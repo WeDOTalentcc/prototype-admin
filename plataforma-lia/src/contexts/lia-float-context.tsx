@@ -435,9 +435,13 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   // depender de state.dynamicPanel no dep array, senao recria a cada
   // wizard_stage e faz churn dos listeners de edit/regenerate WSI.
   const dynamicPanelRef = useRef(state.dynamicPanel);
+  // B3b (2026-06-09): entityContextRef mirrors dynamicPanelRef pattern — avoids
+  // stale closure in sendChatMessage when entityContext changes.
+  const entityContextRef = useRef(state.entityContext);
   chatContextTypeRef.current = chatContextType;
   chatConversationIdRef.current = chatConversationId;
   dynamicPanelRef.current = state.dynamicPanel;
+  entityContextRef.current = state.entityContext;
   const setChatConversationId = useCallback(
     (id: string | null) => {
       chatConversationIdRef.current = id;
@@ -690,19 +694,37 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
           ? ctxHint || panelHint || undefined
           : panelHint || ctxHint || undefined;
 
-      const enrichedMetadata =
-        hintDomain && !metadata?.domain_hint
+      // B3b (2026-06-09): inject entityContext ids into Rail A metadata so the
+      // backend _collect_entity_ids_for_modal can open entity modals without
+      // running the slow EntityResolverService on message text.
+      const _entityCtx = entityContextRef.current;
+      const _entityIds =
+        _entityCtx?.id && _entityCtx.type
           ? {
-              ...(metadata ?? {}),
-              source: metadata?.source ?? "rail_a",
-              card_id:
-                metadata?.card_id ??
-                (activePanelType
-                  ? `panel_active:${activePanelType}`
-                  : `context:${chatContextTypeRef.current}`),
-              domain_hint: hintDomain,
+              [_entityCtx.type === "job" ? "job_id" : "candidate_id"]: String(
+                _entityCtx.id,
+              ),
+              entity_id: String(_entityCtx.id),
+              entity_type: _entityCtx.type,
             }
-          : metadata;
+          : undefined;
+
+      const baseMetadata = hintDomain && !metadata?.domain_hint
+        ? {
+            ...(metadata ?? {}),
+            source: metadata?.source ?? "rail_a",
+            card_id:
+              metadata?.card_id ??
+              (activePanelType
+                ? `panel_active:${activePanelType}`
+                : `context:${chatContextTypeRef.current}`),
+            domain_hint: hintDomain,
+          }
+        : metadata;
+
+      const enrichedMetadata = _entityIds
+        ? { ...(baseMetadata ?? {}), entity_ids: _entityIds }
+        : baseMetadata;
 
       await connection.sendMessage(content, domain, scope, enrichedMetadata);
     },

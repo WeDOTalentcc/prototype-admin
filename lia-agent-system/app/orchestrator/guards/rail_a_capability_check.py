@@ -60,11 +60,46 @@ async def check_rail_a_capability(
     # ── Non-chat-executable: return ui_action immediately (no agent call) ──
     if not cap.chat_executable:
         if cap.modal_id:
+            # B3b fix (2026-06-09): enrich ui_action_params.data with entity_ids
+            # so LiaEntityModalHost can fetch the entity before opening the modal.
+            modal_data = await _collect_entity_ids_for_modal(
+                entity_requirements=cap.entity_required,
+                meta=_meta,
+                context=context,
+                message=message,
+                company_id=company_id,
+                db=db,
+            )
+            if isinstance(modal_data, dict) and "_redirect" in modal_data:
+                return modal_data["_redirect"]
+            # If entity_required and core params still missing → honest navigate fallback
+            if cap.entity_required:
+                _missing = [r.param for r in cap.entity_required if not (modal_data or {}).get(r.param)]
+                if _missing and cap.navigate_fallback:
+                    logger.info(
+                        "[PR-J] entity_required params missing %s for %r — navigate fallback",
+                        _missing, intent_hint,
+                    )
+                    return {
+                        "type": "message",
+                        "content": (
+                            "Para abrir esse painel preciso saber qual vaga ou candidato. "
+                            "Me diga o nome ou abra primeiro."
+                        ),
+                        "ui_action": _UI_ACTION_NAVIGATE,
+                        "ui_action_params": {"page": cap.navigate_fallback},
+                        "confidence": 0.7,
+                        "domain": "capability_map",
+                        "source": "rail_a_gate",
+                    }
             return {
                 "type": "message",
                 "content": _build_modal_message(intent_hint, cap.modal_id),
                 "ui_action": _UI_ACTION_OPEN_MODAL,
-                "ui_action_params": {"modal_id": cap.modal_id},
+                "ui_action_params": {
+                    "modal_id": cap.modal_id,
+                    "data": {**(modal_data or {}), "company_id": company_id},
+                },
                 "confidence": 1.0,
                 "domain": "capability_map",
                 "source": "rail_a_gate",
@@ -96,6 +131,74 @@ async def check_rail_a_capability(
             logger.warning("[PR-J] Entity resolution failed (non-blocking): %s", _ent_exc)
 
     return None
+
+
+async def _collect_entity_ids_for_modal(
+    entity_requirements: list,
+    meta: dict,
+    context: dict,
+    message: str,
+    company_id: str,
+    db: Any,
+) -> dict:
+    """Collect entity_ids for a non-chat-executable modal.
+
+    Precedence: FE metadata.entity_ids > individual params in meta/context
+    > entity resolver (message text) > empty dict (caller decides fallback).
+
+    Returns:
+        dict  — entity param keys mapped to ids, possibly empty
+        {"_redirect": response_dict}  — when resolution needs user input
+    """
+    if not entity_requirements:
+        return {}
+
+    entity_ids: dict = {}
+
+    # 1. FE-provided entity_ids dict (injected by lia-float-context entityContext)
+    meta_entity_ids = meta.get("entity_ids") or {}
+    if isinstance(meta_entity_ids, dict):
+        entity_ids.update({k: str(v) for k, v in meta_entity_ids.items() if v})
+
+    # 2. Individual param names in meta or context
+    for req in entity_requirements:
+        if entity_ids.get(req.param):
+            continue
+        typed_match = (
+            meta.get("entity_id")
+            if str(meta.get("entity_type", "")) == req.type
+            else (
+                context.get("entity_id")
+                if str(context.get("entity_type", "")) == req.type
+                else None
+            )
+        )
+        val = meta.get(req.param) or context.get(req.param) or typed_match
+        if val:
+            entity_ids[req.param] = str(val)
+
+    # 3. Entity resolver from message text if still missing
+    missing = [r.param for r in entity_requirements if not entity_ids.get(r.param)]
+    if missing and db is not None:
+        try:
+            _resolve_ctx: dict = {**context}
+            _missing_reqs = [r for r in entity_requirements if r.param in missing]
+            resolve_response = await _resolve_required_entities(
+                entity_requirements=_missing_reqs,
+                message=message,
+                context=_resolve_ctx,
+                company_id=company_id,
+                db=db,
+            )
+            if resolve_response is not None:
+                return {"_redirect": resolve_response}
+            for req in _missing_reqs:
+                if _resolve_ctx.get(req.param):
+                    entity_ids[req.param] = str(_resolve_ctx[req.param])
+        except Exception as _exc:
+            logger.warning("[PR-J] _collect_entity_ids_for_modal resolver: %s", _exc)
+
+    return entity_ids
 
 
 async def _resolve_required_entities(
