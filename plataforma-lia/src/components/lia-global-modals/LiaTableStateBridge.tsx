@@ -1,6 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
+import { BackgroundTaskNotification } from "@/components/lia-float/BackgroundTaskNotification"
+import type { BackgroundTask } from "@/components/lia-float/BackgroundAgentsStatus"
 import { useCandidatesStore } from "@/stores/candidates-store"
 import { BulkResultReport } from "@/components/bulk/BulkResultReport"
 import type { BulkItemResult } from "@/lib/bulk"
@@ -48,6 +51,34 @@ interface BulkReportState {
 
 export function LiaTableStateBridge() {
   const [bulkReport, setBulkReport] = useState<BulkReportState | null>(null)
+  const [notification, setNotification] = useState<BackgroundTask | null>(null)
+
+  // Wire BackgroundTaskNotification: watch chatBackgroundTasks for terminal transitions.
+  const { chatBackgroundTasks } = useLiaChatContext()
+  const prevTasksRef = useRef<Map<string, string>>(new Map())
+  useEffect(() => {
+    const prev = prevTasksRef.current
+    for (const task of chatBackgroundTasks) {
+      const prevStatus = prev.get(task.task_id)
+      if (
+        (task.status === "completed" || task.status === "failed") &&
+        prevStatus !== "completed" &&
+        prevStatus !== "failed"
+      ) {
+        // Task just reached terminal state → show notification
+        setNotification({
+          id: task.task_id,
+          type: task.task_type,
+          label: task.label,
+          status: task.status,
+          progress: task.progress,
+          message: task.message,
+          result: task.result,
+        } as BackgroundTask)
+      }
+    }
+    prevTasksRef.current = new Map(chatBackgroundTasks.map((t) => [t.task_id, t.status]))
+  }, [chatBackgroundTasks])
 
   useEffect(() => {
     function handle(e: Event) {
@@ -112,6 +143,16 @@ export function LiaTableStateBridge() {
 
   return (
     <>
+      {/* F5: BackgroundTaskNotification — pop-up quando task de background completa */}
+      {notification && (
+        <div className="fixed bottom-4 right-4 z-[9999] w-80 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <BackgroundTaskNotification
+            task={notification}
+            onViewResult={() => setNotification(null)}
+            onDismiss={() => setNotification(null)}
+          />
+        </div>
+      )}
       {bulkReport && (
         <BulkResultReport
           isOpen={true}

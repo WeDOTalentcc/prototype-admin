@@ -760,10 +760,30 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[kanban_tools] batch_move_candidates error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": "Erro ao mover candidatos em lote."}
+    # F5 bulk_execute producer: emite ui_action para FE abrir BulkResultReport.
+    # Honesto: bulk SQL retorna só o count; per-item ok apenas quando moved==total.
+    _ui_results = (
+        [{"id": cid, "name": cid, "ok": True} for cid in candidate_ids]
+        if moved == len(candidate_ids)
+        else (
+            [{"id": cid, "name": cid, "ok": True} for cid in candidate_ids[:moved]]
+            + [{"id": cid, "name": cid, "ok": False, "reason": "Não confirmado"} for cid in candidate_ids[moved:]]
+        )
+    )
     return {
         "success": True,
-        "data": {"moved_count": moved, "target_stage": target_stage,
-                 "candidate_ids": candidate_ids, "reason": reason},
+        "data": {
+            "ui_action": "bulk_execute",
+            "ui_action_params": {
+                "action": "batch_move_candidates",
+                "title": f"Candidatos movidos para '{target_stage}'",
+                "results": _ui_results,
+            },
+            "moved_count": moved,
+            "target_stage": target_stage,
+            "candidate_ids": candidate_ids,
+            "reason": reason,
+        },
         "message": f"{moved} candidatos movidos para '{target_stage}'.",
     }
 
@@ -791,6 +811,12 @@ async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
     return {
         "success": True,
         "data": {
+            "ui_action": "bulk_execute",
+            "ui_action_params": {
+                "action": "send_batch_communication",
+                "title": f"Comunicação via {channel} enviada",
+                "results": [{"id": cid, "name": cid, "ok": True} for cid in candidate_ids],
+            },
             "sent_count": len(candidate_ids),
             "channel": channel,
             "template": template,

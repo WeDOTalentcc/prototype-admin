@@ -781,18 +781,28 @@ async def bulk_update_candidates_stage(
         else:
             failed_ids.append(cid)
     
+    _failed_set = set(failed_ids)
     return {
         "success": len(failed_ids) == 0,
         "message": f"✅ {success_count}/{len(candidate_ids)} candidatos movidos para '{target_stage}'.",
         "action_taken": "bulk_update_candidates_stage",
         "affected_entities": candidate_ids,
         "data": {
+            "ui_action": "bulk_execute",
+            "ui_action_params": {
+                "action": "bulk_update_candidates_stage",
+                "title": f"Candidatos movidos para '{target_stage}'",
+                "results": [
+                    {"id": cid, "name": cid, "ok": cid not in _failed_set}
+                    for cid in candidate_ids
+                ],
+            },
             "total": len(candidate_ids),
             "success_count": success_count,
             "failed_count": len(failed_ids),
             "failed_ids": failed_ids,
-            "target_stage": target_stage
-        }
+            "target_stage": target_stage,
+        },
     }
 
 

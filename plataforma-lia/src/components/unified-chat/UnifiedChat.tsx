@@ -1397,8 +1397,10 @@ export function UnifiedChat({
               result: t.result,
             } as BackgroundTask))}
             onViewResult={(task) => {
-              // TODO F5: open result detail panel
-              void task;
+              // F5: result is in the conversation bubble — scroll chat to bottom.
+              const el = document.querySelector("[data-chat-messages-end]")
+              el?.scrollIntoView({ behavior: "smooth" })
+              void task
             }}
           />
         )}
