@@ -91,6 +91,7 @@ FIRST_PARTY_AGENTS = [
         "max_steps": 10,
         "temperature": 0.3,
         "category": "screening",
+        "is_marketplace_published": True,
     },
     {
         "id": INTERVIEW_ANALYSIS_AGENT_ID,
@@ -122,6 +123,7 @@ FIRST_PARTY_AGENTS = [
         "max_steps": 8,
         "temperature": 0.2,
         "category": "screening",
+        "is_marketplace_published": True,
     },
     {
         "id": VOICE_SCREENING_CHANNEL_ID,
@@ -153,6 +155,7 @@ async def seed_first_party_agents() -> None:
                         "domains": agent_data["domains"],
                         "allowed_tools": agent_data["allowed_tools"],
                         "description": agent_data["description"],
+                        "is_marketplace_published": agent_data.get("is_marketplace_published", False),
                     },
                 )
             )

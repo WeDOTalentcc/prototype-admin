@@ -385,3 +385,59 @@ class AgentInstallationRepository:
         )
         result = await self._db.execute(stmt)
         return int(result.scalar() or 0)
+
+    # ── Billing hook ────────────────────────────────────────────────────────
+
+    async def activate_module_if_required(
+        self,
+        *,
+        installation: "AgentInstallation",
+        listing: "AgentMarketplaceListing",
+    ) -> bool:
+        """Activate a CompanyModule when a module-gated listing is installed.
+
+        Idempotent — silently skips if the module is already active for the
+        tenant. Returns True if a new CompanyModule row was created.
+
+        Multi-tenancy: uses installation.installer_company_id (from JWT, set
+        by caller) — never from listing or payload.
+        """
+        from lia_models.billing import AVAILABLE_MODULES, CompanyModule
+
+        module_key = getattr(listing, "module_required", None)
+        if not module_key:
+            return False
+        if module_key not in AVAILABLE_MODULES:
+            # Unknown module key — fail-high (log, do not silently skip)
+            import logging
+            logging.getLogger(__name__).warning(
+                "activate_module_if_required: unknown module_key=%r for listing_id=%s — skipping",
+                module_key,
+                listing.id,
+            )
+            return False
+
+        company_id = installation.installer_company_id
+        _require_company_id(company_id)
+
+        # Idempotency check
+        existing_stmt = select(CompanyModule).where(
+            and_(
+                CompanyModule.company_id == company_id,
+                CompanyModule.module_name == module_key,
+            )
+        )
+        existing = (await self._db.execute(existing_stmt)).scalar_one_or_none()
+        if existing:
+            return False  # already active — nothing to do
+
+        # Activate the module
+        module_row = CompanyModule(
+            company_id=company_id,
+            module_name=module_key,
+            status="beta",  # matches AVAILABLE_MODULES initial_status for beta modules
+        )
+        self._db.add(module_row)
+        await self._db.flush()
+        return True
+

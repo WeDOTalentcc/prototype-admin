@@ -34,6 +34,11 @@ class MarketplaceListingStatus(str, enum.Enum):
     UNPUBLISHED = "unpublished"
 
 
+class ListingType(str, enum.Enum):
+    agent = "agent"
+    template = "template"
+
+
 class AgentType(str, enum.Enum):
     """Discriminates first-party WeDo agents (global) from client-created agents.
 
@@ -206,8 +211,23 @@ class AgentMarketplaceListing(Base):
     agent_id = Column(
         UUID(as_uuid=True),
         ForeignKey("custom_agents.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         unique=True,
+    )
+    # FK for listing_type=template — references agent_template_catalog
+    template_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("agent_template_catalog.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    # Billing module key — gates CompanyModule activation on install
+    module_required = Column(String(100), nullable=True)
+    # Distinguishes first-party agents from cloneable templates
+    listing_type = Column(
+        SAEnum(ListingType, name="listingtypeenum", create_type=False),
+        nullable=False,
+        default=ListingType.agent,
+        server_default="agent",
     )
     publisher_company_id = Column(String(64), nullable=False, index=True)
 
@@ -252,7 +272,10 @@ class AgentMarketplaceListing(Base):
     def to_dict(self):
         return {
             "id": str(self.id),
-            "agent_id": str(self.agent_id),
+            "agent_id": str(self.agent_id) if self.agent_id else None,
+            "template_id": str(self.template_id) if self.template_id else None,
+            "module_required": self.module_required,
+            "listing_type": self.listing_type.value if self.listing_type else ListingType.agent.value,
             "publisher_company_id": self.publisher_company_id,
             "title": self.title,
             "short_description": self.short_description,
