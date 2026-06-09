@@ -232,7 +232,6 @@ _fairness_guard = FairnessGuard()  # Item 4: inline FairnessGuard for WS
 # Re-exports for backward compat — functions live in chat_shared.py
 # ---------------------------------------------------------------------------
 from app.api.v1.chat_shared import (  # noqa: E402, F401
-    _AGENTS_LOADED,
     _ensure_agents_loaded,
     _get_agent,
     _build_agent_input,
