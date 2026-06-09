@@ -1089,6 +1089,18 @@ company_id: str = Depends(require_company_id)):
                         except Exception as _c3b_exc:
                             logger.warning("[SSEChat] post_compliance skipped (fail-open): %s", _c3b_exc)
 
+                        # Fase 2 (2026-06-09): diretiva ui_action surfacada por
+                        # um tool (open_ui/apply_table_state) via ui_action_sink
+                        # -> output.metadata (drenado no react base). Precede o
+                        # nav marker — acao explicita do tool ganha. Sem isso o
+                        # produtor era ghost no caminho federado.
+                        _tool_ui_action = (output.metadata or {}).get("ui_action")
+                        _tool_ui_params = (output.metadata or {}).get("ui_action_params")
+                        _eff_ui_action = _tool_ui_action or _nav_ui_action
+                        _eff_ui_params = (
+                            _tool_ui_params if _tool_ui_action else _nav_ui_params
+                        )
+
                         panel_meta = (output.metadata or {}).get("panel_update")
                         if panel_meta and isinstance(panel_meta, dict):
                             yield format_sse_event(
@@ -1116,8 +1128,8 @@ company_id: str = Depends(require_company_id)):
                                 response_blocks=(output.metadata or {}).get(
                                     "response_blocks"
                                 ),
-                                ui_action=_nav_ui_action,
-                                ui_action_params=_nav_ui_params,
+                                ui_action=_eff_ui_action,
+                                ui_action_params=_eff_ui_params,
                                 conversation_id=req.conversation_id,
                             ),
                             next_id(),

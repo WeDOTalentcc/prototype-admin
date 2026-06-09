@@ -207,6 +207,15 @@ def tool_definition_to_langchain_tool(td: ToolContract) -> Any:
         fn = _hitl_tee(fn)
     except Exception:
         pass
+    # Fase 2 (2026-06-09): tee da diretiva ui_action (open_modal/navigate_to/
+    # apply_table_state) pro ui_action_sink (irmao do rrp/hitl). Sem isso a
+    # diretiva morre na stringificacao do ToolMessage no caminho federado
+    # (ReAct) — open_ui/apply_table_state nao chegavam ao FE. Defensivo.
+    try:
+        from app.shared.ui_action_sink import tee_tool_function as _uia_tee
+        fn = _uia_tee(fn)
+    except Exception:
+        pass
     name = td.name
     description = td.description or f"Executa {name}"
 

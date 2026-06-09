@@ -191,6 +191,11 @@ class LangGraphReActBase(LangGraphBase):
             _hitl_reset()
         except Exception:
             pass
+        try:
+            from app.shared.ui_action_sink import reset_sink as _uia_reset
+            _uia_reset()
+        except Exception:
+            pass
 
         audit_callback = AuditCallback(
             user_id=str(input.user_id or "system"),
@@ -356,6 +361,22 @@ class LangGraphReActBase(LangGraphBase):
                 }
         except Exception as _hdrain_exc:
             logger.debug("[%s] hitl drain falhou (fail-open): %s", self.__class__.__name__, _hdrain_exc)
+
+        # Fase 2 (2026-06-09): drena a diretiva ui_action tee'd pelas ui tools
+        # -> metadata['ui_action'/'ui_action_params'] -> SSE/WS serializa -> FE
+        # (useUIAction). Sem isso open_ui/apply_table_state nao chegavam ao FE
+        # no caminho federado. Espelha o drain de response_blocks/hitl acima.
+        try:
+            from app.shared.ui_action_sink import drain_sink as _uia_drain
+            _uia_directive = _uia_drain()
+            if _uia_directive:
+                output.metadata = {
+                    **(output.metadata or {}),
+                    "ui_action": _uia_directive.get("ui_action"),
+                    "ui_action_params": _uia_directive.get("ui_action_params"),
+                }
+        except Exception as _uiadrain_exc:
+            logger.debug("[%s] ui_action drain falhou (fail-open): %s", self.__class__.__name__, _uiadrain_exc)
 
         # --- Post-loop learning (EnhancedAgentMixin) ---
         if hasattr(self, "_post_loop_learning"):
