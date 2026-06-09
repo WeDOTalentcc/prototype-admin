@@ -196,7 +196,7 @@ export function useRevealContact({
               current_company: cand.current_company || null,
               avatar_url: cand.avatar_url || null,
             }),
-          }).catch(() => {/* fire-and-forget */})
+          }).catch((e: unknown) => { console.warn("[bulk-reveal] persist-revealed failed (non-critical):", e) })
         }
       }
 
