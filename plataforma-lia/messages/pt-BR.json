@@ -2749,6 +2749,9 @@
       "active": "Ativo",
       "wedoAgentsSubtitle": "Agentes oficiais da plataforma WeDOTalent",
       "templatesSubtitle": "Personalize um template para criar seu agente",
+      "sectionRoadmap": "Em breve",
+      "roadmapSubtitle": "Recursos da plataforma em desenvolvimento",
+      "roadmapBadge": "Em breve",
       "activate": "Ativar"
     },
     "calibration": {

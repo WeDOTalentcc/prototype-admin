@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
   Store, Download, Search, Loader2,
-  Package, CreditCard, Trash2, TrendingUp, CheckCircle2
+  Package, CreditCard, Trash2, TrendingUp, CheckCircle2, Sparkles
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
@@ -53,6 +53,37 @@ interface Installation {
   installed_at: string | null
   agent_name: string | null
 }
+
+// Marketplace redesign 2026-06-09: 5 módulos de roadmap (sem agente publicado)
+// consolidados aqui como seção "Em breve" display-only. Substituem a antiga
+// página "Módulos (beta)" morta. Placeholders — sem API, sem instalação.
+const ROADMAP_MODULES: Array<{ id: string; name: string; description: string }> = [
+  {
+    id: "internal_mobility",
+    name: "Mobilidade Interna",
+    description: "Correspondência interna + Nota de prontidão",
+  },
+  {
+    id: "workforce_planning",
+    name: "Planejamento de Equipe",
+    description: "Previsão + cenários + dashboard",
+  },
+  {
+    id: "candidate_nurture",
+    name: "Nutrição de Candidatos / CRM",
+    description: "Sequências + engajamento + CRM",
+  },
+  {
+    id: "onboarding_suite",
+    name: "Inteligência de Integração",
+    description: "Workflow pós-contratação completo",
+  },
+  {
+    id: "predictive_analytics",
+    name: "Previsão de Rotatividade",
+    description: "Previsão de risco de turnover com ML",
+  },
+]
 
 export default function MarketplaceTab({ initialCategory }: { initialCategory?: string } = {}) {
   const t = useTranslations('agents.marketplace')
@@ -332,6 +363,41 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
             ))}
           </div>
         )}
+      </section>
+
+      <section data-testid="section-roadmap">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-500" aria-hidden="true" />
+            {t("sectionRoadmap")}
+          </h2>
+          <p className="text-xs text-lia-text-secondary mt-0.5">{t("roadmapSubtitle")}</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {ROADMAP_MODULES.map(mod => (
+            <div
+              key={mod.id}
+              className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary"
+              data-testid={"roadmap-module-card-" + mod.id}
+            >
+              <div className="p-4">
+                <div className="flex items-start justify-between mb-2 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-5 h-5 text-emerald-500" aria-hidden="true" />
+                    </div>
+                    <p className="text-sm font-semibold text-lia-text-primary truncate">{mod.name}</p>
+                  </div>
+                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium flex-shrink-0">
+                    {t("roadmapBadge")}
+                  </span>
+                </div>
+                <p className="text-xs text-lia-text-secondary line-clamp-2">{mod.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   )
