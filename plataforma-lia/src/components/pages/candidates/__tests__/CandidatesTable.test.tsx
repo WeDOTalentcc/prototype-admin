@@ -16,6 +16,10 @@
 import { render, screen } from '@testing-library/react'
 import { CandidatesTable } from '../CandidatesTable'
 import type { Candidate, SortConfig } from '../types'
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => "pt",
+}))
 
 vi.mock('@/components/ui/avatar', () => ({
   Avatar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -51,31 +55,6 @@ vi.mock('@/components/ui/tooltip', () => ({
   TooltipContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   TooltipProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   TooltipTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}))
-vi.mock('lucide-react', () => ({
-  Eye: () => <span>eye</span>,
-  Mail: () => <span>mail</span>,
-  Phone: () => <span>phone</span>,
-  Linkedin: () => <span>linkedin</span>,
-  Star: () => <span>star</span>,
-  MapPin: () => <span>mappin</span>,
-  Building: () => <span>building</span>,
-  Briefcase: () => <span>briefcase</span>,
-  ArrowUpDown: () => <span>sort</span>,
-  ArrowUp: () => <span>asc</span>,
-  ArrowDown: () => <span>desc</span>,
-  Clock: () => <span>clock</span>,
-  GripVertical: () => <span>grip</span>,
-  Loader2: () => <span>loader</span>,
-  MoreVertical: () => <span>more</span>,
-  Globe: () => <span>globe</span>,
-  CheckCircle: () => <span>check</span>,
-  StickyNote: () => <span>note</span>,
-  Zap: () => <span>zap</span>,
-  ChevronDown: () => <span>chevron</span>,
-  ArrowRight: () => <span>arrow</span>,
-  Brain: () => <span>brain</span>,
-  Info: () => <span>info</span>,
 }))
 vi.mock('@/lib/design-tokens', () => ({
   textStyles: { heading: '', body: '', muted: '' },
@@ -159,7 +138,7 @@ describe('CandidatesTable', () => {
 
   it('renders empty-state message when candidates is empty and not loading', () => {
     render(<CandidatesTable {...DEFAULT_PROPS} candidates={[]} />)
-    expect(screen.getByText('Nenhum candidato encontrado')).toBeTruthy()
+    expect(screen.getByText('noCandidatesFound')).toBeTruthy()
   })
 
   it('does not render the table when candidates is empty', () => {

@@ -26,10 +26,6 @@ vi.mock("@/components/ui/button", () => ({
 vi.mock("@/components/ui/chip", () => ({
   Chip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }))
-vi.mock("lucide-react", () => ({
-  Users: () => <span>users</span>,
-  Loader2: () => <span>loader</span>,
-}))
 vi.mock("@/components/tables", () => ({
   UnifiedCandidateTable: () => <div data-testid="unified-table" />,
 }))
