@@ -478,13 +478,6 @@ repos:
         files: ^(app/shared/providers/llm_deepseek\.py|app/shared/providers/__init__\.py|app/shared/resilience/circuit_breaker\.py|app/api/v1/llm_config\.py|alembic/versions/182_deepseek_catalog\.py)$
         pass_filenames: false
 
-      - id: tier6-canary-wired
-        name: "W4-041: Tier 6 (AutonomousReActAgent) canary gate canonical wired (flag + router + metric) (BLOCKING)"
-        language: system
-        entry: python3 scripts/check_tier6_canary_wired.py
-        files: ^(app/shared/governance/feature_flag_service\.py|app/orchestrator/cascaded_router\.py|app/shared/observability/canary_metrics\.py)$
-        pass_filenames: false
-
       - id: few-shot-yaml-schema
         name: "W4-038: few_shot_examples YAML schema canonical (BLOCKING — baseline 0)"
         language: system

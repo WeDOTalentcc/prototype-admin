@@ -10,11 +10,10 @@ Sub-modules:
 
 Previously extracted sub-routers (Sprint E / Phase 5) are still included here so
 main.py only needs to import from this package:
-  lia_voice, lia_multimodal, lia_autonomous, lia_feedback
+  lia_voice, lia_multimodal, lia_feedback
 """
 from fastapi import APIRouter
 
-from app.api.v1.lia_autonomous import autonomous_router
 from app.api.v1.lia_feedback import feedback_router
 from app.api.v1.lia_multimodal import multimodal_router
 
@@ -37,7 +36,6 @@ router = APIRouter(prefix="/lia", tags=["lia-assistant"])
 # Sprint E sub-routers (no extra prefix — they already have /lia/... paths internally)
 router.include_router(voice_router)
 router.include_router(multimodal_router)
-router.include_router(autonomous_router)
 router.include_router(feedback_router)
 
 # This package's route groups

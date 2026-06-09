@@ -199,17 +199,8 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
     def _get_tools(self) -> list:
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
 
-        # GAP 5: Load tools from autonomous pool + domain-specific registries
+        # GAP 5: Load tools from domain-specific registries
         all_tools = []
-
-        # Pool 1: Autonomous tools (40 curated cross-domain tools)
-        try:
-            # Pool 1 cross-domain canonical (46 tools curadas) — Studio agents usam autonomous
-            # como baseline cross-domain + Pool 2 domain-specific (sem substituto em agent_studio).
-            from app.domains.autonomous.agents.autonomous_tool_registry import get_autonomous_tools
-            all_tools.extend(get_autonomous_tools())
-        except Exception:
-            pass
 
         # Pool 2: Domain-specific tools based on agent domain
         domain = self._domain.split(":")[0] if ":" in self._domain else self._domain

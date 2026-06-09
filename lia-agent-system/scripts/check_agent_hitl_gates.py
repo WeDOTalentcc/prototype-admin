@@ -44,10 +44,6 @@ CANONICAL_AGENTS: dict[str, dict[str, str]] = {
         "path": "ats_integration/agents/ats_integration_react_agent.py",
         "priority": "P0",
     },
-    "autonomous": {
-        "path": "autonomous/agents/autonomous_react_agent.py",
-        "priority": "P0",
-    },
     "kanban": {
         "path": "recruiter_assistant/agents/kanban_react_agent.py",
         "priority": "P0",

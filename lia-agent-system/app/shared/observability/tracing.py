@@ -21,7 +21,6 @@ Cobertura de traces (Z6-02 + Task #121):
     - Tier 3: "router.tier3_vector_cache"
     - Tier 4: "router.tier4_fast_router"
     - Tier 5: "router.tier5_llm_cascade"
-    - Tier 6: "router.tier6_autonomous_react"
     - Fallback: "router.fallback_clarification"
   - RAGPipelineService.search() → spans per phase:
     - "rag.query_analysis", "rag.bm25_search", "rag.semantic_search"

@@ -635,8 +635,7 @@ class CascadedRouter:
         # via env AUTONOMOUS_REACT_ENABLED + flag per-tenant tier6_canary_enabled.
         # Em prod env nunca foi SET (default false) -- Tier 6 invocations = 0 nos canary metrics.
         # Decisão: estrutura removida do hot path (low-risk, env-gated already-off).
-        # autonomous_react_agent.py file mantido (5 test files + agent_chat_ws.py import
-        # via @register_agent decorator dependem dele importável). Cleanup em Sprint 12.6.
+        # autonomous_react_agent.py e test files removidos em T13 (Sprint 12.6).
         # Refs: PHASE_2_V1_ARCHITECTURE_AUDIT.md (decisão Batch 1), W4-041 (canary doc).
 
         # Tier 7 — Studio Agent Matcher (custom agents bound to current context)
@@ -899,9 +898,8 @@ class CascadedRouter:
         return route_result
 
     # _route_via_autonomous_agent — REMOVED in Sprint 12.3-B (2026-05-24).
-    # Helper invocava AutonomousReActAgent via Tier 6 do hot path do router.
+    # Helper invocava AutonomousReActAgent via Tier 6 (removido em T13).
     # Tier 6 removido (env never set in prod). Helper era dead code.
-    # autonomous_react_agent.py module mantido para tests + agent_chat_ws.py
     # imports — cleanup completo em Sprint 12.6.
 
     async def _route_via_llm_cascade(

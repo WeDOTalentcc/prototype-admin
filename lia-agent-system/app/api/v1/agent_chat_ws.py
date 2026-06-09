@@ -416,7 +416,6 @@ def _ensure_agents_loaded() -> None:
 
         # Standalone domain agents (added 2026-05-20 by Sprint A.1 — Task #28)
         from app.domains.talent_pool.agents.talent_pool_agent import TalentPoolReActAgent  # noqa: F401
-        from app.domains.autonomous.agents.autonomous_react_agent import AutonomousReActAgent  # noqa: F401  # Tier 6 ReAct fallback canonical — registration trigger pro @register_agent decorator (ADR-V3.1)
         from app.domains.company_settings.agents.company_react_agent import CompanySettingsReActAgent  # noqa: F401
         from app.domains.candidate_self_service.agents.candidate_react_agent import CandidateSelfServiceAgent  # noqa: F401
 
