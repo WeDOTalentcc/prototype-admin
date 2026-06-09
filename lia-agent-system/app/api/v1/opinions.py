@@ -34,8 +34,14 @@ class ParecerGenerateRequest(WeDoBaseModel):
 
 
 class CriteriaMatchRequest(WeDoBaseModel):
-    """Body do POST /opinions/candidate/{id}/criteria-match (matriz da busca, on-the-fly)."""
+    """Body do POST /opinions/candidate/{id}/criteria-match (matriz da busca ou vaga, on-the-fly).
+
+    - search_criteria + sem job_id: matriz plana (busca de talentos).
+    - job_id presente: matriz agrupada (must_have/preferred) derivada da vaga sem LLM.
+      Fallback quando o candidato não tem parecer salvo com qualification_matrix.
+    """
     search_criteria: dict = {}
+    job_id: str | None = None
 
 
 def _build_opinion_full(op: LiaOpinion, job_title: str | None) -> LiaOpinionFull:
@@ -484,5 +490,25 @@ async def candidate_criteria_match(
     if not candidate:
         raise HTTPException(status_code=404, detail=f"Candidate {candidate_id} not found")
     cand_dict = candidate_report_service._build_candidate_dict(candidate)
-    matrix = derive_from_search(payload.search_criteria or {}, cand_dict)
+
+    if payload.job_id:
+        # Matriz agrupada (vaga) — derivação determinística, sem LLM.
+        # Fallback para candidatos sem parecer salvo ou com parecer antigo.
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+            JobVacancyCrudRepository,
+        )
+        from uuid import UUID as _UUID
+        job_repo = JobVacancyCrudRepository(repo.db)
+        try:
+            job_uuid = _UUID(str(payload.job_id))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="job_id deve ser um UUID válido")
+        job = await job_repo.get_vacancy_by_id_and_company(job_uuid, company_id)
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Job {payload.job_id} not found")
+        from app.domains.analytics.services.criteria_derivation import derive_from_job
+        job_dict = candidate_report_service._build_job_dict(job)
+        matrix = derive_from_job(job_dict, cand_dict, None)
+    else:
+        matrix = derive_from_search(payload.search_criteria or {}, cand_dict)
     return matrix.model_dump()

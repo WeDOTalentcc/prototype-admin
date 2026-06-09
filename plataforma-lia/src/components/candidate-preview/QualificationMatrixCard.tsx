@@ -44,6 +44,8 @@ interface QualificationMatrixCardProps {
   matrix?: QualificationMatrixData | null
   /** Critérios da busca — quando presente (e sem matrix), busca on-the-fly. */
   searchCriteria?: Record<string, unknown> | null
+  /** ID da vaga — quando presente (e sem matrix e sem searchCriteria), deriva on-the-fly. */
+  jobId?: string | null
 }
 
 const PROVENANCE_LABEL: Record<CriterionProvenance, string> = {
@@ -134,26 +136,36 @@ export function QualificationMatrixCard({
   companyId,
   matrix,
   searchCriteria,
+  jobId,
 }: QualificationMatrixCardProps) {
-  const shouldFetch = !matrix && !!searchCriteria && !!candidateId && !!companyId
+  const shouldFetchSearch = !matrix && !!searchCriteria && !!candidateId && !!companyId
+  // Deriva on-the-fly da vaga quando não há parecer salvo (ou parecer antigo sem matrix).
+  const shouldFetchJob = !matrix && !searchCriteria && !!jobId && !!candidateId && !!companyId
+  const shouldFetch = shouldFetchSearch || shouldFetchJob
+
+  const queryKey = shouldFetchJob
+    ? CANDIDATE_AI_QUERY_KEYS.qualificationMatrix(candidateId, jobId!, companyId)
+    : CANDIDATE_AI_QUERY_KEYS.criteriaMatch(candidateId, JSON.stringify(searchCriteria ?? {}), companyId)
+
+  const requestBody = shouldFetchJob
+    ? { job_id: jobId }
+    : { search_criteria: searchCriteria ?? {} }
 
   const { data, isLoading, isError, refetch } = useQuery<QualificationMatrixData>({
-    queryKey: CANDIDATE_AI_QUERY_KEYS.criteriaMatch(
-      candidateId,
-      JSON.stringify(searchCriteria ?? {}),
-      companyId
-    ),
+    queryKey,
     queryFn: async () => {
       const res = await fetch(
         `/api/backend-proxy/opinions/candidate/${candidateId}/criteria-match?company_id=${encodeURIComponent(companyId)}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ search_criteria: searchCriteria ?? {} }),
+          body: JSON.stringify(requestBody),
         }
       )
-      if (!res.ok) throw new Error("Falha ao avaliar critérios da busca")
-      return res.json()
+      if (!res.ok) throw new Error("Falha ao avaliar critérios da vaga")
+      const json = await res.json()
+      // Unwrap FastAPI ResponseEnvelopeMiddleware: {ok, data, meta} -> data
+      return (json && typeof json === "object" && "ok" in json && "data" in json) ? json.data : json
     },
     enabled: shouldFetch,
     retry: false,

@@ -84,6 +84,7 @@ export function CandidatePreviewProfileTab({
         companyId={companyId || ''}
         matrix={groupedMatrix}
         searchCriteria={!jobId ? searchCriteria : null}
+        jobId={jobId}
       />
 
       {eligibilityResults && eligibilityResults.length > 0 && (
