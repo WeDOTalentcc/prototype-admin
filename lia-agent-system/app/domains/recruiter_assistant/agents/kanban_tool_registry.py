@@ -20,6 +20,22 @@ logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
 
+async def _fetch_candidate_name_map(candidate_ids: list[str], company_id: str) -> dict[str, str]:
+    """Fetch {id: name} map for bulk result labels. Fail-open: returns {} on error."""
+    if not candidate_ids:
+        return {}
+    try:
+        from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+        async with AsyncSessionLocal() as _sess:
+            _repo = CandidateRepository(_sess)
+            _candidates = await _repo.list_by_ids(candidate_ids, company_id=company_id)
+            return {str(c.id): (c.name or str(c.id)) for c in _candidates}
+    except Exception as _e:
+        import logging as _lg
+        _lg.getLogger(__name__).debug("[kanban_tools] _fetch_candidate_name_map fail-open: %s", _e)
+        return {}
+
+
 
 @tool_handler("kanban")
 async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
@@ -762,12 +778,13 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": str(e), "message": "Erro ao mover candidatos em lote."}
     # F5 bulk_execute producer: emite ui_action para FE abrir BulkResultReport.
     # Honesto: bulk SQL retorna só o count; per-item ok apenas quando moved==total.
+    _name_map = await _fetch_candidate_name_map(candidate_ids, company_id)
     _ui_results = (
-        [{"id": cid, "name": cid, "ok": True} for cid in candidate_ids]
+        [{"id": cid, "name": _name_map.get(cid, cid), "ok": True} for cid in candidate_ids]
         if moved == len(candidate_ids)
         else (
-            [{"id": cid, "name": cid, "ok": True} for cid in candidate_ids[:moved]]
-            + [{"id": cid, "name": cid, "ok": False, "reason": "Não confirmado"} for cid in candidate_ids[moved:]]
+            [{"id": cid, "name": _name_map.get(cid, cid), "ok": True} for cid in candidate_ids[:moved]]
+            + [{"id": cid, "name": _name_map.get(cid, cid), "ok": False, "reason": "Não confirmado"} for cid in candidate_ids[moved:]]
         )
     )
     return {
@@ -792,6 +809,7 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
     """Send communication to multiple candidates."""
     candidate_ids = kwargs.get("candidate_ids", [])
+    company_id = kwargs.get("company_id", "")
     channel = kwargs.get("channel", "email")
     template = kwargs.get("template", "")
     # F3: HITL gate -- comunicacao em lote e acao sensivel (outreach); dormante com LIA_HITL_GATE off.
@@ -808,6 +826,7 @@ async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
         f"[kanban_tools] send_batch_communication called: candidates={len(candidate_ids)} "
         f"channel={channel}"
     )
+    _comm_name_map = await _fetch_candidate_name_map(candidate_ids, company_id)
     return {
         "success": True,
         "data": {
@@ -815,7 +834,7 @@ async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
             "ui_action_params": {
                 "action": "send_batch_communication",
                 "title": f"Comunicação via {channel} enviada",
-                "results": [{"id": cid, "name": cid, "ok": True} for cid in candidate_ids],
+                "results": [{"id": cid, "name": _comm_name_map.get(cid, cid), "ok": True} for cid in candidate_ids],
             },
             "sent_count": len(candidate_ids),
             "channel": channel,

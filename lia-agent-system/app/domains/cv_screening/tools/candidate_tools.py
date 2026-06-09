@@ -740,6 +740,22 @@ async def shortlist_candidate(
         }
 
 
+async def _fetch_candidate_name_map_local(candidate_ids: list[str], company_id: str = "") -> dict[str, str]:
+    """Fetch {id: name} map for bulk result labels. Fail-open: returns {} on error."""
+    if not candidate_ids:
+        return {}
+    try:
+        from app.core.database import AsyncSessionLocal
+        from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+        async with AsyncSessionLocal() as _sess:
+            _repo = CandidateRepository(_sess)
+            _candidates = await _repo.list_by_ids(candidate_ids, company_id=company_id or None)
+            return {str(c.id): (c.name or str(c.id)) for c in _candidates}
+    except Exception as _e:
+        logger.debug("[candidate_tools] _fetch_candidate_name_map fail-open: %s", _e)
+        return {}
+
+
 async def bulk_update_candidates_stage(
     candidate_ids: list[str],
     target_stage: str,
@@ -782,6 +798,8 @@ async def bulk_update_candidates_stage(
             failed_ids.append(cid)
     
     _failed_set = set(failed_ids)
+    # F5 nomes reais no BulkResultReport (fail-open: cai em UUID se lookup falhar)
+    _name_map = await _fetch_candidate_name_map_local(candidate_ids)
     return {
         "success": len(failed_ids) == 0,
         "message": f"✅ {success_count}/{len(candidate_ids)} candidatos movidos para '{target_stage}'.",
@@ -793,7 +811,7 @@ async def bulk_update_candidates_stage(
                 "action": "bulk_update_candidates_stage",
                 "title": f"Candidatos movidos para '{target_stage}'",
                 "results": [
-                    {"id": cid, "name": cid, "ok": cid not in _failed_set}
+                    {"id": cid, "name": _name_map.get(cid, cid), "ok": cid not in _failed_set}
                     for cid in candidate_ids
                 ],
             },
