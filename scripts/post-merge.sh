@@ -26,8 +26,13 @@ fi
 #  in code+migration 082, but the migration was never applied → all candidate
 #  list/search endpoints returned 500 with UndefinedColumnError.)
 if [ -f "lia-agent-system/alembic.ini" ]; then
-  echo "[3/3] Applying database migrations (alembic upgrade head)..."
+  echo "[3/4] Applying database migrations (alembic upgrade head)..."
   ( cd lia-agent-system && python -m alembic upgrade head < /dev/null )
+fi
+
+if [ -f "lia-agent-system/scripts/seed_first_party_agents.py" ]; then
+  echo "[4/4] Seeding first-party WeDo agents (idempotent upsert)..."
+  ( cd lia-agent-system && python scripts/seed_first_party_agents.py < /dev/null )
 fi
 
 echo "=== Post-merge setup complete ==="
