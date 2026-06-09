@@ -80,6 +80,7 @@ export interface UseChatSocketReturn {
   activePlanId: string | null;
 
   conversationIdFromWs: string | null;
+  clearActivityState: () => void;
 }
 
 export function useChatSocket({
@@ -598,6 +599,12 @@ export function useChatSocket({
     [_sendViaSSERaw],
   );
 
+  const clearActivityState = useCallback(() => {
+    setThinkingSteps([]);
+    agentActivityBufferRef.current = [];
+    turnClosedRef.current = true;
+  }, []);
+
   return {
     tokens,
     isStreaming,
@@ -626,5 +633,6 @@ export function useChatSocket({
     activePlanId,
     conversationIdFromWs,
     setIsThinking, // expor para que useChatMessages dispare o indicador "LIA digitando" também no caminho REST/SSE (BUG-13)
+    clearActivityState,
   };
 }

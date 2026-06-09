@@ -137,5 +137,6 @@ export function useLiaChatConnection({
     loadHistory: messaging.loadHistory,
     connect: socket.connect,
     disconnect: socket.disconnect,
+    clearActivityState: socket.clearActivityState,
   }
 }

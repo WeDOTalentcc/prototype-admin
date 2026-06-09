@@ -107,6 +107,7 @@ export type TransportMode = "ws" | "sse" | "disconnected";
 export interface UseLiaChatConnectionResult {
   conversationId: string | null;
   setConversationId: (id: string | null) => void;
+  clearActivityState: () => void;
   isConnected: boolean;
   isStreaming: boolean;
   isReconnecting: boolean;

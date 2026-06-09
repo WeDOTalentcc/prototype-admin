@@ -961,6 +961,10 @@ company_id: str = Depends(require_company_id)):
                     )
                     await _mdb.commit()
                 _cid = str(_conv.id)
+                # Canonical: propaga conversation_id resolvido para agente e FE.
+                # Garante thread_id = session::domain::_cid (fresco p/ nova conversa,
+                # correto p/ conversa carregada da sidebar).
+                context["conversation_id"] = _cid
                 _hctx = await _cmem.get_context_for_llm(
                     _mdb, _cid, max_messages=20
                 )
@@ -1214,7 +1218,7 @@ company_id: str = Depends(require_company_id)):
                                 ),
                                 ui_action=_eff_ui_action,
                                 ui_action_params=_eff_ui_params,
-                                conversation_id=req.conversation_id,
+                                conversation_id=_cid,
                             ),
                             next_id(),
                         )

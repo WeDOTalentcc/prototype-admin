@@ -633,6 +633,9 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         connection.setConversationId(null);
         chatConversationIdRef.current = null;
         setChatMessages([]);
+        // Limpa thinking steps e buffer de activity para evitar poluição
+        // de reasoning steps da conversa anterior na nova conversa.
+        connection.clearActivityState();
         return null;
       }
 
