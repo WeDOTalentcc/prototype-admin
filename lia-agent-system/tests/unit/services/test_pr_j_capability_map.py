@@ -205,6 +205,9 @@ class TestCapabilityMapFaseB:
         ("view_score", "general_score", "candidate"),
         ("view_bigfive", "big_five", "candidate"),
         ("generate_job_report", "job_report", "job"),
+        # Fase 1D (2026-06-09): compare_jobs migrou de navigate_page para modal_id
+        # (modal de comparação multi-vaga em overlay, sem navegar para outra página)
+        ("compare_jobs", "job_compare", None),
     ]
 
     # Capabilities que NAVEGAM pro surface. (intent, navigate_page, destrutivo?)
@@ -214,7 +217,6 @@ class TestCapabilityMapFaseB:
         ("change_job_status", "vaga_detalhe", True),
         ("assign_recruiter", "vaga_detalhe", True),
         ("job_insights", "vaga_detalhe", False),
-        ("compare_jobs", "vagas", False),
         ("bulk_action", "funil_talentos", True),
         ("data_request", "funil_talentos", True),
         ("send_communication", "central_comunicacao", True),

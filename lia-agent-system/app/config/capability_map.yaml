@@ -205,7 +205,7 @@ capabilities:
     label: "Comparar vagas"
     chat_executable: false
     entity_required: []
-    navigate_page: vagas          # comparar exige seleção multi-vaga (na lista)
+    modal_id: job_compare         # abre modal de comparação multi-vaga (Fase 1D)
     navigate_fallback: /jobs
 
   view_score:
