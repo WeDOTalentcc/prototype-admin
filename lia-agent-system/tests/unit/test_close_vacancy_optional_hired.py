@@ -94,6 +94,8 @@ class TestCloseVacancyOptionalHired:
         assert result["success"] is True
         assert result["hired_candidate_id"] == "cand-uuid-001"
         assert result["status"] == "Concluída"
+        call_kwargs = activity_svc.create_activity.call_args.kwargs
+        assert "Candidato contratado" in call_kwargs["description"]
         repo.close_vacancy.assert_awaited_once()
 
     @pytest.mark.asyncio

@@ -566,7 +566,7 @@ async def close_vacancy(
     activity_svc: ActivityService = Depends(get_activity_service),
     comm_svc: CommunicationService = Depends(get_communication_service),
 company_id: str = Depends(require_company_id)) -> dict[str, Any]:
-    """Close a vacancy after hiring a candidate."""
+    """Close a vacancy. Pass close_reason='not_filled' when no hire was made."""
     try:
         company_id = get_user_company_id(current_user)
         data = await request.json()
@@ -680,7 +680,8 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
                 extra_data={
                     "hired_candidate_id": hired_candidate_id,
                     "notified_count": len(other_candidate_ids),
-                    "company_id": company_id
+                    "company_id": company_id,
+                    "close_reason": close_reason
                 },
                 category="recruitment"
             )
@@ -692,6 +693,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
             "vacancy_id": vacancy_id,
             "status": "Concluída",
             "hired_candidate_id": hired_candidate_id,
+            "close_reason": close_reason,
             "notifications_sent": notifications_sent
         }
 
