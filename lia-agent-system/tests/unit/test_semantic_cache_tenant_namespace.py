@@ -1,3 +1,4 @@
+
 """
 Sentinel test for Task #1144 — Redis tenant-namespace contract.
 
@@ -163,6 +164,10 @@ def test_assert_tenant_namespaced_key_passes_for_valid_shapes() -> None:
 def test_assert_tenant_namespaced_key_records_violation_for_bad_shape(monkeypatch) -> None:
     from app.shared.security import tenant_redis_namespace as trn
 
+    assert hasattr(trn, "record_namespace_violation"), (
+        "trn.record_namespace_violation does not exist — "
+        "the monkeypatch target is missing; update the import or the attribute name."
+    )
     seen: list[str] = []
     monkeypatch.setattr(
         trn,
@@ -243,21 +248,18 @@ class _FakeRedis:
         return len(vals)
 
 
-def test_proxy_blocks_legacy_2segment_key_in_prod(monkeypatch) -> None:
+async def test_proxy_blocks_legacy_2segment_key_in_prod(monkeypatch) -> None:
     """The proxy must reject ``route_cache:<md5>`` (2 segments) loudly."""
     monkeypatch.setenv("ENVIRONMENT", "production")
     from app.shared.security.tenant_redis_proxy import wrap_redis_client
 
     proxy = wrap_redis_client(_FakeRedis(), module="sentinel_test")
 
-    import asyncio
     with pytest.raises(RuntimeError):
-        asyncio.run(
-            proxy.set("route_cache:deadbeef", "v")
-        )
+        await proxy.set("route_cache:deadbeef", "v")
 
 
-def test_proxy_allows_canonical_tenant_key(monkeypatch) -> None:
+async def test_proxy_allows_canonical_tenant_key(monkeypatch) -> None:
     """Canonical ``<prefix>:<cid>:<suffix>`` must pass through unchanged."""
     monkeypatch.setenv("ENVIRONMENT", "production")
     from app.shared.security.tenant_redis_proxy import wrap_redis_client
@@ -266,12 +268,11 @@ def test_proxy_allows_canonical_tenant_key(monkeypatch) -> None:
     proxy = wrap_redis_client(fake, module="sentinel_test")
     key = tenant_namespaced_key("route_cache", _TENANT_A, "deadbeef")
 
-    import asyncio
-    asyncio.run(proxy.set(key, "v"))
+    await proxy.set(key, "v")
     assert fake.calls == [("set", (key, "v"), {})]
 
 
-def test_proxy_blocks_well_known_non_tenant_label_at_cid_position(
+async def test_proxy_blocks_well_known_non_tenant_label_at_cid_position(
     monkeypatch,
 ) -> None:
     """Keys whose cid position is a forbidden literal must be rejected."""
@@ -280,14 +281,11 @@ def test_proxy_blocks_well_known_non_tenant_label_at_cid_position(
 
     proxy = wrap_redis_client(_FakeRedis(), module="sentinel_test")
 
-    import asyncio
     with pytest.raises(RuntimeError):
-        asyncio.run(
-            proxy.set("route_cache:default:deadbeef", "v")
-        )
+        await proxy.set("route_cache:default:deadbeef", "v")
 
 
-def test_proxy_allows_slug_tenant_cid(monkeypatch) -> None:
+async def test_proxy_allows_slug_tenant_cid(monkeypatch) -> None:
     """Per CompanyId.parse, slug tenants (e.g. ``acme-corp``) are valid."""
     monkeypatch.setenv("ENVIRONMENT", "production")
     from app.shared.security.tenant_redis_proxy import wrap_redis_client
@@ -295,15 +293,12 @@ def test_proxy_allows_slug_tenant_cid(monkeypatch) -> None:
     fake = _FakeRedis()
     proxy = wrap_redis_client(fake, module="sentinel_test")
 
-    import asyncio
-    asyncio.run(
-        proxy.set("route_cache:acme-corp:deadbeef", "v")
-    )
+    await proxy.set("route_cache:acme-corp:deadbeef", "v")
     # Slug must pass through to the underlying client without raising.
     assert fake.calls == [("set", ("route_cache:acme-corp:deadbeef", "v"), {})]
 
 
-def test_proxy_allows_slug_tenant_at_2segment_prefix(monkeypatch) -> None:
+async def test_proxy_allows_slug_tenant_at_2segment_prefix(monkeypatch) -> None:
     """Slug tenants at parts[2] (e.g. ``lia:session:<slug>:<sid>``) pass."""
     monkeypatch.setenv("ENVIRONMENT", "production")
     from app.shared.security.tenant_redis_proxy import wrap_redis_client
@@ -311,10 +306,7 @@ def test_proxy_allows_slug_tenant_at_2segment_prefix(monkeypatch) -> None:
     fake = _FakeRedis()
     proxy = wrap_redis_client(fake, module="sentinel_test")
 
-    import asyncio
-    asyncio.run(
-        proxy.set("lia:session:acme-corp:sess-1", "v")
-    )
+    await proxy.set("lia:session:acme-corp:sess-1", "v")
     assert fake.calls == [
         ("set", ("lia:session:acme-corp:sess-1", "v"), {})
     ]
