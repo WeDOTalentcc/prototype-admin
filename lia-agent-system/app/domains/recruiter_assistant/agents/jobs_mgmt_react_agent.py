@@ -116,7 +116,10 @@ class JobsManagementReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanc
     def _get_tools(self) -> list:
         """Todos os tools do domínio Jobs Management (LangGraph usa set completo)."""
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
-        tool_defs = get_jobs_mgmt_tools() + self._get_all_enhanced_tools()
+        from app.domains.recruiter_assistant.agents.ui_tool_registry import get_open_ui_tools
+        # Grant UI: open_ui (modais/nav). apply_table_state NAO (surface jobs sem
+        # ponte FE ainda -> evita ghost; entra em slice F2).
+        tool_defs = get_jobs_mgmt_tools() + get_open_ui_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:

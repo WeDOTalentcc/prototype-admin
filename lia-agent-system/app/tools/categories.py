@@ -28,6 +28,7 @@ class ToolCategory:
     ENTREVISTAS_IA = "ENTREVISTAS (IA)"
     TRIAGEM_WSI = "TRIAGEM WSI"
     DELEGACAO = "DELEGAÇÃO / ESPECIALISTAS"
+    INTERFACE = "INTERFACE / NAVEGAÇÃO"
     OTHER = "OTHER"
 
 
@@ -45,6 +46,7 @@ CATEGORY_TAGLINES: dict[str, str] = {
     ToolCategory.TALENT_INTEL: "bancos de talentos, skills adjacency, skill gaps, reengajamento",
     ToolCategory.ENTREVISTAS_IA: "analisar gravação, detectar viés, gerar parecer, comparar performance",
     ToolCategory.TRIAGEM_WSI: "voice screening completo",
+    ToolCategory.INTERFACE: "abrir modais/telas (open_ui) e filtrar/ordenar/buscar tabelas abertas (apply_table_state) — controlar a interface da plataforma pelo chat",
     ToolCategory.OTHER: "ferramentas auxiliares",
 }
 
@@ -53,11 +55,13 @@ CATEGORY_TAGLINES: dict[str, str] = {
 # Used by ToolRegistry.apply_category_mapping() to populate
 # ToolDefinition.category at registration time.
 TOOL_TO_CATEGORY: dict[str, str] = {
-    # ---- CANDIDATOS (UI in-page) ----
-    # apply_table_state: filtra/ordena/busca a tabela de candidatos JA ABERTA
-    # (ponte in-page Fase 2). Registrada no global p/ o supervisor (agentic_loop
-    # Phase 1.5) alcancar; o federado usa via federacao.
-    "apply_table_state": ToolCategory.CANDIDATOS,
+    # ---- INTERFACE / NAVEGAÇÃO (UI tools) ----
+    # open_ui: abre modal/painel ou navega (capability_map-gated + HITL).
+    # apply_table_state: filtra/ordena/busca a tabela JA ABERTA (ponte in-page).
+    # Registrados no global p/ o supervisor (agentic_loop Phase 1.5); o federado
+    # usa via federacao; domain agents via grant explicito no _get_tools.
+    "open_ui": ToolCategory.INTERFACE,
+    "apply_table_state": ToolCategory.INTERFACE,
     # ---- VAGAS ----
     "create_job": ToolCategory.VAGAS,
     "publish_job": ToolCategory.VAGAS,
@@ -215,6 +219,7 @@ def category_for_tool(tool_name: str) -> str:
 DISPLAY_ORDER: list[str] = [
     ToolCategory.VAGAS,
     ToolCategory.CANDIDATOS,
+    ToolCategory.INTERFACE,
     ToolCategory.DELEGACAO,
     ToolCategory.COMUNICACAO,
     ToolCategory.AGENDAMENTO,

@@ -116,7 +116,18 @@ class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanced
     def _get_tools(self) -> list:
         """Todos os tools do domínio Talent (LangGraph usa set completo)."""
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
-        tool_defs = get_talent_tools() + self._get_all_enhanced_tools()
+        from app.domains.recruiter_assistant.agents.ui_tool_registry import (
+            get_open_ui_tools,
+            get_table_state_tools,
+        )
+        # Grant UI (least-privilege, anti-ghost): open_ui (modais/nav) +
+        # apply_table_state (surface 'candidates'/Funil TEM ponte FE).
+        tool_defs = (
+            get_talent_tools()
+            + get_open_ui_tools()
+            + get_table_state_tools()
+            + self._get_all_enhanced_tools()
+        )
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:

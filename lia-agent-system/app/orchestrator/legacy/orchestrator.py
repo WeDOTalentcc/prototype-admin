@@ -317,6 +317,12 @@ class Orchestrator:
                           # moat RRP na trilha supervisor (paridade com o federado).
                           "response_blocks": (dr.metadata or {}).get("response_blocks"),
                           "hitl_pending": (dr.metadata or {}).get("hitl_pending"),
+                          # Fase 2 (2026-06-09): diretiva ui_action do sub-agente
+                          # (open_ui/apply_table_state via ui_action_sink -> metadata)
+                          # que o legacy dropava -> from_orchestrator_result le ->
+                          # ChatResponse.ui_action. Simetria do supervisor Phase 2.
+                          "ui_action": (dr.metadata or {}).get("ui_action"),
+                          "ui_action_params": (dr.metadata or {}).get("ui_action_params"),
                           "policy_constraints": policy.get("constraints", {})}
             else:
                 fb = await self._handle_directly(intent, sanitized, {}, context=ctx)

@@ -69,6 +69,7 @@ _CANONICAL_SOURCES: dict[str, tuple[str, str]] = {
     "policy": ("app.domains.hiring_policy.agents.policy_tool_registry", "get_policy_tools"),
     "sourcing": ("app.domains.sourcing.agents.sourcing_tool_registry", "get_sourcing_tools"),
     "talent_pool": ("app.domains.talent_pool.agents.talent_pool_tool_registry", "get_talent_pool_tools"),
+    "ui": ("app.domains.recruiter_assistant.agents.ui_tool_registry", "get_ui_tools"),
     # autonomous = MENOR prioridade: re-implementa tools de outros dominios
     # (_wrap_auto_*) p/ execucao autonoma. Em colisao de nome, o dominio
     # CANONICO vence (first-wins na ordem). Fase 5 reconciliacao.
@@ -178,6 +179,9 @@ _REGISTRY_SCOPE: dict[str, set[str]] = {
     "talent": {"talent_funnel"},
     "sourcing": {"talent_funnel"},
     "talent_pool": {"talent_funnel"},
+    # ui: apply_table_state so faz sentido onde ha ponte FE (Funil/candidates).
+    # open_ui esta em _GLOBAL_ESSENTIALS (sempre disponivel, todos os escopos).
+    "ui": {"talent_funnel"},
     "communication": {"talent_funnel", "in_job"},
     "kanban": {"in_job"},
     "jobs_mgmt": {"job_table"},
@@ -203,6 +207,10 @@ _GLOBAL_ESSENTIALS: set[str] = {
     "get_portfolio_metrics",
     "get_pipeline_summary",
     "list_stage_candidates",
+    # UI capability universal (self-gated: capability_map + HITL): abrir modal/
+    # navegar de qualquer surface. apply_table_state NAO entra aqui (surface-
+    # specific: so no escopo talent_funnel via _REGISTRY_SCOPE).
+    "open_ui",
 }
 
 

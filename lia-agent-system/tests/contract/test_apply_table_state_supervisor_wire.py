@@ -8,8 +8,8 @@ from __future__ import annotations
 
 
 def test_apply_table_state_mapped_to_canonical_category():
-    from app.tools.categories import category_for_tool
-    assert category_for_tool("apply_table_state") == "CANDIDATOS"
+    from app.tools.categories import category_for_tool, ToolCategory
+    assert category_for_tool("apply_table_state") == ToolCategory.INTERFACE
 
 
 def test_register_ui_tools_global_registers_apply_table_state():
@@ -19,11 +19,13 @@ def test_register_ui_tools_global_registers_apply_table_state():
     from app.tools.registry import tool_registry
 
     n = register_ui_tools_global()
-    assert n == 1
-    td = tool_registry._tools.get("apply_table_state")
-    assert td is not None, "apply_table_state deveria estar no registry global"
-    assert td.category == "CANDIDATOS", "sensor J: nao pode ficar em OTHER"
-    assert td.handler is not None
+    assert n == 2, "registra open_ui + apply_table_state"
+    for name in ("apply_table_state", "open_ui"):
+        td = tool_registry._tools.get(name)
+        assert td is not None, f"{name} deveria estar no registry global"
+        from app.tools.categories import ToolCategory as _TC
+        assert td.category == _TC.INTERFACE, "sensor J: categoria INTERFACE (nao OTHER)"
+        assert td.handler is not None
 
 
 def test_apply_table_state_in_fe_propagated_actions():

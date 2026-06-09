@@ -166,7 +166,9 @@ class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
         from app.domains.sourcing.agents.nurture_sequence_tool_registry import get_nurture_sequence_tools
 
         # Ferramentas base do sourcing + enhanced mixin
-        tool_defs = get_sourcing_tools() + self._get_all_enhanced_tools()
+        from app.domains.recruiter_assistant.agents.ui_tool_registry import get_open_ui_tools
+        # Grant UI: open_ui (modais/nav). apply_table_state NAO (surface sem ponte FE ainda).
+        tool_defs = get_sourcing_tools() + get_open_ui_tools() + self._get_all_enhanced_tools()
 
         # Ferramentas dos sub-agentes especializados — expostas diretamente no grafo LangGraph.
         # SOURCING_SUBAGENT_STAGE_MAP documenta a associação domain→stage para referência

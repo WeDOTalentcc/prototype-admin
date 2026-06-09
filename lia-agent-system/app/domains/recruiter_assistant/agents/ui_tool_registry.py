@@ -390,14 +390,27 @@ def get_ui_tools() -> list[ToolDefinition]:
     return [_build_open_ui_definition(), _build_apply_table_state_definition()]
 
 
+def get_open_ui_tools() -> list[ToolDefinition]:
+    """So open_ui (abre modal / navega). capability_map-gated + HITL nas acoes
+    sensiveis -> seguro p/ conceder a qualquer agente CONVERSACIONAL via grant
+    explicito no _get_tools do agente (least-privilege, removivel)."""
+    return [_build_open_ui_definition()]
+
+
+def get_table_state_tools() -> list[ToolDefinition]:
+    """So apply_table_state (filtra/ordena/busca tabela in-page). Conceder APENAS
+    a agentes cuja surface TEM ponte FE (anti-ghost): hoje a surface 'candidates'
+    (Funil). jobs/kanban/pools entram quando a ponte da surface deles existir."""
+    return [_build_apply_table_state_definition()]
+
+
 def register_ui_tools_global() -> int:
     """Registra ui tools no tool_registry GLOBAL (consumido pelo agentic_loop —
     caminho supervisor Phase 1.5). O caminho federado usa get_ui_tools() via
     federacao e NAO depende disto.
 
-    Slice atual: apenas ``apply_table_state`` (read-only, in-page). ``open_ui`` no
-    supervisor e gap pre-existente separado (o federado ja o cobre via
-    ui_action_sink). Adapter: lia_agents_core.ToolDefinition -> a ToolDefinition
+    Registra open_ui + apply_table_state (simetria: o supervisor Phase 1.5
+    agentic_loop alcanca os mesmos ui tools que o federado). Adapter: lia_agents_core.ToolDefinition -> a ToolDefinition
     do app.tools.registry (campos distintos: parameters->parameters_schema,
     function->handler). Idempotente (o registry sobrescreve por nome)."""
     from app.tools.registry import ToolDefinition as _GlobalToolDef
@@ -405,8 +418,6 @@ def register_ui_tools_global() -> int:
 
     n = 0
     for td in get_ui_tools():
-        if td.name != "apply_table_state":
-            continue
         _global_registry.register(
             _GlobalToolDef(
                 name=td.name,
