@@ -7,7 +7,7 @@ import {
   CreateDigitalTwinModal,
 } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import CustomAgentsTab, { CreateCustomAgentModal } from "@/components/pages-agent-studio/CustomAgentsTab"
-import { TemplateGallery, AgentCard as CustomAgentCard, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
+import { AgentCard as CustomAgentCard, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
 import { TemplatePreviewModal } from "@/components/pages-agent-studio/custom-agents/template-preview-modal"
 import { useCustomAgents, useStudioAlerts } from "@/hooks/agents"
@@ -729,12 +729,21 @@ export default function AgentStudioPage({
               )}
             </section>
 
-            <TemplateGallery
-              onTemplateSelect={handleTemplatePreview}
-              onTemplateUse={handleTemplateUse}
-              onTemplateCustomize={handleTemplatePreview}
-              onCreateManual={() => setShowCreateModal(true)}
-            />
+            {/* Studio Restructure 2026-06-09: templates movidos para /agents/marketplace
+                Agentes Personalizados mostra apenas agentes customizados + link para marketplace. */}
+            <div className="flex items-center justify-between p-4 rounded-md border border-lia-border-subtle bg-lia-bg-secondary/50">
+              <div>
+                <p className="text-sm font-medium text-lia-text-primary">{t("studio.templatesInMarketplace")}</p>
+                <p className="text-xs text-lia-text-secondary mt-0.5">{t("studio.templatesInMarketplaceHint")}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push("/agents/marketplace")}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-violet-600 text-white hover:bg-violet-700 transition-colors flex-shrink-0"
+              >
+                {t("studio.viewTemplates")}
+              </button>
+            </div>
 
             <div id="agent-studio-conversational-creator" className="scroll-mt-4">
               <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
