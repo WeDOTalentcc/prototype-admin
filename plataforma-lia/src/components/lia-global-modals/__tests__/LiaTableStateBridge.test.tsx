@@ -20,6 +20,12 @@ vi.mock("@/stores/candidates-store", () => ({
   },
 }));
 
+// LiaTableStateBridge usa useLiaChatContext para chatBackgroundTasks (BackgroundTaskNotification).
+// Mock minimal para isolar o bridge sem precisar montar LiaFloatProvider completo.
+vi.mock("@/contexts/lia-float-context", () => ({
+  useLiaChatContext: () => ({ chatBackgroundTasks: [] }),
+}));
+
 function fire(detail: unknown) {
   window.dispatchEvent(new CustomEvent("lia:apply_table_state", { detail }));
 }
