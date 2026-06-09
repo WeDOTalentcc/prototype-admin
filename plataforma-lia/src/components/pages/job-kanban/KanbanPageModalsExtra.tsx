@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import { useTranslations } from "next-intl"
 import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
+import type { CloseVacancyPayload } from "@/components/modals/close-vacancy-modal"
 
 const GeneralScoreModal = dynamic(() => import("@/components/modals/general-score-modal").then(m => ({ default: m.GeneralScoreModal })), { ssr: false, loading: () => <LoadingModal /> })
 const TechnicalTestModal = dynamic(() => import("@/components/modals/technical-test-modal").then(m => ({ default: m.TechnicalTestModal })), { ssr: false, loading: () => <LoadingModal /> })
@@ -16,7 +17,6 @@ const CandidateCompareModal = dynamic(() => import("@/components/modals/candidat
 const UniversalTransitionModal = dynamic(() => import("@/components/kanban").then(m => ({ default: m.UniversalTransitionModal })), { ssr: false, loading: () => <LoadingModal /> })
 const DataRequestModal = dynamic(() => import("@/components/modals/data-request-modal").then(m => ({ default: m.DataRequestModal })), { ssr: false, loading: () => <LoadingModal /> })
 const CloseVacancyModal = dynamic(() => import("@/components/modals/close-vacancy-modal").then(m => ({ default: m.CloseVacancyModal })), { ssr: false, loading: () => <LoadingModal /> })
-import type { CloseVacancyPayload } from "@/components/modals/close-vacancy-modal"
 const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), { ssr: false, loading: () => <LoadingModal /> })
 const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => <LoadingModal /> })
 const BulkActionModal = dynamic(() => import("@/components/modals/bulk-action-modal").then(m => ({ default: m.BulkActionModal })), { ssr: false, loading: () => <LoadingModal /> })
