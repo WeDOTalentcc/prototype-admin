@@ -61,9 +61,14 @@ def service():
         ProactiveAlertService,
     )
     svc = ProactiveAlertService()
-    # Replace notification_service with mock to avoid side effects.
-    svc.notification_service = MagicMock()
-    svc.notification_service.create_proactive_notification = AsyncMock()
+    # Replace notification_service with spec'd mock to avoid side effects.
+    # spec=NotificationService impede mockar metodo inexistente (anti-ghost):
+    # se o codigo voltar a chamar create_proactive_notification (que nunca
+    # existiu), o mock lanca AttributeError em vez de fingir sucesso. Foi esse
+    # exato mock-do-ghost que mascarou a entrega quebrada ate 2026-06-09.
+    from app.services.notification_service import NotificationService
+    svc.notification_service = MagicMock(spec=NotificationService)
+    svc.notification_service.send_multi_channel_notification = AsyncMock()
     return svc
 
 
@@ -290,9 +295,9 @@ async def test_alert_uses_tenant_channels_for_dispatch(
     await service._send_alert(alert, USER_ID, company_id=COMPANY_ID)
 
     # Inspect call to create_proactive_notification.
-    assert service.notification_service.create_proactive_notification.called
+    assert service.notification_service.send_multi_channel_notification.called
     call_kwargs = (
-        service.notification_service.create_proactive_notification.call_args.kwargs
+        service.notification_service.send_multi_channel_notification.call_args.kwargs
     )
     channels = call_kwargs["channels"]
 

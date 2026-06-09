@@ -1201,21 +1201,30 @@ class ProactiveAlertService:
                 if alert.get("severity") == NotificationType.URGENT:
                     channels.append(NotificationChannel.TEAMS)
 
-            await self.notification_service.create_proactive_notification(
+            # E1 (entrega multi-canal 2026-06-09): fan-out REAL via
+            # send_multi_channel_notification. Antes chamava
+            # create_proactive_notification (metodo inexistente) -> AttributeError
+            # engolido -> zero entrega em canal nenhum. data["actions"]/company_id
+            # alimentam os handlers de Teams (per-tenant) e Email.
+            _action_url = f"/chat?action={alert.get('suggested_action', 'help')}"
+            _action_label = alert.get("action_label", "Ver Mais")
+            await self.notification_service.send_multi_channel_notification(
                 user_id=user_id,
-                proactive_type=ProactiveNotificationType.APPROVAL_REQUEST,
                 title=alert["title"],
                 message=alert["message"],
-                notification_type=alert.get("severity", NotificationType.INFO),
                 channels=channels,
-                action_url=f"/chat?action={alert.get('suggested_action', 'help')}",
-                action_label=alert.get("action_label", "Ver Mais"),
-                extra_data={
+                notification_type=alert.get("severity", NotificationType.INFO),
+                proactive_type=ProactiveNotificationType.APPROVAL_REQUEST,
+                data={
                     "condition": alert["condition"].value if isinstance(alert["condition"], AlertCondition) else alert["condition"],
                     "category": alert["category"].value if isinstance(alert["category"], AlertCategory) else alert["category"],
                     "data": alert.get("data", {}),
-                    "suggested_action": alert.get("suggested_action")
-                }
+                    "suggested_action": alert.get("suggested_action"),
+                    "action_url": _action_url,
+                    "action_label": _action_label,
+                    "actions": [{"label": _action_label, "url": _action_url}],
+                    "company_id": company_id,
+                },
             )
 
             if isinstance(alert["condition"], AlertCondition):
