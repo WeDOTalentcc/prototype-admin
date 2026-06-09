@@ -460,12 +460,24 @@ class SearchSpec(BaseModel):
     timezones: List[str] = Field(default_factory=list, description="Timezones to filter by")
     timezone: Optional[str] = Field(None, description="Single timezone filter (exact or pattern match)")
     
+    # Mapeamento PT/EN para work_model — valores enviados a Pearch API (EN).
+    # Guard duplo: (1) inclui work_model no filtro; (2) bloqueia valores de
+    # work_model que entram erroneamente no campo location (ex: location="Remoto").
+    _WORK_MODEL_MAP: Dict[str, str] = {
+        "remote": "remote", "remoto": "remote",
+        "hybrid": "hybrid", "híbrido": "hybrid", "hibrido": "hybrid",
+        "onsite": "onsite", "presencial": "onsite",
+        "home office": "remote", "anywhere": "remote", "global": "remote",
+    }
+
     def to_pearch_custom_filters(self) -> Dict[str, Any]:
         """Converte SearchSpec para custom_filters da Pearch API."""
         filters: Dict[str, Any] = {}
-        
+
         if self.location:
-            filters["location"] = self.location
+            # Guard: exclui valores de work_model misclassificados como location.
+            if self.location.lower() not in self._WORK_MODEL_MAP:
+                filters["location"] = self.location
         if self.job_title:
             filters["title"] = self.job_title
         if self.seniority:
@@ -484,7 +496,11 @@ class SearchSpec(BaseModel):
             filters["skills"] = list(set(self.skills + self.required_skills))
         if self.languages:
             filters["languages"] = self.languages
-        
+        if self.work_model:
+            mapped = self._WORK_MODEL_MAP.get(self.work_model.lower())
+            if mapped:
+                filters["work_model"] = mapped
+
         return filters if filters else {}
     
     def should_use_strict_filters(self) -> bool:

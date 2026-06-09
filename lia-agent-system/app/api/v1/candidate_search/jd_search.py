@@ -291,6 +291,7 @@ class ParsedEntities(BaseModel):
     skills: list[str] = Field(default_factory=list)
     seniority: str | None = None
     company: str | None = None
+    work_model: str | None = None
 
 
 class ParseQueryResponse(BaseModel):
@@ -299,6 +300,56 @@ class ParseQueryResponse(BaseModel):
     entities: ParsedEntities
     confidence: float = 0.0
     suggestions: list[str] = Field(default_factory=list)
+
+
+def _extract_search_entities(query: str) -> dict:
+    """
+    Extrai entidades de uma query de busca (work_model, location, job_title, etc.).
+    Thin wrapper testável que encapsula a lógica de regex do handler.
+    """
+    import re as _re
+
+    def _normalize(t):
+        import unicodedata
+        return unicodedata.normalize("NFD", t).encode("ascii", "ignore").decode("ascii").lower()
+
+    q = query.lower().strip()
+    result = {"work_model": None, "location": None, "job_title": None, "seniority": None,
+              "years_experience": None, "skills": [], "industry": None, "company": None}
+
+    _work_model_map = {
+        "remote": "remote", "remoto": "remote",
+        "hibrido": "hybrid", "presencial": "onsite",
+        "home office": "remote", "anywhere": "remote", "global": "remote",
+    }
+    _work_model_accented = {"híbrido": "hybrid"}
+    _wm_terms = list(_work_model_map.keys()) + list(_work_model_accented.keys())
+    wm_pat = r"\b(" + "|".join(_re.escape(t) for t in sorted(_wm_terms, key=len, reverse=True)) + r")\b"
+    wm_m = _re.search(wm_pat, q, _re.IGNORECASE)
+    if wm_m:
+        _raw = wm_m.group(0).lower()
+        result["work_model"] = _work_model_accented.get(_raw) or _work_model_map.get(_raw, _raw)
+
+    # Simplified location check (cities only, not full list)
+    cities = ["são paulo", "sp", "rio de janeiro", "rj", "belo horizonte", "bh",
+              "brasília", "df", "curitiba", "porto alegre", "poa", "salvador",
+              "fortaleza", "recife", "manaus", "florianópolis", "campinas",
+              "brasil", "brazil", "portugal", "argentina"]
+    city_pat = r"\b(" + "|".join(_re.escape(c) for c in sorted(cities, key=len, reverse=True)) + r")\b"
+    loc_m = _re.search(city_pat, q, _re.IGNORECASE)
+    if loc_m:
+        result["location"] = loc_m.group(0).strip().title()
+
+    job_titles_sample = [
+        "product manager", "desenvolvedor", "developer", "engenheiro de software",
+        "software engineer", "data scientist", "analista", "designer",
+    ]
+    jt_pat = r"\b(" + "|".join(_re.escape(t) for t in sorted(job_titles_sample, key=len, reverse=True)) + r")\b"
+    jt_m = _re.search(jt_pat, q, _re.IGNORECASE)
+    if jt_m:
+        result["job_title"] = jt_m.group(0).strip().title()
+
+    return result
 
 
 @router.post("/parse-query", response_model=ParseQueryResponse)
@@ -341,12 +392,30 @@ async def parse_search_query(request: ParseQueryRequest, company_id: str = Depen
         'amapá', 'ap', 'rondônia', 'ro', 'roraima', 'rr'
     ]
     
-    work_models = ['remote', 'remoto', 'híbrido', 'hibrido', 'presencial', 'home office', 'anywhere', 'global']
+    # work_model terms extraídos SEPARADAMENTE de location — não são cidades.
+    _work_model_map = {
+        'remote': 'remote', 'remoto': 'remote',
+        'hibrido': 'hybrid', 'presencial': 'onsite',
+        'home office': 'remote', 'anywhere': 'remote', 'global': 'remote',
+    }
+    # 'híbrido' com acento tratado via normalização abaixo
+    _work_model_accented = {'híbrido': 'hybrid'}
+
     countries_regions = ['brasil', 'brazil', 'usa', 'eua', 'estados unidos', 'europa', 'latam', 'américa latina', 'portugal', 'argentina', 'chile', 'méxico', 'canada', 'uk', 'reino unido', 'alemanha', 'espanha']
-    
-    all_locations = brazilian_cities + brazilian_states + work_models + countries_regions
+
+    # 1a. Work model — primeiro, antes de location (evita misclassificação)
+    _wm_terms = list(_work_model_map.keys()) + list(_work_model_accented.keys())
+    wm_pattern = r'\b(' + '|'.join(re.escape(t) for t in sorted(_wm_terms, key=len, reverse=True)) + r')\b'
+    wm_match = re.search(wm_pattern, query, re.IGNORECASE)
+    if wm_match:
+        _raw = wm_match.group(0).lower()
+        entities.work_model = _work_model_accented.get(_raw) or _work_model_map.get(_raw, _raw)
+        confidence += 0.2
+
+    # 1b. Location — apenas cidades/estados/países (sem work_model)
+    all_locations = brazilian_cities + brazilian_states + countries_regions
     location_pattern = r'\b(' + '|'.join(re.escape(loc) for loc in all_locations) + r')\b'
-    
+
     match = re.search(location_pattern, query, re.IGNORECASE)
     if match:
         entities.location = match.group(0).strip().title()
