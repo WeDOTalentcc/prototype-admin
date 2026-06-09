@@ -45,3 +45,31 @@ class TestCanLoadMoreContract:
         result = FakeSearchResult(pearch_count=0)
         request = FakeRequest(search_pearch=True, pearch_limit=0)
         assert compute_can_load_more(result, request) is False
+
+
+def compute_can_load_more_with_email_mode(
+    result, request, fb_can_load_more=False, require_emails=False, sources_exhausted=False
+):
+    _pearch_was_requested = request.search_pearch and (request.pearch_limit > 0)
+    clm = _pearch_was_requested and (
+        (result.pearch_count >= request.pearch_limit) or fb_can_load_more
+    )
+    if require_emails and sources_exhausted:
+        clm = False
+    return clm
+
+
+class TestCanLoadMoreEmailModeContract:
+    def test_false_when_require_emails_and_sources_exhausted(self):
+        result = FakeSearchResult(pearch_count=15)
+        request = FakeRequest(search_pearch=True, pearch_limit=15)
+        assert compute_can_load_more_with_email_mode(
+            result, request, require_emails=True, sources_exhausted=True
+        ) is False
+
+    def test_true_when_require_emails_but_not_exhausted(self):
+        result = FakeSearchResult(pearch_count=15)
+        request = FakeRequest(search_pearch=True, pearch_limit=15)
+        assert compute_can_load_more_with_email_mode(
+            result, request, require_emails=True, sources_exhausted=False
+        ) is True
