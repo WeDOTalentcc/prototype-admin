@@ -1,0 +1,1488 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.3, pluggy-1.6.0 -- /home/runner/workspace/.pythonlibs/bin/python
+cachedir: .pytest_cache
+rootdir: /home/runner/workspace/lia-agent-system
+configfile: pytest.ini
+plugins: cov-7.0.0, timeout-2.4.0, anyio-4.12.1, langsmith-0.7.25, respx-0.23.1, ddtrace-4.8.7, asyncio-1.4.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 377 items
+
+tests/e2e/test_alpha1_scenario.py::TestEtapa1CriarVaga::test_wizard_components_importable PASSED [  0%]
+tests/e2e/test_alpha1_scenario.py::TestEtapa2Sourcing::test_sourcing_agent_importable PASSED [  0%]
+tests/e2e/test_alpha1_scenario.py::TestGate1Aprovacao::test_pipeline_transition_importable PASSED [  0%]
+tests/e2e/test_alpha1_scenario.py::TestGate1Aprovacao::test_pipeline_stage_service_importable PASSED [  1%]
+tests/e2e/test_alpha1_scenario.py::TestEtapa4Comunicacao::test_ai_footer_defined PASSED [  1%]
+tests/e2e/test_alpha1_scenario.py::TestEtapa56WSI::test_rubric_evaluation_service_importable PASSED [  1%]
+tests/e2e/test_alpha1_scenario.py::TestEtapa56WSI::test_audit_service_importable PASSED [  1%]
+tests/e2e/test_alpha1_scenario.py::TestGate2Aprovacao::test_pipeline_guardrails_active PASSED [  2%]
+tests/e2e/test_alpha1_scenario.py::TestEtapa10Auditoria::test_fairness_audit_trail PASSED [  2%]
+tests/e2e/test_alpha1_scenario.py::TestEtapa10Auditoria::test_guardrails_seeded PASSED [  2%]
+tests/e2e/test_alpha1_scenario.py::TestEtapa10Auditoria::test_observability_no_truncation PASSED [  2%]
+tests/e2e/test_alpha1_scenario.py::TestEtapa10Auditoria::test_settings_no_magic_numbers PASSED [  3%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterFastTier::test_fast_router_tier_returns_result FAILED [  3%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterFastTier::test_fast_router_increments_stats FAILED [  3%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterFastTier::test_fast_router_confidence_meets_threshold FAILED [  3%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterMemoryCache::test_second_call_uses_memory_cache FAILED [  4%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterMemoryCache::test_memory_cache_hit_increments_stats FAILED [  4%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterClarification::test_clarification_when_all_tiers_fail FAILED [  4%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterClarification::test_clarification_has_question FAILED [  5%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterClarification::test_clarification_has_options FAILED [  5%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterClarification::test_no_clarification_when_fast_router_succeeds FAILED [  5%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterClarification::test_clarification_stat_incremented FAILED [  5%]
+tests/e2e/test_cascaded_router_e2e.py::TestRouteResultContract::test_route_result_has_domain_id FAILED [  6%]
+tests/e2e/test_cascaded_router_e2e.py::TestRouteResultContract::test_route_result_has_confidence FAILED [  6%]
+tests/e2e/test_cascaded_router_e2e.py::TestRouteResultContract::test_route_result_has_source FAILED [  6%]
+tests/e2e/test_cascaded_router_e2e.py::TestRouteResultContract::test_canonical_domain_ids_only FAILED [  6%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterStats::test_get_stats_returns_dict PASSED [  7%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterStats::test_stats_keys_present PASSED [  7%]
+tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterStats::test_stats_increment_on_route FAILED [  7%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerOpenTransition::test_circuit_opens_after_threshold_failures PASSED [  7%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerOpenTransition::test_circuit_stays_closed_below_threshold PASSED [  8%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerOpenTransition::test_failure_count_increments_correctly PASSED [  8%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerOpenTransition::test_success_decrements_failure_count PASSED [  8%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerOpenTransition::test_circuit_open_rejects_immediately PASSED [  9%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerOpenTransition::test_circuit_breaker_error_has_retry_after PASSED [  9%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerOpenTransition::test_stats_rejected_calls_incremented PASSED [  9%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerHalfOpenTransition::test_circuit_transitions_to_half_open_after_timeout PASSED [  9%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerHalfOpenTransition::test_circuit_stays_open_before_timeout PASSED [ 10%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerHalfOpenTransition::test_half_open_allows_calls PASSED [ 10%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerRecovery::test_circuit_closes_after_success_threshold_in_half_open PASSED [ 10%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerRecovery::test_circuit_stays_half_open_below_success_threshold PASSED [ 10%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerRecovery::test_failure_in_half_open_reopens_circuit PASSED [ 11%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerRecovery::test_failure_count_resets_after_close PASSED [ 11%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerManualReset::test_manual_reset_closes_open_circuit PASSED [ 11%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerManualReset::test_manual_reset_zeroes_failure_count PASSED [ 11%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerManualReset::test_circuit_functional_after_reset PASSED [ 12%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerCascade::test_cascaded_failure_upstream_circuit_opens PASSED [ 12%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerCascade::test_cascaded_recovery_when_upstream_recovers PASSED [ 12%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerCascade::test_independent_circuits_dont_affect_each_other PASSED [ 12%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerCascade::test_multiple_circuits_all_llm_providers_cascade PASSED [ 13%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerStats::test_get_stats_returns_complete_info PASSED [ 13%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerStats::test_stats_track_total_calls PASSED [ 13%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerStats::test_stats_track_failed_calls PASSED [ 14%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerStats::test_stats_track_successful_calls PASSED [ 14%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerStats::test_stats_state_changes_tracked PASSED [ 14%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerStats::test_stats_retry_after_when_open PASSED [ 14%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerStats::test_stats_retry_after_none_when_closed PASSED [ 15%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerTimeout::test_timeout_counts_as_failure PASSED [ 15%]
+tests/e2e/test_circuit_breaker_cascade_e2e.py::TestCircuitBreakerTimeout::test_circuit_opens_on_repeated_timeouts PASSED [ 15%]
+tests/e2e/test_compliance_chain_sse.py::test_pii_cpf_masked_with_identity_ctx PASSED [ 15%]
+tests/e2e/test_compliance_chain_sse.py::test_pii_rg_masked_with_identity_ctx PASSED [ 16%]
+tests/e2e/test_compliance_chain_sse.py::test_pii_passthrough_when_ctx_off PASSED [ 16%]
+tests/e2e/test_compliance_chain_sse.py::test_chat_request_schema_no_company_id PASSED [ 16%]
+tests/e2e/test_compliance_chain_sse.py::test_chat_request_schema_extra_forbid PASSED [ 16%]
+tests/e2e/test_compliance_chain_sse.py::test_cross_tenant_header_rejected PASSED [ 17%]
+tests/e2e/test_compliance_chain_sse.py::test_cross_tenant_header_same_as_jwt_accepted PASSED [ 17%]
+tests/e2e/test_compliance_chain_sse.py::test_fairness_guard_present_in_sse PASSED [ 17%]
+tests/e2e/test_compliance_chain_sse.py::test_pre_compliance_wired_in_sse_diagnostic PASSED [ 18%]
+tests/e2e/test_compliance_chain_sse.py::test_post_compliance_wired_in_sse PASSED [ 18%]
+tests/e2e/test_compliance_chain_sse.py::test_mask_pii_outbound_present_in_sse PASSED [ 18%]
+tests/e2e/test_core_chain_e2e.py::test_pipeline_search_screening_happy_path SKIPPED2 harness)) [ 18%]
+tests/e2e/test_core_chain_e2e.py::test_screening_rejection_stops_chain SKIPPED2 harness)) [ 19%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQPushFailure::test_push_failure_returns_entry_id PASSED [ 19%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQPushFailure::test_push_failure_calls_lpush PASSED [ 19%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQPushFailure::test_push_failure_returns_none_when_redis_unavailable PASSED [ 19%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQPushFailure::test_push_failure_masks_pii_in_kwargs PASSED [ 20%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQPushFailure::test_push_failure_sets_ttl_on_key PASSED [ 20%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQListEntries::test_list_entries_returns_parsed_entries PASSED [ 20%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQListEntries::test_list_entries_returns_empty_when_redis_unavailable PASSED [ 20%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQListEntries::test_list_entries_respects_limit PASSED [ 21%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQListEntries::test_list_entries_returns_multiple_entries PASSED [ 21%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQQueueSize::test_queue_size_returns_correct_count PASSED [ 21%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQQueueSize::test_queue_size_returns_zero_when_redis_unavailable PASSED [ 22%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQQueueSize::test_queue_size_zero_for_empty_queue PASSED [ 22%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQRequeue::test_requeue_returns_true_on_success PASSED [ 22%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQRequeue::test_requeue_returns_false_when_entry_not_found PASSED [ 22%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQRequeue::test_requeue_calls_celery_send_task PASSED [ 23%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQClear::test_clear_returns_count_of_deleted_entries PASSED [ 23%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQClear::test_clear_calls_redis_delete PASSED [ 23%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQClear::test_clear_returns_zero_when_redis_unavailable PASSED [ 23%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQPIIMasking::test_mask_pii_masks_sensitive_keys PASSED [ 24%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQPIIMasking::test_mask_pii_handles_nested_dicts PASSED [ 24%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQPIIMasking::test_mask_pii_does_not_modify_non_pii_fields PASSED [ 24%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQSummary::test_summary_returns_empty_when_no_queues PASSED [ 24%]
+tests/e2e/test_dlq_retry_e2e.py::TestDLQSummary::test_summary_aggregates_queues PASSED [ 25%]
+tests/e2e/test_email_template_e2e.py::test_email_with_template_delivers_successfully SKIPPEDoyed)) [ 25%]
+tests/e2e/test_email_template_e2e.py::test_send_without_consent_is_blocked SKIPPEDoyed)) [ 25%]
+tests/e2e/test_email_template_e2e.py::test_template_not_found_returns_422 SKIPPEDoyed)) [ 25%]
+tests/e2e/test_email_template_e2e.py::test_missing_variables_returns_422_not_partial_send SKIPPEDoyed)) [ 26%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_01_lowercase_sem_trigger_resolve_candidato PASSED [ 26%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_01_hint_contem_nome_candidato PASSED [ 26%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_02_typo_uma_letra_yasmim_yasmin PASSED [ 27%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_02_typo_acento_variacao PASSED [ 27%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_03_diretor_juridico_casa_titulo_bilingue PASSED [ 27%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_03_variacao_grafias_juridico PASSED [ 27%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_03_hint_vaga_contem_id_e_titulo PASSED [ 28%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_04_mensagem_sem_nome_hint_nao_existe PASSED [ 28%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_04_nome_extraido_sem_match_db_hint_nao_existe PASSED [ 28%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_05_primeiro_nome_identico_retorna_ambos_ordenado PASSED [ 28%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_05_nome_completo_prefere_match_exato PASSED [ 29%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_06_candidato_outra_empresa_nao_casa PASSED [ 29%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_06_vaga_e_candidato_company_scoped PASSED [ 29%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_07_sticky_vacancy_persiste_resolucao PASSED [ 29%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_07_sticky_vacancy_reusa_no_turno_sem_nome PASSED [ 30%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_07_sticky_vacancy_nao_vaza_entre_conversas PASSED [ 30%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_07_sticky_vacancy_override_funciona PASSED [ 30%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_08_hint_formato_canonico_candidato PASSED [ 31%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_08_hint_formato_canonico_vaga PASSED [ 31%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_09_mensagem_vazia_retorna_estrutura_limpa PASSED [ 31%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_09_company_id_vazio_retorna_estrutura_limpa PASSED [ 31%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_09_none_mensagem_retorna_estrutura_limpa PASSED [ 32%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_10_vaga_concluida_nao_casa_query_normal PASSED [ 32%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_d4_10_vaga_concluida_aparece_quando_mencionada PASSED [ 32%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_extract_name_query_pipe_d4_01 PASSED [ 32%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_extract_name_query_pipe_d4_02 PASSED [ 33%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_best_fuzzy_match_pipe_d4_02 PASSED [ 33%]
+tests/e2e/test_entity_resolver_fuzzy_e2e.py::test_match_titles_pipe_d4_03 PASSED [ 33%]
+tests/e2e/test_hitl_guards.py::TestHITLReceiveApprovalInvalidId::test_receive_approval_unknown_id_returns_skeleton_not_exception PASSED [ 33%]
+tests/e2e/test_hitl_guards.py::TestHITLReceiveApprovalInvalidId::test_is_approved_unknown_id_returns_none_fail_closed PASSED [ 34%]
+tests/e2e/test_hitl_guards.py::TestHITLReceiveApprovalInvalidId::test_receive_approval_rejected_unknown_id_also_safe PASSED [ 34%]
+tests/e2e/test_hitl_guards.py::TestHITLGateOff::test_hitl_modules_import_without_gate PASSED [ 34%]
+tests/e2e/test_hitl_guards.py::TestHITLGateOff::test_hitl_gate_enabled_false_when_unset PASSED [ 35%]
+tests/e2e/test_hitl_guards.py::TestHITLGateOff::test_hitl_gate_enabled_false_with_falsy_values PASSED [ 35%]
+tests/e2e/test_hitl_guards.py::TestHITLGateOff::test_hitl_gate_enabled_true_when_on PASSED [ 35%]
+tests/e2e/test_hitl_guards.py::TestHITLGateOff::test_hitl_preflight_returns_none_when_gate_off PASSED [ 35%]
+tests/e2e/test_hitl_guards.py::TestHITLGateOff::test_hitl_preflight_returns_block_when_gate_on_not_approved PASSED [ 36%]
+tests/e2e/test_hitl_guards.py::TestHITLGateOff::test_hitl_preflight_returns_none_when_approved PASSED [ 36%]
+tests/e2e/test_hitl_guards.py::TestHITLGatedToolsCount::test_at_least_7_tools_gated_via_hitl_preflight PASSED [ 36%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewSessionStore::test_get_returns_none_for_unknown_session PASSED [ 36%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewSessionStore::test_set_and_get_round_trip PASSED [ 37%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewSessionStore::test_delete_removes_entry PASSED [ 37%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewSessionStore::test_overwrite_updates_state PASSED [ 37%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewSessionStore::test_multiple_sessions_isolated PASSED [ 37%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewSchedulingSessionPersistence::test_collecting_status_saves_workflow_to_store PASSED [ 38%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewSchedulingSessionPersistence::test_second_turn_recovers_workflow_from_store PASSED [ 38%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewSchedulingSessionPersistence::test_params_workflow_data_overrides_stored PASSED [ 38%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewSchedulingSessionPersistence::test_completed_status_clears_session_store PASSED [ 38%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewSchedulingSessionPersistence::test_no_session_id_skips_persistence PASSED [ 39%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewGraphTracing::test_invoke_method_is_decorated PASSED [ 39%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewGraphTracing::test_run_node_logs_start_end FAILED [ 39%]
+tests/e2e/test_interview_scheduling_e2e.py::TestInterviewGraphTracing::test_run_node_error_logs_node_error FAILED [ 40%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.job_management.agents.wizard_react_agent-WizardReActAgent] FAILED [ 40%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.cv_screening.agents.pipeline_react_agent-PipelineReActAgent] FAILED [ 40%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.sourcing.agents.sourcing_react_agent-SourcingReActAgent] FAILED [ 40%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.recruiter_assistant.agents.talent_react_agent-TalentReActAgent] FAILED [ 41%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.recruiter_assistant.agents.kanban_react_agent-KanbanReActAgent] FAILED [ 41%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent-JobsManagementReActAgent] FAILED [ 41%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.hiring_policy.agents.policy_react_agent-PolicyReActAgent] FAILED [ 41%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.automation.agents.automation_react_agent-AutomationReActAgent] FAILED [ 42%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.pipeline.agents.pipeline_transition_agent-PipelineTransitionAgent] FAILED [ 42%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.job_management.agents.wizard_react_agent-WizardReActAgent] FAILED [ 42%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.cv_screening.agents.pipeline_react_agent-PipelineReActAgent] FAILED [ 42%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.sourcing.agents.sourcing_react_agent-SourcingReActAgent] FAILED [ 43%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.recruiter_assistant.agents.talent_react_agent-TalentReActAgent] FAILED [ 43%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.recruiter_assistant.agents.kanban_react_agent-KanbanReActAgent] FAILED [ 43%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent-JobsManagementReActAgent] FAILED [ 44%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.hiring_policy.agents.policy_react_agent-PolicyReActAgent] FAILED [ 44%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.automation.agents.automation_react_agent-AutomationReActAgent] FAILED [ 44%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.pipeline.agents.pipeline_transition_agent-PipelineTransitionAgent] FAILED [ 44%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.job_management.agents.wizard_react_agent-WizardReActAgent] FAILED [ 45%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.cv_screening.agents.pipeline_react_agent-PipelineReActAgent] FAILED [ 45%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.sourcing.agents.sourcing_react_agent-SourcingReActAgent] FAILED [ 45%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.recruiter_assistant.agents.talent_react_agent-TalentReActAgent] FAILED [ 45%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.recruiter_assistant.agents.kanban_react_agent-KanbanReActAgent] FAILED [ 46%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent-JobsManagementReActAgent] FAILED [ 46%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.hiring_policy.agents.policy_react_agent-PolicyReActAgent] FAILED [ 46%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.automation.agents.automation_react_agent-AutomationReActAgent] FAILED [ 46%]
+tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.pipeline.agents.pipeline_transition_agent-PipelineTransitionAgent] FAILED [ 47%]
+tests/e2e/test_langgraph_agents_e2e.py::TestWSIInterviewGraphE2E::test_wsi_interview_graph_instantiates PASSED [ 47%]
+tests/e2e/test_langgraph_agents_e2e.py::TestWSIInterviewGraphE2E::test_wsi_interview_graph_has_start_method PASSED [ 47%]
+tests/e2e/test_langgraph_agents_e2e.py::TestWSIInterviewGraphE2E::test_wsi_has_langgraph_method PASSED [ 48%]
+tests/e2e/test_langgraph_agents_e2e.py::TestWSIInterviewGraphE2E::test_wsi_start_with_mocked_nodes FAILED [ 48%]
+tests/e2e/test_langgraph_agents_e2e.py::TestInterviewGraphE2E::test_interview_graph_instantiates PASSED [ 48%]
+tests/e2e/test_langgraph_agents_e2e.py::TestInterviewGraphE2E::test_interview_graph_has_invoke_method PASSED [ 48%]
+tests/e2e/test_langgraph_agents_e2e.py::TestInterviewGraphE2E::test_interview_graph_has_build_langgraph PASSED [ 49%]
+tests/e2e/test_langgraph_agents_e2e.py::TestInterviewGraphE2E::test_interview_graph_invoke_with_mock_compiled PASSED [ 49%]
+tests/e2e/test_langgraph_agents_e2e.py::TestCheckpointerDevMode::test_get_checkpointer_returns_memory_saver_when_pg_unavailable PASSED [ 49%]
+tests/e2e/test_langgraph_agents_e2e.py::TestCheckpointerDevMode::test_get_checkpointer_returns_checkpointer_by_default PASSED [ 49%]
+tests/e2e/test_langgraph_agents_e2e.py::TestCheckpointerDevMode::test_checkpointer_production_requires_postgres FAILED [ 50%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphJsonExists::test_langgraph_json_file_exists PASSED [ 50%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphJsonExists::test_langgraph_json_is_valid_json PASSED [ 50%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphJsonExists::test_langgraph_json_has_graphs_key PASSED [ 50%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphJsonExists::test_langgraph_json_graphs_is_dict PASSED [ 51%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphExpectedGraphs::test_has_exactly_three_graphs PASSED [ 51%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphExpectedGraphs::test_wizard_graph_configured PASSED [ 51%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphExpectedGraphs::test_wsi_interview_graph_configured PASSED [ 51%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphExpectedGraphs::test_interview_graph_configured PASSED [ 52%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphExpectedGraphs::test_no_duplicate_graph_values PASSED [ 52%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphModuleFormat::test_graph_value_has_colon_separator[wsi_interview_graph] PASSED [ 52%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphModuleFormat::test_graph_value_has_colon_separator[interview_graph] PASSED [ 53%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphModuleFormat::test_graph_value_has_colon_separator[wizard_graph] PASSED [ 53%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphModuleFormat::test_graph_attribute_not_empty[wsi_interview_graph] PASSED [ 53%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphModuleFormat::test_graph_attribute_not_empty[interview_graph] PASSED [ 53%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphModuleFormat::test_graph_attribute_not_empty[wizard_graph] PASSED [ 54%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphFileExists::test_graph_python_file_exists[wizard_graph-expected0] FAILED [ 54%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphFileExists::test_graph_python_file_exists[wsi_interview_graph-expected1] PASSED [ 54%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphFileExists::test_graph_python_file_exists[interview_graph-expected2] PASSED [ 54%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphFileExists::test_graph_path_in_config_matches_expected[wizard_graph-expected0] PASSED [ 55%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphFileExists::test_graph_path_in_config_matches_expected[wsi_interview_graph-expected1] PASSED [ 55%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphFileExists::test_graph_path_in_config_matches_expected[interview_graph-expected2] PASSED [ 55%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphFileExists::test_graph_attribute_matches_expected[wizard_graph-expected0] PASSED [ 55%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphFileExists::test_graph_attribute_matches_expected[wsi_interview_graph-expected1] PASSED [ 56%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphFileExists::test_graph_attribute_matches_expected[interview_graph-expected2] PASSED [ 56%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphEnvConfig::test_env_key_present PASSED [ 56%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphEnvConfig::test_env_file_exists PASSED [ 57%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphEnvConfig::test_dependencies_key_present PASSED [ 57%]
+tests/e2e/test_langgraph_studio_config.py::TestLangGraphEnvConfig::test_dependencies_includes_current_dir PASSED [ 57%]
+tests/e2e/test_memory_continuity.py::TestMultipleSystemMessagesBug::test_messages_for_continuation_helper_exists PASSED [ 57%]
+tests/e2e/test_memory_continuity.py::TestMultipleSystemMessagesBug::test_first_turn_preserves_system_message PASSED [ 58%]
+tests/e2e/test_memory_continuity.py::TestMultipleSystemMessagesBug::test_continuation_turn_removes_system_from_new_input PASSED [ 58%]
+tests/e2e/test_memory_continuity.py::TestMultipleSystemMessagesBug::test_no_consecutive_system_messages_produced PASSED [ 58%]
+tests/e2e/test_memory_continuity.py::TestMultipleSystemMessagesBug::test_empty_and_none_inputs_dont_raise PASSED [ 58%]
+tests/e2e/test_memory_continuity.py::TestMultipleSystemMessagesBug::test_thread_key_includes_domain_for_session_isolation PASSED [ 59%]
+tests/e2e/test_memory_continuity.py::TestMultipleSystemMessagesBug::test_prior_state_detection_logic_exists PASSED [ 59%]
+tests/e2e/test_memory_continuity.py::TestSessionIsolation::test_repository_requires_company_id_fail_closed PASSED [ 59%]
+tests/e2e/test_memory_continuity.py::TestSessionIsolation::test_session_isolation_key_includes_session_id PASSED [ 59%]
+tests/e2e/test_memory_continuity.py::TestSessionIsolation::test_different_sessions_dont_share_memory PASSED [ 60%]
+tests/e2e/test_memory_continuity.py::TestSessionIsolation::test_company_id_isolation_in_query_filter PASSED [ 60%]
+tests/e2e/test_memory_continuity.py::TestSessionIsolation::test_conversation_memory_service_requires_company_id PASSED [ 60%]
+tests/e2e/test_memory_continuity.py::TestSessionIsolation::test_conversation_service_session_id_stored_on_create PASSED [ 61%]
+tests/e2e/test_memory_continuity.py::TestSessionIsolation::test_thread_id_composition_prevents_cross_session_contamination PASSED [ 61%]
+tests/e2e/test_memory_continuity.py::TestSessionIsolation::test_thread_id_composition_prevents_cross_domain_contamination PASSED [ 61%]
+tests/e2e/test_navigation_serializer.py::TestNavigateMarkupLeak::test_plain_content_no_navigate_markers PASSED [ 61%]
+tests/e2e/test_navigation_serializer.py::TestNavigateMarkupLeak::test_navigate_markup_if_present_check_content PASSED [ 62%]
+tests/e2e/test_navigation_serializer.py::TestNavigateMarkupLeak::test_ui_action_navigate_not_set_without_explicit_param PASSED [ 62%]
+tests/e2e/test_navigation_serializer.py::TestUiActionNoParams::test_ui_action_without_params_no_crash PASSED [ 62%]
+tests/e2e/test_navigation_serializer.py::TestUiActionNoParams::test_ui_action_navigate_page_without_params_no_crash PASSED [ 62%]
+tests/e2e/test_navigation_serializer.py::TestUiActionNoParams::test_ui_action_empty_string_not_included PASSED [ 63%]
+tests/e2e/test_navigation_serializer.py::TestUiActionWithParams::test_ui_action_with_params_in_payload PASSED [ 63%]
+tests/e2e/test_navigation_serializer.py::TestUiActionWithParams::test_navigate_page_with_url_param PASSED [ 63%]
+tests/e2e/test_navigation_serializer.py::TestUiActionWithParams::test_open_ui_with_modal_and_entity PASSED [ 63%]
+tests/e2e/test_navigation_serializer.py::TestFormatSseEventNavigation::test_format_sse_event_basic_message PASSED [ 64%]
+tests/e2e/test_navigation_serializer.py::TestFormatSseEventNavigation::test_format_sse_event_with_ui_action PASSED [ 64%]
+tests/e2e/test_navigation_serializer.py::TestFormatSseEventNavigation::test_format_sse_event_open_ui_roundtrip PASSED [ 64%]
+tests/e2e/test_navigation_serializer.py::TestFormatSseEventNavigation::test_format_sse_event_no_ui_action_clean PASSED [ 64%]
+tests/e2e/test_parity_anchors.py::TestRoutingVerification::test_federated_flag_routes_to_recruiter_copilot PASSED [ 65%]
+tests/e2e/test_parity_anchors.py::TestRoutingVerification::test_supervisor_flag_routes_to_main_orchestrator PASSED [ 65%]
+tests/e2e/test_parity_anchors.py::TestRoutingVerification::test_baseline_uses_cascaded_router PASSED [ 65%]
+tests/e2e/test_parity_anchors.py::TestRoutingVerification::test_federated_and_supervisor_flags_precedence PASSED [ 66%]
+tests/e2e/test_parity_anchors.py::TestComplianceParity::test_fairness_guard_called_in_sse_path PASSED [ 66%]
+tests/e2e/test_parity_anchors.py::TestComplianceParity::test_pre_compliance_in_sse_path PASSED [ 66%]
+tests/e2e/test_parity_anchors.py::TestComplianceParity::test_post_compliance_present PASSED [ 66%]
+tests/e2e/test_parity_anchors.py::TestHITLParity::test_hitl_preflight_available_both_scenarios PASSED [ 67%]
+tests/e2e/test_parity_anchors.py::TestHITLParity::test_hitl_gate_flag_controls_behavior PASSED [ 67%]
+tests/e2e/test_parity_anchors.py::TestDiagnosticReport::test_generate_parity_diagnostic_report PASSED [ 67%]
+tests/e2e/test_rabbitmq_propagation_e2e.py::test_event_reaches_rails_audit_log[screening.completed] SKIPPED [ 67%]
+tests/e2e/test_rabbitmq_propagation_e2e.py::test_event_reaches_rails_audit_log[interview.scheduled] SKIPPED [ 68%]
+tests/e2e/test_rabbitmq_propagation_e2e.py::test_event_reaches_rails_audit_log[interview.completed] SKIPPED [ 68%]
+tests/e2e/test_rabbitmq_propagation_e2e.py::test_event_reaches_rails_audit_log[offer.sent] SKIPPED [ 68%]
+tests/e2e/test_rabbitmq_propagation_e2e.py::test_event_reaches_rails_audit_log[candidate.enriched] SKIPPED [ 68%]
+tests/e2e/test_rabbitmq_propagation_e2e.py::test_event_reaches_rails_audit_log[pipeline.moved] SKIPPED [ 69%]
+tests/e2e/test_rabbitmq_propagation_e2e.py::test_incompatible_event_version_is_rejected SKIPPED [ 69%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterAllowed::test_first_request_always_allowed PASSED [ 69%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterAllowed::test_requests_below_per_minute_limit_allowed PASSED [ 70%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterAllowed::test_different_users_independent_limits PASSED [ 70%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterAllowed::test_redis_backed_allows_within_limits PASSED [ 70%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterUserMinuteLimit::test_user_blocked_after_per_minute_limit PASSED [ 70%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterUserMinuteLimit::test_user_blocked_gets_retry_after_equal_to_block_duration PASSED [ 71%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterUserMinuteLimit::test_redis_backed_user_blocked_when_fixed_window_denied PASSED [ 71%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterCompanyMinuteLimit::test_company_blocked_after_per_minute_limit PASSED [ 71%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterCompanyMinuteLimit::test_company_rate_limit_blocks_all_users_in_company PASSED [ 71%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterRetryAfter::test_retry_after_positive_when_blocked PASSED [ 72%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterRetryAfter::test_retry_after_none_when_allowed PASSED [ 72%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterRetryAfter::test_previously_blocked_unblocked_after_duration PASSED [ 72%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterFallback::test_falls_back_to_memory_when_redis_unavailable PASSED [ 72%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterFallback::test_memory_backend_still_enforces_limits PASSED [ 73%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterFallback::test_redis_error_degrades_to_allow_all PASSED [ 73%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterTenantIsolation::test_user_limits_are_per_user_not_shared PASSED [ 73%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterTenantIsolation::test_companies_have_independent_rate_limits PASSED [ 74%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterStats::test_get_stats_returns_dict PASSED [ 74%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterStats::test_get_stats_backend_memory_when_redis_unavailable PASSED [ 74%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterStats::test_get_stats_limits_include_required_keys PASSED [ 74%]
+tests/e2e/test_rate_limiter_e2e.py::TestRateLimiterStats::test_limits_have_correct_values PASSED [ 75%]
+tests/e2e/test_rrp_provenance.py::TestRRPProvenance::test_no_score_explainer_without_opinion_id PASSED [ 75%]
+tests/e2e/test_rrp_provenance.py::TestRRPProvenance::test_score_explainer_emitted_with_opinion_id PASSED [ 75%]
+tests/e2e/test_rrp_provenance.py::TestRRPProvenance::test_score_explainer_provenance_fields_present PASSED [ 75%]
+tests/e2e/test_rrp_provenance.py::TestRRPProvenance::test_no_score_explainer_mixed_rows PASSED [ 76%]
+tests/e2e/test_rrp_provenance.py::TestRRPProvenance::test_empty_rows_returns_no_blocks PASSED [ 76%]
+tests/e2e/test_rrp_provenance.py::TestRRPProvenance::test_candidate_card_without_opinion_is_unverified PASSED [ 76%]
+tests/e2e/test_rrp_provenance.py::TestRRPProvenance::test_candidate_card_with_opinion_has_score PASSED [ 76%]
+tests/e2e/test_rrp_provenance.py::TestRRPProvenance::test_score_explainer_block_id_links_to_table_row PASSED [ 77%]
+tests/e2e/test_rrp_provenance.py::TestRRPProvenance::test_row_without_opinion_has_no_score_block_id PASSED [ 77%]
+tests/e2e/test_rrp_provenance.py::TestRRPExhaustiveness::test_all_expected_kinds_are_registered PASSED [ 77%]
+tests/e2e/test_rrp_provenance.py::TestRRPExhaustiveness::test_no_extra_undocumented_kinds PASSED [ 77%]
+tests/e2e/test_rrp_provenance.py::TestRRPExhaustiveness::test_kind_map_values_are_block_classes PASSED [ 78%]
+tests/e2e/test_rrp_provenance.py::TestRRPExhaustiveness::test_unknown_block_type_rejected_by_response_block PASSED [ 78%]
+tests/e2e/test_rrp_provenance.py::TestRRPExhaustiveness::test_schema_extra_fields_forbidden_on_score_explainer PASSED [ 78%]
+tests/e2e/test_rrp_provenance.py::TestRRPExhaustiveness::test_schema_extra_fields_forbidden_on_comparison_table PASSED [ 79%]
+tests/e2e/test_rrp_provenance.py::TestRRPExhaustiveness::test_all_kinds_produce_valid_block_ids PASSED [ 79%]
+tests/e2e/test_rrp_provenance.py::TestRRPExhaustiveness::test_response_block_discriminator_roundtrip PASSED [ 79%]
+tests/e2e/test_tenant_isolation_e2e.py::test_direct_get_across_tenants_returns_404 SKIPPED(item 1.3)) [ 79%]
+tests/e2e/test_tenant_isolation_e2e.py::test_fork_uuid_get_across_tenants_returns_404 SKIPPED(item 1.3)) [ 80%]
+tests/e2e/test_tenant_isolation_e2e.py::test_search_does_not_leak_other_tenants SKIPPED(item 1.3)) [ 80%]
+tests/e2e/test_tenant_isolation_e2e.py::test_update_across_tenants_returns_404_or_403 SKIPPED(item 1.3)) [ 80%]
+tests/e2e/test_tenant_isolation_e2e.py::test_search_with_term_matching_other_tenant_returns_empty SKIPPED(item 1.3)) [ 80%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheFullFlow::test_cache_miss_on_empty_db PASSED [ 81%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheFullFlow::test_cache_hit_after_set PASSED [ 81%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheFullFlow::test_get_returns_none_below_threshold PASSED [ 81%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheFullFlow::test_set_does_not_raise_on_db_error PASSED [ 81%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheFullFlow::test_get_returns_none_on_embedding_error PASSED [ 82%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheFullFlow::test_get_returns_none_on_db_query_error PASSED [ 82%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheHitCount::test_hit_returns_domain_data PASSED [ 82%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheHitCount::test_multiple_hits_all_return_data PASSED [ 83%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheThresholds::test_default_threshold_is_high PASSED [ 83%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheThresholds::test_custom_threshold_accepted PASSED [ 83%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheThresholds::test_high_threshold_more_restrictive PASSED [ 83%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheMultiTenant::test_different_caches_do_not_share_state PASSED [ 84%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheMultiTenant::test_cache_set_calls_insert_cache PASSED [ 84%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheMultiTenant::test_cache_get_returns_none_on_cache_miss PASSED [ 84%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheEmbeddingDimensions::test_accepts_1536_dim_embeddings PASSED [ 84%]
+tests/e2e/test_vector_semantic_cache_e2e.py::TestVectorCacheEmbeddingDimensions::test_accepts_768_dim_embeddings PASSED [ 85%]
+tests/e2e/test_wizard_job_creation.py::TestWizardJobCreation::test_wizard_initial_message SKIPPEDph_e2e.py com ASGITransport.) [ 85%]
+tests/e2e/test_wizard_job_creation.py::TestWizardJobCreation::test_wizard_field_extraction SKIPPEDph_e2e.py com ASGITransport.) [ 85%]
+tests/e2e/test_wizard_job_creation.py::TestWizardJobCreation::test_wizard_stage_transitions FAILED [ 85%]
+tests/e2e/test_wizard_job_creation.py::TestWizardJobCreation::test_wizard_confirmation_gates FAILED [ 86%]
+tests/e2e/test_wizard_job_creation.py::TestWizardJobCreation::test_wizard_complete_creates_job FAILED [ 86%]
+tests/e2e/test_wizard_job_creation.py::TestWizardJobCreation::test_full_wizard_flow_creates_job_with_id FAILED [ 86%]
+tests/e2e/test_wizard_job_creation.py::TestWizardAPIEndpoints::test_stage_mapping_endpoint FAILED [ 87%]
+tests/e2e/test_wizard_job_creation.py::TestWizardAPIEndpoints::test_graph_structure_endpoint FAILED [ 87%]
+tests/e2e/test_wizard_job_creation.py::TestJobVacancyCreation::test_direct_job_creation FAILED [ 87%]
+tests/e2e/test_wizard_job_creation.py::TestJobVacancyCreation::test_job_list_endpoint FAILED [ 87%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorWeightedFormula::test_all_max_scores_yield_overall_wsi_above_4 PASSED [ 88%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorWeightedFormula::test_all_min_scores_yield_baixo_classification_and_wsi_below_2 PASSED [ 88%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorWeightedFormula::test_result_preserves_candidate_and_job_ids PASSED [ 88%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorWeightedFormula::test_score_5_in_all_responses_yields_alto_or_excelente_classification PASSED [ 88%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorWeightedFormula::test_result_contains_original_response_analyses PASSED [ 89%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorWeightedFormula::test_overall_wsi_is_rounded_to_2_decimal_places PASSED [ 89%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorWeightedFormula::test_empty_responses_returns_wsi_result_without_crash PASSED [ 89%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorPercentiles::test_highest_overall_wsi_gets_100th_percentile PASSED [ 89%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorPercentiles::test_lowest_score_gets_strictly_lower_percentile_than_top PASSED [ 90%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorPercentiles::test_single_candidate_gets_percentile_100 PASSED [ 90%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorPercentiles::test_all_percentiles_are_nonnegative_integers_at_most_100 PASSED [ 90%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIScoreCalculatorPercentiles::test_list_of_five_candidates_all_get_percentiles PASSED [ 90%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSafeJsonParse::test_plain_json_string_parsed_correctly PASSED [ 91%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSafeJsonParse::test_json_in_markdown_code_block_extracted PASSED [ 91%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSafeJsonParse::test_dict_input_returned_as_is_without_modification PASSED [ 91%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSafeJsonParse::test_invalid_json_with_fallback_returns_fallback_dict PASSED [ 92%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSafeJsonParse::test_invalid_json_without_fallback_raises_value_error PASSED [ 92%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestNormalizeWeights::test_already_normalized_weights_sum_to_1 PASSED [ 92%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestNormalizeWeights::test_unnormalized_weights_rescaled_to_sum_1 PASSED [ 92%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestNormalizeWeights::test_zero_total_raises_value_error PASSED [ 93%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestNormalizeWeights::test_relative_proportions_preserved_after_normalization PASSED [ 93%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSeniorityBigFiveMapping::test_junior_maps_to_2_traits PASSED [ 93%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSeniorityBigFiveMapping::test_senior_maps_to_3_traits PASSED [ 93%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSeniorityBigFiveMapping::test_lead_maps_to_4_traits PASSED [ 94%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSeniorityBigFiveMapping::test_vp_clevel_maps_to_5_traits PASSED [ 94%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSeniorityBigFiveMapping::test_all_levels_have_valid_trait_counts_between_2_and_5 PASSED [ 94%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestSeniorityBigFiveMapping::test_higher_seniority_gets_more_traits_than_lower PASSED [ 94%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSICallLifecycleE2E::test_start_voice_screening_initiates_twilio_call_and_returns_result PASSED [ 95%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSICallLifecycleE2E::test_process_call_completed_returns_none_when_session_not_found PASSED [ 95%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSICallLifecycleE2E::test_process_call_completed_analyzes_transcript_and_produces_wsi_result PASSED [ 95%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIAnalyzeResponseLLMBoundary::test_analyze_response_returns_response_analysis_with_score_1_to_5 PASSED [ 96%]
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIAnalyzeResponseLLMBoundary::test_analyze_response_falls_back_gracefully_on_llm_error PASSED [ 96%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphImport::test_graph_importable PASSED [ 96%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphImport::test_singleton_importable PASSED [ 96%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphImport::test_start_is_async_callable PASSED [ 97%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphImport::test_submit_response_is_async_callable PASSED [ 97%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphImport::test_run_node_is_async_callable FAILED [ 97%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphSession::test_create_session_returns_state_with_correct_fields PASSED [ 97%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphSession::test_create_session_initial_stage_is_init PASSED [ 98%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphSession::test_is_complete_false_at_start PASSED [ 98%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphNodeLogging::test_run_node_logs_node_start_and_end FAILED [ 98%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphNodeLogging::test_run_node_logs_node_error_on_exception FAILED [ 98%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphStart::test_start_calls_load_context_and_generate_question PASSED [ 99%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphStart::test_start_skips_generate_question_if_complete PASSED [ 99%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphSummary::test_get_session_summary_returns_required_fields PASSED [ 99%]
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphSummary::test_get_session_summary_scores_structure FAILED [100%]
+
+=================================== FAILURES ===================================
+_______ TestCascadedRouterFastTier.test_fast_router_tier_returns_result ________
+tests/e2e/test_cascaded_router_e2e.py:97: in test_fast_router_tier_returns_result
+    result = await router.route("criar vaga de desenvolvedor")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+_________ TestCascadedRouterFastTier.test_fast_router_increments_stats _________
+tests/e2e/test_cascaded_router_e2e.py:112: in test_fast_router_increments_stats
+    await router.route("buscar candidatos")
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+____ TestCascadedRouterFastTier.test_fast_router_confidence_meets_threshold ____
+tests/e2e/test_cascaded_router_e2e.py:123: in test_fast_router_confidence_meets_threshold
+    result = await router.route("analisar cv do candidato")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+_______ TestCascadedRouterMemoryCache.test_second_call_uses_memory_cache _______
+tests/e2e/test_cascaded_router_e2e.py:143: in test_second_call_uses_memory_cache
+    result1 = await router.route("criar vaga de desenvolvedor")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+_____ TestCascadedRouterMemoryCache.test_memory_cache_hit_increments_stats _____
+tests/e2e/test_cascaded_router_e2e.py:159: in test_memory_cache_hit_increments_stats
+    await router.route("relatório de pipeline")
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+____ TestCascadedRouterClarification.test_clarification_when_all_tiers_fail ____
+tests/e2e/test_cascaded_router_e2e.py:181: in test_clarification_when_all_tiers_fail
+    result = await router.route("xyzzy nonsense 999 aaa bbb ccc")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+_______ TestCascadedRouterClarification.test_clarification_has_question ________
+tests/e2e/test_cascaded_router_e2e.py:191: in test_clarification_has_question
+    result = await router.route("algo absolutamente ambíguo 0xdeadbeef")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+________ TestCascadedRouterClarification.test_clarification_has_options ________
+tests/e2e/test_cascaded_router_e2e.py:201: in test_clarification_has_options
+    result = await router.route("xyz abc def 12345")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+_ TestCascadedRouterClarification.test_no_clarification_when_fast_router_succeeds _
+tests/e2e/test_cascaded_router_e2e.py:215: in test_no_clarification_when_fast_router_succeeds
+    result = await router.route("buscar candidatos para vaga")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+_____ TestCascadedRouterClarification.test_clarification_stat_incremented ______
+tests/e2e/test_cascaded_router_e2e.py:224: in test_clarification_stat_incremented
+    await router.route("incompreensível xyzzy 99999")
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+___________ TestRouteResultContract.test_route_result_has_domain_id ____________
+tests/e2e/test_cascaded_router_e2e.py:242: in test_route_result_has_domain_id
+    result = await router.route("enviar email para candidato")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+___________ TestRouteResultContract.test_route_result_has_confidence ___________
+tests/e2e/test_cascaded_router_e2e.py:254: in test_route_result_has_confidence
+    result = await router.route("sincronizar gupy")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+_____________ TestRouteResultContract.test_route_result_has_source _____________
+tests/e2e/test_cascaded_router_e2e.py:266: in test_route_result_has_source
+    result = await router.route("criar vaga")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+____________ TestRouteResultContract.test_canonical_domain_ids_only ____________
+tests/e2e/test_cascaded_router_e2e.py:292: in test_canonical_domain_ids_only
+    result = await router.route(query)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+____________ TestCascadedRouterStats.test_stats_increment_on_route _____________
+tests/e2e/test_cascaded_router_e2e.py:330: in test_stats_increment_on_route
+    await router.route("criar tarefa urgente")
+app/shared/observability/tracing.py:303: in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/orchestrator/routing/cascaded_router.py:309: in route
+    record_namespace_violation("cascaded_router.unknown_company")
+app/shared/security/tenant_redis_namespace.py:153: in record_namespace_violation
+    raise RuntimeError(msg)
+E   RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+------------------------------ Captured log call -------------------------------
+CRITICAL app.shared.security.tenant_redis_namespace:tenant_redis_namespace.py:152 [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+____________ TestInterviewGraphTracing.test_run_node_logs_start_end ____________
+tests/e2e/test_interview_scheduling_e2e.py:310: in test_run_node_logs_start_end
+    await g._run_node("interview_state_loader", state)
+          ^^^^^^^^^^^
+E   AttributeError: 'InterviewGraph' object has no attribute '_run_node'
+________ TestInterviewGraphTracing.test_run_node_error_logs_node_error _________
+tests/e2e/test_interview_scheduling_e2e.py:339: in test_run_node_error_logs_node_error
+    result = await g._run_node("interview_state_loader", state)
+                   ^^^^^^^^^^^
+E   AttributeError: 'InterviewGraph' object has no attribute '_run_node'
+_ TestReActAgentsLangGraphNativeE2E.test_process_returns_agent_output[app.domains.job_management.agents.wizard_react_agent-WizardReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:91: in test_process_returns_agent_output
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/job_management/agents/wizard_react_agent.py:106: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_returns_agent_output[app.domains.cv_screening.agents.pipeline_react_agent-PipelineReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:91: in test_process_returns_agent_output
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/cv_screening/agents/pipeline_react_agent.py:85: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_returns_agent_output[app.domains.sourcing.agents.sourcing_react_agent-SourcingReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:91: in test_process_returns_agent_output
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/sourcing/agents/sourcing_react_agent.py:122: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_returns_agent_output[app.domains.recruiter_assistant.agents.talent_react_agent-TalentReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:91: in test_process_returns_agent_output
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/recruiter_assistant/agents/talent_funnel_react_agent.py:88: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_returns_agent_output[app.domains.recruiter_assistant.agents.kanban_react_agent-KanbanReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:91: in test_process_returns_agent_output
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/recruiter_assistant/agents/kanban_react_agent.py:92: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_returns_agent_output[app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent-JobsManagementReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:91: in test_process_returns_agent_output
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py:88: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_returns_agent_output[app.domains.hiring_policy.agents.policy_react_agent-PolicyReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:91: in test_process_returns_agent_output
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/hiring_policy/agents/policy_react_agent.py:97: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_returns_agent_output[app.domains.automation.agents.automation_react_agent-AutomationReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:91: in test_process_returns_agent_output
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/automation/agents/automation_react_agent.py:53: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_returns_agent_output[app.domains.pipeline.agents.pipeline_transition_agent-PipelineTransitionAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:91: in test_process_returns_agent_output
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/pipeline/agents/pipeline_transition_agent.py:43: in __init__
+    super().__init__()  # inicializa LangGraphBase._checkpointer
+    ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_always_calls_langgraph[app.domains.job_management.agents.wizard_react_agent-WizardReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:108: in test_process_always_calls_langgraph
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/job_management/agents/wizard_react_agent.py:106: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_always_calls_langgraph[app.domains.cv_screening.agents.pipeline_react_agent-PipelineReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:108: in test_process_always_calls_langgraph
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/cv_screening/agents/pipeline_react_agent.py:85: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_always_calls_langgraph[app.domains.sourcing.agents.sourcing_react_agent-SourcingReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:108: in test_process_always_calls_langgraph
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/sourcing/agents/sourcing_react_agent.py:122: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_always_calls_langgraph[app.domains.recruiter_assistant.agents.talent_react_agent-TalentReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:108: in test_process_always_calls_langgraph
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/recruiter_assistant/agents/talent_funnel_react_agent.py:88: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_always_calls_langgraph[app.domains.recruiter_assistant.agents.kanban_react_agent-KanbanReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:108: in test_process_always_calls_langgraph
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/recruiter_assistant/agents/kanban_react_agent.py:92: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_always_calls_langgraph[app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent-JobsManagementReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:108: in test_process_always_calls_langgraph
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py:88: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_always_calls_langgraph[app.domains.hiring_policy.agents.policy_react_agent-PolicyReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:108: in test_process_always_calls_langgraph
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/hiring_policy/agents/policy_react_agent.py:97: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_always_calls_langgraph[app.domains.automation.agents.automation_react_agent-AutomationReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:108: in test_process_always_calls_langgraph
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/automation/agents/automation_react_agent.py:53: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_process_always_calls_langgraph[app.domains.pipeline.agents.pipeline_transition_agent-PipelineTransitionAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:108: in test_process_always_calls_langgraph
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/pipeline/agents/pipeline_transition_agent.py:43: in __init__
+    super().__init__()  # inicializa LangGraphBase._checkpointer
+    ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_agent_output_has_required_fields[app.domains.job_management.agents.wizard_react_agent-WizardReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:124: in test_agent_output_has_required_fields
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/job_management/agents/wizard_react_agent.py:106: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_agent_output_has_required_fields[app.domains.cv_screening.agents.pipeline_react_agent-PipelineReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:124: in test_agent_output_has_required_fields
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/cv_screening/agents/pipeline_react_agent.py:85: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_agent_output_has_required_fields[app.domains.sourcing.agents.sourcing_react_agent-SourcingReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:124: in test_agent_output_has_required_fields
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/sourcing/agents/sourcing_react_agent.py:122: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_agent_output_has_required_fields[app.domains.recruiter_assistant.agents.talent_react_agent-TalentReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:124: in test_agent_output_has_required_fields
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/recruiter_assistant/agents/talent_funnel_react_agent.py:88: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_agent_output_has_required_fields[app.domains.recruiter_assistant.agents.kanban_react_agent-KanbanReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:124: in test_agent_output_has_required_fields
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/recruiter_assistant/agents/kanban_react_agent.py:92: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_agent_output_has_required_fields[app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent-JobsManagementReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:124: in test_agent_output_has_required_fields
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py:88: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_agent_output_has_required_fields[app.domains.hiring_policy.agents.policy_react_agent-PolicyReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:124: in test_agent_output_has_required_fields
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/hiring_policy/agents/policy_react_agent.py:97: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_agent_output_has_required_fields[app.domains.automation.agents.automation_react_agent-AutomationReActAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:124: in test_agent_output_has_required_fields
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/automation/agents/automation_react_agent.py:53: in __init__
+    super().__init__()
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+_ TestReActAgentsLangGraphNativeE2E.test_agent_output_has_required_fields[app.domains.pipeline.agents.pipeline_transition_agent-PipelineTransitionAgent] _
+tests/e2e/test_langgraph_agents_e2e.py:124: in test_agent_output_has_required_fields
+    agent = AgentClass()
+            ^^^^^^^^^^^^
+app/domains/pipeline/agents/pipeline_transition_agent.py:43: in __init__
+    super().__init__()  # inicializa LangGraphBase._checkpointer
+    ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/langgraph_base.py:80: in __init__
+    self._checkpointer = get_checkpointer()
+                         ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+__________ TestWSIInterviewGraphE2E.test_wsi_start_with_mocked_nodes ___________
+tests/e2e/test_langgraph_agents_e2e.py:185: in test_wsi_start_with_mocked_nodes
+    result = await g.start(state)
+             ^^^^^^^^^^^^^^^^^^^^
+app/domains/cv_screening/agents/wsi_interview_graph.py:1126: in start
+    return await self._start_langgraph(state, audit_callback)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/domains/cv_screening/agents/wsi_interview_graph.py:990: in _start_langgraph
+    self._compiled_lg = self._build_langgraph()
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+app/domains/cv_screening/agents/wsi_interview_graph.py:978: in _build_langgraph
+    checkpointer=get_checkpointer(),
+                 ^^^^^^^^^^^^^^^^^^
+libs/agents-core/lia_agents_core/checkpointer.py:312: in get_checkpointer
+    raise RuntimeError(
+E   RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+____ TestCheckpointerDevMode.test_checkpointer_production_requires_postgres ____
+tests/e2e/test_langgraph_agents_e2e.py:254: in test_checkpointer_production_requires_postgres
+    with pytest.raises(RuntimeError, match="PostgresSaver FALHOU em produção"):
+E   Failed: DID NOT RAISE <class 'RuntimeError'>
+_ TestLangGraphFileExists.test_graph_python_file_exists[wizard_graph-expected0] _
+tests/e2e/test_langgraph_studio_config.py:160: in test_graph_python_file_exists
+    assert os.path.isfile(full_path), (
+E   AssertionError: Arquivo do grafo 'wizard_graph' não encontrado: /home/runner/workspace/lia-agent-system/tests/e2e/../../app/domains/job_management/agents/job_wizard_graph.py
+E   assert False
+E    +  where False = <function isfile at 0x7f17aa8c0040>('/home/runner/workspace/lia-agent-system/tests/e2e/../../app/domains/job_management/agents/job_wizard_graph.py')
+E    +    where <function isfile at 0x7f17aa8c0040> = <module 'posixpath' (frozen)>.isfile
+E    +      where <module 'posixpath' (frozen)> = os.path
+_____________ TestWizardJobCreation.test_wizard_stage_transitions ______________
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:101: in map_httpcore_exceptions
+    yield
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:256: in handle_async_request
+    raise exc from None
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:101: in handle_async_request
+    raise exc
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:78: in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:124: in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/auto.py:31: in connect_tcp
+    return await self._backend.connect_tcp(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/anyio.py:113: in connect_tcp
+    with map_exceptions(exc_map):
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_exceptions.py:14: in map_exceptions
+    raise to_exc(exc) from exc
+E   httpcore.ConnectError: All connection attempts failed
+
+The above exception was the direct cause of the following exception:
+tests/e2e/test_wizard_job_creation.py:104: in test_wizard_stage_transitions
+    response = await client.post(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1859: in post
+    return await self.request(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:393: in handle_async_request
+    with map_httpcore_exceptions():
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:118: in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+E   httpx.ConnectError: All connection attempts failed
+_____________ TestWizardJobCreation.test_wizard_confirmation_gates _____________
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:101: in map_httpcore_exceptions
+    yield
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:256: in handle_async_request
+    raise exc from None
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:101: in handle_async_request
+    raise exc
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:78: in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:124: in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/auto.py:31: in connect_tcp
+    return await self._backend.connect_tcp(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/anyio.py:113: in connect_tcp
+    with map_exceptions(exc_map):
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_exceptions.py:14: in map_exceptions
+    raise to_exc(exc) from exc
+E   httpcore.ConnectError: All connection attempts failed
+
+The above exception was the direct cause of the following exception:
+tests/e2e/test_wizard_job_creation.py:130: in test_wizard_confirmation_gates
+    response = await client.post(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1859: in post
+    return await self.request(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:393: in handle_async_request
+    with map_httpcore_exceptions():
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:118: in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+E   httpx.ConnectError: All connection attempts failed
+____________ TestWizardJobCreation.test_wizard_complete_creates_job ____________
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:101: in map_httpcore_exceptions
+    yield
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:256: in handle_async_request
+    raise exc from None
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:101: in handle_async_request
+    raise exc
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:78: in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:124: in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/auto.py:31: in connect_tcp
+    return await self._backend.connect_tcp(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/anyio.py:113: in connect_tcp
+    with map_exceptions(exc_map):
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_exceptions.py:14: in map_exceptions
+    raise to_exc(exc) from exc
+E   httpcore.ConnectError: All connection attempts failed
+
+The above exception was the direct cause of the following exception:
+tests/e2e/test_wizard_job_creation.py:152: in test_wizard_complete_creates_job
+    response = await client.post(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1859: in post
+    return await self.request(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:393: in handle_async_request
+    with map_httpcore_exceptions():
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:118: in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+E   httpx.ConnectError: All connection attempts failed
+_______ TestWizardJobCreation.test_full_wizard_flow_creates_job_with_id ________
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:101: in map_httpcore_exceptions
+    yield
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:256: in handle_async_request
+    raise exc from None
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:101: in handle_async_request
+    raise exc
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:78: in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:124: in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/auto.py:31: in connect_tcp
+    return await self._backend.connect_tcp(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/anyio.py:113: in connect_tcp
+    with map_exceptions(exc_map):
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_exceptions.py:14: in map_exceptions
+    raise to_exc(exc) from exc
+E   httpcore.ConnectError: All connection attempts failed
+
+The above exception was the direct cause of the following exception:
+tests/e2e/test_wizard_job_creation.py:175: in test_full_wizard_flow_creates_job_with_id
+    response = await client.post(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1859: in post
+    return await self.request(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:393: in handle_async_request
+    with map_httpcore_exceptions():
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:118: in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+E   httpx.ConnectError: All connection attempts failed
+______________ TestWizardAPIEndpoints.test_stage_mapping_endpoint ______________
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:101: in map_httpcore_exceptions
+    yield
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:256: in handle_async_request
+    raise exc from None
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:101: in handle_async_request
+    raise exc
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:78: in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:124: in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/auto.py:31: in connect_tcp
+    return await self._backend.connect_tcp(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/anyio.py:113: in connect_tcp
+    with map_exceptions(exc_map):
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_exceptions.py:14: in map_exceptions
+    raise to_exc(exc) from exc
+E   httpcore.ConnectError: All connection attempts failed
+
+The above exception was the direct cause of the following exception:
+tests/e2e/test_wizard_job_creation.py:202: in test_stage_mapping_endpoint
+    response = await client.get(f"{BASE_URL}/api/v1/wizard/stage-mapping")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1768: in get
+    return await self.request(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:393: in handle_async_request
+    with map_httpcore_exceptions():
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:118: in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+E   httpx.ConnectError: All connection attempts failed
+_____________ TestWizardAPIEndpoints.test_graph_structure_endpoint _____________
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:101: in map_httpcore_exceptions
+    yield
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:256: in handle_async_request
+    raise exc from None
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:101: in handle_async_request
+    raise exc
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:78: in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:124: in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/auto.py:31: in connect_tcp
+    return await self._backend.connect_tcp(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/anyio.py:113: in connect_tcp
+    with map_exceptions(exc_map):
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_exceptions.py:14: in map_exceptions
+    raise to_exc(exc) from exc
+E   httpcore.ConnectError: All connection attempts failed
+
+The above exception was the direct cause of the following exception:
+tests/e2e/test_wizard_job_creation.py:218: in test_graph_structure_endpoint
+    response = await client.get(f"{BASE_URL}/api/v1/wizard/graph-structure")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1768: in get
+    return await self.request(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:393: in handle_async_request
+    with map_httpcore_exceptions():
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:118: in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+E   httpx.ConnectError: All connection attempts failed
+_______________ TestJobVacancyCreation.test_direct_job_creation ________________
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:101: in map_httpcore_exceptions
+    yield
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:256: in handle_async_request
+    raise exc from None
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:101: in handle_async_request
+    raise exc
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:78: in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:124: in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/auto.py:31: in connect_tcp
+    return await self._backend.connect_tcp(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/anyio.py:113: in connect_tcp
+    with map_exceptions(exc_map):
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_exceptions.py:14: in map_exceptions
+    raise to_exc(exc) from exc
+E   httpcore.ConnectError: All connection attempts failed
+
+The above exception was the direct cause of the following exception:
+tests/e2e/test_wizard_job_creation.py:233: in test_direct_job_creation
+    response = await client.post(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1859: in post
+    return await self.request(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:393: in handle_async_request
+    with map_httpcore_exceptions():
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:118: in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+E   httpx.ConnectError: All connection attempts failed
+________________ TestJobVacancyCreation.test_job_list_endpoint _________________
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:101: in map_httpcore_exceptions
+    yield
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:256: in handle_async_request
+    raise exc from None
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:101: in handle_async_request
+    raise exc
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:78: in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_async/connection.py:124: in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/auto.py:31: in connect_tcp
+    return await self._backend.connect_tcp(
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_backends/anyio.py:113: in connect_tcp
+    with map_exceptions(exc_map):
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpcore/_exceptions.py:14: in map_exceptions
+    raise to_exc(exc) from exc
+E   httpcore.ConnectError: All connection attempts failed
+
+The above exception was the direct cause of the following exception:
+tests/e2e/test_wizard_job_creation.py:247: in test_job_list_endpoint
+    response = await client.get(f"{BASE_URL}/api/v1/jobs/job-vacancies")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1768: in get
+    return await self.request(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:393: in handle_async_request
+    with map_httpcore_exceptions():
+/nix/store/6334pjf6w2q623rgvwi499qaiym1p6yv-python3-3.11.14/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+../.pythonlibs/lib/python3.11/site-packages/httpx/_transports/default.py:118: in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+E   httpx.ConnectError: All connection attempts failed
+_________ TestWSIInterviewGraphImport.test_run_node_is_async_callable __________
+tests/e2e/test_wsi_interview_graph_e2e.py:47: in test_run_node_is_async_callable
+    assert callable(g._run_node)
+                    ^^^^^^^^^^^
+E   AttributeError: 'WSIInterviewGraph' object has no attribute '_run_node'
+____ TestWSIInterviewGraphNodeLogging.test_run_node_logs_node_start_and_end ____
+tests/e2e/test_wsi_interview_graph_e2e.py:120: in test_run_node_logs_node_start_and_end
+    await g._run_node("test_node", mock_fn, state)
+          ^^^^^^^^^^^
+E   AttributeError: 'WSIInterviewGraph' object has no attribute '_run_node'
+_ TestWSIInterviewGraphNodeLogging.test_run_node_logs_node_error_on_exception __
+tests/e2e/test_wsi_interview_graph_e2e.py:150: in test_run_node_logs_node_error_on_exception
+    result = await g._run_node("fail_node", failing_fn, state)
+                   ^^^^^^^^^^^
+E   AttributeError: 'WSIInterviewGraph' object has no attribute '_run_node'
+------------------------------ Captured log call -------------------------------
+INFO     app.domains.cv_screening.agents.wsi_interview_graph:wsi_interview_graph.py:850 [WSIInterviewGraph] Initialized
+____ TestWSIInterviewGraphSummary.test_get_session_summary_scores_structure ____
+tests/e2e/test_wsi_interview_graph_e2e.py:257: in test_get_session_summary_scores_structure
+    assert "eligibility" in scores
+E   AssertionError: assert 'eligibility' in {'technical': 0.0, 'behavioral': 0.0, 'situational': 0.0, 'final': None}
+------------------------------ Captured log call -------------------------------
+INFO     app.domains.cv_screening.agents.wsi_interview_graph:wsi_interview_graph.py:850 [WSIInterviewGraph] Initialized
+=============================== warnings summary ===============================
+tests/e2e/test_wsi_call_flow_e2e.py::TestWSIAnalyzeResponseLLMBoundary::test_analyze_response_returns_response_analysis_with_score_1_to_5
+  /home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/_pytest/logging.py:387: RuntimeWarning: coroutine 'Connection._cancel' was never awaited
+    self.records = []
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphStart::test_start_skips_generate_question_if_complete
+  /home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/_pytest/stash.py:108: RuntimeWarning: coroutine 'Connection._cancel' was never awaited
+    del self._storage[key]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterFastTier::test_fast_router_tier_returns_result - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterFastTier::test_fast_router_increments_stats - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterFastTier::test_fast_router_confidence_meets_threshold - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterMemoryCache::test_second_call_uses_memory_cache - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterMemoryCache::test_memory_cache_hit_increments_stats - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterClarification::test_clarification_when_all_tiers_fail - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterClarification::test_clarification_has_question - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterClarification::test_clarification_has_options - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterClarification::test_no_clarification_when_fast_router_succeeds - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterClarification::test_clarification_stat_incremented - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestRouteResultContract::test_route_result_has_domain_id - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestRouteResultContract::test_route_result_has_confidence - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestRouteResultContract::test_route_result_has_source - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestRouteResultContract::test_canonical_domain_ids_only - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_cascaded_router_e2e.py::TestCascadedRouterStats::test_stats_increment_on_route - RuntimeError: [tenant_redis_namespace] Redis key emitted without company_id by module='cascaded_router.unknown_company'. Task #1144 contract violated.
+FAILED tests/e2e/test_interview_scheduling_e2e.py::TestInterviewGraphTracing::test_run_node_logs_start_end - AttributeError: 'InterviewGraph' object has no attribute '_run_node'
+FAILED tests/e2e/test_interview_scheduling_e2e.py::TestInterviewGraphTracing::test_run_node_error_logs_node_error - AttributeError: 'InterviewGraph' object has no attribute '_run_node'
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.job_management.agents.wizard_react_agent-WizardReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.cv_screening.agents.pipeline_react_agent-PipelineReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.sourcing.agents.sourcing_react_agent-SourcingReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.recruiter_assistant.agents.talent_react_agent-TalentReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.recruiter_assistant.agents.kanban_react_agent-KanbanReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent-JobsManagementReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.hiring_policy.agents.policy_react_agent-PolicyReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.automation.agents.automation_react_agent-AutomationReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_returns_agent_output[app.domains.pipeline.agents.pipeline_transition_agent-PipelineTransitionAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.job_management.agents.wizard_react_agent-WizardReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.cv_screening.agents.pipeline_react_agent-PipelineReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.sourcing.agents.sourcing_react_agent-SourcingReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.recruiter_assistant.agents.talent_react_agent-TalentReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.recruiter_assistant.agents.kanban_react_agent-KanbanReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent-JobsManagementReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.hiring_policy.agents.policy_react_agent-PolicyReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.automation.agents.automation_react_agent-AutomationReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_process_always_calls_langgraph[app.domains.pipeline.agents.pipeline_transition_agent-PipelineTransitionAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.job_management.agents.wizard_react_agent-WizardReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.cv_screening.agents.pipeline_react_agent-PipelineReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.sourcing.agents.sourcing_react_agent-SourcingReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.recruiter_assistant.agents.talent_react_agent-TalentReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.recruiter_assistant.agents.kanban_react_agent-KanbanReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent-JobsManagementReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.hiring_policy.agents.policy_react_agent-PolicyReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.automation.agents.automation_react_agent-AutomationReActAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestReActAgentsLangGraphNativeE2E::test_agent_output_has_required_fields[app.domains.pipeline.agents.pipeline_transition_agent-PipelineTransitionAgent] - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestWSIInterviewGraphE2E::test_wsi_start_with_mocked_nodes - RuntimeError: [Checkpointer] get_checkpointer() chamado antes de initialize_checkpointer_async() em APP_ENV='production'. AsyncPostgresSaver precisa de event loop pra inicializar — chame initialize_checkpointer_async() no lifespan da app.
+FAILED tests/e2e/test_langgraph_agents_e2e.py::TestCheckpointerDevMode::test_checkpointer_production_requires_postgres - Failed: DID NOT RAISE <class 'RuntimeError'>
+FAILED tests/e2e/test_langgraph_studio_config.py::TestLangGraphFileExists::test_graph_python_file_exists[wizard_graph-expected0] - AssertionError: Arquivo do grafo 'wizard_graph' não encontrado: /home/runner/workspace/lia-agent-system/tests/e2e/../../app/domains/job_management/agents/job_wizard_graph.py
+assert False
+ +  where False = <function isfile at 0x7f17aa8c0040>('/home/runner/workspace/lia-agent-system/tests/e2e/../../app/domains/job_management/agents/job_wizard_graph.py')
+ +    where <function isfile at 0x7f17aa8c0040> = <module 'posixpath' (frozen)>.isfile
+ +      where <module 'posixpath' (frozen)> = os.path
+FAILED tests/e2e/test_wizard_job_creation.py::TestWizardJobCreation::test_wizard_stage_transitions - httpx.ConnectError: All connection attempts failed
+FAILED tests/e2e/test_wizard_job_creation.py::TestWizardJobCreation::test_wizard_confirmation_gates - httpx.ConnectError: All connection attempts failed
+FAILED tests/e2e/test_wizard_job_creation.py::TestWizardJobCreation::test_wizard_complete_creates_job - httpx.ConnectError: All connection attempts failed
+FAILED tests/e2e/test_wizard_job_creation.py::TestWizardJobCreation::test_full_wizard_flow_creates_job_with_id - httpx.ConnectError: All connection attempts failed
+FAILED tests/e2e/test_wizard_job_creation.py::TestWizardAPIEndpoints::test_stage_mapping_endpoint - httpx.ConnectError: All connection attempts failed
+FAILED tests/e2e/test_wizard_job_creation.py::TestWizardAPIEndpoints::test_graph_structure_endpoint - httpx.ConnectError: All connection attempts failed
+FAILED tests/e2e/test_wizard_job_creation.py::TestJobVacancyCreation::test_direct_job_creation - httpx.ConnectError: All connection attempts failed
+FAILED tests/e2e/test_wizard_job_creation.py::TestJobVacancyCreation::test_job_list_endpoint - httpx.ConnectError: All connection attempts failed
+FAILED tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphImport::test_run_node_is_async_callable - AttributeError: 'WSIInterviewGraph' object has no attribute '_run_node'
+FAILED tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphNodeLogging::test_run_node_logs_node_start_and_end - AttributeError: 'WSIInterviewGraph' object has no attribute '_run_node'
+FAILED tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphNodeLogging::test_run_node_logs_node_error_on_exception - AttributeError: 'WSIInterviewGraph' object has no attribute '_run_node'
+FAILED tests/e2e/test_wsi_interview_graph_e2e.py::TestWSIInterviewGraphSummary::test_get_session_summary_scores_structure - AssertionError: assert 'eligibility' in {'technical': 0.0, 'behavioral': 0.0, 'situational': 0.0, 'final': None}
+============ 59 failed, 298 passed, 20 skipped, 2 warnings in 9.49s ============
