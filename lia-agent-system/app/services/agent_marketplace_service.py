@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from lia_models.custom_agent import (
     AgentInstallation,
     AgentMarketplaceListing,
+    AgentType,
     CustomAgent,
     CustomAgentStatus,
     MarketplaceListingStatus,
@@ -99,6 +100,7 @@ class AgentMarketplaceService:
         category: Optional[str] = None,  # Sprint 7A category filter
         talent_pool_id: Optional[str] = None,  # Sprint 7B-3b Part 2 v2
         job_id: Optional[str] = None,  # Sprint 7B-3b Part 2 v2
+        agent_type: Optional[str] = None,  # first_party | custom (None = tenant-scoped default)
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[CustomAgent], int]:
@@ -106,7 +108,15 @@ class AgentMarketplaceService:
         # talent_pool JOIN. Canonical CustomAgentRepository does not yet cover
         # the combined filter matrix used by this endpoint (Sprint 7A+7B-3b).
         # Move to repo when an `advanced_search` method is added.
-        conditions = [CustomAgent.company_id == company_id]
+        if agent_type == "first_party":
+            # TENANT-FREE: first_party agents sao globais (company_id=None e
+            # valido por design — ver AgentType docstring). Nao filtrar por
+            # company_id aqui, senao os agentes WeDo globais nunca aparecem.
+            conditions = [CustomAgent.agent_type == AgentType.first_party]
+        else:
+            conditions = [CustomAgent.company_id == company_id]
+            # tenant listing exclui first_party (esses vivem no marketplace)
+            conditions.append(CustomAgent.agent_type != AgentType.first_party)
         if status:
             conditions.append(CustomAgent.status == status)
         if domain:

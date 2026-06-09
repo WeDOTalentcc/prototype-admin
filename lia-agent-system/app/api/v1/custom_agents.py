@@ -157,6 +157,11 @@ async def list_custom_agents(
         None,
         description="Sprint 7B-3b Part 2 v2: filtra agents com config.job_id match (JSONB)",
     ),
+    agent_type: Optional[str] = Query(
+        None,
+        pattern="^(first_party|custom)$",
+        description="first_party = agentes WeDo globais (company_id=None); custom/None = tenant-scoped",
+    ),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
@@ -171,6 +176,7 @@ company_id: str = Depends(require_company_id)):
         category=category,
         talent_pool_id=talent_pool_id,
         job_id=job_id,
+        agent_type=agent_type,
         limit=limit,
         offset=offset,
     )
