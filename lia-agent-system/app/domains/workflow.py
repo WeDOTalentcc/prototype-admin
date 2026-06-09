@@ -681,7 +681,7 @@ class DomainWorkflow:
         try:
             from lia_agents_core.agent_interface import AgentInput
 
-            from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+            from app.api.v1.chat_shared import _ensure_agents_loaded
             from app.shared.agents.agent_registry import AgentRegistry
 
             # Idempotent: garante que @register_agent decorators rodaram

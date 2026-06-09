@@ -542,13 +542,13 @@ company_id: str = Depends(require_company_id)):
             return
 
         if resolved_domain == "kanban":
-            from app.api.v1.agent_chat_ws import _subagent_for_kanban
+            from app.api.v1.chat_shared import _subagent_for_kanban
             resolved_domain = _subagent_for_kanban(content)
         elif resolved_domain == "pipeline_transition":
-            from app.api.v1.agent_chat_ws import _subagent_for_pipeline
+            from app.api.v1.chat_shared import _subagent_for_pipeline
             resolved_domain = _subagent_for_pipeline(content)
         elif resolved_domain == "sourcing":
-            from app.api.v1.agent_chat_ws import _subagent_for_sourcing
+            from app.api.v1.chat_shared import _subagent_for_sourcing
             resolved_domain = _subagent_for_sourcing(content)
 
         # Wizard canonical path (mirrors agent_chat_ws.py)
@@ -650,7 +650,7 @@ company_id: str = Depends(require_company_id)):
             "LIA_BUBBLE_VIA_SUPERVISOR", "false"
         ).lower() in ("true", "1")
 
-        from app.api.v1.agent_chat_ws import _get_agent, _build_agent_input
+        from app.api.v1.chat_shared import _get_agent, _build_agent_input
 
         # Fase 4 (LIA_FEDERATED_PRIMARY): a bolha roteia pro federado unico
         # (escopado) em vez dos agentes de dominio isolados. Off = atual.
