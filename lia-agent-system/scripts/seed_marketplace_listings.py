@@ -8,10 +8,10 @@ Idempotent:
 
 Run via: python3 scripts/seed_marketplace_listings.py
 """
+from __future__ import annotations
+
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from __future__ import annotations
 
 import asyncio
 import uuid
