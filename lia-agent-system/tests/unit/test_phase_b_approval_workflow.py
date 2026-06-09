@@ -35,7 +35,7 @@ def test_list_pending_by_company_uses_canonical_pending_string():
     crashed with NameError. Sentinel: source must reference 'pending'
     string or the enum, never a bare identifier."""
     import inspect
-    from app.domains.approvals.repositories import approvals_repository
+    from app.repositories import approvals_repository
 
     source = inspect.getsource(
         approvals_repository.ApprovalsRepository.list_pending_by_company

@@ -247,7 +247,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_tenant_db
 
-from .repositories.goals_repository import GoalsRepository
+from app.repositories.goals_repository import GoalsRepository
 
 
 def get_goals_repo(db: AsyncSession = Depends(get_tenant_db)) -> GoalsRepository:
@@ -436,7 +436,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_tenant_db
-from app.repositories.triagem_session_repository import (
+from app.domains.recruitment.repositories.triagem_session_repository import (
     TriagemSessionRepository,
 )
 
