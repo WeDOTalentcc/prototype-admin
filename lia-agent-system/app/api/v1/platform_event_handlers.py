@@ -823,6 +823,27 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 auto_advance,
             )
 
+        # A2b (2026-06-10): notifica recrutador via Teams DM ao completar triagem.
+        # Fail-soft: erro de entrega Teams nao deve abortar processamento do evento.
+        try:
+            from app.domains.communication.services.teams_proactivity_engine import (
+                teams_proactivity_engine as _tpe,
+            )
+
+            await _tpe.on_screening_complete(
+                candidate_id=candidate_id,
+                candidate_name=candidate_name or "Candidato",
+                vacancy_id=vacancy_id,
+                job_title=job_title or "",
+                match_score=wsi_final,
+                recommendation=decision,
+                company_id=company_id,
+            )
+        except Exception as _tpe_exc:
+            logger.warning(
+                "[EventHandler] teams on_screening_complete skipped: %s", _tpe_exc
+            )
+
         decision_labels = {
             "approved": "Aprovado na Triagem WSI",
             "review": "Triagem WSI - Revisão Necessária",
@@ -882,6 +903,73 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
         await db.close()
 
 
+async def handle_candidate_applied_teams(event: PlatformEvent) -> None:
+    """A2b (2026-06-10): ao receber candidatura, notifica recrutador via Teams DM.
+
+    CandidateAppliedEvent e lean (candidate_id + vacancy_id apenas). Fazemos
+    lookup DB para obter name + title antes de chamar o engine.
+    Multi-tenancy fail-closed: valida company_id do candidato E da vaga contra
+    event.company_id (do JWT do request original) antes de qualquer fan-out.
+    Fail-soft + LOUD: erro de entrega Teams e logado mas nao aborta o fluxo.
+    """
+    candidate_id = event.payload.get("candidate_id")
+    vacancy_id = event.payload.get("vacancy_id")
+    company_id = event.company_id
+
+    if not candidate_id or not vacancy_id:
+        logger.warning(
+            "[EventHandler] handle_candidate_applied_teams: missing ids (cid=%s vid=%s), skipping",
+            candidate_id,
+            vacancy_id,
+        )
+        return
+
+    db = await _get_db()
+    try:
+        from app.models.candidate import Candidate
+        from app.models.job_vacancy import JobVacancy
+
+        cand = await db.get(Candidate, candidate_id)
+        vac = await db.get(JobVacancy, vacancy_id)
+
+        # Multi-tenancy: ambos devem pertencer ao tenant do evento.
+        if not cand or str(cand.company_id) != company_id:
+            logger.warning(
+                "[EventHandler] handle_candidate_applied_teams: candidate tenant mismatch"
+                " (expected company=%s), skipping",
+                company_id,
+            )
+            return
+        if not vac or str(vac.company_id) != company_id:
+            logger.warning(
+                "[EventHandler] handle_candidate_applied_teams: vacancy tenant mismatch"
+                " (expected company=%s), skipping",
+                company_id,
+            )
+            return
+
+        from app.domains.communication.services.teams_proactivity_engine import (
+            teams_proactivity_engine,
+        )
+
+        await teams_proactivity_engine.on_candidate_applied(
+            candidate_id=candidate_id,
+            candidate_name=cand.name or "Candidato",
+            vacancy_id=vacancy_id,
+            vacancy_title=vac.title or "Vaga",
+            company_id=company_id,
+        )
+        logger.info(
+            "[EventHandler] handle_candidate_applied_teams OK candidate=%s vacancy=%s",
+            candidate_id,
+            vacancy_id,
+        )
+    except Exception as exc:
+        logger.warning("[EventHandler] handle_candidate_applied_teams error: %s", exc)
+    finally:
+        await db.close()
+
+
 def register_all_handlers() -> None:
     """
     Registra todos os event handlers para eventos inter-API.
@@ -895,6 +983,7 @@ def register_all_handlers() -> None:
     register_event_handler("funil.candidate.moved", handle_candidate_moved)
     register_event_handler("onboarding.company.configured", handle_company_configured)
     register_event_handler("screening.wsi.completed", handle_screening_completed_event)
+    register_event_handler("candidate_applied", handle_candidate_applied_teams)  # A2b
     logger.info(
         "[PlatformEvents] All event handlers registered: %s",
         [
