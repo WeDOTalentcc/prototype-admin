@@ -425,7 +425,26 @@ class WeeklyDigestService:
         recruiter_id: str,
         recruiter_name: str,
         db: AsyncSession,
+        company_id: str | None = None,  # B2: digest_enabled gate
     ) -> dict[str, Any]:
+        # B2: respect per-company digest_enabled toggle (fail-open: True when not set)
+        if company_id:
+            from app.shared.policy_helper import get_company_policy
+            try:
+                policy = await get_company_policy(company_id, db)
+                comm_rules = (policy or {}).get("communication_rules", {})
+                if not comm_rules.get("digest_enabled", True):
+                    logger.info(
+                        "[WeeklyDigest] digest_enabled=False for company=%s, skipping delivery",
+                        company_id,
+                    )
+                    return {
+                        "skipped": True,
+                        "reason": "digest_disabled_by_company",
+                        "company_id": company_id,
+                    }
+            except Exception as _exc:
+                logger.warning("[WeeklyDigest] digest_enabled check failed (fail-open): %s", _exc)
         digest = await self.generate_digest(recruiter_id, recruiter_name, db)
         delivery = await self.deliver_digest(digest, recruiter_id, recruiter_name, db)
 

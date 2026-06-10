@@ -93,7 +93,7 @@ company_id: str = Depends(require_company_id)):
     else:
         raise HTTPException(status_code=404, detail="Recruiter not found")
 
-    result = await svc.generate_and_deliver(recruiter_id, name, db)
+    result = await svc.generate_and_deliver(recruiter_id, name, db, company_id=company_id)
     return result
 
 

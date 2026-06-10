@@ -42,6 +42,8 @@ COMMUNICATION_RULES_DEFAULTS = {
     "rejection_feedback_deadline_hours": 48,
     "preferred_channel": "whatsapp",
     "lia_tone": "professional",
+    "briefing_frequency": "daily",   # B1 canonical — lido por briefing_dispatch.py
+    "digest_enabled": True,           # B2 opt-in digest — gated em WeeklyDigestService
 }
 
 SCREENING_RULES_DEFAULTS = {

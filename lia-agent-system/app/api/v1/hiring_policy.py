@@ -80,7 +80,7 @@ def _blocks_completed(policy) -> dict[str, bool]:
     block_questions = {
         "pipeline_rules": {"min_interviews_before_offer", "manager_approval_for_offer", "max_days_in_stage", "pipeline_template"},
         "scheduling_rules": {"allowed_days", "allowed_hours", "default_duration_minutes", "self_scheduling_enabled"},
-        "communication_rules": {"auto_rejection_feedback", "rejection_feedback_deadline_hours", "preferred_channel", "lia_tone"},
+        "communication_rules": {"auto_rejection_feedback", "rejection_feedback_deadline_hours", "preferred_channel", "lia_tone", "briefing_frequency", "digest_enabled"},
         "screening_rules": {"salary_expectation_filter", "experience_policy", "default_screening_questions"},
         "automation_rules": {"auto_screening", "auto_scheduling", "auto_stage_advance", "autonomy_level"},
     }

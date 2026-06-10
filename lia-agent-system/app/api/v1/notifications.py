@@ -673,28 +673,36 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/proactive/history", response_model=None)
 async def get_proactive_alert_history(
-    user_id: str = "default_user", 
+    limit: int = Query(default=50, le=200),
+    db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
-    Get history of proactive alerts sent to a user.
-
-    This shows which alerts were triggered and when to help
-    understand notification patterns.
+    Get history of proactive actions/alerts for this company.
+    B3 — reads from proactive_actions table (persistent, survives restart).
     """
     try:
-        from app.domains.automation.services.proactive_alert_service import proactive_alert_service
+        from lia_models.background_jobs import ProactiveAction
+        from sqlalchemy import select, desc, cast, String as SAString
 
-        history = await proactive_alert_service.get_alert_history(user_id)
-
+        stmt = (
+            select(ProactiveAction)
+            .where(cast(ProactiveAction.company_id, SAString) == str(company_id))
+            .order_by(desc(ProactiveAction.created_at))
+            .limit(limit)
+        )
+        result = await db.execute(stmt)
+        actions = result.scalars().all()
         return {
             "success": True,
-            "data": history
+            "data": [a.to_dict() for a in actions],
+            "count": len(actions),
+            "source": "db",
         }
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting alert history: {e}")
+        logger.error(f"Error getting proactive alert history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

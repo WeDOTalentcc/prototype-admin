@@ -28,6 +28,8 @@ class CommunicationRulesSchema(BaseModel):
     rejection_feedback_deadline_hours: int = Field(default=48, ge=1, le=720)
     preferred_channel: str = Field(default="whatsapp")
     lia_tone: str = Field(default="professional")
+    briefing_frequency: str = Field(default="daily")   # B1 (daily/twice_daily/weekly/monthly)
+    digest_enabled: bool = Field(default=True)            # B2 opt-in digest (default on)
 
 
 class ScreeningRulesSchema(BaseModel):
