@@ -466,6 +466,7 @@ company_id: str = Depends(require_company_id)):
         if request.job_id:
             vacancy_candidate = await vc_repo.get_for_candidate_and_job(
                 candidate_id=candidate_id, job_vacancy_id=request.job_id,
+                company_id=company_id,
             )
         if vacancy_candidate:
             current_stage = vacancy_candidate.stage

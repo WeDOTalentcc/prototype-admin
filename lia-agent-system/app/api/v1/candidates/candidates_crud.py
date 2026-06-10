@@ -754,6 +754,7 @@ async def update_candidate_stage(
         vacancy_candidate = await vc_repo.get_for_candidate_and_job(
             candidate_id=candidate_id,
             job_vacancy_id=str(stage_data.job_vacancy_id) if stage_data.job_vacancy_id else None,
+            company_id=company_id,
         )
 
         if not vacancy_candidate:

@@ -245,3 +245,146 @@ async def test_vc_get_most_recent_for_candidate_with_company_filters() -> None:
     assert "company_id" in where_clause, (
         f"company_id NOT in WHERE: {where_clause}"
     )
+
+
+# ── Empty-string bypass regression (ADR-001 multi-tenancy fail-closed) ───────
+# RED tests — must fail until fix applied. These pin the vulnerability where
+#  silently skips the tenant filter for empty-string company_id.
+
+
+@pytest.mark.asyncio
+async def test_vc_get_most_recent_for_candidate_empty_string_raises() -> None:
+    """get_most_recent_for_candidate with company_id="" MUST raise, not cross-tenant query.
+
+    Vulnerability:  skips filter for falsy values. company_id
+    is the ONLY tenant guard here (no vacancy_id in query). Should be fail-closed.
+    """
+    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+        VacancyCandidateRepository,
+    )
+
+    session = _make_async_session_returning([])
+    repo = VacancyCandidateRepository(session)
+
+    with pytest.raises(ValueError, match="company_id"):
+        await repo.get_most_recent_for_candidate(CANDIDATE_ID, company_id="")
+
+
+@pytest.mark.asyncio
+async def test_vc_get_most_recent_for_candidate_none_raises() -> None:
+    """get_most_recent_for_candidate with company_id=None MUST raise.
+
+    No company_id = no tenant scope = cross-tenant read. Fail-closed.
+    """
+    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+        VacancyCandidateRepository,
+    )
+
+    session = _make_async_session_returning([])
+    repo = VacancyCandidateRepository(session)
+
+    with pytest.raises((ValueError, TypeError), match="company_id"):
+        await repo.get_most_recent_for_candidate(CANDIDATE_ID, company_id=None)
+
+
+@pytest.mark.asyncio
+async def test_vc_get_for_candidate_and_job_empty_string_raises() -> None:
+    """get_for_candidate_and_job with company_id="" MUST raise (cascades to get_most_recent)."""
+    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+        VacancyCandidateRepository,
+    )
+
+    session = _make_async_session_returning([])
+    repo = VacancyCandidateRepository(session)
+
+    with pytest.raises(ValueError, match="company_id"):
+        await repo.get_for_candidate_and_job(
+            str(CANDIDATE_ID), job_vacancy_id=None, company_id=""
+        )
+
+
+@pytest.mark.asyncio
+async def test_vc_get_by_vacancy_and_candidate_empty_string_applies_filter() -> None:
+    """get_by_vacancy_and_candidate(company_id=) MUST apply company_id filter.
+
+     is not None — the filter should be applied (returns 0 rows, not cross-tenant).
+     wrongly skips it;  is correct.
+    """
+    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+        VacancyCandidateRepository,
+    )
+
+    session = _make_async_session_returning([])
+    repo = VacancyCandidateRepository(session)
+    await repo.get_by_vacancy_and_candidate(
+        VACANCY_ID, CANDIDATE_ID, company_id=""
+    )
+
+    session.execute.assert_awaited_once()
+    stmt = session.execute.await_args.args[0]
+    where_clause = _where_clause(stmt)
+    assert "company_id" in where_clause, (
+        f"Empty-string company_id bypassed filter (cross-tenant!): {where_clause}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_vc_list_awaiting_screening_empty_string_applies_filter() -> None:
+    """list_awaiting_screening_for_vacancy(company_id=) MUST apply filter.
+
+    Same fix as get_by_vacancy_and_candidate: .
+    """
+    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+        VacancyCandidateRepository,
+    )
+
+    session = _make_async_session_returning([])
+    repo = VacancyCandidateRepository(session)
+    await repo.list_awaiting_screening_for_vacancy(
+        str(VACANCY_ID), company_id=""
+    )
+
+    session.execute.assert_awaited_once()
+    stmt = session.execute.await_args.args[0]
+    where_clause = _where_clause(stmt)
+    assert "company_id" in where_clause, (
+        f"Empty-string company_id bypassed filter (cross-tenant!): {where_clause}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_candidate_repo_get_by_id_empty_string_applies_filter() -> None:
+    """CandidateRepository.get_by_id(company_id=) MUST apply company_id filter."""
+    from app.domains.candidates.repositories.candidate_repository import (
+        CandidateRepository,
+    )
+
+    session = _make_async_session_returning([])
+    repo = CandidateRepository(session)
+    await repo.get_by_id(CANDIDATE_ID, company_id="")
+
+    session.execute.assert_awaited_once()
+    stmt = session.execute.await_args.args[0]
+    where_clause = _where_clause(stmt)
+    assert "company_id" in where_clause, (
+        f"Empty-string company_id bypassed filter (cross-tenant!): {where_clause}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_favorites_repo_get_empty_string_applies_filter() -> None:
+    """CandidateFavoritesRepository.get(company_id=) MUST apply company_id filter."""
+    from app.domains.candidates.repositories.candidate_favorites_repository import (
+        CandidateFavoritesRepository,
+    )
+
+    session = _make_async_session_returning([])
+    repo = CandidateFavoritesRepository(session)
+    await repo.get(candidate_id="cand-1", user_id="user-1", company_id="")
+
+    session.execute.assert_awaited_once()
+    stmt = session.execute.await_args.args[0]
+    where_clause = _where_clause(stmt)
+    assert "company_id" in where_clause, (
+        f"Empty-string company_id bypassed filter (cross-tenant!): {where_clause}"
+    )

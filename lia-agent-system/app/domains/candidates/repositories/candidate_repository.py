@@ -39,7 +39,7 @@ class CandidateRepository:
         # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
         # é appended conditionally below quando company_id passado.
         query = select(Candidate).where(Candidate.id == candidate_id)
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
@@ -70,7 +70,7 @@ class CandidateRepository:
         # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
         # é appended conditionally below quando company_id passado.
         query = select(Candidate).where(Candidate.id.in_(candidate_ids))
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         result = await self.db.execute(query)
         return list(result.scalars().all())
@@ -140,7 +140,7 @@ class CandidateRepository:
                 Candidate._email_raw == email,  # transition: pre-migration rows with plaintext
             )
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
@@ -255,7 +255,7 @@ class CandidateRepository:
         # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
         # é appended conditionally below quando company_id passado.
         query = select(func.count(Candidate.id)).where(Candidate.is_active)
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
         result = await self.db.execute(query)
@@ -279,7 +279,7 @@ class CandidateRepository:
         # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
         # é appended conditionally below quando company_id passado.
         query = select(Candidate).where(Candidate.is_active)
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
 
@@ -316,7 +316,7 @@ class CandidateRepository:
         # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
         # é appended conditionally below quando company_id passado.
         query = select(Candidate).where(Candidate.is_active == filters.is_active)
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
 
         # LGPD Art. 18 - excluir candidatos com consent revogado para AI/automated
@@ -459,7 +459,7 @@ class CandidateRepository:
             )
             .limit(limit)
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         result = await self.db.execute(query)
         return list(result.scalars().all())
@@ -502,7 +502,7 @@ class CandidateRepository:
             )
             .where(Candidate.id == candidate_id)
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()

@@ -45,13 +45,14 @@ class VacancyCandidateRepository:
         except (ValueError, TypeError):
             return None
 
-        # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id == company_id
-        # é appended conditionally below quando company_id passado.
+        # TENANT-EXEMPT: dynamic builder — genuinely optional (e.g. candidate
+        # comparison service). `is not None` prevents empty-string bypass while
+        # preserving None=absent semantic.
         query = select(VacancyCandidate).where(
             VacancyCandidate.vacancy_id == vacancy_uuid,
             VacancyCandidate.candidate_id == candidate_uuid,
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(VacancyCandidate.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
@@ -59,26 +60,25 @@ class VacancyCandidateRepository:
     async def get_most_recent_for_candidate(
         self,
         candidate_id: str | UUID,
-        company_id: str | None = None,
+        company_id: str,
     ) -> VacancyCandidate | None:
         """Get most recent VacancyCandidate for candidate.
 
-        Multi-tenancy defense-in-depth via company_id filter (REGRA ZERO + B.1).
+        Multi-tenancy: company_id is the ONLY tenant guard (no vacancy_id in
+        query). Fail-closed via _require_company_id — raises if absent/empty.
         """
-        # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id == company_id
-        # é appended conditionally below quando company_id passado.
+        cid = self._require_company_id(company_id)
         query = (
             select(VacancyCandidate)
             .where(
                 VacancyCandidate.candidate_id == (
                     uuid.UUID(str(candidate_id)) if isinstance(candidate_id, str) else candidate_id
-                )
+                ),
+                VacancyCandidate.company_id == cid,
             )
             .order_by(VacancyCandidate.updated_at.desc())
             .limit(1)
         )
-        if company_id:
-            query = query.where(VacancyCandidate.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
@@ -86,14 +86,16 @@ class VacancyCandidateRepository:
         self,
         candidate_id: str,
         job_vacancy_id: str | None,
-        company_id: str | None = None,
+        company_id: str,
     ) -> VacancyCandidate | None:
         """
         Find VacancyCandidate by candidate + optional job.
         Falls back to most-recent if job_vacancy_id is None or invalid UUID.
 
-        Multi-tenancy defense-in-depth via company_id filter (REGRA ZERO + B.1).
+        Multi-tenancy: company_id required (fail-closed). Cascades to
+        get_most_recent_for_candidate which also enforces fail-closed.
         """
+        self._require_company_id(company_id)
         if job_vacancy_id:
             try:
                 vacancy_uuid = uuid.UUID(str(job_vacancy_id))
@@ -174,8 +176,8 @@ class VacancyCandidateRepository:
         """
         from sqlalchemy import and_
 
-        # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id == company_id
-        # é appended conditionally below quando company_id passado.
+        # TENANT-EXEMPT: dynamic builder — genuinely optional. `is not None`
+        # prevents empty-string bypass while preserving None=absent semantic.
         query = (
             select(VacancyCandidate)
             .where(
@@ -190,7 +192,7 @@ class VacancyCandidateRepository:
             )
             .limit(limit)
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(VacancyCandidate.company_id == company_id)
         result = await self.db.execute(query)
         return list(result.scalars().all())
