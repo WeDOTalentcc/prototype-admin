@@ -122,3 +122,27 @@ class TestNormalizeRejectionSubstatus:
     def test_empty_is_safe(self):
         assert normalize_rejection_substatus("") == ""
         assert normalize_rejection_substatus(None) is None
+
+
+class TestPredictNonRejectionCanonical:
+    """Predições de sub-status para transições NÃO-rejeição também devem ser canônicas."""
+
+    NON_REJECTION_STAGES = [
+        "screening", "long_list", "short_list", "interview_hr", "interview_technical",
+        "interview_manager", "interview_manager2", "interview_final", "references",
+        "offer", "hired", "offer_declined", "standby",
+    ]
+
+    def test_non_rejection_predictions_are_canonical(self):
+        """Fix: em SubStatusPredictor._predict_non_rejection, o default de cada etapa
+        deve ser um código de CANONICAL_SUB_STATUSES[<etapa>]
+        (ex: standby -> 'future_talent', não 'temporary_hold').
+        """
+        for stage in self.NON_REJECTION_STAGES:
+            res = SubStatusPredictor.predict({}, from_stage="", to_stage=stage)
+            code = res["predicted_substatus"]
+            canonical = {i["name"] for i in CANONICAL_SUB_STATUSES.get(stage, [])}
+            assert code in canonical, (
+                f"Predição não-canônica '{code}' para to_stage='{stage}'. "
+                f"Use um código de CANONICAL_SUB_STATUSES['{stage}']."
+            )

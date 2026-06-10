@@ -212,7 +212,7 @@ class SubStatusPredictor:
             'offer': 'preparing_offer',
             'hired': 'onboarding_scheduled',
             'offer_declined': 'accepted_other_offer',
-            'standby': 'temporary_hold'
+            'standby': 'future_talent'
         }
         
         default = stage_default_substatus.get(to_stage, 'in_progress')
