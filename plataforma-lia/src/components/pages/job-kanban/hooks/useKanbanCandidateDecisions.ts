@@ -288,17 +288,33 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
             return newData
           })
 
-          // fire-and-forget: welcome email ao contratado
-          fetch('/api/backend-proxy/automation/handle-trigger/candidate-hired', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              candidate_id: candidate.id,
-              vacancy_id: job?.id?.toString() ?? null,
-              candidate_name: candidate.name,
-              candidate_email: candidate.email ?? null,
+          // Side-effects: email boas-vindas + ATS sync + audit trail
+          // Não bloqueia o fluxo principal (contratação já confirmada), mas avisa se falhar
+          try {
+            const sideEffectResp = await fetch('/api/backend-proxy/automation/handle-trigger/candidate-hired', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                candidate_id: candidate.id,
+                vacancy_id: job?.id?.toString() ?? null,
+                candidate_name: candidate.name,
+                candidate_email: candidate.email ?? null,
+              }),
             })
-          }).catch(() => { /* fire-and-forget */ })
+            if (!sideEffectResp.ok) {
+              console.error('[candidate-hired] side-effects handler failed:', sideEffectResp.status)
+              toast.warning('Contratação registrada', {
+                description: 'Email de boas-vindas pode não ter sido enviado. Verifique com o candidato.',
+                duration: 6000,
+              })
+            }
+          } catch (networkErr) {
+            console.error('[candidate-hired] side-effects network error:', networkErr)
+            toast.warning('Contratação registrada', {
+              description: 'Email de boas-vindas pode não ter sido enviado. Verifique com o candidato.',
+              duration: 6000,
+            })
+          }
 
           toast.success('Candidato contratado! 🎉', {
             description: `${candidate.name} foi movido para Contratados.`,
