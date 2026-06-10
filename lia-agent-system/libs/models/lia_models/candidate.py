@@ -123,10 +123,10 @@ class Candidate(EncryptedFieldMixin, Base):
     #   "_email_raw" → hybrid_property "email"; "_cpf_raw" → hybrid_property "cpf"
     _pii_encrypt_fields = [
         ("_email_raw", "_email_encrypted", "email_hash"),
-        ("_cpf_raw",   "_cpf_encrypted",   None),
+        ("_cpf_raw",   "_cpf_encrypted",   "cpf_hash"),
         # UC-P1-15: name and phone encrypted at rest (migration 111)
         ("_name_raw",  "_name_encrypted",  None),
-        ("_phone_raw", "_phone_encrypted", None),
+        ("_phone_raw", "_phone_encrypted", "phone_hash"),
     ]
 
     # Primary key
@@ -157,6 +157,8 @@ class Candidate(EncryptedFieldMixin, Base):
     _phone_raw = Column("phone", String(50), nullable=True)
     # PII-encrypted phone (added by migration 111)
     _phone_encrypted = Column("phone_encrypted", LargeBinary, nullable=True)
+    # phone_hash: SHA-256 (digits-only, BR-normalized) for indexed lookup (migration 259)
+    phone_hash = Column(String(64), nullable=True, index=True)
     mobile_phone = Column(String(50), nullable=True)
     secondary_phone = Column(String(50), nullable=True)
     linkedin_url = Column(String(500), nullable=True)
@@ -187,6 +189,8 @@ class Candidate(EncryptedFieldMixin, Base):
     _cpf_raw = Column("cpf", String(14), nullable=True)
     # PII-encrypted CPF (added by migration 060)
     _cpf_encrypted = Column("cpf_encrypted", LargeBinary, nullable=True)
+    # cpf_hash: SHA-256 (digits-only) for indexed lookup (migration 259, chat entity-resolution)
+    cpf_hash = Column(String(64), nullable=True, index=True)
     
     # Professional Profile
     current_title = Column(String(255), nullable=True)
@@ -308,6 +312,8 @@ class Candidate(EncryptedFieldMixin, Base):
     
     # Work History (JSON snapshot for fast access - denormalized from candidate_experiences)
     work_history = Column(JSON, default=[])
+    # Education snapshot (denormalized from candidate_education; populated by PUT /candidates/{id}/education)
+    education_snapshot = Column(JSON, nullable=True)
     
     # Additional Information
     tags = Column(ARRAY(String), default=list)

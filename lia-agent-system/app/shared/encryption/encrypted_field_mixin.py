@@ -52,6 +52,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import os
+import re
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -136,6 +137,46 @@ def _sha256_hash(value: str | None) -> str | None:
     return hashlib.sha256(value.strip().lower().encode("utf-8")).hexdigest()
 
 
+def _normalize_cpf_digits(value: str | None) -> str:
+    """CPF canonical form for hashing: digits only ('123.456.789-00' -> '12345678900')."""
+    return re.sub(r"\D", "", value or "")
+
+
+def _normalize_phone_digits(value: str | None) -> str:
+    """Phone canonical form for hashing: digits only, strip BR country code (55) and
+    leading zeros. Best-effort: '+55 (11) 99999-9999' / '11999999999' -> '11999999999'.
+    NOTE: hash exact-match is fragile for phones (DDD/9-digit/country variance); CPF
+    and email are deterministic. Documented limitation (ADR-LGPD-002 resolve-then-strip)."""
+    d = re.sub(r"\D", "", value or "")
+    if len(d) > 11 and d.startswith("55"):
+        d = d[2:]
+    return d.lstrip("0")
+
+
+# Per-hash-attr normalizer. email_hash uses the default strip().lower() (_sha256_hash).
+_HASH_NORMALIZERS = {
+    "cpf_hash": _normalize_cpf_digits,
+    "phone_hash": _normalize_phone_digits,
+}
+
+
+def _sha256_hash_for_attr(hash_attr: str | None, value: str | None) -> str | None:
+    """SHA-256 hash for a specific hash column, applying per-field normalization.
+
+    cpf_hash/phone_hash normalize to a digits-only canonical form BEFORE hashing so a
+    formatted value typed by the recruiter ('123.456.789-00') matches the stored hash.
+    Other hash columns fall back to _sha256_hash (strip+lower) — preserves email_hash."""
+    if value is None:
+        return None
+    norm = _HASH_NORMALIZERS.get(hash_attr or "")
+    if norm is not None:
+        canon = norm(value)
+        if not canon:
+            return None
+        return hashlib.sha256(canon.encode("utf-8")).hexdigest()
+    return _sha256_hash(value)
+
+
 class EncryptedField:
     """
     Python descriptor that transparently encrypts/decrypts a SQLAlchemy column.
@@ -168,7 +209,7 @@ class EncryptedField:
     def __set__(self, obj: Any, value: str | None) -> None:
         setattr(obj, self.storage_attr, _encrypt(value))
         if self.hash_attr:
-            setattr(obj, self.hash_attr, _sha256_hash(value))
+            setattr(obj, self.hash_attr, _sha256_hash_for_attr(self.hash_attr, value))
 
 
 class EncryptedFieldMixin:
@@ -232,7 +273,7 @@ class EncryptedFieldMixin:
                     # Set encrypted backing column and hash
                     setattr(self, enc, _encrypt(value))
                     if h:
-                        setattr(self, h, _sha256_hash(value))
+                        setattr(self, h, _sha256_hash_for_attr(h, value))
                     # Null the raw/plaintext column via the ORM column attribute
                     # (using the underlying column name, not the hybrid property)
                     setattr(self, raw, None)
@@ -249,3 +290,13 @@ class EncryptedFieldMixin:
     def email_hash_for(cls, email: str | None) -> str | None:
         """Return the SHA-256 hash of a plaintext email for indexed lookup."""
         return _sha256_hash(email)
+
+    @classmethod
+    def cpf_hash_for(cls, cpf: str | None) -> str | None:
+        """SHA-256 hash of a CPF (digits-only normalized) for indexed lookup."""
+        return _sha256_hash_for_attr("cpf_hash", cpf)
+
+    @classmethod
+    def phone_hash_for(cls, phone: str | None) -> str | None:
+        """SHA-256 hash of a phone (digits-only, BR-normalized) for indexed lookup."""
+        return _sha256_hash_for_attr("phone_hash", phone)
