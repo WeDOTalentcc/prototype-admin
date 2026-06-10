@@ -304,17 +304,30 @@ async def register_hire(
 
                 vc.previous_status = vc.stage
                 vc.status = "hired"
-                vc.stage = "hired"
+                vc.stage = "Contratado"
                 # Task #1306: also persist the structural stage link so the SLA
                 # detector can join by id instead of fragile name matching.
                 from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
                 vc.recruitment_stage_id = await resolve_recruitment_stage_id(
-                    db, str(vc.company_id), "hired"
+                    db, str(vc.company_id), "Contratado"
                 )
                 if notes:
                     vc.notes = notes
 
                 await db.commit()
+
+                # B2: setar Candidate.is_hired=True (LGPD guard + UI chip)
+                try:
+                    from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+                    cand_repo = CandidateRepository(db)
+                    cand = await cand_repo.get_by_id_str(str(candidate_id), company_id=str(company_id))
+                    if cand:
+                        cand.is_hired = True
+                        cand.hired_at = datetime.now(UTC)
+                        await db.commit()
+                except Exception as _cand_exc:
+                    logger.warning("register_hire: falha ao setar is_hired no Candidate: %s", _cand_exc)
+
                 _db_write_done = True
 
         except Exception as _exc:

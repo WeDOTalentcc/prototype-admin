@@ -33,7 +33,7 @@ from .._shared import (
     ensure_company_access,
     get_activity_service,
     get_ats_sync_service,
-    get_email_service,
+    get_mailgun_email_service,
     get_whatsapp_service,
     log_automation_execution,
     validate_multi_tenancy,
@@ -125,7 +125,7 @@ company_id: str = Depends(require_company_id)):
         if candidate_email:
             try:
                 from app.templates.communication_templates import EmailTemplates
-                email_service = get_email_service()
+                email_service = get_mailgun_email_service()
 
                 email_content = EmailTemplates.follow_up(
                     candidate_name=candidate_name,
@@ -429,7 +429,7 @@ company_id: str = Depends(require_company_id)):
             # First no-show: Send polite reschedule offer
             if candidate_email:
                 try:
-                    email_service = get_email_service()
+                    email_service = get_mailgun_email_service()
                     email_content = EmailTemplates.no_show_first(
                         candidate_name=candidate_name,
                         job_title=job_title,
@@ -484,7 +484,7 @@ company_id: str = Depends(require_company_id)):
             # Multiple no-shows: Send final notice
             if candidate_email:
                 try:
-                    email_service = get_email_service()
+                    email_service = get_mailgun_email_service()
                     email_content = EmailTemplates.no_show_final(
                         candidate_name=candidate_name,
                         job_title=job_title,
@@ -748,7 +748,7 @@ company_id: str = Depends(require_company_id)):
         ats_synced = False
 
         try:
-            email_service = get_email_service()
+            email_service = get_mailgun_email_service()
             from app.templates.communication_templates import EmailTemplates
 
             template = EmailTemplates.offer_sent(
@@ -916,7 +916,7 @@ company_id: str = Depends(require_company_id)):
         ats_synced = False
 
         try:
-            email_service = get_email_service()
+            email_service = get_mailgun_email_service()
             from app.templates.communication_templates import EmailTemplates
 
             template = EmailTemplates.candidate_hired_welcome(
@@ -965,6 +965,26 @@ company_id: str = Depends(require_company_id)):
                 stage_updated = True
                 actions_taken.append("stage_updated")
                 logger.info("✅ [CANDIDATE_HIRED] Stage updated to Contratado")
+
+                # B2: setar Candidate.is_hired=True (LGPD guard + UI chip)
+                try:
+                    from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+                    cand_repo = CandidateRepository(db)
+                    cand = await cand_repo.get_by_id_str(
+                        str(request.candidate_id),
+                        company_id=str(request.company_id),
+                    )
+                    if cand:
+                        cand.is_hired = True
+                        cand.hired_at = datetime.utcnow()
+                        if request.job_title:
+                            cand.hired_job_title = request.job_title
+                        await db.commit()
+                        actions_taken.append("candidate_is_hired_set")
+                        logger.info("✅ [CANDIDATE_HIRED] Candidate.is_hired=True persisted")
+                except Exception as _cand_exc:
+                    logger.error(f"❌ [CANDIDATE_HIRED] Failed to set is_hired: {_cand_exc}")
+
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to update stage: {e}")
 
@@ -1130,7 +1150,7 @@ company_id: str = Depends(require_company_id)):
 
         if request.send_feedback:
             try:
-                email_service = get_email_service()
+                email_service = get_mailgun_email_service()
                 from app.templates.communication_templates import EmailTemplates
 
                 template = EmailTemplates.candidate_rejected(

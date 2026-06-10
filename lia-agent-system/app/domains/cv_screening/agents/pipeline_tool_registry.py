@@ -711,6 +711,13 @@ async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
                 "data": {},
                 "message": "Erro ao persistir contratação — tente novamente.",
             }
+
+        # B2: setar Candidate.is_hired=True (campo para LGPD guard + UI chip)
+        if candidate_obj:
+            candidate_obj.is_hired = True
+            candidate_obj.hired_at = datetime.utcnow()
+            await db.commit()
+
         return {
             "success": True,
             "data": {
