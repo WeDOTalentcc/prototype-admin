@@ -256,12 +256,29 @@ class AutomationScheduler:
                 replace_existing=True,
             )
 
+            self.scheduler.add_job(
+                self.run_teams_proactive_checks,
+                IntervalTrigger(hours=4),
+                id="teams_proactive_checks",
+                name="A2 — Teams proactive cards (stalled pipelines + deadlines)",
+                replace_existing=True,
+            )
+
             self.scheduler.start()
             # Daily digest — 08:00 BRT, Mon–Fri
             self.scheduler.add_job(
                 self._run_daily_digest,
                 CronTrigger(day_of_week="mon-fri", hour=8, minute=0),
                 id="daily_platform_digest",
+                replace_existing=True,
+            )
+
+            # A2 — Teams daily digest (DM do bot), 08:30 BRT Mon-Fri
+            self.scheduler.add_job(
+                self.run_teams_daily_digest,
+                CronTrigger(day_of_week="mon-fri", hour=8, minute=30),
+                id="teams_daily_digest",
+                name="A2 — Teams daily digest per recruiter",
                 replace_existing=True,
             )
 
@@ -916,6 +933,43 @@ Equipe de Recrutamento
                         logger.error(f"[Scheduler] proactive_alerts company={company_id} falhou: {e}")
         except Exception as e:
             logger.error(f"[Scheduler] Error in proactive_alerts: {e}")
+
+    async def run_teams_proactive_checks(self):
+        """A2 (2026-06-09): aciona TeamsProactivityEngine periodicamente.
+
+        Antes so via REST manual (teams.py) — nenhum scheduler acionava, entao os
+        cards proativos do Teams (DM do bot por recrutador) nunca eram postados.
+        company_id=None => processa todas as empresas. Posta pipelines parados +
+        deadlines proximos. Complementa o canal compartilhado (webhook via E4).
+        """
+        logger.info("[Scheduler] Running teams_proactive_checks job")
+        try:
+            from app.domains.communication.services.teams_proactivity_engine import (
+                teams_proactivity_engine,
+            )
+
+            stalled = await teams_proactivity_engine.check_stalled_pipelines()
+            deadlines = await teams_proactivity_engine.check_approaching_deadlines()
+            logger.info(
+                "[Scheduler] teams_proactive_checks: stalled=%s deadlines=%s",
+                stalled,
+                deadlines,
+            )
+        except Exception as e:
+            logger.error(f"[Scheduler] Error in teams_proactive_checks: {e}")
+
+    async def run_teams_daily_digest(self):
+        """A2 (2026-06-09): digest diario do TeamsProactivityEngine (DM do bot)."""
+        logger.info("[Scheduler] Running teams_daily_digest job")
+        try:
+            from app.domains.communication.services.teams_proactivity_engine import (
+                teams_proactivity_engine,
+            )
+
+            sent = await teams_proactivity_engine.send_daily_digest()
+            logger.info(f"[Scheduler] teams_daily_digest: {sent} enviados")
+        except Exception as e:
+            logger.error(f"[Scheduler] Error in teams_daily_digest: {e}")
 
     async def run_learning_automation(self):
         """Run learning automation: pattern detection and skill promotion for all companies."""
