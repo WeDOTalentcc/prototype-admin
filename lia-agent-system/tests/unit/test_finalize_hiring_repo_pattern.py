@@ -121,8 +121,8 @@ def test_finalize_hiring_no_sql_inline():
     for node in ast.walk(tree):
         if isinstance(node, ast.AsyncFunctionDef) and node.name == "_wrap_finalize_hiring":
             for inner in ast.walk(node):
-                if isinstance(inner, ast.Constant) and isinstance(inner.s, str):
-                    val = inner.s
+                if isinstance(inner, ast.Constant) and isinstance(inner.value, str):
+                    val = inner.value
                     if "UPDATE vacancy_candidates" in val or "SELECT vc.stage" in val:
                         sql_strings_in_func.append(val[:80])
 
@@ -141,7 +141,7 @@ def test_finalize_hiring_no_sql_inline():
     for node in ast.walk(tree):
         if isinstance(node, ast.AsyncFunctionDef) and node.name == "_wrap_finalize_hiring":
             for inner in ast.walk(node):
-                if isinstance(inner, ast.Constant) and inner.s == "hired":
+                if isinstance(inner, ast.Constant) and inner.value == "hired":
                     hired_found = True
                     break
     assert hired_found, "status 'hired' deve estar presente no return dict (VALID_STATUSES fix)"

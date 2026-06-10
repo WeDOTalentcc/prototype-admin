@@ -702,7 +702,15 @@ async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
         # P0.A canonical: hiring transition is CRITICAL write — tenant gate mandatory.
         vc.stage = "Contratado"
         vc.status = "hired"  # fix: "contratado" não estava em VALID_STATUSES
-        await repo.update(vc)
+        try:
+            updated = await repo.update(vc)
+        except Exception as e:
+            logger.error("[pipeline_tools] finalize_hiring: falha ao persistir contratação", exc_info=True)
+            return {
+                "success": False,
+                "data": {},
+                "message": "Erro ao persistir contratação — tente novamente.",
+            }
         return {
             "success": True,
             "data": {
