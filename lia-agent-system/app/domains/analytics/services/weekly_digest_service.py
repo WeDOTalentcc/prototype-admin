@@ -302,7 +302,7 @@ class WeeklyDigestService:
             TeamsDigestFormatter,
         )
 
-        results = {"teams": None, "chat": None, "bell": None}
+        results = {"teams": None, "chat": None, "bell": None, "email": None}
 
         try:
             bell_fmt = BellDigestFormatter()
@@ -384,6 +384,31 @@ class WeeklyDigestService:
         except Exception as exc:
             logger.warning("[WeeklyDigest] Teams delivery failed: %s", exc)
             results["teams"] = {"success": False, "error": str(exc)}
+
+        try:
+            # E6 (2026-06-09): WeeklyDigest tambem por EMAIL (era so bell+chat+teams).
+            from lia_messaging.notification_service import (
+                NotificationChannel,
+                NotificationService,
+            )
+
+            email_data = BellDigestFormatter().format(digest)
+            ns = NotificationService()
+            email_result = await ns.send_multi_channel_notification(
+                user_id=recruiter_id,
+                title=email_data["title"],
+                message=email_data["message"],
+                channels=[NotificationChannel.EMAIL],
+                data={
+                    "digest_type": "weekly",
+                    "action_url": email_data.get("action_url", "/chat"),
+                },
+                db=db,
+            )
+            results["email"] = {"success": True, "details": email_result}
+        except Exception as exc:
+            logger.warning("[WeeklyDigest] Email delivery failed: %s", exc)
+            results["email"] = {"success": False, "error": str(exc)}
 
         logger.info(
             "[WeeklyDigest] Delivered to recruiter=%s bell=%s chat=%s teams=%s",
