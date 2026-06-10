@@ -85,10 +85,14 @@ async def test_get_next_question_sequential_then_none():
     session = _FakeSession()
     await plugin.on_session_initiated(session, db=None)
 
-    q1 = await plugin.get_next_question(session, db=None)
-    q2 = await plugin.get_next_question(session, db=None)
-    q3 = await plugin.get_next_question(session, db=None)
+    # Fase 3: get_next_question returns the RECORDING_NOTICE first (LGPD Art. 9),
+    # then each field prompt in order, then None.
+    q0 = await plugin.get_next_question(session, db=None)  # RECORDING_NOTICE
+    q1 = await plugin.get_next_question(session, db=None)  # field 1
+    q2 = await plugin.get_next_question(session, db=None)  # field 2
+    q3 = await plugin.get_next_question(session, db=None)  # exhausted
 
+    assert q0 is not None and "gravada" in q0  # LGPD recording notice
     assert q1 is not None and "nome completo" in q1
     assert q2 is not None and "e-mail" in q2
     assert q3 is None  # exhausted → core wraps up

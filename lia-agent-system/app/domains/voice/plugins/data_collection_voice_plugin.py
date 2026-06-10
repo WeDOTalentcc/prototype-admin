@@ -126,12 +126,25 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
         self._candidate_turns_at_consent_ask: int | None = None
         self._verbal_consent_granted: bool | None = None
 
+        # Per-tenant AI persona loaded in on_session_initiated from
+        # ai_persona_service. Defaults to canonical platform values until the
+        # session starts and the persona is resolved from the tenant policy.
+        self._ai_name: str = "LIA"
+        self._ai_tone: str = "profissional"
+        # Tenant-aware recording notice. Equals RECORDING_NOTICE (class
+        # constant = platform default) until on_session_initiated runs and
+        # personalises it with the tenant's AI name.
+        self._recording_notice_text: str = self.RECORDING_NOTICE
+
     @property
     def plugin_name(self) -> str:
         return "data_collection"
 
     # Fase 3 (LGPD Art. 9): mandatory recording / data-collection notice spoken
     # as the FIRST utterance of the call, before any field is requested.
+    # PLATFORM DEFAULT used before persona is loaded and as fallback when
+    # persona load fails. Per-tenant calls use _build_recording_notice(ai_name)
+    # which personalises the greeting with the tenant's AI persona name.
     RECORDING_NOTICE: str = (
         "Olá! Esta ligação será gravada para fins de coleta de dados do seu "
         "processo seletivo. As informações que você fornecer serão usadas "
@@ -143,6 +156,10 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
     # Consent-first (LGPD Art. 7): explicit verbal authorization question asked
     # right AFTER the recording notice, BEFORE any field. A verbal "yes" is
     # recorded as valid consent (provenance=voice); a "no" ends the call.
+    # LGPD COMPLIANCE: MUST REMAIN HARDCODED. DO NOT PARAMETERIZE.
+    # "WeDOTalent" is the legal data controller (Art. 7/9). The tenant's
+    # ai_persona name is NOT the controller and must NOT replace it here.
+    # test_voice_wording_persona.py enforces this invariant (no {} placeholders).
     CONSENT_QUESTION: str = (
         "Você autoriza a WeDOTalent a coletar e tratar seus dados pessoais para "
         "o seu processo seletivo, conforme a LGPD? Por favor responda sim ou não."
@@ -198,6 +215,36 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
             self._portal_only_names = [p.name for p in portal_only_fields(script)]
             self._cursor = 0
 
+            # Load ai_persona per-tenant for wording personalization.
+            # Lazy import: ai_persona_service -> HiringPolicyRepository.
+            # Best-effort: persona load failure must NOT break the voice session.
+            try:
+                company_id = getattr(session, "company_id", None)
+                if company_id and db is not None:
+                    from app.domains.persona.services.ai_persona_service import (
+                        get_ai_persona,
+                    )
+                    persona = await get_ai_persona(str(company_id), db)
+                    self._ai_name = persona.get("name") or "LIA"
+                    self._ai_tone = persona.get("tone") or "profissional"
+                    self._recording_notice_text = self._build_recording_notice(
+                        self._ai_name
+                    )
+                    logger.debug(
+                        "[DataCollectionVoicePlugin] persona loaded session=%s "
+                        "ai_name=%r tone=%r",
+                        getattr(session, "session_id", "<unknown>"),
+                        self._ai_name,
+                        self._ai_tone,
+                    )
+            except Exception as _persona_err:
+                logger.warning(
+                    "[DataCollectionVoicePlugin] persona load failed (using "
+                    "defaults) session=%s: %s",
+                    getattr(session, "session_id", "<unknown>"),
+                    _persona_err,
+                )
+
             # Telemetry: annotate session metadata defensively (never break ser.).
             try:
                 current_metadata = getattr(session, "metadata", None)
@@ -249,7 +296,7 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
             # LGPD recording notice is the very first thing said on the call.
             if not self._recording_notice_emitted:
                 self._recording_notice_emitted = True
-                return self.RECORDING_NOTICE
+                return self._recording_notice_text
 
             # ── Consent-first mode: gate ALL field prompts on verbal consent ──
             if self._require_verbal_consent:
@@ -462,8 +509,24 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
 
     # ── Internal helpers ───────────────────────────────────────────────────
 
-    @staticmethod
-    def _format_prompt(prompt: Any) -> str:
+    def _build_recording_notice(self, ai_name: str) -> str:
+        """Build the per-tenant recording notice with the AI persona name.
+
+        LGPD Art. 9: titular must be informed of processing before collection.
+        ai_name is the tenant's AI persona display name (safe to interpolate).
+        It is NOT the legal data controller — that is always WeDOTalent.
+        The informational/legal content is preserved intact.
+        """
+        return (
+            f"Ola! Aqui e {ai_name}. Esta ligacao sera gravada para fins de "
+            "coleta de dados do seu processo seletivo. As informacoes que voce "
+            "fornecer serao usadas exclusivamente para esse fim, conforme a Lei "
+            "Geral de Protecao de Dados. Se voce nao concordar, pode encerrar a "
+            f"ligacao a qualquer momento. {ai_name} vai fazer algumas perguntas "
+            "para completar seu cadastro."
+        )
+
+    def _format_prompt(self, prompt: Any) -> str:
         """
         Build the spoken question for a field prompt.
 
@@ -477,6 +540,12 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
                 f"Preciso confirmar um dado sensível: poderia me informar {label}? "
                 "Vou repetir para você confirmar."
             )
+        tone = getattr(self, "_ai_tone", "profissional")
+        if tone in ("amigavel", "casual"):
+            return f"Pode me contar {label}?"
+        if tone in ("formal", "formal_amigavel"):
+            return f"Poderia, por gentileza, me informar {label}?"
+        # profissional / empatico / unknown -> canonical default (backward-compat)
         return f"Poderia me informar {label}?"
 
     @staticmethod

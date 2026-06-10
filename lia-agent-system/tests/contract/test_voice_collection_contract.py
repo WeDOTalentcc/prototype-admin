@@ -89,17 +89,20 @@ class _FakeCandidate:
         self.email = "m@x.com"
 
 
-def _consent_result(allowed=True, soft_warning=False):
+def _consent_result(allowed=True, soft_warning=False, reason=None):
     r = MagicMock()
     r.allowed = allowed
     r.soft_warning = soft_warning
+    r.reason = reason
     return r
 
 
-def _patch_consent(allowed=True, soft_warning=False):
+def _patch_consent(allowed=True, soft_warning=False, reason=None):
     checker_instance = MagicMock()
     checker_instance.check_candidate_consent = AsyncMock(
-        return_value=_consent_result(allowed=allowed, soft_warning=soft_warning)
+        return_value=_consent_result(
+            allowed=allowed, soft_warning=soft_warning, reason=reason
+        )
     )
     checker_cls = MagicMock(return_value=checker_instance)
     return patch(
@@ -164,7 +167,15 @@ async def test_unsupported_channel_rejected_not_silently_dropped():
 # SENSOR 3 — voice collection is FAIL-CLOSED on consent
 # ===========================================================================
 @pytest.mark.asyncio
-async def test_voice_no_consent_blocks_and_orchestrator_not_instantiated():
+async def test_voice_absent_consent_triggers_consent_first_call():
+    """Absent consent -> consent-FIRST call (not a hard block).
+
+    UPDATED: post-Fase-3 behavior: absent consent (no prior consent, not revoked)
+    triggers a consent-first call where the plugin asks for verbal LGPD
+    authorization before collecting any field. The call IS placed;
+    require_verbal_consent=True is passed to the plugin.
+    Revoked consent is tested separately (blocks completely).
+    """
     from app.domains.communication.services.data_request_voice_service import (
         DataRequestVoiceService,
     )
@@ -173,24 +184,31 @@ async def test_voice_no_consent_blocks_and_orchestrator_not_instantiated():
     cand = _FakeCandidate()
     db = _voice_db(dr, cand)
 
-    fake_orch_cls = MagicMock()  # must NOT be called when consent is denied
+    fake_session = MagicMock()
+    fake_session.status = "initiated"
+    fake_session.session_id = "vs-consent-first"
+    fake_orch = MagicMock()
+    fake_orch.initiate_call = AsyncMock(return_value=fake_session)
+    fake_orch_cls = MagicMock(return_value=fake_orch)
+    fake_plugin_cls = MagicMock()
 
-    # allowed=True + soft_warning=True still means "no firm consent" -> blocked,
-    # mirroring test_voice_consent_and_persist.test_start_collection_blocks_when_no_consent.
-    with _patch_consent(allowed=True, soft_warning=True), patch(
+    # absent = allowed=True, soft_warning=True, reason="absent"
+    with _patch_consent(allowed=True, soft_warning=True, reason="absent"), patch(
         "app.domains.voice.services.voice_screening_orchestrator.VoiceCoreOrchestrator",
         fake_orch_cls,
     ), patch(
         "app.domains.voice.plugins.data_collection_voice_plugin.DataCollectionVoicePlugin",
-        MagicMock(),
+        fake_plugin_cls,
     ):
         result = await DataRequestVoiceService().start_collection(
             db=db, data_request_id=dr.id, candidate_phone="+5511999999999"
         )
 
-    assert result["status"] == "voice_collection_no_consent", result
-    fake_orch_cls.assert_not_called()  # call NOT placed (fail-closed)
-
+    # Absent consent -> consent-first call placed (NOT a hard block).
+    assert result["status"] == "voice_collection_initiated_consent_first", result
+    fake_orch_cls.assert_called_once()
+    _, kwargs = fake_plugin_cls.call_args
+    assert kwargs.get("require_verbal_consent") is True
 
 @pytest.mark.asyncio
 async def test_voice_revoked_consent_blocks_and_orchestrator_not_instantiated():
@@ -204,7 +222,8 @@ async def test_voice_revoked_consent_blocks_and_orchestrator_not_instantiated():
 
     fake_orch_cls = MagicMock()
 
-    with _patch_consent(allowed=False, soft_warning=False), patch(
+    # reason="revoked" is the authoritative signal for hard-block.
+    with _patch_consent(allowed=False, soft_warning=False, reason="revoked"), patch(
         "app.domains.voice.services.voice_screening_orchestrator.VoiceCoreOrchestrator",
         fake_orch_cls,
     ), patch(
@@ -216,7 +235,8 @@ async def test_voice_revoked_consent_blocks_and_orchestrator_not_instantiated():
         )
 
     assert result["status"] == "voice_collection_no_consent", result
-    fake_orch_cls.assert_not_called()
+    assert result.get("note") == "lgpd_consent_revoked_call_not_placed", result
+    fake_orch_cls.assert_not_called()  # call NOT placed (fail-closed)
 
 
 # ===========================================================================
