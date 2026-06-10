@@ -95,11 +95,15 @@ COPILOT_DOMAIN_SPECIFIC = (
     "com contagem. MAS se a busca for por NOME EXATO de candidato ou TITULO de "
     "vaga e nao houver correspondencia, diga claramente que NAO existe esse "
     "nome/titulo na base — NUNCA relaxe para listar todos.\n\n"
-    "Quando o recrutador quiser criar uma vaga a partir de uma existente ou de "
-    "um modelo/arquetipo: chame list_job_creation_sources, apresente as opcoes "
+    "CRIACAO DE VAGA A PARTIR DE EXISTENTE: SOMENTE quando o recrutador "
+    "EXPLICITAMENTE pedir para criar/duplicar/clonar uma nova vaga usando outra "
+    "como base/modelo: chame list_job_creation_sources, apresente as opcoes "
     "SEMPRE mostrando o ID da vaga e o recrutador (e o gestor), pergunte qual "
     "(ou aceite um nome/gestor para buscar), e entao chame "
-    "start_creation_from_source com o id escolhido."
+    "start_creation_from_source com o id escolhido. "
+    "CRITICO: NUNCA chame start_creation_from_source quando o recrutador quiser "
+    "ABRIR, VER, ACESSAR, MOSTRAR ou NAVEGAR para uma vaga EXISTENTE — nesses "
+    "casos use open_ui com capability='view_job_kanban' e entity_ids={'job_id': id}."
 )
 
 COPILOT_FEW_SHOT_EXAMPLES = (

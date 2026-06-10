@@ -205,6 +205,16 @@ capabilities:
     navigate_page: vaga_detalhe   # insights vivem na vaga (métricas pré-computadas)
     navigate_fallback: /jobs
 
+  view_job_kanban:
+    label: "Abrir kanban/pipeline da vaga"
+    description: "Navega para a pagina de detalhes da vaga com candidatos e pipeline. Use SEMPRE que o recrutador quiser ABRIR, VER, ACESSAR ou MOSTRAR uma vaga existente."
+    chat_executable: true
+    entity_required:
+      - type: job
+        param: job_id
+    navigate_page: vaga_detalhe
+    navigate_fallback: /jobs
+
   compare_jobs:
     label: "Comparar vagas"
     chat_executable: false
