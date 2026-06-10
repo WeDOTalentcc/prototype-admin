@@ -50,7 +50,7 @@ Multi-tenancy: ``company_id`` is read from the persisted DataRequest row
 (authoritative, never from a request payload), mirroring the WhatsApp service.
 """
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -65,6 +65,89 @@ from lia_models.data_request import DataRequest
 
 logger = logging.getLogger(__name__)
 
+
+
+# -- Gap A: Monthly voice call budget -------------------------------------------
+# Default limit: 100 voice calls/month per tenant (~$6.50 at $0.065/call).
+# Mirrors token_budget:  key  = f"token_budget:{company_id}:{YYYY-MM-DD}"
+# Voice key format:             f"voice_calls:{company_id}:{YYYY-MM}"
+VOICE_CALLS_MONTHLY_DEFAULT_LIMIT: int = 100
+_VOICE_REDIS_TTL: int = 33 * 24 * 3600  # 33 days -- outlives the longest month
+
+
+def _voice_redis_key(company_id: str) -> str:
+    """Monthly voice-call counter key. Format: ``voice_calls:{company_id}:YYYY-MM``."""
+    ym = datetime.now(UTC).strftime("%Y-%m")
+    return f"voice_calls:{company_id}:{ym}"
+
+
+async def _check_voice_budget(
+    company_id: str,
+    limit: int = VOICE_CALLS_MONTHLY_DEFAULT_LIMIT,
+) -> tuple[bool, int]:
+    """Check monthly voice-call budget for a tenant.
+
+    Returns (allowed, current_count).
+    FAIL-OPEN: Redis unavailable -> returns (True, 0) so Redis downtime does not
+    block all voice calls.
+    """
+    try:
+        import redis.asyncio as _aioredis
+        from lia_config.config import settings as _settings
+        _r = _aioredis.from_url(_settings.REDIS_URL)
+        try:
+            key = _voice_redis_key(company_id)
+            raw = await _r.get(key)
+            current = int(raw) if raw else 0
+            allowed = current < limit
+            if not allowed:
+                logger.warning(
+                    "[VoiceBudget] Budget esgotado: company_id=%s calls=%d limit=%d",
+                    company_id,
+                    current,
+                    limit,
+                )
+            return allowed, current
+        finally:
+            await _r.aclose()
+    except Exception as _exc:
+        logger.warning(
+            "[VoiceBudget] Redis indisponivel em check -- permitindo chamada "
+            "(company_id=%s): %s",
+            company_id,
+            _exc,
+        )
+        return True, 0
+
+
+async def _increment_voice_calls(company_id: str) -> int:
+    """Increment monthly voice-call counter after a successful call.
+
+    Returns new total. Fail-silent if Redis unavailable.
+    """
+    try:
+        import redis.asyncio as _aioredis
+        from lia_config.config import settings as _settings
+        _r = _aioredis.from_url(_settings.REDIS_URL)
+        try:
+            key = _voice_redis_key(company_id)
+            new_total = await _r.incr(key)
+            await _r.expire(key, _VOICE_REDIS_TTL)
+            logger.debug(
+                "[VoiceBudget] Incrementado: company_id=%s -> %d calls este mes",
+                company_id,
+                new_total,
+            )
+            return new_total
+        finally:
+            await _r.aclose()
+    except Exception as _exc:
+        logger.warning(
+            "[VoiceBudget] Redis indisponivel em increment (company_id=%s): %s",
+            company_id,
+            _exc,
+        )
+        return 0
 
 class DataRequestVoiceService:
     """Service for voice-call-based data collection (Fase 1 skeleton)."""
@@ -218,6 +301,29 @@ class DataRequestVoiceService:
         # "absent" → consent-first call; "granted" → today's behavior.
         require_verbal_consent = consent_state == "absent"
 
+        # -- Gap A: Monthly voice call budget gate --------------------------------
+        # Gate BEFORE placing the call. Exceeding budget -> explicit status +
+        # note to route to non-voice channels. Never a fake success.
+        _budget_allowed, _call_count = await _check_voice_budget(company_id)
+        if not _budget_allowed:
+            logger.warning(
+                "Voice collection: BLOCKED -- monthly budget exceeded "
+                "company=%s calls_this_month=%d limit=%d. "
+                "Route to non-voice channels.",
+                company_id,
+                _call_count,
+                VOICE_CALLS_MONTHLY_DEFAULT_LIMIT,
+            )
+            return {
+                "status": "voice_collection_budget_exceeded",
+                "channel": "voice",
+                "fields": voice_fields,
+                "portal_fallback_fields": portal_redirect_fields,
+                "note": "monthly_voice_call_limit_reached",
+                "calls_this_month": _call_count,
+                "limit": VOICE_CALLS_MONTHLY_DEFAULT_LIMIT,
+            }
+
         # Construct the data-collection orchestrator. Mirrors how
         # VoiceScreeningOrchestrator installs WSIVoicePlugin (plugins=[plugin]),
         # but with the collection plugin fed the SAME pending fields the script
@@ -270,6 +376,7 @@ class DataRequestVoiceService:
                 else "voice_collection_initiated"
             )
             data_request.collection_method = "voice"
+            await _increment_voice_calls(company_id)
             await db.commit()
         else:
             # 'fallback' / 'failed' → Twilio unavailable. Explicit, not faked.

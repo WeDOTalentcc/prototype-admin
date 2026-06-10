@@ -173,6 +173,9 @@ async def test_voice_start_collection_builds_script():
     with _consent_granted(), patch(
         "app.domains.voice.services.voice_screening_orchestrator.voice_screening_orchestrator",
         fake_orch,
+    ), patch(
+        "app.domains.communication.services.data_request_voice_service._check_voice_budget",
+        __import__("unittest.mock", fromlist=["AsyncMock"]).AsyncMock(return_value=(True, 0)),
     ):
         result = await DataRequestVoiceService().start_collection(
             db, dr.id, cand.phone
@@ -207,6 +210,9 @@ async def test_voice_start_collection_does_not_fake_completed():
     with _consent_granted(), patch(
         "app.domains.voice.services.voice_screening_orchestrator.voice_screening_orchestrator",
         fake_orch,
+    ), patch(
+        "app.domains.communication.services.data_request_voice_service._check_voice_budget",
+        __import__("unittest.mock", fromlist=["AsyncMock"]).AsyncMock(return_value=(True, 0)),
     ):
         result = await DataRequestVoiceService().start_collection(
             db, dr.id, cand.phone
