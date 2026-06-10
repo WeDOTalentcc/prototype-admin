@@ -127,6 +127,16 @@ COPILOT_DOMAIN_SPECIFIC = (
     "  visao global/pipeline/recrutar -> ir_para_visao_global\n"
     "  visao global aba candidatos/funil por etapa -> ir_para_visao_global_candidatos\n"
     "  visao global aba vagas/ciclo de vida vagas -> ir_para_visao_global_vagas\n"
+    "CONFIGURACOES — seções especificas (deep-link direto na aba certa):\n"
+    "  config empresa/perfil/cultura/beneficios -> ir_para_config_empresa\n"
+    "  config LIA/instrucoes/personalidade/tom -> ir_para_config_lia\n"
+    "  config instrucoes LIA por campo -> ir_para_config_instrucoes_lia\n"
+    "  config recrutamento/pipeline/screening -> ir_para_config_recrutamento\n"
+    "  config comunicacao/emails/templates/mensagens -> ir_para_config_comunicacao\n"
+    "  config alertas/notificacoes -> ir_para_config_alertas\n"
+    "  config usuarios/equipe/departamentos -> ir_para_config_usuarios\n"
+    "  config integracoes/ATS -> ir_para_config_integracoes\n"
+    "  config conformidade/LGPD/fairness/auditoria -> ir_para_config_conformidade\n"
     "Navegacao pura nao precisa de lookup previa.\n\n"
 )
 

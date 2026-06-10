@@ -453,3 +453,81 @@ capabilities:
     navigate_query:
       view: vagas
     navigate_fallback: /recrutar?view=vagas
+
+  # ── Deep-links de Configurações por seção (2026-06-10) ──────────────────
+  # settings_section → emite settings_open_tab (navega + abre aba na tela).
+  # chat_executable: false → Rail A short-circuit se houver intent_hint.
+
+  ir_para_config_empresa:
+    label: "Configurar Empresa"
+    description: "Abrir configuracoes de perfil da empresa, cultura, beneficios e dados basicos"
+    chat_executable: false
+    entity_required: []
+    settings_section: minha-empresa
+    navigate_fallback: /configuracoes?section=minha-empresa
+
+  ir_para_config_lia:
+    label: "Configurar LIA / Personalização"
+    description: "Abrir configuracoes de instrucoes da LIA, tom e aprendizado"
+    chat_executable: false
+    entity_required: []
+    settings_section: lia-personalizacao
+    navigate_fallback: /configuracoes?section=lia-personalizacao
+
+  ir_para_config_instrucoes_lia:
+    label: "Configurar Instrucoes LIA por Campo"
+    description: "Abrir a subsecao de instrucoes personalizadas da LIA por campo de triagem"
+    chat_executable: false
+    entity_required: []
+    settings_section: lia-personalizacao
+    settings_subsection: instrucoes-lia
+    navigate_fallback: /configuracoes?section=lia-personalizacao&subsection=instrucoes-lia
+
+  ir_para_config_recrutamento:
+    label: "Configurar Recrutamento"
+    description: "Abrir configuracoes de processo seletivo, pipeline e screening"
+    chat_executable: false
+    entity_required: []
+    settings_section: recrutamento-lia
+    navigate_fallback: /configuracoes?section=recrutamento-lia
+
+  ir_para_config_comunicacao:
+    label: "Configurar Comunicacao"
+    description: "Abrir configuracoes de comunicacao, templates de email e alertas"
+    chat_executable: false
+    entity_required: []
+    settings_section: comunicacao-alertas
+    navigate_fallback: /configuracoes?section=comunicacao-alertas
+
+  ir_para_config_alertas:
+    label: "Configurar Alertas"
+    description: "Abrir a subsecao de alertas e notificacoes das configuracoes"
+    chat_executable: false
+    entity_required: []
+    settings_section: comunicacao-alertas
+    settings_subsection: alerts
+    navigate_fallback: /configuracoes?section=comunicacao-alertas&subsection=alerts
+
+  ir_para_config_usuarios:
+    label: "Configurar Usuarios e Departamentos"
+    description: "Abrir configuracoes de usuarios, equipe, papeis e departamentos"
+    chat_executable: false
+    entity_required: []
+    settings_section: usuarios-departamentos
+    navigate_fallback: /configuracoes?section=usuarios-departamentos
+
+  ir_para_config_integracoes:
+    label: "Configurar Integracoes"
+    description: "Abrir configuracoes de integracoes com ATS externos"
+    chat_executable: false
+    entity_required: []
+    settings_section: integrations
+    navigate_fallback: /configuracoes?section=integrations
+
+  ir_para_config_conformidade:
+    label: "Configurar Conformidade / LGPD"
+    description: "Abrir configuracoes de fairness, compliance, LGPD e auditoria"
+    chat_executable: false
+    entity_required: []
+    settings_section: fairness-compliance
+    navigate_fallback: /configuracoes?section=fairness-compliance

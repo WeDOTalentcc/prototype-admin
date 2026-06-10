@@ -102,6 +102,22 @@ async def _wrap_open_ui(**kwargs: Any) -> dict[str, Any]:
                 "tem permissão de acesso."
             ),
         }
+    if cap.settings_section:
+        # settings_open_tab: navega pra /configuracoes?section=X&subsection=Y
+        # e dispara lia:settings-action para abrir a aba correta mesmo se
+        # a página já estiver montada. FE (useUIAction) cuida disso.
+        return {
+            "success": True,
+            "data": {
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {
+                    "section": cap.settings_section,
+                    "subsection": cap.settings_subsection or "",
+                },
+            },
+            "message": "Abrindo a seção de configurações...",
+        }
+
     if not cap.modal_id:
         # Sem modal → navega pro surface (a ação/seleção vive na página, com
         # seu handler + confirmação = HITL preservado). Não duplica a lógica

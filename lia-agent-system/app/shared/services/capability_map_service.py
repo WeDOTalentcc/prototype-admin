@@ -34,6 +34,8 @@ class Capability:
     required_role: str | None = None   # role-gate: papel exigido (None=todos)
     label: str | None = None   # rótulo p/ catálogo de comandos (Ctrl+/); None=oculto
     navigate_query: dict | None = None  # query params extras p/ navegação (ex: {view: 'candidatos'})
+    settings_section: str | None = None     # deep-link direto a seção de configurações
+    settings_subsection: str | None = None  # subsection dentro da seção
 
 
 class CapabilityMapService:
@@ -60,6 +62,8 @@ class CapabilityMapService:
                 required_role=cfg.get("required_role"),
                 label=cfg.get("label"),
                 navigate_query=cfg.get("navigate_query") or None,
+                settings_section=cfg.get("settings_section"),
+                settings_subsection=cfg.get("settings_subsection"),
             )
         return result
 
