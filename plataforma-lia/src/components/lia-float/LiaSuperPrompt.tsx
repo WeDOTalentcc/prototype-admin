@@ -21,7 +21,7 @@ import { sanitizeHtml } from "@/lib/sanitize"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { useRouter } from "next/navigation"
-import { ThinkingDots } from "@/components/ui/thinking-dots"
+import { AgentActivityTimeline } from "@/components/unified-chat/AgentActivityTimeline"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import { ContextBadge } from "@/components/lia-float/ContextBadge"
 
@@ -44,6 +44,7 @@ export function LiaSuperPrompt() {
     setChatConversationId,
     chatIsStreaming,
     chatIsThinking,
+    chatThinkingSteps,
     chatStreamingContent,
     chatIsCreating,
     sendChatMessage,
@@ -63,6 +64,21 @@ export function LiaSuperPrompt() {
   const [showHistory, setShowHistory] = useState(false)
   const [recentChats, setRecentChats] = useState<Array<{ id: string; title: string; timestamp: number }>>([])
   const [contextDismissed, setContextDismissed] = useState(false)
+
+  // AgentActivityTimeline lifecycle — mirrors UnifiedMessageList.
+  // ON when thinking/streaming starts; OFF after timeline fires onFinished.
+  const [liveActive, setLiveActive] = useState(false)
+  useEffect(() => {
+    if (isThinking || isStreaming) {
+      setLiveActive(true)
+    }
+  }, [isThinking, isStreaming])
+  // Failsafe: force-clear if onFinished never fires (e.g. timeline never mounts)
+  useEffect(() => {
+    if (!liveActive || isThinking || isStreaming) return
+    const t = setTimeout(() => setLiveActive(false), 3000)
+    return () => clearTimeout(t)
+  }, [liveActive, isThinking, isStreaming])
   useEffect(() => { setContextDismissed(false) }, [contextPage])
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -73,6 +89,7 @@ export function LiaSuperPrompt() {
   const isCreating = chatIsCreating
   const isStreaming = chatIsStreaming
   const isThinking = chatIsThinking
+  const thinkingSteps = chatThinkingSteps
   const streamingContent = chatStreamingContent
   const initConversation = initChatConversation
   const loadHistory = useCallback(async (id: string) => {
@@ -427,18 +444,14 @@ export function LiaSuperPrompt() {
                             </div>
                           )}
 
-                          {isThinking && !streamingContent && (
-                            <div className="flex items-start gap-2.5">
-                              <div className="flex-shrink-0 pt-1">
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center">
-                                  <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-                                </div>
-                              </div>
-                              <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-4">
-                                <div className="flex items-center gap-1.5">
-                                  <ThinkingDots dotClassName="bg-wedo-cyan" size="lg" />
-                                </div>
-                              </div>
+                          {liveActive && (
+                            <div className="mt-1">
+                              <AgentActivityTimeline
+                                fallbackSteps={thinkingSteps}
+                                showFallback={isThinking && !streamingContent}
+                                completed={!isThinking && !isStreaming}
+                                onFinished={() => setLiveActive(false)}
+                              />
                             </div>
                           )}
 
