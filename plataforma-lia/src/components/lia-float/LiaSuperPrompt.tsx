@@ -43,6 +43,7 @@ export function LiaSuperPrompt() {
     chatConversationId,
     setChatConversationId,
     chatIsStreaming,
+    chatIsThinking,
     chatStreamingContent,
     chatIsCreating,
     sendChatMessage,
@@ -71,6 +72,7 @@ export function LiaSuperPrompt() {
   const messages = sharedMessages
   const isCreating = chatIsCreating
   const isStreaming = chatIsStreaming
+  const isThinking = chatIsThinking
   const streamingContent = chatStreamingContent
   const initConversation = initChatConversation
   const loadHistory = useCallback(async (id: string) => {
@@ -425,7 +427,7 @@ export function LiaSuperPrompt() {
                             </div>
                           )}
 
-                          {isStreaming && !streamingContent && (
+                          {isThinking && !streamingContent && (
                             <div className="flex items-start gap-2.5">
                               <div className="flex-shrink-0 pt-1">
                                 <div className="w-7 h-7 rounded-full flex items-center justify-center">
