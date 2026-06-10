@@ -1097,6 +1097,17 @@ STAGE_TO_MACRO = {
     "hired": "contratacao",
     "Recusado": "contratacao",
     "recusado": "contratacao",
+    # Stages present in real DB rows — caused 13 invisible candidates in pipeline-pulse
+    "interview_hr": "entrevista",
+    "interview_manager": "entrevista",
+    "interview_manager2": "entrevista",
+    "interview_technical": "entrevista",
+    "technical_test": "entrevista",
+    "english_test": "entrevista",
+    "short_list": "triagem",
+    "long_list": "triagem",
+    "rejected": "contratacao",
+    "reprovado": "contratacao",
 }
 
 @router.get("/pipeline-pulse", response_model=PipelinePulseResponse)
