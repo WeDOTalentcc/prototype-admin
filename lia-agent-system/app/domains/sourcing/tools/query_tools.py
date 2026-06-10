@@ -846,7 +846,7 @@ async def get_talent_engagement(
             
             contacted_statuses = {"contacted", "outreach_sent", "in_contact"}
             responded_statuses = {"in_process", "screening", "interview", "responded", "interested"}
-            in_process_stages = {"Triagem", "Entrevista RH", "Entrevista Técnica", "Entrevista Final", "Oferta", "Contratado"}
+            in_process_stages = {"Triagem", "Entrevista RH", "Entrevista Técnica", "Entrevista Final", "Oferta", "Contratado", "hired"}
             
             contacted_count = 0
             responded_count = 0

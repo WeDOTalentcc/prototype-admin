@@ -230,15 +230,15 @@ async def get_conversion_patterns(
                 if source not in source_stats:
                     source_stats[source] = {"total": 0, "hired": 0, "advanced": 0}
                 source_stats[source]["total"] += 1
-                if stage == "Contratado":
+                if stage in ["Contratado", "hired"]:
                     source_stats[source]["hired"] += 1
-                if stage in ["Entrevista RH", "Entrevista Técnica", "Entrevista Final", "Oferta", "Contratado"]:
+                if stage in ["Entrevista RH", "Entrevista Técnica", "Entrevista Final", "Oferta", "Contratado", "hired"]:
                     source_stats[source]["advanced"] += 1
 
                 if seniority not in seniority_stats:
                     seniority_stats[seniority] = {"total": 0, "hired": 0}
                 seniority_stats[seniority]["total"] += 1
-                if stage == "Contratado":
+                if stage in ["Contratado", "hired"]:
                     seniority_stats[seniority]["hired"] += 1
 
                 if stage in stage_funnel:
@@ -409,7 +409,7 @@ async def get_smart_alerts(
                 if updated_at:
                     days_idle = (datetime.utcnow() - updated_at).days
 
-                    if days_idle >= 5 and stage not in ["Contratado", "Rejeitado", "Desistente"]:
+                    if days_idle >= 5 and stage not in ["Contratado", "Rejeitado", "Desistente", "hired"]:
                         idle_severity = "low"
                         if days_idle >= 10:
                             idle_severity = "medium"
@@ -437,7 +437,7 @@ async def get_smart_alerts(
                 total = sum(stages.values())
 
                 for stage, count in stages.items():
-                    if stage not in ["Contratado", "Rejeitado", "Desistente"] and total >= 5:
+                    if stage not in ["Contratado", "Rejeitado", "Desistente", "hired"] and total >= 5:
                         if count / total >= 0.6:
                             bottleneck_warnings.append({
                                 "job_id": job_key,

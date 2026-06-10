@@ -201,7 +201,7 @@ async def get_trends(
                 ).where(
                     and_(
                         VacancyCandidate.company_id == company_id,
-                        VacancyCandidate.stage == "Contratado",
+                        VacancyCandidate.stage.in_(["Contratado", "hired"]),
                         VacancyCandidate.updated_at >= start_date
                     )
                 ).group_by(
