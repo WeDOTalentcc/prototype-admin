@@ -192,6 +192,80 @@ def _has_vacancy_referent(message: str) -> bool:
     return bool(_VACANCY_REFERENT_RE.search(message or ""))
 
 
+def _extract_identifiers(message: str) -> tuple[list[str], list[str], list[str]]:
+    """Extrai CPF/email/telefone de uma mensagem (DRY: reusa os patterns do
+    pii_masking). Usado para resolver candidato POR identificador sem vazar o valor
+    cru ao LLM (resolve-then-strip, ADR-LGPD-002)."""
+    if not message:
+        return [], [], []
+    from app.shared.pii_masking import CPF_PATTERN, EMAIL_PATTERN, PHONE_BR_PATTERN
+
+    cpfs = [m for m in CPF_PATTERN.findall(message) if m]
+    emails = [m for m in EMAIL_PATTERN.findall(message) if m]
+    phones = [m for m in PHONE_BR_PATTERN.findall(message) if m]
+    return cpfs, emails, phones
+
+
+async def _resolve_candidates_by_identifier(
+    message: str, company_id: str, db: Any
+) -> list[tuple[str, str]]:
+    """Resolve candidato(s) por identificador (CPF/email/telefone) via hash indexado,
+    company-scoped. Retorna [(id, name)]. NUNCA usa o identificador cru na query nem no
+    hint — só o HASH (resolve-then-strip + minimização Art. 12). Decripta name p/ o hint
+    (linhas pós-migração têm name plaintext = NULL)."""
+    if not message or not company_id:
+        return []
+    cpfs, emails, phones = _extract_identifiers(message)
+    if not (cpfs or emails or phones):
+        return []
+    from sqlalchemy import text as _t
+
+    from app.models.candidate import Candidate
+    from app.shared.encryption.encrypted_field_mixin import _decrypt
+
+    conds: list[str] = []
+    params: dict = {"co": str(company_id)}
+    hi = 0
+    for raw in cpfs:
+        h = Candidate.cpf_hash_for(raw)
+        if h:
+            conds.append(f"cpf_hash = :h{hi}")
+            params[f"h{hi}"] = h
+            hi += 1
+    for raw in emails:
+        h = Candidate.email_hash_for(raw)
+        if h:
+            conds.append(f"email_hash = :h{hi}")
+            params[f"h{hi}"] = h
+            hi += 1
+    for raw in phones:
+        h = Candidate.phone_hash_for(raw)
+        if h:
+            conds.append(f"phone_hash = :h{hi}")
+            params[f"h{hi}"] = h
+            hi += 1
+    if not conds:
+        return []
+    r = await db.execute(
+        _t(
+            "SELECT id, name, name_encrypted FROM candidates "
+            "WHERE company_id = CAST(:co AS varchar) "
+            f"AND ({' OR '.join(conds)}) LIMIT 10"
+        ),
+        params,
+    )
+    out: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for m in r.mappings():
+        cid = str(m["id"])
+        if cid in seen:
+            continue
+        seen.add(cid)
+        nm = m.get("name") or _decrypt(m.get("name_encrypted")) or ""
+        out.append((cid, nm))
+    return out
+
+
 async def resolve_named_entities(
     message: str, company_id: str, db: Any, history_text: str = ""
 ) -> dict:
@@ -259,6 +333,20 @@ async def resolve_named_entities(
     except Exception:
         pass
 
+    # ── Candidatos por IDENTIFICADOR (CPF/email/telefone) — precede o match por
+    #    nome (mais preciso, zero ambiguidade). resolve-then-strip: usa o HASH, nunca
+    #    o identificador cru; o hint leva nome+id, nunca o CPF/email. ──
+    try:
+        _ident = await _resolve_candidates_by_identifier(message, company_id, db)
+        if _ident:
+            result["candidates"] = _ident
+            hints.append(
+                "CANDIDATO(S) referido(s) por identificador (use EXATAMENTE este id): "
+                + "; ".join(f"'{n}' (id={i})" for i, n in _ident)
+            )
+    except Exception:
+        pass
+
     # ── Candidatos: extrai nome (case-insensitive) e casa fuzzy (difflib) ──
     try:
         name_q = _extract_name_query(message)
@@ -278,13 +366,16 @@ async def resolve_named_entities(
             )
             pool = [(str(x["id"]), x["name"]) for x in r.mappings()]
             cands = _best_fuzzy_match(name_q, pool)[:5]
-            result["candidates"] = cands
+            _existing_ids = {x[0] for x in result["candidates"]}
+            result["candidates"] = result["candidates"] + [
+                c for c in cands if c[0] not in _existing_ids
+            ]
             if cands:
                 hints.append(
                     "CANDIDATO(S) referido(s) (use EXATAMENTE este id): "
                     + "; ".join(f"'{n}' (id={i})" for i, n in cands)
                 )
-            else:
+            elif not result["candidates"]:
                 hints.append(
                     f"NAO existe candidato com nome ~'{name_q}' na base "
                     "(diga isso claramente; NAO liste todos nem invente)."

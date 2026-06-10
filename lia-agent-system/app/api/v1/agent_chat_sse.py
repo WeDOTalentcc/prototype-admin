@@ -986,8 +986,11 @@ company_id: str = Depends(require_company_id)):
                         for _m in (_hist[-6:] if _hist else [])
                         if _m.get("content")
                     )
+                    # resolve-then-strip (ADR-LGPD-002): resolver recebe o RAW
+                    # (com CPF/email/tel) p/ casar candidato por identificador.
+                    # Retorna só nome+id no hint -> nada cru vaza ao LLM.
                     _ent = await resolve_named_entities(
-                        content, company_id, _mdb, history_text=_hist_text
+                        _raw_content, company_id, _mdb, history_text=_hist_text
                     )
                     _ehint = _ent.get("hint") or ""
                     try:
