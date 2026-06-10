@@ -50,7 +50,7 @@ def _ui_capabilities() -> dict[str, Any]:
     return {
         intent: cap
         for intent, cap in CapabilityMapService.load().items()
-        if cap.modal_id or cap.navigate_page
+        if cap.modal_id or cap.navigate_page or cap.settings_section
     }
 
 
