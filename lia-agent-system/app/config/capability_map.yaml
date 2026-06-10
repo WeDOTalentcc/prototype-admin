@@ -296,15 +296,131 @@ capabilities:
   ir_para_configuracoes:
     label: Ir para Configuracoes
     description: Navegar para a pagina de Configuracoes
+    chat_executable: false
+    entity_required: []
+    navigate_page: configuracoes
     navigate_fallback: /configuracoes
 
   ir_para_funil_talentos:
     label: Ir para Funil de Talentos
     description: Navegar para o Funil de Talentos
+    chat_executable: false
+    entity_required: []
     navigate_page: funil_talentos
     navigate_fallback: /funil-de-talentos
 
   ir_para_agent_studio:
     label: Ir para Estudio de Agentes
     description: Navegar para o Estudio de Agentes de IA
+    chat_executable: false
+    entity_required: []
+    navigate_page: agent_studio
     navigate_fallback: /agent-studio
+
+  # ── Alias: create_job = criar_vaga (corrige divergência SUGGESTION_HINTS vs YAML 2026-06-10)
+  create_job:
+    label: "Criar nova vaga"
+    description: "Iniciar criacao de nova vaga. Alias de criar_vaga para compatibilidade com intent_hint do Rail A."
+    chat_executable: true
+    entity_required: []
+    navigate_fallback: /jobs/new
+
+  # ── Navegacao para paginas principais — expansao canonical 2026-06-10 ──────
+  # chat_executable: false → Rail A short-circuit (sem LLM); navigate_page →
+  # open_ui via LLM usa enum canonico; navigate_fallback → fallback URL bruta.
+
+  ir_para_dashboard:
+    label: "Ir para Dashboard / Indicadores"
+    description: "Navegar para o dashboard de indicadores e metricas de recrutamento"
+    chat_executable: false
+    entity_required: []
+    navigate_page: dashboard
+    navigate_fallback: /?view=Indicadores
+
+  ir_para_tasks:
+    label: "Ir para Tarefas / Aprovacoes"
+    description: "Navegar para o centro de tarefas e aprovacoes pendentes (HITL)"
+    chat_executable: false
+    entity_required: []
+    navigate_page: tasks
+    navigate_fallback: /tasks
+
+  ir_para_central_comunicacao:
+    label: "Ir para Central de Comunicacao"
+    description: "Navegar para a central de comunicacao (emails, WhatsApp, templates)"
+    chat_executable: false
+    entity_required: []
+    navigate_page: central_comunicacao
+    navigate_fallback: /central-comunicacao
+
+  ir_para_biblioteca:
+    label: "Ir para Biblioteca LIA"
+    description: "Navegar para a biblioteca de templates e artefatos reutilizaveis da LIA"
+    chat_executable: false
+    entity_required: []
+    navigate_page: biblioteca
+    navigate_fallback: /biblioteca-lia
+
+  ir_para_bancos_talentos:
+    label: "Ir para Bancos de Talentos"
+    description: "Navegar para bancos de talentos (candidatos passados para reativacao e matching)"
+    chat_executable: false
+    entity_required: []
+    navigate_page: bancos_talentos
+    navigate_fallback: /bancos-de-talentos
+
+  ir_para_vagas:
+    label: "Ir para Lista de Vagas"
+    description: "Navegar para a lista de vagas cadastradas da empresa"
+    chat_executable: false
+    entity_required: []
+    navigate_page: vagas
+    navigate_fallback: /jobs
+
+  ir_para_trust:
+    label: "Ir para Trust Center / Conformidade"
+    description: "Navegar para o trust center de compliance, LGPD, auditoria e governanca"
+    chat_executable: false
+    entity_required: []
+    navigate_page: trust
+    navigate_fallback: /trust
+
+  ir_para_marketplace:
+    label: "Ir para Marketplace de Agentes"
+    description: "Navegar para o marketplace de agentes IA disponiveis para instalacao"
+    chat_executable: false
+    entity_required: []
+    navigate_page: agents_marketplace
+    navigate_fallback: /agents/marketplace
+
+  ir_para_creditos_ia:
+    label: "Ir para Creditos de IA"
+    description: "Navegar para a tela de creditos de IA (saldo, consumo, compra de creditos)"
+    chat_executable: false
+    entity_required: []
+    navigate_page: ai_credits
+    navigate_fallback: /configuracoes/ai-credits
+
+  ir_para_integracoes:
+    label: "Ir para Integracoes ATS"
+    description: "Navegar para a pagina de integracoes com sistemas externos de recrutamento"
+    chat_executable: false
+    entity_required: []
+    navigate_page: integracoes_ats
+    navigate_fallback: /integracoes-ats
+
+  ir_para_ajuda:
+    label: "Ir para Ajuda / Documentacao"
+    description: "Navegar para a pagina de ajuda e documentacao da plataforma"
+    chat_executable: false
+    entity_required: []
+    navigate_page: ajuda
+    navigate_fallback: /ajuda
+
+  ir_para_home:
+    label: "Ir para Inicio / Home"
+    description: "Navegar para a pagina inicial da plataforma"
+    chat_executable: false
+    entity_required: []
+    navigate_page: home
+    navigate_fallback: /

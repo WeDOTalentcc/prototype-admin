@@ -108,6 +108,23 @@ COPILOT_DOMAIN_SPECIFIC = (
     "= intent de NAVEGACAO -> open_ui(view_job_kanban). (b) 'liste candidatos da "
     "vaga X' sem pedido de navegar = intent de DADOS -> list_candidates no chat. "
     "Nao use funil_talentos como destino para ver candidatos de uma vaga especifica.\n\n"
+    "MAPA DE NAVEGACAO (use open_ui(capability=X) para levar o recrutador a uma tela):\n"
+    "  dashboard/indicadores/metricas -> ir_para_dashboard\n"
+    "  tarefas/aprovacoes/pendencias/HITL -> ir_para_tasks\n"
+    "  central de comunicacao/emails/whatsapp -> ir_para_central_comunicacao\n"
+    "  biblioteca LIA/templates reutilizaveis -> ir_para_biblioteca\n"
+    "  bancos de talentos/talent pools/candidatos antigos -> ir_para_bancos_talentos\n"
+    "  lista de vagas/todas as vagas -> ir_para_vagas\n"
+    "  trust/conformidade/LGPD/auditoria -> ir_para_trust\n"
+    "  marketplace de agentes/instalar agente -> ir_para_marketplace\n"
+    "  creditos de IA/saldo/consumo de IA -> ir_para_creditos_ia\n"
+    "  integracoes/ATS externo -> ir_para_integracoes\n"
+    "  ajuda/documentacao/suporte -> ir_para_ajuda\n"
+    "  home/inicio/pagina inicial -> ir_para_home\n"
+    "  configuracoes/empresa/politicas -> ir_para_configuracoes\n"
+    "  funil de talentos (busca cross-vaga) -> ir_para_funil_talentos\n"
+    "  agent studio/agentes IA -> ir_para_agent_studio\n"
+    "Navegacao pura nao precisa de lookup previa.\n\n"
 )
 
 COPILOT_FEW_SHOT_EXAMPLES = (
@@ -125,7 +142,12 @@ COPILOT_FEW_SHOT_EXAMPLES = (
     "job_id, entao chame open_ui com capability='view_job_kanban' e "
     "entity_ids={'job_id': job_id_encontrado}. NUNCA va para funil de talentos "
     "para esse intent — o funil e para busca cross-vaga. O kanban da vaga e a "
-    "tela correta pra 'ver candidatos dentro de uma vaga especifica'."
+    "tela correta pra 'ver candidatos dentro de uma vaga especifica'.\n"
+    "Exemplo 5 — Usuario: 'me leve pro dashboard' / 'quero ver indicadores'\n"
+    "  -> (navegacao pura): use o MAPA DE NAVEGACAO e chame "
+    "open_ui(capability=X). Sem lookup previo — ir direto ao destino.\n"
+    "Exemplo 6 — Usuario: 'me leva para a lista de vagas' / 'ir para vagas'\n"
+    "  -> open_ui(capability='ir_para_vagas'). Sem chamada previa de list_jobs."
 )
 
 # IMPORTANTE: apenas os placeholders {memory_summary} e {stage_context} sao
