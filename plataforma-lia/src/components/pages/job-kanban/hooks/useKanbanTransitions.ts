@@ -35,6 +35,9 @@ export function useKanbanTransitions({
             channel: data.channel || 'email',
             action_behavior: data.actionBehavior || universalModalState.actionBehavior,
             extracted_preferences: data.extracted_preferences || undefined,
+            // AUD-4: o clique "Confirmar" do modal de transicao E a aprovacao humana (HITL).
+            // Com LIA_HITL_GATE on, libera o dispatch; chamadas nao-confirmadas ao endpoint ficam bloqueadas.
+            hitl_approved: true,
           })
         })
         const result = await response.json()
