@@ -513,6 +513,29 @@ export function useChatTransport(
       setTokens("")
       setError(null)
 
+      // SSE inactivity watchdog — se nenhum dado chegar em 90s, aborta e surface erro.
+      // O reader.read() pode travar indefinidamente se o backend parar de enviar
+      // sem fechar o stream (done=true nunca chega → isThinking fica preso).
+      const SSE_INACTIVITY_TIMEOUT_MS = 90_000
+      let inactivityTimerRef: ReturnType<typeof setTimeout> | null = null
+
+      const resetInactivity = () => {
+        if (inactivityTimerRef) clearTimeout(inactivityTimerRef)
+        inactivityTimerRef = setTimeout(() => {
+          if (mountedRef.current) {
+            setIsStreaming(false)
+            onEventRef.current?.({
+              type: "error",
+              message: "Sem resposta do servidor por 90 segundos. Tente novamente.",
+            } as TransportEvent)
+          }
+          controller.abort()
+        }, SSE_INACTIVITY_TIMEOUT_MS)
+      }
+
+      // start watchdog immediately
+      resetInactivity()
+
       // BUG-AUDIT #277 / H7: rastrear se um evento terminal (message/clarification/error)
       // foi recebido. Se o stream fechar (done=true) sem terminal, emitimos "error"
       // pra destravar isThinking em useChatSocket.
@@ -576,6 +599,7 @@ export function useChatTransport(
               if (done) break
 
               buffer += decoder.decode(value, { stream: true })
+              resetInactivity() // reset watchdog on each received chunk
               const lines = buffer.split("\n")
               buffer = lines.pop() || ""
 
@@ -596,6 +620,7 @@ export function useChatTransport(
               }
             }
 
+            if (inactivityTimerRef) clearTimeout(inactivityTimerRef)
             sseFailureCountRef.current = 0
             if (mountedRef.current) {
               setIsStreaming(false)
@@ -610,6 +635,7 @@ export function useChatTransport(
             }
           })
           .catch((err) => {
+            if (inactivityTimerRef) clearTimeout(inactivityTimerRef)
             if (err.name === "AbortError") return
             sseFailureCountRef.current += 1
 
