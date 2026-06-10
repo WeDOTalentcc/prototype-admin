@@ -956,7 +956,7 @@ company_id: str = Depends(require_company_id)):
                 await pipeline_service.transition_candidate(
                     vacancy_candidate_id=str(vacancy_candidate.id),
                     to_stage="Contratado",
-                    to_sub_status="contratado",
+                    to_sub_status="hired",  # fix: "contratado" não está em VALID_STATUSES — usar "hired"
                     triggered_by="automation",
                     source_agent="offer_management",
                     reason="Candidate hired",
@@ -1200,7 +1200,7 @@ company_id: str = Depends(require_company_id)):
                 await pipeline_service.transition_candidate(
                     vacancy_candidate_id=str(vacancy_candidate.id),
                     to_stage="Reprovado",
-                    to_sub_status="reprovado",
+                    to_sub_status="rejected",  # fix: "reprovado" não está em VALID_STATUSES — usar "rejected"
                     triggered_by="automation",
                     source_agent="rejection_management",
                     reason=request.rejection_reason or "Candidate rejected",
