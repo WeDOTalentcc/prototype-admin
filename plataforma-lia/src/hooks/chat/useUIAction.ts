@@ -33,7 +33,7 @@ import {
   canonicalPageToUrl,
   canonicalPageToUrlWithFallback,
 } from "@/lib/canonical-pages";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCallback } from "react";
 
 interface UseUIActionReturn {
@@ -62,6 +62,7 @@ interface UseUIActionReturn {
 export function useUIAction(): UseUIActionReturn {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const locale =
     typeof params?.locale === "string" && params.locale ? params.locale : "pt";
 
@@ -255,6 +256,28 @@ export function useUIAction(): UseUIActionReturn {
           const patch = params.patch;
           if (!patch || typeof patch !== "object") return false;
           if (typeof window === "undefined") return false;
+          // Bug-fix 2026-06-10: race condition navigate+filter.
+          // Quando o agente navega para /jobs e depois filtra, o evento pode
+          // disparar antes do listener em useJobsFilters estar registrado.
+          // Solução: para surface=jobs com filtro, também pusha rota com ?filter
+          // na URL — useJobsFilters lê o valor no mount (window.location.search).
+          if (
+            surface === "jobs" &&
+            typeof (patch as Record<string, unknown>).filter === "string"
+          ) {
+            const filterValue = (patch as Record<string, unknown>).filter as string;
+            const isOnJobsPage =
+              pathname?.includes("/jobs") && !pathname?.includes("/jobs/");
+            if (!isOnJobsPage) {
+              // Navegar para jobs com filtro embutido na URL (garante estado no mount)
+              router.push(`/${locale}/jobs?filter=${encodeURIComponent(filterValue)}`);
+            } else {
+              // Já na página: atualizar URL sem push completo (replace preserva histórico)
+              router.replace(
+                `${pathname}?filter=${encodeURIComponent(filterValue)}`,
+              );
+            }
+          }
           window.dispatchEvent(
             new CustomEvent("lia:apply_table_state", {
               detail: { surface, patch },
@@ -303,7 +326,7 @@ export function useUIAction(): UseUIActionReturn {
           return false;
       }
     },
-    [router, locale],
+    [router, locale, pathname],
   );
 
   const dispatchOrEmit = useCallback(

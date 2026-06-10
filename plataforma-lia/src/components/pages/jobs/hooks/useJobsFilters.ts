@@ -138,7 +138,15 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('todas')
   const [selectedDaysFilter, setSelectedDaysFilter] = useState<string>('todas')
-  const [activeFilter, setActiveFilter] = useState<string>('todas')
+  const [activeFilter, setActiveFilter] = useState<string>(() => {
+    // Bug-fix 2026-06-10: race condition navigate+filter.
+    // Quando o agente navega E filtra em sequência, o evento lia:apply_table_state
+    // pode disparar antes do listener ser registrado (página ainda montando).
+    // Solução: o apply_table_state também faz router.push com ?filter=X na URL,
+    // e aqui lemos o valor inicial da URL no momento do mount (client-only).
+    if (typeof window === "undefined") return "todas"
+    return new URLSearchParams(window.location.search).get("filter") || "todas"
+  })
   const [booleanSearch, setBooleanSearch] = useState("")
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string[]>>({ ...EMPTY_ADVANCED_FILTERS })
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
