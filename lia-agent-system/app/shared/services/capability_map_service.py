@@ -33,6 +33,7 @@ class Capability:
     navigate_page: str | None = None   # canonical page p/ navegar (sem modal)
     required_role: str | None = None   # role-gate: papel exigido (None=todos)
     label: str | None = None   # rótulo p/ catálogo de comandos (Ctrl+/); None=oculto
+    navigate_query: dict | None = None  # query params extras p/ navegação (ex: {view: 'candidatos'})
 
 
 class CapabilityMapService:
@@ -58,6 +59,7 @@ class CapabilityMapService:
                 navigate_page=cfg.get("navigate_page"),
                 required_role=cfg.get("required_role"),
                 label=cfg.get("label"),
+                navigate_query=cfg.get("navigate_query") or None,
             )
         return result
 

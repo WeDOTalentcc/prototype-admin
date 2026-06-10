@@ -124,6 +124,9 @@ COPILOT_DOMAIN_SPECIFIC = (
     "  configuracoes/empresa/politicas -> ir_para_configuracoes\n"
     "  funil de talentos (busca cross-vaga) -> ir_para_funil_talentos\n"
     "  agent studio/agentes IA -> ir_para_agent_studio\n"
+    "  visao global/pipeline/recrutar -> ir_para_visao_global\n"
+    "  visao global aba candidatos/funil por etapa -> ir_para_visao_global_candidatos\n"
+    "  visao global aba vagas/ciclo de vida vagas -> ir_para_visao_global_vagas\n"
     "Navegacao pura nao precisa de lookup previa.\n\n"
 )
 

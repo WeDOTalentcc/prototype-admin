@@ -424,3 +424,32 @@ capabilities:
     entity_required: []
     navigate_page: home
     navigate_fallback: /
+
+  # ── Visão Global (Recrutar) — tabs candidatos e vagas (2026-06-10) ──────
+  ir_para_visao_global:
+    label: "Ir para Visao Global / Pipeline"
+    description: "Navegar para a Visao Global do pipeline de recrutamento (pagina Recrutar)"
+    chat_executable: false
+    entity_required: []
+    navigate_page: pipeline_kanban
+    navigate_fallback: /recrutar
+
+  ir_para_visao_global_candidatos:
+    label: "Ir para Visao Global — aba Candidatos"
+    description: "Navegar para a Visao Global mostrando o funil de candidatos por etapa"
+    chat_executable: false
+    entity_required: []
+    navigate_page: pipeline_kanban
+    navigate_query:
+      view: candidatos
+    navigate_fallback: /recrutar?view=candidatos
+
+  ir_para_visao_global_vagas:
+    label: "Ir para Visao Global — aba Vagas"
+    description: "Navegar para a Visao Global mostrando o ciclo de vida das vagas por etapa"
+    chat_executable: false
+    entity_required: []
+    navigate_page: pipeline_kanban
+    navigate_query:
+      view: vagas
+    navigate_fallback: /recrutar?view=vagas

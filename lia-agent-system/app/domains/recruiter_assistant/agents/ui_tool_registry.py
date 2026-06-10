@@ -116,6 +116,8 @@ async def _wrap_open_ui(**kwargs: Any) -> dict[str, Any]:
             params: dict[str, Any] = {"page": cap.navigate_page}
             if nav_id:
                 params["id"] = nav_id
+            if cap.navigate_query:
+                params["query"] = cap.navigate_query
             return {
                 "success": True,
                 "data": {"ui_action": "navigate_to", "ui_action_params": params},
