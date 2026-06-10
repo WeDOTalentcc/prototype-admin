@@ -291,6 +291,7 @@ class TransitionExecuteRequest(WeDoBaseModel):
     channel: str | None = "email"
     action_behavior: str | None = None
     extracted_preferences: dict[str, Any] | None = None
+    hitl_approved: bool = False  # AUD-4: FE seta True ao confirmar (gate REST)
 
 
 class TransitionExecuteResponse(BaseModel):
@@ -302,6 +303,7 @@ class TransitionExecuteResponse(BaseModel):
     dispatch_results: list[DispatchResult] | None = None
     predicted_sub_status: str | None = None
     prediction_confidence: float | None = None
+    requires_approval: bool = False  # AUD-4: feedback segurado por HITL gate
 
 
 # ---------------------------------------------------------------------------

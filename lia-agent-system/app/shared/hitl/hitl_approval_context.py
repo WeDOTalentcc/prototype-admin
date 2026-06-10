@@ -82,3 +82,22 @@ def hitl_preflight(
     if extra:
         out.update(extra)
     return out
+
+
+def rest_hitl_blocks(*, action: str, approved: bool) -> bool:
+    """Gate HITL para o path REST (modal Mover-para / transition/execute).
+
+    O mecanismo de chat (_hitl_approved ContextVar) NAO serve aqui: o transporte
+    REST nunca seta o ContextVar. Aqui a aprovacao vem de um campo explicito do
+    request (request.hitl_approved), setado pelo FE quando o usuario confirma.
+
+    Retorna True se o DISPATCH de feedback ao candidato (acao irreversivel, so
+    em action == 'lia_auto') deve ser SEGURADO ate confirmacao. Dormante com
+    LIA_HITL_GATE off -> sempre False (zero regressao). A movimentacao do
+    candidato (reversivel, interna) NAO e bloqueada.
+    """
+    if not hitl_gate_enabled():
+        return False
+    if approved:
+        return False
+    return action == "lia_auto"

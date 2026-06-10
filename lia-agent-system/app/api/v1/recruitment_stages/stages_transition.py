@@ -289,6 +289,12 @@ company_id: str = Depends(require_company_id)):
         values = {"stage": request.to_stage}
         if request.sub_status:
             values["status"] = request.sub_status
+        # AUD-4 / LGPD Art. 20: registrar o humano autenticado que decidiu a transicao.
+        _reviewer_id = str(getattr(current_user, "id", "") or "") or None
+        if _reviewer_id:
+            values["human_reviewer_id"] = _reviewer_id
+        if request.from_stage:
+            values["previous_status"] = request.from_stage
 
         predicted_sub_status = None
         prediction = None
@@ -393,7 +399,11 @@ company_id: str = Depends(require_company_id)):
             except Exception as stage_err:
                 logger.warning(f"Could not resolve action_behavior from stage: {stage_err}")
 
-        if request.action == "lia_auto" and resolved_action_behavior:  # type: ignore[truthy-bool]
+        from app.shared.hitl.hitl_approval_context import rest_hitl_blocks
+        _hitl_held = rest_hitl_blocks(action=request.action or "", approved=bool(getattr(request, "hitl_approved", False)))
+        if _hitl_held:
+            logger.info("[PIPELINE] HITL gate: feedback de %s retido ate confirmacao", request.vacancy_candidate_id)
+        if request.action == "lia_auto" and resolved_action_behavior and not _hitl_held:  # type: ignore[truthy-bool]
             try:
                 from app.domains.communication.services.transition_dispatch_service import TransitionDispatchService
                 dispatch_service = TransitionDispatchService(stage_repo.db)
@@ -468,15 +478,42 @@ company_id: str = Depends(require_company_id)):
                     error=str(dispatch_error)
                 ))
 
+        # AUD-4: trilha de auditoria da decisao de transicao (humano autenticado).
+        try:
+            from app.models.audit_log import DecisionType
+            from app.shared.compliance.audit_service import get_audit_service
+            _dtype = DecisionType.REJECT_CANDIDATE.value if request.to_stage == "rejected" else DecisionType.MOVE_STAGE.value
+            await get_audit_service().log_decision(
+                company_id=str(company_id),
+                agent_name="pipeline_transition",
+                decision_type=_dtype,
+                action="execute_transition",
+                decision=str(values.get("status") or request.to_stage),
+                reasoning=[
+                    f"Transicao {request.from_stage or '?'} -> {request.to_stage}",
+                    f"Motivo: {values.get('status') or 'n/d'}",
+                    f"Acao: {request.action or 'n/d'}",
+                    ("Feedback retido p/ confirmacao HITL" if _hitl_held else ("Feedback disparado" if request.action == "lia_auto" else "Sem feedback")),
+                ],
+                criteria_used=["human_initiated_transition"],
+                candidate_id=request.vacancy_candidate_id,
+                job_vacancy_id=request.vacancy_id or None,
+                human_review_required=_hitl_held,
+                actor_user_id=_reviewer_id,
+            )
+        except Exception as audit_err:
+            logger.warning(f"[PIPELINE] audit log_decision failed: {audit_err}")
+
         return TransitionExecuteResponse(
             success=True,
-            message=f"Candidato movido para {request.to_stage}",
+            message=("Candidato movido; feedback aguarda confirmacao." if _hitl_held else f"Candidato movido para {request.to_stage}"),
             candidate_id=request.vacancy_candidate_id,
             new_stage=request.to_stage,
             new_sub_status=request.sub_status or predicted_sub_status,
             dispatch_results=dispatch_results if dispatch_results else None,
             predicted_sub_status=predicted_sub_status,
             prediction_confidence=prediction.get("confidence") if predicted_sub_status and prediction else None,
+            requires_approval=_hitl_held,
         )
     except Exception as e:
         return TransitionExecuteResponse(
