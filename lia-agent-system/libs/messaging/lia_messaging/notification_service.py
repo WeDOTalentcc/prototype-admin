@@ -612,6 +612,16 @@ class NotificationService:
                         logger.info(f"📱 Teams notification sent to user {user_id}")
                     
                     elif channel == NotificationChannel.EMAIL:
+                        # Guard: system:-prefixed user_ids are service accounts with no
+                        # real DB row. The UUID lookup would raise "invalid UUID 'system:...'
+                        # length must be between 32..36" (30 occurrences in logs). Skip email
+                        # for service accounts silently -- they have no inbox.
+                        if isinstance(user_id, str) and user_id.startswith("system:"):
+                            logger.debug(
+                                "Skipping email channel for service-account user_id '%s'",
+                                user_id,
+                            )
+                            continue
                         recipient_email = data.get("recipient_email") if data else None
                         if not recipient_email:
                             from app.core.database import AsyncSessionLocal as DBSession
