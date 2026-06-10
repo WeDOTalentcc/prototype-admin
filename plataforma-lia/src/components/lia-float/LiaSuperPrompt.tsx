@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation"
 import { AgentActivityTimeline } from "@/components/unified-chat/AgentActivityTimeline"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import { ContextBadge } from "@/components/lia-float/ContextBadge"
+import { ComplianceBadge } from "@/components/lia-float/ComplianceBadge"
 
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
   vagas: { icon: 'var(--lia-text-secondary)', bg: 'var(--lia-bg-secondary)', border: 'var(--lia-border-subtle)', hoverBg: 'var(--lia-bg-tertiary)' },
@@ -498,6 +499,7 @@ export function LiaSuperPrompt() {
                           <Send className="w-4 h-4" />
                         </button>
                       </div>
+                      <ComplianceBadge />
                     </div>
                   </div>
                 </div>
