@@ -368,6 +368,10 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
                         "portal_fallback_fields": list(self._portal_only_names),
                         "persisted_fields": [],
                         "status": "voice_collection_consent_denied",
+                        # Consent DENIED → a refused candidate must NOT receive
+                        # any follow-up message (LGPD + respect of the refusal).
+                        "followup_triggered": False,
+                        "followup_reason": "consent_denied",
                     }
 
             for idx, prompt in enumerate(self._voice_prompts):
@@ -415,6 +419,24 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
             # persisted as answered (CLAUDE.md REGRA 4). No new write path.
             persisted = await self._persist_collected_fields(session, db, collected)
 
+            # Voz #1 — auto follow-up via a NON-voice channel for the fields the
+            # call did not collect (needs_followup) or could not collect by voice
+            # (portal_fallback_fields). Reuses the canonical DataRequest producer
+            # (send_notification) — the portal naturally shows only the fields NOT
+            # in fields_completed, so a generic follow-up covers exactly what is
+            # still missing. Best-effort; never breaks finalize.
+            followup = await self._trigger_followup_for_remaining(
+                session=session,
+                db=db,
+                needs_followup=needs_followup,
+                portal_fallback_fields=list(self._portal_only_names),
+                consent_granted=(
+                    self._verbal_consent_granted
+                    if self._require_verbal_consent
+                    else True
+                ),
+            )
+
             return {
                 "strategy": "data_collection",
                 "consent_first": self._require_verbal_consent,
@@ -427,6 +449,7 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
                 "needs_followup": needs_followup,
                 "portal_fallback_fields": list(self._portal_only_names),
                 "persisted_fields": persisted,
+                **followup,
             }
         except Exception as e:
             logger.warning(
@@ -585,6 +608,109 @@ class DataCollectionVoicePlugin(VoiceCorePlugin):
                 e,
                 exc_info=True,
             )
+
+    async def _trigger_followup_for_remaining(
+        self,
+        *,
+        session: "VoiceScreeningSession",
+        db: Any,
+        needs_followup: list[str],
+        portal_fallback_fields: list[str],
+        consent_granted: bool | None,
+    ) -> dict[str, Any]:
+        """
+        Fire a best-effort follow-up over a NON-voice channel for the fields the
+        voice call did not collect.
+
+        ``remaining`` = ``needs_followup`` ∪ ``portal_fallback_fields`` (deduped,
+        order-preserving). The follow-up reuses the CANONICAL DataRequest
+        producer ``DataRequestService.send_notification`` — that sends a generic
+        portal link, and the portal only shows fields NOT yet in
+        ``fields_completed`` (valid voice answers were already persisted by
+        ``_persist_collected_fields``), so a single generic follow-up naturally
+        covers exactly the still-missing fields. NO new notification path.
+
+        Guards:
+          - No follow-up when ``remaining`` is empty (everything collected).
+          - No follow-up when ``consent_granted`` is not True — a denied/uncaptured
+            candidate must not be messaged again.
+          - No follow-up without a ``self._data_request_id`` (nothing to point to).
+          - Channels are resolved from the company's ``DataRequestConfig``
+            booleans; "voice" is NEVER included (recursion guard).
+
+        Returns a dict merged into the finalize result so the outcome is
+        OBSERVABLE (never silent): ``followup_triggered`` always present, plus
+        ``followup_channels`` on success or ``followup_error`` on failure. A
+        follow-up failure is logged loudly and does NOT propagate (the call
+        already happened; valid fields are persisted).
+        """
+        # Dedup while preserving order: needs_followup first, then portal-only.
+        remaining: list[str] = []
+        for name in list(needs_followup) + list(portal_fallback_fields):
+            if name and name not in remaining:
+                remaining.append(name)
+
+        if not remaining:
+            return {"followup_triggered": False, "followup_reason": "all_collected"}
+        if consent_granted is not True:
+            return {"followup_triggered": False, "followup_reason": "consent_denied"}
+        if not self._data_request_id or db is None:
+            return {"followup_triggered": False, "followup_reason": "no_data_request"}
+
+        company_id = getattr(session, "company_id", None)
+        try:
+            # LAZY import — keep the module top cheap + let tests patch the class.
+            from app.domains.communication.services.data_request_service import (
+                DataRequestService,
+            )
+
+            service = DataRequestService()
+
+            # Resolve the company's NON-voice channels from its DataRequestConfig.
+            # company_id is the authoritative tenant id from the session (never a
+            # payload). "voice" is never appended → recursion guard.
+            channels: list[str] = ["email"]
+            if company_id:
+                config = await service.get_or_create_config(db, company_id)
+                channels = []
+                if getattr(config, "send_email_notification", True):
+                    channels.append("email")
+                if getattr(config, "send_whatsapp_notification", True):
+                    channels.append("whatsapp")
+                if not channels:
+                    channels = ["email"]  # always reach the candidate somehow
+            # Defensive: never re-trigger a voice call from a voice follow-up.
+            channels = [c for c in channels if c != "voice"]
+            if not channels:
+                channels = ["email"]
+
+            await service.send_notification(db, self._data_request_id, channels)
+            logger.info(
+                "[DataCollectionVoicePlugin] session=%s follow-up sent via %s "
+                "for %d remaining field(s) (data_request=%s).",
+                getattr(session, "session_id", "<unknown>"),
+                channels,
+                len(remaining),
+                self._data_request_id,
+            )
+            return {
+                "followup_triggered": True,
+                "followup_channels": channels,
+                "followup_fields": remaining,
+            }
+        except Exception as e:
+            # Anti-silent-fallback (CLAUDE.md REGRA 4): log loudly + surface the
+            # error in the return. A follow-up failure must NOT break finalize.
+            logger.warning(
+                "[DataCollectionVoicePlugin] follow-up FAILED (non-blocking) "
+                "session=%s data_request=%s remaining=%s: %s",
+                getattr(session, "session_id", "<unknown>"),
+                self._data_request_id,
+                remaining,
+                e,
+                exc_info=True,
+            )
+            return {"followup_triggered": False, "followup_error": str(e)}
 
     async def _persist_collected_fields(
         self,

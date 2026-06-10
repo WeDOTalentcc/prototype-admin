@@ -1011,11 +1011,25 @@ class MonitoringLoop:
             return
         try:
             from lia_messaging.notification_service import (
+                NotificationChannel,
                 NotificationService,
                 NotificationType,
             )
 
             svc = NotificationService()
+            # E4 (2026-06-09): fan-out REAL. Antes create_notification so persistia
+            # 1 linha de sino e os channels (teams/email) viravam JSON inerte, nunca
+            # entregues. Agora send_multi_channel_notification entrega em cada canal.
+            # company_id em data habilita Teams per-tenant (E2) — estes sao "alertas
+            # de empresa" (user_id=system:) que vao pro canal Teams compartilhado.
+            _CHANNEL_MAP = {
+                "bell": NotificationChannel.BELL,
+                "chat": NotificationChannel.CHAT,
+                "teams": NotificationChannel.TEAMS,
+                "email": NotificationChannel.EMAIL,
+                "whatsapp": NotificationChannel.WHATSAPP,
+                "in_app": NotificationChannel.IN_APP,
+            }
             high_alerts = [a for a in alerts if a.severity in (AlertSeverity.HIGH, AlertSeverity.CRITICAL)]
 
             for alert in high_alerts[:10]:
@@ -1024,21 +1038,26 @@ class MonitoringLoop:
                     if alert.severity == AlertSeverity.CRITICAL
                     else NotificationType.WARNING
                 )
-                await svc.create_notification(
+                _str_channels = alert.channels or ["bell", "chat"]
+                _channels = [
+                    _CHANNEL_MAP[c] for c in _str_channels if c in _CHANNEL_MAP
+                ] or [NotificationChannel.BELL]
+                await svc.send_multi_channel_notification(
                     user_id=f"system:{company_id}",
                     title=alert.title,
                     message=alert.message,
                     notification_type=ntype,
-                    category="proactive_alert",
-                    source_agent="monitoring_loop",
-                    source_trigger=alert.category.value,
+                    channels=_channels,
                     related_job_id=alert.job_id,
                     related_candidate_id=alert.candidate_id,
-                    # Task #1295: canais canônicos por-alerta (AlertPreference),
-                    # não mais hardcoded — honra a tela Configurações.
-                    channels=alert.channels or ["bell", "chat"],
-                    metadata=alert.metadata,
-                    expires_in_hours=24,
+                    data={
+                        "company_id": company_id,
+                        "category": "proactive_alert",
+                        "source_agent": "monitoring_loop",
+                        "source_trigger": alert.category.value,
+                        "metadata": alert.metadata,
+                        "expires_in_hours": 24,
+                    },
                 )
         except Exception as exc:
             logger.warning("Failed to persist alerts as notifications: %s", exc)

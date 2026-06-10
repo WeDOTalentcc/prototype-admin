@@ -80,14 +80,6 @@ class TestWSIInterviewGraphSession:
 # Section 3: _run_node logging estruturado (BCB 498 / SOX)
 # ---------------------------------------------------------------------------
 
-class TestWSIInterviewGraphNodeLogging:
-
-    @pytest.mark.asyncio
-    @pytest.mark.asyncio
-class TestWSIInterviewGraphStart:
-
-    @pytest.mark.asyncio
-    @pytest.mark.asyncio
 class TestWSIInterviewGraphSummary:
 
     def test_get_session_summary_returns_required_fields(self):
