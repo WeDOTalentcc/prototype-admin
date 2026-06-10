@@ -20,6 +20,7 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   type ReactNode,
@@ -477,7 +478,11 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   // refresh. The setChatConversationId callback covers explicit FE writes;
   // this effect catches the WS-driven path (`connection.conversationId`
   // populated by the `message` event in useChatSocket).
-  useEffect(() => {
+  // useLayoutEffect (not useEffect): ensures sessionStorage is updated
+  // synchronously before paint. Prevents a race where router.push fires
+  // before the async useEffect batch commits, leaving sessionStorage with
+  // the old conversationId and causing history to vanish on remount.
+  useLayoutEffect(() => {
     if (chatConversationId) {
       persistConversationId(chatConversationId);
     }
