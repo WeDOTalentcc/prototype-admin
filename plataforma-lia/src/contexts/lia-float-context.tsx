@@ -13,6 +13,8 @@ import {
 } from "@/hooks/chat/lia-chat-connection-types";
 import type { FloatMessage } from "@/hooks/chat/use-float-conversation";
 import { useLiaChatConnection } from "@/hooks/chat/use-lia-chat-connection";
+import { usePathname } from "next/navigation";
+import { routeToCanonicalPage, CANONICAL_PAGES } from "@/lib/canonical-pages";
 import { useUIAction } from "@/hooks/chat/useUIAction";
 import React, {
   createContext,
@@ -26,6 +28,30 @@ import React, {
   type ReactNode,
 } from "react";
 import { useAuthStore } from "@/stores/auth-store";
+
+/** Maps canonical page IDs to badge display labels. */
+const CANONICAL_PAGE_DISPLAY: Partial<Record<string, string>> = {
+  home: "Início",
+  vagas: "Vagas",
+  recrutar: "Visão Global",
+  pipeline_kanban: "Visão Global",
+  funil_talentos: "Funil de Talentos",
+  dashboard: "Indicadores",
+  configuracoes: "Configurações",
+  agent_studio: "Estúdio de Agentes",
+  ajuda: "Ajuda",
+  bancos_talentos: "Bancos de Talentos",
+  biblioteca: "Biblioteca LIA",
+  central_comunicacao: "Central de Comunicação",
+  tasks: "Decidir",
+  chat: "Conversar",
+  trust: "Conformidade",
+  agents_marketplace: "Marketplace de Agentes",
+  ai_credits: "Créditos de IA",
+  integracoes_ats: "Integrações ATS",
+  vaga_detalhe: "Vaga",
+  candidato_detalhe: "Candidato",
+}
 
 export interface SplitViewState {
   active: boolean;
@@ -328,6 +354,22 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   );
 
   const [sessionId] = useState(() => loadOrCreateSessionId());
+
+  // Badge context: update contextPage reactively to URL changes.
+  // Covers pages outside DashboardApp shell (Agent Studio, Trust, etc.)
+  // DashboardApp.setContextPage() fires AFTER this, so its explicit label
+  // takes precedence for sub-pages it manages. Both converge to the same value.
+  const _pathname = usePathname();
+  useEffect(() => {
+    const canonical = routeToCanonicalPage(_pathname);
+    if (canonical === CANONICAL_PAGES.GENERAL) return; // unknown page — keep prev label
+    const label = CANONICAL_PAGE_DISPLAY[canonical];
+    if (label) {
+      setState((prev) =>
+        prev.contextPage === label ? prev : { ...prev, contextPage: label },
+      );
+    }
+  }, [_pathname]);
   const [pendingPrefill, setPendingPrefill] = useState<string | null>(null);
 
   const { dispatchOrEmit: dispatchUIAction } = useUIAction();
