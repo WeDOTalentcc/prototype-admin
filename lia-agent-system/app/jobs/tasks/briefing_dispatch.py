@@ -235,6 +235,60 @@ async def _list_alert_configs_for_frequency(db, frequencies: list[str]) -> list[
     return list(result.scalars().all())
 
 
+async def _dispatch_briefing_notification(
+    notification_service,
+    *,
+    user_id: str,
+    company_id: str | None,
+    freq: str,
+    briefing: dict,
+    db,
+) -> None:
+    """E3 (2026-06-09): entrega o briefing em bell+email+teams via fan-out real.
+
+    Antes o call site chamava notification_service.send_notification(channel="bell"),
+    metodo que NUNCA existiu em NotificationService -> AttributeError engolido ->
+    briefing nao chegava nem no sino, e era hardcoded bell (sem email/teams).
+    Agora usa send_multi_channel_notification (canonical) nos 3 canais; company_id
+    em data habilita a resolucao per-tenant do webhook Teams (E2).
+    """
+    from app.services.notification_service import (
+        NotificationChannel,
+        NotificationType,
+    )
+
+    urgent_count = len(briefing.get("urgent_actions", []))
+    title_map = {
+        "daily": "Briefing diario",
+        "twice_daily": "Briefing do turno",
+        "weekly": "Resumo semanal",
+        "monthly": "Resumo mensal",
+    }
+    title = title_map.get(freq, "Briefing")
+    body = (
+        f"{urgent_count} acoes urgentes pendentes"
+        if urgent_count > 0
+        else "Seu pipeline esta atualizado"
+    )
+    await notification_service.send_multi_channel_notification(
+        user_id=user_id,
+        title=title,
+        message=body,
+        channels=[
+            NotificationChannel.BELL,
+            NotificationChannel.EMAIL,
+            NotificationChannel.TEAMS,
+        ],
+        notification_type=NotificationType.INFO,
+        data={
+            "type": f"{freq}_briefing",
+            "briefing_date": briefing.get("date"),
+            "company_id": company_id,
+        },
+        db=db,
+    )
+
+
 async def _list_tenants_with_briefing_frequency(
     db, frequencies: list[str]
 ) -> list[dict[str, Any]]:
@@ -363,29 +417,12 @@ async def _dispatch_for_frequency_async(frequencies: list[str], task_name: str) 
                         notification_service,
                     )
 
-                    urgent_count = len(briefing.get("urgent_actions", []))
-                    title_map = {
-                        "daily": "Briefing diario",
-                        "twice_daily": "Briefing do turno",
-                        "weekly": "Resumo semanal",
-                        "monthly": "Resumo mensal",
-                    }
-                    title = title_map.get(freq, "Briefing")
-                    body = (
-                        f"{urgent_count} acoes urgentes pendentes"
-                        if urgent_count > 0
-                        else "Seu pipeline esta atualizado"
-                    )
-                    await notification_service.send_notification(
+                    await _dispatch_briefing_notification(
+                        notification_service,
                         user_id=str(user_id),
                         company_id=str(company_id) if company_id else None,
-                        channel="bell",
-                        title=title,
-                        body=body,
-                        data={
-                            "type": f"{freq}_briefing",
-                            "briefing_date": briefing.get("date"),
-                        },
+                        freq=freq,
+                        briefing=briefing,
                         db=db,
                     )
                 except Exception as notif_exc:
