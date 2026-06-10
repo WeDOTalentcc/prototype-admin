@@ -47,6 +47,8 @@ company_id: str = Depends(require_company_id)):
     from app.domains.offer.tools.create_offer_draft import _fetch_job_snapshot, _fetch_candidate_snapshot
     from app.domains.base import DomainContext
     ctx = DomainContext(
+        domain_id="offer",
+        session_id=str(current_user.id),
         user_id=current_user.id,
         tenant_id=company_id,
         metadata={"auth_token": getattr(current_user, "_raw_token", "")},
@@ -116,6 +118,8 @@ company_id: str = Depends(require_company_id)):
     from app.domains.base import DomainContext
     company_id = current_user.company_id
     ctx = DomainContext(
+        domain_id="offer",
+        session_id=str(current_user.id),
         user_id=current_user.id,
         tenant_id=company_id,
         metadata={"auth_token": getattr(current_user, "_raw_token", "")},
@@ -145,6 +149,8 @@ company_id: str = Depends(require_company_id)):
     from app.domains.base import DomainContext
     company_id = current_user.company_id
     ctx = DomainContext(
+        domain_id="offer",
+        session_id=str(current_user.id),
         user_id=current_user.id,
         tenant_id=company_id,
         metadata={"auth_token": getattr(current_user, "_raw_token", "")},
