@@ -110,10 +110,6 @@ intent_keywords:
   smart alerts: proactive_alerts
   alertas inteligentes: proactive_alerts
   riscos do pipeline: proactive_alerts
-  ações autônomas: autonomous_actions
-  ações automáticas: autonomous_actions
-  ações pendentes: autonomous_actions
-  autonomous actions: autonomous_actions
   notificar gestor: stakeholder_notify
   notificar hiring manager: stakeholder_notify
   decisões pendentes: stakeholder_notify

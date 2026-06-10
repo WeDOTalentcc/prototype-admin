@@ -143,13 +143,6 @@ RECRUITER_ASSISTANT_ACTIONS = [
         tags=["alerts", "proactive", "monitoring"],
     ),
     DomainAction(
-        action_id="autonomous_actions",
-        name="Ações Autônomas",
-        description="Ver e gerenciar ações autônomas executadas pela LIA",
-        requires_confirmation=False,
-        tags=["autonomous", "actions", "automation"],
-    ),
-    DomainAction(
         action_id="stakeholder_notify",
         name="Notificar Stakeholders",
         description="Detectar decisões pendentes e notificar hiring managers com escalação",
