@@ -573,7 +573,7 @@ class CascadedRouter:
                         _t5_span.set_attribute("hit", "false")
                         _t5_span.set_attribute("below_threshold", "true")
                         logger.info(
-                            "CascadedRouter: Tier 5 confidence %.2f < %.2f for '%s...' — falling to Tier 6",
+                            "CascadedRouter: Tier 5 confidence %.2f < %.2f for '%s...' — falling to Tier 7 (Tier 6 removed Sprint 12.3-B)",
                             cascade_result.confidence, _TIER5_MIN_CONFIDENCE, message[:40],
                         )
                     else:

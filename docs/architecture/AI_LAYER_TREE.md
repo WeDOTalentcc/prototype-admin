@@ -223,7 +223,7 @@ Hierarquia de resolução por **custo crescente**:
 | 6 | ~~Autonomous~~ | REMOVIDO Sprint 12.3-B | — | Era AutonomousReActAgent; env nunca setado em prod |
 | FB | clarification_needed | `cascaded_router.py` | — | Pergunta ao usuário quando tudo falha |
 
-> ⚠️ **Inconsistência conhecida (Tier 6):** o header do router documenta Tier 6 como REMOVIDO em Sprint 12.3-B ("env nunca setado em prod"), mas `DOMAIN_CATALOG.md` ainda descreve `autonomous` como fallback vivo de Tier 6. Os dois discordam — o catalog está desatualizado. Ver §21 item G-TIER6.
+> **Tier 6 REMOVIDO (Sprint 12.3-B):** `autonomous` não é mais roteado. `DOMAIN_CATALOG.md` atualizado — `autonomous` é "código órfão sem roteamento ativo". Log corrigido ("falling to Tier 7"). Ver §21 G-TIER6.
 
 > ⚠️ **`handoff_tools.py:54` — mismatch semântico:** o domínio `"autonomous"` está mapeado como *"listar, confirmar ou rejeitar ações pendentes"* (semântica de `AutonomousAgentService` / proactive actions), mas `delegate_to_autonomous` resolve via `AgentRegistry().get_instance("autonomous")` → `AutonomousReActAgent` (ReAct cross-domain). Se o supervisor for ativado, pode delegar "ações pendentes" a um agente que faz outra coisa. **Fix recomendado:** remover essa entrada do mapa de handoff. Ver §21 item G-HANDOFF.
 
@@ -1187,7 +1187,7 @@ Os dois conjuntos têm **interseção parcial**, mas não são iguais. Exemplo: 
 | `talent_intelligence` | **promotion_candidate** ⚠️ | Skills Ontology, Workforce Planning, Internal Mobility — tools registradas mas ativação operacional pendente |
 | `voice` | **promotion_candidate** ⚠️ | Voice screening (~1 725 LOC orchestrator) — sem `domain.py`, sem `@register_domain` |
 
-> ⚠️ **Promotion candidates** (`interview_intelligence`, `voice`, `talent_intelligence`): carregam lógica agentic-grade mas ainda classificados como service domains. Promoção = adicionar `domain.py` + `@register_domain`. Ver §21 item G-PROMOTION.
+> **Agent Studio em desenvolvimento** (`interview_intelligence`, `voice`, `talent_intelligence`): sem `domain.py` por decisão arquitetural — serão criados como agentes no Agent Studio, não como agentic domains canônicos. Ver §21 G-PROMOTION.
 
 ### Canonical-Active Legacy (2)
 
@@ -1195,16 +1195,14 @@ Domínios com código de produção na forma pré-refactor (sem `domain.py` mode
 
 | Domain | LOC | Status real |
 |--------|-----|------------|
-| `autonomous` | ~2 300 | ReAct cross-domain fallback (Tier 6 — **REMOVIDO** do router em Sprint 12.3-B, env nunca setado em prod). `DOMAIN_CATALOG.md` ainda o documenta como ativo — inconsistência. Ver §21 G-TIER6. |
+| `autonomous` | ~2 300 | Tier 6 **REMOVIDO** em Sprint 12.3-B. Código existe em `agents/` mas sem roteamento ativo — "código órfão". `DOMAIN_CATALOG.md` e router corrigidos. Ver §21 G-TIER6. |
 | `policy` | ~2 343 | Motor real de `PolicyEngineService` + `PolicySetupAgent` + FairnessGuard por setor. Pré-refactor. `hiring_policy` NÃO o substitui. |
 
-### Repository Stubs (30)
+### Repository Stubs — Migrados para `app/repositories/` (✅ RESOLVIDO)
 
-> ⚠️ **Namespace bloat:** 30 de 59 entradas em `app/domains/` são stubs de acesso a dados puro (CRUD). Colocar layers de data-access no mesmo namespace que domínios agentes autônomos torna o sistema aparentemente maior e menos consistente. Refatoração para namespace separado (`app/data/` ou `app/repositories/`) é item de dívida técnica. Ver §21 item G-STUBS.
->
-> Sensors que validam invariantes de stubs: `scripts/check_stub_invariants.py`, `validate_stubs.py`, `check_canonical_domain_structure.py`, `check_no_imports_from_deprecated.py`.
+> **2026-06-10:** 27 diretórios-fantasma de stubs foram deletados de `app/domains/`. Repositórios CRUD agora consolidados em `app/repositories/` (~40 arquivos `*_repository.py`). Ver §21 G-STUBS.
 
-Pure CRUD data access layers. Não roteáveis pelo orquestrador. Incluem: `admin`, `agent_memory`, `approvals`, `auth`, `bulk_actions`, `candidate_lists`, `chat`, `clients`, `client_users`, `company_culture`, `compliance`, `consent`, `data_subject`, `email_templates`, `goals`, `health_check`, `integrations_hub` (repo), `journey_mapping`, `notifications`, `observability`, `offers`, `opinions`, `persona`, `policy` (legacy), `recruitment_journey`, `saas_metrics`, `shared_searches`, `talent_intelligence`, `tasks`, `trust_center`.
+Namespace único de acesso a dados: `app/repositories/`. Inclui: `admin_repository.py`, `agent_memory_repository.py`, `approvals_repository.py`, `auth_user_repository.py`, `bulk_actions_repository.py`, `candidate_list_repository.py`, `chat_repository.py`, `client_account_repository.py`, `company_culture_repository.py`, `compliance_controls_repository.py`, `consent_repository.py`, `data_subject_repository.py`, `email_templates_repository.py`, `goals_repository.py`, `health_check_repository.py`, `job_vacancies_analytics_repository.py`, `journey_mapping_repository.py`, `notifications_repository.py`, `opinions_repository.py`, `recruitment_journey_repository.py`, `saas_metrics_repository.py`, `shared_search_repository.py`, `tasks_repository.py`, `technical_tests_repository.py`, `trust_center_repository.py` e outros.
 
 ---
 
@@ -1273,93 +1271,75 @@ mutmut results  # mede survival-rate atual
 
 ---
 
-### G-STUBS — Repository Stubs poluem `app/domains/` (🟡 PARCIALMENTE RESOLVIDO)
+### G-STUBS — Repository Stubs poluem `app/domains/` (✅ RESOLVIDO)
 
-**Descoberto:** 2026-06-09. **Parcialmente resolvido:** `app/repositories/` criado e stubs puros migrados.
+**Descoberto:** 2026-06-09. **Resolvido:** 2026-06-10 — diretórios-fantasma deletados.
 
-**Estado atual:**
+**O que foi feito:**
+1. `app/repositories/` já existia com ~40 `*_repository.py` consolidados
+2. **27 diretórios-fantasma deletados** de `app/domains/`: `admin`, `admin_settings`, `agent_memory`, `approvals`, `auth`, `bulk_actions`, `candidate_lists`, `chat`, `clients`, `client_users`, `company_culture`, `data_subject`, `email_templates`, `goals`, `health_check`, `job_vacancies_analytics`, `journey_mapping`, `lia_assistant`, `notifications`, `observability`, `opinions`, `recruitment_journey`, `saas_metrics`, `shared_searches`, `tasks`, `technical_tests`, `trust_center`
 
-```
-app/repositories/           ← NOVO namespace criado (~40 arquivos *_repository.py consolidados)
-  admin_repository.py
-  agent_memory_repository.py
-  chat_repository.py
-  ... (38 arquivos)
+**Estado final:** `app/domains/` tem agora ~30 entradas — apenas domínios ativos com lógica real. `app/repositories/` é o namespace único de acesso a dados CRUD.
 
-app/domains/admin/          ← diretório ainda existe
-  __pycache__/
-  repositories/             ← thin wrapper que importa de app/repositories/
-
-app/domains/chat/           ← idem — só __pycache__ + repositories/
-```
-
-**O que foi resolvido:** stubs puros (admin, chat, approvals, bulk_actions, etc.) foram esvaziados — seus diretórios em `app/domains/` agora contêm apenas `__pycache__/` e um `repositories/` vazio ou de delegação.
-
-**O que ainda resta:** os diretórios-fantasma em `app/domains/` ainda existem (não foram deletados), então `ls app/domains/` ainda mostra 72 entradas. O namespace bloat visual permanece.
-
-**Service domains com conteúdo legítimo** (sem `domain.py`, mas não são stubs puros):
-
-| Domain | Py files | Natureza |
-|--------|---------|---------|
-| `ai` | 27 | LLM services, cache, RAG (service legítimo) |
-| `company` | 34 | Settings, policies, culture (service legítimo) |
-| `recruitment` | 22 | Dados de processos (service legítimo) |
-| `candidates` | 12 | CRUD candidatos (service legítimo) |
-| `lgpd` | 13 | Compliance purge (service legítimo) |
-
-**Sensores:**
+**Sensores que continuam válidos:**
 - `scripts/check_stub_invariants.py`, `validate_stubs.py`
 - `scripts/check_canonical_domain_structure.py`, `check_no_imports_from_deprecated.py`
 
-**Próximo passo:** deletar diretórios-fantasma de `app/domains/` para completar a migração.
-
 ---
 
-### G-POLICY-OVERLAP — `hiring_policy` vs `policy`: Overlap Confuso (✅ DOCUMENTADO)
+### G-POLICY-OVERLAP — `hiring_policy` vs `policy`: Overlap Confuso (✅ RESOLVIDO)
 
-**Descoberto:** 2026-06-09. **Resolvido:** DOMAIN_CATALOG.md atualizado com nota explícita.
+**Descoberto:** 2026-06-09. **Resolvido:** 2026-06-10 — DOMAIN_CATALOG.md reescrito com separação explícita.
 
-**Estado atual — DOMAIN_CATALOG.md documenta:**
+**Papéis clarificados:**
 
-> *"hiring_policy/ é stub aspiracional (40 LOC) — **NÃO substitui** policy/."*
+| Domain | Papel | LOC |
+|--------|-------|-----|
+| `hiring_policy/` | **Entry point** registrado no DomainRegistry — roteamento conversacional, delega para `policy/` | ~40 |
+| `policy/` | **Motor real** — `PolicyEngineService`, `PolicySetupAgent`, `ALPHA1_SECTOR_RULES`, FairnessGuard setorial | 2.343 |
 
-A tabela "Canonical-active legacy" do catalog agora lista `policy` com:
-> *"Canonical policy engine (13 files, 2 343 LOC) + 1 167 LOC v1 endpoints. Cobre PolicyEngineService (BusinessRule/RateLimitRule/EscalationRule), PolicySetupAgent (chat-driven setup), ALPHA1_SECTOR_RULES (sector-dependent FairnessGuard). hiring_policy/ é stub aspiracional (40 LOC) — NÃO substitui policy/."*
-
-**Regra inegociável (permanece):** `hiring_policy` NÃO substitui `policy`. Regras de contratação = `app/domains/policy/`.
+**Regra inegociável:** qualquer lógica nova de política de contratação vai em `policy/`, nunca em `hiring_policy/`.
 
 **Arquivos:** `app/domains/DOMAIN_CATALOG.md`, `app/domains/hiring_policy/`, `app/domains/policy/`
 
 ---
 
-### G-PROMOTION — Promote `interview_intelligence` / `voice` / `talent_intelligence` (🟡)
+### G-PROMOTION — `interview_intelligence` / `voice` / `talent_intelligence` sem `domain.py` (✅ ESCLARECIDO)
 
-**Problema:** três domínios com lógica agentic-grade (totalizando >5 000 LOC de serviços/tools) ainda classificados como "service domains" sem `domain.py` ou `@register_domain`.
+**Descoberto:** 2026-06-09. **Esclarecido:** 2026-06-10 — ausência de `domain.py` é **intencional por decisão arquitetural**.
 
-| Domain | LOC relevante | O que falta |
-|--------|--------------|-------------|
-| `interview_intelligence` | ~2 026 LOC | `domain.py` + `@register_domain` |
-| `voice` | ~1 725 LOC orchestrator | `domain.py` + `@register_domain` |
-| `talent_intelligence` | tools registradas | `domain.py` + `@register_domain` (ver G-TALENT-INTEL) |
+Esses três módulos **não serão promovidos a agentic domains canônicos**. Serão criados como **agentes customizados no Agent Studio** (`agent_studio` domain) — o mecanismo projetado para agentes especializados configuráveis por tenant.
 
-**Critério para promoção:** adicionar `domain.py` com `@register_domain`, `ComplianceDomainPrompt`, e registrar no `DomainRegistry`. A sentinela T-D não bloqueia promoção de service → agentic (só conta ReActAgents canônicos).
+| Domain | Conteúdo já implementado | Destino |
+|--------|------------------------|---------|
+| `interview_intelligence` | `services/`: bias_detector, comparative_analysis, feedback_generator, interview_wsi, strategic_opinion, transcription (~2 026 LOC) | Agent Studio — agente de inteligência de entrevistas |
+| `voice` | `services/` + `plugins/` + `protocols/`: gemini_live_audio, voice_core_orchestrator, voice_screening, data_collection_plugin, wsi_voice_plugin (~2 059 LOC) | Agent Studio — agente de triagem por voz |
+| `talent_intelligence` | `tools/`: candidate_nurture, internal_mobility, interview_intelligence_tools, market_intelligence, skills_ontology, workforce_planning + registry (8 arquivos) | Agent Studio — agente de inteligência de talentos |
 
-**Arquivos:** `app/domains/{interview_intelligence,voice,talent_intelligence}/`
+**Por que Agent Studio e não agentic domain canônico?**
+- Evita adicionar 17º+ ReActAgent canônico ao inventário sentinela (`test_tenant_aware_rollout_t_d.py`)
+- Agent Studio permite configuração por tenant sem tocar no core do CascadedRouter
+- Escopo especializado — não são domínios de roteamento geral
+
+**DOMAIN_CATALOG.md** atualizado: nova categoria "Agent Studio em Desenvolvimento (3)" substitui "Service Promotion Candidates".
 
 ---
 
-### G-TIER6 — Inconsistência Tier 6 / autonomous entre router e catalog (🔴 Fix)
+### G-TIER6 — Inconsistência Tier 6 / autonomous entre router e catalog (✅ RESOLVIDO)
 
-**Problema:** dois documentos autoritativos discordam sobre o status do `autonomous` domain:
+**Descoberto:** 2026-06-09. **Resolvido:** 2026-06-10.
 
-| Fonte | O que diz |
-|-------|-----------|
-| `cascaded_router.py` (header) | Tier 6 REMOVIDO em Sprint 12.3-B — "env nunca setado em prod" |
-| `DOMAIN_CATALOG.md` | `autonomous` documentado como fallback vivo de Tier 6 |
+**Fixes aplicados:**
 
-**Estado real (auditoria):** o router **não usa** mais o `AutonomousReActAgent` como Tier 6. A env var que habilitava não era setada em produção. O domínio `autonomous` permanece no código (pré-refactor) mas não é ativado no fluxo de roteamento.
+1. **`cascaded_router.py` linha 576** — log corrigido:
+   - Antes: `"falling to Tier 6"`
+   - Depois: `"falling to Tier 7 (Tier 6 removed Sprint 12.3-B)"`
 
-**Fix:** atualizar `DOMAIN_CATALOG.md` para refletir que `autonomous` é "Canonical-active legacy — Tier 6 removido do router em Sprint 12.3-B". Fecha a inconsistência entre os dois documentos.
+2. **`DOMAIN_CATALOG.md`** — `autonomous` reclassificado de "Canonical Active" para **"Código órfão (sem roteamento ativo)"**:
+   - Tier 6 removido em Sprint 12.3-B (2026-05-24) — `AUTONOMOUS_REACT_ENABLED` nunca SET em prod
+   - `_route_via_autonomous_agent` + `autonomous_react_agent.py` removidos em Sprint 12.6
+   - Diretório `app/domains/autonomous/agents/` ainda existe mas não é roteado por nenhum caller
+   - Candidato a remoção completa na próxima limpeza de namespace
 
 **Arquivos:** `app/orchestrator/routing/cascaded_router.py`, `app/domains/DOMAIN_CATALOG.md`
 
