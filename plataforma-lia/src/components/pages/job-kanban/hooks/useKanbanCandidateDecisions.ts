@@ -33,6 +33,7 @@ export interface KanbanCandidateDecisionsContext {
   setShowRubricModal: (open: boolean) => void
   setRubricEvaluationData: (data: RubricEvaluationData) => void
   setDecisionFlowType: (type: string) => void
+  setShowCloseVacancyModal: (open: boolean) => void
 }
 
 export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext) {
@@ -51,6 +52,7 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     setShowRubricModal,
     setRubricEvaluationData,
     setDecisionFlowType,
+    setShowCloseVacancyModal,
   } = ctx
 
   const handleApproveCandidate = async (candidate: KanbanCandidate) => {
@@ -298,7 +300,14 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
             })
           }).catch(() => { /* fire-and-forget */ })
 
-          toast.success('Candidato contratado!', { description: `${candidate.name} foi movido para Contratados.` })
+          toast.success('Candidato contratado! 🎉', {
+            description: `${candidate.name} foi movido para Contratados.`,
+            action: {
+              label: 'Fechar vaga',
+              onClick: () => setShowCloseVacancyModal(true),
+            },
+            duration: 8000,
+          })
         } else {
           const errorData = await transitionResp.json().catch(() => ({}))
           toast.error('Erro ao contratar', { description: errorData.detail?.message || errorData.error || 'Não foi possível registrar a contratação.' })

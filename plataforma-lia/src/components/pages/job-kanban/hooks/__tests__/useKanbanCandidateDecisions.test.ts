@@ -45,6 +45,7 @@ const makeCtx = (overrides: Partial<KanbanCandidateDecisionsContext> = {}): Kanb
     setShowRubricModal: vi.fn(),
     setRubricEvaluationData: vi.fn(),
     setDecisionFlowType: vi.fn(),
+    setShowCloseVacancyModal: vi.fn(),
     ...overrides,
   }
 }
@@ -113,11 +114,18 @@ describe('useKanbanCandidateDecisions — confirm_hire branch', () => {
       })
     )
 
-    // toast.success called
+    // toast.success called with action button
     expect(mockToast.success).toHaveBeenCalledWith(
-      'Candidato contratado!',
-      expect.objectContaining({ description: expect.stringContaining(candidate.name) })
+      'Candidato contratado! 🎉',
+      expect.objectContaining({
+        description: expect.stringContaining(candidate.name),
+        action: expect.objectContaining({ label: 'Fechar vaga' }),
+        duration: 8000,
+      })
     )
+
+    // setShowCloseVacancyModal is available in ctx (can be triggered via action.onClick)
+    expect(ctx.setShowCloseVacancyModal).toBeDefined()
 
     // modal closed
     expect(ctx.setShowDecisionFlowModal).toHaveBeenCalledWith(false)

@@ -482,6 +482,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setShowRubricModal: uiModals.actions.setShowRubricModal,
     setRubricEvaluationData: uiModals.actions.setRubricEvaluationData as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["setRubricEvaluationData"],
     setDecisionFlowType: uiModals.actions.setDecisionFlowType as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["setDecisionFlowType"],
+    setShowCloseVacancyModal: uiModals.actions.setShowCloseVacancyModal,
   })
 
   const handleOpenTriagem = useCallback((candidate: Record<string, unknown>) => {
