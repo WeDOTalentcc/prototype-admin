@@ -26,6 +26,7 @@
 18. [Feature Flags de Comportamento AI](#18-feature-flags-de-comportamento-ai)
 19. [Observabilidade & Monitoramento](#19-observabilidade--monitoramento)
 20. [Domain Catalog — Resumo](#20-domain-catalog--resumo)
+21. [Gaps Conhecidos & Dívida Técnica](#21-gaps-conhecidos--dívida-técnica)
 
 ---
 
@@ -221,6 +222,10 @@ Hierarquia de resolução por **custo crescente**:
 | 5 | LLM Cascade | `routing/llm_cascade.py` | $$ | Gemini Flash → Claude Sonnet → Claude Opus |
 | 6 | ~~Autonomous~~ | REMOVIDO Sprint 12.3-B | — | Era AutonomousReActAgent; env nunca setado em prod |
 | FB | clarification_needed | `cascaded_router.py` | — | Pergunta ao usuário quando tudo falha |
+
+> ⚠️ **Inconsistência conhecida (Tier 6):** o header do router documenta Tier 6 como REMOVIDO em Sprint 12.3-B ("env nunca setado em prod"), mas `DOMAIN_CATALOG.md` ainda descreve `autonomous` como fallback vivo de Tier 6. Os dois discordam — o catalog está desatualizado. Ver §21 item G-TIER6.
+
+> ⚠️ **`handoff_tools.py:54` — mismatch semântico:** o domínio `"autonomous"` está mapeado como *"listar, confirmar ou rejeitar ações pendentes"* (semântica de `AutonomousAgentService` / proactive actions), mas `delegate_to_autonomous` resolve via `AgentRegistry().get_instance("autonomous")` → `AutonomousReActAgent` (ReAct cross-domain). Se o supervisor for ativado, pode delegar "ações pendentes" a um agente que faz outra coisa. **Fix recomendado:** remover essa entrada do mapa de handoff. Ver §21 item G-HANDOFF.
 
 ### RouteResult (dataclass)
 
@@ -721,7 +726,29 @@ Consolida bias detection de múltiplos domínios (Interview, Job Creation, Sourc
 
 Camada adicional de detecção de discurso de ódio (complementa FairnessGuard).
 
-### 12.7 Compliance Bypass Flags (R-007)
+### 12.7 ⚠️ Gap de PII — Name-Leak Residual no Chat do Recrutador
+
+**Descoberto em auditoria (2026-06-09).** `c3b_layer.pre_compliance` chama:
+
+```python
+strip_pii_for_llm_prompt(message, mask_names=False)
+# ↑ para callers recruiter chat (chat-page + agent_chat_ws)
+```
+
+**Efeito real:**
+- ✅ Identificadores estruturados (CPF, email, telefone) → **sempre removidos**
+- ❌ **Nomes de candidatos** → **chegam ao LLM sem mascaramento** no fluxo recruiter-facing
+
+**Justificativa original:** recrutadores estão autorizados a ver nomes e NER produzia false positives em títulos de cargo.
+
+**Controle de re-habilitação:** `LIA_RECRUITER_CHAT_MASK_PII=true` re-ativa `mask_names=True` para o chat recruiter.
+
+**Paths afetados:** `c3b_layer.pre_compliance` via callers `chat-page` e `agent_chat_ws`.
+**Paths não-afetados (mask=True padrão):** embeddings, candidate-facing paths.
+
+Ver §21 item G-PII-NAME para rastreamento.
+
+### 12.8 Compliance Bypass Flags (R-007)
 
 > Detalhamento completo em `docs/runbooks/operational-flags.md`
 
@@ -887,6 +914,32 @@ Gerencia documentos indexados por tenant (JDs, políticas, perfis de empresa) pa
 **Arquivo:** `app/domains/ai/services/ragas_evaluation_service.py`
 
 Framework de avaliação de qualidade RAG (faithfulness, answer relevance, context precision).
+
+### 15.7 ⚠️ Gap — Embeddings sempre na Platform Key (nunca BYOK por tenant)
+
+**Descoberto em auditoria (2026-06-09).** Estado real em produção:
+
+```
+EmbeddingService.generate_embedding()  →  plataforma key (sempre)
+                 ↑
+nenhum call site passa company_id; a assinatura não aceita um
+```
+
+**O branch de tenant key no código:**
+
+```python
+# _get_tenant_provider() — branch NUNCA alcançado por embeddings
+if provider == "gemini" and tenant_api_key:
+    return tenant_gemini_client  # ← dead code para embeddings
+```
+
+**Isolamento de tenant em embeddings:** feito via **filtro SQL** (`company_id` nas queries pgvector), **não** via chave de LLM separada por tenant.
+
+**O que ainda honra BYOK:** completions / chat (via `get_provider_for_tenant()`). Apenas embeddings são platform-pinned.
+
+**Risco:** tenant A com BYOK ativado continua gerando embeddings na chave da plataforma — pode conflitar com expectativas de faturamento ou compliance de dados em algumas regiões.
+
+Ver §21 item G-EMBED-KEY para rastreamento.
 
 ---
 
@@ -1072,6 +1125,17 @@ Exemplo (company_settings): 18 cenários × threshold 0.85.
 
 > Fonte canônica: `app/domains/DOMAIN_CATALOG.md`
 
+### ⚠️ Os Dois "16s" — Distinção Crítica
+
+O número 16 aparece em dois contextos **diferentes** e frequentemente confunde leitores:
+
+| Conjunto | O que é | Critério |
+|----------|---------|---------|
+| **16 ReActAgents canônicos** (§5) | Agentes roteáveis pelo orquestrador, com `TenantAwareAgentMixin + LangGraphReActBase` | `@register_agent` + sentinela T-D |
+| **16 `@register_domain` domains** | Domínios registrados na `DomainRegistry` | `@register_domain` decorator |
+
+Os dois conjuntos têm **interseção parcial**, mas não são iguais. Exemplo: `job_creation` é um `@register_domain` mas o agente associado é `WizardReActAgent` (domain_id = `job_management`). Exemplo inverso: `RecruiterCopilotReActAgent` é um dos 16 canônicos mas está sob `recruiter_assistant`, que também contém mais 3 outros agentes.
+
 ### Agentic Domains (13) — registrados via `@register_domain`
 
 | Domain | domain_id | LOC aprox. | Descrição |
@@ -1081,7 +1145,7 @@ Exemplo (company_settings): 18 cenários × threshold 0.85.
 | `automation` | automation | 37 files | Tasks, lembretes, notas, workflow |
 | `communication` | communication | 75 files | Email, WhatsApp, Teams, SMS |
 | `cv_screening` | cv_screening | 80 files | WSI, avaliação de CV, scoring |
-| `hiring_policy` | hiring_policy | 14 files | Política de contratação + FairnessGuard |
+| `hiring_policy` | hiring_policy | ~40 LOC stub | ⚠️ Stub registrado — NÃO é onde as regras são aplicadas (ver nota abaixo) |
 | `interview_scheduling` | interview_scheduling | 25 files | Agendamento + Microsoft Calendar |
 | `job_creation` | job_creation | 13 files | Wizard de criação de vaga (HITL) |
 | `job_management` | job_management | 69 files | CRUD de vagas, pipeline config |
@@ -1089,6 +1153,14 @@ Exemplo (company_settings): 18 cenários × threshold 0.85.
 | `recruiter_assistant` | recruiter_assistant | 38 files | Copiloto geral (fallback domain) |
 | `sourcing` | sourcing | 49 files | Sourcing multi-canal |
 | `agent_studio` | agent_studio | 4 files | Custom agents marketplace |
+
+> ⚠️ **`hiring_policy` vs `policy` — onde as regras de contratação são de fato aplicadas:**
+>
+> - `hiring_policy` (`@register_domain`, ~40 LOC) é um **stub registrado** — aparece no namespace agentic mas apenas encaminha ao `PolicyReActAgent`.
+> - `policy` (~2 343 LOC) é o **motor real**: `PolicyEngineService`, `PolicySetupAgent`, `FairnessGuard` por setor. Está na forma legada pré-refactor (sem `domain.py`, sem `@register_domain`). Listado como "Canonical-active legacy" abaixo.
+> - `hiring_policy` **NÃO substitui** `policy`. Um leitor do namespace de domínios NÃO consegue determinar onde as regras são aplicadas sem conhecer essa distinção.
+>
+> Ver §21 item G-POLICY-OVERLAP.
 
 ### Micro-Action Domains (3)
 
@@ -1108,15 +1180,228 @@ Exemplo (company_settings): 18 cenários × threshold 0.85.
 | `company` | service | Settings e configuração de empresa |
 | `credits` | service | Tracking de consumo AI |
 | `integrations_hub` | service | Third-party integration management |
-| `interview_intelligence` | **promotion_candidate** | Bias detection, análise comparativa (2 026 LOC) |
+| `interview_intelligence` | **promotion_candidate** ⚠️ | Bias detection, análise comparativa (~2 026 LOC) — sem `domain.py`, sem `@register_domain` |
 | `lgpd` | service | LGPD/GDPR compliance e purge |
 | `modules` | service | Feature gating por tier |
 | `recruitment` | service | Dados de processos seletivos |
-| `voice` | **promotion_candidate** | Voice screening (~1 725 LOC orchestrator) |
+| `talent_intelligence` | **promotion_candidate** ⚠️ | Skills Ontology, Workforce Planning, Internal Mobility — tools registradas mas ativação operacional pendente |
+| `voice` | **promotion_candidate** ⚠️ | Voice screening (~1 725 LOC orchestrator) — sem `domain.py`, sem `@register_domain` |
+
+> ⚠️ **Promotion candidates** (`interview_intelligence`, `voice`, `talent_intelligence`): carregam lógica agentic-grade mas ainda classificados como service domains. Promoção = adicionar `domain.py` + `@register_domain`. Ver §21 item G-PROMOTION.
+
+### Canonical-Active Legacy (2)
+
+Domínios com código de produção na forma pré-refactor (sem `domain.py` moderno):
+
+| Domain | LOC | Status real |
+|--------|-----|------------|
+| `autonomous` | ~2 300 | ReAct cross-domain fallback (Tier 6 — **REMOVIDO** do router em Sprint 12.3-B, env nunca setado em prod). `DOMAIN_CATALOG.md` ainda o documenta como ativo — inconsistência. Ver §21 G-TIER6. |
+| `policy` | ~2 343 | Motor real de `PolicyEngineService` + `PolicySetupAgent` + FairnessGuard por setor. Pré-refactor. `hiring_policy` NÃO o substitui. |
 
 ### Repository Stubs (30)
 
+> ⚠️ **Namespace bloat:** 30 de 59 entradas em `app/domains/` são stubs de acesso a dados puro (CRUD). Colocar layers de data-access no mesmo namespace que domínios agentes autônomos torna o sistema aparentemente maior e menos consistente. Refatoração para namespace separado (`app/data/` ou `app/repositories/`) é item de dívida técnica. Ver §21 item G-STUBS.
+>
+> Sensors que validam invariantes de stubs: `scripts/check_stub_invariants.py`, `validate_stubs.py`, `check_canonical_domain_structure.py`, `check_no_imports_from_deprecated.py`.
+
 Pure CRUD data access layers. Não roteáveis pelo orquestrador. Incluem: `admin`, `agent_memory`, `approvals`, `auth`, `bulk_actions`, `candidate_lists`, `chat`, `clients`, `client_users`, `company_culture`, `compliance`, `consent`, `data_subject`, `email_templates`, `goals`, `health_check`, `integrations_hub` (repo), `journey_mapping`, `notifications`, `observability`, `offers`, `opinions`, `persona`, `policy` (legacy), `recruitment_journey`, `saas_metrics`, `shared_searches`, `talent_intelligence`, `tasks`, `trust_center`.
+
+---
+
+## 21. Gaps Conhecidos & Dívida Técnica
+
+> Esta seção documenta gaps arquiteturais identificados em auditoria de código (2026-06-09). Cada item tem um identificador (`G-*`) referenciado pelas seções relevantes do documento. Itens 🔴 têm fix imediato recomendado; itens 🟡 são dívida técnica gerenciada.
+
+### G-HITL — HITL Fragmentado por Caller (🟡 Mitigado)
+
+**Descoberto:** 2026-06-09. **Status:** funciona hoje; mitigado por sensor `G-FED-HITL`.
+
+**Problema:** não há chokepoint único para Human-in-the-Loop (HITL). Três mecanismos coexistem:
+
+| Mecanismo | Localização | Caller |
+|-----------|------------|--------|
+| `_HITL_ACTION_TYPES` | `orchestrator/execution/federated_executor.py` | Execução federada |
+| `intents_config` | `orchestrator/supervisor/supervisor_config.py` | Supervisor (quando ativo) |
+| `requires_confirmation` | `tools/tool_handler.py` | Tool handler — **não usado** pelas escritas do federado |
+
+**Risco:** um caller pode executar uma ação mutativa contornando o gate HITL se não estiver no `_HITL_ACTION_TYPES` do federado. O `requires_confirmation` do `tool_handler` não intercepta essas escritas.
+
+**Mitigação atual:** sensor `G-FED-HITL` (commit f4b0bbff5) detecta divergências entre os três conjuntos em CI.
+
+**Fix ideal:** mover o gate HITL para o `tool_handler` como chokepoint universal (qualquer caller). Consolidação rastreada como Sprint N backlog.
+
+**Arquivos:** `orchestrator/execution/federated_executor.py`, `orchestrator/supervisor/supervisor_config.py`, `tools/tool_handler.py`
+
+---
+
+### G-TALENT-INTEL — talent_intelligence: Desbloqueio Operacional Pendente (🟡)
+
+**Status Sprint 2 (commit 77d310f10):** tools JÁ registradas no código (verificador corrigiu o auditor). Funcionalidade existe mas não está ativa por padrão.
+
+**Desbloqueio necessário — ação operacional (não mudança de código):**
+
+```bash
+# Opção 1 — seed via Python
+ModuleService.seed_beta_modules()
+
+# Opção 2 — REST API
+POST /modules/company/{company_id}/activate
+# Body: { "module_ids": ["talent_intelligence", "workforce_planning",
+#          "internal_mobility", "skills_ontology", "passive_nurture"] }
+# 5 módulos, todos initial_status=beta
+```
+
+**Dívida técnica adicional:** 3 queries raw SQL marcadas `ADR-001-EXEMPT` em `app/domains/talent_intelligence/tools/workforce_planning_tools.py`. Extração para `WorkforceRepository` = backlog.
+
+**Arquivos:** `app/domains/talent_intelligence/tools/workforce_planning_tools.py`, `app/domains/modules/services/module_service.py`
+
+---
+
+### G-MUTATION — Mutation Testing de Compliance → Blocking (🟡 Diferido)
+
+**Status:** DIFERIDO — requer medir o survival-rate atual primeiro.
+
+**Problema:** mutation testing (`mutmut`) para a compliance layer não está configurado como blocking no CI. Tornar blocking cegamente pode quebrar o CI se houver mutants sobreviventes hoje que passam nos testes atuais.
+
+**Por que foi diferido:** `mutmut` é lento e pode introduzir regressões no CI se aplicado antes de medir a cobertura atual.
+
+**Próximo passo correto:**
+```bash
+mutmut run --paths-to-mutate app/shared/compliance/
+mutmut results  # mede survival-rate atual
+# Só tornar blocking após zero surviving mutants ou baseline documentado
+```
+
+**O sensor MRO** (check_agent_mro_compliance.py) entrega o maior valor de hardening do Gap G.30 com custo menor.
+
+---
+
+### G-STUBS — Repository Stubs poluem `app/domains/` (🟡)
+
+**Problema:** 30 de 59 entradas em `app/domains/` são pure CRUD stubs (`__init__.py` + `dependencies.py` + `repositories/` only). Colocar data-access packages no mesmo namespace que domínios agentes autônomos:
+- Torna o sistema aparentemente maior e menos consistente do que é
+- Dificulta grep por domínios agenticos verdadeiros
+- Confunde newcomers sobre o que é "domínio com agente" vs "repositório de dados"
+
+**Fix proposto:** mover stubs para `app/data/` ou `app/repositories/` (namespace separado).
+
+**Sensores que validam invariantes dos stubs:**
+- `scripts/check_stub_invariants.py`
+- `scripts/validate_stubs.py`
+- `scripts/check_canonical_domain_structure.py`
+- `scripts/check_no_imports_from_deprecated.py`
+- `app/shared/tool_catalog.py`
+
+**Lista completa dos 30 stubs:** ver §20 "Repository Stubs (30)".
+
+---
+
+### G-POLICY-OVERLAP — `hiring_policy` vs `policy`: Overlap Confuso (🟡)
+
+**Problema:** dois domínios com nomes relacionados têm responsabilidades confusas para um leitor do namespace.
+
+| Domain | LOC | Onde regras são aplicadas |
+|--------|-----|--------------------------|
+| `hiring_policy` | ~40 LOC stub | Registrado em `@register_domain` — encaminha para `PolicyReActAgent`. NÃO contém engine. |
+| `policy` | ~2 343 LOC | Motor real: `PolicyEngineService`, `PolicySetupAgent`, FairnessGuard por setor. Forma pré-refactor (sem `domain.py`, sem `@register_domain`). |
+
+**Regra inegociável:** `hiring_policy` NÃO substitui `policy`. As regras de contratação são aplicadas **exclusivamente** no `policy` domain.
+
+**Fix proposto:** documentar explicitamente no `hiring_policy/domain.py` que ele é um stub de entrada que delega para `PolicyReActAgent`, e que as regras reais vivem em `policy/`.
+
+**Arquivos:** `app/domains/hiring_policy/`, `app/domains/policy/`
+
+---
+
+### G-PROMOTION — Promote `interview_intelligence` / `voice` / `talent_intelligence` (🟡)
+
+**Problema:** três domínios com lógica agentic-grade (totalizando >5 000 LOC de serviços/tools) ainda classificados como "service domains" sem `domain.py` ou `@register_domain`.
+
+| Domain | LOC relevante | O que falta |
+|--------|--------------|-------------|
+| `interview_intelligence` | ~2 026 LOC | `domain.py` + `@register_domain` |
+| `voice` | ~1 725 LOC orchestrator | `domain.py` + `@register_domain` |
+| `talent_intelligence` | tools registradas | `domain.py` + `@register_domain` (ver G-TALENT-INTEL) |
+
+**Critério para promoção:** adicionar `domain.py` com `@register_domain`, `ComplianceDomainPrompt`, e registrar no `DomainRegistry`. A sentinela T-D não bloqueia promoção de service → agentic (só conta ReActAgents canônicos).
+
+**Arquivos:** `app/domains/{interview_intelligence,voice,talent_intelligence}/`
+
+---
+
+### G-TIER6 — Inconsistência Tier 6 / autonomous entre router e catalog (🔴 Fix)
+
+**Problema:** dois documentos autoritativos discordam sobre o status do `autonomous` domain:
+
+| Fonte | O que diz |
+|-------|-----------|
+| `cascaded_router.py` (header) | Tier 6 REMOVIDO em Sprint 12.3-B — "env nunca setado em prod" |
+| `DOMAIN_CATALOG.md` | `autonomous` documentado como fallback vivo de Tier 6 |
+
+**Estado real (auditoria):** o router **não usa** mais o `AutonomousReActAgent` como Tier 6. A env var que habilitava não era setada em produção. O domínio `autonomous` permanece no código (pré-refactor) mas não é ativado no fluxo de roteamento.
+
+**Fix:** atualizar `DOMAIN_CATALOG.md` para refletir que `autonomous` é "Canonical-active legacy — Tier 6 removido do router em Sprint 12.3-B". Fecha a inconsistência entre os dois documentos.
+
+**Arquivos:** `app/orchestrator/routing/cascaded_router.py`, `app/domains/DOMAIN_CATALOG.md`
+
+---
+
+### G-HANDOFF — `handoff_tools.py:54` Mismatch Semântico (🔴 Fix)
+
+**Arquivo:** `app/orchestrator/supervisor/handoff_tools.py`, linha 54.
+
+**Problema:**
+
+```python
+# handoff_tools.py linha 54
+"autonomous": "listar, confirmar ou rejeitar ações pendentes"
+# ↑ semântica de AutonomousAgentService / proactive actions
+
+# Mas a resolução real é:
+delegate_to_autonomous → AgentRegistry().get_instance("autonomous")
+                       → AutonomousReActAgent  # ReAct cross-domain
+```
+
+**Risco:** se o supervisor for ativado (via `LIA_WIZARD_SUPERVISOR_CLASSIFIER=true` em prod), pode delegar "ações pendentes" ao `AutonomousReActAgent`, que é um agente ReAct cross-domain e faz outra coisa — não processa proactive actions.
+
+**Fix recomendado:** remover a entrada `"autonomous"` do mapa de handoff enquanto o Tier 6 estiver desativado.
+
+**Arquivos:** `app/orchestrator/supervisor/handoff_tools.py`
+
+---
+
+### G-EMBED-KEY — Embeddings sempre na Platform Key (🔴 Fix planejado)
+
+**Estado real em produção:** todos os embeddings usam a **platform key**, nunca a tenant key (BYOK).
+
+**Causa raiz:**
+- `EmbeddingService.generate_embedding()` não aceita `company_id` na assinatura
+- Nenhum call site passa `company_id`
+- O branch de tenant key em `_get_tenant_provider()` para embeddings é **dead code**
+
+**O que funciona corretamente com BYOK:** completions / chat via `get_provider_for_tenant()`.
+
+**Isolamento atual:** feito via filtro SQL (`company_id` nas queries pgvector), não via chave de LLM separada.
+
+**Risco:** tenant com BYOK ativado gera embeddings na chave da plataforma — potencial conflito com faturamento e compliance regional (dados fluem por infra da plataforma).
+
+**Fix proposto:** adicionar parâmetro `company_id` em `EmbeddingService.generate_embedding()` e propagar para `_get_tenant_provider()`.
+
+**Arquivos:** `app/domains/ai/services/embedding_service.py`, `app/shared/providers/llm_factory.py`
+
+---
+
+### G-PII-NAME — Name-Leak Residual no Chat do Recrutador (🔴 Conhecido e aceito)
+
+**Estado documentado em §12.7.** Resumo para rastreamento:
+
+- **Path afetado:** `c3b_layer.pre_compliance` → callers `chat-page` + `agent_chat_ws`
+- **O que vaza:** nomes de candidatos (NER desabilitado por design para recruiter chat)
+- **O que NÃO vaza:** CPF, email, telefone (sempre mascarados)
+- **Controle:** `LIA_RECRUITER_CHAT_MASK_PII=true` re-habilita mascaramento de nomes
+- **Decisão:** aceito — recrutadores estão autorizados a ver nomes, e NER causava false positives em títulos de cargo
+
+**Documentar em threat model:** este gap deve ser explicitamente mencionado no `threat_model.md` sob "Information Disclosure".
 
 ---
 
