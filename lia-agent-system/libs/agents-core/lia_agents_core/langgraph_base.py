@@ -227,6 +227,23 @@ class LangGraphBase(BaseAgent, ABC):
                     )
                     await _clear_corrupt_checkpoint(_thread_key)
                     _has_prior = False
+                else:
+                    # Case 2: checkpoint termina com ToolMessage sem resposta final
+                    # (turno incompleto: model foi chamado com tool results mas falhou
+                    # antes de gerar a resposta — ex: BadRequestError do Vertex AI).
+                    _last_real = [
+                        m for m in _ckpt_msgs
+                        if type(m).__name__ not in ("SystemMessage",)
+                    ]
+                    if _last_real and type(_last_real[-1]).__name__ == "ToolMessage":
+                        logger.warning(
+                            "[%s] INCOMPLETE_TURN: checkpoint termina com ToolMessage "
+                            "(turno falhou antes da resposta final, thread=%s) — "
+                            "limpando checkpoint e reiniciando",
+                            self.__class__.__name__, _thread_key,
+                        )
+                        await _clear_corrupt_checkpoint(_thread_key)
+                        _has_prior = False
             except Exception as _guard_exc:
                 logger.debug(
                     "[%s] guard INVALID_CHAT_HISTORY (fail-open): %s",
