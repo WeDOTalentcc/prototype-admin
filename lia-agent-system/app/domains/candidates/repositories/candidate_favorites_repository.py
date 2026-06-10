@@ -50,6 +50,7 @@ class CandidateFavoritesRepository:
         return favorite
 
     async def update(self, favorite: CandidateFavorite) -> CandidateFavorite:
+        self.db.add(favorite)
         await self.db.commit()
         await self.db.refresh(favorite)
         return favorite

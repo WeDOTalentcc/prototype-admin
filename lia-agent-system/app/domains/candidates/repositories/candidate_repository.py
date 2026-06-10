@@ -471,6 +471,7 @@ class CandidateRepository:
         return candidate
 
     async def update(self, candidate: Candidate) -> Candidate:
+        self.db.add(candidate)
         await self.db.commit()
         await self.db.refresh(candidate)
         return candidate
