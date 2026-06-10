@@ -54,6 +54,32 @@ def _messages_for_continuation(messages, has_prior_state):
     return [m for m in (messages or []) if type(m).__name__ != "SystemMessage"]
 
 
+async def _clear_corrupt_checkpoint(thread_key: str) -> None:
+    """Deleta checkpoints corrompidos (INVALID_CHAT_HISTORY) do Postgres.
+    Usa o pool singleton do checkpointer — fail-open se pool indisponível.
+    Chamado automaticamente por _run_graph ao detectar dangling tool_calls.
+    """
+    try:
+        from lia_agents_core.checkpointer import _POOL_SINGLETON, _SAVER_KIND
+        if _POOL_SINGLETON is None or _SAVER_KIND != "async_postgres":
+            return  # MemorySaver — sem Postgres para limpar
+        async with _POOL_SINGLETON.connection() as _conn:
+            await _conn.execute(
+                "DELETE FROM checkpoint_blobs WHERE thread_id = %s", (thread_key,)
+            )
+            await _conn.execute(
+                "DELETE FROM checkpoint_writes WHERE thread_id = %s", (thread_key,)
+            )
+            await _conn.execute(
+                "DELETE FROM checkpoints WHERE thread_id = %s", (thread_key,)
+            )
+    except Exception as _exc:
+        logger.warning(
+            "[clear_corrupt_checkpoint] falhou (fail-open): thread=%s err=%s",
+            thread_key, _exc,
+        )
+
+
 try:
     from langgraph.graph import StateGraph, START, END
     _HAS_LANGGRAPH = True
@@ -164,6 +190,38 @@ class LangGraphBase(BaseAgent, ABC):
             )
         except Exception:
             _has_prior = False
+        # INVALID_CHAT_HISTORY guard: detecta AIMessages com tool_calls sem
+        # ToolMessage correspondente (checkpoint corrompido por crash mid-turn).
+        # Limpa o checkpoint e recomeça do zero — fail-open se detecção falhar.
+        if _has_prior:
+            try:
+                _ckpt_msgs = (_prior_state.values or {}).get("messages") or []
+                _pending_tc_ids: set = set()
+                for _m in _ckpt_msgs:
+                    for _tc in (getattr(_m, "tool_calls", None) or []):
+                        _tc_id = (
+                            _tc.get("id") if isinstance(_tc, dict)
+                            else getattr(_tc, "id", None)
+                        )
+                        if _tc_id:
+                            _pending_tc_ids.add(_tc_id)
+                    _tcid = getattr(_m, "tool_call_id", None)
+                    if _tcid:
+                        _pending_tc_ids.discard(_tcid)
+                if _pending_tc_ids:
+                    logger.warning(
+                        "[%s] INVALID_CHAT_HISTORY: %d tool_call(s) sem ToolMessage "
+                        "(thread=%s ids=%s) — limpando checkpoint e reiniciando",
+                        self.__class__.__name__, len(_pending_tc_ids),
+                        _thread_key, list(_pending_tc_ids)[:3],
+                    )
+                    await _clear_corrupt_checkpoint(_thread_key)
+                    _has_prior = False
+            except Exception as _guard_exc:
+                logger.debug(
+                    "[%s] guard INVALID_CHAT_HISTORY (fail-open): %s",
+                    self.__class__.__name__, _guard_exc,
+                )
         if _has_prior:
             initial_state = {
                 **initial_state,

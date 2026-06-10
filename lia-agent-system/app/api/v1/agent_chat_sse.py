@@ -957,6 +957,7 @@ company_id: str = Depends(require_company_id)):
         _ehint = ""
         _cid = req.conversation_id or session_id
         try:
+            from app.core.database import AsyncSessionLocal
             async with AsyncSessionLocal() as _mdb:
                 _conv = None
                 if req.conversation_id:
