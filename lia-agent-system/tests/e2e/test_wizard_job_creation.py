@@ -44,54 +44,7 @@ class TestWizardJobCreation:
     """Test suite for wizard job creation flow."""
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="E2E requer servidor live + LLM (>30s). Coberto por test_job_wizard_graph_e2e.py com ASGITransport.")
-    async def test_wizard_initial_message(self, session_id):
-        """Test sending initial message to wizard."""
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                f"{BASE_URL}/api/v1/wizard/smart-orchestrate",
-                json={
-                    "message": "Quero criar uma vaga de desenvolvedor Python",
-                    "current_stage": "input-evaluation",
-                    "collected_data": {},
-                    "conversation_history": [],
-                    "conversation_id": session_id,
-                }
-            )
-            
-            assert response.status_code == 200
-            data = response.json()
-            
-            assert data["success"] is True
-            assert "lia_message" in data
-            assert len(data["lia_message"]) > 0
-            assert "detected_criteria" in data
-
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="E2E requer servidor live + LLM (>30s). Coberto por test_job_wizard_graph_e2e.py com ASGITransport.")
-    async def test_wizard_field_extraction(self, session_id):
-        """Test that wizard extracts job fields from natural language."""
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                f"{BASE_URL}/api/v1/wizard/smart-orchestrate",
-                json={
-                    "message": "Preciso de um desenvolvedor Python senior para trabalhar em São Paulo, modelo híbrido, salário entre 15 e 25 mil",
-                    "current_stage": "input-evaluation",
-                    "collected_data": {},
-                    "conversation_history": [],
-                    "conversation_id": session_id,
-                }
-            )
-            
-            assert response.status_code == 200
-            data = response.json()
-            
-            assert data["success"] is True
-            criteria = data["detected_criteria"]
-            
-            assert "title" in criteria or "job_title" in criteria
-            assert "seniority" in criteria or "seniority_level" in criteria
-
     @pytest.mark.asyncio
     async def test_wizard_stage_transitions(self, session_id, sample_job_data):
         """Test wizard progresses through stages correctly."""
