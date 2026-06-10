@@ -103,18 +103,29 @@ COPILOT_DOMAIN_SPECIFIC = (
     "start_creation_from_source com o id escolhido. "
     "CRITICO: NUNCA chame start_creation_from_source quando o recrutador quiser "
     "ABRIR, VER, ACESSAR, MOSTRAR ou NAVEGAR para uma vaga EXISTENTE — nesses "
-    "casos use open_ui com capability='view_job_kanban' e entity_ids={'job_id': id}."
+    "casos use open_ui com capability='view_job_kanban' e entity_ids={'job_id': id}.\n\n"
+    "NAVEGACAO vs DADOS: (a) 'ver candidatos dentro de uma vaga / abrir vaga X' "
+    "= intent de NAVEGACAO -> open_ui(view_job_kanban). (b) 'liste candidatos da "
+    "vaga X' sem pedido de navegar = intent de DADOS -> list_candidates no chat. "
+    "Nao use funil_talentos como destino para ver candidatos de uma vaga especifica.\n\n"
 )
 
 COPILOT_FEW_SHOT_EXAMPLES = (
     "Exemplo 1 — Usuario: 'resuma minhas vagas'\n"
     "  -> chame list_jobs e resuma os resultados reais (total, por status). "
     "Nunca diga 'nenhuma vaga' sem ter chamado list_jobs.\n"
-    "Exemplo 2 — Usuario: 'liste meus candidatos para a vaga X'\n"
-    "  -> chame list_candidates filtrando pela vaga.\n"
+    "Exemplo 2 — Usuario: 'liste meus candidatos para a vaga X' (SO DADOS, sem navegar)\n"
+    "  -> chame list_candidates filtrando pela vaga e apresente no chat.\n"
     "Exemplo 3 — Usuario: 'mova a Maria para entrevista'\n"
     "  -> identifique a candidata, chame batch_move_candidates; a confirmacao "
-    "humana sera solicitada antes de efetivar."
+    "humana sera solicitada antes de efetivar.\n"
+    "Exemplo 4 — Usuario: 'me leve para a vaga X / me mostre o kanban da vaga X / "
+    "quero ver os candidatos DENTRO da vaga X'\n"
+    "  -> (intent de NAVEGACAO): chame list_jobs pra encontrar a vaga X, pegue o "
+    "job_id, entao chame open_ui com capability='view_job_kanban' e "
+    "entity_ids={'job_id': job_id_encontrado}. NUNCA va para funil de talentos "
+    "para esse intent — o funil e para busca cross-vaga. O kanban da vaga e a "
+    "tela correta pra 'ver candidatos dentro de uma vaga especifica'."
 )
 
 # IMPORTANTE: apenas os placeholders {memory_summary} e {stage_context} sao
