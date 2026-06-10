@@ -45,13 +45,23 @@ def _extract_ai_text(message: Any) -> str:
 
 
 def _messages_for_continuation(messages, has_prior_state):
-    """Turno de continuacao (checkpointer ja tem estado): remove SystemMessage(s)
-    do input novo. O checkpointer preserva o System do turno 1; re-injetar geraria
-    system messages nao-consecutivos (Anthropic rejeita). Turno 1 (sem estado):
-    retorna inalterado. Fix P0 2026-06-06."""
+    """Turno de continuacao: o checkpointer ja preserva o historico COMPLETO.
+    Injetar conversation_history junto com checkpointer causava duplicacao
+    exponencial de mensagens - na 4a+ troca o contexto crescia a ponto de o
+    Vertex AI retornar BadRequestError 'assistant message prefill'.
+    Fix: retornar APENAS a nova HumanMessage para continuacoes; o checkpointer
+    gerencia todo o resto. Turno 1 (has_prior_state=False): retorna inalterado.
+    Fix P0 2026-06-10 (substitui fix 2026-06-06)."""
     if not has_prior_state:
         return messages
-    return [m for m in (messages or []) if type(m).__name__ != "SystemMessage"]
+    # Para continuacoes: retornar somente a nova HumanMessage (ultima da lista).
+    # O add_messages reducer apenda apenas ela ao estado do checkpointer.
+    for m in reversed(messages or []):
+        if type(m).__name__ == "HumanMessage":
+            return [m]
+    # Fallback: retornar ultima mensagem nao-SystemMessage
+    filtered = [m for m in (messages or []) if type(m).__name__ != "SystemMessage"]
+    return filtered[-1:] if filtered else []
 
 
 async def _clear_corrupt_checkpoint(thread_key: str) -> None:
