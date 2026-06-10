@@ -1212,25 +1212,22 @@ Pure CRUD data access layers. Não roteáveis pelo orquestrador. Incluem: `admin
 
 > Esta seção documenta gaps arquiteturais identificados em auditoria de código (2026-06-09). Cada item tem um identificador (`G-*`) referenciado pelas seções relevantes do documento. Itens 🔴 têm fix imediato recomendado; itens 🟡 são dívida técnica gerenciada.
 
-### G-HITL — HITL Fragmentado por Caller (🟡 Mitigado)
+### G-HITL — HITL Fragmentado por Caller (✅ RESOLVIDO)
 
-**Descoberto:** 2026-06-09. **Status:** funciona hoje; mitigado por sensor `G-FED-HITL`.
+**Descoberto:** 2026-06-09. **Resolvido:** arquitetura do orchestrator foi refatorada.
 
-**Problema:** não há chokepoint único para Human-in-the-Loop (HITL). Três mecanismos coexistem:
+**Estado atual:** `federated_executor.py` foi **removido**. O HITL está agora centralizado em um único chokepoint:
 
-| Mecanismo | Localização | Caller |
-|-----------|------------|--------|
-| `_HITL_ACTION_TYPES` | `orchestrator/execution/federated_executor.py` | Execução federada |
-| `intents_config` | `orchestrator/supervisor/supervisor_config.py` | Supervisor (quando ativo) |
-| `requires_confirmation` | `tools/tool_handler.py` | Tool handler — **não usado** pelas escritas do federado |
+```
+action_executor/executor.py
+  └── config.get("requires_confirmation", False)
+        └── lê de action_executor/intents_config.py
+              (todas as ações mutativas declaradas aqui com requires_confirmation: True/False)
+```
 
-**Risco:** um caller pode executar uma ação mutativa contornando o gate HITL se não estiver no `_HITL_ACTION_TYPES` do federado. O `requires_confirmation` do `tool_handler` não intercepta essas escritas.
+**`intents_config.py` é o chokepoint universal** — qualquer caller passa pelo `ActionExecutor` e herda o gate HITL declarativo. Eliminou a fragmentação entre `_HITL_ACTION_TYPES` (federado), `intents_config` (supervisor) e `tool_handler` (antes não usado pelo federado).
 
-**Mitigação atual:** sensor `G-FED-HITL` (commit f4b0bbff5) detecta divergências entre os três conjuntos em CI.
-
-**Fix ideal:** mover o gate HITL para o `tool_handler` como chokepoint universal (qualquer caller). Consolidação rastreada como Sprint N backlog.
-
-**Arquivos:** `orchestrator/execution/federated_executor.py`, `orchestrator/supervisor/supervisor_config.py`, `tools/tool_handler.py`
+**Arquivos:** `orchestrator/action_executor/executor.py`, `orchestrator/action_executor/intents_config.py`
 
 ---
 
@@ -1276,40 +1273,62 @@ mutmut results  # mede survival-rate atual
 
 ---
 
-### G-STUBS — Repository Stubs poluem `app/domains/` (🟡)
+### G-STUBS — Repository Stubs poluem `app/domains/` (🟡 PARCIALMENTE RESOLVIDO)
 
-**Problema:** 30 de 59 entradas em `app/domains/` são pure CRUD stubs (`__init__.py` + `dependencies.py` + `repositories/` only). Colocar data-access packages no mesmo namespace que domínios agentes autônomos:
-- Torna o sistema aparentemente maior e menos consistente do que é
-- Dificulta grep por domínios agenticos verdadeiros
-- Confunde newcomers sobre o que é "domínio com agente" vs "repositório de dados"
+**Descoberto:** 2026-06-09. **Parcialmente resolvido:** `app/repositories/` criado e stubs puros migrados.
 
-**Fix proposto:** mover stubs para `app/data/` ou `app/repositories/` (namespace separado).
+**Estado atual:**
 
-**Sensores que validam invariantes dos stubs:**
-- `scripts/check_stub_invariants.py`
-- `scripts/validate_stubs.py`
-- `scripts/check_canonical_domain_structure.py`
-- `scripts/check_no_imports_from_deprecated.py`
-- `app/shared/tool_catalog.py`
+```
+app/repositories/           ← NOVO namespace criado (~40 arquivos *_repository.py consolidados)
+  admin_repository.py
+  agent_memory_repository.py
+  chat_repository.py
+  ... (38 arquivos)
 
-**Lista completa dos 30 stubs:** ver §20 "Repository Stubs (30)".
+app/domains/admin/          ← diretório ainda existe
+  __pycache__/
+  repositories/             ← thin wrapper que importa de app/repositories/
+
+app/domains/chat/           ← idem — só __pycache__ + repositories/
+```
+
+**O que foi resolvido:** stubs puros (admin, chat, approvals, bulk_actions, etc.) foram esvaziados — seus diretórios em `app/domains/` agora contêm apenas `__pycache__/` e um `repositories/` vazio ou de delegação.
+
+**O que ainda resta:** os diretórios-fantasma em `app/domains/` ainda existem (não foram deletados), então `ls app/domains/` ainda mostra 72 entradas. O namespace bloat visual permanece.
+
+**Service domains com conteúdo legítimo** (sem `domain.py`, mas não são stubs puros):
+
+| Domain | Py files | Natureza |
+|--------|---------|---------|
+| `ai` | 27 | LLM services, cache, RAG (service legítimo) |
+| `company` | 34 | Settings, policies, culture (service legítimo) |
+| `recruitment` | 22 | Dados de processos (service legítimo) |
+| `candidates` | 12 | CRUD candidatos (service legítimo) |
+| `lgpd` | 13 | Compliance purge (service legítimo) |
+
+**Sensores:**
+- `scripts/check_stub_invariants.py`, `validate_stubs.py`
+- `scripts/check_canonical_domain_structure.py`, `check_no_imports_from_deprecated.py`
+
+**Próximo passo:** deletar diretórios-fantasma de `app/domains/` para completar a migração.
 
 ---
 
-### G-POLICY-OVERLAP — `hiring_policy` vs `policy`: Overlap Confuso (🟡)
+### G-POLICY-OVERLAP — `hiring_policy` vs `policy`: Overlap Confuso (✅ DOCUMENTADO)
 
-**Problema:** dois domínios com nomes relacionados têm responsabilidades confusas para um leitor do namespace.
+**Descoberto:** 2026-06-09. **Resolvido:** DOMAIN_CATALOG.md atualizado com nota explícita.
 
-| Domain | LOC | Onde regras são aplicadas |
-|--------|-----|--------------------------|
-| `hiring_policy` | ~40 LOC stub | Registrado em `@register_domain` — encaminha para `PolicyReActAgent`. NÃO contém engine. |
-| `policy` | ~2 343 LOC | Motor real: `PolicyEngineService`, `PolicySetupAgent`, FairnessGuard por setor. Forma pré-refactor (sem `domain.py`, sem `@register_domain`). |
+**Estado atual — DOMAIN_CATALOG.md documenta:**
 
-**Regra inegociável:** `hiring_policy` NÃO substitui `policy`. As regras de contratação são aplicadas **exclusivamente** no `policy` domain.
+> *"hiring_policy/ é stub aspiracional (40 LOC) — **NÃO substitui** policy/."*
 
-**Fix proposto:** documentar explicitamente no `hiring_policy/domain.py` que ele é um stub de entrada que delega para `PolicyReActAgent`, e que as regras reais vivem em `policy/`.
+A tabela "Canonical-active legacy" do catalog agora lista `policy` com:
+> *"Canonical policy engine (13 files, 2 343 LOC) + 1 167 LOC v1 endpoints. Cobre PolicyEngineService (BusinessRule/RateLimitRule/EscalationRule), PolicySetupAgent (chat-driven setup), ALPHA1_SECTOR_RULES (sector-dependent FairnessGuard). hiring_policy/ é stub aspiracional (40 LOC) — NÃO substitui policy/."*
 
-**Arquivos:** `app/domains/hiring_policy/`, `app/domains/policy/`
+**Regra inegociável (permanece):** `hiring_policy` NÃO substitui `policy`. Regras de contratação = `app/domains/policy/`.
+
+**Arquivos:** `app/domains/DOMAIN_CATALOG.md`, `app/domains/hiring_policy/`, `app/domains/policy/`
 
 ---
 
@@ -1346,48 +1365,53 @@ mutmut results  # mede survival-rate atual
 
 ---
 
-### G-HANDOFF — `handoff_tools.py:54` Mismatch Semântico (🔴 Fix)
+### G-HANDOFF — `handoff_tools.py:54` Mismatch Semântico (✅ RESOLVIDO)
 
-**Arquivo:** `app/orchestrator/supervisor/handoff_tools.py`, linha 54.
+**Descoberto:** 2026-06-09. **Resolvido:** `handoff_tools.py` marcado como "CURADO".
 
-**Problema:**
+**Estado atual:** a entrada `"autonomous"` foi **removida** do mapa de handoff. O arquivo agora usa uma função genérica `delegate_to_domain(agent_domain, ...)` em vez de mapeamentos hard-coded por domínio. O risco de delegar "ações pendentes" ao `AutonomousReActAgent` foi eliminado.
 
 ```python
-# handoff_tools.py linha 54
-"autonomous": "listar, confirmar ou rejeitar ações pendentes"
-# ↑ semântica de AutonomousAgentService / proactive actions
-
-# Mas a resolução real é:
-delegate_to_autonomous → AgentRegistry().get_instance("autonomous")
-                       → AutonomousReActAgent  # ReAct cross-domain
+# handoff_tools.py (após fix)
+# CURADO. Tools de handoff delegam a domain sub-agents via delegate_to_domain()
+async def delegate_to_domain(agent_domain: str, ...):
+    # resolução genérica — sem entrada hardcoded para "autonomous"
 ```
-
-**Risco:** se o supervisor for ativado (via `LIA_WIZARD_SUPERVISOR_CLASSIFIER=true` em prod), pode delegar "ações pendentes" ao `AutonomousReActAgent`, que é um agente ReAct cross-domain e faz outra coisa — não processa proactive actions.
-
-**Fix recomendado:** remover a entrada `"autonomous"` do mapa de handoff enquanto o Tier 6 estiver desativado.
 
 **Arquivos:** `app/orchestrator/supervisor/handoff_tools.py`
 
 ---
 
-### G-EMBED-KEY — Embeddings sempre na Platform Key (🔴 Fix planejado)
+### G-EMBED-KEY — Embeddings sempre na Platform Key (✅ RESOLVIDO)
 
-**Estado real em produção:** todos os embeddings usam a **platform key**, nunca a tenant key (BYOK).
+**Descoberto:** 2026-06-09. **Resolvido:** `generate_embedding()` agora aceita e propaga `company_id`.
 
-**Causa raiz:**
-- `EmbeddingService.generate_embedding()` não aceita `company_id` na assinatura
-- Nenhum call site passa `company_id`
-- O branch de tenant key em `_get_tenant_provider()` para embeddings é **dead code**
+**Estado atual — assinatura corrigida:**
 
-**O que funciona corretamente com BYOK:** completions / chat via `get_provider_for_tenant()`.
+```python
+# app/shared/intelligence/embedding_service.py
+async def generate_embedding(
+    text: str,
+    model: str | None = None,
+    mask_names: bool = True,
+    company_id: str | None = None,   # ← ADICIONADO
+) -> list[float]: ...
+```
 
-**Isolamento atual:** feito via filtro SQL (`company_id` nas queries pgvector), não via chave de LLM separada.
+**Call sites atualizados** (exemplos verificados):
 
-**Risco:** tenant com BYOK ativado gera embeddings na chave da plataforma — potencial conflito com faturamento e compliance regional (dados fluem por infra da plataforma).
+| Call site | company_id passado |
+|-----------|-------------------|
+| `sourcing/domain.py` | `company_id=context.tenant_id` ✅ |
+| `job_management/services/job_embedding_service.py` | `company_id=company_id` ✅ |
+| `recruiter_assistant/services/memory_service.py` | `company_id=str(company_id)` ✅ |
+| `ai/services/domain_embedding_service.py` | `company_id=company_id` ✅ |
+| `ai/services/rag_pipeline_service.py` | `company_id=company_id` ✅ |
+| `orchestrator/memory/vector_semantic_cache.py` | não passa company_id ⚠️ (residual) |
 
-**Fix proposto:** adicionar parâmetro `company_id` em `EmbeddingService.generate_embedding()` e propagar para `_get_tenant_provider()`.
+**Nota residual:** `vector_semantic_cache.py` ainda não passa `company_id` em uma chamada. Impacto baixo (cache de routing, não dados de candidatos). Isolamento continua via filtro SQL.
 
-**Arquivos:** `app/domains/ai/services/embedding_service.py`, `app/shared/providers/llm_factory.py`
+**Arquivos:** `app/shared/intelligence/embedding_service.py`, `app/shared/services/embedding_service.py`
 
 ---
 
