@@ -145,8 +145,6 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
     limit = int(kwargs.get("limit", 20))
     logger.info(f"[talent_tools] list_candidates called: status={status} vacancy={vacancy_id} limit={limit}")
 
-    candidates = []
-    total = 0
     try:
         async with AsyncSessionLocal() as db:
             repo = VacancyCandidateRepository(db)
@@ -160,6 +158,10 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
         total = data["total"]
     except Exception as e:
         logger.warning(f"[talent_tools] list_candidates DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui listar os candidatos agora. Tente novamente em instantes.",
+        }
 
     _blocks, _hint = [], ""
     if candidates:
@@ -472,11 +474,6 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     logger.info(f"[talent_tools] analyze_skills called: candidate={candidate_id} vacancy={vacancy_id}")
 
-    matched_skills: list[str] = []
-    missing_skills: list[str] = []
-    extra_skills: list[str] = []
-    match_percentage = 0.0
-
     try:
         async with AsyncSessionLocal() as session:
             cand_repo = CandidateRepository(session)
@@ -486,6 +483,11 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
                 candidate_id=candidate_id,
                 company_id=company_id,
             )
+
+            matched_skills: list[str] = []
+            missing_skills: list[str] = []
+            extra_skills: list[str] = []
+            match_percentage = 0.0
 
             if vacancy_id:
                 jv_repo = JobVacancyCrudRepository(session)
@@ -510,6 +512,10 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
                     )
     except Exception as e:
         logger.warning(f"[talent_tools] analyze_skills DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui analisar as skills agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -667,7 +673,6 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[talent_tools] export_report called: type={report_type} candidates={len(candidate_ids)}")
 
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: dict[str, Any] = {"count": len(candidate_ids)}
 
     try:
         if candidate_ids:
@@ -684,8 +689,14 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
                 "top_candidate": entries[0]["name"] if entries else None,
                 "entries": entries,
             }
+        else:
+            summary = {"count": len(candidate_ids)}
     except Exception as e:
         logger.warning(f"[talent_tools] export_report DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui gerar o relatório agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -1103,7 +1114,6 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     logger.info(f"[talent_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as db:
             repo = CandidateRepository(db)
@@ -1113,6 +1123,10 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
             )
     except Exception as e:
         logger.warning(f"[talent_tools] generate_report DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui gerar o relatório de talentos agora. Tente novamente em instantes.",
+        }
     return {
         "success": True,
         "data": {

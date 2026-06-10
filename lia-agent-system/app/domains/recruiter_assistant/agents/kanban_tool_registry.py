@@ -101,9 +101,6 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
         f"vacancy={vacancy_id} company={company_id}"
     )
 
-    per_stage_metrics = {}
-    company_averages = {}
-
     try:
         # W1-004-B (2026-05-23): SQL inline → RecruiterMetricsRepository (ADR-001).
         # _require_company_id fail-closed garante zero cross-tenant aggregation.
@@ -113,6 +110,8 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
 
         async with AsyncSessionLocal() as session:
             repo = RecruiterMetricsRepository(session)
+            per_stage_metrics = {}
+            company_averages = {}
             if vacancy_id:
                 per_stage_metrics = await repo.avg_days_per_stage_for_vacancy(
                     vacancy_id=vacancy_id, company_id=company_id
@@ -124,6 +123,10 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] SQL error in get_pipeline_benchmarks: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar os benchmarks do pipeline agora. Tente novamente em instantes.",
+        }
 
     status_map = {}
     for stage_name, metrics in per_stage_metrics.items():
@@ -425,9 +428,6 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] get_pipeline_summary called for vacancy={vacancy_id or 'all'}")
 
-    stages: dict[str, int] = {}
-    total = 0
-    hired = 0
     try:
         async with AsyncSessionLocal() as session:
             repo = RecruiterMetricsRepository(session)
@@ -440,6 +440,10 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] get_pipeline_summary DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar o resumo do pipeline agora. Tente novamente em instantes.",
+        }
 
     conversion = round(hired / total * 100, 1) if total > 0 else 0.0
     _rrp_blocks = []
@@ -474,7 +478,6 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] get_stage_metrics called: stage={stage} vacancy={vacancy_id or 'all'}")
-    metrics: dict[str, Any] = {"stage": stage, "vacancy_id": vacancy_id or "all"}
     try:
         async with AsyncSessionLocal() as session:
             repo = RecruiterMetricsRepository(session)
@@ -489,6 +492,10 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] get_stage_metrics DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar as métricas da etapa agora. Tente novamente em instantes.",
+        }
     return {
         "success": True,
         "data": metrics,
@@ -510,8 +517,6 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     limit = int(kwargs.get("limit", 20))
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] list_stage_candidates called: stage={stage} vacancy={vacancy_id or 'all'}")
-    candidates = []
-    total = 0
     if not company_id:
         return {"error": "company_id is required", "success": False}
     try:
@@ -523,6 +528,10 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] list_stage_candidates DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui listar os candidatos da etapa agora. Tente novamente em instantes.",
+        }
     return {
         "success": True,
         "data": {"stage": stage, "vacancy_id": vacancy_id or "all",
@@ -908,7 +917,6 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] view_candidate_full_profile called for candidate={candidate_id}")
 
-    profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
     try:
         async with AsyncSessionLocal() as session:
             repo = CandidatePipelineRepository(session)
@@ -925,6 +933,10 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] view_candidate_full_profile DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui carregar o perfil do candidato agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,

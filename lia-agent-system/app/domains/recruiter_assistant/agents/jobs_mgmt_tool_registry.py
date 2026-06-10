@@ -36,7 +36,6 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
         f"company={company_id} period={period_days}d"
     )
 
-    benchmarks: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -47,6 +46,10 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] SQL error in get_recruitment_benchmarks: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar os benchmarks agora. Tente novamente em instantes.",
+        }
 
     ttf = benchmarks.get("avg_ttf_days", 0.0)
     fill_rate = benchmarks.get("fill_rate", 0.0)
@@ -230,7 +233,6 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] get_portfolio_metrics called: period={period}")
 
-    metrics: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -241,6 +243,10 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] get_portfolio_metrics DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar as métricas do portfolio agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -260,7 +266,6 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] compare_jobs called: jobs={job_ids}")
 
-    comparison: list[dict] = []
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -271,6 +276,10 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] compare_jobs DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui comparar as vagas agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -290,12 +299,6 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] check_sla called: job={job_id or 'all'}")
 
-    sla: dict[str, Any] = {
-        "overdue_jobs": [],
-        "at_risk_jobs": [],
-        "compliant_count": 0,
-        "overall_status": "compliant",
-    }
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -306,6 +309,10 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] check_sla DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar o status de SLA agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -333,7 +340,6 @@ async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] analyze_bottlenecks called: department={department}")
 
-    bottlenecks: list[dict] = []
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -344,6 +350,10 @@ async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] analyze_bottlenecks DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui analisar os gargalos agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -495,7 +505,6 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[jobs_mgmt_tools] generate_report called: type={report_type} period={period}")
 
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -506,6 +515,10 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] generate_report DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui gerar o relatório agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
