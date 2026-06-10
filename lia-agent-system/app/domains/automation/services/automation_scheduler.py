@@ -860,6 +860,32 @@ Equipe de Recrutamento
         except Exception as e:
             logger.error(f"❌ [Scheduler] Error in pipeline_monitor: {e}")
     
+    # E5 (2026-06-09): destinatarios de alertas proativos = TODOS os recrutadores
+    # ativos (admin/manager/recruiter), nao so 1 admin/empresa. Decisao Paulo:
+    # cada recrutador recebe conforme sua preferencia (cooldown por-user evita spam).
+    # Strings literais (StrEnum.value) p/ nao exigir import de UserRole no nivel de classe.
+    PROACTIVE_ALERT_RECIPIENT_ROLES = ("admin", "manager", "recruiter")
+
+    @staticmethod
+    async def _select_proactive_alert_recipients(db):
+        """Retorna [(company_id, user_id)] de todos os recrutadores ativos.
+
+        Substitui a antiga query func.min(User.id) group by company_id (que
+        limitava a 1 admin/empresa). Sem group_by: cada admin/manager/recruiter
+        ativo recebe seus alertas conforme AlertPreference + cooldown por-user.
+        """
+        from sqlalchemy import select as _select
+        from app.auth.models import User
+
+        res = await db.execute(
+            _select(User.company_id, User.id).where(
+                User.role.in_(AutomationScheduler.PROACTIVE_ALERT_RECIPIENT_ROLES),
+                User.is_active.is_(True),
+                User.company_id.isnot(None),
+            )
+        )
+        return list(res.all())
+
     async def run_proactive_alerts(self):
         """P0-3 (auditoria Configuracoes): dispara ProactiveAlertService autonomamente.
 
@@ -869,24 +895,15 @@ Equipe de Recrutamento
         """
         logger.info("[Scheduler] Running proactive_alerts job")
         try:
-            from sqlalchemy import func
-            from app.auth.models import User, UserRole
             from app.domains.automation.services.proactive_alert_service import (
                 proactive_alert_service,
             )
             async with async_session_factory() as db:
                 # TENANT-EXEMPT: cron system-wide; check_all_conditions reaplica company_id por tenant
-                result = await db.execute(
-                    select(User.company_id, func.min(User.id))
-                    .where(
-                        User.role == UserRole.admin,
-                        User.is_active.is_(True),
-                        User.company_id.isnot(None),
-                    )
-                    .group_by(User.company_id)
-                )
-                pairs = result.all()
-                logger.info(f"[Scheduler] proactive_alerts: {len(pairs)} empresas")
+                # E5 (2026-06-09): TODOS os recrutadores ativos (admin/manager/recruiter),
+                # nao so 1 admin/empresa. Cada um recebe conforme sua preferencia.
+                pairs = await AutomationScheduler._select_proactive_alert_recipients(db)
+                logger.info(f"[Scheduler] proactive_alerts: {len(pairs)} destinatarios")
                 for company_id, user_id in pairs:
                     try:
                         await proactive_alert_service.check_all_conditions(
