@@ -283,6 +283,3 @@ class TestInterviewGraphTracing:
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
         g = InterviewGraph()
         assert callable(g.invoke)
-
-    @pytest.mark.asyncio
-    @pytest.mark.asyncio
