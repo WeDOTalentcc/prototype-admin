@@ -34,6 +34,7 @@ const SECTION_ICON_COLORS: Record<string, string> = {
 
 
 import dynamic from"next/dynamic"
+import { useSearchParams } from"next/navigation"
 import { LoadingFallback } from"@/components/ui/loading"
 const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
 const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <LoadingFallback text="Carregando pipeline..." /> })
@@ -322,20 +323,21 @@ export default function SettingsPageEnhanced() {
     return () => window.removeEventListener('lia:settings-action', actionHandler)
   }, [])
 
-  // Deep-link: /configuracoes?section=<id> abre a secao diretamente.
-  // Conserta os NAVIGATION_OVERRIDES (?section=pipeline, ?section=templates-assinatura,
-  // ?section=consumo via redirect ai-credits) que antes caiam em minha-empresa.
+  // Deep-link: /configuracoes?section=<id>&subsection=<sub> abre secao+subsecao.
+  // useSearchParams torna o efeito REATIVO a mudancas de URL (client-side nav
+  // para mesma pagina — ex: /configuracoes?section=minha-empresa ->  ?section=comunicacao-alertas).
+  const _searchParams = useSearchParams()
+  const _deepLinkSection = _searchParams.get("section")
+  const _deepLinkSubsection = _searchParams.get("subsection")
   useEffect(() => {
-    if (typeof window === "undefined") return
-    const requested = new URLSearchParams(window.location.search).get("section")
-    if (!requested) return
-    const match = settingsSections.find((s) => s.id === requested)
+    if (!_deepLinkSection) return
+    const match = settingsSections.find((s) => s.id === _deepLinkSection)
     if (!match) return
     setActiveSection(match.id)
-    setActiveSubsection("")
+    setActiveSubsection(_deepLinkSubsection ?? "")
     setExpandedSections(new Set([match.id]))
     setExpandedGroups((prev) => new Set(prev).add(match.group))
-  }, [])
+  }, [_deepLinkSection, _deepLinkSubsection, settingsSections])
   
   const [sectionCompletion, setSectionCompletion] = useState<Record<string, number>>({
     'minha-empresa': 0,
