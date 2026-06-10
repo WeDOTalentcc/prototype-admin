@@ -43,9 +43,9 @@ class TestBulkSubStatusPrediction:
             result = SubStatusPredictor.predict(candidate, "interview_technical", "rejected")
             results.append(result)
 
-        assert results[0]["predicted_substatus"] == "insufficient_technical_skills"  # low tech score
+        assert results[0]["predicted_substatus"] == "lacking_technical_skills"  # low tech score
         assert results[1]["predicted_substatus"] == "another_candidate_selected"  # job has hire
-        assert results[2]["predicted_substatus"] == "cultural_fit"  # low cultural score
+        assert results[2]["predicted_substatus"] == "cultural_mismatch"  # low cultural score
 
         for r in results:
             assert "confidence" in r
@@ -70,7 +70,7 @@ class TestBulkSubStatusPrediction:
             "rejected"
         )
         assert result["predicted_substatus"] in [
-            "underqualified", "profile_not_aligned", "insufficient_technical_skills"
+            "under_qualified", "another_candidate_selected", "lacking_technical_skills"
         ]
 
     def test_bulk_predict_manager_rejection(self):
@@ -82,7 +82,7 @@ class TestBulkSubStatusPrediction:
             "interview_manager",
             "rejected"
         )
-        assert result["predicted_substatus"] == "manager_decision"
+        assert result["predicted_substatus"] == "another_candidate_selected"
 
     def test_bulk_predict_with_interview_gaps(self):
         """Test rejection with technical interview gaps."""
@@ -101,7 +101,7 @@ class TestBulkSubStatusPrediction:
         }
 
         result = SubStatusPredictor.predict(context, "interview_technical", "rejected")
-        assert result["predicted_substatus"] == "insufficient_technical_skills"
+        assert result["predicted_substatus"] == "lacking_technical_skills"
 
 
 class TestWebhookAdapters:
@@ -378,7 +378,7 @@ class TestPredictSubstatusFromDb:
             )
             
             assert result["predicted_substatus"] in [
-                "underqualified", "insufficient_technical_skills", "profile_not_aligned"
+                "under_qualified", "lacking_technical_skills", "another_candidate_selected"
             ]
             assert "confidence" in result
             assert "reasoning" in result
