@@ -501,7 +501,7 @@ class JobVacancyCRUDRepository:
                 FROM job_vacancies jv
                 WHERE (:status = 'all' OR status ILIKE :status_val)
                   AND (:dept = 'all' OR department ILIKE :dept_val)
-                  AND (:title_q IS NULL OR title ILIKE :title_q_val)
+                  AND (:title_q::varchar IS NULL OR title ILIKE :title_q_val)
                   AND company_id = :company_id
                 ORDER BY
                     CASE status
@@ -541,7 +541,7 @@ class JobVacancyCRUDRepository:
                 SELECT COUNT(*) AS total FROM job_vacancies
                 WHERE (:status = 'all' OR status ILIKE :status_val)
                   AND (:dept = 'all' OR department ILIKE :dept_val)
-                  AND (:title_q IS NULL OR title ILIKE :title_q_val)
+                  AND (:title_q::varchar IS NULL OR title ILIKE :title_q_val)
                   AND company_id = :company_id
             """),
             {
