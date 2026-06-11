@@ -2,15 +2,19 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { 
   Loader2, 
   CheckCircle2, 
   AlertCircle, 
+  AlertTriangle,
   Mail,
-  User
+  User,
+  ShieldCheck
 } from "lucide-react"
 import { PortalFieldRenderer } from "../PortalFieldRenderer"
+import { SENSITIVE_DATA_REQUEST_FIELDS } from "../_hooks/useDataRequest"
 import type { useDataRequest } from "../_hooks/useDataRequest"
 
 type DataRequestReturn = ReturnType<typeof useDataRequest>
@@ -49,6 +53,9 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
     handleFileChange,
     saveProgress,
     submitForm,
+    consentChecked,
+    setConsentChecked,
+    hasSensitiveFields,
   } = hook
 
   if (step === "loading") {
@@ -333,6 +340,60 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
             </div>
           )}
 
+          {/* Phase 3a: LGPD Art. 11 sensitive-field consent block */}
+          {hasSensitiveFields && (
+            <Card className="mb-6 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950">
+              <CardContent className="pt-5 space-y-4">
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
+                      Este formulario coleta dados sensiveis (LGPD Art. 11)
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                      Sua privacidade e protegida. Os dados abaixo sao coletados somente com seu consentimento
+                      explicito, conforme a Lei Geral de Protecao de Dados.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pl-8">
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-2">
+                    Campos sensiveis que serao coletados:
+                  </p>
+                  <ul className="space-y-1">
+                    {portalData?.fields
+                      .filter((f) => SENSITIVE_DATA_REQUEST_FIELDS.has(f.name) || SENSITIVE_DATA_REQUEST_FIELDS.has(f.field_type))
+                      .map((f) => (
+                        <li key={f.name} className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                          <AlertTriangle className="w-3 h-3" />
+                          {f.label}
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+
+                <div className="pl-8">
+                  <p className="text-xs text-amber-600 dark:text-amber-500 mb-3">
+                    <strong>Base legal:</strong> Art. 11, paragrafo 2, II LGPD — Consentimento explicito do titular
+                  </p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <Checkbox
+                      id="lgpd-art11-consent"
+                      checked={consentChecked}
+                      onCheckedChange={(v) => setConsentChecked(v === true)}
+                      className="mt-0.5 border-amber-500 data-[state=checked]:bg-amber-600"
+                    />
+                    <span className="text-sm text-amber-800 dark:text-amber-300 leading-snug">
+                      Consinto com a coleta e tratamento dos dados sensiveis listados acima para fins do
+                      processo seletivo, conforme a LGPD.
+                    </span>
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="mb-6">
             <CardContent className="pt-6 space-y-6">
               {portalData?.fields.map((field) => (
@@ -354,7 +415,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
           <div className="space-y-3 pb-8">
             <Button
               onClick={submitForm}
-              disabled={submitting || saving}
+              disabled={submitting || saving || (hasSensitiveFields && !consentChecked)}
               className="w-full h-12 text-base font-medium"
               style={{backgroundColor: primaryColor}}
             >
