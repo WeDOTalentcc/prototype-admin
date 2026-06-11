@@ -7,6 +7,7 @@ Present 3+ candidates for calibration (approve/reject).
 """
 
 import logging
+import os
 import time
 from typing import Any, Dict
 
@@ -27,6 +28,13 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
 
     Fetches calibration candidates from Rails API if not already loaded.
     """
+    # Tombstone: graph path is legacy. LIA_WIZARD_ORCHESTRATOR=1 is canonical.
+    if not os.environ.get("RAILS_API_URL"):
+        raise RuntimeError(
+            "calibration_node requer RAILS_API_URL (caminho legacy de grafo). "
+            "LIA_WIZARD_ORCHESTRATOR=1 esta ativo -- use wizard_orchestrator_service.py. "
+            "Este no nao deve ser invocado sem RAILS_API_URL definido."
+        )
     # Lazy import of helpers defined in graph.py (avoids circular import).
     from app.domains.job_creation.graph import (  # noqa: E402
         _get_api_client,

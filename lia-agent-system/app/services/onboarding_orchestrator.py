@@ -724,10 +724,16 @@ class OnboardingOrchestrator:
             try:
                 import httpx
                 import os
-                rails_url = os.getenv("RAILS_BACKEND_URL", "http://localhost:3000")
+                rails_url = os.getenv("RAILS_BACKEND_URL")
+                if not rails_url:
+                    logger.debug("[Onboarding] RAILS_BACKEND_URL not set -- skipping Rails sync (rails-elimination)")
+                    return
                 async with httpx.AsyncClient(timeout=10.0) as client:
                     # Update onboarding session phase
-                    internal_token = os.getenv("INTERNAL_API_TOKEN", "internal")
+                    internal_token = os.getenv("INTERNAL_API_TOKEN")
+                    if not internal_token:
+                        logger.warning("[Onboarding] INTERNAL_API_TOKEN not set -- skipping Rails sync")
+                        return
                     headers = {"Authorization": f"Bearer {internal_token}", "Content-Type": "application/json", "X-Internal": "true"}
 
                     await client.patch(
