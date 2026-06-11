@@ -1,4 +1,3 @@
-export { CandidateTableRow, type CandidateTableRowProps, type CandidateTableRowAlert } from './CandidateTableRow'
 export { CandidateBadges } from './CandidateBadges'
 export { UniversalTransitionModal } from './UniversalTransitionModal'
 export type { UniversalTransitionConfirmData } from './UniversalTransitionModal'
