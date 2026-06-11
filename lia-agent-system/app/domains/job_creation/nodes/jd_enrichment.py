@@ -151,6 +151,13 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         and not _has_panel_form
         and not _has_attached
         and not _has_structured_intake  # RC2: funil aprovado → gera, nao pede JD
+        # Perf guard (2026-06-11): mensagens longas (>300 chars) são claramente
+        # conteúdo (JD colado, texto estruturado) e não meta-perguntas. Rodar
+        # o Haiku classifier nelas adiciona 1-3s de latência desnecessária.
+        # O static guard abaixo também não dispara (raw_len<100 não bate),
+        # então o enrichment segue normalmente. Fail-safe: raw_len não
+        # mascara disponibilidade do LLM — só pula a chamada Haiku.
+        and _raw_len <= 300
     )
 
     # ── Task #1098 + Task #1123 — LLM intent classifier SEMPRE roda ──
