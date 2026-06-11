@@ -6,6 +6,17 @@ import uuid
 from lia_config.database import Base
 
 
+# ── TriagemSession canonical status constants (VARCHAR — no PG ENUM, add freely) ──
+# Ordered by lifecycle: invited → awaiting_consent → started → in_progress → completed
+TRIAGEM_STATUS_INVITED = "invited"
+TRIAGEM_STATUS_AWAITING_CONSENT = "awaiting_consent"  # Phase 1b: waiting for LGPD SIM/NÃO
+TRIAGEM_STATUS_CONSENT_DECLINED = "consent_declined"  # candidate replied NÃO
+TRIAGEM_STATUS_STARTED = "started"
+TRIAGEM_STATUS_IN_PROGRESS = "in_progress"
+TRIAGEM_STATUS_COMPLETED = "completed"
+TRIAGEM_STATUS_EXPIRED = "expired"
+
+
 class TriagemSession(Base):
     __tablename__ = "triagem_sessions"
     __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
