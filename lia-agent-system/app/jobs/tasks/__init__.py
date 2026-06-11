@@ -152,3 +152,7 @@ __all__ = [
     "dispatch_agent_deployment_task",
     "scan_agent_deployment_cron_schedules",
 ]
+
+from app.jobs.tasks.expurgo_gravacoes import (  # noqa: F401  # Phase 3b LGPD Art. 16
+    expurgo_gravacoes_audio,
+)

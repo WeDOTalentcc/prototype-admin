@@ -402,6 +402,13 @@ celery_app.conf.update(
             "schedule": crontab(day_of_month=1, hour=2, minute=0),
             "options": {"expires": 7200},
         },
+        # Phase 3b — Expurgo mensal de gravações de áudio (LGPD Art. 16)
+        # 1º de cada mês 05:00 UTC = 02:00 BRT. Após data-retention-monthly (02h UTC).
+        "expurgo-gravacoes-mensal": {
+            "task": "expurgo_gravacoes_audio",
+            "schedule": crontab(0, 5, day_of_month=1),  # 05:00 UTC = 02:00 BRT
+            "options": {"expires": 7200, "queue": "onboarding_low"},
+        },
         # E4 — Hot-Reload de Agentes: verificar agents_registry.yaml a cada minuto
         "agent-registry-hot-reload": {
             "task": "agents.registry.check_reload",
