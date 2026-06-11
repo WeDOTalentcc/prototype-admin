@@ -240,6 +240,27 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             # ficava None quando WSI nao gerado, perdendo o modo escolhido).
             cb_wrap(api.save_screening_config, job_id, questions, mode, eligibility)
 
+            # Step 2b: Create versioned question_set so triagem uses approved
+            # questions. Without this, triagem reads screening_question_sets
+            # (versioned table) but wizard only writes to screening_config JSONB
+            # -> regenerates from scratch, discarding HITL #2 + Bloom calibration.
+            if questions and state.get("questions_approved"):
+                try:
+                    cb_wrap(
+                        api.save_question_set,
+                        job_id,
+                        questions,
+                        mode,
+                        state.get("seniority_resolved"),
+                    )
+                except Exception as _qset_err:
+                    logger.error(
+                        "[JobCreation:publish] falha ao criar question_set -- "
+                        "triagem usara fallback de regeneracao",
+                        exc_info=True,
+                        extra={"job_id": job_id},
+                    )
+
             # Step 3: Publish to platforms
             platforms = state.get("publish_platforms", ["website"])
             # PR-8 ONDA 3 / F-3.5: warn + count quando UI nao setou sourcing_mode.
