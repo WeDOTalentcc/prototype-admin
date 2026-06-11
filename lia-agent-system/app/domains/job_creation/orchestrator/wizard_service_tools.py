@@ -421,6 +421,17 @@ def _handle_publish_job(
             error=True,
         )
 
+    if not state.get("questions_approved"):
+        return ToolResult(
+            llm_message=(
+                "A triagem WSI ainda nao foi aprovada. "
+                "Por favor, revise as perguntas no painel de Triagem e clique em "
+                "'Aprovar' antes de publicar a vaga."
+            ),
+            state_updates={"requires_action": "approve_wsi_questions"},
+            error=True,
+        )
+
     confirmed = bool(tool_input.get("confirm"))
     if not confirmed:
         title = state.get("parsed_title") or "a vaga"
