@@ -25,9 +25,9 @@ async function getServerUser(): Promise<Record<string, unknown> | null> {
     // QW3 audit 2026-05-22: layout.tsx tem `export const dynamic = "force-dynamic"`,
     // entao TODA navegacao SSR-renderiza esperando este fetch. Quando o backend
     // FastAPI esta lento (restart, hung, OOM), sem timeout = tela preta 30s+
-    // antes do user ver qualquer HTML. Timeout de 3s + null fallback garante
-    // que o layout SEMPRE responde em <3s. Middleware ja valida JWT entao
-    // serverUser eh apenas conveniencia (passa pro window.__INITIAL_USER__).
+    // antes do user ver qualquer HTML. Timeout 800ms garante resposta em <1s;
+    // normais; expira rapido se estiver hung/reiniciando. Middleware ja
+    // valida JWT entao serverUser eh apenas conveniencia (window.__INITIAL_USER__).
     const response = await fetch(`${BACKEND_URL}/api/v1/auth/me`, {
       method: 'GET',
       headers: {
@@ -35,7 +35,7 @@ async function getServerUser(): Promise<Record<string, unknown> | null> {
         'Content-Type': 'application/json',
       },
       cache: 'no-store',
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(800),
     })
 
     if (response.ok) {
