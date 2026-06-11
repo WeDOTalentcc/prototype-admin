@@ -42,6 +42,8 @@ export interface CandidatePreviewProfileTabProps {
   getAddressString: () => string
   /** Critérios da busca ativa — quando presente (e sem jobId), mostra a matriz flat. */
   searchCriteria?: Record<string, unknown> | null
+  /** Navigate to consent tab */
+  onShowConsentHistory?: () => void
 }
 
 export function CandidatePreviewProfileTab({
@@ -59,6 +61,7 @@ export function CandidatePreviewProfileTab({
   hasAddressData,
   getAddressString,
   searchCriteria,
+  onShowConsentHistory,
 }: CandidatePreviewProfileTabProps) {
   const { companyId } = useCurrentCompany()
   const candidateId = String((candidate as { id?: unknown }).id ?? '')
@@ -112,6 +115,7 @@ export function CandidatePreviewProfileTab({
         hasSalaryData={hasSalaryData}
         hasAddressData={hasAddressData}
         getAddressString={getAddressString}
+        onShowConsentHistory={onShowConsentHistory}
       />
     </div>
   )
