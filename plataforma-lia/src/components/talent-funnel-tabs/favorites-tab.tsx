@@ -61,6 +61,7 @@ export function FavoritesTab({
   onLIAClick,
   onUpdateFavoriteNote
 }: FavoritesTabProps) {
+  const { openEntityChat } = useLiaEntitySelection()
   const [filterType, setFilterType] = useState<'all' | 'pinned' | 'starred'>('all')
   const [sortConfig, setSortConfig] = useState<TableSortConfig>({ field: 'score', direction: 'desc' })
   const [searchTerm, setSearchTerm] = useState('')

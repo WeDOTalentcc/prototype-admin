@@ -88,6 +88,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
   onEmailCandidate, 
   viewedCandidateIds = new Set()
 }: CandidateTableRowProps) {
+  const { openEntityChat } = useLiaEntitySelection()
   const [showActions, setShowActions] = useState(false)
   const ranking = calculateRanking(candidate)
   const alerts = getAlerts(candidate)

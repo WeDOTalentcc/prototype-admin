@@ -65,7 +65,6 @@ export interface CalibrationCandidateCardProps {
 // ---------- Component ----------
 
 export function CalibrationCandidateCard({
-  const { openEntityChat } = useLiaEntitySelection()
   candidate,
   onApprove,
   onReject,
@@ -73,6 +72,7 @@ export function CalibrationCandidateCard({
   criteriaHeader,
   className,
 }: CalibrationCandidateCardProps) {
+  const { openEntityChat } = useLiaEntitySelection()
   return (
     <div className={cn("flex h-full", className)}>
       {/* ---- Left Panel: Candidate Profile ---- */}
