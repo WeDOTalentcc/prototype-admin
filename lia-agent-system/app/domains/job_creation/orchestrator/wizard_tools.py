@@ -692,6 +692,38 @@ def _handle_navigate_to_jobs(
     )
 
 
+
+def _handle_open_panel(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Expande o painel lateral (ficha viva) no frontend."""
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    return ToolResult(
+        llm_message=(
+            "Painel lateral aberto -- confirme ao recrutador que a ficha viva "
+            "esta visivel ao lado."
+        ),
+        state_updates={"panel_pref": "expanded"},
+    )
+
+
+def _handle_close_panel(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Minimiza o painel lateral para o dock acima do input."""
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    return ToolResult(
+        llm_message=(
+            "Painel minimizado para o card acima do campo de mensagem -- "
+            "confirme ao recrutador que ele pode reabrir clicando no card."
+        ),
+        state_updates={"panel_pref": "docked"},
+    )
+
 def _handle_get_wizard_status(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -906,6 +938,29 @@ NAVIGATE_TO_JOBS = WizardTool(
     handler=_handle_navigate_to_jobs,
 )
 
+
+OPEN_PANEL = WizardTool(
+    name="open_panel",
+    description=(
+        "Expande o painel lateral (ficha viva da vaga) no frontend. Use quando "
+        "o recrutador pedir para 'abrir o painel', 'mostrar o painel', 'ver a "
+        "ficha ao lado'."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_open_panel,
+)
+
+CLOSE_PANEL = WizardTool(
+    name="close_panel",
+    description=(
+        "Minimiza o painel lateral para um card compacto acima do campo de "
+        "mensagem. Use quando o recrutador pedir para 'fechar o painel', "
+        "'esconder o painel', 'continuar so pelo chat'."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_close_panel,
+)
+
 GET_WIZARD_STATUS = WizardTool(
     name="get_wizard_status",
     description=(
@@ -932,6 +987,8 @@ PURE_TOOLS: tuple[WizardTool, ...] = (
     APPROVE_JOB_DESCRIPTION,
     SET_SALARY,
     NAVIGATE_TO_JOBS,
+    OPEN_PANEL,
+    CLOSE_PANEL,
     GET_WIZARD_STATUS,
 )
 

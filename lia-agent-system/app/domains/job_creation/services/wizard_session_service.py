@@ -92,6 +92,21 @@ def _derive_wizard_stage(state: dict) -> str:
         return "competency"
     return "intake"
 
+def _consume_panel_pref(state: dict) -> str | None:
+    """Manus F1 — preferência de painel one-shot (tools open_panel/close_panel).
+
+    Remove ``panel_pref`` do state (pop) e retorna o valor SE válido
+    ("expanded" | "docked"). One-shot por design: o pop acontece ANTES de
+    ``_persist_orchestrator_state`` (que usa ``update_state`` = MERGE no
+    checkpoint), então a key nunca chega ao checkpoint — o FE recebe a
+    preferência UMA vez no payload do ``wizard_stage`` e as etapas seguintes
+    não re-forçam o modo (preserva a escolha manual do recrutador). Valor
+    inválido é consumido e descartado (não emite).
+    """
+    pref = state.pop("panel_pref", None)
+    return pref if pref in ("expanded", "docked") else None
+
+
 # Keys carried forward from context into wizard state
 _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
 
@@ -1125,6 +1140,11 @@ class WizardSessionService:
         conv.append({"role": "assistant", "content": result.reply})
         new_state["conversation_messages"] = conv[-50:]
 
+        # Manus F1 — panel_pref one-shot: consumir (pop) ANTES do persist
+        # para a key nunca chegar ao checkpoint (update_state faz MERGE —
+        # pop pós-persist não removeria, e os turnos seguintes re-emitiriam).
+        panel_pref = _consume_panel_pref(new_state)
+
         await cls._persist_orchestrator_state(thread_id, new_state)
 
         # Payload alinhado ao contrato canonical do painel (DRY com _ficha_data
@@ -1229,6 +1249,10 @@ class WizardSessionService:
             if stage == "handoff":
                 _jid = new_state.get("job_id")
                 data["handoff_url"] = f"/jobs/{_jid}" if _jid else "/jobs"
+            # Manus F1 — preferência de painel one-shot (open_panel/
+            # close_panel). Emitida UMA vez; já removida do state acima.
+            if panel_pref:
+                data["panel_pref"] = panel_pref
             payload = build_ws_stage_payload(
                 stage=stage,
                 requires_approval=bool(new_state.get("requires_approval")),

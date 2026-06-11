@@ -3,6 +3,7 @@ WSI Service - Main orchestrator combining all WSI components.
 """
 import json
 import logging
+import unicodedata
 from typing import Any, Literal
 
 from .models import (
@@ -42,6 +43,56 @@ def _wsi_fairness_check(text: str):
     except Exception as exc:  # noqa: BLE001 — fail-open
         logger.warning("[WSIService] FairnessGuard indisponivel (fail-open): %s", exc)
         return None
+
+
+_SENIORITY_KERNEL_ALIASES: dict[str, str] = {
+    "estagiario": "estagiario",
+    "estagio": "estagiario",
+    "junior": "junior",
+    "jr": "junior",
+    "pleno": "pleno",
+    "pl": "pleno",
+    "senior": "senior",
+    "sr": "senior",
+    "lead": "lead",
+    "tech lead": "lead",
+    "gerente": "lead",
+    "manager": "lead",
+    "principal": "principal",
+    "staff": "senior",
+    "diretor": "diretor",
+    "director": "diretor",
+    "vp": "executive",
+    "vp_clevel": "executive",
+    "vp clevel": "executive",
+    "executive": "executive",
+}
+
+
+def _normalize_seniority_for_kernel(raw: str | None) -> str:
+    """Normaliza senioridade para chave canonica de SENIORITY_DISTRIBUTIONS.
+
+    Remove acentos via NFD, converte para minusculas, mapeia aliases
+    (senior->senior, estagiario fix, staff->senior, gerente->lead, etc).
+    Fallback: pleno.
+    """
+    if not raw:
+        return "pleno"
+    normalized = unicodedata.normalize("NFD", str(raw).lower().strip())
+    normalized = "".join(c for c in normalized if unicodedata.category(c) != "Mn")
+    # Tentar lookup com underscores (ex: vp_clevel)
+    normalized_us = normalized.replace("-", "_").replace(" ", "_")
+    if normalized_us in _SENIORITY_KERNEL_ALIASES:
+        return _SENIORITY_KERNEL_ALIASES[normalized_us]
+    # Tentar lookup com espacos (ex: tech lead)
+    normalized_sp = normalized.replace("_", " ").replace("-", " ")
+    if normalized_sp in _SENIORITY_KERNEL_ALIASES:
+        return _SENIORITY_KERNEL_ALIASES[normalized_sp]
+    # Prefix match como fallback
+    for alias, target in _SENIORITY_KERNEL_ALIASES.items():
+        if normalized_us.startswith(alias) or normalized_sp.startswith(alias):
+            return target
+    return "pleno"
 
 
 class WSIService:
@@ -263,11 +314,7 @@ Responda em JSON:
         endpoints, wizard) to use the canonical F6 pipeline without manually
         building ``Competency`` objects.
         """
-        _seniority = (seniority or "pleno").lower().strip()
-        _seniority_level = _seniority.replace(" ", "_").replace("-", "_")
-        _valid_levels = ("junior", "pleno", "senior", "lead", "executive", "estagiario", "principal", "diretor", "vp_clevel")
-        if _seniority_level not in _valid_levels:
-            _seniority_level = "pleno"
+        _seniority_level = _normalize_seniority_for_kernel(seniority)
 
         competencies: list[Competency] = []
 
@@ -278,7 +325,7 @@ Responda em JSON:
                 name=skill.strip(),
                 type="technical",
                 weight=round(max(0.1, 1.0 - idx * 0.05), 2),
-                seniority_level=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+                seniority_level=_seniority_level,
                 is_critical=idx < 3,
             ))
 
@@ -289,7 +336,7 @@ Responda em JSON:
                 name=comp.strip(),
                 type="behavioral",
                 weight=round(max(0.1, 0.9 - idx * 0.05), 2),
-                seniority_level=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+                seniority_level=_seniority_level,
                 is_critical=False,
             ))
 
@@ -306,7 +353,7 @@ Responda em JSON:
             competencies=competencies,
             mode=mode,
             job_description=job_description,
-            seniority=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+            seniority=_seniority_level,
             collect_dropped=collect_dropped,
             precomputed_selected_traits=precomputed_selected_traits,
         )

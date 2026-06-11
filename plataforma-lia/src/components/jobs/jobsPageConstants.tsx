@@ -70,7 +70,7 @@ export function getStatusColor(status: JobStatus): string {
     'Cancelada': 'var(--status-error)',
     'Rascunho': 'var(--lia-border-subtle)',
     'Arquivada': 'var(--lia-border-subtle)',
-    'Concluída': 'var(--lia-text-secondary)'
+    'Concluída': 'color-mix(in srgb, var(--wedo-purple) 10%, transparent)'
   }
   return statusColors[status] || 'var(--lia-border-subtle)'
 }
