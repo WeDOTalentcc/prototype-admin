@@ -384,6 +384,8 @@ async def complete_session(db: AsyncSession, token: str) -> dict[str, Any]:
     eliminatory_keywords: list[str] = [
         str(k).lower() for k in (session_meta_for_scoring.get("eliminatory_keywords") or [])
     ]
+    # F9-2: senioridade da vaga gravada no metadata ao criar sessao (seniority_level)
+    session_seniority: str | None = session_meta_for_scoring.get("seniority_level")
 
     candidate_by_block: dict[int, list[TriagemMessage]] = {}
     for msg in candidate_msgs:
@@ -417,7 +419,7 @@ async def complete_session(db: AsyncSession, token: str) -> dict[str, Any]:
                 score_result["has_eliminatory_hit"] = any(kw in response_lower for kw in eliminatory_keywords)
             response_scores.append(score_result)
 
-    final_score, recommendation = _calculate_final_score(response_scores)
+    final_score, recommendation = _calculate_final_score(response_scores, seniority=session_seniority)
     session.wsi_final_score = final_score
     session.recommendation = recommendation
 

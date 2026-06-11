@@ -2,9 +2,13 @@
 Scoring helpers for triagem session responses.
 """
 import logging
+import statistics as _stats
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+_DEFAULT_TECH_WEIGHT = 0.625  # pleno default
+_DEFAULT_BEHAV_WEIGHT = 1.0 - _DEFAULT_TECH_WEIGHT
 
 
 def _score_response_deterministic(response_text: str, block_type: str, competency: str) -> dict[str, Any]:
@@ -38,7 +42,61 @@ def _score_response_deterministic(response_text: str, block_type: str, competenc
         }
 
 
-def _calculate_final_score(response_scores: list[dict[str, Any]]) -> tuple[float, str]:
+def calculate_session_final_score(
+    technical_scores: list[float],
+    behavioral_scores: list[float],
+    seniority: str | None = None,
+) -> dict[str, Any]:
+    """
+    Calcula o score final da sessao de triagem aplicando SENIORITY_WEIGHTS.
+
+    Args:
+        technical_scores:  Lista de scores numericos para blocos tecnicos.
+        behavioral_scores: Lista de scores numericos para blocos comportamentais.
+        seniority:         Nivel de senioridade da vaga (lookup em SENIORITY_WEIGHTS).
+
+    Returns:
+        Dict com final_score, technical_mean, behavioral_mean, tech_weight, behav_weight.
+    """
+    if not technical_scores and not behavioral_scores:
+        return {
+            "final_score": 0.0,
+            "technical_mean": 0.0,
+            "behavioral_mean": 0.0,
+            "tech_weight": _DEFAULT_TECH_WEIGHT,
+            "behav_weight": _DEFAULT_BEHAV_WEIGHT,
+            "seniority_used": seniority,
+        }
+
+    t_mean = _stats.mean(technical_scores) if technical_scores else 0.0
+    b_mean = _stats.mean(behavioral_scores) if behavioral_scores else 0.0
+
+    tech_weight = _DEFAULT_TECH_WEIGHT
+    if seniority:
+        try:
+            from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+                get_seniority_weights,
+            )
+            weights = get_seniority_weights(seniority)
+            tech_weight = weights.get("technical", _DEFAULT_TECH_WEIGHT)
+        except Exception as exc:
+            logger.warning(f"[Triagem] Failed to resolve seniority weights for {seniority!r}: {exc}")
+
+    behav_weight = 1.0 - tech_weight
+    return {
+        "final_score": round(t_mean * tech_weight + b_mean * behav_weight, 2),
+        "technical_mean": round(t_mean, 2),
+        "behavioral_mean": round(b_mean, 2),
+        "tech_weight": tech_weight,
+        "behav_weight": behav_weight,
+        "seniority_used": seniority,
+    }
+
+
+def _calculate_final_score(
+    response_scores: list[dict[str, Any]],
+    seniority: str | None = None,
+) -> tuple[float, str]:
     if not response_scores:
         return 3.0, "aguardando"
 
@@ -48,7 +106,7 @@ def _calculate_final_score(response_scores: list[dict[str, Any]]) -> tuple[float
     for rs in response_scores:
         score = rs.get("score", 3.0)
         block_type = rs.get("block_type", "behavioral")
-        # F9-1 — trait_weight do ranking F3; padrao 1.0 = pesos uniformes
+        # F9-1 - trait_weight do ranking F3; padrao 1.0 = pesos uniformes
         trait_weight = float(rs.get("trait_weight", 1.0))
         if block_type == "technical":
             technical_scores.append(("", score, 1.0))
@@ -62,6 +120,7 @@ def _calculate_final_score(response_scores: list[dict[str, Any]]) -> tuple[float
         result = calculate_final_wsi_score(
             technical_scores=technical_scores or [("", 3.0, 1.0)],
             behavioral_scores=behavioral_scores or [("", 3.0, 1.0)],
+            seniority=seniority,
         )
         final = result["final_score"]
         scaled = round(final * 2.0, 1)
