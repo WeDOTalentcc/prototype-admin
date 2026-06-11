@@ -5975,7 +5975,18 @@
           "hours": "hours",
           "days": "days",
           "percent": "%"
-        }
+        },
+        "generalTitle": "General notifications",
+        "generalSubtitle": "Control when and how to receive briefings and summaries",
+        "frequencyLabel": "Briefing frequency",
+        "frequency": {
+          "daily": "Daily",
+          "twice_daily": "Twice daily",
+          "weekly": "Weekly",
+          "monthly": "Monthly"
+        },
+        "digestLabel": "Weekly digest",
+        "digestHint": "Receive a consolidated metrics summary every week"
       }
     },
     "integrations": {

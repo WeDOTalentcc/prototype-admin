@@ -36,8 +36,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   AlertCircle,
   Bell,
+  Calendar,
   CheckCircle,
   Loader2,
+  ToggleLeft,
   UserCog,
   UserRound,
 } from "lucide-react"
@@ -45,9 +47,11 @@ import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from "@/lib/design-tokens"
 import {
   useAlertPreferences,
+  useBriefingPreferences,
   type AlertPreference,
   type AlertPreferenceChannel,
   type AlertPreferenceUpdate,
+  type BriefingFrequency,
 } from "@/hooks/settings/use-alert-preferences"
 
 type Audience = "recruiter" | "candidate"
@@ -164,6 +168,17 @@ export function AlertPreferencesPanel() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [successFor, setSuccessFor] = useState<string | null>(null)
 
+  // B1+B2: briefing frequency + digest toggle (Rules of Hooks: top, before any if/return)
+  const {
+    briefingFrequency,
+    digestEnabled,
+    isLoading: isBriefingLoading,
+    isSaving: isBriefingSaving,
+    saveError: briefingSaveError,
+    updateBriefingFrequency,
+    updateDigestEnabled,
+  } = useBriefingPreferences()
+
   const groups = useMemo(() => {
     const recruiter: AlertPreference[] = []
     const candidate: AlertPreference[] = []
@@ -196,101 +211,79 @@ export function AlertPreferencesPanel() {
   function renderCard(pref: AlertPreference) {
     const meta = metaFor(pref.alert_type)
     const isSaving = savingId === (pref.id ?? pref.alert_type)
+    const unitLabel = t(`alertPreferences.unit.${meta.unit}`)
+
     return (
       <div
-        key={pref.id ?? pref.alert_type}
-        data-component="alert-preference-card"
-        data-alert-type={pref.alert_type}
-        className={`p-3 rounded-md border transition-colors motion-reduce:transition-none ${
-          pref.is_enabled
-            ? "bg-lia-bg-primary border-lia-border-subtle"
-            : "bg-lia-bg-secondary border-lia-border-subtle"
-        }`}
+        key={pref.alert_type}
+        className="rounded-xl border border-lia-border-subtle/60 bg-lia-bg-primary/60 p-3 space-y-2"
+        data-testid={`alert-card-${pref.alert_type}`}
       >
-        {/* Linha 1: identidade + toggle */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-lia-bg-secondary text-lia-text-secondary shrink-0">
-              <Bell className="w-3.5 h-3.5" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-lia-text-primary">
-                {pref.name ?? pref.alert_type}
-              </p>
-              {pref.description && (
-                <p className="text-xs text-lia-text-secondary mt-0.5">
-                  {pref.description}
-                </p>
-              )}
-            </div>
-          </div>
-
+        {/* Row 1: toggle + frase legível */}
+        <div className="flex items-start gap-2.5">
           <button
             type="button"
-            onClick={() => handleUpdate(pref, { is_enabled: !pref.is_enabled })}
-            disabled={isSaving}
             role="switch"
             aria-checked={pref.is_enabled}
             aria-label={t("alertPreferences.toggleAria", { type: pref.alert_type })}
-            data-toggle={`alert_pref_${pref.alert_type}_enabled`}
-            data-testid={`alert-pref-toggle-${pref.alert_type}`}
-            className={`relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 shrink-0 ${
-              pref.is_enabled ? "bg-lia-text-secondary" : "bg-lia-border-subtle"
+            disabled={isSaving}
+            onClick={() => handleUpdate(pref, { is_enabled: !pref.is_enabled })}
+            className={`relative inline-flex h-4 w-7 shrink-0 mt-0.5 items-center rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 ${
+              pref.is_enabled ? "bg-lia-accent" : "bg-lia-border-subtle"
             }`}
           >
             <span
-              className={`absolute top-0.5 w-4 h-4 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${
-                pref.is_enabled ? "left-4" : "left-0.5"
+              className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform motion-reduce:transition-none ${
+                pref.is_enabled ? "translate-x-3.5" : "translate-x-0.5"
               }`}
             />
           </button>
+
+          <div className="flex-1 min-w-0">
+            <p className={`text-xs leading-tight ${pref.is_enabled ? "text-lia-text-primary" : "text-lia-text-secondary"}`}>
+              {pref.name ?? pref.alert_type.replace(/_/g, " ")}
+            </p>
+            {pref.description && (
+              <p className="text-micro text-lia-text-secondary mt-0.5">{pref.description}</p>
+            )}
+          </div>
         </div>
 
-        {/* Linha 2: configuração — só quando habilitado */}
-        {pref.is_enabled ? (
-          <div className="mt-2.5 pl-9 space-y-2">
-            {/* Frase legível do gatilho */}
-            <div className="flex items-center gap-1.5 flex-wrap text-xs text-lia-text-secondary">
-              <span>{meta.before}</span>
+        {/* Row 2: threshold + cooldown + channels (só quando ativo) */}
+        {pref.is_enabled && (
+          <>
+            {/* Frase legível com threshold */}
+            <div className="flex items-center gap-1.5 pl-9 flex-wrap" data-field="threshold">
+              <span className="text-micro text-lia-text-secondary">{meta.before}</span>
               <input
                 type="number"
                 min={0}
-                max={1000000}
                 value={pref.threshold ?? 0}
                 onChange={(e) => {
-                  const next = Number(e.target.value)
-                  if (Number.isFinite(next) && next >= 0) {
-                    handleUpdate(pref, { threshold: next })
-                  }
+                  const val = parseInt(e.target.value, 10)
+                  if (!isNaN(val)) handleUpdate(pref, { threshold: val })
                 }}
                 disabled={isSaving}
-                className="font-data tabular-nums text-xs w-16 border border-lia-border-subtle rounded-md px-1.5 py-1 bg-lia-bg-primary text-lia-text-primary disabled:opacity-60"
-                data-field="threshold"
-                data-testid={`alert-pref-threshold-${pref.alert_type}`}
                 aria-label={t("alertPreferences.thresholdAria", { type: pref.alert_type })}
+                className="w-12 text-micro text-center border border-lia-border-subtle rounded-md px-1 py-0.5 bg-lia-bg-secondary disabled:opacity-60 focus:outline-none focus:ring-1 focus:ring-lia-accent/40"
               />
-              {meta.after && <span data-field="threshold_unit">{meta.after}</span>}
+              <span className="text-micro text-lia-text-secondary">{meta.after} ({unitLabel})</span>
             </div>
 
-            {/* Frase legível do intervalo de repetição (cooldown) */}
-            <div className="flex items-center gap-1.5 flex-wrap text-xs text-lia-text-secondary">
-              <span>{t("alertPreferences.cooldownLabel")}</span>
+            {/* Cooldown */}
+            <div className="flex items-center gap-1.5 pl-9 flex-wrap" data-field="cooldown">
+              <span className="text-micro text-lia-text-secondary">{t("alertPreferences.cooldownLabel")}</span>
               <input
                 type="number"
                 min={1}
-                max={720}
-                value={pref.cooldown_hours ?? 24}
+                value={pref.cooldown_hours}
                 onChange={(e) => {
-                  const next = Number(e.target.value)
-                  if (Number.isFinite(next) && next >= 1 && next <= 720) {
-                    handleUpdate(pref, { cooldown_hours: next })
-                  }
+                  const val = parseInt(e.target.value, 10)
+                  if (!isNaN(val) && val >= 1) handleUpdate(pref, { cooldown_hours: val })
                 }}
                 disabled={isSaving}
-                className="font-data tabular-nums text-xs w-16 border border-lia-border-subtle rounded-md px-1.5 py-1 bg-lia-bg-primary text-lia-text-primary disabled:opacity-60"
-                data-field="cooldown_hours"
-                data-testid={`alert-pref-cooldown-${pref.alert_type}`}
                 aria-label={t("alertPreferences.cooldownAria", { type: pref.alert_type })}
+                className="w-12 text-micro text-center border border-lia-border-subtle rounded-md px-1 py-0.5 bg-lia-bg-secondary disabled:opacity-60 focus:outline-none focus:ring-1 focus:ring-lia-accent/40"
               />
               <span>{t("alertPreferences.cooldownUnit")}</span>
             </div>
@@ -331,8 +324,9 @@ export function AlertPreferencesPanel() {
                 <Loader2 className={`${actionButtonStyles.icon} animate-spin ml-1`} />
               )}
             </div>
-          </div>
-        ) : (
+          </>
+        ) }
+        {!pref.is_enabled && (
           <p className="mt-2 pl-9 text-micro text-lia-text-secondary">
             {t("alertPreferences.disabledHint")}
           </p>
@@ -403,6 +397,85 @@ export function AlertPreferencesPanel() {
         </CardHeader>
 
         <CardContent className="space-y-5">
+          {/* B1+B2: Configurações gerais de notificação */}
+          {!isBriefingLoading && (
+            <section className="space-y-3" data-component="notification-general-settings">
+              <div className="flex items-start gap-2">
+                <div className="w-6 h-6 rounded-md flex items-center justify-center bg-lia-bg-secondary text-lia-text-secondary shrink-0">
+                  <Calendar className="w-3.5 h-3.5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-xs font-semibold text-lia-text-primary">
+                    {t("alertPreferences.generalTitle")}
+                  </h3>
+                  <p className="text-micro text-lia-text-secondary">
+                    {t("alertPreferences.generalSubtitle")}
+                  </p>
+                </div>
+              </div>
+
+              {/* B1: Frequência do briefing */}
+              <div className="ml-8 space-y-1">
+                <label className="text-xs text-lia-text-primary font-medium">
+                  {t("alertPreferences.frequencyLabel")}
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {(["daily", "twice_daily", "weekly", "monthly"] as BriefingFrequency[]).map((freq) => (
+                    <button
+                      key={freq}
+                      type="button"
+                      disabled={isBriefingSaving}
+                      onClick={() => updateBriefingFrequency(freq).catch(() => {})}
+                      aria-pressed={briefingFrequency === freq}
+                      className={`text-micro rounded-full px-2.5 py-0.5 border transition-colors disabled:opacity-60 ${
+                        briefingFrequency === freq
+                          ? "bg-lia-accent text-white border-lia-accent"
+                          : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle"
+                      }`}
+                    >
+                      {t(`alertPreferences.frequency.${freq}`)}
+                    </button>
+                  ))}
+                  {isBriefingSaving && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-lia-text-secondary self-center" />
+                  )}
+                </div>
+              </div>
+
+              {/* B2: Toggle digest semanal */}
+              <div className="ml-8 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-lia-text-primary font-medium">
+                    {t("alertPreferences.digestLabel")}
+                  </p>
+                  <p className="text-micro text-lia-text-secondary">
+                    {t("alertPreferences.digestHint")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={digestEnabled}
+                  disabled={isBriefingSaving}
+                  onClick={() => updateDigestEnabled(!digestEnabled).catch(() => {})}
+                  className={`relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${
+                    digestEnabled ? "bg-lia-accent" : "bg-lia-border-subtle"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${
+                      digestEnabled ? "translate-x-3.5" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {briefingSaveError && (
+                <p className="ml-8 text-micro text-status-error">{briefingSaveError}</p>
+              )}
+            </section>
+          )}
+
           {isLoading && (
             <div
               className="flex items-center gap-2 text-xs text-lia-text-secondary py-4 justify-center"

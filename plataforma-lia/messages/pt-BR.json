@@ -5975,7 +5975,18 @@
           "hours": "horas",
           "days": "dias",
           "percent": "%"
-        }
+        },
+        "generalTitle": "Notificações gerais",
+        "generalSubtitle": "Controle quando e como receber briefings e resumos",
+        "frequencyLabel": "Frequência do briefing",
+        "frequency": {
+          "daily": "Diário",
+          "twice_daily": "2× ao dia",
+          "weekly": "Semanal",
+          "monthly": "Mensal"
+        },
+        "digestLabel": "Resumo semanal",
+        "digestHint": "Receba um consolidado das métricas toda semana"
       }
     },
     "integrations": {

@@ -248,15 +248,21 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   const saveAlertsConfig = async () => {
     try {
       setSaving(true)
+      // (1) salva alertas na API legada (compat — apenas campos de alert, sem briefing_frequency)
       const response = await apiFetch('/api/backend-proxy/alerts/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           alerts: alerts.map(a => ({ id: a.id, name: a.name, description: a.description, enabled: a.enabled, channel: a.channel })),
-          briefing_frequency: briefingFrequency
         })
       })
       if (!response.ok) throw new Error('Falha ao salvar configuração de alertas')
+      // (2) salva briefing_frequency no endpoint canonical (B1 fix — canonical successor)
+      await fetch('/api/backend-proxy/hiring-policy/block', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ block: 'communication_rules', data: { briefing_frequency: briefingFrequency } }),
+      })
       setSuccessMessage('Configuração salva com sucesso!')
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {

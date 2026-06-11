@@ -135,6 +135,8 @@ export const POLICY_FIELD_TO_BLOCK: Record<string, string> = {
   diversity_inclusion_guidelines: "screening_rules",
   manager_approval_sla_hours: "pipeline_rules",
   vacancy_approval_required: "pipeline_rules",
+  briefing_frequency: "communication_rules",   // B1
+  digest_enabled: "communication_rules",        // B2
 }
 
 // ─── Pure helper functions ───────────────────────────────────────────────────
