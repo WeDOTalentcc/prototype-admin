@@ -217,6 +217,12 @@ class AuthSettings(BaseSettings):
     # Default False = backward compat (Rails JWTs still accepted).
     # Flip to True only after all active users have FastAPI JWTs.
     FASTAPI_AUTH_PRIMARY: bool = False
+    # Phase 2a: WorkOS SSO callback issues FastAPI JWT (lia_access_token).
+    # Default False = backward compat (workos_session cookie still used).
+    WORKOS_FASTAPI_JWT: bool = False
+    # Phase 2b: Magic-link verification done by FastAPI instead of Rails.
+    # Default False = backward compat (Rails magic-link still used).
+    FASTAPI_MAGIC_LINK_PRIMARY: bool = False
     WORKOS_CLIENT_ID: str | None = None
     WORKOS_API_KEY: str | None = None
     WORKOS_WEBHOOK_SECRET: str | None = None

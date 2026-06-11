@@ -92,10 +92,44 @@ export async function GET(req: NextRequest) {
     if (!syncResponse.ok) {
     }
 
+    // Phase 2a (2026-06-10): issue a FastAPI JWT so WorkOS SSO users get
+    // lia_access_token (same cookie as password-login) instead of relying on
+    // the workos_session cookie + WorkOS accessToken forwarding (which FastAPI
+    // cannot validate). Gate: WORKOS_FASTAPI_JWT=true on backend.
+    const issueTokenHeaders: HeadersInit = { 'Content-Type': 'application/json' }
+    if (INTERNAL_API_SECRET) {
+      issueTokenHeaders['X-Internal-Auth'] = INTERNAL_API_SECRET
+    }
+    const issueTokenResponse = await fetch(
+      `${process.env.BACKEND_URL || 'http://127.0.0.1:8001'}/api/v1/auth/workos/issue-token`,
+      {
+        method: 'POST',
+        headers: issueTokenHeaders,
+        body: JSON.stringify({ email: profile.email, workos_id: profile.id }),
+      },
+    ).catch(() => null)
+
     const welcomeUrl = new URL('/login/welcome', req.url)
     welcomeUrl.searchParams.set('sso', 'true')
     welcomeUrl.searchParams.set('returnTo', returnTo)
-    return NextResponse.redirect(welcomeUrl)
+    const redirectResponse = NextResponse.redirect(welcomeUrl)
+
+    if (issueTokenResponse?.ok) {
+      const tokenData = await issueTokenResponse.json().catch(() => null)
+      if (tokenData?.access_token) {
+        // Set FastAPI JWT as lia_access_token — same httpOnly cookie as password login.
+        // When this cookie is present, proxy.ts prefers it over workos_session.
+        redirectResponse.cookies.set('lia_access_token', tokenData.access_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: tokenData.expires_in ?? 86400,
+          path: '/',
+        })
+      }
+    }
+    // Whether or not issue-token succeeded, workos_session is still set as fallback.
+    return redirectResponse
   } catch (error) {
     const loginUrl = new URL('/login', req.url)
     loginUrl.searchParams.set('error', 'Failed to complete SSO login')

@@ -6,6 +6,7 @@ para mitigar email flood + enumeration timing attack.
 Pattern: data_subject_requests.py via rate_limiter._redis_sliding_window.
 """
 import os
+_INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "")
 from datetime import datetime, timedelta
 from uuid import UUID
 
@@ -797,4 +798,216 @@ async def exchange_rails_token(
         access_token=access_token,
         refresh_token=refresh_token,
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+
+
+# =============================================================================
+# Phase 2 — WorkOS SSO -> FastAPI JWT + Magic-link -> FastAPI
+# (Rails Elimination Plan, 2026-06-10)
+# =============================================================================
+
+
+class WorkOSIssueTokenRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    email: str
+    workos_id: str | None = None
+
+
+class WorkOSIssueTokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    issued_for: str = "workos_sso"
+
+
+@router.post("/workos/issue-token", response_model=WorkOSIssueTokenResponse)
+async def workos_issue_fastapi_token(
+    request: WorkOSIssueTokenRequest,
+    repo: UserRepository = Depends(get_user_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
+    x_internal_auth: str | None = None,
+):
+    """
+    Issue a FastAPI JWT for a WorkOS SSO user.
+
+    Called internally by the Next.js WorkOS callback after sync-user succeeds.
+    Protected by X-Internal-Auth header (INTERNAL_API_SECRET).
+    """
+    secret = os.getenv("INTERNAL_API_SECRET", "")
+    if secret and x_internal_auth != secret:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+    from app.core.config import settings as _cfg
+    if not getattr(_cfg, "WORKOS_FASTAPI_JWT", False):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="WORKOS_FASTAPI_JWT flag is not enabled",
+        )
+
+    user = await repo.get_by_email(request.email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found. Run sync-user first.",
+        )
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is inactive")
+
+    company_id = str(user.company_id) if user.company_id else ""
+    access_token = create_access_token(
+        subject=str(user.id),
+        role=user.role.value,
+        company_id=company_id,
+    )
+    refresh_token = create_refresh_token(subject=str(user.id))
+
+    try:
+        await audit_svc.log_decision(
+            company_id=company_id or None,
+            agent_name="auth_module",
+            decision_type="auth_event",
+            action="workos_fastapi_token_issued",
+            decision="approved",
+            reasoning=["WorkOS SSO -> FastAPI JWT issued", f"workos_id={request.workos_id}"],
+            criteria_used=["workos_jwt_valid", "fastapi_user_found", "is_active"],
+            confidence=1.0,
+            human_review_required=False,
+        )
+    except Exception as audit_err:
+        logger.warning("[Phase2] Audit log failed for workos issue-token: %s", audit_err)
+
+    return WorkOSIssueTokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+
+
+# -- Magic-link endpoints -----------------------------------------------------
+
+
+class MagicLinkSendRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    email: str
+    frontend_url: str | None = None
+    first_login: bool = False
+
+
+class MagicLinkSendResponse(BaseModel):
+    sent: bool
+    simulated: bool = False
+    message: str
+    debug_magic_url: str | None = None
+
+
+@router.post("/magic-link/send", response_model=MagicLinkSendResponse)
+async def send_magic_link(request: MagicLinkSendRequest):
+    """
+    Generate and send a magic-link OTT for the given email.
+
+    Public endpoint — rate-limited by frontend.  Does NOT reveal whether
+    the email exists (prevents enumeration).
+    """
+    from app.auth.magic_link_service import generate_magic_link, send_magic_link_email
+
+    frontend_url = (
+        request.frontend_url
+        or os.getenv("APP_FRONTEND_URL", "https://app.wedotalent.cc")
+    ).rstrip("/")
+
+    try:
+        magic_url = await generate_magic_link(
+            email=request.email,
+            frontend_url=frontend_url,
+            first_login=request.first_login,
+        )
+    except RuntimeError as exc:
+        logger.error("[Phase2] magic-link generate failed: %s", exc)
+        raise HTTPException(status_code=503, detail="Token storage unavailable")
+
+    try:
+        actually_sent = await send_magic_link_email(
+            email=request.email,
+            magic_url=magic_url,
+        )
+    except RuntimeError as exc:
+        logger.error("[Phase2] magic-link email send failed: %s", exc)
+        raise HTTPException(status_code=503, detail="Email delivery unavailable")
+
+    is_dev = os.getenv("APP_ENV", "development") == "development"
+    return MagicLinkSendResponse(
+        sent=actually_sent,
+        simulated=not actually_sent,
+        message="Link de acesso enviado" if actually_sent else "Link gerado (modo simulado)",
+        debug_magic_url=magic_url if (not actually_sent and is_dev) else None,
+    )
+
+
+class MagicLinkVerifyResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    first_login: bool = False
+
+
+@router.get("/magic-link/verify", response_model=MagicLinkVerifyResponse)
+async def verify_magic_link(
+    token: str,
+    uid: str,
+    repo: UserRepository = Depends(get_user_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
+):
+    """
+    Verify a magic-link token and issue a FastAPI JWT.
+
+    GET /api/v1/auth/magic-link/verify?token=T&uid=U
+    """
+    from app.auth.magic_link_service import verify_magic_link as _verify
+
+    verified = await _verify(token=token, uid=uid)
+    if not verified:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Link invalido ou expirado",
+        )
+
+    email = verified["email"]
+    first_login = verified.get("first_login", False)
+
+    user = await repo.get_by_email(email)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario nao encontrado")
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Conta inativa")
+
+    company_id = str(user.company_id) if user.company_id else ""
+    access_token = create_access_token(
+        subject=str(user.id),
+        role=user.role.value,
+        company_id=company_id,
+    )
+    refresh_token = create_refresh_token(subject=str(user.id))
+
+    try:
+        await audit_svc.log_decision(
+            company_id=company_id or None,
+            agent_name="auth_module",
+            decision_type="auth_event",
+            action="magic_link_login",
+            decision="approved",
+            reasoning=["Magic-link verified and FastAPI JWT issued"],
+            criteria_used=["ott_valid", "single_use_consumed", "user_active"],
+            confidence=1.0,
+            human_review_required=False,
+        )
+    except Exception as audit_err:
+        logger.warning("[Phase2] Audit log failed for magic-link verify: %s", audit_err)
+
+    return MagicLinkVerifyResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        first_login=first_login,
     )
