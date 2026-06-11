@@ -269,7 +269,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
 
       {isPreviewOpen && previewCandidate && (
         <div
-          className="flex-shrink-0 flex"
+          className="flex-shrink-0 h-full flex"
           style={{ width: isPreviewMaximized ? 700 : panelWidth }}
         >
           <div
@@ -279,7 +279,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
           >
             <div className="w-0.5 h-8 rounded-full bg-lia-border-medium group-hover:bg-lia-text-disabled transition-colors motion-reduce:transition-none" />
           </div>
-          <div className="flex-1 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+          <div className="flex-1 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-full overflow-hidden">
           <CandidatePreview
             candidate={previewCandidate}
             isOpen={isPreviewOpen}
