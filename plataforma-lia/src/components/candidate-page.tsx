@@ -107,7 +107,7 @@ export function CandidatePage({
 
   const containerClass =
     mode === "modal"
-      ? "fixed inset-0 bg-lia-bg-primary dark:bg-lia-bg-primary z-30 overflow-hidden flex flex-col"
+      ? "fixed inset-0 bg-lia-bg-primary dark:bg-lia-bg-primary z-[200] overflow-hidden flex flex-col"
       : "min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col"
 
   return (
