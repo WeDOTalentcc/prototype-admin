@@ -26,16 +26,6 @@ def _resolve_screening_mode(screening_config: dict) -> str:
     return mode if mode in ("full", "compact") else "compact"
 
 
-def _resolve_screening_mode(screening_config: dict) -> str:
-    """Resolve modo de triagem com backward compat para chave legada format.
-
-    Wizard grava screening_mode; codigo legado usava format.
-    Precedencia: screening_mode > format > default compact.
-    """
-    mode = screening_config.get("screening_mode") or screening_config.get("format")
-    return mode if mode in ("full", "compact") else "compact"
-
-
 def _map_question_type_to_category(question_type: str) -> str:
     mapping = {
         "autodeclaration": "technical",
