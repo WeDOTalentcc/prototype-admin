@@ -37,8 +37,6 @@ from ._shared import (
     normalize_array_field,
 )
 from pydantic import BaseModel
-from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
-from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_candidates_deprecation
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
@@ -451,42 +449,18 @@ async def list_candidates(
     sort_order: str | None = None,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     vacancy_candidate_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
     current_user: User = Depends(get_current_user_or_demo),
     company_id: str = Depends(require_company_id),
 ):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     # Sprint 2 Phase 4 RBAC: dept scope filter via current_user.department_id (soft-launch).
-    """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
+    """List candidates from local DB."""
     logger.info(
         f"[FUNIL-DEBUG] ENTRY vacancy_id={vacancy_id!r} status={status!r} "
         f"skip={skip} offset={offset} limit={limit} company={company_id!r}"
     )  # TEMP debug funil-zero 2026-06-06 (remover apos diagnostico)
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # bypassing endpoint-level filters and authorization.
-    if RAILS_ENABLED and not vacancy_id:
-        try:
-            page = (offset or skip) // limit + 1 if limit else 1
-            rails_items = await rails_adapter.list_candidates_from_rails_only(
-                search=search or "*",
-                page=page,
-                limit=limit,
-                status=status,
-                source=source,
-                seniority=seniority,
-            )
-            if rails_items is not None:
-                logger.debug("[list_candidates] Returning %d candidates from Rails", len(rails_items))
-                return {
-                    "total": len(rails_items),
-                    "skip": offset or skip,
-                    "limit": limit,
-                    "source": "rails",
-                    "items": rails_items,
-                }
-        except Exception as e:
-            logger.warning("[list_candidates] Rails unavailable, falling back to local DB: %s", e)
-
     try:
         id_list: list[str] | None = None
         if ids:
@@ -550,23 +524,13 @@ async def list_candidates(
 async def get_candidate(
     candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
     current_user: User = Depends(get_current_user_or_demo),
     company_id: str = Depends(require_company_id),
 ):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Get a candidate by ID. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
+    """Get a candidate by ID."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # returning unscoped/unfiltered data.
-    if RAILS_ENABLED:
-        try:
-            rails_result = await rails_adapter.get_candidate_from_rails_only(candidate_id)
-            if rails_result:
-                logger.debug("[get_candidate] Returning candidate %s from Rails", candidate_id)
-                return ok_envelope(rails_result, meta={"source": "rails"})
-        except Exception as e:
-            logger.warning("[get_candidate] Rails unavailable for %s, falling back to local DB: %s", candidate_id, e)
-
     try:
         try:
             uuid.UUID(candidate_id)
