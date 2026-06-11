@@ -302,6 +302,13 @@ class ConsentRecord(Base):
     consent_text = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
     
+    # Phase 1a LGPD Consent — canal, user_agent, processo_id, vaga_id, versao_disclaimer (2026-06-11)
+    canal = Column(String(20), nullable=True)  # chat_web | whatsapp | chamada_online | chamada_telefonica
+    user_agent = Column(Text, nullable=True)
+    processo_id = Column(UUID(as_uuid=True), nullable=True)  # FK to triagem_sessions (processo seletivo)
+    vaga_id = Column(UUID(as_uuid=True), nullable=True)  # FK to job_vacancies
+    versao_disclaimer = Column(String(10), nullable=True)  # configurable disclaimer version
+    
     created_at = Column(DateTime, server_default=func.now(), index=True)
     
     def __repr__(self):
@@ -320,6 +327,11 @@ class ConsentRecord(Base):
             "is_active": self.is_active,
             "source": self.source,
             "legal_basis": self.legal_basis,
+            "canal": self.canal,
+            "user_agent": self.user_agent,
+            "processo_id": str(self.processo_id) if self.processo_id else None,
+            "vaga_id": str(self.vaga_id) if self.vaga_id else None,
+            "versao_disclaimer": self.versao_disclaimer,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 

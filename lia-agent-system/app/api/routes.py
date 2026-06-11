@@ -110,6 +110,7 @@ from app.api.v1 import (
     integrations_hub,
     intelligence,
     interview_analysis,
+    interview_consent,
     interview_notes,
     interviews,
     jd_generation,
@@ -358,6 +359,7 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Interviews & Scheduling ───────────────────────────────────────────────
     app.include_router(interviews.router, prefix="/api/v1", tags=["interviews"])
+    app.include_router(interview_consent.router, prefix="/api/v1", tags=["interview-consent"])
     app.include_router(scheduling.router, prefix="/api/v1", tags=["scheduling"])
     app.include_router(interview_notes.router, prefix="/api/v1", tags=["interview-notes"])
     app.include_router(interview_analysis.router, prefix="/api/v1", tags=["interview-analysis"])
