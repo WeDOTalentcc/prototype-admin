@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CheckCircle2, ExternalLink, Plus } from "lucide-react"
+import { CheckCircle2, ExternalLink, Plus, X } from "lucide-react"
 
 interface Props {
   data: Record<string, unknown>
@@ -67,6 +67,13 @@ export function DonePanel({ data }: Props) {
         >
           <Plus className="w-4 h-4 text-lia-text-secondary" />
           Criar outra vaga
+        </button>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("lia:wizard-close-panel"))}
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md border border-lia-border text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors text-sm"
+        >
+          <X className="w-4 h-4" />
+          Fechar painel
         </button>
       </div>
 

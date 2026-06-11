@@ -1,6 +1,6 @@
 "use client"
 
-import React, { Suspense, lazy } from "react"
+import React, { Suspense, lazy, useEffect } from "react"
 import { Minimize2 } from "lucide-react"
 import type { WizardStage } from "./wizard-types"
 import { STAGE_LABELS } from "./wizard-types"
@@ -106,6 +106,14 @@ export function DynamicContextPanel({
   onUpdate,
 }: Props) {
   if (!stage) return null
+
+  // Escuta CustomEvent disparado pelo DonePanel para fechar o painel
+  // via botao interno — sem tool nova no backend (puro FE CustomEvent).
+  useEffect(() => {
+    const handler = () => onClose?.()
+    window.addEventListener("lia:wizard-close-panel", handler)
+    return () => window.removeEventListener("lia:wizard-close-panel", handler)
+  }, [onClose])
 
   return (
     <div className="flex flex-col h-full bg-lia-bg-primary">

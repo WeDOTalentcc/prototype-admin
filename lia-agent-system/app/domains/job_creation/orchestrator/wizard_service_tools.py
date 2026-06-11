@@ -964,6 +964,21 @@ def _handle_add_wsi_question(
         return ToolResult(
             llm_message="block deve ser 'technical' ou 'behavioral'.", error=True
         )
+    # Gate de limite máximo por modo (full=12, compact=7)
+    _mode = str(state.get("screening_mode") or "compact").strip().lower()
+    _max_total = 12 if _mode == "full" else 7
+    _current_count = len(state.get("wsi_questions") or [])
+    if _current_count >= _max_total:
+        _modo_label = "completo" if _mode == "full" else "compacto"
+        return ToolResult(
+            llm_message=(
+                f"O pacote já tem {_current_count} perguntas — limite máximo para o modo "
+                f"{_modo_label} ({_max_total}). "
+                f"Para adicionar uma nova, primeiro remova ou substitua uma existente "
+                f"com replace_wsi_question."
+            ),
+            error=True,
+        )
     instruction = str(tool_input.get("instruction") or "").strip() or (
         f"Gere uma nova pergunta {block} complementar, distinta das existentes."
     )
