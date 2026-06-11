@@ -4,6 +4,7 @@ import { useState, Suspense, useEffect, useRef } from "react"
 import React from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { useNavGuardStore } from "@/stores/nav-guard-store"
+import { useNavigationStore } from "@/stores/navigation-store"
 import { useLocale } from "next-intl"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useKeyboardShortcuts } from "@/hooks/shared/use-keyboard-shortcuts"
@@ -389,12 +390,10 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   }
 
   const handleRecentItemClick = (item: RecentItem) => {
-    if (item.type === 'vaga' && item.meta?.jobId) {
-      setPendingJobOpen(null)
-      setTimeout(() => {
-        setPendingJobOpen({ jobId: item.meta!.jobId!, jobTitle: item.title })
-        setCurrentPage("Vagas")
-      }, 0)
+    if (item.type === 'vaga' && (item.meta?.jobId || item.id)) {
+      const jobId = item.meta?.jobId || item.id
+      useNavigationStore.getState().setNavigateToCandidate({ jobId, jobTitle: item.title })
+      handleNavigate("Vagas")
     } else if (item.type === 'candidato' && item.meta?.candidateId) {
       setPendingCandidateOpen(null)
       setTimeout(() => {
