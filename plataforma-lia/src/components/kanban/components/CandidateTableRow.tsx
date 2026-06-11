@@ -15,9 +15,11 @@ import {
   Eye, 
   Bell, 
   Pin, 
-  CheckCircle
+  CheckCircle,
+  MessageSquareText
 } from 'lucide-react'
 import { textStyles, buttonStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
+import { useLiaEntitySelection } from '@/hooks/shared/use-lia-entity-selection'
 import { type UrgencyLevel } from '../utils/status-utils'
 import { CandidateBadges } from './CandidateBadges'
 import type { KanbanCandidate } from '../types'
@@ -303,6 +305,17 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
           <div className="font-medium text-sm text-lia-text-primary">
             {candidate.name}
           </div>
+          <button
+            className="opacity-40 hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-lia-bg-subtle text-lia-primary"
+            title={`Falar com LIA sobre ${candidate.name}`}
+            aria-label={`Conversar com LIA sobre ${candidate.name}`}
+            onClick={(e) => {
+              e.stopPropagation()
+              openEntityChat({ type: 'candidate', id: String(candidate.id), name: candidate.name })
+            }}
+          >
+            <MessageSquareText className="w-[18px] h-[18px]" />
+          </button>
         </div>
       </td>
 

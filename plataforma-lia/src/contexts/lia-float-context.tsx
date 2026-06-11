@@ -988,9 +988,11 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       const detail = ((e as CustomEvent).detail ?? {}) as Record<string, unknown>;
       const stage = detail.stage as string | undefined;
       if (!stage) return; // payload incompleto -- ignora silenciosamente
+      const data =
+        ((detail.data as Record<string, unknown> | undefined) ?? {}) as Record<string, unknown>;
       openDynamicPanel({
         panelType: "job_creation",
-        data: (detail.data as Record<string, unknown>) ?? {},
+        data,
         stage,
         requires_approval: Boolean(detail.requires_approval),
       });
@@ -999,8 +1001,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       if (stage === "done" || stage === "handoff") {
         setWizardPanelModeState("docked");
       } else {
-        const pref = (detail.data as Record<string, unknown> | undefined)
-          ?.panel_pref;
+        const pref = data.panel_pref;
         if (pref === "expanded" || pref === "docked") {
           setWizardPanelModeState(pref);
         }

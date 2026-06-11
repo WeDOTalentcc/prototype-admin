@@ -388,7 +388,7 @@ Responda em JSON:
         """
         from .bigfive import rank_traits as _rank_traits, TRAITS as _TRAITS
 
-        _sen = (seniority or "pleno").lower().strip().replace(" ", "_").replace("-", "_")
+        _sen = _normalize_seniority_for_kernel(seniority)
 
         behav_list = [b for b in (behavioral or []) if b and b.strip()]
 
@@ -579,15 +579,7 @@ Retorne APENAS JSON válido:
         Returns:
             Tuple[List[Competency], str] — (competências com big_five_mapping, jd_context para F2.5)
         """
-        _SENIORITY_MAP = {
-            "estagiario": "junior", "estagiário": "junior",
-            "junior": "junior", "júnior": "junior",
-            "pleno": "pleno",
-            "senior": "senior", "sênior": "senior",
-            "lead": "lead", "principal": "lead",
-            "diretor": "executive", "vp": "executive", "clevel": "executive", "c-level": "executive",
-        }
-        seniority_level = _SENIORITY_MAP.get(seniority.lower().strip(), "pleno")
+        seniority_level = _normalize_seniority_for_kernel(seniority)
         competencies: list = []
 
         # --- Técnicas: de skills_obrigatorias ---

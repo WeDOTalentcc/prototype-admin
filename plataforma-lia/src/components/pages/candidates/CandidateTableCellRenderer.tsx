@@ -196,14 +196,14 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 </span>
                 {openEntityChat && (
                   <button
-                    className="opacity-0 group-hover/name:opacity-100 transition-opacity shrink-0 p-0.5 rounded hover:bg-lia-bg-subtle text-lia-text-secondary hover:text-lia-primary"
+                    className="opacity-40 hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-lia-bg-subtle text-lia-primary"
                     aria-label={`Conversar com LIA sobre ${candidate.name}`}
                     onClick={(e) => {
                       e.stopPropagation()
                       openEntityChat({ type: 'candidate', id: String(candidate.id), name: candidate.name })
                     }}
                   >
-                    <MessageSquareText className="w-3 h-3" />
+                    <MessageSquareText className="w-[18px] h-[18px]" />
                   </button>
                 )}
               </div>

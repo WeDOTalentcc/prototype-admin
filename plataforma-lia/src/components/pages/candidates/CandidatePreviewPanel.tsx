@@ -5,14 +5,16 @@ import { useTranslations } from "next-intl"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
-import { Calendar, Mail, MessageSquare, Star, Briefcase, User, Phone, Linkedin, X } from"lucide-react"
+import { Calendar, Mail, MessageSquare, MessageSquareText, Star, Briefcase, User, Phone, Linkedin, X } from"lucide-react"
 import { LIAIcon } from"@/components/ui/lia-icon"
 import { LIAFeedbackWidget } from"@/components/calibration"
 import { textStyles, badgeStyles, formatScore, formatScorePercent } from"@/lib/design-tokens"
 import type { Candidate } from"@/components/pages/candidates/types"
+import { useLiaEntitySelection } from "@/hooks/shared/use-lia-entity-selection"
 
 export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candidate; onClose: () => void }) {
     const t = useTranslations('candidates.preview')
+    const { openEntityChat } = useLiaEntitySelection()
 
     const [activeTab, setActiveTab] = useState('overview')
 
@@ -223,7 +225,20 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold text-lia-text-primary">{candidate.name}</h3>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-semibold text-lia-text-primary">{candidate.name}</h3>
+                  <button
+                    className="opacity-40 hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-lia-bg-subtle text-lia-primary"
+                    title={`Falar com LIA sobre ${candidate.name}`}
+                    aria-label={`Conversar com LIA sobre ${candidate.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openEntityChat({ type: 'candidate', id: String(candidate.id), name: candidate.name })
+                    }}
+                  >
+                    <MessageSquareText className="w-[18px] h-[18px]" />
+                  </button>
+                </div>
                 <p className="text-sm text-lia-text-primary">{candidate.position}</p>
               </div>
             </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from"react"
+import { useLiaEntitySelection } from "@/hooks/shared/use-lia-entity-selection"
 import { getPercentageScoreColorClass } from"@/lib/score-utils"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
@@ -30,6 +31,7 @@ import {
   Eye,
   Loader2,
   Zap
+  MessageSquareText,
 } from"lucide-react"
 
 export interface CandidateResult {
@@ -114,6 +116,7 @@ export function SearchResultsCard({
   onSaveToBase,
   threadId
 }: SearchResultsCardProps) {
+  const { openEntityChat } = useLiaEntitySelection()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [currentPage, setCurrentPage] = useState(0)
   const pageSize = 5
@@ -285,6 +288,17 @@ export function SearchResultsCard({
                     <span className="font-medium text-lia-text-primary truncate">
                       {candidate.name}
                     </span>
+                    <button
+                      className="opacity-40 hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-lia-bg-subtle text-lia-primary"
+                      title={`Falar com LIA sobre ${candidate.name}`}
+                      aria-label={`Conversar com LIA sobre ${candidate.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openEntityChat({ type: 'candidate', id: String(candidate.id), name: candidate.name })
+                      }}
+                    >
+                      <MessageSquareText className="w-[18px] h-[18px]" />
+                    </button>
                     {candidate.is_open_to_work && (
                       <Tooltip>
                         <TooltipTrigger>

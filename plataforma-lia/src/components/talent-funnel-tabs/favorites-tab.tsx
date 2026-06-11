@@ -10,8 +10,10 @@ import { Textarea } from"@/components/ui/textarea"
 import {
   Pin, Star, Search, MapPin,
   BarChart3, X, StickyNote,
-  TrendingUp
+  TrendingUp,
+  MessageSquareText
 } from"lucide-react"
+import { useLiaEntitySelection } from "@/hooks/shared/use-lia-entity-selection"
 import {
   Popover,
   PopoverContent,
@@ -506,9 +508,22 @@ export function FavoritesTab({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium text-lia-text-primary text-xs">
-                    {viewingNote.candidate.name}
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-medium text-lia-text-primary text-xs">
+                      {viewingNote.candidate.name}
+                    </p>
+                    <button
+                      className="opacity-40 hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-lia-bg-subtle text-lia-primary"
+                      title={`Falar com LIA sobre ${viewingNote.candidate.name}`}
+                      aria-label={`Conversar com LIA sobre ${viewingNote.candidate.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openEntityChat({ type: 'candidate', id: String(viewingNote.candidate.id), name: viewingNote.candidate.name || '' })
+                      }}
+                    >
+                      <MessageSquareText className="w-[18px] h-[18px]" />
+                    </button>
+                  </div>
                   <p className="text-xs text-lia-text-tertiary">
                     {viewingNote.candidate.position}
                   </p>
