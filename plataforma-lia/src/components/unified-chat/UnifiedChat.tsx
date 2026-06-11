@@ -1244,27 +1244,7 @@ export function UnifiedChat({
           />
         </div>
 
-        {/* Wizard progress bar — sticky at the top of the feed while the
-            "Criar nova vaga" wizard is active. Mounts on the first
-            `wizard_stage` event and unmounts at `done`/`handoff`. */}
-        {wizardActive && (
-          <div
-            className="border-b border-lia-border-subtle"
-            role="status"
-            aria-live="polite"
-            aria-label="Progresso do wizard de criação de vaga"
-            data-testid="wizard-progress-bar"
-          >
-            <WizardProgressBar
-              currentStage={wizardStage}
-              completeness={wizardCompleteness}
-              stageHistory={wizardHistory}
-              degradedStages={wizardDegradedStages}
-              compact={effectiveMode === "floating"}
-              onCancelWizard={handleCancelWizard}
-            />
-          </div>
-        )}
+
 
         {/* Sprint Pipeline Templates Gap #6 (2026-05-26) — render auto-suggest card no chat.
             Card aparece quando backend graph (intake_node ou jd_enrichment_node) emite
@@ -1500,21 +1480,41 @@ export function UnifiedChat({
           >
             <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-8 rounded-full bg-lia-border-subtle group-hover:bg-wedo-cyan transition-colors" />
           </div>
-          <div className="flex-1 min-w-0 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-lg shadow-black/10 overflow-hidden">
-          <DynamicContextPanel
-            stage={(dynamicPanel?.stage as WizardStage) ?? null}
-            data={dynamicPanel?.data ?? {}}
-            requiresApproval={dynamicPanel?.requires_approval ?? false}
-            onApprove={() => sendApproval(true)}
-            onReject={() => sendApproval(false)}
-            onClose={() => setWizardPanelMode("docked")}
-            onUpdate={(updates) => {
-              collectedDataRef.current = mergeCollectedData(collectedDataRef.current, updates)
-              sendChatMessage(wizardUpdateToMessage(updates), undefined, undefined, {
-                right_panel_form: collectedDataRef.current,
-              })
-            }}
-          />
+          <div className="flex-1 min-w-0 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-lg shadow-black/10 overflow-hidden flex flex-col">
+            <div className="flex-1 min-h-0 overflow-auto">
+              <DynamicContextPanel
+                stage={(dynamicPanel?.stage as WizardStage) ?? null}
+                data={dynamicPanel?.data ?? {}}
+                requiresApproval={dynamicPanel?.requires_approval ?? false}
+                onApprove={() => sendApproval(true)}
+                onReject={() => sendApproval(false)}
+                onClose={() => setWizardPanelMode("docked")}
+                onUpdate={(updates) => {
+                  collectedDataRef.current = mergeCollectedData(collectedDataRef.current, updates)
+                  sendChatMessage(wizardUpdateToMessage(updates), undefined, undefined, {
+                    right_panel_form: collectedDataRef.current,
+                  })
+                }}
+              />
+            </div>
+            {wizardStage && (
+              <div
+                className="border-t border-lia-border-subtle flex-shrink-0"
+                role="status"
+                aria-live="polite"
+                aria-label="Progresso do wizard de criação de vaga"
+                data-testid="wizard-progress-bar"
+              >
+                <WizardProgressBar
+                  currentStage={wizardStage}
+                  completeness={wizardCompleteness}
+                  stageHistory={wizardHistory}
+                  degradedStages={wizardDegradedStages}
+                  compact
+                  onCancelWizard={handleCancelWizard}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
