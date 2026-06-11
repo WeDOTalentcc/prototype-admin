@@ -753,6 +753,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
               ),
               entity_id: String(_entityCtx.id),
               entity_type: _entityCtx.type,
+              ...((_entityCtx.name) ? { entity_label: _entityCtx.name } : {}),
             }
           : undefined;
 

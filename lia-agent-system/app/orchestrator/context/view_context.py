@@ -93,6 +93,15 @@ def format_view_context(view_context: dict[str, Any] | None) -> str:
         sample = ", ".join(str(i) for i in list(visible_ids)[:5])
         lines.append(f"- Itens visíveis: {len(visible_ids)} (ex.: {sample})")
 
+    # Fase 5 (2026-06-10): candidato/vaga em foco (origem: entityContext do FE)
+    entity_focus = view_context.get("entity_focus")
+    if isinstance(entity_focus, dict) and entity_focus.get("id"):
+        _etype = entity_focus.get("type", "candidate")
+        _label = entity_focus.get("label") or entity_focus.get("id", "")
+        _label_pt = "Candidato em foco" if _etype == "candidate" else "Vaga em foco"
+        _id_str = entity_focus["id"]
+        lines.append(f"- {_label_pt}: {_label} (ID: {_id_str})")
+
     if not lines:
         return ""
 
@@ -128,4 +137,15 @@ def view_context_from_context(ctx: dict | None) -> dict | None:
         visible.append(str(ctx["candidate_id"]))
     if visible:
         synth["visible_ids"] = visible
+    # Fase 5 (2026-06-10): synthesize entity_focus from context.metadata.entity_ids
+    # (injected by lia-float-context.tsx when user clicks hover LIA button)
+    meta_entity_ids = (ctx.get("metadata") or {}).get("entity_ids")
+    if isinstance(meta_entity_ids, dict):
+        _eid = meta_entity_ids.get("candidate_id") or meta_entity_ids.get("job_id") or meta_entity_ids.get("entity_id")
+        if _eid and "entity_focus" not in synth:
+            synth["entity_focus"] = {
+                "type": meta_entity_ids.get("entity_type", "candidate"),
+                "id": str(_eid),
+                "label": meta_entity_ids.get("entity_label", ""),
+            }
     return synth or None
