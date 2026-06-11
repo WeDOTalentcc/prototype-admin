@@ -144,6 +144,8 @@ company_id: str = Depends(require_company_id)):
     except Exception:
         pass
 
+    # B-F1 (2026-06-10): commit obrigatorio — sem isso a mudanca e perdida ao fechar sessao.
+    await db.commit()
 
     user_id = str(current_user.id)
     logger.info(
