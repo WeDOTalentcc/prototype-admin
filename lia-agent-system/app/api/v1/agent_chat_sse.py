@@ -582,6 +582,19 @@ company_id: str = Depends(require_company_id)):
                         on_token=_wiz_on_token,
                     )
 
+                # wizard-reasoning (2026-06-11): wire SSE sink para reasoning_step
+                # emitidos pelo WizardOrchestrator.process_turn (sync, via to_thread).
+                # asyncio.to_thread copia o contextvars context -> _sse_frame_sink fica
+                # visível na thread; o orchestrator usa run_coroutine_threadsafe p/ await.
+                async def _wiz_sse_push(_frame: dict) -> None:
+                    await sse_queue.put(_frame)
+
+                from lia_agents_core.streaming_callback import (
+                    set_sse_frame_sink as _wiz_set_sink,
+                    reset_sse_frame_sink as _wiz_reset_sink,
+                )
+                _wiz_sink_token = _wiz_set_sink(_wiz_sse_push)
+
                 _wiz_task = asyncio.create_task(
                     asyncio.wait_for(_run_wizard(), timeout=_AGENT_TIMEOUT)
                 )
@@ -596,6 +609,7 @@ company_id: str = Depends(require_company_id)):
                     yield _ev
 
                 _wiz_msg, _wiz_payload, _wiz_tokens = await _wiz_task
+                _wiz_reset_sink(_wiz_sink_token)  # cleanup sink (wizard-reasoning 2026-06-11)
 
                 while not sse_queue.empty():
                     _tok = sse_queue.get_nowait()
@@ -624,6 +638,7 @@ company_id: str = Depends(require_company_id)):
                         domain="wizard",
                         source="wizard_session_canonical",
                         conversation_id=req.conversation_id,
+                        ws_stage_payload=_wiz_payload if isinstance(_wiz_payload, dict) else None,
                     ),
                     next_id(),
                 )
