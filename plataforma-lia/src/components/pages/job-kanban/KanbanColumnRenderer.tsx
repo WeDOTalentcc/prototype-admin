@@ -68,6 +68,7 @@ import { KanbanCardActions } from "./KanbanCardActions"
 import { KanbanCardScores } from "./KanbanCardScores"
 import { KanbanCardStatusBadges } from "./KanbanCardStatusBadges"
 import { KanbanCardInterviewButtons } from "./KanbanCardInterviewButtons"
+import { useLiaEntitySelection } from "@/hooks/shared/use-lia-entity-selection"
 
 type KanbanCandidate = CandidateLocal & {
   score?: number
@@ -273,6 +274,7 @@ export function KanbanColumnRenderer({
   openTransition,
 }: KanbanColumnRendererProps) {
   const t = useTranslations('kanban')
+  const { openEntityChat } = useLiaEntitySelection()
   const dynamicStage = dynamicStages.find((s) => s.id === stageId)
   const stageInfo = getStageByName(stageId)
   const displayTitle = dynamicStage?.displayName || stageInfo?.displayName || stageId
@@ -569,7 +571,7 @@ export function KanbanColumnRenderer({
                 </div>
 
                 {/* Nome do candidato + Data Request Indicator */}
-                <div className="flex items-center gap-1 flex-1 min-w-0">
+                <div className="flex items-center gap-1 flex-1 min-w-0 group/name">
                   <h4
                     className="font-medium text-xs truncate text-lia-text-primary"
                     data-lia-entity-type="candidate"
@@ -578,6 +580,16 @@ export function KanbanColumnRenderer({
                   >
                     {candidate.name}
                   </h4>
+                  <button
+                    className="opacity-0 group-hover/name:opacity-100 transition-opacity shrink-0 p-0.5 rounded hover:bg-lia-bg-subtle text-lia-text-secondary hover:text-lia-primary"
+                    aria-label={`Conversar com LIA sobre ${candidate.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openEntityChat({ type: 'candidate', id: String(candidate.id), name: candidate.name })
+                    }}
+                  >
+                    <MessageSquareText className="w-3 h-3" />
+                  </button>
                   {(() => {
                     const dataRequest = getDataRequestForCandidate(candidate.id)
                     if (!dataRequest) return null

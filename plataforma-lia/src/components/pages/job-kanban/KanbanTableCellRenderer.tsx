@@ -18,6 +18,7 @@ import {
   Brain, Target, Fingerprint,
   ThumbsUp, XCircle, Flag, Eye, ChevronDown, CheckCircle,
   MoreVertical, Video, BrainCircuit,
+  MessageSquareText,
 } from"lucide-react"
 import { renderScoreCell } from"./KanbanScoreCells"
 import { renderPearchCell } from"./KanbanPearchCells"
@@ -58,6 +59,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
     onTransitionRequired,
     onStatusChange,
     onCandidateClick,
+  openEntityChat,
   } = props
 
   const scoreCellProps = {
@@ -147,7 +149,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 group/name">
               {!!(isDemo) && (
                 <span className="text-micro font-medium text-lia-text-disabled">[D]</span>
               )}
@@ -159,6 +161,18 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
               >
                 {candidate.name as string}
               </span>
+              {openEntityChat && (
+                <button
+                  className="opacity-0 group-hover/name:opacity-100 transition-opacity shrink-0 p-0.5 rounded hover:bg-lia-bg-subtle text-lia-text-secondary hover:text-lia-primary"
+                  aria-label={`Conversar com LIA sobre ${candidate.name as string}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    openEntityChat({ type: 'candidate', id: String(candidate.id), name: candidate.name as string })
+                  }}
+                >
+                  <MessageSquareText className="w-3 h-3" />
+                </button>
+              )}
               {(() => {
                 const dataRequest = getDataRequestForCandidate(candidate.id as string)
                 if (!dataRequest) return null

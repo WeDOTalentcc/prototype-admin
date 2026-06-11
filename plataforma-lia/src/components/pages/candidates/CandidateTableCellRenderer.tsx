@@ -6,6 +6,7 @@ import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Eye, ChevronsLeftRight, MapPin,
+  MessageSquareText,
 } from "lucide-react"
 import { SearchFeedbackButtons } from "@/components/search/SearchFeedbackButtons"
 import { textStyles } from "@/lib/design-tokens"
@@ -33,6 +34,7 @@ export interface CellRendererDeps {
   onToggleExpandedRow: (candidateId: string) => void
   t?: TranslateFn
   contactValidity?: Record<string, { email_valid?: boolean | null; email_reason?: string | null; phone_valid?: boolean | null }>
+  openEntityChat?: (target: { type: "candidate" | "job"; id: string; name: string }) => void
 }
 
 export function createCellRenderer(deps: CellRendererDeps) {
@@ -47,6 +49,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
     onToggleExpandedRow,
     t,
     contactValidity,
+    openEntityChat,
   } = deps
 
   const formatDate = (date: string | undefined) => {
@@ -182,7 +185,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
               )}
             </div>
             <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 group/name">
                 <span
                   className="font-medium text-lia-text-primary truncate text-xs"
                   data-lia-entity-type="candidate"
@@ -191,6 +194,18 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 >
                   {candidate.name}
                 </span>
+                {openEntityChat && (
+                  <button
+                    className="opacity-0 group-hover/name:opacity-100 transition-opacity shrink-0 p-0.5 rounded hover:bg-lia-bg-subtle text-lia-text-secondary hover:text-lia-primary"
+                    aria-label={`Conversar com LIA sobre ${candidate.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openEntityChat({ type: 'candidate', id: String(candidate.id), name: candidate.name })
+                    }}
+                  >
+                    <MessageSquareText className="w-3 h-3" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
