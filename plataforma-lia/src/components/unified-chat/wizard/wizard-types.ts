@@ -97,6 +97,9 @@ export interface JdEnrichmentData {
     earned: number
     status: "sufficient" | "partial" | "insufficient"
     detail?: string
+    count?: number
+    minimum?: number
+    word_count?: number
   }>
   quality_band?: string
   /**
