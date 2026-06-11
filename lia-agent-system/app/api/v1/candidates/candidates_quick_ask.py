@@ -22,7 +22,7 @@ class CandidateQuickAskRequest(WeDoBaseModel):
     job_id: Optional[str] = None
 
 
-@router.post("/candidates/{candidate_id}/quick-ask")
+@router.post("/{candidate_id}/quick-ask")
 async def quick_ask_about_candidate(
     candidate_id: str,
     payload: CandidateQuickAskRequest,
