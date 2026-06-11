@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Eye, ChevronsLeftRight, MapPin,
 } from "lucide-react"
+import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
 import { SearchFeedbackButtons } from "@/components/search/SearchFeedbackButtons"
 import { textStyles } from "@/lib/design-tokens"
 import type { Candidate } from "@/components/pages/candidates/types"
@@ -183,14 +184,16 @@ export function createCellRenderer(deps: CellRendererDeps) {
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5 group/name">
-                <span
-                  className="font-medium text-lia-text-primary truncate text-xs"
-                  data-lia-entity-type="candidate"
-                  data-lia-entity-id={candidate.id}
-                  data-lia-entity-label={candidate.name}
-                >
-                  {candidate.name}
-                </span>
+                <CandidateChatPopover candidateId={candidate.id} candidateName={candidate.name}>
+                  <span
+                    className="font-medium text-lia-text-primary truncate text-xs"
+                    data-lia-entity-type="candidate"
+                    data-lia-entity-id={candidate.id}
+                    data-lia-entity-label={candidate.name}
+                  >
+                    {candidate.name}
+                  </span>
+                </CandidateChatPopover>
               </div>
             </div>
           </div>

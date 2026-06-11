@@ -67,6 +67,7 @@ import { KanbanCardActions } from "./KanbanCardActions"
 import { KanbanCardScores } from "./KanbanCardScores"
 import { KanbanCardStatusBadges } from "./KanbanCardStatusBadges"
 import { KanbanCardInterviewButtons } from "./KanbanCardInterviewButtons"
+import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
 
 type KanbanCandidate = CandidateLocal & {
   score?: number
@@ -569,14 +570,20 @@ export function KanbanColumnRenderer({
 
                 {/* Nome do candidato + Data Request Indicator */}
                 <div className="flex items-center gap-1 flex-1 min-w-0 group/name">
-                  <h4
-                    className="font-medium text-xs truncate text-lia-text-primary"
-                    data-lia-entity-type="candidate"
-                    data-lia-entity-id={candidate.id}
-                    data-lia-entity-label={candidate.name}
+                  <CandidateChatPopover
+                    candidateId={candidate.id}
+                    candidateName={candidate.name}
+                    jobId={currentJob.backendId || currentJob.id}
                   >
-                    {candidate.name}
-                  </h4>
+                    <h4
+                      className="font-medium text-xs truncate text-lia-text-primary"
+                      data-lia-entity-type="candidate"
+                      data-lia-entity-id={candidate.id}
+                      data-lia-entity-label={candidate.name}
+                    >
+                      {candidate.name}
+                    </h4>
+                  </CandidateChatPopover>
                   {(() => {
                     const dataRequest = getDataRequestForCandidate(candidate.id)
                     if (!dataRequest) return null

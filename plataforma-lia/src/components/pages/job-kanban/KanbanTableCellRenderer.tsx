@@ -19,6 +19,7 @@ import {
   ThumbsUp, XCircle, Flag, Eye, ChevronDown, CheckCircle,
   MoreVertical, Video, BrainCircuit,
 } from"lucide-react"
+import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
 import { renderScoreCell } from"./KanbanScoreCells"
 import { renderPearchCell } from"./KanbanPearchCells"
 import type {
@@ -151,14 +152,20 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
               {!!(isDemo) && (
                 <span className="text-micro font-medium text-lia-text-disabled">[D]</span>
               )}
-              <span
-                className="font-medium text-sm text-lia-text-primary"
-                data-lia-entity-type="candidate"
-                data-lia-entity-id={candidate.id as string}
-                data-lia-entity-label={candidate.name as string}
+              <CandidateChatPopover
+                candidateId={candidate.id as string}
+                candidateName={candidate.name as string}
+                jobId={jobVacancyId}
               >
-                {candidate.name as string}
-              </span>
+                <span
+                  className="font-medium text-sm text-lia-text-primary"
+                  data-lia-entity-type="candidate"
+                  data-lia-entity-id={candidate.id as string}
+                  data-lia-entity-label={candidate.name as string}
+                >
+                  {candidate.name as string}
+                </span>
+              </CandidateChatPopover>
               {(() => {
                 const dataRequest = getDataRequestForCandidate(candidate.id as string)
                 if (!dataRequest) return null

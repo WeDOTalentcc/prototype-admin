@@ -8,6 +8,7 @@ import { Button } from"@/components/ui/button"
 import { Calendar, Mail, MessageSquare, Star, Briefcase, User, Phone, Linkedin, X } from"lucide-react"
 import { LIAIcon } from"@/components/ui/lia-icon"
 import { LIAFeedbackWidget } from"@/components/calibration"
+import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
 import { textStyles, badgeStyles, formatScore, formatScorePercent } from"@/lib/design-tokens"
 import type { Candidate } from"@/components/pages/candidates/types"
 
@@ -224,7 +225,9 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
               </Avatar>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-semibold text-lia-text-primary">{candidate.name}</h3>
+                  <CandidateChatPopover candidateId={candidate.id} candidateName={candidate.name}>
+                    <h3 className="font-semibold text-lia-text-primary">{candidate.name}</h3>
+                  </CandidateChatPopover>
                 </div>
                 <p className="text-sm text-lia-text-primary">{candidate.position}</p>
               </div>
