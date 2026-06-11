@@ -5,9 +5,9 @@ import React, { useState, useRef, useCallback, useEffect } from "react"
 const CandidatePreviewDynamic = React.lazy(() =>
   import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })))
 
-const PANEL_MIN_WIDTH = 320
+const PANEL_MIN_WIDTH = 360
 const PANEL_MAX_WIDTH = 700
-const PANEL_DEFAULT_WIDTH = 400
+const PANEL_DEFAULT_WIDTH = 480
 
 interface KanbanCandidatePreviewPanelProps {
   isPreviewOpen: boolean

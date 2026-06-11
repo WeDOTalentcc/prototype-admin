@@ -43,8 +43,8 @@ export const DEFAULT_PEARCH_OPTIONS: PearchSearchOptions = {
 }
 
 /** Preview panel sizing constraints (px) */
-export const PREVIEW_WIDTH_DEFAULT = 420
-export const PREVIEW_WIDTH_MIN = 280
+export const PREVIEW_WIDTH_DEFAULT = 480
+export const PREVIEW_WIDTH_MIN = 360
 export const PREVIEW_WIDTH_MAX = 600
 
 /** LIA sidebar default width (px) */

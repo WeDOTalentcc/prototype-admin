@@ -12,7 +12,7 @@ import { JobFairnessBlockBanner } from "@/components/jobs/JobFairnessBlockBanner
 import type { KanbanPageCoreState } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
 import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 
-const PANEL_MIN_WIDTH = 320
+const PANEL_MIN_WIDTH = 360
 const PANEL_MAX_WIDTH = 900
 
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => null })
@@ -25,7 +25,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
   const t = useTranslations('kanban')
   const { openOfferReview } = useOfferReviewFlow()
 
-  const [panelWidth, setPanelWidth] = useState(400)
+  const [panelWidth, setPanelWidth] = useState(480)
   const isDragging = useRef(false)
   const dragStartX = useRef(0)
   const dragStartWidth = useRef(0)
