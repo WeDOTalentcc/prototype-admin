@@ -384,12 +384,25 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
             # Fallback: Rails JWT (token assinado pelo ats_api, secret compartilhado)
             # Phase 1 Auth Decoupling (2026-06-10): use DB-backed cache (rails_user_sync)
             # instead of per-request HTTP to Rails /v1/me. L1(memory) → L2(DB) → L3(rails).
+            # Phase 1b: when FASTAPI_AUTH_PRIMARY=True, Rails JWTs are rejected with
+            # 401 + upgrade_required=True. Clients must call POST /auth/exchange first.
             if payload is None or not payload.get("sub"):
                 from app.auth.rails_jwt import validate_rails_token_from_env
                 from app.auth.rails_user_sync import get_or_sync_rails_user
+                from app.core.config import settings as _auth_settings
 
                 rails_payload = validate_rails_token_from_env(token)
                 if rails_payload:
+                    if getattr(_auth_settings, "FASTAPI_AUTH_PRIMARY", False):
+                        # Phase 1b — Rails JWTs no longer accepted. Return upgrade prompt.
+                        return JSONResponse(
+                            {
+                                "detail": "Rails token no longer accepted. Exchange via POST /api/v1/auth/exchange.",
+                                "upgrade_required": True,
+                                "code": "RAILS_JWT_UPGRADE_REQUIRED",
+                            },
+                            status_code=401,
+                        )
                     rails_info = await get_or_sync_rails_user(token, rails_payload.user_id)
                     if rails_info and rails_info.get("email"):
                         payload = {

@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel
 
 from app.auth.dependencies import get_current_active_user, get_current_user_or_demo
 from app.auth.models import User, UserRole
@@ -672,3 +673,128 @@ async def accept_invitation(
     logger.info(f"Invitation accepted for: {user.id}")
 
     return {"message": "Conta ativada com sucesso! Você já pode fazer login."}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Phase 1b — Token exchange: Rails JWT → FastAPI JWT
+# (2026-06-10, Rails Elimination Plan)
+# ─────────────────────────────────────────────────────────────────────────────
+
+class RailsTokenExchangeRequest(BaseModel):
+    """Body for POST /auth/exchange — Rails JWT → FastAPI JWT conversion."""
+
+    model_config = {"extra": "forbid"}
+
+    rails_token: str
+
+
+class RailsTokenExchangeResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    upgraded_from: str = "rails_jwt"
+
+
+@router.post("/exchange", response_model=RailsTokenExchangeResponse)
+async def exchange_rails_token(
+    request: RailsTokenExchangeRequest,
+    repo: UserRepository = Depends(get_user_repo),
+    audit_svc: AuditService = Depends(get_audit_service),
+):
+    """
+    Exchange a Rails-issued JWT for a FastAPI-issued JWT.
+
+    Phase 1b Rails Elimination (2026-06-10):
+    Allows users / API clients that hold a Rails JWT (signed with
+    RAILS_JWT_SECRET_KEY) to upgrade to a FastAPI JWT (signed with SECRET_KEY)
+    without re-authenticating. This endpoint is the migration path that makes
+    FASTAPI_AUTH_PRIMARY=true safe to flip: all existing Rails sessions are
+    upgraded on their first request after the flag is set.
+
+    Flow:
+    1. Validate the Rails JWT (signature + expiry via RAILS_JWT_SECRET_KEY)
+    2. Resolve user from FastAPI DB (uses Phase 1a DB cache: no Rails HTTP call)
+    3. Look up the FastAPI User record by email
+    4. Issue a fresh FastAPI JWT (ACCESS + REFRESH) for that user
+    5. Background: upsert user into DB cache if not already there
+
+    Security:
+    - RAILS_JWT_SECRET_KEY must be configured; missing secret → 503
+    - Rails JWT must not be expired
+    - User must be is_active=True in FastAPI DB
+    - Audit trail logged (action=rails_token_exchange)
+    """
+    from app.auth.rails_jwt import validate_rails_token_from_env
+    from app.auth.rails_user_sync import get_or_sync_rails_user
+    from app.core.config import settings
+
+    # Validate Rails JWT signature + expiry
+    rails_payload = validate_rails_token_from_env(request.rails_token)
+    if not rails_payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired Rails token",
+        )
+
+    # Resolve user info (L1 cache → L2 DB → Rails /v1/me)
+    rails_info = await get_or_sync_rails_user(request.rails_token, rails_payload.user_id)
+    if not rails_info or not rails_info.get("email"):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Cannot resolve user — Rails user resolution failed",
+        )
+
+    email = rails_info["email"]
+    company_id = str(rails_info.get("account_id") or rails_info.get("company_id") or "")
+
+    # Look up FastAPI user record
+    user = await repo.get_by_email(email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=(
+                "User not found in FastAPI DB. "
+                "Please log in with email + password to create your account."
+            ),
+        )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User account is inactive",
+        )
+
+    # Issue FastAPI JWT
+    access_token = create_access_token(
+        subject=str(user.id),
+        role=user.role.value,
+        company_id=company_id or getattr(user, "company_id", None),
+    )
+    refresh_token = create_refresh_token(subject=str(user.id))
+
+    logger.info("[Phase1b] Rails→FastAPI token exchange for user: %s", str(user.id)[:8])
+
+    try:
+        await audit_svc.log_decision(
+            company_id=company_id or None,
+            agent_name="auth_module",
+            decision_type="auth_event",
+            action="rails_token_exchange",
+            decision="approved",
+            reasoning=[
+                "Rails JWT validated and exchanged for FastAPI JWT",
+                f"rails_user_id={rails_payload.user_id}",
+                f"source={rails_info.get('_source', 'unknown')}",
+            ],
+            criteria_used=["rails_jwt_valid", "fastapi_user_found", "is_active"],
+            confidence=1.0,
+            human_review_required=False,
+        )
+    except Exception as audit_err:
+        logger.warning("[Phase1b] Audit log failed for token exchange: %s", audit_err)
+
+    return RailsTokenExchangeResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )

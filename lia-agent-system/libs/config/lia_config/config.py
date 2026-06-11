@@ -212,6 +212,11 @@ class AuthSettings(BaseSettings):
     # True (default): checks users.rails_user_id before calling Rails GET /v1/me.
     # False: reverts to in-memory-only cache (instant rollback if DB issues).
     FASTAPI_RAILS_DB_CACHE: bool = True
+    # Phase 1b: FastAPI is the sole JWT issuer. When True, Rails JWT fallback
+    # raises 401 with upgrade_required=True instead of silently accepting.
+    # Default False = backward compat (Rails JWTs still accepted).
+    # Flip to True only after all active users have FastAPI JWTs.
+    FASTAPI_AUTH_PRIMARY: bool = False
     WORKOS_CLIENT_ID: str | None = None
     WORKOS_API_KEY: str | None = None
     WORKOS_WEBHOOK_SECRET: str | None = None
