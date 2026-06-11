@@ -1014,7 +1014,17 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       } else {
         const pref = data.panel_pref;
         if (pref === "expanded" || pref === "docked") {
-          setWizardPanelModeState(pref);
+          // Fix 2026-06-11: ignorar panel_pref=expanded durante stage=intake
+          // se o recrutador ainda não expandiu manualmente. A LLM não pode
+          // forçar expanded no 1º turno — o painel inicia e permanece docked
+          // até ação explícita do recrutador ou artefato gerado (JD/WSI).
+          const isIntakeStage = stage === "intake";
+          if (pref === "expanded" && isIntakeStage && !userExpandedRef.current) {
+            // ignore: LLM não pode forçar expanded durante intake
+          } else {
+            if (pref === "expanded") userExpandedRef.current = true;
+            setWizardPanelModeState(pref);
+          }
         }
       }
     };
