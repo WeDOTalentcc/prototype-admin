@@ -472,13 +472,24 @@ export function useChatSocket({
           const responseBlocks = Array.isArray(eventRec.response_blocks)
             ? (eventRec.response_blocks as ResponseBlock[])
             : undefined;
+          const wsStagePayload =
+            eventRec.ws_stage_payload &&
+            typeof eventRec.ws_stage_payload === "object"
+              ? (eventRec.ws_stage_payload as {
+                  stage: string
+                  data: Record<string, unknown>
+                  completeness?: number
+                  requires_approval?: boolean
+                })
+              : undefined;
           const extras =
-            uiAction || uiActionParams || _activity.length || responseBlocks
+            uiAction || uiActionParams || _activity.length || responseBlocks || wsStagePayload
               ? {
                   ui_action: uiAction,
                   ui_action_params: uiActionParams,
                   agent_activity: _activity.length ? [..._activity] : undefined,
                   response_blocks: responseBlocks,
+                  ws_stage_payload: wsStagePayload,
                 }
               : undefined;
           agentActivityBufferRef.current = [];

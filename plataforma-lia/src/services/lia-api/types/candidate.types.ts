@@ -130,6 +130,7 @@ export interface AddCandidatesToPipelineResponse {
 
 export interface CandidateLocal {
   id: string
+  vc_id?: string
   name: string
   email?: string | null
   secondary_email?: string | null

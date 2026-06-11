@@ -95,6 +95,7 @@ export function useKanbanCandidateLoader({
                 appliedDate: c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : null,
                 email: c.email || '', phone: c.phone || '', linkedin: c.linkedin_url || '',
                 experience: experience ? `${experience} anos` : null, stage: mappedStage, etapa: mappedStage,
+                vacancy_candidate_id: c.vc_id || undefined,
                 seniority_level: c.seniority_level || null,
                 years_of_experience: c.years_of_experience ?? null,
                 education: null, skills: c.technical_skills || [],

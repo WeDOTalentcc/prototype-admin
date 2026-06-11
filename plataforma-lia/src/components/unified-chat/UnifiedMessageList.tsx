@@ -11,6 +11,8 @@ import { AgentActivitySummary } from "./AgentActivitySummary"
 import { OutreachCard } from "./OutreachCard"
 import { WizardPublishedJobCard } from "./wizard/WizardPublishedJobCard"
 import { WizardPipelineTemplateCard } from "./wizard/WizardPipelineTemplateCard"
+import { WizardJdCard } from "./wizard/WizardJdCard"
+import { WizardWsiCard } from "./wizard/WizardWsiCard"
 import { WebsiteProposalCard } from "./WebsiteProposalCard"
 import { CandidateProfileCard, type CandidateProfileActionId } from "./candidate/CandidateProfileCard"
 import { CandidateEvaluationCard } from "./candidate/CandidateEvaluationCard"
@@ -436,6 +438,10 @@ export function UnifiedMessageList({
           meta?.type === "wizard_published_job" && meta?.publishedJob != null
         const hasTemplateCard =
           meta?.type === "wizard_template_select" && meta?.templateCard != null
+        const hasWizardJdCard =
+          meta?.type === "wizard_stage_card" && meta?.wizardStage === "jd_enrichment"
+        const hasWizardWsiCard =
+          meta?.type === "wizard_stage_card" && meta?.wizardStage === "wsi_questions"
         const hasWebsiteProposal =
           meta?.type === "website_proposal" && meta?.websiteProposal != null
         const hasCandidateProfile =
@@ -589,6 +595,22 @@ export function UnifiedMessageList({
                 {hasWebsiteProposal && (
                   <WebsiteProposalCard
                     data={meta!.websiteProposal as import("@/components/unified-chat/WebsiteProposalCard").WebsiteProposalCardData}
+                  />
+                )}
+
+                {/* JD enrichment card — rendered when wizard stage jd_enrichment
+                    emits ws_stage_payload; shows quality score + expandable details. */}
+                {hasWizardJdCard && (
+                  <WizardJdCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                  />
+                )}
+
+                {/* WSI questions card — rendered when wizard stage wsi_questions
+                    emits ws_stage_payload; collapsible list with type badges. */}
+                {hasWizardWsiCard && (
+                  <WizardWsiCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
                   />
                 )}
 

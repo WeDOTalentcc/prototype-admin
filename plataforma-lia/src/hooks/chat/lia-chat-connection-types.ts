@@ -90,6 +90,14 @@ export interface MessageCompleteExtras {
   errorCode?: string;
   ui_action?: string;
   ui_action_params?: Record<string, unknown>;
+  /** F2 wizard: payload do stage emitido pelo wizard (jd_enrichment, wsi_questions, etc).
+   *  Usado pelo lia-float-context para popular msg.metadata e renderizar cards no chat. */
+  ws_stage_payload?: {
+    stage: string
+    data: Record<string, unknown>
+    completeness?: number
+    requires_approval?: boolean
+  }
 }
 
 export interface UseLiaChatConnectionOptions {

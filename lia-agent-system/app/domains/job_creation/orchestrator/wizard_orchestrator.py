@@ -227,6 +227,39 @@ class OrchestratorResult:
     error: bool = False
 
 
+def _emit_reasoning_sync(label: str) -> None:
+    """Emite reasoning_step para o SSE sink atual (best-effort, thread-safe).
+
+    wizard_orchestrator.process_turn() e sincrono e roda via asyncio.to_thread.
+    asyncio.to_thread copia o contextvars.Context, entao _sse_frame_sink esta
+    disponivel na thread via ContextVar. Porem o sink e uma coroutine: usamos
+    run_coroutine_threadsafe para despachar ao event loop do caller.
+
+    Falha silenciosa (try/except amplo): reasoning e best-effort, nunca
+    interrompe o fluxo do wizard.
+    """
+    try:
+        import asyncio as _asyncio
+        from lia_agents_core.streaming_callback import _sse_frame_sink as _sink_cv
+        _sink = _sink_cv.get(None)
+        if _sink is None:
+            return
+        from app.shared.chat_event_serializer import serialize_reasoning_step
+        _frame = serialize_reasoning_step(label=label, detail='')
+        try:
+            _loop = _asyncio.get_running_loop()
+            _loop.create_task(_sink(_frame))
+        except RuntimeError:
+            try:
+                _loop = _asyncio.get_event_loop()
+                if _loop.is_running():
+                    _asyncio.run_coroutine_threadsafe(_sink(_frame), _loop)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
 def _extract_history_messages(state: dict, n: int = 6) -> list[dict[str, Any]]:
     """Converte ``conversation_messages`` em mensagens Anthropic (últimas N).
 
@@ -421,6 +454,7 @@ class WizardOrchestrator:
         accumulated_text: list[str] = []
         max_iters = _get_max_iterations()
 
+        _emit_reasoning_sync('Analisando sua mensagem...')
         for iteration in range(1, max_iters + 1):
             try:
                 response = client.messages.create(
@@ -520,6 +554,7 @@ class WizardOrchestrator:
                 tool_input = getattr(tu, "input", {}) or {}
                 tu_id = getattr(tu, "id", "")
                 tool_calls.append(name)
+                _emit_reasoning_sync(f'Executando: {name}...')
                 tool = self._registry.get(name)
                 if tool is None:
                     result_text = (

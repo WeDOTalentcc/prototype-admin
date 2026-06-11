@@ -115,6 +115,7 @@ interface CandidateItem {
   vc_id: string
   vacancy_id: string
   candidate_id?: string
+  stage?: string
   name: string
   vacancy_title?: string | null
   sub_status?: string | null
@@ -500,7 +501,10 @@ export function PipelineOverviewPage() {
       const pipeline: PipelineStageWithCount[] = (data.pipeline || []).sort(
         (a: PipelineStageWithCount, b: PipelineStageWithCount) =>
           a.stage_order - b.stage_order
-      )
+      ).map((s: PipelineStageWithCount) => ({
+        ...s,
+        candidates: s.candidates.map(c => ({ ...c, stage: s.name })),
+      }))
       setStages(pipeline)
       setTotalCandidates(data.total_candidates || 0)
     } catch (err) {
@@ -1415,7 +1419,9 @@ function candidateItemToRecord(c: CandidateItem): Record<string, unknown> {
     id: c.candidate_id || c.vc_id,
     candidateId: c.candidate_id || c.vc_id,
     vc_id: c.vc_id,
+    vacancy_candidate_id: c.vc_id,
     vacancy_id: c.vacancy_id,
+    stage: c.stage,
     name: c.name,
     fullName: c.name,
     email: "",

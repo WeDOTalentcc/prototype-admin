@@ -287,6 +287,28 @@ class VacancyCandidateRepository:
         )
         return [str(r[0]) for r in rows.fetchall()]
 
+    async def list_vc_map_for_vacancy(
+        self, vacancy_id: str, company_id: str
+    ) -> dict[str, str]:
+        """Returns {candidate_id: vc_id} for all vacancy_candidates of a vacancy.
+
+        Allows the candidates list endpoint to include vc_id in its response so
+        FE can drive stage transitions without a separate lookup.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        rows = await self.db.execute(
+            sa_text(
+                """
+                SELECT vc.candidate_id::text, vc.id::text
+                FROM vacancy_candidates vc
+                WHERE vc.vacancy_id::text = :vid AND vc.company_id = :cid
+                """
+            ),
+            {"vid": vacancy_id, "cid": cid},
+        )
+        return {str(r[0]): str(r[1]) for r in rows.fetchall()}
+
     async def list_for_talent_funnel(
         self,
         company_id: str,

@@ -480,6 +480,7 @@ async def list_candidates(
         # aos candidatos vinculados à vaga (vacancy_candidates), via o path `ids=`.
         # Antes o board do Kanban lia a lista GLOBAL (sem filtro de vaga).
         effective_skip = offset if offset > 0 else skip
+        vc_map: dict[str, str] = {}
         if vacancy_id:
             vc_ids = await vacancy_candidate_repo.list_candidate_ids_for_vacancy(
                 vacancy_id, company_id
@@ -487,6 +488,9 @@ async def list_candidates(
             if not vc_ids:
                 return {"total": 0, "skip": effective_skip, "limit": limit, "source": "local", "items": []}
             id_list = [i for i in id_list if i in set(vc_ids)] if id_list else vc_ids
+            vc_map = await vacancy_candidate_repo.list_vc_map_for_vacancy(
+                vacancy_id, company_id
+            )
         total = await candidate_repo.count_candidates(
             search=search, status=status, source=source, seniority=seniority, ids=id_list,
         )
@@ -498,10 +502,12 @@ async def list_candidates(
         candidates = await _filter_candidates_by_dept_scope(candidates, current_user)
         # A4 field-level PII redaction: replaces 2-bucket Sprint 5/8 grants.
         role_defaults = await _load_role_pii_defaults(company_id)
-        items = [
-            apply_pii_field_visibility(_serialize_candidate(c), current_user, role_defaults)
-            for c in candidates
-        ]
+        items = []
+        for c in candidates:
+            serialized = apply_pii_field_visibility(_serialize_candidate(c), current_user, role_defaults)
+            if vc_map and str(c.id) in vc_map:
+                serialized["vc_id"] = vc_map[str(c.id)]
+            items.append(serialized)
         logger.info(
             f"[FUNIL-DEBUG] RETURN vacancy_id={vacancy_id!r} total={total} "
             f"items={len(items)}"

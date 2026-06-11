@@ -34,6 +34,30 @@ from app.domains.persona.services.ai_persona_service import get_ai_persona
 
 logger = logging.getLogger(__name__)
 
+# -- Expires-by-channel canonical (Phase 1a LGPD Consent 2026-06-11)
+# Async channels allow pausing between sessions => 2 days.
+# Sync channels (real-time call) expire later for scheduling => 7 days.
+ASYNC_CHANNELS: frozenset[str] = frozenset({"chat_web", "whatsapp"})
+SYNC_CHANNELS: frozenset[str] = frozenset({"chamada_online", "chamada_telefonica"})
+_EXPIRES_DAYS_ASYNC: int = 2
+_EXPIRES_DAYS_SYNC: int = 7
+
+
+def get_expires_days_for_channel(invite_channel: str, override: int | None = None) -> int:
+    """Return canonical expires_days for a given invite channel.
+
+    Async channels (chat_web, whatsapp) allow candidates to pause and resume
+    across sessions. A 2-day window reduces stale-link risk.
+    Sync channels (calls) need a longer window for scheduling convenience.
+
+    Args:
+        invite_channel: The channel slug (whatsapp, chat_web, chamada_online, etc.)
+        override: Caller-supplied override; honoured when explicitly set.
+    """
+    if override is not None:
+        return override
+    return _EXPIRES_DAYS_ASYNC if invite_channel in ASYNC_CHANNELS else _EXPIRES_DAYS_SYNC
+
 
 async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
     repo = TriagemSessionRepository(db)

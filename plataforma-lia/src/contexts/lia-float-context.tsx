@@ -423,6 +423,12 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
           status: string;
           durationMs?: number;
         }>;
+        ws_stage_payload?: {
+          stage: string
+          data: Record<string, unknown>
+          completeness?: number
+          requires_approval?: boolean
+        }
       },
     ) => {
       const msg: LiaChatMessage = {
@@ -450,6 +456,21 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         ?.response_blocks;
       if (_rb && _rb.length > 0) {
         msg.response_blocks = _rb;
+      }
+      // F2 wizard: se o frame carregou ws_stage_payload de stage que gera card,
+      // popular msg.metadata para que UnifiedMessageList renderize o card inline.
+      const _wsp = extras?.ws_stage_payload;
+      if (_wsp) {
+        const _CARD_STAGES = ["jd_enrichment", "wsi_questions", "publish", "done"]
+        if (_CARD_STAGES.includes(_wsp.stage)) {
+          msg.metadata = {
+            ...(msg.metadata ?? {}),
+            type: "wizard_stage_card",
+            wizardStage: _wsp.stage,
+            wizardStageData: _wsp.data,
+            wizardRequiresApproval: _wsp.requires_approval ?? false,
+          }
+        }
       }
       setChatMessages((prev) => dedupeAppend(prev, msg));
 

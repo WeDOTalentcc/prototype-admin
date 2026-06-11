@@ -16,7 +16,7 @@ export const candidateStageSchema = z.object({
 })
 
 export const candidateDecisionSchema = z.object({
-  decision: z.enum(['approved', 'rejected', 'pending']).optional(),
+  decision: z.enum(['approved', 'rejected']),
   notes: z.string().optional(),
   reason: z.string().optional(),
 }).passthrough()

@@ -85,7 +85,7 @@ export function PipelineDecisionBar({
       if (res.ok) {
         const data = await res.json()
         const list: Array<{ id: string; meeting_url: string | null; status: string }> =
-          data.interviews || data.items || []
+          Array.isArray(data) ? data : (data.interviews || data.items || [])
         const active = list.find(i => ["scheduled", "confirmed"].includes(i.status))
         if (active) {
           setInterviewData({ interview_id: active.id, meeting_url: active.meeting_url, status: active.status })
@@ -225,7 +225,12 @@ export function PipelineDecisionBar({
         })
         if (res.ok) {
           const data = await res.json()
-          if (data.success) {
+          if (data.requires_approval) {
+            toast.info("Aguardando aprovação", {
+              description: `A transição de ${candidate.name} requer aprovação antes de ser concluída.`,
+            })
+            onCandidateUpdated?.()
+          } else if (data.success) {
             const targetStage = pipeline.find(s => s.name === toStage)
             const targetSubLabel = subStatus
               ? (targetStage?.sub_statuses?.find(s => s.name === subStatus)?.display_name || subStatus)
@@ -269,31 +274,17 @@ export function PipelineDecisionBar({
     }
   }, [interviewData])
 
-  const handleReschedule = useCallback(async () => {
+  const handleReschedule = useCallback(() => {
     if (!interviewData?.interview_id) {
       toast.error("Entrevista não encontrada", {
-        description: "Não foi possível identificar a entrevista para reagendar.",
+        description: "Nenhuma entrevista agendada encontrada para este candidato.",
       })
       return
     }
-    try {
-      const res = await fetch("/api/backend-proxy/calendar/reschedule-interview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ interview_id: interviewData.interview_id }),
-      })
-      if (res.ok) {
-        toast.success("Reagendamento solicitado", {
-          description: `${candidate.name} receberá um convite de novo horário.`,
-        })
-        fetchInterviewData()
-      } else {
-        toast.error("Erro ao reagendar", { description: "Não foi possível solicitar reagendamento." })
-      }
-    } catch {
-      toast.error("Erro de conexão")
-    }
-  }, [interviewData, candidate.name, fetchInterviewData])
+    toast.info("Selecione um novo horário", {
+      description: "Acesse o calendário da entrevista para escolher um novo horário e confirme o reagendamento.",
+    })
+  }, [interviewData])
 
   // ---------- No job context: show AI highlight only ----------
   if (!effectiveJobId) {
