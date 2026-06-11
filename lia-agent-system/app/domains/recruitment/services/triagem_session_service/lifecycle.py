@@ -30,6 +30,7 @@ from .scoring import _calculate_final_score, _score_response_deterministic
 from .voice import _generate_tts_audio
 from .wsi_blocks import _load_or_generate_blocks
 from . import eligibility_phase
+from app.domains.persona.services.ai_persona_service import get_ai_persona
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,15 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
     job_info: dict[str, Any] = {}
     job_id = session_data.get("job_id")
     company_id = session_data.get("company_id")
+
+    # Phase 1a — fetch ai_name for InterviewLobby (fail-open: default Lia if unavailable)
+    ai_name = "Lia"
+    if company_id:
+        try:
+            persona = await get_ai_persona(company_id, db)
+            ai_name = persona.get("name", "Lia") or "Lia"
+        except Exception as _e:
+            logger.warning("[Triagem] Could not fetch ai_persona for company_id=%s: %s", company_id, _e)
     if job_id:
         try:
             job = await find_job_vacancy_for_triagem(db, job_id, company_id)
@@ -106,11 +116,24 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
 
     messages_data = [m.to_dict() for m in messages]
 
+    # Phase 1a — resolve is_affirmative / affirmative_type from session metadata
+    _session_meta = (session_orm.metadata_json if session_orm else None) or {}
+    _is_affirmative: bool = bool(_session_meta.get("is_affirmative", False))
+    _affirmative_type: str | None = _session_meta.get("affirmative_criteria") or None
+    # expires_at from session model (already in to_dict but adding to top-level for InterviewLobby)
+    _expires_at: str = session_data.get("expires_at", "")
+
     response: dict[str, Any] = {
         "valid": True,
         "completed": validation.get("completed", False),
         "session": session_data,
         "config": config,
+        # InterviewLobby fields (Phase 1a)
+        "ai_name": ai_name,
+        "is_affirmative": _is_affirmative,
+        "affirmative_type": _affirmative_type,
+        "has_practice_question": False,  # default False — Phase 1b will set this
+        "expires_at": _expires_at,
         "progress": _build_progress(
             session_data.get("current_block", 0),
             len([m for m in messages if m.sender == "candidate"]),

@@ -8041,5 +8041,42 @@
     "closeButton": "Fechar",
     "copyFailed": "Copiar lista de falhas",
     "deliveryFailed": "Último envio falhou: {reason}"
+  },
+  "interview": {
+    "lobby": {
+      "logoAlt": "Logo de {name}",
+      "greeting": "Olá, {name}! Esta triagem é conduzida por inteligência artificial.",
+      "aiDeclarationTitle": "Triagem conduzida por {aiName}",
+      "aiDeclarationBody": "Esta triagem é conduzida por inteligência artificial. Um recrutador revisará sua candidatura antes de qualquer decisão.",
+      "practiceQuestionHint": "Uma pergunta de prática será apresentada antes de começar.",
+      "tipsTitle": "Dicas de preparação",
+      "tip1": "Escolha um local silencioso com boa conexão de internet.",
+      "tip2": "Responda com honestidade e objetividade — não há resposta certa ou errada.",
+      "tip3": "Se usar voz, fale de forma clara e pausada para melhor reconhecimento.",
+      "consentTitle": "Consentimento LGPD",
+      "disclaimerAriaLabel": "Texto completo do consentimento",
+      "disclaimerVersion": "Versão do documento: {version}",
+      "scrollToEnable": "Role até o final para habilitar o botão de aceite.",
+      "consentCheckboxLabel": "Li e concordo com o tratamento dos meus dados conforme a",
+      "privacyPolicyLink": "Política de Privacidade",
+      "affirmativeTitle": "Programa de ação afirmativa: {type}",
+      "affirmativeGeneric": "ação afirmativa",
+      "affirmativeBody": "Esta vaga possui cotas de inclusão. Ao continuar, você declara se enquadrar no critério informado no processo seletivo.",
+      "affirmativeCheckboxLabel": "Declaro que me enquadro no critério de inclusão desta vaga.",
+      "consentError": "Erro ao registrar consentimento. Por favor, tente novamente.",
+      "micDenied": "Acesso ao microfone negado. Permita o acesso nas configurações do navegador.",
+      "expiryWarning": "Este link expira em menos de 24 horas. Conclua sua triagem em breve.",
+      "groupAsync": "Resposta assíncrona",
+      "channelChatLabel": "Responder por mensagem online",
+      "channelChatDesc": "Responda no seu próprio ritmo, pelo navegador.",
+      "channelWhatsappLabel": "WhatsApp",
+      "channelWhatsappDesc": "Receba e responda as perguntas pelo WhatsApp.",
+      "groupSync": "Chamada em tempo real",
+      "channelOnlineCallLabel": "Chamada online",
+      "channelOnlineCallDesc": "Fale pelo microfone do computador ou celular agora.",
+      "channelPhoneLabel": "Chamada telefônica",
+      "channelPhoneDesc": "Receba uma ligação no seu telefone agora.",
+      "syncBadge": "tempo real"
+    }
   }
 }

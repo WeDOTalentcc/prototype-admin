@@ -8041,5 +8041,42 @@
     "closeButton": "Close",
     "copyFailed": "Copy failed list",
     "deliveryFailed": "Last delivery failed: {reason}"
+  },
+  "interview": {
+    "lobby": {
+      "logoAlt": "{name} logo",
+      "greeting": "Hello, {name}! This screening is conducted by artificial intelligence.",
+      "aiDeclarationTitle": "Screening conducted by {aiName}",
+      "aiDeclarationBody": "This screening is conducted by artificial intelligence. A recruiter will review your application before any decision is made.",
+      "practiceQuestionHint": "A practice question will be shown before the real screening begins.",
+      "tipsTitle": "Preparation tips",
+      "tip1": "Choose a quiet location with a good internet connection.",
+      "tip2": "Answer honestly and directly — there are no right or wrong answers.",
+      "tip3": "If using voice, speak clearly and at a steady pace for best recognition.",
+      "consentTitle": "LGPD Consent",
+      "disclaimerAriaLabel": "Full consent text",
+      "disclaimerVersion": "Document version: {version}",
+      "scrollToEnable": "Scroll to the bottom to enable the consent checkbox.",
+      "consentCheckboxLabel": "I have read and agree to the processing of my data as per the",
+      "privacyPolicyLink": "Privacy Policy",
+      "affirmativeTitle": "Affirmative action programme: {type}",
+      "affirmativeGeneric": "affirmative action",
+      "affirmativeBody": "This position has inclusion quotas. By continuing, you declare that you meet the inclusion criteria stated in the selection process.",
+      "affirmativeCheckboxLabel": "I declare that I meet the inclusion criteria for this position.",
+      "consentError": "Failed to record consent. Please try again.",
+      "micDenied": "Microphone access denied. Allow access in your browser settings.",
+      "expiryWarning": "This link expires in less than 24 hours. Please complete your screening soon.",
+      "groupAsync": "Async response",
+      "channelChatLabel": "Reply by online message",
+      "channelChatDesc": "Answer at your own pace, via the browser.",
+      "channelWhatsappLabel": "WhatsApp",
+      "channelWhatsappDesc": "Receive and answer questions via WhatsApp.",
+      "groupSync": "Real-time call",
+      "channelOnlineCallLabel": "Online call",
+      "channelOnlineCallDesc": "Speak via your computer or mobile microphone now.",
+      "channelPhoneLabel": "Phone call",
+      "channelPhoneDesc": "Receive a phone call now.",
+      "syncBadge": "live"
+    }
   }
 }
