@@ -505,7 +505,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   }
 
   return (
-    <div data-dashboard-shell className="h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex overflow-hidden">
+    <div data-dashboard-shell className="h-screen bg-white bg-lia-bg-primary flex overflow-hidden">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {currentPage}
       </div>
