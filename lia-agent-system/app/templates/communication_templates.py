@@ -1509,6 +1509,56 @@ Informamos que o processo para *{job_title}* foi encerrado. Essa decisão não t
 Seu perfil permanece em nosso banco de talentos e entraremos em contato sobre novas oportunidades.
 
 Desejamos sucesso! 🍀"""
+    
+    @staticmethod
+    def consent_request(
+        job_title: str,
+        ai_name: str = "Lia",
+        is_affirmative: bool = False,
+        affirmative_type: str | None = None,
+    ) -> str:
+        """Generate LGPD consent request for WhatsApp triagem.
+
+        REGRA LGPD: o texto de consentimento DEVE mencionar WeDOTalent (controlador legal,
+        LGPD Art. 7/9), prazo de retencao, DPO e canal de revogacao. ai_name NAO substitui
+        "WeDOTalent" neste texto — ver ADR voice plugin consent_request canonical rule.
+        """
+        base = (
+            f"Esta triagem e conduzida por inteligencia artificial. Um recrutador "
+            f"revisara sua candidatura antes de qualquer decisao sobre o processo.\n\n"
+            f"Para participar, a WeDOTalent precisa do seu consentimento conforme a LGPD.\n\n"
+            f"Suas respostas serao coletadas e processadas exclusivamente para avaliacao "
+            f"da sua candidatura a vaga de {job_title}. Os dados sao armazenados por ate "
+            f"12 meses e nao serao usados para reconhecimento biometrico.\n\n"
+            f"Voce pode a qualquer momento solicitar acesso, correcao ou exclusao "
+            f"pelo e-mail privacidadededados@wedotalent.cc."
+        )
+        if is_affirmative and affirmative_type:
+            type_label = {
+                "pcd": "condicao de PCD",
+                "racial": "autodeclaracao racial",
+                "gender": "identidade de genero",
+            }.get(affirmative_type, affirmative_type)
+            base += (
+                f"\n\nAlem disso, esta e uma vaga de acao afirmativa. Uma das perguntas "
+                f"coletara informacao sobre {type_label}. "
+                f"Voce tambem consente com esta coleta adicional? (Art. 11 \u00a72o, II \u2014 LGPD)."
+            )
+        base += (
+            "\n\nVoce consente com o uso dos seus dados nesta triagem?"
+            "\nResponda *SIM* para continuar ou *NAO* para recusar."
+        )
+        return base
+
+    @staticmethod
+    def expiry_reminder(job_title: str, hours_left: int) -> str:
+        """Generate pre-expiry reminder for sessions awaiting consent or response."""
+        return (
+            f"Ola! Ainda esta disponivel para a triagem da vaga de {job_title}?\n"
+            f"Seu prazo para participar expira em {hours_left} hora(s). "
+            f"Acesse o link que enviamos anteriormente para continuar."
+        )
+
 
 
 class RecruiterNotificationTemplates:
@@ -1702,58 +1752,7 @@ Posso confirmar sua participação?
 
 {action_prompt}
 
-{actions}"""
-    
-    @staticmethod
-    def consent_request(
-        job_title: str,
-        ai_name: str = "Lia",
-        is_affirmative: bool = False,
-        affirmative_type: str | None = None,
-    ) -> str:
-        """Generate LGPD consent request for WhatsApp triagem.
-
-        REGRA LGPD: o texto de consentimento DEVE mencionar WeDOTalent (controlador legal,
-        LGPD Art. 7/9), prazo de retencao, DPO e canal de revogacao. ai_name NAO substitui
-        "WeDOTalent" neste texto — ver ADR voice plugin consent_request canonical rule.
-        """
-        base = (
-            f"Esta triagem e conduzida por inteligencia artificial. Um recrutador "
-            f"revisara sua candidatura antes de qualquer decisao sobre o processo.\n\n"
-            f"Para participar, a WeDOTalent precisa do seu consentimento conforme a LGPD.\n\n"
-            f"Suas respostas serao coletadas e processadas exclusivamente para avaliacao "
-            f"da sua candidatura a vaga de {job_title}. Os dados sao armazenados por ate "
-            f"12 meses e nao serao usados para reconhecimento biometrico.\n\n"
-            f"Voce pode a qualquer momento solicitar acesso, correcao ou exclusao "
-            f"pelo e-mail privacidadededados@wedotalent.cc."
-        )
-        if is_affirmative and affirmative_type:
-            type_label = {
-                "pcd": "condicao de PCD",
-                "racial": "autodeclaracao racial",
-                "gender": "identidade de genero",
-            }.get(affirmative_type, affirmative_type)
-            base += (
-                f"\n\nAlem disso, esta e uma vaga de acao afirmativa. Uma das perguntas "
-                f"coletara informacao sobre {type_label}. "
-                f"Voce tambem consente com esta coleta adicional? (Art. 11 \u00a72o, II \u2014 LGPD)."
-            )
-        base += (
-            "\n\nVoce consente com o uso dos seus dados nesta triagem?"
-            "\nResponda *SIM* para continuar ou *NAO* para recusar."
-        )
-        return base
-
-    @staticmethod
-    def expiry_reminder(job_title: str, hours_left: int) -> str:
-        """Generate pre-expiry reminder for sessions awaiting consent or response."""
-        return (
-            f"Ola! Ainda esta disponivel para a triagem da vaga de {job_title}?\n"
-            f"Seu prazo para participar expira em {hours_left} hora(s). "
-            f"Acesse o link que enviamos anteriormente para continuar."
-        )
-
-    @staticmethod
+{actions}"""    @staticmethod
     def critical_alert(
         alert_type: str,
         message: str,
