@@ -332,11 +332,36 @@ class ObservabilityRepository:
         return result.scalar_one_or_none()
 
     async def revoke_consent(self, consent: ConsentRecord) -> ConsentRecord:
-        consent.is_active = False
-        consent.revoked_at = datetime.utcnow()
+        """Append-only revocation: INSERTs a new revocation record instead of mutating the original.
+
+        Required for compatibility with RN-06 immutability trigger in migration 261
+        (BEFORE UPDATE/DELETE raises exception on consent_records).
+        Returns the newly inserted revocation record.
+        """
+        import uuid as _uuid
+        revocation = ConsentRecord(
+            id=_uuid.uuid4(),
+            company_id=consent.company_id,
+            candidate_id=consent.candidate_id,
+            consent_type=consent.consent_type,
+            version=consent.version,
+            granted_at=consent.granted_at,
+            revoked_at=datetime.utcnow(),
+            is_active=False,
+            source=consent.source,
+            legal_basis=consent.legal_basis,
+            consent_text=consent.consent_text,
+            ip_address=consent.ip_address,
+            canal=consent.canal,
+            user_agent=consent.user_agent,
+            processo_id=consent.processo_id,
+            vaga_id=consent.vaga_id,
+            versao_disclaimer=consent.versao_disclaimer,
+        )
+        self.db.add(revocation)
         await self.db.commit()
-        await self.db.refresh(consent)
-        return consent
+        await self.db.refresh(revocation)
+        return revocation
 
     # ── IncidentReport ────────────────────────────────────────────────────────
 
