@@ -88,12 +88,18 @@ export function CandidateChatPopover({
           job_id: jobId ? String(jobId) : undefined,
         }),
       })
-      if (!res.ok) throw new Error(String(res.status))
+      if (!res.ok) {
+        const body = await res.text().catch(() => "")
+        console.error("[quick-ask] HTTP", res.status, "candidateId:", candidateId, "body:", body)
+        setError(`Erro ${res.status} — veja o console para detalhes`)
+        return
+      }
       const data = await res.json()
       const payload = data?.data ?? data
       setAnswer(payload.answer ?? "")
       setQuestion("")
-    } catch {
+    } catch (err) {
+      console.error("[quick-ask] fetch error:", err)
       setError("Não foi possível responder. Tente no chat completo.")
     } finally {
       setIsLoading(false)
