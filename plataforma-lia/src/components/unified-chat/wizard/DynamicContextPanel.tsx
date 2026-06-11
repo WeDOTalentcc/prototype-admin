@@ -105,15 +105,16 @@ export function DynamicContextPanel({
   onClose,
   onUpdate,
 }: Props) {
-  if (!stage) return null
-
   // Escuta CustomEvent disparado pelo DonePanel para fechar o painel
   // via botao interno — sem tool nova no backend (puro FE CustomEvent).
+  // NOTA: useEffect DEVE ficar antes de qualquer early return (rules-of-hooks).
   useEffect(() => {
     const handler = () => onClose?.()
     window.addEventListener("lia:wizard-close-panel", handler)
     return () => window.removeEventListener("lia:wizard-close-panel", handler)
   }, [onClose])
+
+  if (!stage) return null
 
   return (
     <div className="flex flex-col h-full bg-lia-bg-primary">
