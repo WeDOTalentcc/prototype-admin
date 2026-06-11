@@ -123,8 +123,8 @@ def _subagent_for_pipeline(message: str) -> str:
         return "pipeline_action"
     if any(kw in msg for kw in _decision_kw):
         return "pipeline_decision"
-    # Default for pipeline: read-only context (safer)
-    return "pipeline_context"
+    # Default for pipeline: full agent (HITL + FairnessGuard + 20 tools - matches REST)
+    return "pipeline_transition"
 
 
 def _get_agent(domain: str) -> Any | None:
