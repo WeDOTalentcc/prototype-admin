@@ -205,7 +205,7 @@ export function CandidateChatPopover({
           {/* Footer link */}
           <div className="px-3 pb-2.5">
             <button
-              className="flex items-center gap-1 text-micro text-lia-primary hover:opacity-70 transition-opacity"
+              className="flex items-center gap-1 text-micro text-lia-text-primary hover:opacity-60 transition-opacity"
               onClick={handleOpenFullChat}
             >
               <MessageSquare className="w-3 h-3" />
