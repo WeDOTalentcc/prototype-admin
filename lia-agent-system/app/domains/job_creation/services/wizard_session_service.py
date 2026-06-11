@@ -1227,6 +1227,25 @@ class WizardSessionService:
                 data["wsi_questions_used_fallback"] = new_state.get(
                     "wsi_questions_used_fallback", False
                 )
+                # Task-6 fix: expor seniority_level + screening_mode +
+                # expected_distribution para o FE abandonar MIN_DISTRIBUTION
+                # hardcoded e usar os dados canônicos do YAML.
+                try:
+                    from app.domains.job_creation.helpers.wsi_distribution import (
+                        block_distribution as _block_dist,
+                    )
+                    _seniority = new_state.get("seniority_resolved") or "pleno"
+                    _mode = new_state.get("screening_mode") or "compact"
+                    data["seniority_level"] = _seniority
+                    data["screening_mode"] = _mode
+                    data["expected_distribution"] = _block_dist(
+                        mode=_mode, seniority=_seniority
+                    )
+                except Exception as _t6_exc:  # noqa: BLE001 — best-effort, não bloqueia painel
+                    logger.debug(
+                        "[WizardOrchestrator] expected_distribution calc falhou: %s",
+                        _t6_exc,
+                    )
                 # Gate de distribuição (mesma lógica do approve_wsi_questions,
                 # fail-open): popula distribution_gap para o banner do
                 # WsiQuestionsPanel disparar também no caminho live.
