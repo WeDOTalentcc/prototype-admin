@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useRef, useCallback, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { useTranslations } from "next-intl"
 import { Plus, Users } from "lucide-react"
@@ -12,6 +12,9 @@ import { JobFairnessBlockBanner } from "@/components/jobs/JobFairnessBlockBanner
 import type { KanbanPageCoreState } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
 import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 
+const PANEL_MIN_WIDTH = 320
+const PANEL_MAX_WIDTH = 900
+
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => null })
 
 interface KanbanBoardSectionProps {
@@ -21,6 +24,42 @@ interface KanbanBoardSectionProps {
 export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
   const t = useTranslations('kanban')
   const { openOfferReview } = useOfferReviewFlow()
+
+  const [panelWidth, setPanelWidth] = useState(400)
+  const isDragging = useRef(false)
+  const dragStartX = useRef(0)
+  const dragStartWidth = useRef(0)
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    isDragging.current = true
+    dragStartX.current = e.clientX
+    dragStartWidth.current = panelWidth
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+  }, [panelWidth])
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return
+      const delta = dragStartX.current - e.clientX
+      const newWidth = Math.min(PANEL_MAX_WIDTH, Math.max(PANEL_MIN_WIDTH, dragStartWidth.current + delta))
+      setPanelWidth(newWidth)
+    }
+    const onMouseUp = () => {
+      if (!isDragging.current) return
+      isDragging.current = false
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [])
+
   const {
     dynamicStages, setDynamicStages, candidatesData, setCandidatesData,
     isLoadingCandidates, hasMounted, searchQuery,
@@ -229,8 +268,18 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
       </div>
 
       {isPreviewOpen && previewCandidate && (
-        <div className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
-          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+        <div
+          className="flex-shrink-0 flex"
+          style={{ width: isPreviewMaximized ? 700 : panelWidth }}
+        >
+          <div
+            className="w-1.5 flex-shrink-0 cursor-col-resize group flex items-center justify-center hover:bg-lia-border-medium/40 transition-colors motion-reduce:transition-none rounded-l-md"
+            onMouseDown={onMouseDown}
+            title="Arraste para redimensionar"
+          >
+            <div className="w-0.5 h-8 rounded-full bg-lia-border-medium group-hover:bg-lia-text-disabled transition-colors motion-reduce:transition-none" />
+          </div>
+          <div className="flex-1 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
           <CandidatePreview
             candidate={previewCandidate}
             isOpen={isPreviewOpen}

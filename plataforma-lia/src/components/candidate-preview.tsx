@@ -208,7 +208,7 @@ export function CandidatePreview({
       </div>
 
       <TooltipProvider delayDuration={200}>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {activeTab === 'profile' && (
           <CandidatePreviewProfileTab
             candidate={c as Record<string, unknown>}
