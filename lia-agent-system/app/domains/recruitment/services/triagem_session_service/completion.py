@@ -411,7 +411,11 @@ async def _persist_wsi_results(
     score_val = session.wsi_final_score or 0.0
 
     screening_config = _get_screening_config(session)
-    raw_mode = screening_config.get("format") or "compact"
+    raw_mode = (
+        screening_config.get("screening_mode")
+        or screening_config.get("format")
+        or "compact"
+    )
     _mode_map = {"compact": "compact", "compact_plus": "compact_plus", "full": "compact_plus"}
     mode = _mode_map.get(raw_mode, "compact")
 

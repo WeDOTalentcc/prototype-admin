@@ -16,6 +16,26 @@ from ._shared import WSI_BLOCKS_FALLBACK
 logger = logging.getLogger(__name__)
 
 
+def _resolve_screening_mode(screening_config: dict) -> str:
+    """Resolve modo de triagem com backward compat para chave legada format.
+
+    Wizard grava screening_mode; codigo legado usava format.
+    Precedencia: screening_mode > format > default compact.
+    """
+    mode = screening_config.get("screening_mode") or screening_config.get("format")
+    return mode if mode in ("full", "compact") else "compact"
+
+
+def _resolve_screening_mode(screening_config: dict) -> str:
+    """Resolve modo de triagem com backward compat para chave legada format.
+
+    Wizard grava screening_mode; codigo legado usava format.
+    Precedencia: screening_mode > format > default compact.
+    """
+    mode = screening_config.get("screening_mode") or screening_config.get("format")
+    return mode if mode in ("full", "compact") else "compact"
+
+
 def _map_question_type_to_category(question_type: str) -> str:
     mapping = {
         "autodeclaration": "technical",
@@ -147,7 +167,7 @@ async def _load_or_generate_blocks(
         seniority = getattr(job, "seniority_level", "pleno") or "pleno" if job else "pleno"
         job_description = (job.description or "")[:1000] if job and job.description else ""
         sc = getattr(job, "screening_config", None) or {} if job else {}
-        mode = sc.get("format", "compact")
+        mode = _resolve_screening_mode(sc)
         generated_qs = await wsi_service.generate_screening_questions(
             competencies=competencies,
             mode=mode,
