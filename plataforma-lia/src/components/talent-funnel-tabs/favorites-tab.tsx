@@ -35,6 +35,7 @@ import {
   getColumnDefinition,
   COLUMN_PRESETS
 } from"@/components/tables"
+import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
 
 interface FavoritesTabProps {
   candidates: TableCandidate[]
@@ -137,11 +138,16 @@ export function FavoritesTab({
         sortable: nameCol?.sortable ?? true,
         width: nameCol?.width || 220,
         render: (candidate, _col) => (
-          <CandidateCell 
-            candidate={candidate} 
-            isPinned={pinnedCandidates.has(candidate.id)}
-            isFavorite={favoriteCandidates.has(candidate.id)}
-          />
+          <CandidateChatPopover
+            candidateId={candidate.id}
+            candidateName={candidate.name || "Candidato"}
+          >
+            <CandidateCell 
+              candidate={candidate} 
+              isPinned={pinnedCandidates.has(candidate.id)}
+              isFavorite={favoriteCandidates.has(candidate.id)}
+            />
+          </CandidateChatPopover>
         )
       },
       {
