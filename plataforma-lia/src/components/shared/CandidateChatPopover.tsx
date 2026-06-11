@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { MessageSquareDashed, MessageSquare, Send, ExternalLink, X, Brain } from "lucide-react"
 import { useLiaEntitySelection } from "@/hooks/shared/use-lia-entity-selection"
 
@@ -24,13 +25,32 @@ export function CandidateChatPopover({
   const [answer, setAnswer] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Portal positioning — computed from trigger getBoundingClientRect()
+  const [popoverPos, setPopoverPos] = useState<{ bottom: number; left: number } | null>(null)
+  // isMounted guard ensures createPortal only runs client-side (no SSR mismatch)
+  const [isMounted, setIsMounted] = useState(false)
+
+  const triggerRef = useRef<HTMLDivElement>(null)
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const inputRef = useRef<HTMLInputElement>(null)
   const { openEntityChat } = useLiaEntitySelection()
 
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const openPopover = useCallback(() => {
     clearTimeout(closeTimerRef.current)
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      setPopoverPos({
+        // Anchor ABOVE the trigger: distance from bottom of viewport to trigger top, plus gap
+        bottom: window.innerHeight - rect.top + 6,
+        // Clamp so popover never overflows right edge
+        left: Math.min(rect.left, window.innerWidth - 292),
+      })
+    }
     setIsOpen(true)
     setTimeout(() => inputRef.current?.focus(), 60)
   }, [])
@@ -90,23 +110,32 @@ export function CandidateChatPopover({
 
   return (
     <div
+      ref={triggerRef}
       className={`relative inline-flex items-center gap-1 group/lia-hover ${className ?? ""}`}
       onMouseEnter={handleTriggerEnter}
       onMouseLeave={handleTriggerLeave}
     >
       {children}
 
-      {/* Hint icon — só aparece no hover, invisible at rest */}
+      {/* Hint icon — invisible at rest, subtle on hover */}
       <MessageSquareDashed
         className="w-3 h-3 text-lia-primary opacity-0 group-hover/lia-hover:opacity-50 transition-opacity duration-150 pointer-events-none flex-shrink-0"
         aria-hidden="true"
       />
 
-      {isOpen && (
+      {/* Portal: renders into document.body, escapes all overflow/transform stacking contexts */}
+      {isMounted && isOpen && popoverPos && createPortal(
         <div
           role="dialog"
           aria-label={`Mini chat sobre ${candidateName}`}
-          className="absolute bottom-full left-0 z-[9999] mb-1.5 w-72 rounded-xl border border-lia-border-default bg-white dark:bg-lia-bg-elevated shadow-lg shadow-black/8 dark:shadow-black/30"
+          style={{
+            position: "fixed",
+            bottom: `${popoverPos.bottom}px`,
+            left: `${popoverPos.left}px`,
+            zIndex: 99999,
+            width: "288px",
+          }}
+          className="rounded-xl border border-lia-border-default bg-white dark:bg-lia-bg-elevated shadow-lg shadow-black/8 dark:shadow-black/30"
           onMouseEnter={handlePopoverEnter}
           onMouseLeave={scheduleClose}
           onClick={(e) => e.stopPropagation()}
@@ -135,16 +164,16 @@ export function CandidateChatPopover({
             </div>
           )}
 
-          {/* Loading */}
+          {/* Loading dots */}
           {isLoading && (
-            <div className="px-3 py-2.5 text-xs text-lia-text-disabled border-b border-lia-border-subtle flex items-center gap-2">
+            <div className="px-3 py-2.5 border-b border-lia-border-subtle flex items-center gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-lia-primary animate-pulse" />
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-lia-primary animate-pulse [animation-delay:200ms]" />
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-lia-primary animate-pulse [animation-delay:400ms]" />
             </div>
           )}
 
-          {/* Input */}
+          {/* Input row */}
           <div className="p-2">
             <div className="flex items-center gap-1.5 rounded-lg bg-lia-bg-subtle px-2.5 py-1.5">
               <input
@@ -173,7 +202,7 @@ export function CandidateChatPopover({
             )}
           </div>
 
-          {/* Footer */}
+          {/* Footer link */}
           <div className="px-3 pb-2.5">
             <button
               className="flex items-center gap-1 text-micro text-lia-primary hover:opacity-70 transition-opacity"
@@ -184,7 +213,8 @@ export function CandidateChatPopover({
               <ExternalLink className="w-2.5 h-2.5" />
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
