@@ -168,6 +168,9 @@ interface LiaFloatContextType extends LiaFloatState {
   openDynamicPanel: (panel: DynamicPanelData) => void;
   closeDynamicPanel: () => void;
   updateDynamicPanelData: (data: Record<string, unknown>) => void;
+  /** Manus F1 — modo do painel do wizard: dock lateral ou expandido. */
+  wizardPanelMode: "docked" | "expanded";
+  setWizardPanelMode: (mode: "docked" | "expanded") => void;
 
   sharedMessages: FloatMessage[];
   addSharedMessage: (msg: FloatMessage) => void;
@@ -331,6 +334,18 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     dynamicPanel: null,
     hasInlineChat: false,
   });
+
+  // Manus F1 — modo do painel do wizard (sticky; fora de LiaFloatState
+  // pra nao ser zerado pelos resets de close()/closeAll()).
+  const [wizardPanelMode, setWizardPanelModeState] = useState<
+    "docked" | "expanded"
+  >("docked");
+  const setWizardPanelMode = useCallback(
+    (mode: "docked" | "expanded") => {
+      setWizardPanelModeState(mode);
+    },
+    [],
+  );
 
   const [sharedConversationId, setSharedConversationId] = useState<
     string | null
@@ -979,6 +994,17 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         stage,
         requires_approval: Boolean(detail.requires_approval),
       });
+      // Manus F1 — done/handoff recolhe pro dock; tool open/close_panel
+      // aplica preferencia via data.panel_pref. Sem pref => sticky.
+      if (stage === "done" || stage === "handoff") {
+        setWizardPanelModeState("docked");
+      } else {
+        const pref = (detail.data as Record<string, unknown> | undefined)
+          ?.panel_pref;
+        if (pref === "expanded" || pref === "docked") {
+          setWizardPanelModeState(pref);
+        }
+      }
     };
     window.addEventListener("lia:wizard-stage-payload", handler);
     return () =>
@@ -1052,6 +1078,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       openDynamicPanel,
       closeDynamicPanel,
       updateDynamicPanelData,
+      wizardPanelMode,
+      setWizardPanelMode,
       sharedMessages,
       addSharedMessage,
       setSharedMessages,
@@ -1114,6 +1142,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       openDynamicPanel,
       closeDynamicPanel,
       updateDynamicPanelData,
+      wizardPanelMode,
+      setWizardPanelMode,
       sharedMessages,
       addSharedMessage,
       sharedConversationId,
