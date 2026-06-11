@@ -43,7 +43,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
       </head>
       <body
-        className={`${inter.variable} ${openSans.variable} ${sourceSerif4.variable} antialiased`}
+        className={`${inter.variable} ${openSans.variable} ${sourceSerif4.variable} antialiased bg-white`}
         suppressHydrationWarning
       >
         <EnvironmentBadge />

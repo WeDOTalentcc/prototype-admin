@@ -8,6 +8,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  background-color: #ffffff;
+}
+
+
 /* Sprint 7: globals.css split -- see src/app/styles/ for themed files */
 
 
