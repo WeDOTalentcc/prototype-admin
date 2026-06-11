@@ -93,12 +93,18 @@ function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
 
 function OutOfScopeIndicator() {
   return (
-    <div className="mt-2 pt-2 border-t border-status-warning/30/50">
-      <div className="flex items-center gap-1.5">
-        <ExternalLink className="w-3 h-3 text-status-warning flex-shrink-0" />
-        <span className="text-micro font-medium text-status-warning" >
-          Fora do escopo desta conversa
-        </span>
+    <div className="mt-2 pt-2 border-t border-status-warning/30">
+      <div className="flex items-start gap-1.5">
+        <ExternalLink className="w-3 h-3 text-status-warning flex-shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="flex flex-col gap-0.5">
+          <span className="text-micro font-medium text-status-warning">
+            Isso foge desta transição
+          </span>
+          <span className="text-micro text-lia-text-tertiary">
+            Aqui eu cuido de concluir esta etapa do candidato. Para outras ações
+            (e-mail a outros candidatos, criar vaga, relatórios), use o chat lateral da LIA.
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -296,9 +302,15 @@ export function TransitionChatPanel({
           className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-[240px]"
         >
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center py-8 opacity-60">
-              <p className="text-xs text-lia-text-tertiary">
-                Envie uma mensagem para começar
+            <div className="flex flex-col items-center justify-center h-full text-center py-8 px-4">
+              <div className="w-9 h-9 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mb-2">
+                <Lightbulb className="w-4 h-4 text-wedo-cyan" aria-hidden="true" />
+              </div>
+              <p className="text-xs font-medium text-lia-text-secondary mb-1 max-w-[260px]">
+                {BEHAVIOR_DESCRIPTIONS[actionBehavior] || "Posso ajudar a concluir esta transição."}
+              </p>
+              <p className="text-micro text-lia-text-tertiary max-w-[260px]">
+                Foco nesta etapa do candidato. Para outras ações, use o chat lateral da LIA.
               </p>
             </div>
           ) : (
