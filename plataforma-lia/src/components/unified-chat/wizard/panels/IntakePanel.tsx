@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { Chip } from "@/components/ui/chip"
 import { useAuthStore } from "@/stores/auth-store"
 import { useJdSimilar } from "@/hooks/jobs/use-jd-similar"
+import { ComplianceBadge } from "@/components/lia-float/ComplianceBadge"
 import { JdSimilarCard } from "./JdSimilarCard"
 
 interface Props {
@@ -64,12 +65,14 @@ function FichaField({
   value,
   editKey,
   type = "text",
+  inferred,
   onUpdate,
 }: {
   label: string
   value: string
   editKey?: string
   type?: "text" | "email"
+  inferred?: boolean
   onUpdate?: (updates: Record<string, unknown>) => void
 }) {
   const filled = Boolean(value)
@@ -132,6 +135,9 @@ function FichaField({
           title={editable ? "Clique para editar" : undefined}
         >
           {value}
+          {inferred && (
+            <span className="ml-1 text-[10px] text-wedo-cyan bg-wedo-cyan/10 px-1.5 py-0.5 rounded-full font-normal">inferido</span>
+          )}
         </Chip>
       ) : editable ? (
         <button
@@ -307,16 +313,16 @@ export function IntakePanel({ data, onUpdate }: Props) {
   // editKey = nome do campo no schema do backend (right_panel_form). Campos sem
   // editKey ficam display-only (modo de triagem tem affordance própria de chips;
   // salário tem o SalaryPanel dedicado).
-  const blockingFields: { label: string; value: string; editKey?: string; type?: "text" | "email" }[] = [
+  const blockingFields: { label: string; value: string; editKey?: string; type?: "text" | "email"; inferred?: boolean }[] = [
     { label: "Título", value: fieldText(data.parsed_title), editKey: "title" },
-    { label: "Senioridade", value: fieldText(data.parsed_seniority), editKey: "seniority" },
+    { label: "Senioridade", value: fieldText(data.parsed_seniority), editKey: "seniority", inferred: Boolean(data.seniority_inferred_from_title) },
     { label: "Modelo de trabalho", value: fieldText(data.parsed_model), editKey: "work_model" },
   ]
-  const enrichingFields: { label: string; value: string; editKey?: string; type?: "text" | "email" }[] = [
-    { label: "Departamento", value: fieldText(data.parsed_department), editKey: "department" },
+  const enrichingFields: { label: string; value: string; editKey?: string; type?: "text" | "email"; inferred?: boolean }[] = [
+    { label: "Departamento", value: fieldText(data.parsed_department), editKey: "department", inferred: Boolean(data.department_inferred_from_title) },
     { label: "Localização", value: fieldText(data.parsed_location), editKey: "location" },
     { label: "Contrato", value: fieldText(data.parsed_employment_type), editKey: "contract_type" },
-    { label: "Gestor responsável", value: fieldText(data.parsed_manager_name), editKey: "manager_name" },
+    { label: "Gestor responsável", value: fieldText(data.parsed_manager_name), editKey: "manager_name", inferred: Boolean(data.manager_name_suggested_from_email) },
     { label: "Email do gestor", value: fieldText(data.parsed_manager_email), editKey: "manager_email", type: "email" },
     { label: "Salário", value: salaryText(data) },
     { label: "Modo de triagem", value: screeningMode ? (MODE_LABEL[screeningMode] || screeningMode) : "" },
@@ -381,7 +387,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
         <div data-testid="intake-blocking-zone" className="space-y-1">
           <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider">Falta para avançar</p>
           {blockingFields.map((f) => (
-            <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} onUpdate={onUpdate} />
+            <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} inferred={f.inferred} onUpdate={onUpdate} />
           ))}
         </div>
       )}
@@ -391,8 +397,9 @@ export function IntakePanel({ data, onUpdate }: Props) {
         <div data-testid="intake-enriching-zone" className="space-y-1 pt-1">
           <p className="text-micro font-medium text-lia-text-secondary uppercase tracking-wide">Enriquecer (opcional)</p>
           {enrichingFields.map((f) => (
-            <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} onUpdate={onUpdate} />
+            <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} inferred={f.inferred} onUpdate={onUpdate} />
           ))}
+          <ComplianceBadge className="mt-1" />
         </div>
       )}
 
