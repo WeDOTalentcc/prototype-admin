@@ -620,10 +620,13 @@ export function UnifiedChat({
     setWizardSavedAt(new Date());
   }, [wizardStage, wizardCompleteness]);
   useEffect(() => {
-    if (!wizardActive) return;
+    if (!wizardActive) {
+      closeDynamicPanel(); // flush stale panel on wizard end
+      return;
+    }
     const id = setInterval(() => setSavedTick((n) => n + 1), 30_000);
     return () => clearInterval(id);
-  }, [wizardActive]);
+  }, [wizardActive, closeDynamicPanel]);
   const wizardSavedLabel = formatWizardSavedLabel(
     wizardSavedAt,
     new Date(),
@@ -1431,15 +1434,12 @@ export function UnifiedChat({
               />
             }
             thumbnail={
-              <DynamicContextPanel
-                stage={(dynamicPanel.stage as WizardStage) ?? null}
-                data={dynamicPanel.data ?? {}}
-                requiresApproval={false}
-                onApprove={undefined}
-                onReject={undefined}
-                onClose={undefined}
-                onUpdate={undefined}
-              />
+              <div className="w-full h-full bg-gradient-to-br from-wedo-cyan/10 to-wedo-purple/10 flex flex-col gap-1 p-2">
+                <div className="text-[8px] font-semibold text-lia-text-primary truncate">
+                  {WIZARD_STAGE_LABELS[dynamicPanel.stage] ?? dynamicPanel.stage}
+                </div>
+                <div className="flex-1 rounded bg-lia-bg-secondary/50" />
+              </div>
             }
           />
         )}

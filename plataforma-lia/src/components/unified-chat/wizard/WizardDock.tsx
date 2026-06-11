@@ -40,7 +40,7 @@ export function WizardDock({
         }
       }}
       aria-label={`Abrir painel: ${stageLabel}`}
-      className="mx-3 mb-2 flex items-stretch gap-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-md shadow-black/10 p-2 cursor-pointer hover:border-wedo-cyan/50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan focus-visible:ring-offset-1"
+      className="ml-3 mb-2 flex items-stretch gap-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-md shadow-black/10 p-2 cursor-pointer hover:border-wedo-cyan/50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan focus-visible:ring-offset-1 max-w-[380px]"
     >
       <div
         data-testid="wizard-dock-thumbnail"
