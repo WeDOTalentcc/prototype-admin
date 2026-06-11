@@ -340,8 +340,14 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   const [wizardPanelMode, setWizardPanelModeState] = useState<
     "docked" | "expanded"
   >("docked");
+  // Manus F1 sticky fix — rastreia se o usuário expandiu manualmente nesta sessão
+  // do wizard para evitar reset indevido quando backend emite "done" intermediário.
+  const userExpandedRef = useRef(false);
   const setWizardPanelMode = useCallback(
     (mode: "docked" | "expanded") => {
+      if (mode === "expanded") {
+        userExpandedRef.current = true;
+      }
       setWizardPanelModeState(mode);
     },
     [],
@@ -996,10 +1002,15 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         stage,
         requires_approval: Boolean(detail.requires_approval),
       });
-      // Manus F1 — done/handoff recolhe pro dock; tool open/close_panel
-      // aplica preferencia via data.panel_pref. Sem pref => sticky.
-      if (stage === "done" || stage === "handoff") {
-        setWizardPanelModeState("docked");
+      // Manus F1 — done fecha + limpa estado stale (só se usuário não expandiu
+      // ativamente esta sessão). handoff NÃO reseta — é transição intermediária.
+      // tool open/close_panel aplica preferencia via data.panel_pref. Sem pref => sticky.
+      if (stage === "done") {
+        if (!userExpandedRef.current) {
+          setWizardPanelModeState("docked");
+        }
+        closeDynamicPanel(); // limpa estado stale
+        userExpandedRef.current = false; // reset para próximo wizard
       } else {
         const pref = data.panel_pref;
         if (pref === "expanded" || pref === "docked") {
@@ -1010,7 +1021,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     window.addEventListener("lia:wizard-stage-payload", handler);
     return () =>
       window.removeEventListener("lia:wizard-stage-payload", handler);
-  }, [openDynamicPanel]);
+  }, [openDynamicPanel, closeDynamicPanel]);
 
   const updateDynamicPanelData = useCallback(
     (data: Record<string, unknown>) => {
