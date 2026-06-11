@@ -4,7 +4,6 @@ import { useState } from "react"
 import { usePathname } from "next/navigation"
 import { useMemo } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { DashboardApp } from "@/components/dashboard-app"
 import { labelFromPath } from "@/lib/navigation/routes"
 import { OnboardingChatBanner } from "@/components/onboarding/OnboardingChatBanner"
@@ -65,9 +64,6 @@ export default function DashboardLayoutClient({
           </div>
         </div>
       </DashboardApp>
-      {process.env.NODE_ENV === "development" && (
-        <ReactQueryDevtools initialIsOpen={false} />
-      )}
     </QueryClientProvider>
   )
 }
