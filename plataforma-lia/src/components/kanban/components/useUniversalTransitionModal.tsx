@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from 'react'
-import { useInterpretContext, type InterpretChatMessage as ChatMessage } from '@/hooks/shared/use-interpret-context'
+import { useTransitionChat, type ChatMessage } from '@/hooks/shared/use-transition-chat'
 import { useTransitionContext, type CandidateContext, type JobContext } from '@/hooks/recruitment/use-transition-context'
 import { useRecruitmentStages } from '@/hooks/recruitment/use-recruitment-stages'
 import { isLiaAutoAllowed } from '../utils/action-matrix'
@@ -214,7 +214,7 @@ export function useUniversalTransitionModal({
     companyId,
   })
 
-  const { sendMessage, messages, result: interpretResult, isLoading: isInterpreting, reset: resetInterpret } = useInterpretContext()
+  const { sendMessage, messages, result: interpretResult, isLoading: isInterpreting, reset: resetInterpret, hitlPending, sendApproval } = useTransitionChat()
 
   const firstCandidateId = candidates[0]?.id
   const firstCandidateName = candidates[0]?.name
@@ -399,5 +399,7 @@ export function useUniversalTransitionModal({
     handleOpenManualModal,
     prompt,
     setPrompt,
+    hitlPending,
+    sendApproval,
   }
 }

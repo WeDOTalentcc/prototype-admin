@@ -80,6 +80,8 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
     handleOpenManualModal,
     prompt,
     setPrompt,
+    hitlPending,
+    sendApproval,
   } = useUniversalTransitionModal(props)
 
   const fromStage = props.fromStage
@@ -259,6 +261,8 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                 onClearChat={() => { resetInterpret(); setPrompt(''); }}
                 actionBehavior={currentActionBehavior}
                 extractedPreferences={action === 'lia_auto' ? interpretResult?.extracted_preferences : null}
+                localHitlPending={hitlPending}
+                onLocalSendApproval={sendApproval}
               />
             </div>
           )}

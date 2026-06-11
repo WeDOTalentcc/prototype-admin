@@ -26,6 +26,7 @@ import { isClearChatCommand } from '@/lib/chat-commands'
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from '@/lib/chat-format'
 import { MessageFeedback } from '@/components/chat/message-feedback'
 import type { InterpretChatMessage as ChatMessage, TaskItem, LearnedSuggestion } from '@/hooks/shared/use-interpret-context'
+import type { HitlPendingState } from '@/hooks/shared/use-transition-chat'
 import { sanitizeHtml } from "@/lib/sanitize"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { ContextBadge } from "@/components/lia-float/ContextBadge"
@@ -46,6 +47,8 @@ interface TransitionChatPanelProps {
   placeholder?: string
   extractedPreferences?: Record<string, unknown> | null
   sessionId?: string
+  localHitlPending?: HitlPendingState | null
+  onLocalSendApproval?: (approved: boolean) => void
 }
 
 const BEHAVIOR_DESCRIPTIONS: Record<string, string> = {
@@ -194,12 +197,16 @@ export function TransitionChatPanel({
   placeholder,
   extractedPreferences,
   sessionId,
+  localHitlPending,
+  onLocalSendApproval,
 }: TransitionChatPanelProps) {
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const { contextPage } = useLiaFloat()
-  const { chatHitlPending, sendApproval } = useLiaChatContext()
+  const { chatHitlPending, sendApproval: globalSendApproval } = useLiaChatContext()
+  const activeHitlPending = localHitlPending !== undefined ? localHitlPending : chatHitlPending
+  const activeSendApproval = onLocalSendApproval ?? globalSendApproval
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -418,13 +425,13 @@ export function TransitionChatPanel({
               )
             })
           )}
-          {chatHitlPending && (
+          {activeHitlPending && (
             <div className="mt-3 px-1">
               <HITLConfirmCard
-                action={chatHitlPending.action}
-                description={chatHitlPending.description}
-                onConfirm={(_autoConfirm: boolean) => sendApproval(true)}
-                onCancel={() => sendApproval(false)}
+                action={activeHitlPending!.action}
+                description={activeHitlPending!.description}
+                onConfirm={(_autoConfirm: boolean) => activeSendApproval(true)}
+                onCancel={() => activeSendApproval(false)}
               />
             </div>
           )}
