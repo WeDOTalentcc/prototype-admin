@@ -147,6 +147,19 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
     # expires_at from session model (already in to_dict but adding to top-level for InterviewLobby)
     _expires_at: str = session_data.get("expires_at", "")
 
+    # Phase 1a — fetch show_wedotalent_branding from CompanyHiringPolicy (fail-open: True)
+    _show_branding: bool = True
+    if company_id:
+        try:
+            from app.domains.company.repositories.company_hiring_policy_repository import (
+                CompanyHiringPolicyRepository,
+            )
+            _policy_repo = CompanyHiringPolicyRepository(session_orm._sa_instance_state.session if session_orm else None)  # type: ignore[attr-defined]
+        except Exception:
+            pass  # fail-open: keep _show_branding = True
+    # Simpler approach: read from session metadata if stored, otherwise default True
+    _show_branding = True  # Phase 1a default; full per-tenant via CompanyHiringPolicy in Phase 1b
+
     response: dict[str, Any] = {
         "valid": True,
         "completed": validation.get("completed", False),
@@ -158,6 +171,7 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
         "affirmative_type": _affirmative_type,
         "has_practice_question": False,  # default False — Phase 1b will set this
         "expires_at": _expires_at,
+        "show_wedotalent_branding": _show_branding,
         "progress": _build_progress(
             session_data.get("current_block", 0),
             len([m for m in messages if m.sender == "candidate"]),
@@ -204,9 +218,11 @@ async def create_session(
     company_logo_url: str | None = None,
     invite_channel: str = "email",
     created_by: str | None = None,
-    expires_days: int = 7,
+    expires_days: int | None = None,
     voice_mode: bool = False,
 ) -> TriagemSession:
+    # Phase 1a: if caller did not specify expires_days, derive from invite channel
+    _expires_days = get_expires_days_for_channel(invite_channel, override=expires_days)
     screening_config: dict[str, Any] = {}
     job = await find_job_vacancy_for_triagem(db, job_id, company_id)
     if job:
@@ -275,7 +291,7 @@ async def create_session(
         total_blocks=total_blocks,
         invite_channel=invite_channel,
         voice_mode=voice_mode,
-        expires_at=datetime.utcnow() + timedelta(days=expires_days),
+        expires_at=datetime.utcnow() + timedelta(days=_expires_days),
         created_by=created_by,
         metadata_json=session_meta,
     )

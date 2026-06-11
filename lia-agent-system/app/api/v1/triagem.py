@@ -525,6 +525,128 @@ async def request_phone_call(
     return JSONResponse(content=result)
 
 
+
+
+class StartWhatsAppRequest(WeDoBaseModel):
+    candidate_phone: str | None = None  # optional if already on file in session metadata
+
+    def model_post_init(self, __context: object = None) -> None:
+        if self.candidate_phone is not None:
+            phone = self.candidate_phone.strip()
+            digits = re.sub(r"\D", "", phone)
+            if not phone.startswith("+"):
+                if len(digits) == 10 or len(digits) == 11:
+                    phone = f"+55{digits}"
+                elif len(digits) == 12 or len(digits) == 13:
+                    phone = f"+{digits}"
+            if not _E164_BR_PATTERN.match(phone):
+                raise ValueError(
+                    "Telefone invalido. Use formato (DDD) + numero, ex: (11) 99999-9999"
+                )
+            object.__setattr__(self, "candidate_phone", phone)
+
+
+@router.post("/{token}/start-whatsapp", response_model=None)
+async def start_whatsapp_triagem(
+    token: str,
+    request: StartWhatsAppRequest | None = None,
+    repo: TriagemRepository = Depends(get_triagem_repo),
+    triagem_svc: TriagemSessionService = Depends(get_triagem_service),
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
+    """Initiate WhatsApp screening for a candidate.
+
+    Sends a WhatsApp consent/screening message to the candidate phone number.
+    If candidate_phone is omitted, looks for it in session metadata.
+
+    Phase 1a LGPD Consent (2026-06-11).
+    """
+    validation = await triagem_svc.validate_token(repo.db, token)
+
+    if not validation.get("valid"):
+        error = validation.get("error")
+        if error == "not_found":
+            raise HTTPException(status_code=404, detail="Token invalido")
+        if error == "expired":
+            raise HTTPException(status_code=410, detail="Link expirado")
+
+    if validation.get("completed"):
+        raise HTTPException(status_code=409, detail="Triagem ja foi concluida")
+
+    session_data = validation.get("session") or {}
+
+    # Resolve phone: from request body, or from session metadata
+    candidate_phone: str | None = (request.candidate_phone if request else None)
+    if not candidate_phone:
+        meta = session_data.get("metadata_json") or {}
+        candidate_phone = (
+            meta.get("candidate_phone")
+            or meta.get("phone")
+            or meta.get("whatsapp_phone")
+        )
+    if not candidate_phone:
+        raise HTTPException(
+            status_code=422,
+            detail="Numero de telefone do candidato nao disponivel. Forneca candidate_phone.",
+        )
+
+    # Validate E.164 format for stored phone values
+    digits_only = re.sub(r"\D", "", candidate_phone)
+    if not candidate_phone.startswith("+"):
+        if len(digits_only) in (10, 11):
+            candidate_phone = f"+55{digits_only}"
+        elif len(digits_only) in (12, 13):
+            candidate_phone = f"+{digits_only}"
+    if not _E164_BR_PATTERN.match(candidate_phone):
+        raise HTTPException(status_code=422, detail="Telefone invalido - use formato E.164 ou (DDD) numero")
+
+    # Persist phone in session metadata so subsequent webhook messages can be matched
+    session_orm = await repo.get_session_by_token(token)
+    if session_orm:
+        meta = dict(session_orm.metadata_json or {})
+        meta["candidate_phone"] = candidate_phone
+        session_orm.metadata_json = meta
+        await repo.db.flush()
+
+    # Send WhatsApp consent/screening invite using communication_dispatcher
+    try:
+        from app.domains.communication.services.communication_dispatcher import (
+            communication_dispatcher,
+        )
+        from app.templates.communication_templates import WhatsAppTemplates
+
+        is_aff = bool((session_orm.metadata_json or {}).get("is_affirmative", False)) if session_orm else False
+        consent_text = WhatsAppTemplates.consent_request(
+            job_title=session_data.get("job_title") or "a vaga",
+            is_affirmative=is_aff,
+        )
+        result = communication_dispatcher.send_whatsapp(
+            to_phone=candidate_phone,
+            message=consent_text,
+        )
+    except Exception as exc:
+        logger.error(
+            "[Triagem][start-whatsapp] send failed: %s token=%s", exc, token[:8], exc_info=True
+        )
+        raise HTTPException(status_code=502, detail="Falha ao enviar mensagem WhatsApp. Tente novamente.")
+
+    if not result.get("success"):
+        err = result.get("error") or "unknown"
+        logger.warning("[Triagem][start-whatsapp] WA send failed: %s", err)
+        raise HTTPException(status_code=502, detail=f"Falha ao enviar WhatsApp: {err}")
+
+    logger.info(
+        "[Triagem][start-whatsapp] consent sent to %s for token=%s",
+        candidate_phone[-4:],
+        token[:8],
+    )
+    return JSONResponse(content={
+        "ok": True,
+        "phone_masked": candidate_phone[:-4] + "****",
+        "message": "Mensagem WhatsApp enviada. Aguarde a mensagem no seu WhatsApp.",
+    })
+
 class StartSessionRequest(WeDoBaseModel):
     voice_mode: bool | None = None
 
