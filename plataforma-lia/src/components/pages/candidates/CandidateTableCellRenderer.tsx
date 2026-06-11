@@ -183,7 +183,12 @@ export function createCellRenderer(deps: CellRendererDeps) {
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-medium text-lia-text-primary truncate text-xs">
+                <span
+                  className="font-medium text-lia-text-primary truncate text-xs"
+                  data-lia-entity-type="candidate"
+                  data-lia-entity-id={candidate.id}
+                  data-lia-entity-label={candidate.name}
+                >
                   {candidate.name}
                 </span>
               </div>

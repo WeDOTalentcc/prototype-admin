@@ -151,7 +151,12 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
               {!!(isDemo) && (
                 <span className="text-micro font-medium text-lia-text-disabled">[D]</span>
               )}
-              <span className="font-medium text-sm text-lia-text-primary">
+              <span
+                className="font-medium text-sm text-lia-text-primary"
+                data-lia-entity-type="candidate"
+                data-lia-entity-id={candidate.id as string}
+                data-lia-entity-label={candidate.name as string}
+              >
                 {candidate.name as string}
               </span>
               {(() => {

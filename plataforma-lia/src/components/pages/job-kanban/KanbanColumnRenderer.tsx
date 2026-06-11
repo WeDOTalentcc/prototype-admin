@@ -570,7 +570,12 @@ export function KanbanColumnRenderer({
 
                 {/* Nome do candidato + Data Request Indicator */}
                 <div className="flex items-center gap-1 flex-1 min-w-0">
-                  <h4 className="font-medium text-xs truncate text-lia-text-primary">
+                  <h4
+                    className="font-medium text-xs truncate text-lia-text-primary"
+                    data-lia-entity-type="candidate"
+                    data-lia-entity-id={candidate.id}
+                    data-lia-entity-label={candidate.name}
+                  >
                     {candidate.name}
                   </h4>
                   {(() => {
