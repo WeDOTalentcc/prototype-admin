@@ -193,6 +193,7 @@ interface CandidatePreviewHeaderProps {
   generateShortId: (name: string, id?: string) => string
   onOpenFullPage?: (candidate: Record<string, unknown>) => void
   onClose: () => void
+  hasAudioConsent?: boolean
 }
 
 export function CandidatePreviewHeader({
@@ -201,6 +202,7 @@ export function CandidatePreviewHeader({
   generateShortId,
   onOpenFullPage,
   onClose,
+  hasAudioConsent,
 }: CandidatePreviewHeaderProps) {
   const formatDate = (dateStr: string | Date | null | undefined): string =>
     formatDateUtil(dateStr, { day: '2-digit', month: 'short', year: 'numeric' })
@@ -256,7 +258,19 @@ export function CandidatePreviewHeader({
             {(c.communication_consent !== undefined || c.communicationConsent !== undefined) && (
               <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(c.communication_consent ?? c.communicationConsent) ? '' : ''}`}>
                 {(c.communication_consent ?? c.communicationConsent) ? <CheckCircle className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
-                LGPD
+                Consent. com.
+              </Chip>
+            )}
+            {hasAudioConsent === true && (
+              <Chip variant="success" muted className="text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 bg-status-success/10 text-status-success">
+                <CheckCircle className="w-2.5 h-2.5" />
+                Consent. audio OK
+              </Chip>
+            )}
+            {hasAudioConsent === false && (
+              <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 bg-lia-bg-tertiary text-lia-text-secondary">
+                <AlertCircle className="w-2.5 h-2.5" />
+                Sem consent. audio
               </Chip>
             )}
             {c.is_enriching && (

@@ -2,7 +2,7 @@
 
 import { useCandidatePreviewCore } from"@/components/candidate-preview/useCandidatePreviewCore"
 import { Chip } from "@/components/ui/chip"
-import { Activity, FileText, Brain, UserCheck } from"lucide-react"
+import { Activity, FileText, Brain, UserCheck, ShieldCheck } from"lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import { CandidatePreviewHeader } from"@/components/candidate-preview/CandidatePreviewHeader"
 import { CandidatePreviewActionBar } from"@/components/candidate-preview/CandidatePreviewActionBar"
@@ -12,6 +12,7 @@ import { CandidateFilesTab } from"@/components/candidate-preview/CandidateFilesT
 import { CandidateActivitiesTab } from"@/components/candidate-preview/CandidateActivitiesTab"
 import { CandidatePreviewProfileTab } from"@/components/candidate-preview/CandidatePreviewProfileTab"
 import { CandidateOpinionsTab } from"@/components/candidate-preview/CandidateOpinionsTab"
+import { CandidateConsentTab } from"@/components/candidate-preview/CandidateConsentTab"
 import type { CandidateData } from"@/components/candidate-preview/ProfileTabTypes"
 
 interface CandidatePreviewProps {
@@ -135,7 +136,8 @@ export function CandidatePreview({
     { id: 'profile', label: 'Perfil Completo', icon: UserCheck },
     { id: 'activities', label: 'Atividades', icon: Activity },
     { id: 'files', label: 'Arquivos', icon: FileText },
-    { id: 'opinions', label: 'Pareceres e Análises', icon: Brain, badge: ((opinionsData as unknown as {total_opinions?: number} | undefined)?.total_opinions || 0) }
+    { id: 'opinions', label: 'Pareceres e Análises', icon: Brain, badge: ((opinionsData as unknown as {total_opinions?: number} | undefined)?.total_opinions || 0) },
+    { id: 'consent', label: 'Consentimento', icon: ShieldCheck },
   ]
 
   const liaActions = [
@@ -188,7 +190,7 @@ export function CandidatePreview({
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'activities' | 'profile' | 'files' | 'opinions')}
+              onClick={() => setActiveTab(tab.id as 'activities' | 'profile' | 'files' | 'opinions' | 'consent')}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                   ? 'rounded-lg bg-lia-bg-tertiary text-lia-text-primary font-semibold'
@@ -225,6 +227,7 @@ export function CandidatePreview({
             hasAddressData={hasAddressData}
             getAddressString={getAddressString}
             searchCriteria={searchCriteria}
+            onShowConsentHistory={() => setActiveTab('consent')}
           />
         )}
 
@@ -262,6 +265,12 @@ export function CandidatePreview({
             setExpandedOpinionId={setExpandedOpinionId as never}
             copiedItemId={copiedItemId}
             handleCopyOpinion={handleCopyOpinion as never}
+          />
+        )}
+
+        {activeTab === 'consent' && (
+          <CandidateConsentTab
+            candidateId={String(c.id || c.candidateId || '')}
           />
         )}
       </div>
