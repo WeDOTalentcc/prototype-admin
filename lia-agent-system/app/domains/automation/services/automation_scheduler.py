@@ -264,6 +264,15 @@ class AutomationScheduler:
                 replace_existing=True,
             )
 
+            # Frente C — detectores proativos (15) por empresa, independente do MonitoringLoop
+            self.scheduler.add_job(
+                self.run_proactive_detection,
+                IntervalTrigger(hours=1),
+                id="proactive_detection",
+                name="Proactive detectors (15) por empresa — independente do MonitoringLoop",
+                replace_existing=True,
+            )
+
             self.scheduler.start()
             # Daily digest — 08:00 BRT, Mon–Fri
             self.scheduler.add_job(
@@ -903,6 +912,24 @@ Equipe de Recrutamento
         )
         return list(res.all())
 
+    @staticmethod
+    async def _select_active_company_ids(db) -> list:
+        """Retorna company_ids distintos com pelo menos um usuario ativo.
+
+        Usado por run_proactive_detection para iterar por empresa sem repetir.
+        Diferente de _select_proactive_alert_recipients (que retorna pares user+company
+        para envio de alertas individuais): aqui queremos 1 execucao de detectores por empresa.
+        """
+        from sqlalchemy import select as _select
+        from app.auth.models import User
+
+        res = await db.execute(
+            _select(User.company_id)
+            .where(User.is_active.is_(True), User.company_id.isnot(None))
+            .distinct()
+        )
+        return [str(row[0]) for row in res.all()]
+
     async def run_proactive_alerts(self):
         """P0-3 (auditoria Configuracoes): dispara ProactiveAlertService autonomamente.
 
@@ -957,6 +984,45 @@ Equipe de Recrutamento
             )
         except Exception as e:
             logger.error(f"[Scheduler] Error in teams_proactive_checks: {e}")
+
+    async def run_proactive_detection(self):
+        """Frente C: executa os 15 detectores proativos por empresa.
+
+        Roda independente do MonitoringLoop (que era o unico trigger em dev).
+        O MonitoringLoop mantem seu piggyback como defesa-em-profundidade.
+        Cada empresa e isolada: erro em uma nao afeta as outras.
+        """
+        logger.info("[Scheduler] Running proactive_detection job")
+        try:
+            from app.shared.services.proactive_detector_service import (
+                proactive_detector_service,
+            )
+            async with async_session_factory() as db:
+                company_ids = await AutomationScheduler._select_active_company_ids(db)
+                logger.info(
+                    "[Scheduler] proactive_detection: %s companies para detectar",
+                    len(company_ids),
+                )
+                detected_total = 0
+                for company_id in company_ids:
+                    try:
+                        result = await proactive_detector_service.run_for_company(
+                            db, company_id
+                        )
+                        detected_total += result.get("hints_persisted", 0)
+                    except Exception as exc:
+                        await db.rollback()
+                        logger.error(
+                            "[Scheduler] proactive_detection company=%s falhou: %s",
+                            company_id,
+                            exc,
+                        )
+                logger.info(
+                    "[Scheduler] proactive_detection: %s hints persistidos total",
+                    detected_total,
+                )
+        except Exception as exc:
+            logger.error("[Scheduler] Error in proactive_detection: %s", exc)
 
     async def run_teams_daily_digest(self):
         """A2 (2026-06-09): digest diario do TeamsProactivityEngine (DM do bot)."""
