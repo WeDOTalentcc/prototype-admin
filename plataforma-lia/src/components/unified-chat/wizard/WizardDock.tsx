@@ -8,7 +8,7 @@ interface WizardDockProps {
   stageLabel: string
   requiresApproval: boolean
   onExpand: () => void
-  /** WizardProgressBar compacto — projetado aqui quando o painel está docked */
+  /** WizardProgressBar compacto — projetado aqui quando o painel estä docked */
   progressBar: ReactNode
   /** Painel real renderizado em escala (thumbnail vivo) — pointer-events none */
   thumbnail: ReactNode
@@ -40,7 +40,7 @@ export function WizardDock({
         }
       }}
       aria-label={`Abrir painel: ${stageLabel}`}
-      className="mx-3 mb-2 flex items-stretch gap-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-md shadow-black/10 p-2 cursor-pointer hover:border-wedo-cyan/50 transition-colors motion-reduce:transition-none"
+      className="mx-3 mb-2 flex items-stretch gap-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-md shadow-black/10 p-2 cursor-pointer hover:border-wedo-cyan/50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan focus-visible:ring-offset-1"
     >
       <div
         data-testid="wizard-dock-thumbnail"
@@ -54,7 +54,7 @@ export function WizardDock({
           <span className="text-xs font-semibold text-lia-text-primary truncate">{stageLabel}</span>
           {requiresApproval && (
             <span className="px-1.5 py-0.5 rounded bg-status-warning/10 text-status-warning text-[10px] font-medium whitespace-nowrap">
-              1 aprovação pendente
+              aprovação pendente
             </span>
           )}
         </div>

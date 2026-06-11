@@ -38,4 +38,14 @@ describe("WizardDock — Manus F1", () => {
     rerender(<WizardDock {...baseProps} requiresApproval={false} />)
     unmount()
   })
+
+  it("Enter e Espaço ativam onExpand; outras teclas não", () => {
+    const onExpand = vi.fn()
+    render(<WizardDock {...baseProps} onExpand={onExpand} />)
+    const dock = screen.getByTestId("wizard-dock")
+    fireEvent.keyDown(dock, { key: "Enter" })
+    fireEvent.keyDown(dock, { key: " " })
+    fireEvent.keyDown(dock, { key: "Escape" })
+    expect(onExpand).toHaveBeenCalledTimes(2)
+  })
 })
