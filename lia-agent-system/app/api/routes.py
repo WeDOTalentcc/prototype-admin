@@ -271,6 +271,8 @@ from app.api.v1.rh_dashboard import router as rh_dashboard_router
 from app.api.v1.rails_health import router as rails_health_router
 from app.api.v1.rails_sync import router as rails_sync_router
 from app.api.v1.llm_config import router as llm_config_router
+from app.api.v1.inline_chat import router as inline_chat_router
+
 
 
 def register_all_routes(app: FastAPI) -> None:
@@ -653,3 +655,4 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(rh_dashboard_router, prefix="/api/v1", tags=["rh-dashboard"])
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
     app.include_router(candidate_portal.router, tags=["candidate-portal"])
+    app.include_router(inline_chat_router, prefix="/api/v1/inline-chat", tags=["inline-chat"])
