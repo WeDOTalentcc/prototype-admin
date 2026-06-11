@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from enum import Enum as PyEnum, StrEnum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, LargeBinary, String, ForeignKey, text
+from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, LargeBinary, String, ForeignKey, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import validates
 
@@ -151,6 +151,10 @@ class User(EncryptedFieldMixin, Base):
     sso_provider = Column(String(100), nullable=True)
     is_scim_managed = Column(Boolean, default=False, nullable=False)
     last_sso_login_at = Column(DateTime, nullable=True)
+    # Phase 1 Auth Decoupling (2026-06-10): maps Rails integer user_id to this FastAPI user.
+    # Populated by rails_user_sync.py background task on first Rails JWT validation.
+    # Enables L2 DB cache: subsequent requests skip Rails GET /v1/me entirely.
+    rails_user_id = Column(Integer, nullable=True, unique=True, index=True)
     
     def get(self, key: str, default=None):
         """Compatibility bridge: 100+ endpoints use current_user.get() expecting dict-like access.

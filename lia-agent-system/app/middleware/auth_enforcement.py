@@ -382,12 +382,15 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 payload = None
 
             # Fallback: Rails JWT (token assinado pelo ats_api, secret compartilhado)
+            # Phase 1 Auth Decoupling (2026-06-10): use DB-backed cache (rails_user_sync)
+            # instead of per-request HTTP to Rails /v1/me. L1(memory) → L2(DB) → L3(rails).
             if payload is None or not payload.get("sub"):
-                from app.auth.rails_jwt import fetch_rails_user_info, validate_rails_token_from_env
+                from app.auth.rails_jwt import validate_rails_token_from_env
+                from app.auth.rails_user_sync import get_or_sync_rails_user
 
                 rails_payload = validate_rails_token_from_env(token)
                 if rails_payload:
-                    rails_info = await fetch_rails_user_info(token, rails_payload.user_id)
+                    rails_info = await get_or_sync_rails_user(token, rails_payload.user_id)
                     if rails_info and rails_info.get("email"):
                         payload = {
                             "sub": rails_info["email"],  # placeholder; real user resolvido em get_current_user

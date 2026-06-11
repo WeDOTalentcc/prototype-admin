@@ -208,6 +208,10 @@ class AuthSettings(BaseSettings):
     # WorkOS
     # Rails JWT shared secret (same as Rails secret_key_base)
     RAILS_JWT_SECRET_KEY: str | None = None
+    # Phase 1 Auth Decoupling: enable DB-backed cache for Rails user resolution.
+    # True (default): checks users.rails_user_id before calling Rails GET /v1/me.
+    # False: reverts to in-memory-only cache (instant rollback if DB issues).
+    FASTAPI_RAILS_DB_CACHE: bool = True
     WORKOS_CLIENT_ID: str | None = None
     WORKOS_API_KEY: str | None = None
     WORKOS_WEBHOOK_SECRET: str | None = None
