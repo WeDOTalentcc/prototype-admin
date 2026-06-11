@@ -151,7 +151,7 @@ export function SCMSectionConfiguracoes({
                     </div>
                     {fallbackKeys.length > 0 && (
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-micro text-lia-text-disabled">Fallback:</span>
+                        <span className="text-micro text-lia-text-disabled">Secundários:</span>
                         {fallbackKeys.map((fk, i) => {
                           const fDef = CHANNEL_DEFS.find(c => c.key === fk)
                           const FIcon = fDef?.icon ?? Globe
@@ -485,7 +485,7 @@ export function SCMSectionConfiguracoes({
             {/* Canal de Triagem editing */}
             <div>
               <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 mb-1">Canal de Triagem</h3>
-              <p className="text-micro text-lia-text-disabled px-1 mb-3">Escolha o canal principal e a ordem de fallback caso o candidato não responda</p>
+              <p className="text-micro text-lia-text-disabled px-1 mb-3">Escolha o canal principal e os canais secundários caso o candidato não responda</p>
               <div className="space-y-2">
                 {CHANNEL_DEFS.map((ch) => {
                   const ChIcon = ch.icon
@@ -545,9 +545,9 @@ export function SCMSectionConfiguracoes({
                                   ? 'bg-lia-bg-tertiary border-lia-border-default text-lia-text-secondary'
                                   : 'border-lia-border-subtle text-lia-text-disabled hover:border-lia-border-default'
                               }`}
-                              title={isInFallback ? `Fallback ${fallbackIdx + 1} — clique para remover` : 'Adicionar como fallback'}
+                              title={isInFallback ? `Secundário ${fallbackIdx + 1} — clique para remover` : 'Adicionar como secundário'}
                             >
-                              {isInFallback ? `Fallback ${fallbackIdx + 1}` : '+ Fallback'}
+                              {isInFallback ? `Secundário ${fallbackIdx + 1}` : '+ Secundário'}
                             </button>
                           )}
                           <button
@@ -567,7 +567,7 @@ export function SCMSectionConfiguracoes({
                       </div>
                       {isInFallback && !isPrimary && editFallbackOrder.length > 1 && (
                         <div className="mt-1.5 flex items-center gap-1">
-                          <span className="text-micro text-lia-text-disabled">Posição no fallback:</span>
+                          <span className="text-micro text-lia-text-disabled">Posição entre os secundários:</span>
                           <div className="flex items-center gap-0.5">
                             {editFallbackOrder.map((fk, i) => (
                               <span key={fk} className={`text-micro px-1 py-0 rounded ${fk === ch.key ? 'bg-lia-border-default text-white' : 'text-lia-text-disabled'}`}>

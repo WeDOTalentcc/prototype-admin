@@ -434,7 +434,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Chip>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-micro text-lia-text-secondary">Fallback</span>
+            <span className="text-micro text-lia-text-secondary">Secundário</span>
             <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center">Revisão Manual</Chip>
           </div>
         </div>
