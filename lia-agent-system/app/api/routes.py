@@ -252,6 +252,7 @@ from app.api.v1.email_tracking import communication_webhook_router
 from app.api.v1.email_tracking import router as email_tracking_router
 from app.api.v1.event_history import router as event_history_router
 from app.api.v1.granular_consent import router as granular_consent_router
+from app.api.v1.public_consent import router as public_consent_router
 from app.api.v1.health_langgraph import router as health_langgraph_router
 from app.api.v1.hitl import router as hitl_router
 from app.api.v1.ml_feedback import router as ml_feedback_router
@@ -541,6 +542,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(data_subject_requests.router, prefix="/api/v1", tags=["data-subject-requests"])
     app.include_router(consent_management.router, prefix="/api/v1", tags=["consent-management"])
     app.include_router(granular_consent_router, prefix="/api/v1", tags=["granular-consent"])
+    app.include_router(public_consent_router, prefix="/api/v1", tags=["public-consents"])
     app.include_router(data_request.router, prefix="/api/v1", tags=["data-requests"])
     app.include_router(admin_lgpd_router, prefix="/api/v1")
     app.include_router(admin_expurgo_audit_router, prefix="/api/v1")  # Phase 3b LGPD expurgo
