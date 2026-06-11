@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { MessageSquareDashed, MessageSquare, Send, ExternalLink, X, Sparkles } from "lucide-react"
+import { MessageSquareDashed, MessageSquare, Send, ExternalLink, X, Brain } from "lucide-react"
 import { useLiaEntitySelection } from "@/hooks/shared/use-lia-entity-selection"
 
 interface CandidateChatPopoverProps {
@@ -85,7 +85,8 @@ export function CandidateChatPopover({
     openEntityChat({ type: "candidate", id: String(candidateId), name: candidateName })
   }, [openEntityChat, candidateId, candidateName])
 
-  const firstName = candidateName.split(" ")[0]
+  const cleanName = candidateName.replace(/^\[DEMO\]\s*/i, "").trim()
+  const firstName = cleanName.split(" ")[0] || candidateName.split(" ")[0]
 
   return (
     <div
@@ -105,7 +106,7 @@ export function CandidateChatPopover({
         <div
           role="dialog"
           aria-label={`Mini chat sobre ${candidateName}`}
-          className="absolute top-full left-0 z-[9999] mt-1.5 w-72 rounded-xl border border-lia-border-default bg-white dark:bg-lia-bg-elevated shadow-lg shadow-black/8 dark:shadow-black/30"
+          className="absolute bottom-full left-0 z-[9999] mb-1.5 w-72 rounded-xl border border-lia-border-default bg-white dark:bg-lia-bg-elevated shadow-lg shadow-black/8 dark:shadow-black/30"
           onMouseEnter={handlePopoverEnter}
           onMouseLeave={scheduleClose}
           onClick={(e) => e.stopPropagation()}
@@ -113,7 +114,7 @@ export function CandidateChatPopover({
           {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-lia-border-subtle">
             <div className="flex items-center gap-1.5 min-w-0">
-              <Sparkles className="w-3.5 h-3.5 text-lia-primary flex-shrink-0" />
+              <Brain className="w-3.5 h-3.5 text-lia-primary flex-shrink-0" />
               <span className="text-xs font-medium text-lia-text-secondary truncate">
                 {candidateName}
               </span>
