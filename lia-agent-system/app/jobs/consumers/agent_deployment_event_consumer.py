@@ -290,50 +290,35 @@ _consumer_task: asyncio.Task | None = None
 
 
 async def start_agent_deployment_event_consumer() -> None:
-    """Inicializa subscription RabbitMQ canonical pra platform.events.
+    """Inicializa subscription Redis pub-sub canonical pra platform.events.
 
-    Declara topic exchange `platform.events` + queue `agent_deployment_event_driven`
-    bound aos routing keys canonical. Cada mensagem recebida vira chamada a
-    `dispatch_event` (registry canonical), que invoca os handlers registrados.
+    Escuta canal Redis "platform.events". Cada mensagem recebida vira chamada
+    a dispatch_event (registry canonical), que invoca os handlers registrados.
 
-    No-op canonical se:
-      - RABBITMQ_URL não configurado (dev local sem broker);
-      - aio_pika não instalado;
-      - falha de conexão (loga + retorna; não trava startup).
-
-    Pattern derivado de `pool_agent_event_consumer.start_pool_agent_event_consumer`.
+    Migrado de RabbitMQ → Redis pub-sub (A2b 2026-06-11): Redis já roda em
+    dev e prod, zero nova infra. Pattern: fire-and-forget suficiente para
+    notificações Teams / agent dispatch event-driven.
     """
     global _consumer_task
-
-    rabbitmq_url = os.getenv("RABBITMQ_URL")
-    if not rabbitmq_url:
-        logger.info(
-            "[AgentDeploymentEventConsumer] RABBITMQ_URL não configurado — consumer "
-            "inativo (handlers continuam registrados; dispatch_event direto via "
-            "testes ainda funciona)."
-        )
-        return
-
     try:
-        import aio_pika  # noqa: F401
-    except ImportError:
-        logger.info(
-            "[AgentDeploymentEventConsumer] aio_pika não instalado — consumer inativo."
+        from app.shared.messaging.redis_pubsub_transport import (
+            PLATFORM_EVENTS_CHANNEL,
+            start_subscriber,
         )
-        return
+        from app.shared.messaging.platform_events import dispatch_event
 
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
+        _consumer_task = start_subscriber(
+            PLATFORM_EVENTS_CHANNEL,
+            dispatch_event,
+            name="agent_deployment_event_consumer",
+        )
+        logger.info("[AgentDeploymentEventConsumer] Redis subscriber iniciado")
+    except Exception as exc:
         logger.error(
-            "[AgentDeploymentEventConsumer] no running event loop — cannot start consumer."
+            "[AgentDeploymentEventConsumer] falhou ao iniciar Redis subscriber: %s",
+            exc,
+            exc_info=True,
         )
-        return
-
-    _consumer_task = loop.create_task(
-        _consume_loop(rabbitmq_url), name="agent_deployment_event_consumer"
-    )
-    logger.info("[AgentDeploymentEventConsumer] consumer task agendado")
 
 
 async def _consume_loop(rabbitmq_url: str) -> None:
