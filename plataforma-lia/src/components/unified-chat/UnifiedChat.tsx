@@ -61,6 +61,8 @@ import {
   SPLIT_STAGES,
 } from "./wizard/DynamicContextPanel";
 import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure";
+import { WizardDock } from "./wizard/WizardDock";
+import { wizardPanelVisibility } from "./wizard/panel-visibility";
 import { WizardProgressBar } from "./wizard/WizardProgressBar";
 import { PipelineTemplateSuggestion } from "./wizard/PipelineTemplateSuggestion";
 import { WizardPipelineTemplateStagePanel } from "./wizard/WizardPipelineTemplateStagePanel";
@@ -451,6 +453,8 @@ export function UnifiedChat({
     dynamicPanel,
     openDynamicPanel,
     closeDynamicPanel,
+    wizardPanelMode,
+    setWizardPanelMode,
   } = useLiaFloat();
 
   const {
@@ -1130,8 +1134,10 @@ export function UnifiedChat({
     chatMessages.find((m) => m.sender === "user")?.content?.slice(0, 40) ||
     null;
   const hasMessages = chatMessages.length > 0;
-  const hasDynamicPanel =
-    !!dynamicPanel && SPLIT_STAGES.includes(dynamicPanel.stage as WizardStage);
+  const { showPanel: hasDynamicPanel, showDock: hasWizardDock } = wizardPanelVisibility({
+    stage: dynamicPanel?.stage,
+    mode: wizardPanelMode,
+  });
   const activeTaskLabel = dynamicPanel?.stage
     ? (WIZARD_STAGE_LABELS[dynamicPanel.stage] ?? dynamicPanel.stage)
     : null;
@@ -1427,6 +1433,37 @@ export function UnifiedChat({
           />
         )}
 
+        {/* Wizard Dock (Manus F1) — thumbnail minimizado quando mode="docked" */}
+        {hasWizardDock && dynamicPanel && dynamicPanel.stage && (
+          <WizardDock
+            stage={dynamicPanel.stage}
+            stageLabel={WIZARD_STAGE_LABELS[dynamicPanel.stage] ?? dynamicPanel.stage}
+            requiresApproval={dynamicPanel.requires_approval ?? false}
+            onExpand={() => setWizardPanelMode("expanded")}
+            progressBar={
+              <WizardProgressBar
+                currentStage={wizardStage}
+                completeness={wizardCompleteness}
+                stageHistory={wizardHistory}
+                degradedStages={wizardDegradedStages}
+                compact
+                onCancelWizard={handleCancelWizard}
+              />
+            }
+            thumbnail={
+              <DynamicContextPanel
+                stage={(dynamicPanel.stage as WizardStage) ?? null}
+                data={dynamicPanel.data ?? {}}
+                requiresApproval={false}
+                onApprove={undefined}
+                onReject={undefined}
+                onClose={undefined}
+                onUpdate={undefined}
+              />
+            }
+          />
+        )}
+
         {/* Input */}
         <UnifiedChatInput
           mode={effectiveMode}
@@ -1470,7 +1507,7 @@ export function UnifiedChat({
             requiresApproval={dynamicPanel?.requires_approval ?? false}
             onApprove={() => sendApproval(true)}
             onReject={() => sendApproval(false)}
-            onClose={closeDynamicPanel}
+            onClose={() => setWizardPanelMode("docked")}
             onUpdate={(updates) => {
               collectedDataRef.current = mergeCollectedData(collectedDataRef.current, updates)
               sendChatMessage(wizardUpdateToMessage(updates), undefined, undefined, {

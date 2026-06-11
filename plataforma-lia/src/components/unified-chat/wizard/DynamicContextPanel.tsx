@@ -1,7 +1,7 @@
 "use client"
 
 import React, { Suspense, lazy } from "react"
-import { X } from "lucide-react"
+import { Minimize2 } from "lucide-react"
 import type { WizardStage } from "./wizard-types"
 import { STAGE_LABELS } from "./wizard-types"
 import { WizardErrorBoundary } from "./WizardErrorBoundary"
@@ -117,11 +117,11 @@ export function DynamicContextPanel({
         {onClose && (
           <button
             onClick={onClose}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-lia-text-disabled hover:text-status-error hover:bg-status-error/5 transition-colors motion-reduce:transition-none"
-            title="Cancelar criacao"
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-lia-text-disabled hover:text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+            title="Minimizar painel"
           >
-            <X className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Cancelar</span>
+            <Minimize2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Minimizar</span>
           </button>
         )}
       </div>
