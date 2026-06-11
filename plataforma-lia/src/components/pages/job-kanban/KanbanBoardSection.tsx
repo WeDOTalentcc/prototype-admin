@@ -3,7 +3,6 @@
 import React from "react"
 import dynamic from "next/dynamic"
 import { useTranslations } from "next-intl"
-import { LoadingModal } from "@/components/ui/loading"
 import { Plus, Users } from "lucide-react"
 import { EmptyState } from "@/components/ui/empty-state"
 import { KanbanFiltersPanel } from "@/components/pages/job-kanban/KanbanFiltersPanel"
@@ -13,7 +12,7 @@ import { JobFairnessBlockBanner } from "@/components/jobs/JobFairnessBlockBanner
 import type { KanbanPageCoreState } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
 import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 
-const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => <LoadingModal /> })
+const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => null })
 
 interface KanbanBoardSectionProps {
   state: KanbanPageCoreState

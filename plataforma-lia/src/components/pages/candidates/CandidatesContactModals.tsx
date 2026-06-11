@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { LoadingModal } from "@/components/ui/loading"
 import type { CommunicationResult } from "@/components/modals/unified-communication-types"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import dynamic from "next/dynamic"
@@ -9,10 +8,10 @@ import type { CandidatesPageModalsProps } from "./CandidatesPageModals.types"
 import { BulkResultReport } from "@/components/bulk"
 import type { BulkItemResult } from "@/lib/bulk"
 
-const ContactModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ContactModal })), { ssr: false, loading: () => <LoadingModal /> })
-const ScheduleModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ScheduleModal })), { ssr: false, loading: () => <LoadingModal /> })
-const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => <LoadingModal /> })
-const SendEmailModal = dynamic(() => import("@/components/email-templates").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => <LoadingModal /> })
+const ContactModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ContactModal })), { ssr: false, loading: () => null })
+const ScheduleModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ScheduleModal })), { ssr: false, loading: () => null })
+const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => null })
+const SendEmailModal = dynamic(() => import("@/components/email-templates").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => null })
 
 type CandidatesContactModalsProps = Pick<CandidatesPageModalsProps,
   | 'selectedCandidateForAction'

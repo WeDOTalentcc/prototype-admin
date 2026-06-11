@@ -1,6 +1,5 @@
 "use client"
 
-import { LoadingModal } from "@/components/ui/loading"
 import { useTranslations } from "next-intl"
 import { GlobalExpansionConfirmModal } from "@/components/pages/candidates/GlobalExpansionConfirmModal"
 import { SourceChangeConfirmModal } from "@/components/pages/candidates/SourceChangeConfirmModal"
@@ -16,11 +15,11 @@ import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import type { CandidatesPageModalsProps, ModalArchetype, ModalChatMessage } from "./CandidatesPageModals.types"
 
-const AdvancedFiltersModal = dynamic(() => import("@/components/search/advanced-filters-modal").then(m => ({ default: m.AdvancedFiltersModal })), { ssr: false, loading: () => <LoadingModal /> })
-const AddToListModal = dynamic(() => import("@/components/modals/add-to-list-modal").then(m => ({ default: m.AddToListModal })), { ssr: false, loading: () => <LoadingModal /> })
-const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => <LoadingModal /> })
-const AddCandidatesToVacancyModal = dynamic(() => import("@/components/modals/add-candidates-to-vacancy-modal").then(m => ({ default: m.AddCandidatesToVacancyModal })), { ssr: false, loading: () => <LoadingModal /> })
-const AddListToVacanciesModal = dynamic(() => import("@/components/modals/add-list-to-vacancies-modal").then(m => ({ default: m.AddListToVacanciesModal })), { ssr: false, loading: () => <LoadingModal /> })
+const AdvancedFiltersModal = dynamic(() => import("@/components/search/advanced-filters-modal").then(m => ({ default: m.AdvancedFiltersModal })), { ssr: false, loading: () => null })
+const AddToListModal = dynamic(() => import("@/components/modals/add-to-list-modal").then(m => ({ default: m.AddToListModal })), { ssr: false, loading: () => null })
+const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => null })
+const AddCandidatesToVacancyModal = dynamic(() => import("@/components/modals/add-candidates-to-vacancy-modal").then(m => ({ default: m.AddCandidatesToVacancyModal })), { ssr: false, loading: () => null })
+const AddListToVacanciesModal = dynamic(() => import("@/components/modals/add-list-to-vacancies-modal").then(m => ({ default: m.AddListToVacanciesModal })), { ssr: false, loading: () => null })
 
 type CandidatesSearchModalsProps = Pick<CandidatesPageModalsProps,
   | 'showCreditConfirmation'

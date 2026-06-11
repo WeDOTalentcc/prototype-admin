@@ -1,6 +1,5 @@
 "use client"
 
-import { LoadingModal } from "@/components/ui/loading"
 import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
@@ -8,16 +7,16 @@ import { liaApi } from "@/services/lia-api"
 import { formatJobLocation } from "@/lib/jobs/location"
 import type { CandidatesPageModalsProps } from "./CandidatesPageModals.types"
 
-const CandidateComparison = dynamic(() => import("@/components/candidate-comparison").then(m => ({ default: m.CandidateComparison })), { ssr: false, loading: () => <LoadingModal /> })
-const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false, loading: () => <LoadingModal /> })
-const NewCandidateUnifiedModal = dynamic(() => import("@/components/modals/new-candidate-unified-modal").then(m => ({ default: m.NewCandidateUnifiedModal })), { ssr: false, loading: () => <LoadingModal /> })
-const BatchApprovalModal = dynamic(() => import("@/components/batch-approval-modal").then(m => ({ default: m.BatchApprovalModal })), { ssr: false, loading: () => <LoadingModal /> })
-const WSITextScreeningModal = dynamic(() => import("@/components/wsi").then(m => ({ default: m.WSITextScreeningModal })), { ssr: false, loading: () => <LoadingModal /> })
-const WSIVoiceScreeningStatus = dynamic(() => import("@/components/wsi").then(m => ({ default: m.WSIVoiceScreeningStatus })), { ssr: false, loading: () => <LoadingModal /> })
-const WSITriagemInviteModal = dynamic(() => import("@/components/wsi/wsi-triagem-invite-modal").then(m => ({ default: m.WSITriagemInviteModal })), { ssr: false, loading: () => <LoadingModal /> })
-const RubricEvaluationModal = dynamic(() => import("@/components/rubric-evaluation-modal").then(m => ({ default: m.RubricEvaluationModal })), { ssr: false, loading: () => <LoadingModal /> })
-const RevealCreditsModal = dynamic(() => import("@/components/reveal-credits-modal").then(m => ({ default: m.RevealCreditsModal })), { ssr: false, loading: () => <LoadingModal /> })
-const CVPreview = dynamic(() => import("@/components/cv").then(m => ({ default: m.CVPreview })), { ssr: false, loading: () => <LoadingModal /> })
+const CandidateComparison = dynamic(() => import("@/components/candidate-comparison").then(m => ({ default: m.CandidateComparison })), { ssr: false, loading: () => null })
+const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false, loading: () => null })
+const NewCandidateUnifiedModal = dynamic(() => import("@/components/modals/new-candidate-unified-modal").then(m => ({ default: m.NewCandidateUnifiedModal })), { ssr: false, loading: () => null })
+const BatchApprovalModal = dynamic(() => import("@/components/batch-approval-modal").then(m => ({ default: m.BatchApprovalModal })), { ssr: false, loading: () => null })
+const WSITextScreeningModal = dynamic(() => import("@/components/wsi").then(m => ({ default: m.WSITextScreeningModal })), { ssr: false, loading: () => null })
+const WSIVoiceScreeningStatus = dynamic(() => import("@/components/wsi").then(m => ({ default: m.WSIVoiceScreeningStatus })), { ssr: false, loading: () => null })
+const WSITriagemInviteModal = dynamic(() => import("@/components/wsi/wsi-triagem-invite-modal").then(m => ({ default: m.WSITriagemInviteModal })), { ssr: false, loading: () => null })
+const RubricEvaluationModal = dynamic(() => import("@/components/rubric-evaluation-modal").then(m => ({ default: m.RubricEvaluationModal })), { ssr: false, loading: () => null })
+const RevealCreditsModal = dynamic(() => import("@/components/reveal-credits-modal").then(m => ({ default: m.RevealCreditsModal })), { ssr: false, loading: () => null })
+const CVPreview = dynamic(() => import("@/components/cv").then(m => ({ default: m.CVPreview })), { ssr: false, loading: () => null })
 
 type CandidatesCoreModalsProps = Pick<CandidatesPageModalsProps,
   | 'showComparisonModal'

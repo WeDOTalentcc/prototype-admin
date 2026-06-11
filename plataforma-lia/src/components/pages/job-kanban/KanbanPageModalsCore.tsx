@@ -2,7 +2,6 @@
 
 import React, { useState } from "react"
 import dynamic from "next/dynamic"
-import { LoadingModal } from "@/components/ui/loading"
 import { useTranslations } from "next-intl"
 import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
 import { BulkResultReport } from "@/components/bulk"
@@ -10,23 +9,23 @@ import type { BulkItemResult } from "@/lib/bulk"
 import type { CommunicationResult } from "@/components/modals/unified-communication-types"
 import type { EligibilityResultItem } from "@/components/wsi/eligibility-results-section"
 
-const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false, loading: () => <LoadingModal /> })
-const TriagemDetailsModal = dynamic(() => import("@/components/triagem-details-modal").then(m => ({ default: m.TriagemDetailsModal })), { ssr: false, loading: () => <LoadingModal /> })
-const TestLibraryModal = dynamic(() => import("@/components/pages/job-kanban/TestLibraryModal").then(m => ({ default: m.TestLibraryModal })), { ssr: false, loading: () => <LoadingModal /> })
-const TestHistoryModal = dynamic(() => import("@/components/pages/job-kanban/TestHistoryModal").then(m => ({ default: m.TestHistoryModal })), { ssr: false, loading: () => <LoadingModal /> })
-const LIAQuestionsPanel = dynamic(() => import("@/components/pages/job-kanban/LIAQuestionsPanel").then(m => ({ default: m.LIAQuestionsPanel })), { ssr: false, loading: () => <LoadingModal /> })
-const TestPreviewModal = dynamic(() => import("@/components/pages/job-kanban/TestPreviewModal").then(m => ({ default: m.TestPreviewModal })), { ssr: false, loading: () => <LoadingModal /> })
-const LIASuggestionsPanel = dynamic(() => import("@/components/pages/job-kanban/LIASuggestionsPanel").then(m => ({ default: m.LIASuggestionsPanel })), { ssr: false, loading: () => <LoadingModal /> })
-const JobReportModal = dynamic(() => import("@/components/job-report-modal").then(m => ({ default: m.JobReportModal })), { ssr: false, loading: () => <LoadingModal /> })
-const SendEmailModal = dynamic(() => import("@/components/email-templates/send-email-modal").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => <LoadingModal /> })
-const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => <LoadingModal /> })
-const AddToListModal = dynamic(() => import("@/components/modals/add-to-list-modal").then(m => ({ default: m.AddToListModal })), { ssr: false, loading: () => <LoadingModal /> })
-const WSITextScreeningModal = dynamic(() => import("@/components/wsi/wsi-text-screening-modal").then(m => ({ default: m.WSITextScreeningModal })), { ssr: false, loading: () => <LoadingModal /> })
-const WSITriagemInviteModal = dynamic(() => import("@/components/wsi/wsi-triagem-invite-modal").then(m => ({ default: m.WSITriagemInviteModal })), { ssr: false, loading: () => <LoadingModal /> })
-const AddCandidatesToVacancyModal = dynamic(() => import("@/components/modals/add-candidates-to-vacancy-modal").then(m => ({ default: m.AddCandidatesToVacancyModal })), { ssr: false, loading: () => <LoadingModal /> })
-const RubricEvaluationModal = dynamic(() => import("@/components/rubric-evaluation-modal").then(m => ({ default: m.RubricEvaluationModal })), { ssr: false, loading: () => <LoadingModal /> })
-const BigFiveModal = dynamic(() => import("@/components/big-five-modal").then(m => ({ default: m.BigFiveModal })), { ssr: false, loading: () => <LoadingModal /> })
-const CandidateDecisionFlowModal = dynamic(() => import("@/components/candidate-decision-flow-modal").then(m => ({ default: m.CandidateDecisionFlowModal })), { ssr: false, loading: () => <LoadingModal /> })
+const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false, loading: () => null })
+const TriagemDetailsModal = dynamic(() => import("@/components/triagem-details-modal").then(m => ({ default: m.TriagemDetailsModal })), { ssr: false, loading: () => null })
+const TestLibraryModal = dynamic(() => import("@/components/pages/job-kanban/TestLibraryModal").then(m => ({ default: m.TestLibraryModal })), { ssr: false, loading: () => null })
+const TestHistoryModal = dynamic(() => import("@/components/pages/job-kanban/TestHistoryModal").then(m => ({ default: m.TestHistoryModal })), { ssr: false, loading: () => null })
+const LIAQuestionsPanel = dynamic(() => import("@/components/pages/job-kanban/LIAQuestionsPanel").then(m => ({ default: m.LIAQuestionsPanel })), { ssr: false, loading: () => null })
+const TestPreviewModal = dynamic(() => import("@/components/pages/job-kanban/TestPreviewModal").then(m => ({ default: m.TestPreviewModal })), { ssr: false, loading: () => null })
+const LIASuggestionsPanel = dynamic(() => import("@/components/pages/job-kanban/LIASuggestionsPanel").then(m => ({ default: m.LIASuggestionsPanel })), { ssr: false, loading: () => null })
+const JobReportModal = dynamic(() => import("@/components/job-report-modal").then(m => ({ default: m.JobReportModal })), { ssr: false, loading: () => null })
+const SendEmailModal = dynamic(() => import("@/components/email-templates/send-email-modal").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => null })
+const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => null })
+const AddToListModal = dynamic(() => import("@/components/modals/add-to-list-modal").then(m => ({ default: m.AddToListModal })), { ssr: false, loading: () => null })
+const WSITextScreeningModal = dynamic(() => import("@/components/wsi/wsi-text-screening-modal").then(m => ({ default: m.WSITextScreeningModal })), { ssr: false, loading: () => null })
+const WSITriagemInviteModal = dynamic(() => import("@/components/wsi/wsi-triagem-invite-modal").then(m => ({ default: m.WSITriagemInviteModal })), { ssr: false, loading: () => null })
+const AddCandidatesToVacancyModal = dynamic(() => import("@/components/modals/add-candidates-to-vacancy-modal").then(m => ({ default: m.AddCandidatesToVacancyModal })), { ssr: false, loading: () => null })
+const RubricEvaluationModal = dynamic(() => import("@/components/rubric-evaluation-modal").then(m => ({ default: m.RubricEvaluationModal })), { ssr: false, loading: () => null })
+const BigFiveModal = dynamic(() => import("@/components/big-five-modal").then(m => ({ default: m.BigFiveModal })), { ssr: false, loading: () => null })
+const CandidateDecisionFlowModal = dynamic(() => import("@/components/candidate-decision-flow-modal").then(m => ({ default: m.CandidateDecisionFlowModal })), { ssr: false, loading: () => null })
 
 function extractEligibilityResults(
   candidate: Record<string, unknown>,

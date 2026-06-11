@@ -53,8 +53,7 @@ import { toast } from "sonner"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { SearchFingerprintProvider } from "@/components/search/SearchFingerprintContext"
 
-import { LoadingModal as CandidatesLoadingModal } from "@/components/ui/loading"
-const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => <CandidatesLoadingModal /> })
+const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => null })
 
 export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened, pendingPoolOpen, onPoolOpened }: { onAddRecentItem?: (item: { id: string; type: 'vaga' | 'chat' | 'candidato' | 'banco'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void; pendingCandidateOpen?: { candidateId: string; candidateName: string } | null; onCandidateOpened?: () => void; pendingPoolOpen?: { poolId: string; poolName: string } | null; onPoolOpened?: () => void } = {}) {
   const {

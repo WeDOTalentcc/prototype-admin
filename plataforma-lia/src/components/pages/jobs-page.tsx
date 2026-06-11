@@ -7,7 +7,6 @@ import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause,
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 import type { PageTab } from "@/components/ui/page-tab-navigation"
 import { JobKanbanPage } from "./job-kanban-page"
-import { LoadingModal as JobsLoadingModal } from "@/components/ui/loading"
 import { toast } from "sonner"
 import { liaApi } from "@/services/lia-api"
 import { useJobsPageCore } from "./jobs/hooks/useJobsPageCore"
