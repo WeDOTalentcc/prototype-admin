@@ -39,7 +39,7 @@ export default function DashboardLayoutClient({
         defaultOptions: {
           queries: {
             staleTime: 30_000,
-            retry: 2,
+            retry: 1,
             refetchOnWindowFocus: false,
           },
         },
