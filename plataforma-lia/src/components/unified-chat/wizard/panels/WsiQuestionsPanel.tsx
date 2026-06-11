@@ -83,36 +83,9 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onToggleA
     }))
   }
 
-  // Distribuicao minima por modo (tabela F5 da metodologia WSI)
-  const MIN_DISTRIBUTION: Record<string, Record<string, { technical: number; behavioral: number }>> = {
-    compact: {
-      estagiario: { technical: 5, behavioral: 2 },
-      junior: { technical: 5, behavioral: 2 },
-      pleno: { technical: 5, behavioral: 2 },
-      senior: { technical: 4, behavioral: 3 },
-      principal: { technical: 4, behavioral: 3 },
-      staff: { technical: 4, behavioral: 3 },
-      lead: { technical: 3, behavioral: 4 },
-      diretor: { technical: 3, behavioral: 4 },
-    },
-    full: {
-      estagiario: { technical: 9, behavioral: 3 },
-      junior: { technical: 9, behavioral: 3 },
-      pleno: { technical: 8, behavioral: 4 },
-      senior: { technical: 7, behavioral: 5 },
-      principal: { technical: 7, behavioral: 5 },
-      staff: { technical: 7, behavioral: 5 },
-      lead: { technical: 7, behavioral: 5 },
-      diretor: { technical: 7, behavioral: 5 },
-    },
-  }
-
-  const screeningMode = (d.screening_mode || "compact").toLowerCase()
-  const seniority = (d.seniority_level || "pleno").toLowerCase()
-  const minDist =
-    MIN_DISTRIBUTION[screeningMode]?.[seniority] ??
-    MIN_DISTRIBUTION[screeningMode]?.["pleno"] ??
-    { technical: 5, behavioral: 2 }
+  // Task 7 WSI — usar expected_distribution do backend (YAML canonical).
+  // Fallback conservador: compact/pleno = {technical:5, behavioral:2}.
+  const minDist = d.expected_distribution ?? { technical: 5, behavioral: 2 }
 
   const techCount = questions.filter((q) => q.block === "technical").length
   const behavCount = questions.filter((q) => q.block === "behavioral").length
