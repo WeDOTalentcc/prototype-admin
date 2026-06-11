@@ -36,6 +36,7 @@ from app.models.data_request import (
 )
 from app.models.job_vacancy import JobVacancy
 from app.shared.types import WeDoBaseModel
+from lia_models.observability import ConsentRecord
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
@@ -111,6 +112,8 @@ class SubmitDataRequest(WeDoBaseModel):
     """Request to submit data."""
     fields: list[FieldSubmission]
     is_final: bool = False
+    # Phase 3a: consent_id required when template has sensitive fields (LGPD Art. 11)
+    consent_id: str | None = None
 
 
 class SubmitDataResponse(BaseModel):
@@ -497,7 +500,40 @@ async def submit_data(
     
     if data_request.status == DataRequestStatus.COMPLETED:
         raise HTTPException(status_code=400, detail="Solicitação já foi concluída")
-    
+
+    # --- Phase 3a: sensitive-field consent gate (LGPD Art. 11) ---
+    _fields_req_preview = {f.get("name") for f in (data_request.fields_requested or [])}
+    _sensitive_in_template = any(n in SENSITIVE_DATA_REQUEST_FIELDS for n in _fields_req_preview)
+    if request_data.is_final and _sensitive_in_template:
+        if not request_data.consent_id:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "consent_required",
+                    "message": "Campos sensiveis requerem consentimento explicito (Art. 11 LGPD)",
+                },
+            )
+        import uuid as _uuid_gate
+        try:
+            _cid = _uuid_gate.UUID(request_data.consent_id)
+        except (ValueError, AttributeError):
+            raise HTTPException(
+                status_code=422,
+                detail={"error": "consent_invalid", "message": "consent_id invalido"},
+            )
+        # Use db.get (PK lookup) — simpler than a query, testable without SA column expressions
+        _cr = await db.get(ConsentRecord, _cid)
+        if (
+            _cr is None
+            or not _cr.is_active
+            or str(_cr.candidate_id) != str(data_request.candidate_id)
+        ):
+            raise HTTPException(
+                status_code=422,
+                detail={"error": "consent_invalid", "message": "consent_id nao encontrado ou nao pertence ao candidato"},
+            )
+    # --- end consent gate ---
+
     fields_requested = {f.get('name'): f for f in (data_request.fields_requested or [])}
     fields_completed = {f.get('name'): f for f in (data_request.fields_completed or [])}
     
@@ -734,3 +770,122 @@ def mask_email(email: str) -> str:
     if len(local) <= 1:
         return f"{local[0]}***@{domain}"
     return f"{local[0]}{'*' * (len(local) - 1)}@{domain}"
+
+
+# ---------------------------------------------------------------------------
+# Phase 3a — LGPD Art. 11 consent gate for sensitive fields
+# ---------------------------------------------------------------------------
+
+# Campos sensiveis que requerem consentimento explicito (LGPD Art. 11)
+SENSITIVE_DATA_REQUEST_FIELDS: frozenset[str] = frozenset({
+    "disability_info",
+    "pcd_type",
+    "pcd_document",
+    "gender",
+    "race_ethnicity",
+    "racial_autodeclaration",
+})
+
+CONSENT_VERSAO_DISCLAIMER = "1.0"
+
+
+class DataRequestConsentRequest(WeDoBaseModel):
+    """Request to record explicit consent before submitting sensitive fields (LGPD Art. 11)."""
+    canal: str = Field(default="web", pattern=r"^(web|whatsapp|chamada_online|chamada_telefonica)$")
+    versao_disclaimer: str = Field(default=CONSENT_VERSAO_DISCLAIMER, max_length=10)
+
+
+class DataRequestConsentResponse(BaseModel):
+    """Response confirming consent was recorded."""
+    ok: bool
+    consent_id: str
+
+
+@router.post("/{token}/consent", response_model=DataRequestConsentResponse)
+async def record_data_request_consent(
+    token: str,
+    request_data: DataRequestConsentRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Record explicit candidate consent (LGPD Art. 11) before submitting
+    sensitive fields (disability, gender, race/ethnicity).
+
+    Must be called BEFORE the final submit when the template contains
+    any field in SENSITIVE_DATA_REQUEST_FIELDS.
+
+    Returns consent_id to be included in the subsequent submit call.
+    """
+    import uuid as _uuid_mod
+
+    data_request = await get_data_request_by_token(token, db, require_otp=True)
+
+    if data_request.status == DataRequestStatus.COMPLETED:
+        raise HTTPException(status_code=400, detail="Solicitacao ja foi concluida")
+
+    try:
+        candidate_id_uuid = _uuid_mod.UUID(str(data_request.candidate_id))
+        company_id_uuid = _uuid_mod.UUID(str(data_request.company_id))
+    except (ValueError, AttributeError) as exc:
+        logger.error(
+            "[DataRequestConsent] ID conversion error for data_request %s: %s",
+            data_request.id, exc, exc_info=True,
+        )
+        raise HTTPException(status_code=500, detail="Erro interno ao registrar consentimento")
+
+    vaga_id = None
+    if data_request.vacancy_id:
+        try:
+            vaga_id = _uuid_mod.UUID(str(data_request.vacancy_id))
+        except (ValueError, AttributeError):
+            pass
+
+    now = datetime.utcnow()
+    client_ip = request.client.host if request.client else None
+    user_agent_str = request.headers.get("user-agent", "")[:500]
+
+    sensitive_names = ", ".join(sorted(SENSITIVE_DATA_REQUEST_FIELDS))
+    consent_text = (
+        "Candidato consentiu explicitamente com a coleta de dados sensiveis "
+        "(Art. 11, paragrafo 2, II LGPD) via portal de coleta de dados WeDOTalent. "
+        f"Campos sensiveis: {sensitive_names}. "
+        f"Solicitacao de dados ID: {data_request.id}."
+    )
+
+    try:
+        consent_record = ConsentRecord(
+            id=_uuid_mod.uuid4(),
+            company_id=company_id_uuid,
+            candidate_id=candidate_id_uuid,
+            consent_type="dados_coletados_solicitacao",
+            version=request_data.versao_disclaimer,
+            canal=request_data.canal,
+            vaga_id=vaga_id,
+            processo_id=None,
+            granted_at=now,
+            is_active=True,
+            legal_basis="Art. 11, paragrafo 2, II - LGPD",
+            consent_text=consent_text,
+            versao_disclaimer=request_data.versao_disclaimer,
+            source="data_request_portal",
+            ip_address=client_ip,
+            user_agent=user_agent_str,
+        )
+        db.add(consent_record)
+        await db.flush()
+        await db.commit()
+    except Exception as exc:
+        logger.error(
+            "[DataRequestConsent] DB error creating ConsentRecord for data_request %s: %s",
+            data_request.id, exc, exc_info=True,
+        )
+        await db.rollback()
+        raise HTTPException(status_code=500, detail="Erro ao registrar consentimento") from exc
+
+    logger.info(
+        "[DataRequestConsent] ConsentRecord %s created for data_request %s (canal=%s)",
+        consent_record.id, data_request.id, request_data.canal,
+    )
+
+    return DataRequestConsentResponse(ok=True, consent_id=str(consent_record.id))
