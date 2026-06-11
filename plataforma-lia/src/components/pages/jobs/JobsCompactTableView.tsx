@@ -545,7 +545,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                           <Brain className="w-3 h-3 text-wedo-cyan" />
                                           {tf('pipelineLIA')}
                                         </div>
-                                        <div className="text-xs text-lia-text-tertiary">{tf('candidatesContacted', { count: liaTriages.pipeline })}</div>
+                                        <div className="text-xs text-lia-text-on-inverse/80">{tf('candidatesContacted', { count: liaTriages.pipeline })}</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
@@ -563,7 +563,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">{tf('screeningsScheduled')}</div>
-                                        <div className="text-xs text-lia-text-tertiary">{tf('screeningsScheduledDesc', { count: liaTriages.agendadas })}</div>
+                                        <div className="text-xs text-lia-text-on-inverse/80">{tf('screeningsScheduledDesc', { count: liaTriages.agendadas })}</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
@@ -581,7 +581,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">{tf('screeningsCompleted')}</div>
-                                        <div className="text-xs text-lia-text-tertiary">{tf('screeningsCompletedDesc', { count: liaTriages.realizadas })}</div>
+                                        <div className="text-xs text-lia-text-on-inverse/80">{tf('screeningsCompletedDesc', { count: liaTriages.realizadas })}</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
@@ -599,7 +599,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                                       <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-xl whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">{tf('interviewsScheduled')}</div>
-                                        <div className="text-xs text-lia-text-tertiary">{tf('interviewsScheduledDesc', { count: liaTriages.entrevistasAgendadas })}</div>
+                                        <div className="text-xs text-lia-text-on-inverse/80">{tf('interviewsScheduledDesc', { count: liaTriages.entrevistasAgendadas })}</div>
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
