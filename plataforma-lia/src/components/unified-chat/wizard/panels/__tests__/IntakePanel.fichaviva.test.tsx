@@ -49,15 +49,13 @@ describe("IntakePanel ficha viva — Rules of Hooks", () => {
 })
 
 describe("IntakePanel ficha viva — zonas", () => {
-  it("zona bloqueante mostra título/senioridade/modelo/modo", () => {
+  it("zona bloqueante mostra título/senioridade/modelo", () => {
     render(<IntakePanel data={fullData()} />)
     const zone = screen.getByTestId("intake-blocking-zone")
     expect(zone).toBeInTheDocument()
     expect(zone).toHaveTextContent(/Engenheiro de Software/)
     expect(zone).toHaveTextContent(/senior/i)
     expect(zone).toHaveTextContent(/remoto/i)
-    // modo compact → rótulo legível
-    expect(zone).toHaveTextContent(/Compacto/i)
   })
 
   it("zona enriquecedora mostra depto/localização/contrato", () => {
@@ -68,10 +66,10 @@ describe("IntakePanel ficha viva — zonas", () => {
     expect(zone).toHaveTextContent(/CLT/)
   })
 
-  it("campo bloqueante ausente aparece como pendente (não some)", () => {
+  it("campo enriquecedor ausente aparece como pendente (não some)", () => {
     render(<IntakePanel data={fullData({ screening_mode: undefined })} />)
-    const zone = screen.getByTestId("intake-blocking-zone")
-    // ainda lista "Modo de triagem" como pendente
+    const zone = screen.getByTestId("intake-enriching-zone")
+    // ainda lista "Modo de triagem" como pendente (está na zona enriquecedora)
     expect(zone).toHaveTextContent(/Modo de triagem/i)
   })
 })

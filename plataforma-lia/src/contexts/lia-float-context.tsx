@@ -529,7 +529,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         setChatMessages(history);
       }
     });
-  }, [chatConversationId, connection]);
+  }, [chatConversationId, connection, isAuthenticated]);
 
   // Mirror WS-derived conversation id into sessionStorage so it survives
   // refresh. The setChatConversationId callback covers explicit FE writes;
