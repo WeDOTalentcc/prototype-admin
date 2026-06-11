@@ -12,7 +12,6 @@ import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import type { ParsedCVResponse } from "@/components/cv"
 import { createCellRenderer } from "@/components/pages/candidates/CandidateTableCellRenderer"
-import { useLiaEntitySelection } from "@/hooks/shared/use-lia-entity-selection"
 import { useContactValidation } from "@/hooks/candidates/useContactValidation"
 import { useCandidatesColumnConfig } from "./useCandidatesColumnConfig"
 import { useCandidatesFilterSort } from "./useCandidatesFilterSort"
@@ -180,7 +179,6 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
     }
     return out
   }, [params.candidates, params.revealedContacts])
-  const { openEntityChat } = useLiaEntitySelection()
   const { validity: _contactValidity } = useContactValidation(_contactsToValidate)
 
   const renderCellValue = createCellRenderer({
@@ -200,7 +198,6 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
         return newSet
       }),
     t: tCells as unknown as (key: string, params?: Record<string, unknown>) => string,
-    openEntityChat,
   })
 
   const filterSort = useCandidatesFilterSort({

@@ -6,7 +6,6 @@ import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Eye, ChevronsLeftRight, MapPin,
-  MessageSquareText,
 } from "lucide-react"
 import { SearchFeedbackButtons } from "@/components/search/SearchFeedbackButtons"
 import { textStyles } from "@/lib/design-tokens"
@@ -34,7 +33,6 @@ export interface CellRendererDeps {
   onToggleExpandedRow: (candidateId: string) => void
   t?: TranslateFn
   contactValidity?: Record<string, { email_valid?: boolean | null; email_reason?: string | null; phone_valid?: boolean | null }>
-  openEntityChat?: (target: { type: "candidate" | "job"; id: string; name: string }) => void
 }
 
 export function createCellRenderer(deps: CellRendererDeps) {
@@ -49,7 +47,6 @@ export function createCellRenderer(deps: CellRendererDeps) {
     onToggleExpandedRow,
     t,
     contactValidity,
-    openEntityChat,
   } = deps
 
   const formatDate = (date: string | undefined) => {
@@ -194,18 +191,6 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 >
                   {candidate.name}
                 </span>
-                {openEntityChat && (
-                  <button
-                    className="opacity-40 hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-lia-bg-subtle text-lia-primary"
-                    aria-label={`Conversar com LIA sobre ${candidate.name}`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      openEntityChat({ type: 'candidate', id: String(candidate.id), name: candidate.name })
-                    }}
-                  >
-                    <MessageSquareText className="w-[18px] h-[18px]" />
-                  </button>
-                )}
               </div>
             </div>
           </div>

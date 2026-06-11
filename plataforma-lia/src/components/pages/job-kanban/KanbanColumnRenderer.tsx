@@ -32,7 +32,6 @@ import {
   MessageCircle,
   Calendar,
   ClipboardList,
-  MessageSquareText,
   Bookmark,
   Heart,
   Gauge,
@@ -68,7 +67,6 @@ import { KanbanCardActions } from "./KanbanCardActions"
 import { KanbanCardScores } from "./KanbanCardScores"
 import { KanbanCardStatusBadges } from "./KanbanCardStatusBadges"
 import { KanbanCardInterviewButtons } from "./KanbanCardInterviewButtons"
-import { useLiaEntitySelection } from "@/hooks/shared/use-lia-entity-selection"
 
 type KanbanCandidate = CandidateLocal & {
   score?: number
@@ -274,7 +272,6 @@ export function KanbanColumnRenderer({
   openTransition,
 }: KanbanColumnRendererProps) {
   const t = useTranslations('kanban')
-  const { openEntityChat } = useLiaEntitySelection()
   const dynamicStage = dynamicStages.find((s) => s.id === stageId)
   const stageInfo = getStageByName(stageId)
   const displayTitle = dynamicStage?.displayName || stageInfo?.displayName || stageId
@@ -580,16 +577,6 @@ export function KanbanColumnRenderer({
                   >
                     {candidate.name}
                   </h4>
-                  <button
-                    className="opacity-40 hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-lia-bg-subtle text-lia-primary"
-                    aria-label={`Conversar com LIA sobre ${candidate.name}`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      openEntityChat({ type: 'candidate', id: String(candidate.id), name: candidate.name })
-                    }}
-                  >
-                    <MessageSquareText className="w-[18px] h-[18px]" />
-                  </button>
                   {(() => {
                     const dataRequest = getDataRequestForCandidate(candidate.id)
                     if (!dataRequest) return null

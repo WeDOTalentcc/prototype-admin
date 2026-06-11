@@ -42,7 +42,6 @@ import type { CandidateLocal } from "@/services/lia-api"
 import { KanbanTablePagination } from "./KanbanTablePagination"
 import { KanbanCandidatePreviewPanel } from "./KanbanCandidatePreviewPanel"
 import { createKanbanCellRenderer, type KanbanTableCellRendererProps } from "./KanbanTableCellRenderer"
-import { useLiaEntitySelection } from "@/hooks/shared/use-lia-entity-selection"
 type QueryInsight = {
   match_level?: string
   subquery?: string
@@ -229,7 +228,6 @@ export function KanbanTableView({
   onSendFeedback,
   candidatesData,
 }: KanbanTableViewProps) {
-  const { openEntityChat } = useLiaEntitySelection()
   const t = useTranslations('kanban')
   const itemsPerPage = 50
 
@@ -262,7 +260,6 @@ export function KanbanTableView({
     onTransitionRequired,
     onStatusChange,
     onCandidateClick,
-    openEntityChat,
   }) as unknown as KanbanTableCellRendererProps)
   return (
     <>

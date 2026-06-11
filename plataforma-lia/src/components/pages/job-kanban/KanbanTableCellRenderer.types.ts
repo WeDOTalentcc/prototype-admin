@@ -95,5 +95,4 @@ export interface KanbanTableCellRendererProps {
   onTransitionRequired: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
   onStatusChange: (candidateId: string, newSubStatus: string, stage: string, jobVacancyId?: string) => Promise<boolean>
   onCandidateClick: (candidate: KanbanCandidate) => void
-  openEntityChat?: (target: { type: "candidate" | "job"; id: string; name: string }) => void
 }

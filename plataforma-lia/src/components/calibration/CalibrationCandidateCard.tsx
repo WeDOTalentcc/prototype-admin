@@ -15,7 +15,6 @@
  */
 
 import React from"react"
-import { useLiaEntitySelection } from "@/hooks/shared/use-lia-entity-selection"
 import {
   ThumbsUp,
   ThumbsDown,
@@ -24,7 +23,6 @@ import {
   Edit3,
   CheckCircle2,
   X,
-  MessageSquareText,
 } from"lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Chip } from "@/components/ui/chip"
@@ -72,7 +70,6 @@ export function CalibrationCandidateCard({
   criteriaHeader,
   className,
 }: CalibrationCandidateCardProps) {
-  const { openEntityChat } = useLiaEntitySelection()
   return (
     <div className={cn("flex h-full", className)}>
       {/* ---- Left Panel: Candidate Profile ---- */}
@@ -94,19 +91,6 @@ export function CalibrationCandidateCard({
               <h3 className="text-base font-semibold text-lia-text-primary">
                 {candidate.name}
               </h3>
-              {openEntityChat && (
-                <button
-                  className="opacity-40 hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-lia-bg-subtle text-lia-primary"
-                  title={`Falar com LIA sobre ${candidate.name}`}
-                  aria-label={`Conversar com LIA sobre ${candidate.name}`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    openEntityChat({ type: 'candidate', id: String(candidate.id), name: candidate.name })
-                  }}
-                >
-                  <MessageSquareText className="w-[18px] h-[18px]" />
-                </button>
-              )}
             </div>
             <p className="text-xs text-lia-text-tertiary">{candidate.location}</p>
           </div>
