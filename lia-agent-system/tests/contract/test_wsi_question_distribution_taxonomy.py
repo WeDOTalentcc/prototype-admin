@@ -29,6 +29,7 @@ CANONICAL_SENIORITIES = {
     "principal",
     "staff",
     "diretor",
+    "executive",
 }
 
 

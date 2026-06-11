@@ -235,6 +235,11 @@ export interface WsiQuestionsData {
   wsi_questions_fallback_reason?: string | null
   /** Task #1070 — modo degradado agregado (sessao/tenant). */
   ai_degraded_mode?: AiDegradedMode | null
+  /** Task 7 WSI — distribuicao minima esperada pelo backend (YAML canonical).
+   * Substitui MIN_DISTRIBUTION hardcoded no WsiQuestionsPanel.
+   * Formato: {technical: number, behavioral: number}
+   */
+  expected_distribution?: { technical: number; behavioral: number } | null
 }
 
 export interface ScreeningQuestion {

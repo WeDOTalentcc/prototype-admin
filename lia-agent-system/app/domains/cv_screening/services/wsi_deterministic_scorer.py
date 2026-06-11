@@ -64,6 +64,8 @@ SENIORITY_WEIGHTS = {
     "principal":  {"technical": 0.50,   "behavioral": 0.50},
     "diretor":    {"technical": 0.3125, "behavioral": 0.6875},
     "vp_clevel":  {"technical": 0.25,   "behavioral": 0.75},
+    "executive":  {"technical": 0.3125, "behavioral": 0.6875},
+    "staff":      {"technical": 0.5625, "behavioral": 0.4375},
 }
 
 # Spec F8 — fórmula tri-componente por tipo de pergunta (v2)
