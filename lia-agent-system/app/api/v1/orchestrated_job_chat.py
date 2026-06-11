@@ -130,6 +130,58 @@ company_id: str = Depends(require_company_id)) -> OrchestratedJobChatResponse:
             db = _db
             break
 
+        # Frente D (2026-06-10): respeitar LIA_FEDERATED_PRIMARY no job-chat.
+        # Sem esta flag, 2 cerebros rodam lado a lado: bolha SSE usa recruiter_copilot,
+        # job-chat lateral usa supervisor — o moat (RRP/scoped-tools/entity-resolver)
+        # nao chegava ao kanban. Feature-flagged: fail-open se agente indisponivel.
+        try:
+            from app.tools.scope_config import federated_primary_enabled as _jc_fed_check
+            _jc_use_federated = _jc_fed_check()
+        except Exception:
+            _jc_use_federated = False
+
+        if _jc_use_federated:
+            try:
+                from app.api.v1.chat_shared import _get_agent, _build_agent_input
+                import uuid as _uuid
+                _fed_agent = _get_agent("recruiter_copilot")
+                if _fed_agent is not None:
+                    logger.info("[JobChat] federated path: recruiter_copilot")
+                    _agent_input = _build_agent_input(
+                        content=ctx.message,
+                        context={
+                            "page_type": "job",
+                            "job_context": request.job_context,
+                            "candidates": request.candidates,
+                            "selected_candidate_ids": request.selected_candidate_ids or [],
+                        },
+                        session_id=request.conversation_id or str(_uuid.uuid4()),
+                        company_id=company_id,
+                        user_id=request.user_id,
+                        conversation_history=[],
+                    )
+                    _agent_output = await _fed_agent.process(_agent_input)
+                    return OrchestratedJobChatResponse(
+                        success=True,
+                        content=_agent_output.message,
+                        agent_used="recruiter_copilot",
+                        agents_consulted=["recruiter_copilot"],
+                        intent_detected="federated",
+                        confidence=_agent_output.confidence,
+                        actions=[a.model_dump() for a in _agent_output.actions],
+                        conversation_id=request.conversation_id,
+                    )
+                else:
+                    logger.warning(
+                        "[JobChat] recruiter_copilot indisponivel, fallback supervisor"
+                    )
+            except Exception as _fed_exc:
+                logger.warning(
+                    "[JobChat] federated path falhou (fail-open, fallback supervisor): %s",
+                    _fed_exc,
+                )
+        # Supervisor path (default quando LIA_FEDERATED_PRIMARY=false ou federated falhou)
+
         chat_response = await main_orchestrator.process(ctx, db)
         return OrchestratedJobChatResponse(
             success=chat_response.success,
