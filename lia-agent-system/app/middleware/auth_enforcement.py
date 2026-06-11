@@ -262,6 +262,12 @@ PUBLIC_REGEX_PATHS: tuple[_re.Pattern[str], ...] = (
     _re.compile(r"^/api/v1/manager-alignments/[0-9a-fA-F\-]{36}/respond/?$"),
     _re.compile(r"^/api/v1/hiring-nps/respond/?$"),
     _re.compile(r"^/api/v1/hiring-nps/[0-9a-fA-F\-]{36}/respond/?$"),
+    # Candidate Portal — portal público LGPD para candidatos preencherem dados.
+    # Token = hex 64 chars (secrets.token_hex(32)), não-guessable, expires_at
+    # validado no handler. company_id derivado do registro (NUNCA do request).
+    # Sub-paths: /request-otp, /verify-otp, /submit, /upload.
+    # Endpoints admin (/api/v1/data-request/*) PRESERVAM JWT — não matchados.
+    _re.compile(r"^/portal/data-request/[A-Za-z0-9_\-]{16,128}(/[A-Za-z0-9_\-]+)?$"),
 )
 
 
