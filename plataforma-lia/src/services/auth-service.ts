@@ -270,7 +270,6 @@ class AuthService {
       document.cookie = 'lia_logged_out=1; path=/; max-age=86400; SameSite=None; Secure'
     }
   }
-}
 
 
   /**
@@ -319,5 +318,7 @@ class AuthService {
     }
   }
 
+
+}
 export const authService = new AuthService()
 export default authService
