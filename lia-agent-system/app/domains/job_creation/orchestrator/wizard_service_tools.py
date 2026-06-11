@@ -476,7 +476,10 @@ def _handle_publish_job(
     return ToolResult(
         llm_message=(
             f"Vaga publicada com sucesso! ID {job_id}.{share_part} "
-            f"Avise o recrutador e ofereça os próximos passos (ver candidatos, etc.)."
+            "Avise o recrutador e ofereça explicitamente as 3 opções: "
+            "(1) ir para a página da vaga (navigate_to_jobs), (2) criar outra "
+            "vaga, ou (3) continuar por aqui no chat (close_panel se ele "
+            "preferir minimizar o painel)."
         ),
         state_updates={
             "job_id": job_id,
