@@ -485,6 +485,13 @@ class VacancyCandidate(Base):
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # P0-2: campos de score e analise pos-triagem (migration 263)
+    cv_score = Column(Float, nullable=True)  # score do CV em relacao a vaga (0-100)
+    cv_fit_score = Column(Float, nullable=True)  # fit cultural + tecnico combinado (0-100)
+    sub_status = Column(String(100), nullable=True)  # sub-estado granular ex: waiting_interview
+    screening_completed_at = Column(DateTime, nullable=True)  # timestamp conclusao triagem
+    ai_analysis = Column(JSON, nullable=True)  # analise estruturada da IA pos-triagem
+
     VALID_STATUSES = [
         "sourced", "approved", "rejected", "pending",
         "hired", "not_selected", "on_hold", "cancelled",
