@@ -167,15 +167,24 @@ class TestWebhookAdapters:
 
     @pytest.mark.asyncio
     async def test_event_log_tracking(self):
+        """Eventos processados sao rastreados (idempotencia) na base WebhookAdapter.
+
+        Contrato REAL: WebhookAdapter._processed_events + is_processed(). (Nao ha
+        log ordenado/get_event_log — feature nunca implementada nem usada.)
+        Isolado: estado e class-level compartilhado entre adapters/testes.
+        """
         from app.domains.automation.services.webhook_adapters import InterviewWebhookAdapter, WebhookAdapter
+
+        WebhookAdapter._processed_events.discard("evt-log1")
+        WebhookAdapter._processed_events.discard("evt-log2")
 
         await InterviewWebhookAdapter.process("evt-log1", "interview_confirmed", {"candidate_id": "c1"})
         await InterviewWebhookAdapter.process("evt-log2", "interview_completed", {"candidate_id": "c2"})
 
-        log = WebhookAdapter.get_event_log()
-        assert len(log) == 2
-        assert log[0]["event_id"] == "evt-log1"
-        assert log[1]["event_id"] == "evt-log2"
+        # is_duplicate(event_id) == True significa "ja processado" (rastreado).
+        assert WebhookAdapter.is_duplicate("evt-log1")
+        assert WebhookAdapter.is_duplicate("evt-log2")
+        assert not WebhookAdapter.is_duplicate("evt-never-seen")
 
     @pytest.mark.asyncio
     async def test_cross_adapter_idempotency(self):
