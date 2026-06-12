@@ -30,6 +30,36 @@ from app.domains.job_creation.helpers.async_audit import (
 logger = logging.getLogger(__name__)
 
 
+
+def _derive_chronogram(interview_stages: list) -> list:
+    """Deriva cronograma operacional a partir dos sla_days de cada stage.
+
+    Retorna lista de {name, order, sla_days, offset_start, offset_end}.
+    FE interpreta offset como dias a partir de hoje (abertura = dia 0).
+    Fail-open: retorna [] se stages vazio ou sem sla_days.
+    """
+    try:
+        sorted_stages = sorted(interview_stages, key=lambda s: s.get("order", 99))
+        chronogram = []
+        offset = 0
+        for stage in sorted_stages:
+            sla = stage.get("sla_days") or stage.get("sla")
+            if sla is None:
+                continue
+            sla = int(sla)
+            chronogram.append({
+                "name": stage.get("name") or stage.get("stageName", "Etapa"),
+                "order": stage.get("order", len(chronogram) + 1),
+                "sla_days": sla,
+                "offset_start": offset,
+                "offset_end": offset + sla,
+            })
+            offset += sla
+        return chronogram
+    except Exception:
+        return []
+
+
 def pipeline_template_node(state: JobCreationState) -> JobCreationState:
     """HITL stage canonical — sugere pipeline template ou permite skip.
 
@@ -95,6 +125,7 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
                     "current_stage": "pipeline_template",
                     "pipeline_template_id": template_id_str,
                     "interview_stages": applied.get("interview_stages", []),
+                    "derived_chronogram": _derive_chronogram(applied.get("interview_stages", [])),
                     "stage_history": (state.get("stage_history") or []) + ["pipeline_template"],
                     "completeness": calculate_completeness("pipeline_template"),
                     "requires_approval": False,

@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CheckCircle, XCircle, ClipboardCheck, Settings, Globe, Building2, Layers } from "lucide-react"
+import { CheckCircle, XCircle, ClipboardCheck, Settings, Globe, Building2, Layers, CalendarDays } from "lucide-react"
 import type { ReviewData } from "../wizard-types"
 import { usePersonaName } from "@/hooks/company/usePersonaName"
 
@@ -56,6 +56,7 @@ export function ReviewPanel({ data, onUpdate }: Props) {
   const personaName = usePersonaName()
   const d = data as unknown as ReviewData
   const readiness = d.readiness || { ready: false, checks: {}, missing: [] }
+  const chronogram = (d as unknown as { derived_chronogram?: Array<{name: string; order: number; sla_days: number; offset_start: number; offset_end: number}> }).derived_chronogram || []
   const defaultsApplied = d.defaults_applied || []
   const sourcingMode = d.sourcing_mode ?? null
 
@@ -154,6 +155,35 @@ export function ReviewPanel({ data, onUpdate }: Props) {
           })}
         </div>
       </div>
+
+
+      {/* W1-I: Cronograma previsto do pipeline */}
+      {chronogram.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <CalendarDays className="w-4 h-4 text-wedo-cyan" />
+            <span className="text-xs font-semibold text-lia-text-secondary">
+              Cronograma previsto
+            </span>
+          </div>
+          <div className="space-y-0.5">
+            {chronogram.map((stage) => (
+              <div key={stage.order} className="flex items-center justify-between text-[10px]">
+                <span className="text-lia-text-primary truncate max-w-[120px]">{stage.name}</span>
+                <div className="flex items-center gap-1 text-lia-text-tertiary shrink-0">
+                  <span>{stage.sla_days}d</span>
+                  <span>·</span>
+                  <span className="text-lia-text-secondary">até +{stage.offset_end} dias</span>
+                </div>
+              </div>
+            ))}
+            <div className="pt-0.5 border-t border-lia-border-subtle mt-1 flex justify-between text-[10px] font-medium">
+              <span className="text-lia-text-secondary">Total estimado</span>
+              <span className="text-wedo-cyan">{chronogram[chronogram.length - 1].offset_end} dias</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Applied defaults */}
       {defaultsApplied.length > 0 && (

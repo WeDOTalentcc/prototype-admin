@@ -311,6 +311,10 @@ class JobCreationState(TypedDict, total=False):
     pipeline_template_skipped: Optional[bool]  # True quando recrutador opta por "Usar Padrão da Empresa"
     pipeline_template_score: Optional[float]
     interview_stages: List[Dict[str, Any]]
+    # Derived from interview_stages.sla_days by pipeline_template_node.
+    # Shape: [{name, order, sla_days, offset_start, offset_end}]
+    # FE computes absolute dates as: today + offset_end days.
+    derived_chronogram: Optional[List[Dict[str, Any]]]
 
     # --- WS protocol fields ---
     ws_stage_payload: Optional[Dict[str, Any]]  # last wizard_stage WS message sent
