@@ -196,7 +196,7 @@ export interface SalaryData {
   salary_min: number | null
   salary_max: number | null
   salary_currency: string
-  benefits: string[]
+  benefits: Array<string | Record<string, unknown>>
   variable_compensation?: Array<{
     name: string
     kind?: string

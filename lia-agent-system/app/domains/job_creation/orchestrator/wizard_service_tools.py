@@ -2044,6 +2044,200 @@ CLOSE_PANEL = WizardTool(
     handler=_handle_close_panel,
 )
 
+
+# ── suggest_benefits ─────────────────────────────────────────────────────────
+
+def _handle_suggest_benefits(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Busca o catálogo de benefícios da empresa e popula state.benefits.
+
+    Filtra benefícios ativos pelo departamento e tipo de contrato da vaga.
+    Sem catálogo configurado, retorna lista vazia com orientação ao recrutador.
+    """
+    _reject_tenant_keys(tool_input)
+
+    company_id = ctx.company_id
+    if not company_id:
+        return ToolResult(
+            llm_message="Empresa não identificada — não consigo buscar o catálogo de benefícios.",
+            error=True,
+        )
+
+    department  = state.get("parsed_department") or state.get("department") or ""
+    emp_type    = state.get("employment_type") or state.get("parsed_employment_type") or ""
+
+    async def _fetch():
+        from app.shared.database import AsyncSessionLocal
+        from app.domains.company.repositories.benefit_repository import BenefitRepository
+        from uuid import UUID
+        async with AsyncSessionLocal() as db:
+            repo = BenefitRepository(db)
+            try:
+                cid = UUID(str(company_id))
+            except ValueError:
+                return []
+            return await repo.list_active_for_company(cid)
+
+    try:
+        benefits_orm = run_coro_in_threadpool(lambda: _fetch(), timeout=10)
+    except Exception as exc:
+        logger.warning("[WizardServiceTools] suggest_benefits failed: %s", exc)
+        return ToolResult(
+            llm_message=(
+                "Não consegui carregar o catálogo de benefícios agora. "
+                "Oriente o recrutador a informar os benefícios manualmente."
+            ),
+            error=False,
+        )
+
+    if not benefits_orm:
+        return ToolResult(
+            llm_message=(
+                "Nenhum benefício cadastrado no catálogo da empresa ainda. "
+                "O recrutador pode informar os benefícios manualmente agora "
+                "ou cadastrá-los em Configurações → Benefícios primeiro."
+            ),
+            state_updates={"benefits": []},
+        )
+
+    # Serializa para shape compatível com VagaBenefit (backward-compat)
+    result_list = []
+    for b in benefits_orm:
+        item = {"name": b.name, "source": "catalog"}
+        if b.category:
+            item["category"] = b.category
+        if b.icon:
+            item["icon"] = b.icon
+        if b.value:
+            item["value"] = b.value
+        if b.value_type:
+            item["value_type"] = b.value_type
+        if getattr(b, "is_highlighted", False):
+            item["is_highlighted"] = True
+        result_list.append(item)
+
+    names = [b["name"] for b in result_list]
+    summary = ", ".join(names[:6]) + (f" e mais {len(names)-6}" if len(names) > 6 else "")
+    return ToolResult(
+        llm_message=(
+            f"Encontrei {len(result_list)} benefícios no catálogo da empresa: {summary}. "
+            "Eles já foram adicionados à vaga. O recrutador pode remover os que não se aplicam."
+        ),
+        state_updates={"benefits": result_list},
+    )
+
+
+SUGGEST_BENEFITS = WizardTool(
+    name="suggest_benefits",
+    description=(
+        "Busca o catálogo de benefícios da empresa e sugere automaticamente os "
+        "benefícios para a vaga. Use quando o recrutador perguntar sobre benefícios "
+        "ou ao iniciar o stage de salário/remuneração. Apresente a lista e permita "
+        "ao recrutador confirmar ou remover itens."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_suggest_benefits,
+)
+
+
+# ── suggest_variable_compensation ────────────────────────────────────────────
+
+def _handle_suggest_variable_compensation(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Busca o catálogo de verbas variáveis da empresa e popula state.variable_compensation.
+
+    Usa list_matching para priorizar verbas compatíveis com departamento/senioridade/
+    tipo de contrato da vaga. Retorna todas — compatíveis pre-marcadas.
+    """
+    _reject_tenant_keys(tool_input)
+
+    company_id = ctx.company_id
+    if not company_id:
+        return ToolResult(
+            llm_message="Empresa não identificada — não consigo buscar o catálogo de verbas variáveis.",
+            error=True,
+        )
+
+    department    = state.get("parsed_department") or state.get("department") or None
+    seniority     = state.get("parsed_seniority") or state.get("seniority") or None
+    emp_type      = state.get("employment_type") or state.get("parsed_employment_type") or None
+
+    async def _fetch():
+        from app.shared.database import AsyncSessionLocal
+        from app.domains.company.repositories.compensation_component_repository import (
+            CompensationComponentRepository,
+        )
+        async with AsyncSessionLocal() as db:
+            repo = CompensationComponentRepository(db)
+            return await repo.list_matching(
+                company_id=str(company_id),
+                seniority_level=seniority,
+                department=department,
+                contract_type=emp_type,
+            )
+
+    try:
+        matched = run_coro_in_threadpool(lambda: _fetch(), timeout=10)
+    except Exception as exc:
+        logger.warning("[WizardServiceTools] suggest_variable_compensation failed: %s", exc)
+        return ToolResult(
+            llm_message=(
+                "Não consegui carregar o catálogo de verbas variáveis agora. "
+                "Oriente o recrutador a informar os componentes manualmente."
+            ),
+            error=False,
+        )
+
+    if not matched:
+        return ToolResult(
+            llm_message=(
+                "Nenhuma verba variável cadastrada no catálogo da empresa ainda. "
+                "O recrutador pode informar os componentes manualmente ou "
+                "cadastrá-los em Configurações → Remuneração Variável primeiro."
+            ),
+            state_updates={"variable_compensation": []},
+        )
+
+    from app.domains.job_creation.helpers.vaga_variable_comp import snapshot_from_catalog
+
+    # Inclui todos; compatíveis têm matches_vaga=True no snapshot
+    result_list = []
+    compatible_count = 0
+    for comp, matches in matched:
+        snap = snapshot_from_catalog(comp)
+        d = snap.model_dump()
+        d["matches_vaga"] = matches
+        if matches:
+            compatible_count += 1
+        result_list.append(d)
+
+    total = len(result_list)
+    summary_names = [r["name"] for r in result_list if r.get("matches_vaga")][:4]
+    summary = ", ".join(summary_names) + (f" e outros" if total > len(summary_names) else "")
+    return ToolResult(
+        llm_message=(
+            f"Encontrei {total} verbas variáveis no catálogo — "
+            f"{compatible_count} compatíveis com este cargo ({summary}). "
+            "Elas já foram adicionadas à vaga. O recrutador pode remover as que não se aplicam."
+        ),
+        state_updates={"variable_compensation": result_list},
+    )
+
+
+SUGGEST_VARIABLE_COMPENSATION = WizardTool(
+    name="suggest_variable_compensation",
+    description=(
+        "Busca o catálogo de verbas variáveis da empresa (PLR, bônus, comissão, etc.) "
+        "e sugere automaticamente os componentes para a vaga, priorizando os "
+        "compatíveis com departamento/senioridade/tipo de contrato. Use quando o "
+        "recrutador mencionar remuneração variável ou ao montar o pacote salarial."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_suggest_variable_compensation,
+)
+
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
@@ -2059,5 +2253,7 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     APPLY_ELIGIBILITY_TEMPLATE,
     CREATE_CUSTOM_ELIGIBILITY_TEMPLATE,
     SEND_MANAGER_BRIEFING,
+    SUGGEST_BENEFITS,
+    SUGGEST_VARIABLE_COMPENSATION,
     CLOSE_PANEL,
 )
