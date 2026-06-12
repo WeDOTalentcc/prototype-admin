@@ -54,6 +54,13 @@ ACTION_BEHAVIOR_TRIGGER_MAP: dict[str, str | None] = {
 DISPATCHABLE_CHANNELS = {"email", "whatsapp", "sms"}
 
 
+def ai_personalization_allowed_for_channel(channel: str) -> bool:
+    """W1 (decisao Paulo 2026-06-10): texto livre gerado por IA so e permitido por
+    EMAIL. WhatsApp business-initiated exige template aprovado pela Meta -> usa o
+    template + variaveis, nunca texto livre da IA (senao a Meta nao entrega)."""
+    return (channel or "").lower() == "email"
+
+
 def is_feedback_fairness_blocked(text, company_id: str = "") -> bool:
     """Camada de fairness/LGPD sobre o feedback gerado por IA, ANTES do envio ao
     candidato (auditoria 2026-06-10). Reusa o guard canonico (L1 explicito + L2
@@ -378,7 +385,14 @@ class TransitionDispatchService:
         rendered_text = self._render_template(template.body_text or "", variables)
 
         ai_personalized = False
-        if personalized_content:
+        if personalized_content and not ai_personalization_allowed_for_channel(channel):
+            # WhatsApp (e demais canais nao-email): template Meta obrigatorio -> ignora
+            # o texto livre da IA; o corpo do template aprovado + variaveis e usado.
+            logger.info(
+                "[DISPATCH] canal=%s: texto IA ignorado (template aprovado obrigatorio); IA so em email",
+                channel,
+            )
+        elif personalized_content:
             if is_feedback_fairness_blocked(personalized_content, company_id or ""):
                 # Texto da IA reprovado pela camada de fairness/LGPD -> NAO envia a
                 # versao da IA; mantem o corpo do template seguro ja renderizado.

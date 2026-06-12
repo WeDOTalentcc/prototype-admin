@@ -23,3 +23,22 @@ class TestFeedbackFairnessGuard:
     def test_empty_not_blocked(self):
         assert is_feedback_fairness_blocked("", "co-1") is False
         assert is_feedback_fairness_blocked(None, "co-1") is False
+
+
+class TestAiPersonalizationChannel:
+    """W1 (decisao Paulo 2026-06-10): texto livre da IA so por email; WhatsApp
+    exige template aprovado pela Meta (mensagem business-initiated)."""
+
+    def test_email_allows_ai(self):
+        from app.domains.communication.services.transition_dispatch_service import (
+            ai_personalization_allowed_for_channel,
+        )
+        assert ai_personalization_allowed_for_channel("email") is True
+
+    def test_whatsapp_blocks_ai(self):
+        from app.domains.communication.services.transition_dispatch_service import (
+            ai_personalization_allowed_for_channel,
+        )
+        assert ai_personalization_allowed_for_channel("whatsapp") is False
+        assert ai_personalization_allowed_for_channel("WhatsApp") is False
+        assert ai_personalization_allowed_for_channel("") is False
