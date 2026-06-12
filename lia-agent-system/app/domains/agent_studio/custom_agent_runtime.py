@@ -64,6 +64,23 @@ def get_available_tool_names() -> list[str]:
     return list(PLATFORM_TOOLS_REGISTRY.keys())
 
 
+# ── P0-1 Onda 0 (2026-06-12): HITL_REQUIRED_TOOLS ──────────────────────────
+# Frozenset de tools sensíveis que NUNCA executam sem aprovação humana explícita
+# no Agent Studio. O gate em _get_tools/_tenant_safe_wrapper intercepta antes
+# da execução e retorna hitl_pending em vez de executar o side-effect.
+# Espelha hitl_preflight do chat principal (app/shared/services/hitl_service.py).
+# Exportado em nível de módulo para que testes de contrato possam importar diretamente.
+HITL_REQUIRED_TOOLS: frozenset[str] = frozenset({
+    "publish_job",
+    "send_offer",
+    "reject_candidate",
+    "bulk_update_candidates",
+    "send_email_bulk",
+    "bulk_reject_candidates",
+    "send_whatsapp_bulk",
+})
+
+
 # ── Q4.1 Sandbox dry-run (2026-05-29) ─────────────────────────────────────────
 # ContextVars (canonical pattern espelhando _CURRENT_COMPANY_ID em
 # auth_enforcement): o runtime e cacheado por agent_id (get_or_create_runtime),
@@ -194,6 +211,8 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
         # Etapa 3: additional dangerous tools (OWASP LLM06 audit)
         "reject_autonomous_action", "calibrate_sourcing_agent",
         "advance_campaign_stage", "move_pool_to_job",
+    })
+
     # ── P0-1 Onda 0 (2026-06-12): HITL_REQUIRED_TOOLS — tools sensíveis que NUNCA ──
     # executam sem aprovação humana explícita. LLM custom NÃO pode invocar publish_job,
     # send_offer, reject_candidate etc. diretamente. O gate abaixo retorna hitl_pending
@@ -291,6 +310,27 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                                 f"'{_fn.__name__}' — nenhuma ação real foi realizada."
                             ),
                             "would_execute": {"tool": _fn.__name__, "args": _safe_args},
+                        }
+
+                    # ── P0-1 HITL gate for sensitive tools (Onda 0, 2026-06-12) ──────────
+                    # HITL_REQUIRED_TOOLS are tools with irreversible/high-impact effects.
+                    # They return hitl_pending regardless of confirm flag — the LLM cannot
+                    # self-approve these. Only the human via the approval UI can unblock.
+                    # This gate runs BEFORE the AUD-4 generic confirm check.
+                    if _fn.__name__ in HITL_REQUIRED_TOOLS:
+                        logger.info(
+                            "[Studio][P0-1] HITL_REQUIRED gate held tool=%s tenant=%s — requer aprovacao humana",
+                            _fn.__name__, request_company_id or "unknown",
+                        )
+                        return {
+                            "status": "hitl_pending",
+                            "requires_approval": True,
+                            "tool": _fn.__name__,
+                            "message": (
+                                f"A acao '{_fn.__name__}' requer aprovacao humana. "
+                                "Use o painel de aprovacao para autorizar ou rejeitar."
+                            ),
+                            "hitl_gate": "P0-1",
                         }
 
                     # ── AUD-4 HITL gate (canonical, registrado Wave C2.6 2026-05-27) ──
