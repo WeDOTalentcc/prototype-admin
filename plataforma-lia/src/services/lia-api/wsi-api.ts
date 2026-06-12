@@ -199,7 +199,7 @@ export async function regenerateWSIQuestions(
   request: RegenerateWSIQuestionsRequest
 ): Promise<RegenerateWSIQuestionsResponse> {
   try {
-    const response = await fetch(`/api/backend-proxy/wsi/regenerate-questions`, {
+    const response = await fetch(`/api/backend-proxy/api/wsi/regenerate-questions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request)
