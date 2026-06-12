@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { cn } from "@/lib/utils"
 import {
   User, CheckCircle, XCircle, Target, ThumbsUp, ThumbsDown, Users,
-  ChevronDown, ChevronUp, Plus, Award, Filter, type LucideIcon,
+  ChevronDown, ChevronUp, Plus, Award, Filter, Minus, type LucideIcon,
 } from "lucide-react"
 import type { CalibrationData, CalibrationCandidate } from "../wizard-types"
 
@@ -24,6 +24,14 @@ const QUALITY_DOT: Record<NonNullable<CriterionItem["quality"]>, string> = {
   good: "text-status-success",
   warning: "text-status-warning",
   poor: "text-status-error",
+}
+
+/** Formata número de meses em representação legível (ex: "1a 4m", "8m"). */
+function formatMonths(months: number): string {
+  if (months < 12) return `${months}m`
+  const years = Math.floor(months / 12)
+  const rem = months % 12
+  return rem > 0 ? `${years}a ${rem}m` : `${years}a`
 }
 
 interface Props {
@@ -53,15 +61,21 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
   const hasCriteria = mustHaves.length > 0 || sourcingConstraints.length > 0
   const [criteriaOpen, setCriteriaOpen] = useState(hasCriteria)
 
-  const handleApproveCandidate = (candidateId: string) => {
+  const handleApproveCandidate = (candidateId: string, comment?: string) => {
     window.dispatchEvent(new CustomEvent("lia:wizard-edit-question", {
-      detail: { type: "calibration_approve", candidateId },
+      detail: { type: "calibration_approve", candidateId, reason: comment },
     }))
   }
 
-  const handleRejectCandidate = (candidateId: string) => {
+  const handleRejectCandidate = (candidateId: string, comment?: string) => {
     window.dispatchEvent(new CustomEvent("lia:wizard-edit-question", {
-      detail: { type: "calibration_reject", candidateId },
+      detail: { type: "calibration_reject", candidateId, reason: comment },
+    }))
+  }
+
+  const handleSkipCandidate = (candidateId: string) => {
+    window.dispatchEvent(new CustomEvent("lia:wizard-edit-question", {
+      detail: { type: "calibration_skip", candidateId },
     }))
   }
 
@@ -150,6 +164,7 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
             candidate={c}
             onApproveCandidate={handleApproveCandidate}
             onRejectCandidate={handleRejectCandidate}
+            onSkipCandidate={handleSkipCandidate}
           />
         ))}
         {candidates.length === 0 && (
@@ -188,12 +203,15 @@ function CandidateCard({
   candidate,
   onApproveCandidate,
   onRejectCandidate,
+  onSkipCandidate,
 }: {
   candidate: CalibrationCandidate
-  onApproveCandidate: (id: string) => void
-  onRejectCandidate: (id: string) => void
+  onApproveCandidate: (id: string, comment?: string) => void
+  onRejectCandidate: (id: string, comment?: string) => void
+  onSkipCandidate: (id: string) => void
 }) {
   const decided = !!candidate.decision
+  const [comment, setComment] = useState("")
 
   return (
     <div className={cn(
@@ -201,47 +219,117 @@ function CandidateCard({
       decided ? "border-lia-border-subtle/50 opacity-70" : "border-lia-border-subtle",
     )}>
       <div className="flex items-start gap-2.5 px-3 py-2.5">
-        <div className="w-8 h-8 rounded-full bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
-          <User className="w-4 h-4 text-lia-text-disabled" />
+        {/* Avatar — usa avatar_url se disponível */}
+        <div className="w-8 h-8 rounded-full bg-lia-bg-secondary flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {candidate.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={candidate.avatar_url} alt={candidate.name} className="w-full h-full object-cover" />
+          ) : (
+            <User className="w-4 h-4 text-lia-text-disabled" />
+          )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-lia-text-primary truncate">
-            {candidate.name}
-          </p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium text-lia-text-primary truncate">
+              {candidate.name}
+            </p>
+            {candidate.linkedin_url && (
+              <a
+                href={candidate.linkedin_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] text-wedo-cyan hover:underline flex-shrink-0"
+                aria-label="Abrir LinkedIn"
+              >
+                in
+              </a>
+            )}
+          </div>
           <p className="text-xs text-lia-text-secondary truncate">
             {candidate.current_title} @ {candidate.current_company}
           </p>
-          <div className="flex items-center gap-1.5 mt-1">
-            <Target className="w-3 h-3 text-wedo-cyan" />
-            <span className="text-[10px] text-wedo-cyan font-medium">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <span className="flex items-center gap-1 text-[10px] text-wedo-cyan font-medium">
+              <Target className="w-3 h-3" />
               Match: {Math.round(candidate.match_score * 100)}%
             </span>
+            {/* Tenure stats */}
+            {candidate.tenure_stats && (
+              <span className="flex items-center gap-1 text-[10px] text-lia-text-tertiary">
+                {candidate.tenure_stats.current_months !== undefined && (
+                  <span title="Tempo no cargo atual">
+                    Cargo: {formatMonths(candidate.tenure_stats.current_months)}
+                  </span>
+                )}
+                {candidate.tenure_stats.avg_months !== undefined && (
+                  <span title="Média de tempo por empresa" className="ml-1">
+                    Média: {formatMonths(candidate.tenure_stats.avg_months)}
+                  </span>
+                )}
+              </span>
+            )}
           </div>
+          {/* Auto-tags */}
+          {candidate.auto_tags && candidate.auto_tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {candidate.auto_tags.map((tag, i) => (
+                <span
+                  key={i}
+                  className="px-1.5 py-0.5 rounded bg-lia-bg-tertiary text-lia-text-secondary text-[10px]"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {decided && (
           candidate.decision === "approved" ? (
             <CheckCircle className="w-5 h-5 text-status-success flex-shrink-0" />
+          ) : candidate.decision === "skipped" ? (
+            <Minus className="w-5 h-5 text-lia-text-disabled flex-shrink-0" />
           ) : (
             <XCircle className="w-5 h-5 text-status-error flex-shrink-0" />
           )
         )}
       </div>
 
-      {/* Match criteria */}
+      {/* Match criteria com reasoning inline */}
       {candidate.match_criteria?.length > 0 && (
-        <div className="px-3 pb-2 flex flex-wrap gap-1">
-          {candidate.match_criteria.map((mc, i) => (
-            <span
-              key={i}
-              className={cn(
-                "px-1.5 py-0.5 rounded text-[10px]",
-                mc.met ? "bg-status-success/10 text-status-success" : "bg-status-error/10 text-status-error",
-              )}
-            >
-              {mc.criterion}
-            </span>
-          ))}
+        <div className="px-3 pb-2 space-y-1">
+          <div className="flex flex-wrap gap-1">
+            {candidate.match_criteria.map((mc, i) => (
+              <div key={i} className="flex flex-col gap-0.5">
+                <span
+                  className={cn(
+                    "px-1.5 py-0.5 rounded text-[10px]",
+                    mc.met ? "bg-status-success/10 text-status-success" : "bg-status-error/10 text-status-error",
+                  )}
+                >
+                  {mc.criterion}
+                </span>
+                {mc.explanation && (
+                  <span className="text-[9px] text-lia-text-tertiary leading-tight max-w-[160px]">
+                    {mc.explanation}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Campo de comentário — disponível para approve e reject */}
+      {!decided && (
+        <div className="px-3 pb-2">
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Adicione um comentário para a LIA aprender melhor (opcional)"
+            rows={2}
+            className="w-full text-[11px] text-lia-text-primary placeholder:text-lia-text-disabled bg-lia-bg-secondary border border-lia-border-subtle rounded px-2 py-1.5 resize-none focus:outline-none focus:ring-1 focus:ring-wedo-cyan/40"
+          />
         </div>
       )}
 
@@ -249,7 +337,7 @@ function CandidateCard({
       {!decided && (
         <div className="flex border-t border-lia-border-subtle">
           <button
-            onClick={() => onRejectCandidate(candidate.id)}
+            onClick={() => onRejectCandidate(candidate.id, comment || undefined)}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-status-error hover:bg-status-error/5 transition-colors"
           >
             <ThumbsDown className="w-3.5 h-3.5" />
@@ -257,7 +345,15 @@ function CandidateCard({
           </button>
           <div className="w-px bg-lia-border-subtle" />
           <button
-            onClick={() => onApproveCandidate(candidate.id)}
+            onClick={() => onSkipCandidate(candidate.id)}
+            className="flex items-center justify-center gap-1.5 px-2.5 py-2 text-xs text-lia-text-tertiary hover:bg-lia-interactive-hover transition-colors"
+            title="Pular este candidato"
+          >
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+          <div className="w-px bg-lia-border-subtle" />
+          <button
+            onClick={() => onApproveCandidate(candidate.id, comment || undefined)}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-status-success hover:bg-status-success/5 transition-colors"
           >
             <ThumbsUp className="w-3.5 h-3.5" />
