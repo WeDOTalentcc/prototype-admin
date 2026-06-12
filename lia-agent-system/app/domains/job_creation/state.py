@@ -324,6 +324,8 @@ class JobCreationState(TypedDict, total=False):
     priority: Optional[str]          # "normal" | "high" | "urgent" — default "normal"
     urgency_level: Optional[int]     # 0=normal, 1=alta, 2=critica — default 0
     is_confidential: Optional[bool]  # vaga sigilosa — default False
+    masked_company_name: Optional[str]  # nome mascarado quando is_confidential=True
+    visibility: Optional[str]           # "public" | "internal" | "unlisted" — default "public"
     computed_deadline: Optional[str] # ISO date derivado do derived_chronogram
 
     # --- WS protocol fields ---

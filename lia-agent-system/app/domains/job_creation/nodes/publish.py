@@ -371,6 +371,9 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 "urgency_level": state.get("urgency_level") or 0,
                 "is_confidential": bool(state.get("is_confidential", False)),
                 "priority": state.get("priority") or "normal",
+                # W3-B: confidentiality + visibility
+                "masked_company_name": state.get("masked_company_name"),
+                "visibility": state.get("visibility") or "public",
             }
             resp = cb_wrap(api.create_job, job_data)
             if resp.success and resp.data:

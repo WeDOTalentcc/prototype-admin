@@ -57,6 +57,13 @@ export function ReviewPanel({ data, onUpdate }: Props) {
   const d = data as unknown as ReviewData
   const readiness = d.readiness || { ready: false, checks: {}, missing: [] }
   const chronogram = (d as unknown as { derived_chronogram?: Array<{name: string; order: number; sla_days: number; offset_start: number; offset_end: number}> }).derived_chronogram || []
+  const opData = d as unknown as {
+    is_confidential?: boolean
+    masked_company_name?: string
+    priority?: string
+    urgency_level?: number
+    visibility?: string
+  }
   const defaultsApplied = d.defaults_applied || []
   const sourcingMode = d.sourcing_mode ?? null
 
@@ -181,6 +188,39 @@ export function ReviewPanel({ data, onUpdate }: Props) {
               <span className="text-lia-text-secondary">Total estimado</span>
               <span className="text-wedo-cyan">{chronogram[chronogram.length - 1].offset_end} dias</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* W3-B: Configurações operacionais da vaga */}
+      {(opData.is_confidential || (opData.priority && opData.priority !== "normal") || (opData.urgency_level != null && opData.urgency_level !== 0) || (opData.visibility && opData.visibility !== "public")) && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <Settings className="w-4 h-4 text-lia-text-secondary" />
+            <span className="text-xs font-semibold text-lia-text-secondary">Configuracoes</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {opData.is_confidential && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-medium">
+                Sigilosa
+                {opData.masked_company_name && <span className="text-lia-text-tertiary">— {opData.masked_company_name}</span>}
+              </span>
+            )}
+            {opData.priority && opData.priority !== "normal" && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 text-[10px] font-medium">
+                {opData.priority === "urgent" ? "Urgente" : "Alta prioridade"}
+              </span>
+            )}
+            {opData.urgency_level != null && opData.urgency_level !== 0 && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 text-[10px] font-medium">
+                Urgencia {opData.urgency_level === 2 ? "Critica" : "Alta"}
+              </span>
+            )}
+            {opData.visibility && opData.visibility !== "public" && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 text-[10px] font-medium">
+                {opData.visibility === "internal" ? "Interna" : "Nao-listada"}
+              </span>
+            )}
           </div>
         </div>
       )}

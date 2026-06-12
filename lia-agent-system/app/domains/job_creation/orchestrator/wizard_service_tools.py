@@ -2404,6 +2404,22 @@ def _handle_set_operational_fields(
     if is_confidential is not None:
         updates["is_confidential"] = bool(is_confidential)
 
+    masked_company_name = tool_input.get("masked_company_name")
+    if masked_company_name is not None:
+        val = str(masked_company_name).strip()
+        if len(val) < 2 or len(val) > 120:
+            errors.append("masked_company_name deve ter entre 2 e 120 caracteres")
+        else:
+            updates["masked_company_name"] = val
+
+    visibility = tool_input.get("visibility")
+    _VALID_VISIBILITY = {"public", "internal", "unlisted"}
+    if visibility is not None:
+        if visibility not in _VALID_VISIBILITY:
+            errors.append(f"visibility invalido: {visibility!r}. Valores aceitos: public, internal, unlisted")
+        else:
+            updates["visibility"] = visibility
+
     if errors:
         return ToolResult(llm_message="; ".join(errors), error=True)
 
@@ -2453,6 +2469,15 @@ SET_OPERATIONAL_FIELDS = WizardTool(
             "is_confidential": {
                 "type": "boolean",
                 "description": "True se a vaga é confidencial/sigilosa",
+            },
+            "masked_company_name": {
+                "type": "string",
+                "description": "Nome mascarado da empresa quando is_confidential=True (ex: empresa de tecnologia de medio porte)",
+            },
+            "visibility": {
+                "type": "string",
+                "enum": ["public", "internal", "unlisted"],
+                "description": "Visibilidade da vaga: public (padrao), internal (apenas colaboradores), unlisted (link direto)",
             },
         },
         "additionalProperties": False,
