@@ -101,6 +101,51 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+def _normalize_job_for_card(j: dict) -> dict:
+    """Normaliza job dict para o shape JobSummary esperado pelo FE (JobListCard)."""
+    return {
+        "id": str(j.get("id") or j.get("job_id") or ""),
+        "title": j.get("title") or j.get("job_title") or "",
+        "department": j.get("department") or j.get("department_name") or None,
+        "status": j.get("status") or j.get("job_status") or None,
+        "candidateCount": j.get("candidate_count") or j.get("candidates_count") or None,
+    }
+
+
+def _format_list_jobs_result(jobs_list: list, *, total: int = 0) -> dict:
+    """P2.5-BE: formata resultado de list_jobs com response_blocks list_jobs_result.
+
+    Produtor UNICO (canonical-fix) — adicionar response_blocks de tipo list_jobs_result
+    para que o FE renderize JobListCard. Dados originais (status_filter, etc.) continuam
+    em data para consumo pelo LLM.
+
+    Seguindo precedente de _format_search_candidates_result (P2.4).
+    """
+    _total = total or len(jobs_list)
+    response_blocks = (
+        [
+            {
+                "type": "list_jobs_result",
+                "data": {
+                    "jobs": [_normalize_job_for_card(j) for j in jobs_list[:20]],
+                    "total_count": _total,
+                },
+            }
+        ]
+        if jobs_list
+        else None
+    )
+    return {
+        "success": True,
+        "data": {
+            "total_jobs": _total,
+            "jobs": jobs_list,
+            "response_blocks": response_blocks,
+        },
+        "message": f"{_total} vagas encontradas.",
+    }
+
+
 @tool_handler("jobs_mgmt")
 async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     status = kwargs.get("status", "all")
@@ -176,7 +221,26 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
         f"{total} vagas no total -- por status: {_bd}." if _bd
         else f"{total} vagas encontradas (status={status}, departamento={department})."
     )
-    if _blocks:
+    # P2.5-BE: adicionar bloco list_jobs_result para FE renderizar JobListCard
+    # Aditivo: _blocks (ComparisonTableBlock RRP) continuam para o LLM;
+    # list_jobs_result e o tipo que o FE usa (JobListCard via UnifiedMessageList).
+    _ljr_block = (
+        [
+            {
+                "type": "list_jobs_result",
+                "data": {
+                    "jobs": [_normalize_job_for_card(j) for j in jobs[:20]],
+                    "total_count": total,
+                },
+            }
+        ]
+        if jobs
+        else []
+    )
+    # Combinar: list_jobs_result (FE card) + ComparisonTable RRP (FE tabela) se existir
+    _all_blocks = _ljr_block + _blocks if _ljr_block else _blocks
+
+    if _all_blocks:
         _data = {
             "status_filter": status,
             "department_filter": department,
@@ -184,7 +248,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
             "status_breakdown": status_breakdown,
             "rendered_as_card": True,
             "narrative": f"{total} vagas (filtro status={status}).",
-            "response_blocks": _blocks,
+            "response_blocks": _all_blocks,
             "render_hint": _hint,
         }
     else:
