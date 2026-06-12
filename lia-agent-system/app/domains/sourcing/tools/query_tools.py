@@ -48,6 +48,14 @@ def _format_search_candidates_result(candidates_list: list, applied_filters: dic
             or "Nenhum candidato encontrado com esses criterios.",
             "data": {"total": 0, "candidates": [], **g},
         }
+    def _normalize(c: dict) -> dict:
+        return {
+            "id": str(c.get("id") or c.get("candidate_id") or ""),
+            "name": c.get("name") or c.get("full_name") or "",
+            "currentTitle": c.get("current_title") or c.get("position") or c.get("title"),
+            "matchScore": c.get("match_score") or c.get("score"),
+        }
+
     return {
         "success": True,
         "message": f"✅ Encontrados {len(candidates_list)} candidatos.",
@@ -57,6 +65,16 @@ def _format_search_candidates_result(candidates_list: list, applied_filters: dic
             "filters_applied": {
                 k: v for k, v in (applied_filters or {}).items() if v not in (None, "", [], {})
             },
+            # Response blocks para o FE renderizar CandidateResultCard
+            "response_blocks": [
+                {
+                    "type": "search_candidates_result",
+                    "data": {
+                        "candidates": [_normalize(c) for c in candidates_list[:20]],
+                        "total_count": len(candidates_list),
+                    },
+                }
+            ],
         },
     }
 

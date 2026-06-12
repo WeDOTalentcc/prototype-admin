@@ -112,14 +112,30 @@ _ACTIONABLE_TOOL_UI_ACTIONS: frozenset[str] = frozenset(
 
 
 def _extract_response_blocks(result: object) -> list:
-    """Pure helper: surface response_blocks (RRP) from a ToolResult.
+    """Pure helper: surface response_blocks (RRP) from a ToolResult or plain dict.
 
     AD3: tools-as-renderers podem retornar blocos ricos em
     ``result.result["data"]["response_blocks"]``. O loop acumula e
     promove no return. Defensivo — shape mismatch -> []; nunca raise.
+
+    Suporta dois formatos:
+    - ToolResult object: result.success / result.result["data"]["response_blocks"]
+    - Plain dict: result["success"] / result["data"]["response_blocks"]
     """
     if result is None:
         return []
+
+    # Plain dict path (ex: ferramentas que retornam dict diretamente)
+    if isinstance(result, dict):
+        if not result.get("success", False):
+            return []
+        data = result.get("data")
+        if not isinstance(data, dict):
+            return []
+        blocks = data.get("response_blocks")
+        return blocks if isinstance(blocks, list) else []
+
+    # ToolResult object path (original)
     if not getattr(result, "success", False):
         return []
     payload = getattr(result, "result", None)
@@ -130,7 +146,6 @@ def _extract_response_blocks(result: object) -> list:
         return []
     blocks = data.get("response_blocks")
     return blocks if isinstance(blocks, list) else []
-
 
 def _extract_tool_directive(result: object) -> "dict | None":
     """Pure helper: surface an actionable UI directive from a ToolResult.
