@@ -176,15 +176,29 @@ export function useWizardIntegration({
     if (!isWizardActive) return
 
     function handleEditQuestion(e: CustomEvent) {
-      const { index, newText, type: eventType, candidateId } = e.detail || {}
+      const { index, newText, type: eventType, candidateId, reason } = e.detail || {}
 
-      // Calibration approve/reject events reuse this channel
-      if (eventType === "calibration_approve" && candidateId) {
-        sendMessage(`Aprovar candidato para calibracao: ${candidateId}`)
-        return
-      }
-      if (eventType === "calibration_reject" && candidateId) {
-        sendMessage(`Rejeitar candidato da calibracao: ${candidateId}`)
+      // Calibration approve/reject/skip: persist feedback + comment via API (fire-and-forget),
+      // then forward to LLM so orchestrator can update calibration state.
+      if ((eventType === "calibration_approve" || eventType === "calibration_reject" || eventType === "calibration_skip") && candidateId) {
+        const feedbackKind =
+          eventType === "calibration_approve" ? "like" :
+          eventType === "calibration_reject" ? "dislike" : "skip"
+
+        // Captura persistente: like/dislike + comentário → BE (best-effort, não bloqueia UX)
+        fetch("/api/backend-proxy/search/calibration/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ candidate_id: candidateId, feedback: feedbackKind, reason: reason ?? null }),
+        }).catch(() => {})
+
+        if (eventType === "calibration_approve") {
+          sendMessage(`Aprovar candidato para calibracao: ${candidateId}` + (reason ? `. Comentario: ${reason}` : ""))
+        } else if (eventType === "calibration_reject") {
+          sendMessage(`Rejeitar candidato da calibracao: ${candidateId}` + (reason ? `. Comentario: ${reason}` : ""))
+        } else {
+          sendMessage(`Pular candidato da calibracao: ${candidateId}`)
+        }
         return
       }
 
