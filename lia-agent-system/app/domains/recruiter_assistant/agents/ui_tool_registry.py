@@ -716,16 +716,47 @@ def _build_select_rows_definition():
     )
 
 
+
+async def _wrap_close_ui(**kwargs: "Any") -> "dict[str, Any]":
+    """Fecha o modal/painel aberto pela LIA."""
+    return {
+        "success": True,
+        "data": {
+            "ui_action": "close_modal",
+            "ui_action_params": {},
+        },
+        "message": "Modal fechado.",
+    }
+
+
+def _build_close_ui_definition() -> "ToolDefinition":
+    return ToolDefinition(
+        name="close_ui",
+        description=(
+            "Fecha o modal/painel aberto pela LIA. Use quando o usuario "
+            "pedir para fechar, dispensar ou sair de um modal aberto. "
+            "Nao precisa de parametros."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_close_ui,
+    )
+
+
 def get_ui_tools() -> list[ToolDefinition]:
     """ToolDefinitions de UI (open_ui + apply_table_state + select_rows). Federadas no recruiter_copilot."""
-    return [_build_open_ui_definition(), _build_apply_table_state_definition(), _build_select_rows_definition()]
+    return [_build_open_ui_definition(), _build_close_ui_definition(), _build_apply_table_state_definition(), _build_select_rows_definition()]
 
 
 def get_open_ui_tools() -> list[ToolDefinition]:
     """So open_ui (abre modal / navega). capability_map-gated + HITL nas acoes
     sensiveis -> seguro p/ conceder a qualquer agente CONVERSACIONAL via grant
     explicito no _get_tools do agente (least-privilege, removivel)."""
-    return [_build_open_ui_definition()]
+    return [_build_open_ui_definition(), _build_close_ui_definition()]
 
 
 def get_table_state_tools() -> list[ToolDefinition]:
