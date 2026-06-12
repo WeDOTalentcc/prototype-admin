@@ -90,11 +90,16 @@ class AutomationScheduler:
         suficiente. Para multi-instância, usar solução externa (Cloud Scheduler,
         Celery Beat com Redis backend, ou APScheduler 4.x quando estável).
         """
+        import zoneinfo
         from apscheduler.jobstores.memory import MemoryJobStore
         jobstores = {"default": MemoryJobStore()}
         logger.info("[AutomationScheduler] Usando MemoryJobStore")
         job_defaults = {"coalesce": True, "max_instances": 1, "misfire_grace_time": 60}
-        return AsyncIOScheduler(jobstores=jobstores, job_defaults=job_defaults)
+        return AsyncIOScheduler(
+            jobstores=jobstores,
+            job_defaults=job_defaults,
+            timezone=zoneinfo.ZoneInfo("America/Sao_Paulo"),
+        )
     
     def _get_email_service(self):
         """Lazy load EmailService."""
@@ -282,10 +287,16 @@ class AutomationScheduler:
                 replace_existing=True,
             )
 
-            # A2 — Teams daily digest (DM do bot), 08:30 BRT Mon-Fri
+            # A2 — Teams daily digest (DM do bot), 08:00 BRT Mon-Fri (Sao Paulo tz explicit)
             self.scheduler.add_job(
                 self.run_teams_daily_digest,
-                CronTrigger(day_of_week="mon-fri", hour=8, minute=30),
+                CronTrigger(
+                    day_of_week="mon-fri",
+                    hour=8,
+                    minute=0,
+                    timezone="America/Sao_Paulo",
+                    misfire_grace_time=3600,
+                ),
                 id="teams_daily_digest",
                 name="A2 — Teams daily digest per recruiter",
                 replace_existing=True,
