@@ -62,6 +62,7 @@ import {
 } from "./wizard/DynamicContextPanel";
 import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure";
 import { WizardDock } from "./wizard/WizardDock";
+import { WizardFullscreenPromptCard } from "./wizard/WizardFullscreenPromptCard";
 import { wizardPanelVisibility } from "./wizard/panel-visibility";
 import { WizardProgressBar } from "./wizard/WizardProgressBar";
 import { PipelineTemplateSuggestion } from "./wizard/PipelineTemplateSuggestion";
@@ -137,11 +138,7 @@ function getStoredPanelWidth(): number {
 // instância NÃO basta: ao navegar pra página "Conversar", `UnifiedChatConditional`
 // troca o branch renderizado de <UnifiedChat>, REMONTANDO o componente — o ref
 // reseta pra false e a escalada re-dispara no próximo turno (fechando o painel
-// recém-preservado). Um Set keyed por conversationId persiste através do
-// remount, garantindo o disparo único de verdade.
-//
-// Skill canônica: harness-engineering [guide computacional remount-safe].
-const _autoFullscreenConversations = new Set<string>();
+// F3 (Manus): auto-escalada removida — consentimento explícito via WizardFullscreenPromptCard.
 
 interface Props {
   renderMode?: "inline" | "overlay";
@@ -232,7 +229,6 @@ export function UnifiedChat({
   const [inputText, setInputText] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [showSwitchTask, setShowSwitchTask] = useState(false);
-  const autoFullscreenDone = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth);
   const [isResizing, setIsResizing] = useState(false);
@@ -455,6 +451,8 @@ export function UnifiedChat({
     closeDynamicPanel,
     wizardPanelMode,
     setWizardPanelMode,
+    wizardConsentDeclined,
+    setWizardConsentDeclined,
   } = useLiaFloat();
 
   const {
@@ -1079,44 +1077,7 @@ export function UnifiedChat({
   }, [handleModeChange]);
 
   // Wizard de alto esforco (criar vaga) sai do chat lateral/bolha e vai para a
-  // tela cheia automaticamente -- uma vez por sessao de wizard. Enterprise
-  // pattern (Salesforce/Jira/HubSpot): chat lateral e entry point; a criacao
-  // estruturada acontece no canvas dedicado. handleModeChange("fullscreen")
-  // ja e o bridge canonico (close() + lia:navigate-chat-page) -- nao criamos
-  // rota concorrente. Respeita renderMode "inline" (chat embutido nao migra).
-  //
-  // FE-3 (2026-06-05): dispara no PRIMEIRO stage que precisa do painel lateral
-  // (qualquer SPLIT_STAGE), nao apenas "intake". O wizard pode iniciar/retomar
-  // em estagios diferentes via SSE/WS (ex.: jd_gate/jd_enrichment) e a bolha
-  // precisa escalar pra tela cheia em todos esses casos -- o painel HITL so
-  // renderiza com o layout completo. A continuidade da conversa e preservada
-  // porque chatConversationId e compartilhado no lia-float-context e o bridge
-  // (lia:navigate-chat-page) carrega a mesma conversa.
-  const _autoFsStage = dynamicPanel?.stage;
-  useEffect(() => {
-    // Guarda remount-safe: a chave é a conversa do wizard (estável entre o
-    // unmount/mount provocado pelo swap de branch em UnifiedChatConditional).
-    // Sem conversa ainda → cai no ref por instância como fallback.
-    const guardKey = chatConversationId ?? "__no_conversation__";
-    const alreadyEscalated =
-      _autoFullscreenConversations.has(guardKey) || autoFullscreenDone.current;
-    if (
-      !!_autoFsStage &&
-      SPLIT_STAGES.includes(_autoFsStage as WizardStage) &&
-      mode !== "fullscreen" &&
-      !alreadyEscalated
-    ) {
-      autoFullscreenDone.current = true;
-      _autoFullscreenConversations.add(guardKey);
-      if (renderMode === "inline") {
-        // Sidebar inline: migra para a pagina de chat dedicada (Bug 2026-06-08).
-        // Wizard em sidebar e UX ruim; /conversar da a experiencia completa.
-        navigateToChat(chatConversationId ?? undefined);
-      } else {
-        handleModeChange("fullscreen");
-      }
-    }
-  }, [_autoFsStage, mode, renderMode, chatConversationId, handleModeChange, navigateToChat]);
+  // F3 (Manus): auto-escalada removida. Consentimento explícito via WizardFullscreenPromptCard.
 
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -1141,6 +1102,15 @@ export function UnifiedChat({
     stage: dynamicPanel?.stage,
     mode: wizardPanelMode,
   });
+  // F3: DynamicContextPanel só monta em fullscreen
+  const hasDynamicPanelFull = hasDynamicPanel && mode === "fullscreen";
+  // F3: mostra card de consentimento quando em SPLIT_STAGE fora de fullscreen
+  const showConsentCard =
+    wizardActive &&
+    !!dynamicPanel?.stage &&
+    SPLIT_STAGES.includes(dynamicPanel.stage as WizardStage) &&
+    mode !== "fullscreen" &&
+    !wizardConsentDeclined;
   const activeTaskLabel = dynamicPanel?.stage
     ? (WIZARD_STAGE_LABELS[dynamicPanel.stage] ?? dynamicPanel.stage)
     : null;
@@ -1150,7 +1120,7 @@ export function UnifiedChat({
   const isInline = renderMode === "inline";
   const effectiveMode: ChatMode = isInline ? "sidebar" : mode;
 
-  const dynamicPanelWidth = hasDynamicPanel ? dynamicPanelWidthPx : 0;
+  const dynamicPanelWidth = hasDynamicPanelFull ? dynamicPanelWidthPx : 0;
   const inlineWidth = isInline ? sidebarWidthPx + dynamicPanelWidth : undefined;
 
   // Task #1291 — when the floating window has been dragged, drop the static
@@ -1407,12 +1377,23 @@ export function UnifiedChat({
         )}
 
         {/* Progressive disclosure tips (wizard active) */}
-        {hasDynamicPanel && (
+        {hasDynamicPanelFull && (
           <ProgressiveDisclosure
             currentStage={(dynamicPanel?.stage as WizardStage) ?? null}
             interactionCount={
               chatMessages.filter((m) => m.sender === "user").length
             }
+          />
+        )}
+
+        {/* F3: Consent card — aparece em sidebar/floating quando wizard está em SPLIT_STAGE */}
+        {showConsentCard && (
+          <WizardFullscreenPromptCard
+            onAccept={() => {
+              if (isInline) navigateToChat(chatConversationId ?? undefined);
+              else handleModeChange("fullscreen");
+            }}
+            onDecline={() => setWizardConsentDeclined(true)}
           />
         )}
 
@@ -1465,7 +1446,7 @@ export function UnifiedChat({
       </div>
 
       {/* Split View: DynamicContextPanel — wider in fullscreen to use available space */}
-      {hasDynamicPanel && (
+      {hasDynamicPanelFull && (
         <div
           className="flex-shrink-0 flex p-2 relative"
           style={{ width: dynamicPanelWidthPx }}
