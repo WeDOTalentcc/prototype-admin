@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { ChevronDown, FileText, ExternalLink } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { useToolSurface } from "@/contexts/ToolSurfaceContext"
 
 interface WizardJdCardProps {
   data: Record<string, unknown>
@@ -34,13 +35,15 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
         ? "text-wedo-cyan"
         : "text-status-warning"
 
+  const surface = useToolSurface()
+
   if (!enriched) return null
 
   return (
     <div
       role="region"
       aria-label="Descrição da vaga enriquecida"
-      className="mt-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary overflow-hidden"
+      className={cn("mt-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary", surface !== 'panel' && "overflow-hidden")}
     >
       {/* Header — sempre visível */}
       <button

@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { ChevronDown, Brain, AlertCircle } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { useToolSurface } from "@/contexts/ToolSurfaceContext"
 
 interface WsiQuestion {
   text: string
@@ -57,6 +58,8 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
     | undefined
   const needsReview = questions.filter((q) => q.needs_manual_review).length
 
+  const surface = useToolSurface()
+
   if (questions.length === 0) return null
 
   const firstThree = questions.slice(0, 3)
@@ -66,7 +69,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
     <div
       role="region"
       aria-label="Perguntas de triagem WSI"
-      className="mt-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary overflow-hidden"
+      className={cn("mt-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary", surface !== 'panel' && "overflow-hidden")}
     >
       {/* Header */}
       <button
