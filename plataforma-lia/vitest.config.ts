@@ -83,6 +83,8 @@ export default defineConfig({
           setupFiles: ['src/hooks/__tests__/setup.ts'],
           alias: {
             '@': path.resolve(dirname, 'src'),
+            // framer-motion nao instalado no ambiente de teste — mock manual preserva DOM.
+            'framer-motion': path.resolve(dirname, '__mocks__/framer-motion.tsx'),
           },
         },
         esbuild: {
