@@ -30,6 +30,8 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useChatStateStore } from "@/stores/chat-state-store";
 import { useRecentItemsStore } from "@/stores/recent-items-store";
 import { useUIPreferencesStore, type LiaRecentItem } from "@/stores/ui-preferences-store";
+import { ToolActivateContext } from "@/contexts/ToolSurfaceContext";
+import { useLiaPanelStore } from "@/stores/lia-panel-store";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type React from "react";
@@ -1114,6 +1116,16 @@ export function UnifiedChat({
   });
   // F3: DynamicContextPanel só monta em fullscreen
   const hasDynamicPanelFull = hasDynamicPanel && mode === "fullscreen";
+  const liaPanelStore = useLiaPanelStore();
+  const handleActivateTool = useCallback(
+    (callId: string) => {
+      if (chatConversationId) {
+        liaPanelStore.openForToolCall(callId, chatConversationId);
+      }
+      setWizardPanelMode("expanded");
+    },
+    [chatConversationId, liaPanelStore, setWizardPanelMode],
+  );
   // F3: mostra card de consentimento quando em SPLIT_STAGE fora de fullscreen
   const showConsentCard =
     wizardActive &&
@@ -1334,19 +1346,21 @@ export function UnifiedChat({
 
         {/* Content area */}
         {hasMessages ? (
-          <UnifiedMessageList
-            mode={effectiveMode}
-            messages={chatMessages}
-            isStreaming={chatIsStreaming}
-            streamingContent={chatStreamingContent}
-            isThinking={chatIsThinking}
-            thinkingSteps={chatThinkingSteps}
-            userName={userName}
-            conversationId={chatConversationId}
-            onChipClick={(value) => sendChatMessage(value)}
-            onRegenerate={handleRegenerate}
-            onOpenPanel={() => setWizardPanelMode("expanded")}
-          />
+          <ToolActivateContext.Provider value={hasDynamicPanelFull ? handleActivateTool : null}>
+            <UnifiedMessageList
+              mode={effectiveMode}
+              messages={chatMessages}
+              isStreaming={chatIsStreaming}
+              streamingContent={chatStreamingContent}
+              isThinking={chatIsThinking}
+              thinkingSteps={chatThinkingSteps}
+              userName={userName}
+              conversationId={chatConversationId}
+              onChipClick={(value) => sendChatMessage(value)}
+              onRegenerate={handleRegenerate}
+              onOpenPanel={() => setWizardPanelMode("expanded")}
+            />
+          </ToolActivateContext.Provider>
         ) : (
           <UnifiedChatEmptyState
             mode={effectiveMode}
