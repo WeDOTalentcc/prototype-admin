@@ -194,6 +194,20 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
         # Etapa 3: additional dangerous tools (OWASP LLM06 audit)
         "reject_autonomous_action", "calibrate_sourcing_agent",
         "advance_campaign_stage", "move_pool_to_job",
+    # ── P0-1 Onda 0 (2026-06-12): HITL_REQUIRED_TOOLS — tools sensíveis que NUNCA ──
+    # executam sem aprovação humana explícita. LLM custom NÃO pode invocar publish_job,
+    # send_offer, reject_candidate etc. diretamente. O gate abaixo retorna hitl_pending
+    # (não um erro genérico de confirm=True), permitindo que o frontend renderize um
+    # card de aprovação específico para essas ações de alto impacto.
+    # Espelha hitl_preflight do chat principal (app/shared/services/hitl_service.py).
+    HITL_REQUIRED_TOOLS: frozenset[str] = frozenset({
+        "publish_job",
+        "send_offer",
+        "reject_candidate",
+        "bulk_update_candidates",
+        "send_email_bulk",
+        "bulk_reject_candidates",
+        "send_whatsapp_bulk",
     })
 
     def _get_tools(self) -> list:

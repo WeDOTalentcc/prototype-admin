@@ -440,6 +440,62 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
                 except Exception as _23_exc:
                     logger.error("[2.3] score_breakdown update falhou (fail-soft): %s", _23_exc)
                     actions["ranking_score_updated"] = "failed"
+            # 2.4: behavioral_analysis (OCEAN traits + scores comportamentais) → LiaOpinion
+            if session.candidate_id and session.job_id and session.company_id:
+                try:
+                    from app.domains.pipeline.repositories.lia_opinion_repository import (
+                        LiaOpinionRepository as _LioRepo24,
+                    )
+                    # Agrega OCEAN traits dos response_scores que têm trait_ocean
+                    _ocean_acc: dict[str, list[float]] = {}
+                    _behav_scores = []
+                    for _rs in (response_scores or []):
+                        if not isinstance(_rs, dict):
+                            continue
+                        if _rs.get("block_type") == "behavioral":
+                            _behav_scores.append({
+                                "competency": _rs.get("competency"),
+                                "score": _rs.get("score"),
+                            })
+                        _trait = _rs.get("trait_ocean")
+                        if _trait and isinstance(_rs.get("score"), (int, float)):
+                            _ocean_acc.setdefault(_trait, []).append(float(_rs["score"]))
+
+                    # Média por trait normalizada para 0-1 (escala WSI 0-5)
+                    _ocean_traits: dict[str, float] = {
+                        _t: round(sum(_vs) / (len(_vs) * 5.0), 3)
+                        for _t, _vs in _ocean_acc.items()
+                        if _vs
+                    }
+
+                    _ba_24 = {
+                        "wsi_classification": getattr(session, "classification", None),
+                        "wsi_behavioral": len(_behav_scores),
+                        "behavioral_scores": _behav_scores[:20],  # trunca para não explodir jsonb
+                        "ocean_traits": _ocean_traits,
+                        "wsi_source": "web_triagem",
+                    }
+
+                    # Buscar o opinion_id criado no bloco 2.2 (se disponível em actions)
+                    _opinion_id_24 = None
+                    _ok_22 = actions.get("lia_opinion_created", "")
+                    if isinstance(_ok_22, str) and _ok_22.startswith("ok:"):
+                        pass  # Não temos o opinion_id direto; re-busca não é necessária
+                    # Re-instanciar repo e atualizar pelo candidato+vaga mais recente
+                    _lio_repo_24 = _LioRepo24(db)
+                    # update_behavioral_analysis por opinion_id — se não temos o ID,
+                    # usamos um UPDATE pelo candidato_id+job_vacancy_id+company_id
+                    _rows_24 = await _lio_repo_24.update_behavioral_analysis_by_candidate(
+                        candidate_id=session.candidate_id,
+                        job_vacancy_id=session.job_id,
+                        company_id=session.company_id,
+                        behavioral_analysis=_ba_24,
+                    )
+                    actions["behavioral_analysis_updated"] = f"ok:ocean={list(_ocean_traits.keys())}"
+                except Exception as _24_exc:
+                    logger.error("[2.4] behavioral_analysis update falhou (fail-soft): %s", _24_exc)
+                    actions["behavioral_analysis_updated"] = "failed"
+
         else:
             actions["wsi_persistence"] = "skipped"
     except Exception as e:

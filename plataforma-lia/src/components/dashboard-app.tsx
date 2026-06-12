@@ -365,9 +365,9 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
     // Ambiguous reply: leave proposal pending until next user message.
   }, [chatMessages, pendingNavProposal, router, locale, setChatMessages])
 
-  const handleNavigate = (page: string) => {
+  const handleNavigate = async (page: string) => {
     if (page === "Sair") {
-      logout()
+      await logout()
       router.push(`/${locale}/login`)
       return
     }

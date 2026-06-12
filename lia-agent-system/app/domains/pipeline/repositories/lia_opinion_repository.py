@@ -127,3 +127,29 @@ class LiaOpinionRepository:
         )
         return opinion_id
 
+    async def update_behavioral_analysis(
+        self,
+        opinion_id: str,
+        company_id: str,
+        behavioral_analysis: dict,
+    ) -> int:
+        """2.4: persiste behavioral_analysis (OCEAN traits + behavioral scores) no LiaOpinion."""
+        import json as _json
+        self._require_company_id(company_id)
+        result = await self.db.execute(
+            text("""
+                UPDATE lia_opinions
+                SET behavioral_analysis = :ba::jsonb,
+                    updated_at = NOW()
+                WHERE id = :opinion_id
+                  AND company_id = :company_id
+            """),
+            {
+                "ba": _json.dumps(behavioral_analysis),
+                "opinion_id": str(opinion_id),
+                "company_id": str(company_id),
+            },
+        )
+        return result.rowcount
+
+
