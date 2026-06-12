@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { DollarSign, Gift, CheckCircle2, Edit2 } from "lucide-react"
+import { DollarSign, Gift, CheckCircle2, Edit2, TrendingUp } from "lucide-react"
 import type { SalaryData } from "../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
 import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
@@ -198,6 +198,36 @@ export function SalaryPanel({ data, onUpdate }: Props) {
               >
                 {b}
               </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {d.variable_compensation && d.variable_compensation.length > 0 && (
+        <div>
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <TrendingUp className="w-4 h-4 text-wedo-cyan" />
+            <span className="text-xs font-medium text-lia-text-secondary">Remuneração Variável</span>
+          </div>
+          <div className="space-y-1">
+            {d.variable_compensation.map((vc, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle"
+              >
+                <span className="text-xs text-lia-text-primary font-medium">{vc.name}</span>
+                {(vc.target_pct || vc.min_pct) && (
+                  <span className="text-micro text-wedo-cyan ml-2">
+                    {vc.target_pct ? `${vc.target_pct}%` : `${vc.min_pct}–${vc.max_pct}%`}
+                  </span>
+                )}
+                {vc.min_amount && (
+                  <span className="text-micro text-wedo-cyan ml-2">
+                    {`R$ ${vc.min_amount.toLocaleString("pt-BR")}`}
+                    {vc.max_amount ? `–${vc.max_amount.toLocaleString("pt-BR")}` : ""}
+                  </span>
+                )}
+              </div>
             ))}
           </div>
         </div>

@@ -192,6 +192,18 @@ export interface SalaryData {
   salary_max: number | null
   salary_currency: string
   benefits: string[]
+  variable_compensation?: Array<{
+    name: string
+    kind?: string
+    description?: string
+    target_pct?: number
+    min_pct?: number
+    max_pct?: number
+    min_amount?: number
+    max_amount?: number
+    currency?: string
+    frequency?: string
+  }>
   benchmark: Record<string, unknown> | null
   /** Task #1065 — `true` quando o benchmark fetch caiu em fallback (timeout). */
   salary_used_fallback?: boolean
