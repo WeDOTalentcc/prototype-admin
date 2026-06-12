@@ -88,6 +88,7 @@ from app.api.v1 import (
     data_subject_requests,
     default_templates,
     digest,
+    digest_schedule,
     drift,
     early_warning,
     eligibility_question_templates,
@@ -393,6 +394,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(communication_webhook_router, prefix="/api/v1", tags=["email-tracking"])
     app.include_router(notifications.router, prefix="/api/v1", tags=["notifications"])
     app.include_router(digest.router, prefix="/api/v1", tags=["digest"])
+    app.include_router(digest_schedule.router, prefix="/api/v1", tags=["notifications"])
 
     # ── Company ───────────────────────────────────────────────────────────────
     app.include_router(company.router, prefix="/api/v1", tags=["company"])

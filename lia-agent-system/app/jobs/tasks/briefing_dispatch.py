@@ -289,6 +289,41 @@ async def _dispatch_briefing_notification(
     )
 
 
+
+
+async def _resolve_user_briefing_frequency(
+    db,
+    company_id: str,
+    user_id: str,
+    company_freq: str | None,
+    company_source: str,
+) -> tuple[str | None, str]:
+    """Decisão 3 (Fatia 2): frequência efetiva por usuário.
+
+    Precedência:
+      1. digest_schedule_preferences WHERE user_id = :user_id (override pessoal)
+      2. digest_schedule_preferences WHERE user_id IS NULL (padrão da empresa)
+      3. company_freq (resolvido via HiringPolicy / AlertConfig — argumento passado)
+
+    Fail-soft: se DigestScheduleRepository falhar, cai para company_freq sem ruído.
+    """
+    try:
+        from app.domains.communication.repositories.digest_schedule_repository import (
+            DigestScheduleRepository,
+        )
+
+        repo = DigestScheduleRepository()
+        pref, source = await repo.get_effective(
+            db, company_id=company_id, user_id=user_id
+        )
+        if pref and pref.frequency in CANONICAL_FREQUENCIES:
+            return pref.frequency, f"digest_schedule_{source}"
+    except Exception as exc:  # pragma: no cover — fail-soft, never breaks dispatch
+        logger.debug(
+            "[briefing_dispatch] _resolve_user_briefing_frequency fallback (exc=%s)", exc
+        )
+    return company_freq, company_source
+
 async def _list_tenants_with_briefing_frequency(
     db, frequencies: list[str]
 ) -> list[dict[str, Any]]:
@@ -335,13 +370,20 @@ async def _list_tenants_with_briefing_frequency(
                 db, str(company_id)
             )
         resolved_freq, source = freq_cache[company_id]
-        if resolved_freq and resolved_freq in frequencies:
+
+        # Decisão 3 (Fatia 2): per-user override via digest_schedule_preferences.
+        # Cada usuário pode ter frequência diferente da empresa.
+        user_freq, user_source = await _resolve_user_briefing_frequency(
+            db, str(company_id), str(cfg.user_id or ""), resolved_freq, source
+        )
+
+        if user_freq and user_freq in frequencies:
             matched.append(
                 {
                     "company_id": str(company_id),
                     "user_id": cfg.user_id,
-                    "frequency": resolved_freq,
-                    "source": source,
+                    "frequency": user_freq,
+                    "source": user_source,
                 }
             )
     return matched
