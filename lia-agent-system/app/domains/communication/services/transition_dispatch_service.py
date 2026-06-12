@@ -54,6 +54,30 @@ ACTION_BEHAVIOR_TRIGGER_MAP: dict[str, str | None] = {
 DISPATCHABLE_CHANNELS = {"email", "whatsapp", "sms"}
 
 
+def is_feedback_fairness_blocked(text, company_id: str = "") -> bool:
+    """Camada de fairness/LGPD sobre o feedback gerado por IA, ANTES do envio ao
+    candidato (auditoria 2026-06-10). Reusa o guard canonico (L1 explicito + L2
+    implicito, com audit). Retorna True se o texto deve ser BLOQUEADO (nao enviar
+    a versao da IA — cai no template seguro). Fail-soft: erro no guard NAO bloqueia
+    o envio (nao quebrar comunicacao por falha do sensor)."""
+    if not text or not str(text).strip():
+        return False
+    try:
+        from app.shared.compliance.fairness_guard_middleware import check_fairness
+        result = check_fairness(
+            texts={"feedback": str(text)},
+            context="candidate_rejection_feedback",
+            company_id=company_id or "",
+        )
+        return bool(result.is_blocked)
+    except Exception as guard_err:
+        logger.warning(
+            "[DISPATCH] fairness guard do feedback falhou (fail-soft, nao bloqueia): %s",
+            guard_err,
+        )
+        return False
+
+
 class TransitionDispatchService:
     """Handles automatic message dispatch when candidates move between pipeline stages."""
 
@@ -355,10 +379,19 @@ class TransitionDispatchService:
 
         ai_personalized = False
         if personalized_content:
-            rendered_html = personalized_content
-            rendered_text = re.sub(r"<[^>]+>", "", personalized_content)
-            ai_personalized = True
-            logger.info("[DISPATCH] Using AI-personalized content instead of template")
+            if is_feedback_fairness_blocked(personalized_content, company_id or ""):
+                # Texto da IA reprovado pela camada de fairness/LGPD -> NAO envia a
+                # versao da IA; mantem o corpo do template seguro ja renderizado.
+                logger.warning(
+                    "[DISPATCH] feedback gerado por IA BLOQUEADO pela camada de fairness/LGPD "
+                    "(candidate=%s) — usando template seguro",
+                    candidate_data.get("candidate_id"),
+                )
+            else:
+                rendered_html = personalized_content
+                rendered_text = re.sub(r"<[^>]+>", "", personalized_content)
+                ai_personalized = True
+                logger.info("[DISPATCH] Using AI-personalized content instead of template")
 
         if channel == "whatsapp":
             phone = candidate_data.get("mobile_phone") or candidate_data.get("phone")
