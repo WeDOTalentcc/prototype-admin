@@ -72,6 +72,7 @@ import { useWizardFlow } from "./wizard/useWizardFlow";
 import { useWizardIntegration } from "./wizard/useWizardIntegration";
 import { formatWizardSavedLabel } from "./wizard/wizard-saved-label";
 import { STAGE_PILL_LABELS, type WizardStage } from "./wizard/wizard-types";
+import { AnimatePresence } from "framer-motion";
 import { getPersisted, setPersisted } from "@/lib/lia-persistence";
 import {
   ARROW_STEP,
@@ -1387,19 +1388,22 @@ export function UnifiedChat({
         )}
 
         {/* F3: Consent card — aparece em sidebar/floating quando wizard está em SPLIT_STAGE */}
-        {showConsentCard && (
-          <WizardFullscreenPromptCard
+        <AnimatePresence>
+          {showConsentCard && (
+            <WizardFullscreenPromptCard
             onAccept={() => {
               if (isInline) navigateToChat(chatConversationId ?? undefined);
               else handleModeChange("fullscreen");
             }}
             onDecline={() => setWizardConsentDeclined(true)}
-          />
-        )}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Wizard Dock (Manus F1) — thumbnail minimizado quando mode="docked" */}
-        {hasWizardDock && dynamicPanel && dynamicPanel.stage && (
-          <WizardDock
+        <AnimatePresence>
+          {hasWizardDock && dynamicPanel && dynamicPanel.stage && (
+            <WizardDock
             stage={dynamicPanel.stage}
             stageLabel={WIZARD_STAGE_LABELS[dynamicPanel.stage] ?? dynamicPanel.stage}
             requiresApproval={dynamicPanel.requires_approval ?? false}
@@ -1422,8 +1426,9 @@ export function UnifiedChat({
                 <div className="flex-1 rounded bg-lia-bg-secondary/50" />
               </div>
             }
-          />
-        )}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Input */}
         <UnifiedChatInput

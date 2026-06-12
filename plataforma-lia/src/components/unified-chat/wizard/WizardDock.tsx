@@ -1,6 +1,7 @@
 "use client"
 
 import { Maximize2 } from "lucide-react"
+import { motion } from "framer-motion"
 import type { ReactNode } from "react"
 
 interface WizardDockProps {
@@ -12,23 +13,27 @@ interface WizardDockProps {
   progressBar: ReactNode
   /** Painel real renderizado em escala (thumbnail vivo) — pointer-events none */
   thumbnail: ReactNode
+  /** Progresso textual opcional, ex: "3/5 etapas" */
+  stageProgress?: string
 }
 
 /**
  * Manus F1 — card minimizado do painel do wizard, acima do input.
  * Padrão FloatingToolPreview (Suna): affordance viva + maximizar.
- * Container clicável é div role=button (NUNCA <button> aninhando interativos).
+ * Container clicável é motion.div role=button (NUNCA <button> aninhando interativos).
+ * F4: enter/exit animation + hover scale no thumbnail.
  */
 export function WizardDock({
   stage: _stage,
   stageLabel,
+  stageProgress,
   requiresApproval,
   onExpand,
   progressBar,
   thumbnail,
 }: WizardDockProps) {
   return (
-    <div
+    <motion.div
       data-testid="wizard-dock"
       role="button"
       tabIndex={0}
@@ -39,13 +44,18 @@ export function WizardDock({
           onExpand()
         }
       }}
-      aria-label={`Abrir painel: ${stageLabel}`}
-      className="ml-3 mb-2 flex items-stretch gap-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-md shadow-black/10 p-2 cursor-pointer hover:border-wedo-cyan/50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan focus-visible:ring-offset-1 max-w-[380px]"
+      aria-label={`Painel ${stageLabel}${stageProgress ? ` — ${stageProgress}` : ""}. Clique para expandir.`}
+      aria-expanded={false}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 6 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="ml-3 mb-2 flex items-stretch gap-3 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-md shadow-black/10 p-2 cursor-pointer hover:border-wedo-cyan/50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan focus-visible:ring-offset-1 max-w-[380px] group"
     >
       <div
         data-testid="wizard-dock-thumbnail"
         aria-hidden="true"
-        className="pointer-events-none select-none w-20 h-14 overflow-hidden rounded-md border border-lia-border-subtle bg-lia-bg-secondary flex-shrink-0"
+        className="pointer-events-none select-none w-20 h-14 overflow-hidden rounded-md border border-lia-border-subtle bg-lia-bg-secondary flex-shrink-0 transition-transform duration-150 group-hover:scale-[1.03] group-hover:shadow-md"
       >
         <div className="origin-top-left scale-[0.18] w-[420px] h-[600px]">{thumbnail}</div>
       </div>
@@ -63,6 +73,6 @@ export function WizardDock({
       <div className="flex items-center pr-1 text-lia-text-disabled">
         <Maximize2 className="w-4 h-4" aria-hidden="true" />
       </div>
-    </div>
+    </motion.div>
   )
 }

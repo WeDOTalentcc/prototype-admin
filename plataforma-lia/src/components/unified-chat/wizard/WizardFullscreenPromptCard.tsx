@@ -2,6 +2,7 @@
 
 import React from "react"
 import { Maximize2, X } from "lucide-react"
+import { motion } from "framer-motion"
 
 interface WizardFullscreenPromptCardProps {
   onAccept: () => void
@@ -10,7 +11,13 @@ interface WizardFullscreenPromptCardProps {
 
 export function WizardFullscreenPromptCard({ onAccept, onDecline }: WizardFullscreenPromptCardProps) {
   return (
-    <div className="mx-3 mb-2 rounded-xl border border-wedo-cyan/30 bg-wedo-cyan/5 p-3 flex items-start gap-3">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
+      transition={{ type: "spring", stiffness: 320, damping: 28 }}
+      className="mx-3 mb-2 rounded-xl border border-wedo-cyan/30 bg-wedo-cyan/5 p-3 flex items-start gap-3"
+    >
       <Maximize2 className="w-4 h-4 text-wedo-cyan flex-shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
         <p className="text-sm text-lia-text-primary font-medium">Abrir em tela cheia?</p>
@@ -43,6 +50,6 @@ export function WizardFullscreenPromptCard({ onAccept, onDecline }: WizardFullsc
       >
         <X className="w-3.5 h-3.5" />
       </button>
-    </div>
+    </motion.div>
   )
 }

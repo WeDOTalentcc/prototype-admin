@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { ChevronDown, Brain, AlertCircle } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface WsiQuestion {
@@ -44,6 +45,7 @@ function QBadge({ block }: { block?: string }) {
  * WizardWsiCard — card inline no chat para stage `wsi_questions`.
  * Lista colapsável com badges por tipo de pergunta.
  * Tokens DS LIA v4.2.1.
+ * F4: AnimatePresence nas perguntas extras (slice(3+)).
  */
 export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
   const [expanded, setExpanded] = useState(false)
@@ -57,7 +59,8 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
 
   if (questions.length === 0) return null
 
-  const visible = expanded ? questions : questions.slice(0, 3)
+  const firstThree = questions.slice(0, 3)
+  const extraQuestions = questions.slice(3)
 
   return (
     <div
@@ -101,7 +104,8 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
 
       {/* Lista de perguntas */}
       <div className="border-t border-lia-border-subtle divide-y divide-lia-border-subtle">
-        {visible.map((q, i) => (
+        {/* Primeiras 3 sempre visíveis */}
+        {firstThree.map((q, i) => (
           <div key={i}>
             <button
               type="button"
@@ -131,6 +135,50 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
             </button>
           </div>
         ))}
+
+        {/* Perguntas extras — animadas com AnimatePresence */}
+        <AnimatePresence initial={false}>
+          {expanded && extraQuestions.map((q, idx) => {
+            const i = idx + 3
+            return (
+              <motion.div
+                key={"extra-" + i}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="overflow-hidden"
+              >
+                <button
+                  type="button"
+                  onClick={() => setExpandedQ(expandedQ === i ? null : i)}
+                  className="w-full flex items-start gap-2 px-3 py-2 hover:bg-lia-interactive-hover transition-colors text-left border-t border-lia-border-subtle"
+                >
+                  <span className="text-[11px] text-lia-text-disabled flex-shrink-0 mt-0.5 tabular-nums w-4">
+                    {i + 1}.
+                  </span>
+                  <p
+                    className={cn(
+                      "text-xs text-lia-text-secondary flex-1 min-w-0",
+                      expandedQ === i ? "" : "line-clamp-2",
+                    )}
+                  >
+                    {q.text}
+                  </p>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {q.needs_manual_review && (
+                      <AlertCircle
+                        className="w-3 h-3 text-status-warning"
+                        aria-label="Requer revisão"
+                      />
+                    )}
+                    <QBadge block={q.block} />
+                  </div>
+                </button>
+              </motion.div>
+            )
+          })}
+        </AnimatePresence>
 
         {!expanded && questions.length > 3 && (
           <button
