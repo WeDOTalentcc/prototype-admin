@@ -152,4 +152,35 @@ class LiaOpinionRepository:
         )
         return result.rowcount
 
+    async def update_behavioral_analysis_by_candidate(
+        self,
+        candidate_id: str,
+        job_vacancy_id: str,
+        company_id: str,
+        behavioral_analysis: dict,
+    ) -> int:
+        """2.4: atualiza behavioral_analysis no LiaOpinion mais recente (candidato+vaga)."""
+        import json as _json
+        self._require_company_id(company_id)
+        result = await self.db.execute(
+            text("""
+                UPDATE lia_opinions
+                SET behavioral_analysis = :ba::jsonb,
+                    updated_at = NOW()
+                WHERE candidate_id::text = :candidate_id
+                  AND job_vacancy_id::text = :job_vacancy_id
+                  AND company_id = :company_id
+                  AND opinion_type = 'wsi'
+                  AND is_current = true
+            """),
+            {
+                "ba": _json.dumps(behavioral_analysis),
+                "candidate_id": str(candidate_id),
+                "job_vacancy_id": str(job_vacancy_id),
+                "company_id": str(company_id),
+            },
+        )
+        return result.rowcount
+
+
 

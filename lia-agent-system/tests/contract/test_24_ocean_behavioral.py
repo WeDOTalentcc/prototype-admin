@@ -1,9 +1,8 @@
 """
 2.4: OCEAN traits + behavioral_analysis → LiaOpinion via web triagem.
-
-Best-effort: se response_scores contêm trait_ocean, agrega por trait (0-1).
-Caso contrário, persiste behavioral_analysis com scores comportamentais.
-Fail-soft em ambos os casos.
+Testa both:
+  - LiaOpinionRepository.update_behavioral_analysis_by_candidate existe
+  - completion._trigger_post_completion chama update_behavioral_analysis_by_candidate após triagem
 """
 from __future__ import annotations
 
@@ -81,10 +80,10 @@ class TestOceanBehavioralOpinion:
     """2.4: behavioral_analysis + ocean_traits atualiza LiaOpinion após triagem."""
 
     def test_lia_opinion_repo_has_update_behavioral_analysis(self):
-        """LiaOpinionRepository deve ter update_behavioral_analysis para 2.4."""
+        """LiaOpinionRepository deve ter update_behavioral_analysis_by_candidate para 2.4."""
         from app.domains.pipeline.repositories.lia_opinion_repository import LiaOpinionRepository
-        assert hasattr(LiaOpinionRepository, "update_behavioral_analysis"), (
-            "LiaOpinionRepository precisa de método update_behavioral_analysis (2.4)"
+        assert hasattr(LiaOpinionRepository, "update_behavioral_analysis_by_candidate"), (
+            "LiaOpinionRepository precisa de update_behavioral_analysis_by_candidate (2.4)"
         )
 
     @pytest.mark.asyncio
@@ -94,14 +93,15 @@ class TestOceanBehavioralOpinion:
             _trigger_post_completion,
         )
 
-        capture = {}
+        capture: dict = {}
         mock_lio = MagicMock()
         mock_lio.create_wsi_opinion = AsyncMock(return_value=str(uuid.uuid4()))
 
-        async def cap_update_ba(**kwargs):
+        async def cap_update(**kwargs):
             capture.update(kwargs)
             return 1
-        mock_lio.update_behavioral_analysis = cap_update_ba
+
+        mock_lio.update_behavioral_analysis_by_candidate = cap_update
 
         session = _make_session()
         db = AsyncMock()
@@ -110,7 +110,7 @@ class TestOceanBehavioralOpinion:
         response_scores = [
             _rs_with_ocean(score=4.0, trait="conscientiousness"),
             _rs_with_ocean(score=3.0, trait="extraversion"),
-            _rs_no_ocean(score=3.5),  # sem trait — deve ser ignorado para OCEAN
+            _rs_no_ocean(score=3.5),
         ]
 
         patches = _base_patches()
@@ -121,12 +121,16 @@ class TestOceanBehavioralOpinion:
             ):
                 await _trigger_post_completion(db=db, session=session, response_scores=response_scores)
 
-        # ocean_traits deve existir no capture
         ba = capture.get("behavioral_analysis", {})
         ocean = ba.get("ocean_traits", {})
-        assert "conscientiousness" in ocean or mock_lio.update_behavioral_analysis.called, (
-            f"ocean_traits deve conter conscientiousness. capture: {capture}"
+        assert "conscientiousness" in ocean, (
+            f"ocean_traits deve conter conscientiousness. ba={ba}"
         )
+        assert "extraversion" in ocean, (
+            f"ocean_traits deve conter extraversion. ba={ba}"
+        )
+        # Normalizado para 0-1 (score/5.0)
+        assert 0 <= ocean["conscientiousness"] <= 1.0
 
     @pytest.mark.asyncio
     async def test_behavioral_analysis_persisted_without_ocean(self):
@@ -135,14 +139,15 @@ class TestOceanBehavioralOpinion:
             _trigger_post_completion,
         )
 
-        capture = {}
+        capture: dict = {}
         mock_lio = MagicMock()
         mock_lio.create_wsi_opinion = AsyncMock(return_value=str(uuid.uuid4()))
 
-        async def cap_update_ba(**kwargs):
+        async def cap_update(**kwargs):
             capture.update(kwargs)
             return 1
-        mock_lio.update_behavioral_analysis = cap_update_ba
+
+        mock_lio.update_behavioral_analysis_by_candidate = cap_update
 
         session = _make_session()
         db = AsyncMock()
@@ -158,21 +163,27 @@ class TestOceanBehavioralOpinion:
             ):
                 await _trigger_post_completion(db=db, session=session, response_scores=response_scores)
 
-        # Deve ter chamado update_behavioral_analysis mesmo sem ocean_traits
-        assert mock_lio.update_behavioral_analysis.called, (
-            "update_behavioral_analysis deve ser chamado mesmo sem trait_ocean"
+        # Deve ter persistido behavioral_analysis mesmo sem ocean_traits
+        assert "behavioral_analysis" in capture, (
+            f"behavioral_analysis deve estar no capture. capture={capture}"
         )
+        ba = capture["behavioral_analysis"]
+        # ocean_traits deve existir mas estar vazio (sem trait_ocean nos scores)
+        assert "ocean_traits" in ba
+        assert ba["ocean_traits"] == {}
 
     @pytest.mark.asyncio
     async def test_update_behavioral_analysis_fail_soft(self):
-        """Falha em update_behavioral_analysis não aborta fluxo."""
+        """Falha em update_behavioral_analysis_by_candidate não aborta fluxo."""
         from app.domains.recruitment.services.triagem_session_service.completion import (
             _trigger_post_completion,
         )
 
         mock_lio = MagicMock()
         mock_lio.create_wsi_opinion = AsyncMock(return_value=str(uuid.uuid4()))
-        mock_lio.update_behavioral_analysis = AsyncMock(side_effect=RuntimeError("DB explodiu"))
+        mock_lio.update_behavioral_analysis_by_candidate = AsyncMock(
+            side_effect=RuntimeError("DB explodiu")
+        )
 
         session = _make_session()
         db = AsyncMock()
@@ -187,3 +198,4 @@ class TestOceanBehavioralOpinion:
                 result = await _trigger_post_completion(db=db, session=session, response_scores=[])
 
         assert isinstance(result, dict), "Fluxo não deve abortar com erro em update_behavioral_analysis"
+        assert result.get("behavioral_analysis_updated") == "failed"
