@@ -250,13 +250,22 @@ export function useWizardIntegration({
       sendMessage("Regenerar todas as perguntas de triagem")
     }
 
+    // W2-B: adicionar pergunta do banco da empresa ao set WSI
+    function handleAddBankQuestion(e: CustomEvent) {
+      const { questionId } = (e as CustomEvent<{ questionId: string }>).detail || {}
+      if (!questionId) return
+      // Mensagem estruturada: UUID literal — o wizard extrai exatamente
+      sendMessage(`Adicionar do banco pergunta id=${questionId}`)
+    }
+
     const c1 = onCustomEvent("lia:wizard-edit-question", handleEditQuestion)
     const c2 = onCustomEvent("lia:wizard-regenerate-question", handleRegenerateQuestion)
     const c3 = onCustomEvent("lia:wizard-remove-question", handleRemoveQuestion)
     const c4 = onCustomEvent("lia:wizard-reorder-questions", handleReorderQuestions)
     const c5 = onCustomEvent("lia:wizard-retry-stage", handleRetryStage)
     const c6 = onCustomEvent("lia:wizard-regenerate-all", handleRegenerateAll)
-    return () => { c1(); c2(); c3(); c4(); c5(); c6() }
+    const c7 = onCustomEvent("lia:wizard-add-bank-question", handleAddBankQuestion)
+    return () => { c1(); c2(); c3(); c4(); c5(); c6(); c7() }
   }, [isWizardActive, sendMessage])
 
   // Prefill message listener (used by DonePanel "Criar outra vaga")

@@ -1,8 +1,10 @@
 "use client"
 
+import { useQuery } from "@tanstack/react-query"
+
 import React, { useRef, useState } from "react"
 import { cn } from "@/lib/utils"
-import { Check, GripVertical, RefreshCw, Trash2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react"
+import { Check, GripVertical, RefreshCw, Trash2, ChevronDown, ChevronUp, AlertTriangle, Library, Plus, ChevronRight } from "lucide-react"
 import type { WsiQuestionsData, ScreeningQuestion } from "../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
 import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
@@ -32,6 +34,28 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onToggleA
   const mode = d.screening_mode
   const dist = d.distribution
   const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [bankOpen, setBankOpen] = useState(false)
+
+  // W2-B: banco de perguntas da empresa (fetch via proxy, cache 60s)
+  const { data: bankData } = useQuery({
+    queryKey: ["company-bank-questions"],
+    queryFn: async () => {
+      const r = await fetch("/api/backend-proxy/company/screening-questions")
+      if (!r.ok) return { items: [] }
+      return r.json()
+    },
+    staleTime: 60_000,
+    enabled: bankOpen,  // lazy — só busca quando abrir
+  })
+  const bankQuestions: Array<{ id: string; question_text: string; category?: string; is_eliminatory?: boolean }> =
+    bankData?.items ?? []
+
+  const handleAddFromBank = (questionId: string) => {
+    window.dispatchEvent(new CustomEvent("lia:wizard-add-bank-question", {
+      detail: { questionId },
+    }))
+    setBankOpen(false)
+  }
   // Onda 33: HTML5 native drag-to-reorder. Source index lives in a ref so the
   // drop handler can pair it with the target index without re-rendering.
   const dragSourceRef = useRef<number | null>(null)
@@ -194,6 +218,42 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onToggleA
       {/* HITL Approval footer */}
       {requiresApproval && questions.length > 0 && (
         <div className="flex-shrink-0 px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-primary flex items-center gap-2">
+          {/* W2-B — banco de perguntas da empresa */}
+          <div className="relative">
+            <button
+              onClick={() => setBankOpen(!bankOpen)}
+              title="Adicionar pergunta do banco da empresa"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-md border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            >
+              <Library className="w-3.5 h-3.5" />
+              Do banco
+              <ChevronRight className={`w-3 h-3 transition-transform ${bankOpen ? "rotate-90" : ""}`} />
+            </button>
+            {bankOpen && (
+              <div className="absolute bottom-full mb-1 left-0 w-72 max-h-48 overflow-y-auto rounded-md border border-lia-border-subtle bg-lia-bg-primary shadow-lg z-20">
+                {bankQuestions.length === 0 ? (
+                  <p className="px-3 py-2 text-xs text-lia-text-tertiary">Nenhuma pergunta no banco ainda.</p>
+                ) : (
+                  <ul role="list" className="py-1">
+                    {bankQuestions.map((bq) => (
+                      <li key={bq.id}>
+                        <button
+                          onClick={() => handleAddFromBank(bq.id)}
+                          className="w-full flex items-start gap-2 px-3 py-2 text-left text-xs text-lia-text-primary hover:bg-lia-interactive-hover transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-cyan" />
+                          <span className="flex-1 line-clamp-2">{bq.question_text}</span>
+                          {bq.is_eliminatory && (
+                            <span className="text-[10px] px-1 rounded bg-status-error/10 text-status-error flex-shrink-0">Elim.</span>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
           <button
             onClick={() =>
               window.dispatchEvent(new CustomEvent("lia:wizard-regenerate-all"))
