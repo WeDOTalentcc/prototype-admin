@@ -8,6 +8,7 @@ import { useAuthStore } from "@/stores/auth-store"
 import { useJdSimilar } from "@/hooks/jobs/use-jd-similar"
 import { ComplianceBadge } from "@/components/lia-float/ComplianceBadge"
 import { JdSimilarCard } from "./JdSimilarCard"
+import { WizardSuggestionChips } from "./WizardSuggestionChips"
 
 interface Props {
   data: Record<string, unknown>
@@ -447,6 +448,9 @@ export function IntakePanel({ data, onUpdate }: Props) {
       {!data.jd_similar_dismissed && (similarJds.length > 0 || jdSimilarLoading) && (
         <JdSimilarCard items={similarJds} loading={jdSimilarLoading} onReuse={handleReuseJd} onCreateFresh={handleCreateFresh} />
       )}
+
+      {/* W3-D: chips de sugestão do histórico da empresa */}
+      <WizardSuggestionChips data={data} onUpdate={onUpdate} />
 
       {/* Processing indicator */}
       {rawInput && (
