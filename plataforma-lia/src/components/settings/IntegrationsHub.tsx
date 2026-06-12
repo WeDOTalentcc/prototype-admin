@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { useTranslations } from "next-intl"
 import { categories, type Integration, type IntegrationCategory } from "./integrations/integration-data"
 import { IntegrationDetailModal } from "./integrations/IntegrationDetailModal"
+import { LinkedInConnectModal } from "./integrations/LinkedInConnectModal"
 import { IntegrationGrid } from "./integrations/IntegrationGrid"
 import { EmbeddingTransparencyCard } from "./integrations/EmbeddingTransparencyCard"
 import { useIntegrationsData } from "@/hooks/integrations/use-integrations-data"
@@ -23,7 +24,6 @@ const tabToCategoryMap: Record<string, IntegrationCategory | "all"> = {
   "crm-hris": "crm_hris",
   "mcps-apis": "mcps_apis",
   "job-boards": "job_board",
-  "job-boards": "job_board",
 }
 
 const TAB_DEFS = [
@@ -34,7 +34,6 @@ const TAB_DEFS = [
   { id: "communication", labelKey: "integrations.tabCommunication", Icon: MessageCircle },
   { id: "crm-hris", labelKey: "integrations.tabCrmHris", Icon: Building },
   { id: "mcps-apis", labelKey: "integrations.tabMcpsApis", Icon: Code },
-  { id: "job-boards", labelKey: "integrations.tabJobBoards", Icon: Briefcase },
   { id: "job-boards", labelKey: "integrations.tabJobBoards", Icon: Briefcase },
 ] as const
 
@@ -50,6 +49,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const [activeTab, setActiveTab] = useState(activeSubsection || "all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
+  const [linkedInModalOpen, setLinkedInModalOpen] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   React.useEffect(() => {
@@ -88,7 +88,11 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const connectedCount = enrichedIntegrations.filter((i) => i.status === "connected").length
 
   const handleCardClick = useCallback((integration: Integration) => {
-    setSelectedIntegration(integration)
+    if (integration.id === "linkedin_jobs") {
+      setLinkedInModalOpen(true)
+    } else {
+      setSelectedIntegration(integration)
+    }
   }, [])
 
   const handleConnectGoogle = useCallback(async () => {
@@ -191,6 +195,12 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         errorMsg={errorMsg}
         llmConfig={llmConfig}
         onConfigSaved={() => { void refetchLlmConfig(); void refetchTeamsStatus() }}
+      />
+
+      <LinkedInConnectModal
+        isOpen={linkedInModalOpen}
+        onClose={() => setLinkedInModalOpen(false)}
+        onConnected={() => void refetchLlmConfig()}
       />
     </div>
   )
