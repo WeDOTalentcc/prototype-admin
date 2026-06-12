@@ -15,6 +15,7 @@ import { WizardJdCard } from "./wizard/WizardJdCard"
 import { WizardWsiCard } from "./wizard/WizardWsiCard"
 import { WizardCalibrationCard } from "./wizard/WizardCalibrationCard"
 import { WebsiteProposalCard } from "./WebsiteProposalCard"
+import { ToolSurfaceContext } from "@/contexts/ToolSurfaceContext"
 import { CandidateProfileCard, type CandidateProfileActionId } from "./candidate/CandidateProfileCard"
 import { CandidateEvaluationCard } from "./candidate/CandidateEvaluationCard"
 import {
@@ -644,14 +645,16 @@ export function UnifiedMessageList({
                     pattern as outreach/website_proposal. Optional shortcuts
                     only render when the surface wires `onCandidateAction`. */}
                 {hasCandidateProfile && (
-                  <CandidateProfileCard
-                    raw={meta!.candidate}
-                    onAction={
-                      meta!.onCandidateAction as
-                        | ((action: CandidateProfileActionId, data: CandidateProfileCardData) => void)
-                        | undefined
-                    }
-                  />
+                  <ToolSurfaceContext.Provider value="inline">
+                    <CandidateProfileCard
+                      raw={meta!.candidate}
+                      onAction={
+                        meta!.onCandidateAction as
+                          | ((action: CandidateProfileActionId, data: CandidateProfileCardData) => void)
+                          | undefined
+                      }
+                    />
+                  </ToolSurfaceContext.Provider>
                 )}
 
                 {/* Candidate evaluation card — BARS / CV-screening result

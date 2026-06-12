@@ -5,6 +5,7 @@ import { MapPin } from "lucide-react"
 import { CandidateAvatar } from "@/components/candidate-profile/CandidateAvatar"
 import { CandidateSkillsList } from "@/components/candidate-profile/CandidateSkillsList"
 import { WSIMiniScore } from "@/components/wsi/wsi-scorecard"
+import { useToolSurface } from "@/contexts/ToolSurfaceContext"
 import {
   buildCandidateProfileCard,
   type CandidateProfileCardData,
@@ -17,6 +18,9 @@ import {
  * Visual support only: the recruiter keeps deciding via chat. The optional
  * shortcuts render exclusively when the chat surface wires an `onAction`
  * handler — we never show dead buttons.
+ *
+ * Surface-aware: when rendered inside DynamicContextPanel (surface === "panel"),
+ * an expanded section with additional details is shown below the compact view.
  */
 
 export type CandidateProfileActionId =
@@ -41,10 +45,11 @@ const ACTIONS: { id: CandidateProfileActionId; label: string }[] = [
 ]
 
 export function CandidateProfileCard({ raw, onAction }: CandidateProfileCardProps) {
+  const surface = useToolSurface()
   const data = React.useMemo(() => buildCandidateProfileCard(raw), [raw])
   if (!data) return null
 
-  const subtitle = [data.role, data.company].filter(Boolean).join(" • ")
+  const subtitle = [data.role, data.company].filter(Boolean).join(" \u2022 ")
 
   return (
     <div className="mt-2 rounded-md border border-lia-border-subtle bg-lia-bg-primary p-3 shadow-lia-sm dark:bg-lia-bg-secondary">
@@ -87,6 +92,36 @@ export function CandidateProfileCard({ raw, onAction }: CandidateProfileCardProp
               {action.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {surface === "panel" && (
+        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+          <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">Detalhes do candidato</p>
+          {data.role && (
+            <p className="mt-0.5">
+              <span className="text-gray-400 dark:text-gray-500">Cargo: </span>
+              {data.role}
+            </p>
+          )}
+          {data.company && (
+            <p className="mt-0.5">
+              <span className="text-gray-400 dark:text-gray-500">Empresa: </span>
+              {data.company}
+            </p>
+          )}
+          {data.location && (
+            <p className="mt-0.5">
+              <span className="text-gray-400 dark:text-gray-500">Local: </span>
+              {data.location}
+            </p>
+          )}
+          {data.matchScore !== null && (
+            <p className="mt-0.5">
+              <span className="text-gray-400 dark:text-gray-500">Score WSI: </span>
+              {data.matchScore}%
+            </p>
+          )}
         </div>
       )}
     </div>
