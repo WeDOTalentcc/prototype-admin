@@ -312,8 +312,7 @@ class JobBoardService:
             lines.append(f"Contrato: {job.employment_type}")
         lines.append("")
         lines.append("Candidate-se e saiba mais:")
-        return "
-".join(lines)
+        return "\n".join(lines)
 
     async def publish_to_indeed(
         self, 
