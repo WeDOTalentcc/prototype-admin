@@ -297,7 +297,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                   variant="outline"
                   size="sm"
                   className="h-9 px-3 text-xs font-medium rounded-xl border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:border-lia-border-default"
-                  onClick={() => onOpenSpecializedModal('rejection-feedback', { candidates, toStage: selectedToStage })}
+                  onClick={() => onOpenSpecializedModal('rejection-feedback', { candidates, toStage: selectedToStage, subStatus })}
                 >
                   <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
                   Feedback

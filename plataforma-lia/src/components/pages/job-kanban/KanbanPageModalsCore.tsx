@@ -227,6 +227,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
             : []
         }
         onSend={handleSend}
+        aiFeedbackContext={(unifiedModalCandidate?._aiFeedbackContext as { vacancyCandidateId: string; toStage: string; subStatus?: string | null } | undefined) ?? null}
       />
 
       <AddToListModal
