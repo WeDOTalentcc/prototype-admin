@@ -15,29 +15,30 @@ import re
 
 logger = logging.getLogger(__name__)
 
-# PII de documento: alto sinal, sem razao legitima de aparecer num feedback.
-# (email/telefone NAO entram — contato da empresa e legitimo -> falso positivo.)
-_CPF = re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b")
-_CNPJ = re.compile(r"\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b")
-_RG = re.compile(r"\b\d{1,2}\.?\d{3}\.?\d{3}-?[\dxX]\b")
+# PII de documento: REUSA as regexes CANONICAS de app.shared.pii_masking (fonte
+# unica de "como e um CPF/RG/CNPJ"). NAO redefinir aqui — evita split-brain.
+# email/telefone NAO entram (contato da empresa e legitimo -> falso positivo);
+# _RG_PATTERN_STRICT exige separadores (evita colidir com telefone BR).
+from app.shared.pii_masking import (  # noqa: E402
+    CPF_PATTERN as _CPF,
+    _CNPJ_PATTERN as _CNPJ,
+    _RG_PATTERN_STRICT as _RG,
+)
 
 _JUDGE_TRUTHY = frozenset({"1", "true", "on", "yes"})
 
 
 def detect_pii(text: str | None) -> list[str]:
-    """Retorna tipos de PII de documento encontrados no texto (CPF/CNPJ/RG)."""
+    """Tipos de PII de documento no texto (CPF/CNPJ/RG), via regexes canonicas."""
     if not text:
         return []
     found = []
-    # CNPJ antes de CPF (CNPJ e mais especifico).
     if _CNPJ.search(text):
         found.append("cnpj")
     if _CPF.search(text):
         found.append("cpf")
-    if _RG.search(text) and "rg" not in found:
-        # RG so se nao for ja capturado como CPF (heuristica simples)
-        if not _CPF.search(text):
-            found.append("rg")
+    if _RG.search(text):
+        found.append("rg")
     return found
 
 
