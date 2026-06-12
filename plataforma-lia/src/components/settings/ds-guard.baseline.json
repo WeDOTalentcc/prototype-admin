@@ -8,10 +8,6 @@
   "BenefitsTab.tsx": {
     "button-rounded-override": 1
   },
-  "DataFieldsPanel.tsx": {
-    "field-rounded-override": 3,
-    "raw-tailwind-color": 10
-  },
   "DepartmentFormCard.tsx": {
     "field-rounded-override": 6
   },

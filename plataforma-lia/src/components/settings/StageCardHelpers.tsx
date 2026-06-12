@@ -106,27 +106,3 @@ export function useStageDisplayName(): (stage: RecruitmentStage) => string {
 export function isRealId(id: string): boolean {
   return !id.startsWith('stage-') && !id.startsWith('catalog-')
 }
-
-export const ALL_DATA_FIELDS: StageDataField[] = [
-  { id: 'full_name',         displayName: 'Nome Completo',            category: 'basic',       required: false, auto_collect: false },
-  { id: 'email',             displayName: 'Email',                    category: 'basic',       required: false, auto_collect: false },
-  { id: 'phone',             displayName: 'Telefone',                 category: 'basic',       required: false, auto_collect: false },
-  { id: 'cpf',               displayName: 'CPF',                      category: 'basic',       required: false, auto_collect: false },
-  { id: 'birth_date',        displayName: 'Data de Nascimento',       category: 'basic',       required: false, auto_collect: false },
-  { id: 'address',           displayName: 'Endereço Completo',        category: 'basic',       required: false, auto_collect: false },
-  { id: 'cv_document',       displayName: 'Currículo (Arquivo)',       category: 'document',    required: false, auto_collect: false },
-  { id: 'id_document',       displayName: 'Documento de Identidade',  category: 'document',    required: false, auto_collect: false },
-  { id: 'proof_of_address',  displayName: 'Comprovante de Residência',category: 'document',    required: false, auto_collect: false },
-  { id: 'rg',                displayName: 'RG',                       category: 'admissional', required: false, auto_collect: false },
-  { id: 'ctps',              displayName: 'CTPS',                     category: 'admissional', required: false, auto_collect: false },
-  { id: 'pis',               displayName: 'PIS/PASEP',                category: 'admissional', required: false, auto_collect: false },
-  { id: 'bank_info',         displayName: 'Dados Bancários',          category: 'financial',   required: false, auto_collect: false },
-  { id: 'emergency_contact', displayName: 'Contato de Emergência',    category: 'admissional', required: false, auto_collect: false },
-]
-
-export const FIELD_CATEGORY_LABELS: Record<string, string> = {
-  basic: 'Dados Básicos',
-  document: 'Documentos',
-  financial: 'Financeiro',
-  admissional: 'Admissional',
-}

@@ -32,7 +32,6 @@ import {
   useStageDisplayName,
 } from "./StageCardHelpers"
 import { SubStatusPanel } from "./SubStatusPanel"
-import { DataFieldsPanel } from "./DataFieldsPanel"
 import { SaturationControlPanel } from "./SaturationControlPanel"
 
 export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
@@ -286,12 +285,6 @@ export function SortableStageCard({
               stage={stage}
               isEditMode={isEditMode}
               onToggleSubStatus={onToggleSubStatus}
-            />
-
-            <DataFieldsPanel
-              stage={stage}
-              isEditMode={isEditMode}
-              onUpdate={onUpdate}
             />
 
             <SaturationControlPanel
