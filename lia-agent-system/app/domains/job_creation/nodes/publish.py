@@ -405,4 +405,44 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 str(exc)[:200],
             )
 
+    # W0-E — Job pattern learning auto-trigger: fire-and-forget after successful publish
+    if not error and job_id:
+        try:
+            from app.domains.job_management.services.job_pattern_service import (
+                record_outcome_fire_and_forget,
+            )
+            _pat_company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+            if _pat_company_id:
+                _jd_p = state.get("jd_enriched") or {}
+                _sal = state.get("salary_defined") or {}
+                record_outcome_fire_and_forget(
+                    company_id=_pat_company_id,
+                    job_id=str(job_id),
+                    outcome_data={
+                        "job_title": (
+                            _jd_p.get("titulo_padronizado")
+                            or state.get("parsed_title")
+                            or ""
+                        ),
+                        "department": state.get("parsed_department"),
+                        "seniority": (
+                            state.get("seniority_resolved")
+                            or state.get("parsed_seniority")
+                        ),
+                        "work_model": state.get("work_model"),
+                        "salary_min": _sal.get("min") if isinstance(_sal, dict) else None,
+                        "salary_max": _sal.get("max") if isinstance(_sal, dict) else None,
+                        "skills": state.get("competencies_confirmed") or [],
+                        "behavioral_competencies": state.get("bigfive_traits") or [],
+                        "outcome_status": "published",
+                        "published_at": __import__("datetime").datetime.utcnow().isoformat(),
+                        "extra_data": {"source": "wizard"},
+                    },
+                )
+        except Exception as _pat_exc:  # pragma: no cover - never block publish
+            logger.warning(
+                "[JobCreation:publish] JobPattern wire failed (non-blocking): %s",
+                str(_pat_exc)[:200],
+            )
+
     return {**state, **updates}
