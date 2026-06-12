@@ -324,8 +324,11 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
                     from app.domains.candidates.repositories.vacancy_candidate_repository import (
                         VacancyCandidateRepository,
                     )
+                    from app.domains.cv_screening.constants.wsi_scale import (
+                        wsi_score_to_lia_scale,
+                    )
                     _vc_repo = VacancyCandidateRepository(db)
-                    _wsi_lia_score = round((session.wsi_final_score or 0.0) * 10.0, 1)
+                    _wsi_lia_score = wsi_score_to_lia_scale(session.wsi_final_score or 0.0)
                     _rowcount = await _vc_repo.update_wsi_lia_score(
                         candidate_id=session.candidate_id,
                         vacancy_id=session.job_id,
