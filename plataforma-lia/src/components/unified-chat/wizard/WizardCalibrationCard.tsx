@@ -100,7 +100,7 @@ export function WizardCalibrationCard({ data }: { data: Record<string, unknown> 
             "h-full transition-[width] duration-300",
             canAdvance ? "bg-status-success" : "bg-wedo-cyan"
           )}
-          style={{ width:  }}
+          style={{ width: `${Math.min(100, (approvedCount / threshold) * 100)}%` }}
         />
       </div>
 
@@ -152,7 +152,7 @@ export function WizardCalibrationCard({ data }: { data: Record<string, unknown> 
                   <CheckCircle className="w-3.5 h-3.5" />
                   {canAdvance
                     ? "Calibração completa — Avançar"
-                    : }
+                    : `Aprovar candidatos (${approvedCount}/${threshold})`}
                 </button>
               </div>
             )}
