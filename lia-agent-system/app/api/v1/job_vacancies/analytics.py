@@ -1397,6 +1397,27 @@ def _classify_job_lifecycle_stage(job: JobVacancy) -> str:
     return "rascunho"
 
 
+
+def _normalize_location(raw) -> str | None:
+    """Format location: JSON string {"city":...,"state":...} -> "City, ST".
+    Handles plain strings, dicts, and null values transparently.
+    """
+    if not raw:
+        return None
+    if isinstance(raw, dict):
+        parts = [p for p in [raw.get("city"), raw.get("state")] if p]
+        return ", ".join(parts) or None
+    if isinstance(raw, str) and raw.startswith("{"):
+        import json as _json
+        try:
+            loc = _json.loads(raw)
+            parts = [p for p in [loc.get("city"), loc.get("state")] if p]
+            return ", ".join(parts) or None
+        except Exception:
+            pass
+    return raw or None
+
+
 class JobLifecycleVacancyItem(BaseModel):
     id: str
     title: str
@@ -1477,7 +1498,7 @@ company_id: str = Depends(require_company_id)):
             id=str(job.id),
             title=job.title or "Sem título",
             department=job.department,
-            location=job.location,
+            location=_normalize_location(job.location),
             work_model=job.work_model,
             seniority_level=job.seniority_level,
             status=job.status or "Rascunho",
