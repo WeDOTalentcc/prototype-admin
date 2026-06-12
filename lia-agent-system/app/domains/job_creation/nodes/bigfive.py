@@ -200,7 +200,41 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
 
         # F3: Rank traits (deterministic — no LLM, no timeout needed)
         seniority = state.get("seniority_resolved") or state.get("parsed_seniority") or "pleno"
-        trait_rankings = generator.rank_traits(bigfive_obj, seniority)
+
+        # W2-A (2026-06-12): buscar dept blend se empresa tem histórico suficiente
+        # (MIN_DEPT_SAMPLES=10 por ADR-LGPD-001 anonimização). Fail-open — se não tiver
+        # histórico ou serviço falhar, rank_traits segue com dept_blend=None (LLM-only).
+        _dept_blend = None
+        _dept_blend_method = "llm_only"
+        try:
+            from app.domains.job_creation.services.bigfive_service import BigFiveDepartmentService
+            from app.core.database import AsyncSessionLocal
+            _company_id = state.get("company_id") or ""
+            _department = state.get("department") or state.get("parsed_department") or ""
+            if _company_id and _department:
+                async def _fetch_blend():
+                    async with AsyncSessionLocal() as _db:
+                        return await BigFiveDepartmentService(_db).get_blend_weights(
+                            _company_id, _department, seniority
+                        )
+                _dept_blend = run_coro_in_threadpool(
+                    _fetch_blend,
+                    timeout=5,
+                )
+                _dept_blend_method = getattr(_dept_blend, "method", "llm_only")
+                if _dept_blend_method == "llm_only":
+                    _dept_blend = None  # sem histórico suficiente, não força blend
+                else:
+                    logger.info(
+                        "[JobCreation:bigfive] dept_blend=%s (dept=%s seniority=%s)",
+                        _dept_blend_method, _department, seniority,
+                    )
+        except Exception as _blend_exc:
+            logger.warning(
+                "[JobCreation:bigfive] get_blend_weights failed (fail-open): %s", _blend_exc
+            )
+
+        trait_rankings = generator.rank_traits(bigfive_obj, seniority, dept_blend=_dept_blend)
     else:
         bigfive_profile = state.get("bigfive_profile")
         trait_rankings = state.get("trait_rankings", [])
@@ -241,6 +275,9 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 ),
                 "bigfive_profile": bigfive_profile,
                 "trait_rankings": trait_rankings,
+                # W2-A — indica se blend de departamento foi aplicado
+                "dept_blended": locals().get("_dept_blend_method", "llm_only") != "llm_only",
+                "dept_blend_method": locals().get("_dept_blend_method", "llm_only"),
                 # Task #1065 — flag de fallback determinístico para o
                 # painel renderizar o banner "Sugestão mínima — revise".
                 "bigfive_used_fallback": locals().get(
