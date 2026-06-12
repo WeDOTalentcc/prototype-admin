@@ -275,6 +275,7 @@ from app.api.v1.rails_health import router as rails_health_router
 from app.api.v1.rails_sync import router as rails_sync_router
 from app.api.v1.llm_config import router as llm_config_router
 from app.api.v1.inline_chat import router as inline_chat_router
+from app.api.v1.linkedin_integration import router as linkedin_integration_router
 
 
 
@@ -566,6 +567,7 @@ def register_all_routes(app: FastAPI) -> None:
     # NOTE: Do NOT add job-status-webhook routes here; they live under /api/v1/job-status-webhooks.
     app.include_router(webhooks.router, prefix="/api/v1", tags=["webhooks"])
     app.include_router(integrations.router, prefix="/api/v1", tags=["integrations"])
+    app.include_router(linkedin_integration_router, prefix="/api/v1/integrations/linkedin", tags=["linkedin-integration"])
     app.include_router(integrations_hub.router, prefix="/api/v1", tags=["integration-hub"])
     app.include_router(external_webhooks.router, prefix="/api/v1", tags=["external-webhooks"])
     app.include_router(merge_webhooks.router, prefix="/api/v1", tags=["merge-webhooks"])
