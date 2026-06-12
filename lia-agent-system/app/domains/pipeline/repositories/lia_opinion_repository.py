@@ -13,6 +13,8 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import text
+import uuid
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -74,3 +76,54 @@ class LiaOpinionRepository:
             scores.append(score_data)
 
         return scores
+
+    async def create_wsi_opinion(
+        self,
+        candidate_id: str,
+        company_id: str,
+        wsi_score: float,
+        job_vacancy_id: Optional[str] = None,
+        wsi_screening_id: Optional[str] = None,
+        recommendation: Optional[str] = None,
+    ) -> Optional[str]:
+        """Cria LiaOpinion tipo 'wsi' após triagem conversacional. Multi-tenancy fail-closed.
+
+        Args:
+            candidate_id: UUID do candidato.
+            company_id: UUID do tenant (fail-closed).
+            wsi_score: Score na escala 0-100 (já convertido de 0-10).
+            job_vacancy_id: UUID da vaga (opcional).
+            wsi_screening_id: UUID da sessão WSI (opcional — para rastreio).
+            recommendation: 'aprovado', 'aguardando' ou 'reprovado'.
+
+        Returns:
+            UUID do opinião criada, ou None em falha.
+        """
+        self._require_company_id(company_id)
+
+        opinion_id = str(uuid.uuid4())
+        await self.db.execute(
+            text("""
+                INSERT INTO lia_opinions
+                    (id, candidate_id, opinion_type, source, job_vacancy_id,
+                     wsi_screening_id, score, wsi_score, recommendation,
+                     company_id, is_current, version, created_at, updated_at)
+                VALUES
+                    (:id, :candidate_id::uuid, 'wsi', 'text_screening',
+                     :job_vacancy_id, :wsi_screening_id,
+                     :score, :wsi_score, :recommendation,
+                     :company_id, true, 1, NOW(), NOW())
+            """),
+            {
+                "id": opinion_id,
+                "candidate_id": str(candidate_id),
+                "job_vacancy_id": str(job_vacancy_id) if job_vacancy_id else None,
+                "wsi_screening_id": str(wsi_screening_id) if wsi_screening_id else None,
+                "score": wsi_score,
+                "wsi_score": wsi_score,
+                "recommendation": recommendation,
+                "company_id": str(company_id),
+            },
+        )
+        return opinion_id
+
