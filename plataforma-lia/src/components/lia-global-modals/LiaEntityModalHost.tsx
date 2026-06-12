@@ -59,6 +59,14 @@ export function LiaEntityModalHost() {
     return () => window.removeEventListener("lia:open_modal", handle)
   }, [])
 
+  useEffect(() => {
+    function handleClose() {
+      setActive(null)
+    }
+    window.addEventListener("lia:close_modal", handleClose)
+    return () => window.removeEventListener("lia:close_modal", handleClose)
+  }, [])
+
   const kind = active ? ENTITY_MODAL_REGISTRY[active.modalId] : undefined
   const candidateQuery = useLiaCandidate(
     kind === "candidate" ? active?.candidateId : undefined,

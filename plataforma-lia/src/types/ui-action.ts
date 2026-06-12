@@ -39,6 +39,10 @@ export type GlobalUIAction =
       };
     }
   | {
+      type: "close_modal";
+      params: Record<string, never>;
+    }
+  | {
       type: "open_offer_review";
       params: {
         candidate_id: string;
@@ -162,6 +166,7 @@ export type GlobalUIActionType = GlobalUIAction["type"];
 export const GLOBAL_UI_ACTION_TYPES: readonly GlobalUIActionType[] = [
   "navigate_to",
   "open_modal",
+  "close_modal",
   "open_offer_review",
   "wizard_step",
   "open_panel",

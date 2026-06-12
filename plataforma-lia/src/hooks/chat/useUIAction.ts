@@ -131,6 +131,11 @@ export function useUIAction(): UseUIActionReturn {
           return true;
         }
 
+        case "close_modal": {
+          window.dispatchEvent(new CustomEvent("lia:close_modal", { detail: {} }));
+          return true;
+        }
+
         case "open_offer_review": {
           const candidate_id = params.candidate_id;
           const job_id = params.job_id;
