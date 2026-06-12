@@ -171,6 +171,9 @@ interface LiaFloatContextType extends LiaFloatState {
   /** Manus F1 — modo do painel do wizard: dock lateral ou expandido. */
   wizardPanelMode: "docked" | "expanded";
   setWizardPanelMode: (mode: "docked" | "expanded") => void;
+  /** Manus F3 - recrutador dispensou o consent card. */
+  wizardConsentDeclined: boolean;
+  setWizardConsentDeclined: (v: boolean) => void;
 
   sharedMessages: FloatMessage[];
   addSharedMessage: (msg: FloatMessage) => void;
@@ -340,6 +343,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   const [wizardPanelMode, setWizardPanelModeState] = useState<
     "docked" | "expanded"
   >("docked");
+  // Manus F3 - recrutador dispensou o consent card de tela cheia
+  const [wizardConsentDeclined, setWizardConsentDeclined] = useState(false);
   // Manus F1 sticky fix — rastreia se o usuário expandiu manualmente nesta sessão
   // do wizard para evitar reset indevido quando backend emite "done" intermediário.
   const userExpandedRef = useRef(false);
@@ -1039,6 +1044,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         }
         closeDynamicPanel(); // limpa estado stale
         userExpandedRef.current = false; // reset para próximo wizard
+        setWizardConsentDeclined(false); // F3: reset consent para próximo wizard
       } else {
         const pref = data.panel_pref;
         if (pref === "expanded" || pref === "docked") {
@@ -1133,6 +1139,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       sharedMessages,
       addSharedMessage,
       setSharedMessages,
+      wizardConsentDeclined,
+      setWizardConsentDeclined,
       sharedConversationId,
       setSharedConversationId,
       chatMessages,
@@ -1197,6 +1205,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       sharedMessages,
       addSharedMessage,
       sharedConversationId,
+      wizardConsentDeclined,
+      setWizardConsentDeclined,
       chatMessages,
       addChatMessage,
       chatConversationId,
