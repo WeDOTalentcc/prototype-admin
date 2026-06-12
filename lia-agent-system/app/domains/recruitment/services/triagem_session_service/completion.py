@@ -398,6 +398,48 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
                 except Exception as _22_exc:
                     logger.error("[2.2] LiaOpinion criação falhou (fail-soft): %s", _22_exc)
                     actions["lia_opinion_created"] = "failed"
+            # 2.3: score_breakdown canônico — combina cv_score + wsi_score via fórmula ranking.
+            # Lê cv_score existente da VC row e chama calculate_ranking_score para gerar
+            # score mais preciso quando ambos os dados estão disponíveis.
+            if session.candidate_id and session.job_id and session.company_id:
+                try:
+                    from app.domains.cv_screening.services.lia_score_service import get_lia_score_service
+                    from app.domains.cv_screening.constants.wsi_scale import (
+                        wsi_score_to_lia_scale as _wsi_scale_23,
+                    )
+                    from datetime import datetime as _dt
+                    _vc_repo_23 = VacancyCandidateRepository(db)
+                    _cv_score = await _vc_repo_23.get_cv_score(
+                        vacancy_id=session.job_id,
+                        candidate_id=session.candidate_id,
+                        company_id=session.company_id,
+                    )
+                    _wsi_s_23 = _wsi_scale_23(session.wsi_final_score or 0.0)
+                    _ranking_svc = get_lia_score_service()
+                    _ranking_result = _ranking_svc.calculate_ranking_score(
+                        candidate={"id": session.candidate_id},
+                        rubricas_score=_cv_score,
+                        wsi_score=_wsi_s_23,
+                    )
+                    _breakdown = _ranking_result.breakdown.to_dict() if _ranking_result.breakdown else {}
+                    _breakdown.setdefault("wsi_score_raw", session.wsi_final_score)
+                    _breakdown.setdefault("formula", "ranking_v1")
+                    _rowcount_23 = await _vc_repo_23.update_score_breakdown(
+                        vacancy_id=session.job_id,
+                        candidate_id=session.candidate_id,
+                        company_id=session.company_id,
+                        lia_score=round(_ranking_result.ranking_score, 1),
+                        ai_analysis=_breakdown,
+                        screening_completed_at=_dt.utcnow().isoformat(),
+                    )
+                    actions["ranking_score_updated"] = f"ok:{_ranking_result.ranking_score:.1f}"
+                    logger.info(
+                        "[2.3] ranking_score atualizado: candidate=%s score=%.1f (wsi=%.1f cv=%s)",
+                        session.candidate_id, _ranking_result.ranking_score, _wsi_s_23, _cv_score,
+                    )
+                except Exception as _23_exc:
+                    logger.error("[2.3] score_breakdown update falhou (fail-soft): %s", _23_exc)
+                    actions["ranking_score_updated"] = "failed"
         else:
             actions["wsi_persistence"] = "skipped"
     except Exception as e:

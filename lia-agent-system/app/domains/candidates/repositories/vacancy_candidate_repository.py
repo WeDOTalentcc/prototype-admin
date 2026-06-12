@@ -729,6 +729,68 @@ class VacancyCandidateRepository:
         return counts
 
 
+    async def get_cv_score(
+        self,
+        vacancy_id: str,
+        candidate_id: str,
+        company_id: str,
+    ) -> float | None:
+        """Lê cv_score atual da VacancyCandidate row. None se não existe. Fail-closed."""
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                SELECT cv_score FROM vacancy_candidates
+                WHERE vacancy_id::text = :vid
+                  AND candidate_id::text = :cid
+                  AND company_id = :company_id
+                LIMIT 1
+            """),
+            {"vid": str(vacancy_id), "cid": str(candidate_id), "company_id": cid},
+        )
+        row = result.first()
+        if row is None:
+            return None
+        return row[0]  # cv_score (float or None)
+
+    async def update_score_breakdown(
+        self,
+        vacancy_id: str,
+        candidate_id: str,
+        company_id: str,
+        lia_score: float,
+        ai_analysis: dict,
+        screening_completed_at: str | None = None,
+    ) -> int:
+        """Persiste lia_score + ai_analysis (score_breakdown) pós-ranking canônico (2.3).
+
+        ai_analysis: dict com score_breakdown do RankingScoreBreakdown.to_dict().
+        screening_completed_at: ISO datetime string (opcional).
+        """
+        import json as _json
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                UPDATE vacancy_candidates
+                SET lia_score = :score,
+                    ai_analysis = :ai_analysis::jsonb,
+                    screening_completed_at = COALESCE(:screened_at::timestamp, screening_completed_at),
+                    updated_at = NOW()
+                WHERE vacancy_id::text = :vid
+                  AND candidate_id::text = :cid
+                  AND company_id = :company_id
+            """),
+            {
+                "score": lia_score,
+                "ai_analysis": _json.dumps(ai_analysis),
+                "screened_at": screening_completed_at,
+                "vid": str(vacancy_id),
+                "cid": str(candidate_id),
+                "company_id": cid,
+            },
+        )
+        return result.rowcount
+
+
 def _is_uuid(value: str) -> bool:
     """True se value e um UUID valido (fail-safe para candidate_ids
     legacy/bigint que nao batem com vacancy_candidates.candidate_id UUID)."""
