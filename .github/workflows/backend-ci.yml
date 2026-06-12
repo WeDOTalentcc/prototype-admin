@@ -123,4 +123,5 @@ jobs:
             tests/test_feedback_safety.py \
             tests/test_feedback_fairness_guard.py \
             tests/test_preview_feedback.py \
+            tests/test_send_email_fairness.py \
             --no-cov --tb=short -q

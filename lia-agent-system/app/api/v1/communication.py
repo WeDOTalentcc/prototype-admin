@@ -102,6 +102,30 @@ company_id: str = Depends(get_verified_company_id)):
     - Falls back to mock success in development when API keys not set
     - Logs the communication to CommunicationHistory
     """
+    # Camada de fairness/LGPD sobre o conteudo (o texto pode ter sido editado a mao
+    # no modal de comunicacao). Bloqueio fail-closed em vies explicito (L1).
+    # Auditoria 2026-06-10. Reusa o guard canonico (mesmo do dispatch de feedback).
+    from app.shared.compliance.fairness_guard_middleware import check_fairness
+    _fairness = check_fairness(
+        texts={
+            "subject": request.subject or "",
+            "body": request.body_text or request.body_html or "",
+        },
+        context="recruiter_email_send",
+        company_id=company_id,
+    )
+    if _fairness.is_blocked:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "fairness_blocked",
+                "field": _fairness.blocked_field,
+                "category": getattr(_fairness.blocked_result, "category", None),
+                "message": getattr(_fairness.blocked_result, "educational_message", None)
+                or "O texto contem termo potencialmente discriminatorio. Revise antes de enviar.",
+            },
+        )
+
     try:
         logger.info(f"Sending email for company {company_id}")
 
