@@ -10,7 +10,6 @@ import {
   ArrowRight,
   Brain,
   User,
-  MessageSquare,
   Loader2,
   CalendarClock,
   ChevronDown,
@@ -291,19 +290,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
 
         <DialogFooter className="px-5 py-0 bg-lia-bg-secondary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between w-full py-2.5 gap-3">
-            <div className="flex items-center gap-2">
-              {currentActionBehavior === 'conclusion_rejected' && onOpenSpecializedModal && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9 px-3 text-xs font-medium rounded-xl border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:border-lia-border-default"
-                  onClick={() => onOpenSpecializedModal('rejection-feedback', { candidates, toStage: selectedToStage, subStatus })}
-                >
-                  <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
-                  Feedback
-                </Button>
-              )}
-            </div>
+            <div className="flex items-center gap-2" />
 
             <div className="flex items-center gap-3">
               <Button

@@ -324,6 +324,21 @@ export function useUniversalTransitionModal({
   }
 
   const handleConfirm = async () => {
+    // Fluxo unico (decisao Paulo 2026-06-10): reprovacao INDIVIDUAL via
+    // "Confirmar com LIA" abre o editor de feedback (texto gerado pela IA) para
+    // REVISAO; o candidato e movido ao ENVIAR (moveOnSend). Bulk e outras
+    // transicoes seguem o caminho normal (onConfirm).
+    if (action === 'lia_auto' && candidates.length === 1 && currentActionBehavior === 'conclusion_rejected' && onOpenSpecializedModal) {
+      onOpenSpecializedModal('rejection-feedback', {
+        candidates,
+        toStage: selectedToStage,
+        subStatus,
+        fromStage,
+        moveOnSend: true,
+      })
+      onClose()
+      return
+    }
     setIsSubmitting(true)
     try {
       await onConfirm({

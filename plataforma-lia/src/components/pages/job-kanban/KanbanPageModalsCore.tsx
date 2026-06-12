@@ -90,6 +90,7 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
     showDecisionFlowModal, setShowDecisionFlowModal, decisionFlowCandidate, setDecisionFlowCandidate,
     decisionFlowType, handleDecisionFlowConfirm,
     setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalSituation, setUnifiedModalOpen,
+    handleUniversalTransitionConfirm,
   } = state
   const [bulkReport, setBulkReport] = useState<{ isOpen: boolean; results: BulkItemResult[]; actionLabel: string }>({ isOpen: false, results: [], actionLabel: "" })
 
@@ -99,6 +100,21 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
     const withBulk = data as CommunicationResult & { bulkResults?: BulkItemResult[] }
     if (Array.isArray(withBulk.bulkResults) && withBulk.bulkResults.length > 0) {
       setBulkReport({ isOpen: true, results: withBulk.bulkResults, actionLabel: COMM_TYPE_LABELS[data.type] ?? "Envio" })
+    }
+    // FE-2c: fluxo unico de reprovacao — move o candidato AO ENVIAR o feedback
+    // (just_move = move + reviewer/audit, sem re-disparar). Se o recrutador fecha
+    // sem enviar, nada move.
+    const aiCtx = unifiedModalCandidate?._aiFeedbackContext as
+      | { vacancyCandidateId: string; toStage: string; subStatus?: string | null; moveOnSend?: boolean }
+      | undefined
+    if (aiCtx?.moveOnSend && aiCtx.vacancyCandidateId) {
+      void handleUniversalTransitionConfirm({
+        candidateIds: [aiCtx.vacancyCandidateId],
+        toStage: aiCtx.toStage,
+        subStatus: aiCtx.subStatus ?? undefined,
+        action: 'just_move',
+        actionBehavior: 'conclusion_rejected',
+      } as Parameters<typeof handleUniversalTransitionConfirm>[0])
     }
   }
 

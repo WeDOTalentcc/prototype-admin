@@ -107,6 +107,8 @@ export function useKanbanTransitionHandlers({
               vacancyCandidateId: _c0.id,
               toStage: (context.toStage as string) || 'rejected',
               subStatus: (context.subStatus as string | undefined) ?? null,
+              fromStage: (context.fromStage as string | undefined) ?? null,
+              moveOnSend: (context.moveOnSend as boolean | undefined) ?? false,
             },
           })
           setUnifiedModalType('feedback')
