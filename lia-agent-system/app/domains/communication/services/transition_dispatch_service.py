@@ -62,13 +62,11 @@ def ai_personalization_allowed_for_channel(channel: str) -> bool:
 
 
 def is_feedback_fairness_blocked(text, company_id: str = "") -> bool:
-    """Camada de fairness/LGPD sobre o feedback gerado por IA, ANTES do envio ao
-    candidato (auditoria 2026-06-10). Reusa o guard canonico (L1 explicito + L2
-    implicito, com audit). Retorna True se o texto deve ser BLOQUEADO (nao enviar
-    a versao da IA — cai no template seguro). Fail-soft: erro no guard NAO bloqueia
-    o envio (nao quebrar comunicacao por falha do sensor)."""
-    if not text or not str(text).strip():
-        return False
+    """Mantido p/ compat (dispatch + preview). Delega ao guard canonico de feedback
+    (fairness L1 explicito + PII de documento). True = bloquear o texto da IA
+    (cai no template seguro). Fail-soft no proprio guard."""
+    from app.shared.compliance.feedback_guard import feedback_block_reason
+    return feedback_block_reason(text, company_id or "") is not None
     try:
         from app.shared.compliance.fairness_guard_middleware import check_fairness
         result = check_fairness(

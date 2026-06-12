@@ -102,27 +102,20 @@ company_id: str = Depends(get_verified_company_id)):
     - Falls back to mock success in development when API keys not set
     - Logs the communication to CommunicationHistory
     """
-    # Camada de fairness/LGPD sobre o conteudo (o texto pode ter sido editado a mao
-    # no modal de comunicacao). Bloqueio fail-closed em vies explicito (L1).
-    # Auditoria 2026-06-10. Reusa o guard canonico (mesmo do dispatch de feedback).
-    from app.shared.compliance.fairness_guard_middleware import check_fairness
-    _fairness = check_fairness(
-        texts={
-            "subject": request.subject or "",
-            "body": request.body_text or request.body_html or "",
-        },
-        context="recruiter_email_send",
-        company_id=company_id,
+    # Conformidade do conteudo (texto pode ter sido editado a mao no modal):
+    # fairness L1 + PII de documento (computacional) + LLM-judge (dormente por flag).
+    from app.shared.compliance.feedback_guard import feedback_block_reason_full
+    _block_reason = await feedback_block_reason_full(
+        f"{request.subject or ''} {request.body_text or request.body_html or ''}",
+        company_id,
     )
-    if _fairness.is_blocked:
+    if _block_reason:
         raise HTTPException(
             status_code=422,
             detail={
-                "error": "fairness_blocked",
-                "field": _fairness.blocked_field,
-                "category": getattr(_fairness.blocked_result, "category", None),
-                "message": getattr(_fairness.blocked_result, "educational_message", None)
-                or "O texto contem termo potencialmente discriminatorio. Revise antes de enviar.",
+                "error": "compliance_blocked",
+                "reason": _block_reason,
+                "message": "O texto contem conteudo bloqueado (vies, PII de documento ou risco juridico). Revise antes de enviar.",
             },
         )
 
@@ -240,6 +233,20 @@ company_id: str = Depends(get_verified_company_id)):
     - Falls back to mock success in development when API keys not set
     - Logs the communication to CommunicationHistory
     """
+    # Conformidade (fairness L1 + PII de documento). WhatsApp = template Meta (W1);
+    # guardamos o conteudo por defesa em profundidade.
+    from app.shared.compliance.feedback_guard import feedback_block_reason as _fbr_wa
+    _wa_block = _fbr_wa(request.message or "", company_id)
+    if _wa_block:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "compliance_blocked",
+                "reason": _wa_block,
+                "message": "Mensagem bloqueada (vies ou PII de documento). Revise antes de enviar.",
+            },
+        )
+
     try:
         logger.info(f"Sending WhatsApp for company {company_id}")
 

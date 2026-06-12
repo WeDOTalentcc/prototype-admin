@@ -21,4 +21,5 @@ async def test_send_email_blocks_discriminatory_text():
         await send_email(req, MagicMock(), "co-1")
     assert exc.value.status_code == 422
     assert isinstance(exc.value.detail, dict)
-    assert exc.value.detail.get("error") == "fairness_blocked"
+    assert exc.value.detail.get("error") == "compliance_blocked"
+    assert str(exc.value.detail.get("reason", "")).startswith("fairness:")

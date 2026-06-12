@@ -556,8 +556,8 @@ Atenciosamente,
         try:
             container = get_anthropic_client()
 
-            old_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(old_substatus, 'Feedback geral')
-            new_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(new_substatus, 'Feedback geral')
+            old_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(normalize_rejection_substatus(old_substatus), 'Feedback geral')
+            new_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(normalize_rejection_substatus(new_substatus), 'Feedback geral')
             
             prompt = f"""A mensagem abaixo precisa ser ajustada porque o motivo da transição mudou.
 
