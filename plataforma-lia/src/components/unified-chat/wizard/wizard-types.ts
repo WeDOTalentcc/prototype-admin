@@ -50,7 +50,6 @@ export type WizardStage =
   | "calibration"
   | "handoff"
   | "done"
-  | "scheduling"
 
 export type ScreeningMode = "compact" | "full"
 
@@ -377,7 +376,6 @@ export const STAGE_LABELS: Record<WizardStage, string> = {
   // Sprint Pipeline Templates 2026-05-26 — Opção B.
   pipeline_template: "Pipeline · Template",
   done: "Concluido",
-  scheduling: "Agendamento",
 }
 
 /**
@@ -401,7 +399,6 @@ export const STAGE_PILL_LABELS: Record<WizardStage, string> = {
   // Sprint Pipeline Templates 2026-05-26 — Opção B (Paulo aprovou)
   pipeline_template: "Pipeline · Template",
   done: "Vaga criada",
-  scheduling: "Agendando · Entrevistas",
 }
 
 export const STAGE_ORDER: WizardStage[] = [
@@ -411,7 +408,7 @@ export const STAGE_ORDER: WizardStage[] = [
   "pipeline_template",
   "bigfive", "salary", "competency",
   "wsi_questions", "eligibility", "review", "publish", "calibration",
-  "handoff", "done", "scheduling",
+  "handoff", "done",
 ]
 
 

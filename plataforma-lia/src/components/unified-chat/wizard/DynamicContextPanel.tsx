@@ -43,9 +43,6 @@ const HandoffPanel = lazy(() =>
 const DonePanel = lazy(() =>
   import("./panels/DonePanel").then((m) => ({ default: m.DonePanel }))
 )
-const SchedulingPanel = lazy(() =>
-  import("./panels/SchedulingPanel").then((m) => ({ default: m.SchedulingPanel }))
-)
 
 function PanelLoader() {
   return (
@@ -87,7 +84,6 @@ export const SPLIT_STAGES: WizardStage[] = [
   "calibration",
   "handoff",
   "done",
-  "scheduling",
 ]
 
 /**
@@ -209,8 +205,6 @@ function renderPanel(
       return <HandoffPanel data={data} />
     case "done":
       return <DonePanel data={data} />
-    case "scheduling":
-      return <SchedulingPanel data={data} onApprove={onApprove} />
     default:
       return (
         <div className="p-4 text-sm text-lia-text-secondary">
