@@ -2244,6 +2244,120 @@ SUGGEST_VARIABLE_COMPENSATION = WizardTool(
 # W1-B — Set Affirmative Fields
 # ---------------------------------------------------------------------------
 
+
+def _handle_add_bank_question(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Adiciona uma pergunta do banco da empresa ao set WSI do wizard.
+
+    Busca pelo question_id canonical (CompanyScreeningQuestionRepository).
+    Multi-tenancy: valida que a pergunta pertence ao company_id do state.
+    Fail-loud: question_id inexistente ou de outro tenant retorna erro explícito.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    question_id = str(tool_input.get("question_id") or "").strip()
+    if not question_id:
+        return ToolResult(llm_message="question_id é obrigatório.", error=True)
+
+    company_id = state.get("company_id") or (ctx.company_id if ctx else "")
+    if not company_id:
+        return ToolResult(
+            llm_message="Não foi possível identificar a empresa. Tente novamente.", error=True
+        )
+
+    # Gate de limite máximo por modo
+    _mode = str(state.get("screening_mode") or "compact").strip().lower()
+    _max_total = 12 if _mode == "full" else 7
+    _current = list(state.get("wsi_questions") or [])
+    if len(_current) >= _max_total:
+        return ToolResult(
+            llm_message=(
+                f"O pacote já tem {len(_current)} perguntas — limite máximo para o modo "
+                f"{'completo' if _mode == 'full' else 'compacto'} ({_max_total}). "
+                "Para adicionar do banco, primeiro remova uma existente."
+            ),
+            error=True,
+        )
+
+    try:
+        from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool  # noqa: PLC0415
+        from app.domains.recruitment.repositories.company_screening_question_repository import (
+            CompanyScreeningQuestionRepository,
+        )
+        from app.core.database import AsyncSessionLocal
+        import uuid as _uuid
+
+        try:
+            _qid = _uuid.UUID(question_id)
+        except ValueError:
+            return ToolResult(llm_message=f"question_id inválido: '{question_id}'.", error=True)
+
+        async def _fetch_question():
+            async with AsyncSessionLocal() as _db:
+                return await CompanyScreeningQuestionRepository(_db).get_by_id(_qid, company_id)
+
+        q = run_coro_in_threadpool(_fetch_question, timeout=5)
+    except Exception as exc:
+        logger.warning("[WizardServiceTools] add_bank_question lookup failed: %s", exc)
+        return ToolResult(
+            llm_message=f"Erro ao buscar pergunta do banco ({exc}). Tente novamente.", error=True
+        )
+
+    if q is None:
+        return ToolResult(
+            llm_message=f"Pergunta '{question_id}' não encontrada no banco da empresa.", error=True
+        )
+
+    # Converter para o formato de ScreeningQuestion do wizard
+    block = "technical" if (q.category or "").lower() in ("technical", "tecnica", "técnica") else "behavioral"
+    new_question = {
+        "question": q.question_text,
+        "framework": "Banco",  # distingue visualmente das LLM-geradas
+        "block": block,
+        "skill": q.category or "",
+        "ideal_answer": q.expected_answer or "",
+        "weight": 1.0,
+        "approved": False,
+        "needs_manual_review": False,
+        "source": "company_bank",
+        "bank_question_id": str(q.id),
+        "is_eliminatory": bool(q.is_eliminatory),
+    }
+
+    questions = _current + [new_question]
+    return ToolResult(
+        llm_message=(
+            f'Adicionada pergunta do banco: "{q.question_text[:80]}{"..." if len(q.question_text) > 80 else ""}". '
+            f"O pacote agora tem {len(questions)} perguntas."
+        ),
+        state_updates={"wsi_questions": questions, "questions_approved": None},
+    )
+
+
+ADD_BANK_QUESTION = WizardTool(
+    name="add_bank_question",
+    description=(
+        "Adiciona uma pergunta do banco de perguntas da empresa ao set WSI do wizard. "
+        "Usar quando o recrutador clicar em 'Adicionar do banco' no painel ou pedir para "
+        "adicionar uma pergunta específica do banco. "
+        "O question_id deve ser o UUID exato recebido — não modifique."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "question_id": {
+                "type": "string",
+                "description": "UUID da pergunta no banco da empresa. Copie exatamente da mensagem — não altere.",
+            },
+        },
+        "required": ["question_id"],
+    },
+    handler=_handle_add_bank_question,
+)
+
 def _handle_set_affirmative_fields(
     state: "JobCreationState",
     tool_input: dict,
@@ -2387,6 +2501,7 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SEND_MANAGER_BRIEFING,
     SUGGEST_BENEFITS,
     SUGGEST_VARIABLE_COMPENSATION,
+    ADD_BANK_QUESTION,
     SET_AFFIRMATIVE_FIELDS,
     CLOSE_PANEL,
 )
