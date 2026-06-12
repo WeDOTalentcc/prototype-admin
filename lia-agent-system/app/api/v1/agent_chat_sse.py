@@ -418,6 +418,10 @@ company_id: str = Depends(require_company_id)):
                     _rd_b2 = (getattr(_pol_b2, "pii_visibility_defaults", None) or {}) if _pol_b2 else {}
                     if _u_b2 is not None:
                         set_chat_pii_mask_identity(chat_should_mask_identity(_u_b2, _rd_b2))
+                        # W0-A: wizard recruiter identity — carried in context so _build_state can populate
+                        # parsed_recruiter_name/email at session start without a separate DB lookup at publish.
+                        context.setdefault("user_name", getattr(_u_b2, "name", None) or None)
+                        context.setdefault("user_email", getattr(_u_b2, "email", None) or None)
             except Exception:
                 logger.debug("[B2] chat identity-masking setup skipped (non-blocking)", exc_info=True)
 

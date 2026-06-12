@@ -412,16 +412,19 @@ class JobCreationAPIClient:
             "location", "work_model", "seniority_level", "requirements",
             "responsibilities", "technical_requirements",
             "behavioral_competencies", "languages", "benefits", "variable_compensation", "status",
-            "employment_type", "manager", "manager_email", "salary_range",
+            "employment_type", "manager", "manager_email", "recruiter", "recruiter_email", "salary_range",
             "created_at", "updated_at",
         ]
+        # W0-A: recruiter identity from wizard session user
+        recruiter = _bp_str(job_data.get("recruiter"), max_chars=255)
+        recruiter_email = _bp_str(job_data.get("recruiter_email"), max_chars=255)
         # Sprint O.2: explicit timestamps (belt-and-suspenders with DB server_default)
         _now_utc = datetime.now(timezone.utc)
         _params_raw = [
             str(new_id), str(company_id), title, description, department,
             location, work_model, seniority, skills_list, resp_list,
             tech_reqs_jsonb, beh_comp_jsonb, languages_jsonb, benefits_jsonb, variable_comp_jsonb, "Rascunho",
-            employment_type, manager, manager_email, salary_range_jsonb,
+            employment_type, manager, manager_email, recruiter, recruiter_email, salary_range_jsonb,
             _now_utc, _now_utc,
         ]
 
@@ -494,11 +497,11 @@ class JobCreationAPIClient:
                     (id, company_id, title, description, department, location,
                      work_model, seniority_level, requirements, responsibilities,
                      technical_requirements, behavioral_competencies, languages, benefits, variable_compensation, status,
-                     employment_type, manager, manager_email, salary_range,
+                     employment_type, manager, manager_email, recruiter, recruiter_email, salary_range,
                      created_at, updated_at)
                     VALUES
                     (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s,
-                     %s, %s, %s, %s::jsonb,
+                     %s, %s, %s, %s, %s, %s::jsonb,
                      %s, %s)
                     RETURNING id
                     """,

@@ -655,6 +655,11 @@ class WizardSessionService:
             for k in _CONTEXT_CARRY_KEYS:
                 if ctx.get(k):
                     state[k] = ctx[k]
+            # W0-A: recruiter from context (first turn) or prior_state (subsequent turns)
+            if ctx.get("user_name"):
+                state["parsed_recruiter_name"] = ctx["user_name"]
+            if ctx.get("user_email"):
+                state["parsed_recruiter_email"] = ctx["user_email"]
             logger.info(
                 "[WizardSession] Continuing session thread=%s stage=%s conv_turns=%d",
                 thread_id,
@@ -683,6 +688,9 @@ class WizardSessionService:
         for k in _CONTEXT_CARRY_KEYS:
             if ctx.get(k):
                 state[k] = ctx[k]
+        # W0-A: recruiter identity from session user (passed via context by SSE/REST endpoint)
+        state["parsed_recruiter_name"] = ctx.get("user_name") or None
+        state["parsed_recruiter_email"] = ctx.get("user_email") or None
         return state
 
     # ── Task #1127 (T1.1 + T2.1 + T2.2) — Supervisor pre-graph ────────

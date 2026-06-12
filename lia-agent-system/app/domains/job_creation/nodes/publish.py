@@ -209,6 +209,9 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 # FASE 5: gestor responsável + email (colunas manager/manager_email já existem).
                 "manager": _mgr_name or "",
                 "manager_email": _mgr_email or "",
+                # W0-A: recrutador responsável (coluna recruiter/recruiter_email já existe na model).
+                "recruiter": state.get("parsed_recruiter_name") or "",
+                "recruiter_email": state.get("parsed_recruiter_email") or "",
                 "salary_min": state.get("salary_min"),
                 "salary_max": state.get("salary_max"),
                 "salary_currency": state.get("salary_currency", "BRL"),
