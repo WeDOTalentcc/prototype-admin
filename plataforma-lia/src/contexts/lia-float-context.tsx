@@ -82,6 +82,11 @@ export interface DynamicPanelData {
   title?: string;
   stage?: string | null;
   requires_approval?: boolean;
+  /** ID do tool call que abriu este painel. Usado pela Phase 1 para destacar
+   *  o card relacionado no chat e pela LiaPanelStore para roteamento de foco. */
+  focusedToolCallId?: string | null;
+  /** Metadados de origem — qual tool + quando. Permite telemetria e deduplicação. */
+  openedBy?: { toolName: string; toolCallId: string; ts: number } | null;
 }
 
 /**
