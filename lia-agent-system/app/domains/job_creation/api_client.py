@@ -638,6 +638,40 @@ class JobCreationAPIClient:
             "eligibility_questions": eligibility_questions or [],
         })
 
+    def activate_screening(self, job_id: int) -> "APIResponse":
+        """Ativa triagem automaticamente: seta screening_status=active no JSONB."""
+        if not self.base_url:
+            return self._activate_screening_local(job_id)
+        return self._request("POST", f"/api/v1/jobs/{job_id}/screening_config/activate")
+
+    def _activate_screening_local(self, job_id) -> "APIResponse":
+        """Dev-local: seta screening_config.status.screening_status=active via psycopg2."""
+        try:
+            conn = self._devlocal_conn()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        UPDATE job_vacancies SET
+                            screening_config = COALESCE(screening_config, '{}'::jsonb) ||
+                                jsonb_build_object('status', jsonb_build_object('screening_status', 'active')),
+                            updated_at = NOW()
+                        WHERE id = %s
+                        RETURNING id
+                        """,
+                        (str(job_id),),
+                    )
+                    row = cur.fetchone()
+                    conn.commit()
+            finally:
+                conn.close()
+        except Exception as e:
+            logger.error("[JobCreationAPI] _activate_screening_local failed: %s", e, exc_info=True)
+            return APIResponse(success=False, error=f"activate_screening_local failed: {e}")
+        if not row:
+            return APIResponse(success=False, error=f"vaga {job_id} nao encontrada")
+        return APIResponse(success=True, data={"activated": True})
+
     def _save_screening_config_local(
         self, job_id, questions: List[Dict[str, Any]], mode: str,
         eligibility: List[Dict[str, Any]],
