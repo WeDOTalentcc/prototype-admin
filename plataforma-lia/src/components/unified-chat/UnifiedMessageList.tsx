@@ -18,6 +18,7 @@ import { WebsiteProposalCard } from "./WebsiteProposalCard"
 import { ToolSurfaceContext, useToolActivate } from "@/contexts/ToolSurfaceContext"
 import { CandidateResultCard, type CandidateSummary } from "./tool-cards/CandidateResultCard"
 import { JobListCard, type JobSummary } from "./tool-cards/JobListCard"
+import { CalibrationResultCard, type CalibrationCandidate } from "./tool-cards/CalibrationResultCard"
 import { useSurfaceForTool } from "@/hooks/chat/useSurfaceForTool"
 import { CandidateProfileCard, type CandidateProfileActionId } from "./candidate/CandidateProfileCard"
 import { CandidateEvaluationCard } from "./candidate/CandidateEvaluationCard"
@@ -110,6 +111,38 @@ function ListJobsResultCard({
       <JobListCard
         jobs={jobs}
         totalCount={totalCount}
+        onOpenPanel={activate ? () => activate(msgId) : undefined}
+      />
+    </ToolSurfaceContext.Provider>
+  )
+}
+
+/**
+ * P2.6-FE -- Renderiza CalibrationResultCard para blocos com type="calibration_result".
+ * Declarado como componente React (nao funcao inline) pois usa hooks.
+ */
+function CalibrationResultCardWrapper({
+  candidates,
+  averageScore,
+  msgId,
+  mode,
+}: {
+  candidates: CalibrationCandidate[]
+  averageScore: number
+  msgId: string
+  mode?: string
+}) {
+  const activate = useToolActivate()
+  const isFullscreen = mode === "fullscreen"
+  const surface = useSurfaceForTool("calibration_score", {
+    isFullscreen,
+    itemCount: candidates.length,
+  })
+  return (
+    <ToolSurfaceContext.Provider value={surface}>
+      <CalibrationResultCard
+        candidates={candidates}
+        averageScore={averageScore}
         onOpenPanel={activate ? () => activate(msgId) : undefined}
       />
     </ToolSurfaceContext.Provider>
@@ -649,6 +682,21 @@ export function UnifiedMessageList({
                         key={`ljr-${idx}`}
                         jobs={jobs}
                         totalCount={totalCount}
+                        msgId={message.id}
+                        mode={mode}
+                      />
+                    )
+                  }
+
+                  if (raw.type === "calibration_result") {
+                    const data = raw.data as { candidates?: CalibrationCandidate[]; average_score?: number } | undefined
+                    const candidates = data?.candidates ?? []
+                    const averageScore = data?.average_score ?? 0
+                    return (
+                      <CalibrationResultCardWrapper
+                        key={`cr-${idx}`}
+                        candidates={candidates}
+                        averageScore={averageScore}
                         msgId={message.id}
                         mode={mode}
                       />
