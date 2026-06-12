@@ -13,6 +13,12 @@ vi.mock('sonner', () => ({
   toast: mockToast,
 }))
 
+// Pre-existente (commit 234d32fc2 adicionou useAuthenticatedUserId ao hook sem
+// mockar aqui -> arquivo ficou vermelho). Mock do auth hook = renderHook sem provider.
+vi.mock('@/hooks/shared/use-authenticated-user-id', () => ({
+  useAuthenticatedUserId: () => ({ userId: 'reviewer-1' }),
+}))
+
 const makeCandidate = (overrides: Partial<KanbanCandidate> = {}): KanbanCandidate => ({
   id: 'cand-123',
   name: 'Felipe Almeida',
@@ -65,7 +71,7 @@ describe('useKanbanCandidateDecisions — confirm_hire branch', () => {
 
     // Primary transition/execute returns 200
     const fetchMock = vi.spyOn(global, 'fetch')
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ stage: 'hired' }) } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ stage: 'hired', success: true }) } as Response)  // success: exigido desde e3ac4a6a4
       // fire-and-forget call
       .mockResolvedValueOnce({ ok: true } as Response)
 
@@ -169,5 +175,36 @@ describe('useKanbanCandidateDecisions — confirm_hire branch', () => {
     expect(mockToast.success).not.toHaveBeenCalled()
     expect(mockToast.error).not.toHaveBeenCalled()
     expect(ctx.setShowDecisionFlowModal).not.toHaveBeenCalled()
+  })
+})
+
+describe('useKanbanCandidateDecisions — reject_with_feedback (anti-ghost)', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+  afterEach(() => { vi.restoreAllMocks() })
+
+  it('ENVIA o feedback via send-email (nao apenas toast)', async () => {
+    const ctx = makeCtx()
+    const fetchMock = vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ new_stage: 'Reprovados' }) } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) } as Response)
+    const { result } = renderHook(() => useKanbanCandidateDecisions(ctx))
+    await act(async () => {
+      await result.current.handleDecisionFlowConfirm('reject_with_feedback', 'Olá Felipe, obrigado por participar do processo.', 'email')
+    })
+    const urls = fetchMock.mock.calls.map(c => c[0])
+    expect(urls).toContain('/api/backend-proxy/communication/send-email')
+  })
+
+  it('ENVIA via send-whatsapp quando canal e whatsapp', async () => {
+    const ctx = makeCtx()
+    const fetchMock = vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ new_stage: 'Reprovados' }) } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) } as Response)
+    const { result } = renderHook(() => useKanbanCandidateDecisions(ctx))
+    await act(async () => {
+      await result.current.handleDecisionFlowConfirm('reject_with_feedback', 'Olá Felipe, obrigado.', 'whatsapp')
+    })
+    const urls = fetchMock.mock.calls.map(c => c[0])
+    expect(urls).toContain('/api/backend-proxy/communication/send-whatsapp')
   })
 })

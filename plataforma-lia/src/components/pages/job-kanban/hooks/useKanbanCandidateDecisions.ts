@@ -262,7 +262,29 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     } else if (action.startsWith('reject')) {
       await handleRejectCandidate(candidate)
       if (action === 'reject_with_feedback' && feedbackMessage) {
-        toast.success('Feedback enviado', { description: `Mensagem de feedback enviada para ${candidate.name} via ${channel === 'whatsapp' ? 'WhatsApp' : 'Email'}.` })
+        // Anti-ghost (auditoria 2026-06-10): ENVIAR de fato pelo endpoint guardado
+        // (communication/send-email|send-whatsapp ja passam por fairness + PII).
+        // Antes: so toast "Feedback enviado" — a mensagem era descartada (claim falso).
+        const ch = channel === 'whatsapp' ? 'whatsapp' : 'email'
+        try {
+          const endpoint = ch === 'whatsapp' ? 'communication/send-whatsapp' : 'communication/send-email'
+          const payload = ch === 'whatsapp'
+            ? { to_phone: candidate.phone ?? '', message: feedbackMessage, candidate_id: candidate.id, candidate_name: candidate.name, vacancy_id: job?.id?.toString() ?? null, communication_type: 'feedback' }
+            : { to_email: candidate.email ?? '', to_name: candidate.name, subject: `Retorno sobre sua candidatura${job?.title ? ` - ${job.title}` : ''}`, body_html: feedbackMessage, body_text: feedbackMessage, candidate_id: candidate.id, candidate_name: candidate.name, vacancy_id: job?.id?.toString() ?? null, communication_type: 'feedback' }
+          const sendResp = await fetch(`/api/backend-proxy/${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+          if (sendResp.ok) {
+            toast.success('Feedback enviado', { description: `Mensagem enviada para ${candidate.name} via ${ch === 'whatsapp' ? 'WhatsApp' : 'Email'}.` })
+          } else {
+            const err = await sendResp.json().catch(() => ({}))
+            toast.error('Feedback não enviado', { description: err?.detail?.message || err?.error || 'Revise o texto e tente novamente.' })
+          }
+        } catch {
+          toast.error('Feedback não enviado', { description: 'Falha de conexão ao enviar o feedback.' })
+        }
       }
     } else if (action === 'confirm_hire') {
       try {
