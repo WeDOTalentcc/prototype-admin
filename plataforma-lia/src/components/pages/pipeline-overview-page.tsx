@@ -834,7 +834,10 @@ export function PipelineOverviewPage() {
                 } satisfies PageTab,
               ]}
               activeTab={mode}
-              onTabChange={(id) => setMode(id as "candidatos" | "vagas")}
+              onTabChange={(id) => {
+                setMode(id as "candidatos" | "vagas")
+                if (id === "candidatos") handleCloseVacancyPreview()
+              }}
             />
 
             <div className="flex items-center gap-2 mt-2 mb-1">
@@ -1142,7 +1145,7 @@ export function PipelineOverviewPage() {
         {/* Phase A — vacancy side panel (mode='vagas'). Mirrors candidate
             preview layout. Conditional mount keeps modal hooks dormant
             while closed (defense-in-depth Rules of Hooks). */}
-        {showVacancyPreview && previewVacancy && (
+        {mode === "vagas" && showVacancyPreview && previewVacancy && (
           <div className="flex-shrink-0 w-[420px] relative pl-2">
             <div className="bg-lia-bg-primary h-full overflow-hidden rounded-xl border border-lia-border-subtle shadow-sm">
               <VacancyPreview
