@@ -241,6 +241,23 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 job_uid = attrs.get("uid") or data.get("uid")
                 logger.info("[JobCreation:publish] Job created: id=%s", job_id)
 
+            # W1-B (2026-06-12): persistir campos de vaga afirmativa se detectados
+            if job_id and state.get("is_affirmative"):
+                try:
+                    cb_wrap(
+                        api.update_affirmative_fields,
+                        job_id,
+                        state.get("is_affirmative", False),
+                        state.get("affirmative_criteria_primary"),
+                        state.get("affirmative_description"),
+                    )
+                except Exception as _aff_err:
+                    logger.warning(
+                        "[JobCreation:publish] update_affirmative_fields falhou",
+                        exc_info=True,
+                        extra={"job_id": job_id},
+                    )
+
         if job_id:
             # Step 2: Save screening config (WSI questions + eligibility)
             questions = state.get("wsi_questions", [])

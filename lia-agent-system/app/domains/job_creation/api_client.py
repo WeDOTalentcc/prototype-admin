@@ -672,6 +672,57 @@ class JobCreationAPIClient:
             return APIResponse(success=False, error=f"vaga {job_id} nao encontrada")
         return APIResponse(success=True, data={"activated": True})
 
+    def update_affirmative_fields(
+        self,
+        job_id: int,
+        is_affirmative: bool,
+        affirmative_criteria_primary: Optional[str] = None,
+        affirmative_description: Optional[str] = None,
+    ) -> "APIResponse":
+        """Persiste campos de vaga afirmativa via UPDATE (nao vai no INSERT dev-local)."""
+        if not self.base_url:
+            return self._update_affirmative_local(
+                job_id, is_affirmative, affirmative_criteria_primary, affirmative_description
+            )
+        return self._request("PATCH", f"/api/v1/jobs/{job_id}", json_body={
+            "job": {
+                "is_affirmative": is_affirmative,
+                "affirmative_criteria_primary": affirmative_criteria_primary,
+                "affirmative_description": affirmative_description,
+            }
+        })
+
+    def _update_affirmative_local(
+        self, job_id, is_affirmative, criteria_primary, description
+    ) -> "APIResponse":
+        """Dev-local: UPDATE direto via psycopg2."""
+        try:
+            conn = self._devlocal_conn()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        UPDATE job_vacancies SET
+                            is_affirmative = %s,
+                            affirmative_criteria_primary = %s,
+                            affirmative_description = %s,
+                            updated_at = NOW()
+                        WHERE id = %s
+                        RETURNING id
+                        """,
+                        (is_affirmative, criteria_primary, description, str(job_id)),
+                    )
+                    row = cur.fetchone()
+                    conn.commit()
+            finally:
+                conn.close()
+        except Exception as e:
+            logger.error("[JobCreationAPI] _update_affirmative_local failed: %s", e, exc_info=True)
+            return APIResponse(success=False, error=f"update_affirmative_local failed: {e}")
+        if not row:
+            return APIResponse(success=False, error=f"vaga {job_id} nao encontrada")
+        return APIResponse(success=True, data={"updated": True})
+
     def _save_screening_config_local(
         self, job_id, questions: List[Dict[str, Any]], mode: str,
         eligibility: List[Dict[str, Any]],

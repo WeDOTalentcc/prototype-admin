@@ -124,6 +124,34 @@ def _match_department(title, dept_names, threshold: float = 0.8):
     return best if best_score >= threshold else None
 
 
+
+_AFFIRMATIVE_PATTERNS: list[tuple[str, str]] = [
+    (r"\bpcd\b|pessoa[s]?\s+com\s+defici\u00eancia|defici\u00eancia\s+f\u00edsica|defici\u00eancia\s+visual|defici\u00eancia\s+auditiva", "disability"),
+    (r"\bmulhere[s]?\b|\bfeminino\b|\bfeminina\b|g\u00eanero\s+feminino|exclusiv[ao]\s+para\s+mulher", "gender"),
+    (r"\bnegr[ao]s?\b|\bpretos?\b|afrodescendente[s]?|afro-descendent", "race_ethnicity"),
+    (r"\blgbtqia?\+?\b|\blgbtq\b|transgên|transsexual|\btrans\b|n\u00e3o-bin\u00e1ri|nao[\\s-]binari", "lgbtqia"),
+    (r"\bind\u00edgen[ao]s?\b|indigena[s]?\b|povos\s+origin\u00e1ri", "indigenous"),
+    (r"\brefugiad[ao]s?\b|\bimigrante[s]?\b", "refugee"),
+    (r"\bafirmativ[ao]\b|a\u00e7\u00e3o\s+afirmativa|vaga\s+afirmativa", "other"),
+]
+
+
+def _detect_affirmative_intent(query: str) -> tuple[bool, str | None, str | None]:
+    """Detecta vaga afirmativa no texto do recrutador via regex.
+    Retorna (is_affirmative, criteria_primary, description_hint).
+    Proveniencia declarada -- nunca alucina.
+    """
+    if not query:
+        return False, None, None
+    text = unicodedata.normalize("NFKD", query.lower())
+    # Remove combining chars (acentos) para match uniforme
+    text = "".join(c for c in text if not unicodedata.combining(c))
+    for pattern, criteria in _AFFIRMATIVE_PATTERNS:
+        if re.search(pattern, text):
+            desc = query.strip()[:120] if query else None
+            return True, criteria, desc
+    return False, None, None
+
 def _derive_intake_suggestions(
     *,
     parsed_title: str | None,
@@ -326,6 +354,11 @@ def intake_node(state: JobCreationState) -> JobCreationState:
 
     # Audit 2026-06-03: transparencia -- quando algo foi deduzido, a LIA avisa
     # explicitamente na mensagem (chega ao chat via stage_data.message).
+    # W1-B (2026-06-12): inicializa flags de vaga afirmativa.
+    is_affirmative_detected = False
+    affirmative_criteria_detected: str | None = None
+    affirmative_description_detected: str | None = None
+
     _base_intake_msg = (
         msg("intake.captured", parsed_title=parsed_title)
         if parsed_title
@@ -347,6 +380,19 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             f"Pela area do titulo, deduzi o departamento **{parsed_department}** -- "
             f"confirme ou ajuste."
         )
+    # W1-B (2026-06-12): deteccao de vaga afirmativa -- antes de montar mensagem.
+    if not state.get("is_affirmative") and query:
+        _aff, _crit, _desc = _detect_affirmative_intent(query)
+        if _aff:
+            is_affirmative_detected = True
+            affirmative_criteria_detected = _crit
+            affirmative_description_detected = _desc
+            _deduction_notes.append(
+                f"Detectei que esta pode ser uma **vaga afirmativa** "
+                f"({'para PCD' if _crit == 'disability' else 'grupo prioritario: ' + (_crit or 'outro')}) "
+                f"-- confirme se e isso ou corrija."
+            )
+
     intake_message = _base_intake_msg
     if _deduction_notes:
         intake_message = _base_intake_msg + " " + " ".join(_deduction_notes)
@@ -366,6 +412,9 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         "seniority_inferred_from_title": seniority_inferred_from_title,
         "manager_name_suggested_from_email": manager_name_suggested_from_email,
         "department_inferred_from_title": department_inferred_from_title,
+        "is_affirmative": is_affirmative_detected or state.get("is_affirmative", False),
+        "affirmative_criteria_primary": affirmative_criteria_detected or state.get("affirmative_criteria_primary"),
+        "affirmative_description": affirmative_description_detected or state.get("affirmative_description"),
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
         "requires_approval": False,

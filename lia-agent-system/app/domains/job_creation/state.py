@@ -249,6 +249,11 @@ class JobCreationState(TypedDict, total=False):
     screening_pipeline_id: Optional[str]
     auto_screen_enabled: bool
 
+    # W1-B (2026-06-12): vaga afirmativa detectada via NLP no intake.
+    is_affirmative: bool
+    affirmative_criteria_primary: Optional[str]
+    affirmative_description: Optional[str]
+
     # --- T6 (Task #1088) review gate dual-confirmation ---
     # ``pending_publish_confirmation`` é setado por ``review_gate_node``
     # no PRIMEIRO ``publish_now`` (chat). Segundo ``publish_now`` dentro
