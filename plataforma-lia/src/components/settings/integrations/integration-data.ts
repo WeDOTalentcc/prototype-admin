@@ -29,7 +29,6 @@ export type IntegrationCategory =
   | "crm_hris"
   | "mcps_apis"
   | "job_board"
-  | "job_board"
 
 export interface IntegrationCapability {
   name: string
@@ -76,26 +75,6 @@ export const categories: CategoryInfo[] = [
 ]
 
 export const integrations: Integration[] = [
-  {
-    id: "linkedin_jobs",
-    name: "LinkedIn Jobs",
-    shortDescription: "Publique vagas no LinkedIn automaticamente",
-    fullDescription:
-      "Publique vagas da plataforma diretamente no LinkedIn Jobs e no feed da empresa. Os candidatos são redirecionados para o portal WeDOTalent para candidatura. Suporta publicação como Job Posting estruturado e/ou post social no feed da organização.",
-    category: "job_board",
-    status: "not_configured",
-    iconBg: "bg-wedo-cyan/10",
-    iconColor: "text-wedo-cyan",
-    iconLetter: "LI",
-    connectAction: "config",
-    capabilities: [
-      { name: "Publicação de Vagas", description: "Job Posting estruturado no LinkedIn Jobs" },
-      { name: "Post no Feed", description: "Compartilhamento social no feed da empresa" },
-      { name: "Redirecionamento", description: "Candidatos direcionados ao portal WeDOTalent" },
-      { name: "Token Manual", description: "Configure seu access_token sem OAuth" },
-    ],
-    configFields: ["LINKEDIN_ACCESS_TOKEN", "LINKEDIN_ORG_ID"],
-  },
   {
     id: "linkedin_jobs",
     name: "LinkedIn Jobs",
