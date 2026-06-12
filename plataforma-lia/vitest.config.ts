@@ -78,6 +78,7 @@ export default defineConfig({
           include: [
             'src/components/**/__tests__/**/*.test.tsx',
             'src/app/**/__tests__/**/*.test.tsx',
+            'src/contexts/**/__tests__/**/*.test.tsx',
           ],
           globals: true,
           setupFiles: ['src/hooks/__tests__/setup.ts'],
