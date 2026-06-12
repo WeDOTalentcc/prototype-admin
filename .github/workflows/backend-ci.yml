@@ -120,4 +120,6 @@ jobs:
           python3 -m pytest \
             tests/test_substatus_message_focus_canonical.py \
             tests/test_rest_hitl_gate.py \
+            tests/test_feedback_safety.py \
+            tests/test_feedback_fairness_guard.py \
             --no-cov --tb=short -q
