@@ -67,7 +67,9 @@
     "sensor:tokens:blocking": "node scripts/check_canonical_tailwind_tokens.mjs --blocking",
     "sensor:studio-hex": "node scripts/check_no_hardcoded_hex_in_studio.mjs",
     "sensor:studio-hex:blocking": "node scripts/check_no_hardcoded_hex_in_studio.mjs --blocking",
-    "lint:no-conflict-markers": "python3 scripts/check_no_conflict_markers.py"
+    "lint:no-conflict-markers": "python3 scripts/check_no_conflict_markers.py",
+    "lint:surface-sync": "python3 scripts/check_surface_config_sync.py",
+    "lint:surface-sync:blocking": "python3 scripts/check_surface_config_sync.py --blocking"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
