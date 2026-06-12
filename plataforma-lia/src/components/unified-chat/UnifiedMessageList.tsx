@@ -13,6 +13,7 @@ import { WizardPublishedJobCard } from "./wizard/WizardPublishedJobCard"
 import { WizardPipelineTemplateCard } from "./wizard/WizardPipelineTemplateCard"
 import { WizardJdCard } from "./wizard/WizardJdCard"
 import { WizardWsiCard } from "./wizard/WizardWsiCard"
+import { WizardCalibrationCard } from "./wizard/WizardCalibrationCard"
 import { WebsiteProposalCard } from "./WebsiteProposalCard"
 import { CandidateProfileCard, type CandidateProfileActionId } from "./candidate/CandidateProfileCard"
 import { CandidateEvaluationCard } from "./candidate/CandidateEvaluationCard"
@@ -442,6 +443,8 @@ export function UnifiedMessageList({
           meta?.type === "wizard_stage_card" && meta?.wizardStage === "jd_enrichment"
         const hasWizardWsiCard =
           meta?.type === "wizard_stage_card" && meta?.wizardStage === "wsi_questions"
+        const hasWizardCalibrationCard =
+          meta?.type === "wizard_stage_card" && meta?.wizardStage === "calibration"
         const hasWebsiteProposal =
           meta?.type === "website_proposal" && meta?.websiteProposal != null
         const hasCandidateProfile =
@@ -610,6 +613,16 @@ export function UnifiedMessageList({
                     emits ws_stage_payload; collapsible list with type badges. */}
                 {hasWizardWsiCard && (
                   <WizardWsiCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                  />
+                )}
+
+                {/* Calibration card — rendered when wizard stage calibration
+                    emits ws_stage_payload; approve/reject/skip inline with
+                    approve count progress. Serves as primary interaction when
+                    in sidebar/floating mode; secondary checkpoint in fullscreen. */}
+                {hasWizardCalibrationCard && (
+                  <WizardCalibrationCard
                     data={meta!.wizardStageData as Record<string, unknown>}
                   />
                 )}

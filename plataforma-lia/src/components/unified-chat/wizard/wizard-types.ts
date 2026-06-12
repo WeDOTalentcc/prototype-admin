@@ -328,6 +328,23 @@ export interface CalibrationCandidate {
   avatar_url?: string
   /** URL do perfil LinkedIn do candidato (opcional). */
   linkedin_url?: string
+  /** Histórico de experiências — disponível para o modal "Ver perfil completo". */
+  experiences?: Array<{
+    title: string
+    company: string
+    start_date: string
+    end_date?: string | null
+    duration_label?: string
+    description?: string
+    is_current?: boolean
+  }>
+  /** Formação acadêmica — disponível para o modal "Ver perfil completo". */
+  education?: Array<{
+    institution: string
+    degree: string
+    field: string
+    period?: string
+  }>
 }
 
 export interface HandoffData {
