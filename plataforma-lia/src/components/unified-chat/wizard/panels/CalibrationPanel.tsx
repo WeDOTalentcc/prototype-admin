@@ -4,8 +4,15 @@ import React, { useState } from "react"
 import { cn } from "@/lib/utils"
 import {
   User, CheckCircle, XCircle, Target, ThumbsUp, ThumbsDown, Users,
-  ChevronDown, ChevronUp, Plus, Award, Filter, Minus, type LucideIcon,
+  ChevronDown, ChevronUp, Plus, Award, Filter, Minus, ExternalLink,
+  Briefcase, GraduationCap, type LucideIcon,
 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import type { CalibrationData, CalibrationCandidate } from "../wizard-types"
 
 // Onda 33 — Local UI type for criteria tables. Backend currently emits only
@@ -212,6 +219,7 @@ function CandidateCard({
 }) {
   const decided = !!candidate.decision
   const [comment, setComment] = useState("")
+  const [profileOpen, setProfileOpen] = useState(false)
 
   return (
     <div className={cn(
@@ -361,6 +369,94 @@ function CandidateCard({
           </button>
         </div>
       )}
+
+      {/* "Ver perfil completo" — link que abre modal com experiências + educação */}
+      {(candidate.experiences?.length || candidate.education?.length) && (
+        <button
+          type="button"
+          onClick={() => setProfileOpen(true)}
+          className="w-full flex items-center justify-center gap-1 px-3 py-1.5 text-[11px] text-lia-text-tertiary hover:text-wedo-cyan transition-colors border-t border-lia-border-subtle/50"
+        >
+          <ExternalLink className="w-3 h-3" aria-hidden="true" />
+          Ver perfil completo
+        </button>
+      )}
+
+      {/* Full profile dialog */}
+      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {candidate.name}
+              <span className="text-sm font-normal text-lia-text-secondary">
+                · {candidate.current_title} @ {candidate.current_company}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-5 pt-2">
+            {/* Experiências */}
+            {candidate.experiences && candidate.experiences.length > 0 && (
+              <div>
+                <h4 className="flex items-center gap-1.5 text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3">
+                  <Briefcase className="w-3.5 h-3.5" />
+                  Experiências
+                </h4>
+                <div className="space-y-3">
+                  {candidate.experiences.map((exp, i) => (
+                    <div key={i} className="border-l-2 border-lia-border-subtle pl-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-lia-text-primary">{exp.title}</p>
+                          <p className="text-xs text-lia-text-secondary">{exp.company}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0 ml-2">
+                          <p className="text-[11px] text-lia-text-tertiary">
+                            {exp.start_date} – {exp.end_date ?? "Atual"}
+                          </p>
+                          {exp.duration_label && (
+                            <p className="text-[11px] text-lia-text-disabled">{exp.duration_label}</p>
+                          )}
+                        </div>
+                      </div>
+                      {exp.description && (
+                        <p className="text-xs text-lia-text-secondary mt-1 leading-relaxed line-clamp-3">
+                          {exp.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Educação */}
+            {candidate.education && candidate.education.length > 0 && (
+              <div>
+                <h4 className="flex items-center gap-1.5 text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3">
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  Formação
+                </h4>
+                <div className="space-y-2">
+                  {candidate.education.map((edu, i) => (
+                    <div key={i} className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-lia-text-primary">
+                          {edu.degree} — {edu.field}
+                        </p>
+                        <p className="text-xs text-lia-text-secondary">{edu.institution}</p>
+                      </div>
+                      {edu.period && (
+                        <p className="text-[11px] text-lia-text-tertiary flex-shrink-0 ml-2">{edu.period}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
