@@ -1277,6 +1277,13 @@ class WizardSessionService:
                         "[WizardOrchestrator] distribution_gap calc falhou: %s",
                         _dg_exc,
                     )
+            # W1-A: Perguntas de elegibilidade — surfacar para EligibilityPanel.
+            # EligibilityPanel usa data["questions"] (igual ao WSI).
+            # Só preenche quando WSI ainda não foi gerado (eligibility vem antes).
+            _elig_q = new_state.get("eligibility_questions")
+            if _elig_q and not new_state.get("wsi_questions"):
+                data["questions"] = _elig_q
+
             if new_state.get("job_id"):
                 data["job_id"] = new_state.get("job_id")
                 data["share_link"] = new_state.get("share_link")
