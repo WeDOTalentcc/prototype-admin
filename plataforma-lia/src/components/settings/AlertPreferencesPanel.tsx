@@ -53,6 +53,10 @@ import {
   type AlertPreferenceUpdate,
   type BriefingFrequency,
 } from "@/hooks/settings/use-alert-preferences"
+import {
+  useDigestSchedule,
+  type DigestFrequency,
+} from "@/hooks/settings/use-digest-schedule"
 
 type Audience = "recruiter" | "candidate"
 type ThresholdUnit = "count" | "hours" | "days" | "percent"
@@ -178,6 +182,17 @@ export function AlertPreferencesPanel() {
     updateBriefingFrequency,
     updateDigestEnabled,
   } = useBriefingPreferences()
+
+  // Fatia 2 (Decisão 3): frequência per-user override (Rules of Hooks: top)
+  const {
+    frequency: userFrequency,
+    source: userFreqSource,
+    hasPersonalOverride,
+    isLoading: isDigestScheduleLoading,
+    setFrequency: setUserFrequency,
+    resetToCompanyDefault,
+    isSaving: isDigestScheduleSaving,
+  } = useDigestSchedule()
 
   const groups = useMemo(() => {
     const recruiter: AlertPreference[] = []
@@ -473,6 +488,65 @@ export function AlertPreferencesPanel() {
               {briefingSaveError && (
                 <p className="ml-8 text-micro text-status-error">{briefingSaveError}</p>
               )}
+            </section>
+          )}
+
+          {/* Fatia 2: Frequência pessoal do usuário (override per-user) */}
+          {!isDigestScheduleLoading && (
+            <section className="space-y-3 border border-lia-border-subtle rounded-lg p-3" data-component="personal-digest-schedule">
+              <div className="flex items-start gap-2">
+                <div className="w-6 h-6 rounded-md flex items-center justify-center bg-lia-bg-secondary text-lia-text-secondary shrink-0">
+                  <UserCog className="w-3.5 h-3.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs font-semibold text-lia-text-primary">
+                    {t("alertPreferences.personalFrequencyTitle")}
+                  </h3>
+                  <p className="text-micro text-lia-text-secondary">
+                    {hasPersonalOverride
+                      ? t("alertPreferences.personalFrequencyActive")
+                      : t("alertPreferences.personalFrequencyDefault")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="ml-8 space-y-2">
+                <label className="text-xs text-lia-text-primary font-medium">
+                  {t("alertPreferences.personalFrequencyLabel")}
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {(["daily", "twice_daily", "weekly", "monthly"] as DigestFrequency[]).map((freq) => (
+                    <button
+                      key={freq}
+                      type="button"
+                      disabled={isDigestScheduleSaving}
+                      onClick={() => setUserFrequency(freq).catch(() => {})}
+                      aria-pressed={userFrequency === freq}
+                      className={`text-micro rounded-full px-2.5 py-0.5 border transition-colors disabled:opacity-60 ${
+                        userFrequency === freq
+                          ? "bg-lia-accent text-white border-lia-accent"
+                          : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle"
+                      }`}
+                    >
+                      {t(`alertPreferences.frequency.${freq}`)}
+                    </button>
+                  ))}
+                  {isDigestScheduleSaving && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-lia-text-secondary self-center" />
+                  )}
+                </div>
+
+                {hasPersonalOverride && (
+                  <button
+                    type="button"
+                    onClick={() => resetToCompanyDefault().catch(() => {})}
+                    disabled={isDigestScheduleSaving}
+                    className="text-micro text-lia-text-secondary underline hover:text-lia-text-primary disabled:opacity-60"
+                  >
+                    {t("alertPreferences.resetToCompanyDefault")}
+                  </button>
+                )}
+              </div>
             </section>
           )}
 

@@ -5986,7 +5986,12 @@
           "monthly": "Monthly"
         },
         "digestLabel": "Weekly digest",
-        "digestHint": "Receive a consolidated metrics summary every week"
+        "digestHint": "Receive a consolidated metrics summary every week",
+        "personalFrequencyTitle": "My frequency",
+        "personalFrequencyLabel": "My digest frequency",
+        "personalFrequencyActive": "You have a personal setting active",
+        "personalFrequencyDefault": "Using company default",
+        "resetToCompanyDefault": "Use company default"
       }
     },
     "integrations": {
