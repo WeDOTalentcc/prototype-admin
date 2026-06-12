@@ -11,7 +11,7 @@
  */
 
 /** Canonical disclaimer version — bump when the consent text changes. */
-export const DISCLAIMER_VERSION = "1.0.0"
+export const DISCLAIMER_VERSION = "1.1"
 
 export interface ConsentLogResult {
   ok: boolean

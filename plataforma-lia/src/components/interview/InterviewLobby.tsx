@@ -46,17 +46,19 @@ export interface InterviewLobbyProps {
 // ── Scroll-to-enable threshold (px tolerance) ──────────────────────────────
 const SCROLL_TOLERANCE = 10
 
-// ── Disclaimer text (canonical — bump DISCLAIMER_VERSION when changed) ──────
-const DISCLAIMER_FULL = `Esta plataforma utiliza inteligência artificial para conduzir a triagem inicial da sua candidatura.
+// ── Disclaimer text (canonical — bump DISCLAIMER_VERSION on any change) ────────
+// SPEC-CONSENT-AUDIO-v1.1 §4.1 — texto aprovado pelo DPO em 11/06/2026
+// v1.1: somente voz (sem câmera/vídeo); \"triagem\" em vez de \"entrevista\"
+const DISCLAIMER_FULL = `Ao marcar esta opção, você consente, de forma livre e expressa, com a gravação da sua voz durante esta triagem de pré-seleção, conduzida pela WeDOTalent (Talenses Recrutamento Especializado).
 
-Ao continuar, você autoriza o WeDOTalent a:
-• Coletar suas respostas de texto e/ou áudio durante a triagem;
-• Processar suas informações para avaliar seu perfil em relação à vaga;
-• Armazenar os dados conforme a Política de Privacidade e a LGPD (Lei 13.709/2018).
+A gravação destina-se exclusivamente à transcrição e análise do conteúdo das suas respostas para fins de seleção — não será utilizada para reconhecimento biométrico ou qualquer outra finalidade.
 
-Base legal: Art. 7º, Inciso I (consentimento) e Inciso II (legítimo interesse — Art. 7º §2º) da LGPD.
+Seus dados serão armazenados por até 12 meses e, após esse prazo, serão excluídos automaticamente.
 
-Um recrutador revisará sua candidatura antes de qualquer decisão final. Você pode solicitar a exclusão dos seus dados a qualquer momento.`
+Você pode, a qualquer momento, solicitar revisão humana da avaliação, acesso, correção ou exclusão dos seus dados pelo e-mail privacidadededados@wedotalent.cc.
+
+Para mais informações, acesse nossa Política de Privacidade em wedotalent.cc/privacidade.\`
+
 
 // ── Mic permission helper ───────────────────────────────────────────────────
 async function requestMicPermission(): Promise<boolean> {
