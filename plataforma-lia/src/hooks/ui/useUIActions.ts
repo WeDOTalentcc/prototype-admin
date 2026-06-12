@@ -1,3 +1,8 @@
+/**
+ * @deprecated Pre-unified-chat hook. Zero external callers.
+ * Canonical: useLiaPanelStore (wizard panel focus) + openDynamicPanel (panel content).
+ * This file may be removed in a future cleanup sprint.
+ */
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
