@@ -1154,6 +1154,31 @@ def _handle_approve_wsi_questions(
             ),
             error=True,
         )
+    # Emite close_panel via SSE sink para fechar o painel lateral WSI
+    # apos aprovacao bem-sucedida (mesmo padrao de _handle_close_panel).
+    # FE chain: ui_action="close_panel" -> useUIAction.ts -> lia:close_panel
+    # -> lia-float-context.tsx handleClosePanel -> closeDynamicPanel().
+    try:
+        import asyncio as _asyncio
+        from lia_agents_core.streaming_callback import (  # noqa: PLC0415
+            _sse_frame_sink as _sink_cv,
+        )
+        from app.shared.chat_event_serializer import (  # noqa: PLC0415
+            serialize_message as _ser_msg,
+        )
+
+        _sink = _sink_cv.get(None)
+        if _sink is not None:
+            _frame = _ser_msg(content="", ui_action="close_panel", domain="wizard")
+            try:
+                _loop = _asyncio.get_event_loop()
+                if _loop.is_running():
+                    _asyncio.run_coroutine_threadsafe(_sink(_frame), _loop)
+            except Exception:  # noqa: BLE001
+                pass
+    except Exception:  # noqa: BLE001 -- best-effort, nunca bloqueia a aprovacao
+        logger.debug("[WizardTool] approve_wsi close_panel SSE emit failed", exc_info=True)
+
     return ToolResult(
         llm_message=(
             "Perguntas de triagem aprovadas pelo recrutador. Serão salvas na "
