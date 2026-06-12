@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CheckCircle2, ExternalLink, Plus, X } from "lucide-react"
+import { CheckCircle2, ExternalLink, Plus, Target, X } from "lucide-react"
 
 interface Props {
   data: Record<string, unknown>
@@ -46,6 +46,22 @@ export function DonePanel({ data }: Props) {
             Ir para a vaga
           </button>
         )}
+
+        {/* CTA calibração — ação principal pós-publish */}
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("lia:prefill-message", {
+            detail: { message: `Quero calibrar perfis de candidatos para a vaga ${jobTitle || jobId || ''}` },
+          }))}
+          className="w-full flex flex-col gap-0.5 px-3 py-2.5 rounded-md bg-wedo-cyan/15 text-wedo-cyan hover:bg-wedo-cyan/25 transition-colors text-sm font-medium border border-wedo-cyan/20"
+        >
+          <div className="flex items-center gap-2.5">
+            <Target className="w-4 h-4" />
+            Calibrar perfis antes de buscar
+          </div>
+          <span className="text-[10px] text-wedo-cyan/70 font-normal ml-[26px]">
+            A LIA aprende seu critério e libera o sourcing automático
+          </span>
+        </button>
 
         {shareLink && (
           <button
