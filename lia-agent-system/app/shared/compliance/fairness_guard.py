@@ -786,7 +786,16 @@ class FairnessGuard:
                 result.soft_warnings.extend(semantic_warnings)
 
         except (ImportError, Exception) as e:
-            logger.warning("[LIA-FG-01] FairnessGuard Redis/semantic unavailable: %s", e)
+            logger.error(
+                "[LIA-FG-01] FairnessGuard Layer3 Redis/semantic UNAVAILABLE: %s",
+                e,
+                exc_info=True,
+            )
+            try:
+                import sentry_sdk  # type: ignore[import]
+                sentry_sdk.capture_exception(e)
+            except ImportError:
+                pass
 
         return result
 
