@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from xml.dom import minidom
 
+import httpx
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,72 +34,286 @@ class JobBoardService:
         self.base_url = os.getenv("APP_BASE_URL", "https://app.wedotalent.com")
     
     async def publish_to_linkedin(
-        self, 
-        job: JobVacancy, 
+        self,
+        job: JobVacancy,
         db: AsyncSession,
-        company_page_id: str | None = None
+        company_id: str | None = None,
+        credentials: dict | None = None,
     ) -> dict:
         """
-        LinkedIn Job Posting API integration.
-        Requires: LinkedIn Company Page admin access and OAuth 2.0.
-        
-        For MVP: Returns mock response. Full integration requires:
-        1. LinkedIn Company Page admin access
-        2. LinkedIn Developer App with Job Posting permissions
-        3. OAuth 2.0 flow for authorization
-        
+        LinkedIn Job Posting API integration (real implementation).
+
+        Two posting modes (controlled by credentials["posting_type"]):
+        - "job_posting": POST to /v2/simpleJobPostings (structured job ad)
+        - "social_only": POST to /v2/ugcPosts only (social feed share)
+
+        Fail-loud: never marks job as published if the API call fails.
+        NEVER fabricates post_id or published_linkedin=True on error.
+
         Args:
-            job: JobVacancy model instance
-            db: Database session
-            company_page_id: LinkedIn Company Page URN (optional)
-        
-        Returns:
-            dict with success status and post details
+            job:         JobVacancy model instance
+            db:          Database session
+            company_id:  Multi-tenancy — used to resolve credentials if not passed
+            credentials: Pre-resolved credentials dict (access_token, org_urn, posting_type)
         """
-        logger.info(f"📤 Publishing job {job.id} to LinkedIn")
-        
-        if not self.linkedin_client_id or not self.linkedin_client_secret:
-            logger.warning(
-                "[JobBoardService] LinkedIn credentials not configured — "
-                "skipping publish for job_id=%s. Set LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET.",
-                job.id,
-            )
+        logger.info("[linkedin] publishing job_id=%s, company_id=%s", job.id, company_id)
+
+        _LINKEDIN_API_BASE = "https://api.linkedin.com/v2"
+
+        if not credentials:
             return {
                 "success": False,
                 "error": "not_configured",
                 "message": (
-                    "LinkedIn API credentials not configured. "
-                    "Set LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET to enable direct LinkedIn posting. "
-                    "Configure in Configurações > Integrações."
+                    "LinkedIn não está configurado. "
+                    "Conecte em Configurações > Integrações > Job Boards > LinkedIn."
                 ),
                 "platform": "linkedin",
                 "job_id": str(job.id),
                 "job_title": job.title,
             }
-        
-        # Onda 2E (audit 2026-06-06): proveniencia honesta. Credenciais configuradas NAO
-        # significam integracao real — a LinkedIn Job Posting API exige aprovacao de partner
-        # (Talent Solutions) e NAO ha chamada HTTP real implementada. NAO fabricar post_id/URL
-        # nem marcar a vaga como publicada (era falso-positivo de publicacao).
-        logger.warning(
-            "[JobBoardService] LinkedIn Job Posting API nao implementada (requer partner approval) "
-            "— job_id=%s retornando not_implemented sem fabricar publicacao.",
-            job.id,
+
+        access_token = credentials.get("access_token", "")
+        org_urn = credentials.get("org_urn", "")
+        posting_type = credentials.get("posting_type", "social_only")
+
+        if not access_token or not org_urn:
+            return {
+                "success": False,
+                "error": "credentials_incomplete",
+                "message": "access_token ou org_urn ausente nas credenciais armazenadas.",
+                "platform": "linkedin",
+                "job_id": str(job.id),
+            }
+
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+            "X-Restli-Protocol-Version": "2.0.0",
+        }
+
+        job_url = f"{self.base_url}/vagas/{job.public_slug or job.id}"
+        job_post_id: str | None = None
+        social_post_id: str | None = None
+
+        # ── Step 1: Job Posting API (structured job ad) ───────────────────────
+        if posting_type == "job_posting":
+            job_payload = {
+                "externalJobPostingId": f"wdt-{job.id}",
+                "title": job.title,
+                "description": {"text": (job.description or "")[:4000]},
+                "employmentStatus": self._map_employment_type_linkedin(job.employment_type),
+                "workRemoteAllowed": (job.work_model or "").lower() in ("remoto", "hibrido", "híbrido", "remote", "hybrid"),
+                "location": {"countryCode": "BR"},
+                "applyMethod": {
+                    "com.linkedin.jobs.OffsiteApply": {
+                        "companyApplyUrl": job_url,
+                    }
+                },
+                "listedAt": int(datetime.utcnow().timestamp() * 1000),
+                "integrationContext": org_urn,
+            }
+            try:
+                async with httpx.AsyncClient(timeout=20.0) as client:
+                    resp = await client.post(
+                        f"{_LINKEDIN_API_BASE}/simpleJobPostings",
+                        headers=headers,
+                        json=job_payload,
+                    )
+                if resp.status_code in (200, 201):
+                    job_post_id = resp.headers.get("x-restli-id") or resp.headers.get("X-Restli-Id")
+                    logger.info(
+                        "[linkedin] job posting created for job_id=%s, post_id=%s",
+                        job.id, job_post_id,
+                    )
+                else:
+                    error_body: dict = {}
+                    try:
+                        error_body = resp.json()
+                    except Exception:
+                        error_body = {"raw": resp.text[:500]}
+                    logger.error(
+                        "[linkedin] simpleJobPostings error for job_id=%s: status=%s body=%s",
+                        job.id, resp.status_code, error_body,
+                    )
+                    return {
+                        "success": False,
+                        "error": f"linkedin_api_error_{resp.status_code}",
+                        "linkedin_error": error_body,
+                        "platform": "linkedin",
+                        "job_id": str(job.id),
+                        "job_title": job.title,
+                        "message": (
+                            f"LinkedIn Job Postings API retornou {resp.status_code}. "
+                            "Verifique se o access_token tem permissão 'w_member_social' ou 'r_liteprofile'."
+                        ),
+                    }
+            except httpx.TimeoutException as exc:
+                logger.error("[linkedin] simpleJobPostings timeout for job_id=%s: %s", job.id, exc)
+                return {
+                    "success": False,
+                    "error": "timeout",
+                    "message": "LinkedIn Job Postings API não respondeu a tempo.",
+                    "platform": "linkedin",
+                    "job_id": str(job.id),
+                }
+            except httpx.RequestError as exc:
+                logger.error("[linkedin] simpleJobPostings request error for job_id=%s: %s", job.id, exc)
+                return {
+                    "success": False,
+                    "error": "request_error",
+                    "message": f"Erro de conexão com LinkedIn: {exc}",
+                    "platform": "linkedin",
+                    "job_id": str(job.id),
+                }
+
+        # ── Step 2: UGC Post (social feed share) — always run ────────────────
+        social_text = self._build_social_summary(job)
+        ugc_payload = {
+            "author": org_urn,
+            "lifecycleState": "PUBLISHED",
+            "specificContent": {
+                "com.linkedin.ugc.ShareContent": {
+                    "shareCommentary": {"text": social_text},
+                    "shareMediaCategory": "ARTICLE",
+                    "media": [
+                        {
+                            "status": "READY",
+                            "originalUrl": job_url,
+                        }
+                    ],
+                }
+            },
+            "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
+        }
+        try:
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                resp = await client.post(
+                    f"{_LINKEDIN_API_BASE}/ugcPosts",
+                    headers=headers,
+                    json=ugc_payload,
+                )
+            if resp.status_code in (200, 201):
+                social_post_id = resp.headers.get("x-restli-id") or resp.headers.get("X-Restli-Id")
+                logger.info(
+                    "[linkedin] ugcPost created for job_id=%s, post_id=%s",
+                    job.id, social_post_id,
+                )
+            else:
+                error_body = {}
+                try:
+                    error_body = resp.json()
+                except Exception:
+                    error_body = {"raw": resp.text[:500]}
+                logger.error(
+                    "[linkedin] ugcPosts error for job_id=%s: status=%s body=%s",
+                    job.id, resp.status_code, error_body,
+                )
+                # If job posting already succeeded, report partial success
+                if job_post_id:
+                    logger.warning(
+                        "[linkedin] job posting succeeded but social post failed for job_id=%s",
+                        job.id,
+                    )
+                else:
+                    return {
+                        "success": False,
+                        "error": f"linkedin_ugc_error_{resp.status_code}",
+                        "linkedin_error": error_body,
+                        "platform": "linkedin",
+                        "job_id": str(job.id),
+                        "job_title": job.title,
+                        "message": (
+                            f"LinkedIn UGC Posts API retornou {resp.status_code}. "
+                            "Verifique se o access_token tem permissão 'w_member_social'."
+                        ),
+                    }
+        except (httpx.TimeoutException, httpx.RequestError) as exc:
+            logger.error("[linkedin] ugcPosts error for job_id=%s: %s", job.id, exc)
+            if not job_post_id:
+                return {
+                    "success": False,
+                    "error": "request_error",
+                    "message": f"Erro de conexão ao criar post social: {exc}",
+                    "platform": "linkedin",
+                    "job_id": str(job.id),
+                }
+
+        # ── Step 3: Mark job as published ONLY after at least one API success ─
+        canonical_post_id = job_post_id or social_post_id
+        if not canonical_post_id:
+            return {
+                "success": False,
+                "error": "no_post_id",
+                "message": "LinkedIn não retornou post_id — não marcando como publicado.",
+                "platform": "linkedin",
+                "job_id": str(job.id),
+            }
+
+        try:
+            job.published_linkedin = True
+            job.linkedin_post_id = canonical_post_id
+            job.last_published_at = datetime.utcnow()
+            await db.commit()
+        except Exception as exc:
+            await db.rollback()
+            logger.error(
+                "[linkedin] DB commit failed after successful API call for job_id=%s: %s",
+                job.id, exc,
+            )
+            return {
+                "success": False,
+                "error": "db_commit_failed",
+                "message": (
+                    "Post enviado com sucesso ao LinkedIn, mas falhou ao salvar no banco. "
+                    f"post_id={canonical_post_id} — verifique manualmente."
+                ),
+                "platform": "linkedin",
+                "job_id": str(job.id),
+                "post_id": canonical_post_id,
+            }
+
+        logger.info(
+            "[linkedin] job_id=%s published successfully: post_id=%s",
+            job.id, canonical_post_id,
         )
         return {
-            "success": False,
-            "status": "not_implemented",
-            "error": "not_implemented",
-            "message": (
-                "Publicacao direta no LinkedIn ainda nao esta disponivel: a LinkedIn Job Posting "
-                "API exige aprovacao de partner (Talent Solutions). As credenciais estao "
-                "configuradas, mas a integracao de publicacao ainda nao foi implementada — "
-                "nenhuma vaga foi publicada."
-            ),
+            "success": True,
             "platform": "linkedin",
             "job_id": str(job.id),
             "job_title": job.title,
+            "post_id": canonical_post_id,
+            "job_post_id": job_post_id,
+            "social_post_id": social_post_id,
+            "job_url": job_url,
+            "linkedin_job_url": (
+                f"https://www.linkedin.com/jobs/view/{job_post_id}"
+                if job_post_id else None
+            ),
+            "published_at": job.last_published_at.isoformat(),
+            "posting_type": posting_type,
         }
+
+    def _build_social_summary(self, job: "JobVacancy") -> str:
+        """Build a concise social post text for the job."""
+        lines = [f"🚀 Nova oportunidade: {job.title}"]
+        if job.department:
+            lines.append(f"Área: {job.department}")
+        work_model_map = {
+            "remoto": "Remoto",
+            "híbrido": "Híbrido",
+            "hibrido": "Híbrido",
+            "presencial": "Presencial",
+        }
+        wm = work_model_map.get((job.work_model or "").lower())
+        if wm:
+            lines.append(f"Modelo: {wm}")
+        if job.employment_type:
+            lines.append(f"Contrato: {job.employment_type}")
+        lines.append("")
+        lines.append("Candidate-se e saiba mais:")
+        return "
+".join(lines)
 
     async def publish_to_indeed(
         self, 
