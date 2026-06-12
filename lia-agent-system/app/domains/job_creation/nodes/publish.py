@@ -226,6 +226,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     else None
                 ),
                 "benefits": state.get("benefits", []),
+                "variable_compensation": state.get("variable_compensation") or [],
                 # item #3: idiomas confirmados -> coluna languages.
                 "languages": state.get("confirmed_languages") or [],
                 "technical_requirements": jd.get("skills_obrigatorias", []),
@@ -268,6 +269,20 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     logger.error(
                         "[JobCreation:publish] falha ao criar question_set -- "
                         "triagem usara fallback de regeneracao",
+                        exc_info=True,
+                        extra={"job_id": job_id},
+                    )
+
+            # W1-F (2026-06-12): ativa triagem automaticamente se auto_screen_enabled
+            if state.get("auto_screen_enabled", True):
+                try:
+                    cb_wrap(api.activate_screening, job_id)
+                    logger.info(
+                        "[JobCreation:publish] triagem ativada automaticamente job_id=%s", job_id
+                    )
+                except Exception as _act_err:
+                    logger.warning(
+                        "[JobCreation:publish] activate_screening falhou — triagem requer ativacao manual",
                         exc_info=True,
                         extra={"job_id": job_id},
                     )

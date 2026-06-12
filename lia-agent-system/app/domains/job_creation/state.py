@@ -198,6 +198,7 @@ class JobCreationState(TypedDict, total=False):
     # VagaBenefit (snapshot+ref) serializado como dict. Normalizado no
     # boundary (publish_node) via helpers.vaga_benefits.parse_vaga_benefits.
     benefits: List[Any]
+    variable_compensation: Optional[List[Dict[str, Any]]]
     salary_benchmark: Optional[Dict[str, Any]]
     # Fase 5 — recrutador confirmou a faixa via right_panel_form (salary_node).
     # Declarado p/ sobreviver ao merge do LangGraph (mesmo motivo de company_id).
