@@ -29,6 +29,7 @@ interface UseUnifiedCommunicationParams {
   companyId: string
   selectedCandidates: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>
   explicitSituation?: TemplateSituation
+  aiFeedbackContext?: { vacancyCandidateId: string; toStage: string; subStatus?: string | null } | null
 }
 
 export function useUnifiedCommunication({
@@ -40,7 +41,8 @@ export function useUnifiedCommunication({
   onSend,
   companyId,
   selectedCandidates,
-  explicitSituation
+  explicitSituation,
+  aiFeedbackContext
 }: UseUnifiedCommunicationParams) {
   const isBulkMode = !propCandidate && selectedCandidates.length > 0
 
@@ -57,6 +59,8 @@ export function useUnifiedCommunication({
   const [message, setMessage] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<string>('')
   const [isSending, setIsSending] = useState(false)
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false)
+  const [aiFeedbackMeta, setAiFeedbackMeta] = useState<{ highRisk: boolean; fairnessBlocked: boolean; usesTemplateOnly: boolean; aiPersonalized: boolean; generatedBy: string } | null>(null)
 
   const [interviewSettings, setInterviewSettings] = useState<InterviewSettings>({
     interviewType: 'funcional',
@@ -398,6 +402,47 @@ export function useUnifiedCommunication({
     }
   }
 
+  const generateAiFeedback = useCallback(async () => {
+    if (!aiFeedbackContext?.vacancyCandidateId) return
+    setIsGeneratingAi(true)
+    try {
+      const resp = await fetch('/api/backend-proxy/transition/preview-feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vacancy_candidate_id: aiFeedbackContext.vacancyCandidateId,
+          to_stage: aiFeedbackContext.toStage,
+          sub_status: aiFeedbackContext.subStatus ?? null,
+          channel: type === 'whatsapp' ? 'whatsapp' : 'email',
+        }),
+      })
+      if (resp.ok) {
+        const data = await resp.json()
+        if (data.body) setMessage(data.body)
+        if (data.subject) setSubject(data.subject)
+        setAiFeedbackMeta({
+          highRisk: !!data.high_risk,
+          fairnessBlocked: !!data.fairness_blocked,
+          usesTemplateOnly: !!data.uses_template_only,
+          aiPersonalized: !!data.ai_personalized,
+          generatedBy: data.generated_by || 'unknown',
+        })
+      }
+    } catch {
+      // fail-soft: recrutador escreve manualmente
+    } finally {
+      setIsGeneratingAi(false)
+    }
+  }, [aiFeedbackContext, type])
+
+  // Ao abrir com contexto de feedback por IA, gera o texto uma vez (corpo vazio).
+  useEffect(() => {
+    if (isOpen && aiFeedbackContext?.vacancyCandidateId && !message) {
+      generateAiFeedback()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, aiFeedbackContext?.vacancyCandidateId])
+
   return {
     isBulkMode,
     candidate,
@@ -426,6 +471,9 @@ export function useUnifiedCommunication({
     getModalInfo,
     handleTemplateSelect,
     handleSend,
-    dialogRef
+    dialogRef,
+    isGeneratingAi,
+    regenerateAiFeedback: generateAiFeedback,
+    aiFeedbackMeta
   }
 }
