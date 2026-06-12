@@ -450,13 +450,31 @@ class MonitoringLoop:
 
     async def run_checks(self, company_id: str) -> list[ProactiveAlert]:
         logger.info("MonitoringLoop running checks for company %s", company_id)
-        alerts: list[ProactiveAlert] = []
 
-        alerts.extend(await self._check_stale_candidates(company_id))
-        alerts.extend(await self._check_sla_risks(company_id))
-        alerts.extend(await self._check_funnel_bottlenecks(company_id))
-        alerts.extend(await self._check_empty_pipelines(company_id))
-        alerts.extend(await self._check_high_rejection_rate(company_id))
+        # Frente C: detectores em paralelo com fail-isolation.
+        # return_exceptions=True garante que falha num check nao aborta os outros.
+        _check_fns = [
+            self._check_stale_candidates(company_id),
+            self._check_sla_risks(company_id),
+            self._check_funnel_bottlenecks(company_id),
+            self._check_empty_pipelines(company_id),
+            self._check_high_rejection_rate(company_id),
+        ]
+        _check_names = [
+            "stale_candidates", "sla_risks", "funnel_bottlenecks",
+            "empty_pipelines", "high_rejection_rate",
+        ]
+        _results = await asyncio.gather(*_check_fns, return_exceptions=True)
+
+        alerts: list[ProactiveAlert] = []
+        for _name, _result in zip(_check_names, _results):
+            if isinstance(_result, Exception):
+                logger.warning(
+                    "MonitoringLoop check '%s' failed for company %s: %s",
+                    _name, company_id, _result,
+                )
+            else:
+                alerts.extend(_result)
 
         self._alert_store[company_id] = alerts
         self._last_run[company_id] = datetime.now(timezone.utc)
