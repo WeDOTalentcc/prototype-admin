@@ -319,6 +319,13 @@ class JobCreationState(TypedDict, total=False):
     # FE computes absolute dates as: today + offset_end days.
     derived_chronogram: Optional[List[Dict[str, Any]]]
 
+    # --- W3-A: campos operacionais ---
+    # Todos têm defaults seguros — wizard seta via set_operational_fields tool.
+    priority: Optional[str]          # "normal" | "high" | "urgent" — default "normal"
+    urgency_level: Optional[int]     # 0=normal, 1=alta, 2=critica — default 0
+    is_confidential: Optional[bool]  # vaga sigilosa — default False
+    computed_deadline: Optional[str] # ISO date derivado do derived_chronogram
+
     # --- WS protocol fields ---
     ws_stage_payload: Optional[Dict[str, Any]]  # last wizard_stage WS message sent
     requires_approval: bool  # current stage needs HITL

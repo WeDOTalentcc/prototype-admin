@@ -232,6 +232,10 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 "technical_requirements": jd.get("skills_obrigatorias", []),
                 "behavioral_competencies": jd.get("competencias_comportamentais", []),
                 "responsibilities": jd.get("responsabilidades", []),
+                # W3-A: campos operacionais com defaults seguros
+                "urgency_level": state.get("urgency_level") or 0,
+                "is_confidential": bool(state.get("is_confidential", False)),
+                "priority": state.get("priority") or "normal",
             }
             resp = cb_wrap(api.create_job, job_data)
             if resp.success and resp.data:
@@ -240,6 +244,26 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 job_id = attrs.get("id") or data.get("id")
                 job_uid = attrs.get("uid") or data.get("uid")
                 logger.info("[JobCreation:publish] Job created: id=%s", job_id)
+
+            # W3-A: derivar deadline a partir do derived_chronogram
+            if job_id and state.get("derived_chronogram"):
+                try:
+                    from datetime import date as _date, timedelta as _td
+                    _chron = state["derived_chronogram"]
+                    _max_offset = max(
+                        (s.get("offset_end") or 0)
+                        for s in _chron
+                        if isinstance(s, dict)
+                    ) if _chron else 0
+                    if _max_offset > 0:
+                        _deadline = (_date.today() + _td(days=_max_offset)).isoformat()
+                        cb_wrap(api.update_job, job_id, {"deadline": _deadline})
+                        logger.info(
+                            "[publish] W3-A deadline derivado do cronograma: %s (offset=%dd)",
+                            _deadline, _max_offset,
+                        )
+                except Exception as _w3a_exc:
+                    logger.warning("[publish] W3-A deadline derivation fail-open: %s", _w3a_exc)
 
             # W1-B (2026-06-12): persistir campos de vaga afirmativa se detectados
             if job_id and state.get("is_affirmative"):

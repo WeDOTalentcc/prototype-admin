@@ -2351,6 +2351,116 @@ SUGGEST_VARIABLE_COMPENSATION = WizardTool(
 
 
 
+
+# ── set_operational_fields (W3-A) ─────────────────────────────────────────────
+
+_VALID_PRIORITIES = {"normal", "high", "urgent"}
+_VALID_URGENCY_LEVELS = {0, 1, 2}
+
+
+def _handle_set_operational_fields(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Define campos operacionais da vaga: prioridade, urgência, confidencialidade.
+
+    Todos são opcionais. Se o recrutador não especificar, defaults seguros são
+    aplicados no publish (normal/0/False). Este tool existe para casos onde o
+    recrutador declara urgência ou vaga sigilosa durante o wizard.
+
+    Multi-tenancy: company_id proibido no input (sempre do ctx).
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    updates: dict = {}
+    errors: list[str] = []
+
+    priority = tool_input.get("priority")
+    if priority is not None:
+        if priority not in _VALID_PRIORITIES:
+            errors.append(
+                f"priority inválido: {priority!r}. "
+                f"Valores aceitos: {sorted(_VALID_PRIORITIES)}"
+            )
+        else:
+            updates["priority"] = priority
+
+    urgency_level = tool_input.get("urgency_level")
+    if urgency_level is not None:
+        try:
+            urgency_level = int(urgency_level)
+        except (TypeError, ValueError):
+            errors.append("urgency_level deve ser inteiro 0/1/2")
+        else:
+            if urgency_level not in _VALID_URGENCY_LEVELS:
+                errors.append(
+                    f"urgency_level inválido: {urgency_level}. Valores aceitos: 0, 1, 2"
+                )
+            else:
+                updates["urgency_level"] = urgency_level
+
+    is_confidential = tool_input.get("is_confidential")
+    if is_confidential is not None:
+        updates["is_confidential"] = bool(is_confidential)
+
+    if errors:
+        return ToolResult(llm_message="; ".join(errors), error=True)
+
+    if not updates:
+        return ToolResult(
+            llm_message="Nenhum campo operacional alterado.",
+            state_updates={},
+        )
+
+    labels = []
+    if "priority" in updates:
+        _priority_labels = {"normal": "Normal", "high": "Alta", "urgent": "Urgente"}
+        labels.append(f"prioridade: {_priority_labels.get(updates['priority'], updates['priority'])}")
+    if "urgency_level" in updates:
+        _urg_labels = {0: "Normal", 1: "Alta", 2: "Crítica"}
+        labels.append(f"urgência: {_urg_labels.get(updates['urgency_level'], updates['urgency_level'])}")
+    if "is_confidential" in updates:
+        labels.append("vaga confidencial" if updates["is_confidential"] else "vaga pública")
+
+    return ToolResult(
+        llm_message=f"Campos operacionais atualizados: {', '.join(labels)}.",
+        state_updates=updates,
+    )
+
+
+SET_OPERATIONAL_FIELDS = WizardTool(
+    name="set_operational_fields",
+    description=(
+        "Define campos operacionais da vaga: prioridade (normal/high/urgent), "
+        "nível de urgência (0=normal, 1=alta, 2=crítica) e se a vaga é "
+        "confidencial (is_confidential=true/false). Use quando o recrutador "
+        "mencionar urgência, prazo apertado ou solicitar discrição na vaga."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "priority": {
+                "type": "string",
+                "enum": ["normal", "high", "urgent"],
+                "description": "Prioridade da vaga",
+            },
+            "urgency_level": {
+                "type": "integer",
+                "enum": [0, 1, 2],
+                "description": "0=normal, 1=alta, 2=crítica",
+            },
+            "is_confidential": {
+                "type": "boolean",
+                "description": "True se a vaga é confidencial/sigilosa",
+            },
+        },
+        "additionalProperties": False,
+    },
+    handler=_handle_set_operational_fields,
+)
+
+
 # ---------------------------------------------------------------------------
 # W1-B — Set Affirmative Fields
 # ---------------------------------------------------------------------------
@@ -2612,6 +2722,7 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SEND_MANAGER_BRIEFING,
     SUGGEST_BENEFITS,
     SUGGEST_VARIABLE_COMPENSATION,
+    SET_OPERATIONAL_FIELDS,
     ADD_BANK_QUESTION,
     SET_AFFIRMATIVE_FIELDS,
     CLOSE_PANEL,
