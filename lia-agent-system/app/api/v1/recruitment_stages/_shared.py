@@ -294,6 +294,25 @@ class TransitionExecuteRequest(WeDoBaseModel):
     hitl_approved: bool = False  # AUD-4: FE seta True ao confirmar (gate REST)
 
 
+class PreviewFeedbackRequest(WeDoBaseModel):
+    vacancy_candidate_id: str
+    to_stage: str
+    sub_status: str | None = None
+    channel: str | None = "email"
+    prompt: str | None = None
+
+
+class PreviewFeedbackResponse(BaseModel):
+    body: str
+    subject: str | None = None
+    generated_by: str = "unknown"
+    ai_personalized: bool = False
+    fairness_blocked: bool = False
+    high_risk: bool = False
+    uses_template_only: bool = False
+    channel: str = "email"
+
+
 class TransitionExecuteResponse(BaseModel):
     success: bool
     message: str

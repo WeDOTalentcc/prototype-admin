@@ -122,4 +122,5 @@ jobs:
             tests/test_rest_hitl_gate.py \
             tests/test_feedback_safety.py \
             tests/test_feedback_fairness_guard.py \
+            tests/test_preview_feedback.py \
             --no-cov --tb=short -q

@@ -19,6 +19,8 @@ from ._shared import (
     InterpretContextResponse,
     TransitionExecuteRequest,
     TransitionExecuteResponse,
+    PreviewFeedbackRequest,
+    PreviewFeedbackResponse,
     DispatchResult,
     TaskItem,
     LearnedSuggestion,
@@ -543,3 +545,74 @@ company_id: str = Depends(require_company_id)):
             extra={"vacancy_candidate_id": getattr(request, "vacancy_candidate_id", None)},
         )
         raise HTTPException(status_code=500, detail="Erro interno ao processar transição")
+
+
+
+@router.post("/transition/preview-feedback", response_model=PreviewFeedbackResponse)
+async def preview_feedback(
+    request: PreviewFeedbackRequest,
+    current_user: User = Depends(get_current_active_user),
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    company_id: str = Depends(require_company_id),
+):
+    """Gera o texto do feedback para REVISAO (item 3 / 1-exemplo do bulk).
+
+    READ-ONLY: NAO move o candidato e NAO envia nada. Reusa o MESMO produtor
+    (MessageGenerator) + a mesma camada de fairness/LGPD e a regra de canal (W1)
+    do envio real, para o recrutador ver exatamente o que sairia.
+    """
+    from app.domains.automation.services.candidate_context_aggregator import (
+        CandidateContextAggregator,
+    )
+    from app.domains.automation.services.stage_transition_automation import (
+        MessageGenerator,
+        is_high_risk_rejection,
+    )
+    from app.domains.communication.services.transition_dispatch_service import (
+        ai_personalization_allowed_for_channel,
+        is_feedback_fairness_blocked,
+    )
+
+    channel = request.channel or "email"
+    aggregator = CandidateContextAggregator(stage_repo.db)
+    candidate_context = await aggregator.aggregate(request.vacancy_candidate_id)
+    job_context = candidate_context.get("job", {}) or {}
+
+    try:
+        from sqlalchemy import select as _sa_sel
+        from app.models.company import Company as _Company
+        _r = await stage_repo.db.execute(
+            _sa_sel(_Company.display_name, _Company.name).where(_Company.id == company_id)
+        )
+        _row = _r.first()
+        if _row:
+            job_context["company_name"] = _row[0] or _row[1] or ""
+    except Exception as _ce:
+        logger.warning(f"[PREVIEW] could not resolve company name: {_ce}")
+
+    msg_type = "feedback_construtivo" if request.to_stage == "rejected" else "aprovacao"
+    result = await MessageGenerator.generate(
+        candidate_context=candidate_context,
+        to_stage=request.to_stage,
+        substatus=request.sub_status or "",
+        job_context=job_context,
+        message_type=msg_type,
+        channel=channel,
+    )
+    body = result.get("body", "") or ""
+    generated_by = (result.get("metadata") or {}).get("generated_by", "unknown")
+    high_risk = request.to_stage == "rejected" and is_high_risk_rejection(request.sub_status or "")
+    uses_template_only = not ai_personalization_allowed_for_channel(channel)
+    fairness_blocked = (not uses_template_only) and is_feedback_fairness_blocked(body, str(company_id))
+    ai_personalized = (generated_by == "lia_claude") and not uses_template_only and not fairness_blocked
+
+    return PreviewFeedbackResponse(
+        body=body,
+        subject=result.get("subject"),
+        generated_by=generated_by,
+        ai_personalized=ai_personalized,
+        fairness_blocked=fairness_blocked,
+        high_risk=high_risk,
+        uses_template_only=uses_template_only,
+        channel=channel,
+    )
