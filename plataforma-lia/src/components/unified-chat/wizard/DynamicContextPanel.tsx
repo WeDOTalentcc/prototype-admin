@@ -46,6 +46,36 @@ const HandoffPanel = lazy(() =>
 const DonePanel = lazy(() =>
   import("./panels/DonePanel").then((m) => ({ default: m.DonePanel }))
 )
+const SchedulingPanel = lazy(() =>
+  import("./panels/SchedulingPanel").then((m) => ({ default: m.SchedulingPanel }))
+)
+
+/**
+ * Declarative map stage → lazy panel component.
+ * Harness sensor: __tests__/DynamicContextPanel.panel-registry.test.ts
+ * verifies every SPLIT_STAGE has an entry here.
+ * Phase 1 will use this registry to inject ToolSurfaceContext into panels.
+ *
+ * NOTE: renderPanel() switch below remains as the rendering path.
+ * This registry exists for declarative coverage checks + Phase 1 migration.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const PANEL_REGISTRY: Partial<Record<WizardStage, React.LazyExoticComponent<any>>> = {
+  intake:        IntakePanel,
+  jd_enrichment: JdEnrichmentPanel,
+  bigfive:       BigFivePanel,
+  salary:        SalaryPanel,
+  competency:    CompetencyPanel,
+  wsi_questions: WsiQuestionsPanel,
+  eligibility:   EligibilityPanel,
+  affirmative:   AffirmativePanel,
+  review:        ReviewPanel,
+  publish:       PublishPanel,
+  calibration:   CalibrationPanel,
+  handoff:       HandoffPanel,
+  done:          DonePanel,
+  scheduling:    SchedulingPanel,
+}
 
 function PanelLoader() {
   return (
