@@ -357,16 +357,29 @@ export function AlertPreferencesPanel() {
     items: AlertPreference[]
   ) {
     if (items.length === 0) return null
+    const activeCount = items.filter((p) => p.is_enabled).length
     return (
       <section className="space-y-2" data-component="alert-preference-group">
         <div className="flex items-start gap-2">
           <div className="w-6 h-6 rounded-md flex items-center justify-center bg-lia-bg-secondary text-lia-text-secondary shrink-0">
             {icon}
           </div>
-          <div className="min-w-0">
-            <h3 className="text-xs font-semibold text-lia-text-primary">
-              {t(titleKey)}
-            </h3>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-xs font-semibold text-lia-text-primary">
+                {t(titleKey)}
+              </h3>
+              <span
+                className={`text-micro rounded-full px-1.5 py-0.5 border ${
+                  activeCount > 0
+                    ? "bg-lia-accent/10 border-lia-accent/30 text-lia-accent"
+                    : "bg-lia-bg-secondary border-lia-border-subtle text-lia-text-secondary"
+                }`}
+                aria-label={t("alertPreferences.activeCountAria", { active: activeCount, total: items.length })}
+              >
+                {t("alertPreferences.activeCount", { active: activeCount, total: items.length })}
+              </span>
+            </div>
             <p className="text-micro text-lia-text-secondary">{t(hintKey)}</p>
           </div>
         </div>
@@ -581,6 +594,19 @@ export function AlertPreferencesPanel() {
                 groups.candidate
               )}
             </>
+          )}
+          {/* Fatia 3 — link de atalho ao histórico de notificações (Indicadores > Alertas) */}
+          {!isLoading && preferences.length > 0 && (
+            <div className="pt-2 border-t border-lia-border-subtle/40">
+              <a
+                href="/pt/indicadores?tab=alerts"
+                className="inline-flex items-center gap-1.5 text-micro text-lia-text-secondary hover:text-lia-accent transition-colors"
+                data-testid="notifications-history-link"
+              >
+                <Bell className="w-3 h-3" />
+                {t("alertPreferences.viewHistory")}
+              </a>
+            </div>
           )}
         </CardContent>
       </Card>

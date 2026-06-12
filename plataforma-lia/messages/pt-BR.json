@@ -5991,7 +5991,10 @@
         "personalFrequencyLabel": "Minha frequência de digest",
         "personalFrequencyActive": "Você tem uma configuração pessoal ativa",
         "personalFrequencyDefault": "Usando o padrão da empresa",
-        "resetToCompanyDefault": "Usar padrão da empresa"
+        "resetToCompanyDefault": "Usar padrão da empresa",
+        "activeCount": "{active} de {total} ativos",
+        "activeCountAria": "{active} de {total} alertas ativos",
+        "viewHistory": "Ver histórico de notificações"
       }
     },
     "integrations": {
