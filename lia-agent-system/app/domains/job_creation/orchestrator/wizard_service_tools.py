@@ -1517,6 +1517,168 @@ CREATE_CUSTOM_ELIGIBILITY_TEMPLATE = WizardTool(
 # ── close_panel (minimizar painel lateral) ─────────────────────────────────────
 
 
+
+def _build_manager_briefing_email(state: dict) -> str:
+    """Monta corpo HTML simplificado do briefing executivo para o gestor."""
+    title = state.get("parsed_title") or "Vaga"
+    seniority = state.get("parsed_seniority") or ""
+    department = state.get("parsed_department") or ""
+    jd = (state.get("jd_enriched") or "")[:600]
+
+    # Salário
+    salary_min = state.get("salary_min")
+    salary_max = state.get("salary_max")
+    salary_str = ""
+    if salary_min and salary_max:
+        salary_str = f"R$ {salary_min:,.0f} – R$ {salary_max:,.0f}".replace(",", ".")
+    elif salary_min:
+        salary_str = f"A partir de R$ {salary_min:,.0f}".replace(",", ".")
+
+    # Competências
+    competencies = state.get("competencies") or []
+    comp_list = ""
+    if competencies:
+        items = [f"<li>{c.get('name', c) if isinstance(c, dict) else c}</li>" for c in competencies[:8]]
+        comp_list = "<ul>" + "".join(items) + "</ul>"
+
+    # Cronograma
+    chronogram = state.get("derived_chronogram") or []
+    chron_rows = ""
+    if chronogram:
+        rows = []
+        for stage in chronogram:
+            rows.append(
+                f"<tr><td>{stage['name']}</td><td>{stage['sla_days']} dias</td>"
+                f"<td>até dia +{stage['offset_end']}</td></tr>"
+            )
+        chron_rows = (
+            "<table border='1' cellpadding='4'>"
+            "<tr><th>Etapa</th><th>SLA</th><th>Prazo (a partir de hoje)</th></tr>"
+            + "".join(rows) + "</table>"
+        )
+
+    # Triagem
+    screening_mode = state.get("screening_mode") or "wsi"
+    n_questions = len(state.get("wsi_questions") or [])
+    screening_info = f"Modo: {screening_mode.upper()}"
+    if n_questions:
+        screening_info += f" · {n_questions} perguntas configuradas"
+
+    # BigFive
+    bigfive = state.get("bigfive_profile") or {}
+    bf_str = ""
+    if bigfive:
+        items = [f"{k}: {v:.0%}" for k, v in bigfive.items() if isinstance(v, (int, float))]
+        bf_str = " | ".join(items[:5])
+
+    html = f"""
+<h2>Briefing de Contratação — {title}</h2>
+<p><b>Departamento:</b> {department} &nbsp;&nbsp; <b>Senioridade:</b> {seniority}</p>
+{"<p><b>Faixa salarial:</b> " + salary_str + "</p>" if salary_str else ""}
+<h3>Descrição da Vaga</h3>
+<p>{jd}{'...' if len(state.get('jd_enriched') or '') > 600 else ''}</p>
+{"<h3>Competências Requeridas</h3>" + comp_list if comp_list else ""}
+{"<h3>Perfil Comportamental (BigFive)</h3><p>" + bf_str + "</p>" if bf_str else ""}
+{"<h3>Cronograma do Processo Seletivo</h3>" + chron_rows if chron_rows else ""}
+<h3>Configuração de Triagem</h3>
+<p>{screening_info}</p>
+<hr/>
+<p><small>Gerado automaticamente pela LIA — WeDOTalent</small></p>
+"""
+    return html.strip()
+
+
+def _handle_send_manager_briefing(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Envia plano de trabalho executivo ao gestor da vaga por email.
+
+    Requer: job_id publicado + parsed_manager_email no state.
+    Compoe briefing com JD resumida, competências, BigFive, cronograma do
+    pipeline, faixa salarial e config de triagem.
+    Multi-tenancy: company_id sempre de ctx.company_id.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    job_id = state.get("job_id")
+    if not job_id:
+        return ToolResult(
+            llm_message=(
+                "A vaga ainda não foi publicada. "
+                "Publique a vaga (publish_job) antes de enviar o briefing ao gestor."
+            ),
+            error=True,
+        )
+
+    manager_email = state.get("parsed_manager_email")
+    if not manager_email:
+        return ToolResult(
+            llm_message=(
+                "Email do gestor não encontrado. "
+                "Informe o email do gestor para enviar o briefing."
+            ),
+            error=True,
+        )
+
+    company_id = ctx.company_id
+    if not company_id:
+        return ToolResult(
+            llm_message="Contexto de empresa ausente — não é possível enviar o briefing.",
+            error=True,
+        )
+
+    try:
+        from app.domains.communication.services.communication_dispatcher import (
+            CommunicationDispatcherService,
+        )
+        from app.core.database import AsyncSessionLocal
+        from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+
+        title = state.get("parsed_title") or "Vaga"
+        manager_name = state.get("parsed_manager_name") or "Gestor"
+        body_html = _build_manager_briefing_email(state)
+
+        async def _dispatch():
+            async with AsyncSessionLocal() as db:
+                dispatcher = CommunicationDispatcherService()
+                return await dispatcher.dispatch_message(
+                    company_id=company_id,
+                    recipient_email=manager_email,
+                    subject=f"[WeDOTalent] Briefing de Contratação — {title}",
+                    message=body_html,
+                    channel="email",
+                    candidate_name=manager_name,
+                    db=db,
+                    multi_channel=False,
+                )
+
+        result = run_coro_in_threadpool(lambda: _dispatch(), timeout=20)
+        status = (result or {}).get("status", "unknown")
+        if status == "error":
+            raise RuntimeError((result or {}).get("error", "dispatch error"))
+
+        return ToolResult(
+            llm_message=(
+                f"Briefing enviado para {manager_name} ({manager_email})! "
+                f"O gestor recebeu: resumo da vaga, competências requeridas, "
+                f"cronograma do processo seletivo e configuração de triagem."
+            ),
+            state_updates={"manager_briefing_sent": True},
+        )
+
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("[WizardServiceTools] send_manager_briefing failed: %s", exc)
+        return ToolResult(
+            llm_message=(
+                f"Não foi possível enviar o briefing agora ({exc}). "
+                "Tente novamente em instantes."
+            ),
+            error=True,
+        )
+
+
 def _handle_close_panel(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -1555,6 +1717,25 @@ def _handle_close_panel(
     )
 
 
+SEND_MANAGER_BRIEFING = WizardTool(
+    name="send_manager_briefing",
+    description=(
+        "Envia plano de trabalho executivo ao gestor da vaga por email "
+        "apos a publicacao. Inclui: JD resumida, competencias requeridas, "
+        "perfil comportamental BigFive, cronograma do processo seletivo, "
+        "faixa salarial e configuracao de triagem. "
+        "So use apos job_id existir no state (vaga publicada) e com manager_email disponivel."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": False,
+    },
+    handler=_handle_send_manager_briefing,
+)
+
+
 CLOSE_PANEL = WizardTool(
     name="close_panel",
     description=(
@@ -1586,5 +1767,6 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_ELIGIBILITY_TEMPLATES,
     APPLY_ELIGIBILITY_TEMPLATE,
     CREATE_CUSTOM_ELIGIBILITY_TEMPLATE,
+    SEND_MANAGER_BRIEFING,
     CLOSE_PANEL,
 )

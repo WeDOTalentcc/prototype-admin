@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CheckCircle2, ExternalLink, Plus, Target, X } from "lucide-react"
+import { CheckCircle2, ExternalLink, Plus, Target, X, Mail } from "lucide-react"
 
 interface Props {
   data: Record<string, unknown>
@@ -15,6 +15,8 @@ export function DonePanel({ data }: Props) {
   const handoffUrl = data.handoff_url as string | null
   const shareLink = data.share_link as string | null
   const jobTitle = data.job_title as string | null
+  const managerEmail = data.parsed_manager_email as string | null
+  const managerName = data.parsed_manager_name as string | null
 
   return (
     <div className="p-4 space-y-5">
@@ -62,6 +64,24 @@ export function DonePanel({ data }: Props) {
             A LIA aprende seu critério e libera o sourcing automático
           </span>
         </button>
+
+        {/* W1-J: Briefing executivo para o gestor */}
+        {managerEmail && (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("lia:prefill-message", {
+              detail: { message: "Enviar plano de trabalho para o gestor" },
+            }))}
+            className="w-full flex flex-col gap-0.5 px-3 py-2.5 rounded-md bg-lia-bg-secondary hover:bg-lia-interactive-hover transition-colors text-sm border border-lia-border-subtle"
+          >
+            <div className="flex items-center gap-2.5 text-lia-text-primary font-medium">
+              <Mail className="w-4 h-4 text-lia-text-secondary" />
+              Enviar briefing ao gestor
+            </div>
+            <span className="text-[10px] text-lia-text-tertiary font-normal ml-[26px]">
+              {managerName ? `Para ${managerName}` : managerEmail}
+            </span>
+          </button>
+        )}
 
         {shareLink && (
           <button
