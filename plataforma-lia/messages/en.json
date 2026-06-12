@@ -52,7 +52,7 @@
     "showMore": "Show more ({count})",
     "expandFullscreen": "Expand to fullscreen",
     "candidateYears": "{count} yrs",
-    "candidateUnverified": "No LIA opinion yet",
+    "candidateUnverified": "No IA opinion yet",
     "funnelTotal": "Total: {count}",
     "funnelConversion": "Conversion: {pct}%",
     "why": "why?",
@@ -873,7 +873,7 @@
     "emptyState": {
       "settings": {
         "heading": "Set up your company",
-        "subtitle": "Tell LIA about your company to personalize the whole hiring process.",
+        "subtitle": "Tell IA about your company to personalize the whole hiring process.",
         "chips": {
           "profile": {
             "label": "Company profile",
@@ -1062,6 +1062,7 @@
       "workModel": "Work Model",
       "seniority": "Seniority",
       "location": "Location",
+      "noLocationsAvailable": "No locations available",
       "department": "Department",
       "recruiter": "Recruiter",
       "noRecruiters": "No recruiters with jobs at the moment",
@@ -5595,7 +5596,7 @@
         "pauseAutomation": "Pause automation",
         "builderTitleEdit": "Edit automation",
         "builderTitleNew": "New automation",
-        "createWithLia": "Create with LIA",
+        "createWithLia": "Create with IA",
         "deleteConfirm": "Are you sure you want to delete this automation?",
         "duplicateSuffix": "(copy)",
         "emptyTitle": "No automations created",
@@ -6804,8 +6805,8 @@
       "almostComplete": "Almost complete",
       "profileCompletePending": "Profile {progress}% complete · {count} pending fields",
       "sectionsToReview": "{count} sections to review",
-      "askLiaToFillTitle": "Ask LIA to fill in {section}",
-      "askLiaShort": "Ask LIA",
+      "askLiaToFillTitle": "Ask IA to fill in {section}",
+      "askLiaShort": "Ask IA",
       "fields": {
         "blocks": {
           "basic": "Company Profile",
@@ -6861,10 +6862,10 @@
       },
       "cultureApproval": {
         "title": "Auto-generated culture profile — pending approval",
-        "description": "This profile was extracted from your website by AI and hasn't been reviewed yet. Approve it so LIA can use it in agent context, or reject to keep it out.",
+        "description": "This profile was extracted from your website by AI and hasn't been reviewed yet. Approve it so IA can use it in agent context, or reject to keep it out.",
         "approve": "Approve",
         "reject": "Reject",
-        "approvedToast": "Culture profile approved — LIA can use it now.",
+        "approvedToast": "Culture profile approved — IA can use it now.",
         "rejectedToast": "Culture profile rejected — it stays out of agent context.",
         "errorToast": "Couldn't update approval. Please try again."
       }
@@ -6914,7 +6915,7 @@
     },
     "workforce": {
       "importTitle": "Import Workforce Planning",
-      "importDescription": "Upload your headcount spreadsheet or describe it in chat — LIA structures the plan.",
+      "importDescription": "Upload your headcount spreadsheet or describe it in chat — IA structures the plan.",
       "headcountPlanning": "Headcount Planning {year}",
       "synchronized": "Synchronized",
       "departmentsDesc": "Departments and positions planned for the period.",
@@ -6935,7 +6936,7 @@
       "addPosition": "Add position",
       "addDepartment": "Add department",
       "describePrompt": "I want to describe our workforce plan. Can you help me structure it?",
-      "preferChat": "Prefer to talk? Ask LIA in chat"
+      "preferChat": "Prefer to talk? Ask IA in chat"
     },
     "documentUpload": {
       "errors": {
@@ -6963,7 +6964,7 @@
         "idle": "Ready",
         "uploading": "Uploading...",
         "extracting": "Extracting data...",
-        "sending": "Sending to LIA...",
+        "sending": "Sending to IA...",
         "done": "Done",
         "error": "Error"
       },
@@ -7002,7 +7003,7 @@
         "idle": "Ready",
         "uploading": "Uploading...",
         "extracting": "Extracting data...",
-        "sending": "Sending to LIA...",
+        "sending": "Sending to IA...",
         "done": "Done",
         "error": "Error"
       },
@@ -7018,7 +7019,7 @@
     },
     "aiTransparency": {
       "title": "AI Transparency",
-      "description": "See and adjust how LIA uses company data in decisions.",
+      "description": "See and adjust how IA uses company data in decisions.",
       "loading": "Loading...",
       "errorLoad": "Failed to load transparency settings.",
       "errorOverride": "Failed to save the change."
@@ -7044,8 +7045,8 @@
       "comingSoonText": "This feature will be available soon.",
       "enableField": "Enable field",
       "fieldCount": "{count} fields",
-      "helpText": "Define which candidate data LIA collects.",
-      "liaCollects": "LIA collects",
+      "helpText": "Define which candidate data IA collects.",
+      "liaCollects": "IA collects",
       "required": "Required"
     },
     "liaField": {
@@ -7055,8 +7056,8 @@
       "instructionPlaceholder": "e.g. Prioritize candidates with leadership experience..."
     },
     "liaFields": {
-      "title": "LIA Fields",
-      "description": "Control which data LIA uses and how it interprets each field.",
+      "title": "IA Fields",
+      "description": "Control which data IA uses and how it interprets each field.",
       "fieldsTotal": "fields",
       "tabs": {
         "fields": "Fields",
@@ -7843,7 +7844,7 @@
       "valueAria": "Scale option"
     },
     "messageBubble": {
-      "liaMessageAria": "Message from LIA",
+      "liaMessageAria": "Message from IA",
       "myMessageAria": "Your message",
       "pauseAria": "Pause audio",
       "playAria": "Play audio"

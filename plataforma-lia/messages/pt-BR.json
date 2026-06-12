@@ -52,7 +52,7 @@
     "showMore": "Ver mais ({count})",
     "expandFullscreen": "Expandir em tela cheia",
     "candidateYears": "{count} anos",
-    "candidateUnverified": "Sem parecer LIA ainda",
+    "candidateUnverified": "Sem parecer IA ainda",
     "funnelTotal": "Total: {count}",
     "funnelConversion": "Conversão: {pct}%",
     "why": "por quê?",
@@ -873,7 +873,7 @@
     "emptyState": {
       "settings": {
         "heading": "Configure sua empresa",
-        "subtitle": "Conte à LIA sobre sua empresa para personalizar todo o recrutamento.",
+        "subtitle": "Conte à IA sobre sua empresa para personalizar todo o recrutamento.",
         "chips": {
           "profile": {
             "label": "Perfil da empresa",
@@ -1062,6 +1062,7 @@
       "workModel": "Modelo de Trabalho",
       "seniority": "Senioridade",
       "location": "Localização",
+      "noLocationsAvailable": "Nenhuma localização disponível",
       "department": "Departamento",
       "recruiter": "Recrutador",
       "noRecruiters": "Nenhum recrutador com vagas no momento",
@@ -5595,7 +5596,7 @@
         "pauseAutomation": "Pausar automação",
         "builderTitleEdit": "Editar automação",
         "builderTitleNew": "Nova automação",
-        "createWithLia": "Criar com a LIA",
+        "createWithLia": "Criar com a IA",
         "deleteConfirm": "Tem certeza que deseja excluir esta automação?",
         "duplicateSuffix": "(cópia)",
         "emptyTitle": "Nenhuma automação criada",
@@ -6804,8 +6805,8 @@
       "almostComplete": "Quase completo",
       "profileCompletePending": "Perfil {progress}% completo · {count} campos pendentes",
       "sectionsToReview": "{count} seções a revisar",
-      "askLiaToFillTitle": "Pedir à LIA para preencher {section}",
-      "askLiaShort": "Pedir à LIA",
+      "askLiaToFillTitle": "Pedir à IA para preencher {section}",
+      "askLiaShort": "Pedir à IA",
       "fields": {
         "blocks": {
           "basic": "Perfil da Empresa",
@@ -6861,10 +6862,10 @@
       },
       "cultureApproval": {
         "title": "Perfil de cultura gerado automaticamente — pendente de aprovação",
-        "description": "Este perfil foi extraído do site por IA e ainda não foi revisado. Aprove para a LIA usá-lo no contexto dos agentes, ou rejeite para mantê-lo fora.",
+        "description": "Este perfil foi extraído do site por IA e ainda não foi revisado. Aprove para a IA usá-lo no contexto dos agentes, ou rejeite para mantê-lo fora.",
         "approve": "Aprovar",
         "reject": "Rejeitar",
-        "approvedToast": "Perfil de cultura aprovado — a LIA já pode usá-lo.",
+        "approvedToast": "Perfil de cultura aprovado — a IA já pode usá-lo.",
         "rejectedToast": "Perfil de cultura rejeitado — segue fora do contexto dos agentes.",
         "errorToast": "Não foi possível atualizar a aprovação. Tente novamente."
       }
@@ -6914,7 +6915,7 @@
     },
     "workforce": {
       "importTitle": "Importar Planejamento de Workforce",
-      "importDescription": "Envie sua planilha de headcount ou descreva no chat — a LIA estrutura o planejamento.",
+      "importDescription": "Envie sua planilha de headcount ou descreva no chat — a IA estrutura o planejamento.",
       "headcountPlanning": "Planejamento de Headcount {year}",
       "synchronized": "Sincronizado",
       "departmentsDesc": "Departamentos e posições planejadas para o período.",
@@ -6935,7 +6936,7 @@
       "addPosition": "Adicionar posição",
       "addDepartment": "Adicionar departamento",
       "describePrompt": "Quero descrever nosso planejamento de workforce. Pode me ajudar a estruturar?",
-      "preferChat": "Prefere conversar? Peça à LIA no chat"
+      "preferChat": "Prefere conversar? Peça à IA no chat"
     },
     "documentUpload": {
       "errors": {
@@ -6963,7 +6964,7 @@
         "idle": "Pronto",
         "uploading": "Enviando...",
         "extracting": "Extraindo dados...",
-        "sending": "Enviando para a LIA...",
+        "sending": "Enviando para a IA...",
         "done": "Concluído",
         "error": "Erro"
       },
@@ -7002,7 +7003,7 @@
         "idle": "Pronto",
         "uploading": "Enviando...",
         "extracting": "Extraindo dados...",
-        "sending": "Enviando para a LIA...",
+        "sending": "Enviando para a IA...",
         "done": "Concluído",
         "error": "Erro"
       },
@@ -7018,7 +7019,7 @@
     },
     "aiTransparency": {
       "title": "Transparência da IA",
-      "description": "Veja e ajuste como a LIA usa os dados da empresa nas decisões.",
+      "description": "Veja e ajuste como a IA usa os dados da empresa nas decisões.",
       "loading": "Carregando...",
       "errorLoad": "Erro ao carregar a configuração de transparência.",
       "errorOverride": "Erro ao salvar a alteração."
@@ -7044,8 +7045,8 @@
       "comingSoonText": "Este recurso estará disponível em breve.",
       "enableField": "Ativar campo",
       "fieldCount": "{count} campos",
-      "helpText": "Defina quais dados a LIA coleta dos candidatos.",
-      "liaCollects": "A LIA coleta",
+      "helpText": "Defina quais dados a IA coleta dos candidatos.",
+      "liaCollects": "A IA coleta",
       "required": "Obrigatório"
     },
     "liaField": {
@@ -7055,8 +7056,8 @@
       "instructionPlaceholder": "Ex: Priorize candidatos com experiência em liderança..."
     },
     "liaFields": {
-      "title": "Campos da LIA",
-      "description": "Controle quais dados a LIA usa e como ela interpreta cada campo.",
+      "title": "Campos da IA",
+      "description": "Controle quais dados a IA usa e como ela interpreta cada campo.",
       "fieldsTotal": "campos",
       "tabs": {
         "fields": "Campos",
@@ -7843,7 +7844,7 @@
       "valueAria": "Opção da escala"
     },
     "messageBubble": {
-      "liaMessageAria": "Mensagem da LIA",
+      "liaMessageAria": "Mensagem da IA",
       "myMessageAria": "Sua mensagem",
       "pauseAria": "Pausar áudio",
       "playAria": "Reproduzir áudio"
