@@ -143,6 +143,8 @@ export function useUniversalTransitionModal({
   const [showAllPerCandidate, setShowAllPerCandidate] = useState(false)
   const [policyWarnings, setPolicyWarnings] = useState<string[]>([])
   const [policyMetadata, setPolicyMetadata] = useState<Record<string, unknown>>({})
+  const [bulkExample, setBulkExample] = useState<{ body: string; highRisk: boolean } | null>(null)
+  const [isLoadingBulkExample, setIsLoadingBulkExample] = useState(false)
   const [selectedToStage, setSelectedToStage] = useState(toStage)
   const [selectedToStageDisplayName, setSelectedToStageDisplayName] = useState(toStageDisplayName)
   const [currentActionBehavior, setCurrentActionBehavior] = useState(actionBehavior)
@@ -375,8 +377,40 @@ export function useUniversalTransitionModal({
     }
   }
 
+  // Bulk 1-exemplo (decisao Paulo): ao reprovar em lote via IA, busca o feedback
+  // do 1o candidato como EXEMPLO representativo (read-only). Cada candidato recebe
+  // seu proprio texto no envio; este e so para o recrutador conferir o tom.
+  const _isRejectedBatchForExample = selectedToStage === 'rejected' && candidates.length > 1
+  useEffect(() => {
+    if (!isOpen || !_isRejectedBatchForExample || action !== 'lia_auto' || candidates.length === 0) {
+      setBulkExample(null)
+      return
+    }
+    let cancelled = false
+    const firstId = candidates[0].id
+    setIsLoadingBulkExample(true)
+    fetch('/api/backend-proxy/transition/preview-feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        vacancy_candidate_id: firstId,
+        to_stage: selectedToStage,
+        sub_status: perCandidateSubStatus[firstId] || subStatus || null,
+        channel: 'email',
+      }),
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (!cancelled && d) setBulkExample({ body: d.body || '', highRisk: !!d.high_risk }) })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setIsLoadingBulkExample(false) })
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, _isRejectedBatchForExample, action, candidates.length, selectedToStage])
+
   return {
     subStatus,
+    bulkExample,
+    isLoadingBulkExample,
     action,
     setAction,
     isSubmitting,

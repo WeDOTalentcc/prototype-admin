@@ -76,6 +76,8 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
     handlePerCandidateSubStatusChange,
     handleSendChatMessage,
     handleConfirm,
+    bulkExample,
+    isLoadingBulkExample,
     handleOpenManualModal,
     prompt,
     setPrompt,
@@ -239,6 +241,21 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                 setShowAllPerCandidate={setShowAllPerCandidate}
                 handlePerCandidateSubStatusChange={handlePerCandidateSubStatusChange}
               />
+
+              {isRejectedBatch && action === 'lia_auto' && (
+                <div className="px-5 py-2">
+                  <p className="text-micro font-medium text-lia-text-secondary mb-1">
+                    Exemplo do feedback (candidato 1 de {candidates.length}) — cada candidato recebe um texto personalizado pela IA
+                  </p>
+                  {isLoadingBulkExample ? (
+                    <p className="text-xs text-lia-text-tertiary">Gerando exemplo…</p>
+                  ) : bulkExample ? (
+                    <div className="text-xs text-lia-text-primary bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-3 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                      {bulkExample.body}
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
               <ActionModeSection
                 action={action}
