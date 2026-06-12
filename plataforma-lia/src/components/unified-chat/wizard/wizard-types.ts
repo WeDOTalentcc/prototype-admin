@@ -307,9 +307,27 @@ export interface CalibrationCandidate {
   current_title: string
   current_company: string
   match_score: number
-  match_criteria: Array<{ criterion: string; score: number; met: boolean }>
-  decision?: "approved" | "rejected"
+  match_criteria: Array<{
+    criterion: string
+    score: number
+    met: boolean
+    /** Reasoning inline por critério — exibido abaixo do chip (como Tezi). */
+    explanation?: string
+  }>
+  decision?: "approved" | "rejected" | "skipped"
   reason?: string
+  /** Tenure stats — exibido como chips de tempo de empresa/cargo. */
+  tenure_stats?: {
+    avg_months?: number
+    current_months?: number
+    total_months?: number
+  }
+  /** Auto-tags geradas pelo backend — ex: ["Scale-up", "Fullstack", "Remoto ✓"]. */
+  auto_tags?: string[]
+  /** URL do avatar do candidato (opcional). */
+  avatar_url?: string
+  /** URL do perfil LinkedIn do candidato (opcional). */
+  linkedin_url?: string
 }
 
 export interface HandoffData {
