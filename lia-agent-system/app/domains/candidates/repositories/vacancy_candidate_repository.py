@@ -436,6 +436,47 @@ class VacancyCandidateRepository:
         )
         await self.db.commit()
 
+    async def create_sourced(
+        self,
+        vacancy_id: str,
+        candidate_id: str,
+        company_id: str,
+        lia_score: float | None = None,
+        status: str = "sourced",
+        stage: str = "initial",
+        source: str = "local",
+        origin: str = "pipeline",
+    ) -> bool:
+        """P1-4: cria VacancyCandidate para candidato sourced automaticamente.
+        Usa ON CONFLICT DO NOTHING para ser idempotente (UniqueConstraint vacancy+candidate).
+        Multi-tenancy: company_id obrigatorio, fail-closed.
+        Retorna True se criou, False se ja existia."""
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                INSERT INTO vacancy_candidates
+                    (id, vacancy_id, candidate_id, company_id, status, stage,
+                     source, origin, lia_score, created_at, updated_at)
+                VALUES
+                    (gen_random_uuid(), :vacancy_id::uuid, :candidate_id::uuid,
+                     :company_id, :status, :stage, :source, :origin, :lia_score,
+                     NOW(), NOW())
+                ON CONFLICT (vacancy_id, candidate_id) DO NOTHING
+            """),
+            {
+                "vacancy_id": str(vacancy_id),
+                "candidate_id": str(candidate_id),
+                "company_id": cid,
+                "status": status,
+                "stage": stage,
+                "source": source,
+                "origin": origin,
+                "lia_score": lia_score,
+            },
+        )
+        return result.rowcount == 1
+
     async def update_wsi_lia_score(
         self,
         candidate_id: str,
