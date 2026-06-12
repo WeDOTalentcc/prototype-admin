@@ -120,3 +120,22 @@ describe("Fix C+I -- SPLIT_STAGES cross-TS/Python canonical sensor", () => {
     expect(LITERAL_STAGES).toContain("pipeline_template")
   })
 })
+
+describe("F3 — DynamicContextPanel fullscreen-only guard (structural)", () => {
+  const UNIFIED_CHAT_SRC = readFileSync(
+    join(__dirname, "..", "..", "UnifiedChat.tsx"),
+    "utf8",
+  )
+
+  test("hasDynamicPanelFull usa guard hasDynamicPanel && mode === 'fullscreen'", () => {
+    // Verifica que o cálculo de hasDynamicPanelFull inclui a condição de fullscreen
+    // Padrão canônico: hasDynamicPanel && mode === "fullscreen"
+    expect(UNIFIED_CHAT_SRC).toMatch(
+      /hasDynamicPanel\s*&&\s*mode\s*===\s*["']fullscreen["']/,
+    )
+  })
+
+  test("_autoFullscreenConversations foi removido (sem auto-escalada silenciosa)", () => {
+    expect(UNIFIED_CHAT_SRC).not.toContain("_autoFullscreenConversations")
+  })
+})
