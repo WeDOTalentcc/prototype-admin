@@ -72,7 +72,7 @@ import { useWizardFlow } from "./wizard/useWizardFlow";
 import { useWizardIntegration } from "./wizard/useWizardIntegration";
 import { formatWizardSavedLabel } from "./wizard/wizard-saved-label";
 import { STAGE_PILL_LABELS, type WizardStage } from "./wizard/wizard-types";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { getPersisted, setPersisted } from "@/lib/lia-persistence";
 import {
   ARROW_STEP,
@@ -1452,8 +1452,14 @@ export function UnifiedChat({
       </div>
 
       {/* Split View: DynamicContextPanel — wider in fullscreen to use available space */}
+      <AnimatePresence>
       {hasDynamicPanelFull && (
-        <div
+        <motion.div
+          key="wizard-panel"
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 24 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="flex-shrink-0 flex p-2 relative"
           style={{ width: dynamicPanelWidthPx }}
         >
