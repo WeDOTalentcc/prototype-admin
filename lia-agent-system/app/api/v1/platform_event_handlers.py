@@ -844,6 +844,55 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 "[EventHandler] teams on_screening_complete skipped: %s", _tpe_exc
             )
 
+        # Fatia 4 — bell notification para o recrutador da vaga (melhor-esforco).
+        try:
+            from app.models.job_vacancy import JobVacancy as _JV
+            _vac = await db.get(_JV, vacancy_id)
+            _recruiter_uid = await _find_recruiter_user_id_by_email(
+                db,
+                getattr(_vac, "recruiter_email", None),
+                company_id,
+            ) if _vac else None
+            if _recruiter_uid:
+                from lia_messaging.notification_service import (
+                    NotificationService as _NS,
+                    NotificationType as _NT,
+                )
+
+                _score_str = f"{wsi_final:.1f}" if wsi_final else "–"
+                _rec_labels = {
+                    "approved": "Aprovado",
+                    "review": "Revisão recomendada",
+                    "rejected": "Não seguiu",
+                }
+                await _NS().create_notification(
+                    user_id=_recruiter_uid,
+                    title=f"Triagem concluída: {candidate_name or 'Candidato'}",
+                    message=(
+                        f"Vaga: {job_title or 'Vaga'} | "
+                        f"Score WSI: {_score_str} | "
+                        f"{_rec_labels.get(decision, decision)}"
+                    ),
+                    notification_type=(
+                        _NT.SUCCESS if decision == "approved" else _NT.INFO
+                    ),
+                    category="screening_completed",
+                    source_trigger="screening.wsi.completed",
+                    related_job_id=vacancy_id,
+                    related_candidate_id=candidate_id,
+                    action_url=f"/pt/vagas/{vacancy_id}/candidatos/{candidate_id}",
+                    action_label="Ver candidato",
+                    channels=["bell"],
+                    db=db,
+                )
+                logger.debug(
+                    "[EventHandler] bell sent screening_complete user=%s rec=%s",
+                    _recruiter_uid,
+                    decision,
+                )
+        except Exception as _bell_exc:
+            logger.debug("[EventHandler] bell screening_complete skipped: %s", _bell_exc)
+
         decision_labels = {
             "approved": "Aprovado na Triagem WSI",
             "review": "Triagem WSI - Revisão Necessária",
@@ -901,6 +950,38 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
         logger.error("[EventHandler] handle_screening_completed_event error: %s", exc)
     finally:
         await db.close()
+
+
+async def _find_recruiter_user_id_by_email(
+    db,
+    recruiter_email: str | None,
+    company_id: str,
+) -> str | None:
+    """Localiza o user_id do recrutador pelo email para envio de bell notification.
+
+    Usa email_hash (SHA-256) para lookup seguro sem expor email plaintext.
+    Multi-tenancy: filtra por company_id para garantir que o user pertence ao tenant.
+    Fail-soft: retorna None em qualquer erro (bell é melhor-esforco).
+    """
+    if not recruiter_email:
+        return None
+    try:
+        from sqlalchemy import select as _sa_select
+        from app.auth.models import User as _User
+        from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+
+        email_hash = _sha256_hash(recruiter_email.strip().lower())
+        result = await db.execute(
+            _sa_select(_User.id).where(
+                _User.email_hash == email_hash,
+                _User.company_id == company_id,
+            ).limit(1)
+        )
+        row = result.scalar_one_or_none()
+        return str(row) if row else None
+    except Exception as _exc:
+        logger.debug("[EventHandler] _find_recruiter_user_id_by_email failed: %s", _exc)
+        return None
 
 
 async def handle_candidate_applied_teams(event: PlatformEvent) -> None:
@@ -964,6 +1045,38 @@ async def handle_candidate_applied_teams(event: PlatformEvent) -> None:
             candidate_id,
             vacancy_id,
         )
+        # Fatia 4 — bell notification para o recrutador da vaga (melhor-esforco).
+        try:
+            _recruiter_uid = await _find_recruiter_user_id_by_email(
+                db,
+                getattr(vac, "recruiter_email", None),
+                company_id,
+            )
+            if _recruiter_uid:
+                from lia_messaging.notification_service import (
+                    NotificationService as _NS,
+                    NotificationType as _NT,
+                )
+
+                await _NS().create_notification(
+                    user_id=_recruiter_uid,
+                    title=f"Nova candidatura: {cand.name or 'Candidato'}",
+                    message=f'Candidatura na vaga {vac.title or "Vaga"}',
+                    notification_type=_NT.INFO,
+                    category="new_application",
+                    source_trigger="candidate_applied",
+                    related_job_id=vacancy_id,
+                    related_candidate_id=candidate_id,
+                    action_url=f"/pt/vagas/{vacancy_id}/candidatos",
+                    action_label="Ver candidatos",
+                    channels=["bell"],
+                    db=db,
+                )
+                logger.debug(
+                    "[EventHandler] bell sent candidate_applied user=%s", _recruiter_uid
+                )
+        except Exception as _bell_exc:
+            logger.debug("[EventHandler] bell candidate_applied skipped: %s", _bell_exc)
     except Exception as exc:
         logger.warning("[EventHandler] handle_candidate_applied_teams error: %s", exc)
     finally:
