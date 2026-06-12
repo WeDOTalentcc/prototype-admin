@@ -279,8 +279,17 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
           })
         })
 
-        if (transitionResp.ok) {
-          setCandidatesData(prev => {
+        if (!transitionResp.ok) {
+          const errorData = await transitionResp.json().catch(() => ({}))
+          toast.error('Erro ao contratar', { description: errorData.detail?.message || errorData.error || 'Falha na conexão — não foi possível registrar a contratação.' })
+        } else {
+          const transitionData = await transitionResp.json()
+          if (!transitionData.success) {
+            toast.error('Transição não concluída', {
+              description: transitionData.message || 'Erro interno — contratação não foi persistida. Tente novamente.',
+              duration: 6000,
+            })
+          } else { setCandidatesData(prev => {
             const currentStage = Object.keys(prev).find(stage =>
               prev[stage]?.some((c: KanbanCandidate) => c.id === candidate.id)
             )
@@ -329,10 +338,8 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
             },
             duration: 8000,
           })
-        } else {
-          const errorData = await transitionResp.json().catch(() => ({}))
-          toast.error('Erro ao contratar', { description: errorData.detail?.message || errorData.error || 'Não foi possível registrar a contratação.' })
-        }
+          } // end transitionData.success
+        } // end response.ok
       } catch {
         toast.error('Erro de conexão', { description: 'Não foi possível conectar ao servidor.' })
       }
