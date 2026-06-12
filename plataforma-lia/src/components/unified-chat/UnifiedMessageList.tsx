@@ -17,6 +17,7 @@ import { WizardCalibrationCard } from "./wizard/WizardCalibrationCard"
 import { WebsiteProposalCard } from "./WebsiteProposalCard"
 import { ToolSurfaceContext, useToolActivate } from "@/contexts/ToolSurfaceContext"
 import { CandidateResultCard, type CandidateSummary } from "./tool-cards/CandidateResultCard"
+import { JobListCard, type JobSummary } from "./tool-cards/JobListCard"
 import { useSurfaceForTool } from "@/hooks/chat/useSurfaceForTool"
 import { CandidateProfileCard, type CandidateProfileActionId } from "./candidate/CandidateProfileCard"
 import { CandidateEvaluationCard } from "./candidate/CandidateEvaluationCard"
@@ -76,6 +77,38 @@ function SearchCandidatesResultCard({
     <ToolSurfaceContext.Provider value={surface}>
       <CandidateResultCard
         candidates={candidates}
+        totalCount={totalCount}
+        onOpenPanel={activate ? () => activate(msgId) : undefined}
+      />
+    </ToolSurfaceContext.Provider>
+  )
+}
+
+/**
+ * P2.5-FE -- Renderiza JobListCard para blocos com type="list_jobs_result".
+ * Declarado como componente React (nao funcao inline) pois usa hooks.
+ */
+function ListJobsResultCard({
+  jobs,
+  totalCount,
+  msgId,
+  mode,
+}: {
+  jobs: JobSummary[]
+  totalCount: number
+  msgId: string
+  mode?: string
+}) {
+  const activate = useToolActivate()
+  const isFullscreen = mode === "fullscreen"
+  const surface = useSurfaceForTool("list_jobs", {
+    isFullscreen,
+    itemCount: jobs.length,
+  })
+  return (
+    <ToolSurfaceContext.Provider value={surface}>
+      <JobListCard
+        jobs={jobs}
         totalCount={totalCount}
         onOpenPanel={activate ? () => activate(msgId) : undefined}
       />
@@ -590,19 +623,39 @@ export function UnifiedMessageList({
                 {/* P2.4-FE: search_candidates_result blocks — formato type-based
                     emitido pelo backend (distinto do RRP kind-based acima). */}
                 {message.response_blocks?.map((block, idx) => {
-                  const raw = block as unknown as { type?: string; data?: { candidates?: CandidateSummary[]; total_count?: number } }
-                  if (raw.type !== "search_candidates_result") return null
-                  const candidates = raw.data?.candidates ?? []
-                  const totalCount = raw.data?.total_count ?? candidates.length
-                  return (
-                    <SearchCandidatesResultCard
-                      key={`scr-${idx}`}
-                      candidates={candidates}
-                      totalCount={totalCount}
-                      msgId={message.id}
-                      mode={mode}
-                    />
-                  )
+                  const raw = block as unknown as { type?: string; data?: Record<string, unknown> }
+
+                  if (raw.type === "search_candidates_result") {
+                    const data = raw.data as { candidates?: CandidateSummary[]; total_count?: number } | undefined
+                    const candidates = data?.candidates ?? []
+                    const totalCount = data?.total_count ?? candidates.length
+                    return (
+                      <SearchCandidatesResultCard
+                        key={`scr-${idx}`}
+                        candidates={candidates}
+                        totalCount={totalCount}
+                        msgId={message.id}
+                        mode={mode}
+                      />
+                    )
+                  }
+
+                  if (raw.type === "list_jobs_result") {
+                    const data = raw.data as { jobs?: JobSummary[]; total_count?: number } | undefined
+                    const jobs = data?.jobs ?? []
+                    const totalCount = data?.total_count ?? jobs.length
+                    return (
+                      <ListJobsResultCard
+                        key={`ljr-${idx}`}
+                        jobs={jobs}
+                        totalCount={totalCount}
+                        msgId={message.id}
+                        mode={mode}
+                      />
+                    )
+                  }
+
+                  return null
                 })}
 
                 {hasTastingInsights && (
