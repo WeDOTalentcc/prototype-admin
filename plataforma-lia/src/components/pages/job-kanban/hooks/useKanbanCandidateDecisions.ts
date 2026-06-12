@@ -2,6 +2,7 @@
 
 import { type KanbanCandidate, type DynamicStage } from "@/components/kanban"
 import { type KanbanJob } from "@/components/pages/job-kanban/types"
+import { useAuthenticatedUserId } from "@/hooks/shared/use-authenticated-user-id"
 import { toast } from "sonner"
 
 interface RubricCriterion {
@@ -54,6 +55,8 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     setDecisionFlowType,
     setShowCloseVacancyModal,
   } = ctx
+
+  const { userId: reviewerId } = useAuthenticatedUserId()
 
   const handleApproveCandidate = async (candidate: KanbanCandidate) => {
     try {
@@ -115,7 +118,8 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
         body: JSON.stringify({
           job_id: job?.id?.toString() || null,
           decision: 'rejected',
-          reason: 'Reprovado via análise'
+          reason: 'Reprovado via análise',
+          reviewer_id: reviewerId ?? undefined,
         })
       })
 
@@ -210,7 +214,8 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
         body: JSON.stringify({
           job_id: job?.id?.toString() || null,
           decision: 'rejected',
-          reason: 'Reprovado via análise de triagem'
+          reason: 'Reprovado via análise de triagem',
+          reviewer_id: reviewerId ?? undefined,
         })
       })
 
