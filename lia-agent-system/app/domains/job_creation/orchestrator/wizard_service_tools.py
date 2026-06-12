@@ -615,6 +615,112 @@ def _wsi_question_to_panel(q) -> dict:
     }
 
 
+
+
+def _normalize_skill_name(s: str) -> str:
+    """Normaliza nome de skill para fuzzy match: lowercase + remove acentos básicos."""
+    replacements = {
+        "á": "a", "à": "a", "â": "a", "ã": "a", "ä": "a",
+        "é": "e", "ê": "e", "ë": "e",
+        "í": "i", "î": "i", "ï": "i",
+        "ó": "o", "ô": "o", "õ": "o", "ö": "o",
+        "ú": "u", "û": "u", "ü": "u",
+        "ç": "c", "ñ": "n",
+    }
+    result = s.lower().strip()
+    for accented, plain in replacements.items():
+        result = result.replace(accented, plain)
+    return result
+
+
+def _reorder_skills_by_effectiveness(
+    skills: list[str],
+    company_id: str,
+    department: str,
+    seniority: str,
+) -> list[str]:
+    """W2-D: reordena skills por discrimination_score histórico (WSI effectiveness).
+
+    Skills que a empresa já avaliou e têm alto poder discriminatório (>= 0.5)
+    são movidas para o topo da lista. O generator de perguntas atribui weight
+    decrescente por índice, então as primeiras na lista viram perguntas priority.
+
+    Fail-open: qualquer erro retorna skills na ordem original.
+    Multi-tenancy: company_id obrigatório, vem do state.
+    """
+    if not company_id or not skills:
+        return skills
+    try:
+        from app.domains.job_creation.services.wsi_skill_taxonomy import (
+            get_skill_to_parent_index,
+            find_skill,
+        )
+        from app.domains.job_creation.services.wsi_effectiveness_service import (
+            WsiEffectivenessService,
+        )
+        from app.core.database import AsyncSessionLocal
+        from app.domains.job_creation.helpers.async_audit import (
+            run_coro_in_threadpool,
+        )
+
+        # Obter todos os parent_ids da taxonomia (limitado para performance)
+        parent_ids = list({v for v in get_skill_to_parent_index().values()})
+
+        if not parent_ids:
+            return skills
+
+        async def _fetch_priority() -> list[dict]:
+            async with AsyncSessionLocal() as _db:
+                svc = WsiEffectivenessService(_db)
+                return await svc.select_priority_skills(
+                    company_id=company_id,
+                    parent_ids=parent_ids,
+                    department=department,
+                    seniority_level=seniority,
+                )
+
+        priority_list = run_coro_in_threadpool(_fetch_priority, timeout=5)
+
+        if not priority_list:
+            return skills
+
+        # Threshold: mesmo DISCRIMINATION_THRESHOLD do WsiEffectivenessService
+        _DISC_THRESHOLD = 0.5
+        # Nomes normalizados de skills com alta discriminação
+        priority_names: set[str] = {
+            _normalize_skill_name(s["name_pt"])
+            for s in priority_list
+            if abs(s.get("discrimination_score", 0.0)) >= _DISC_THRESHOLD
+        }
+
+        if not priority_names:
+            return skills
+
+        # Verificar match entre nome de skill do wizard e name_pt da taxonomia
+        def _has_effectiveness_match(skill_name: str) -> bool:
+            norm = _normalize_skill_name(skill_name)
+            return any(
+                p in norm or norm in p
+                for p in priority_names
+            )
+
+        high_prio = [s for s in skills if _has_effectiveness_match(s)]
+        low_prio = [s for s in skills if not _has_effectiveness_match(s)]
+
+        reordered = high_prio + low_prio
+        if reordered != skills:
+            logger.info(
+                "[W2-D] WSI effectiveness reorder: %d/%d skills boosted company=%s",
+                len(high_prio),
+                len(skills),
+                hash(company_id) % 100000,
+            )
+        return reordered
+
+    except Exception as _w2d_exc:
+        logger.debug("[W2-D] WSI effectiveness reorder fail-open: %s", _w2d_exc)
+        return skills
+
 def _wsi_generate_core(
     state: dict, tool_input: dict, ctx: ToolContext, force_regen: bool = False
 ) -> ToolResult:
@@ -700,6 +806,11 @@ def _wsi_generate_core(
         or "pleno"
     )
     mode = state.get("screening_mode") or "compact"
+
+    # W2-D: reordenar skills por efetividade histórica (fail-open se sem dados)
+    _company_id_eff = state.get("company_id") or (ctx.company_id if ctx else "")
+    _dept_eff = state.get("parsed_department") or ""
+    skills = _reorder_skills_by_effectiveness(skills, _company_id_eff, _dept_eff, seniority)
 
     from app.domains.cv_screening.services.wsi_service.service import get_wsi_service
     from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
