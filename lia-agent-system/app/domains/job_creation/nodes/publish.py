@@ -346,7 +346,17 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     )
 
             # Step 3: Publish to platforms
-            platforms = state.get("publish_platforms", ["website"])
+            # W3-C: sempre inclui indeed (XML feed gratuito, sem API key necessária).
+            # Se recrutador definiu publish_platforms explicitamente, preserva a lista;
+            # caso contrário, usa website + indeed como default.
+            _platforms_raw = state.get("publish_platforms")
+            if _platforms_raw:
+                platforms = list(_platforms_raw)
+                # Garantir indeed se lista explícita não o exclui intencionalmente
+                if "indeed" not in platforms and state.get("indeed_opt_out") is not True:
+                    platforms.append("indeed")
+            else:
+                platforms = ["website", "indeed"]
             # PR-8 ONDA 3 / F-3.5: warn + count quando UI nao setou sourcing_mode.
             _sourcing_raw = state.get("sourcing_mode")
             if _sourcing_raw is None:
