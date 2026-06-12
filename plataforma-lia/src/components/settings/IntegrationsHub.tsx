@@ -22,6 +22,8 @@ const tabToCategoryMap: Record<string, IntegrationCategory | "all"> = {
   communication: "communication",
   "crm-hris": "crm_hris",
   "mcps-apis": "mcps_apis",
+  "job-boards": "job_board",
+  "job-boards": "job_board",
 }
 
 const TAB_DEFS = [
@@ -32,6 +34,8 @@ const TAB_DEFS = [
   { id: "communication", labelKey: "integrations.tabCommunication", Icon: MessageCircle },
   { id: "crm-hris", labelKey: "integrations.tabCrmHris", Icon: Building },
   { id: "mcps-apis", labelKey: "integrations.tabMcpsApis", Icon: Code },
+  { id: "job-boards", labelKey: "integrations.tabJobBoards", Icon: Briefcase },
+  { id: "job-boards", labelKey: "integrations.tabJobBoards", Icon: Briefcase },
 ] as const
 
 interface IntegrationsHubProps {

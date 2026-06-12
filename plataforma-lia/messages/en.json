@@ -6185,7 +6185,8 @@
             "piiPolicy": "Structured"
           }
         }
-      }
+      },
+      "tabJobBoards": "Job Boards"
     },
     "page": {
       "title": "Settings",
