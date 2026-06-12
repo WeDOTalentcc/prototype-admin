@@ -15,7 +15,9 @@ import { WizardJdCard } from "./wizard/WizardJdCard"
 import { WizardWsiCard } from "./wizard/WizardWsiCard"
 import { WizardCalibrationCard } from "./wizard/WizardCalibrationCard"
 import { WebsiteProposalCard } from "./WebsiteProposalCard"
-import { ToolSurfaceContext } from "@/contexts/ToolSurfaceContext"
+import { ToolSurfaceContext, useToolActivate } from "@/contexts/ToolSurfaceContext"
+import { CandidateResultCard, type CandidateSummary } from "./tool-cards/CandidateResultCard"
+import { useSurfaceForTool } from "@/hooks/chat/useSurfaceForTool"
 import { CandidateProfileCard, type CandidateProfileActionId } from "./candidate/CandidateProfileCard"
 import { CandidateEvaluationCard } from "./candidate/CandidateEvaluationCard"
 import {
@@ -48,6 +50,39 @@ import { Textarea } from "@/components/ui/textarea"
  * popover. Keys must match `chat.messageActions.thumbsDownCategory.*` in
  * `messages/{en,pt-BR}.json` and the backend's `category` enum.
  */
+/**
+ * P2.4-FE — Renderiza CandidateResultCard para blocos com type="search_candidates_result".
+ * Declarado como componente React (nao funcao inline) pois usa hooks.
+ * O backend emite este formato via response_blocks com campo "type" (nao "kind" do RRP).
+ */
+function SearchCandidatesResultCard({
+  candidates,
+  totalCount,
+  msgId,
+  mode,
+}: {
+  candidates: CandidateSummary[]
+  totalCount: number
+  msgId: string
+  mode: string
+}) {
+  const activate = useToolActivate()
+  const isFullscreen = mode === "fullscreen"
+  const surface = useSurfaceForTool("search_candidates", {
+    isFullscreen,
+    itemCount: candidates.length,
+  })
+  return (
+    <ToolSurfaceContext.Provider value={surface}>
+      <CandidateResultCard
+        candidates={candidates}
+        totalCount={totalCount}
+        onOpenPanel={activate ? () => activate(msgId) : undefined}
+      />
+    </ToolSurfaceContext.Provider>
+  )
+}
+
 const THUMBS_DOWN_CATEGORIES = ["inaccurate", "wrong_tone", "hallucinated"] as const
 type ThumbsDownCategory = (typeof THUMBS_DOWN_CATEGORIES)[number]
 
@@ -551,6 +586,24 @@ export function UnifiedMessageList({
                 {message.response_blocks && message.response_blocks.length > 0 && (
                   <ResponseBlockRenderer blocks={message.response_blocks} mode={mode} />
                 )}
+
+                {/* P2.4-FE: search_candidates_result blocks — formato type-based
+                    emitido pelo backend (distinto do RRP kind-based acima). */}
+                {message.response_blocks?.map((block, idx) => {
+                  const raw = block as unknown as { type?: string; data?: { candidates?: CandidateSummary[]; total_count?: number } }
+                  if (raw.type !== "search_candidates_result") return null
+                  const candidates = raw.data?.candidates ?? []
+                  const totalCount = raw.data?.total_count ?? candidates.length
+                  return (
+                    <SearchCandidatesResultCard
+                      key={`scr-${idx}`}
+                      candidates={candidates}
+                      totalCount={totalCount}
+                      msgId={message.id}
+                      mode={mode}
+                    />
+                  )
+                })}
 
                 {hasTastingInsights && (
                   <TastingInsightCard
