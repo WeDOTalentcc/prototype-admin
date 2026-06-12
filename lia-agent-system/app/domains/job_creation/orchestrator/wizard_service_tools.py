@@ -1512,6 +1512,66 @@ CREATE_CUSTOM_ELIGIBILITY_TEMPLATE = WizardTool(
     handler=_handle_create_custom_eligibility_template,
 )
 
+
+
+# ── close_panel (minimizar painel lateral) ─────────────────────────────────────
+
+
+def _handle_close_panel(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Fecha/minimiza o painel lateral do wizard retornando ao card de dock.
+
+    Emite ``ui_action: close_panel`` via SSE sink (mesmo padrao de
+    wizard_orchestrator._emit_reasoning_sync). Sem state_updates — a acao
+    e puramente de UI.
+    """
+    try:
+        import asyncio as _asyncio
+        from lia_agents_core.streaming_callback import (  # noqa: PLC0415
+            _sse_frame_sink as _sink_cv,
+        )
+        from app.shared.chat_event_serializer import (  # noqa: PLC0415
+            serialize_message as _ser_msg,
+        )
+
+        _sink = _sink_cv.get(None)
+        if _sink is not None:
+            _frame = _ser_msg(content="", ui_action="close_panel", domain="wizard")
+            try:
+                _loop = _asyncio.get_event_loop()
+                if _loop.is_running():
+                    _asyncio.run_coroutine_threadsafe(_sink(_frame), _loop)
+            except Exception:  # noqa: BLE001
+                pass
+    except Exception:  # noqa: BLE001 — best-effort, nunca bloqueia o wizard
+        logger.debug("[WizardTool] close_panel SSE emit failed", exc_info=True)
+
+    return ToolResult(
+        llm_message=(
+            "Painel lateral minimizado. O recrutador pode continuar pelo chat. "
+            "Use open_panel para reabrir quando necessario."
+        )
+    )
+
+
+CLOSE_PANEL = WizardTool(
+    name="close_panel",
+    description=(
+        "Minimiza o painel lateral do wizard, retornando ao modo de card de dock. "
+        "Use quando o recrutador pedir 'fechar o painel', 'seguir so pelo chat', "
+        "ou quando a etapa atual nao requer revisao no painel. "
+        "NAO use para finalizar a vaga — use publish_job para isso."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": False,
+    },
+    handler=_handle_close_panel,
+)
+
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
@@ -1526,4 +1586,5 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_ELIGIBILITY_TEMPLATES,
     APPLY_ELIGIBILITY_TEMPLATE,
     CREATE_CUSTOM_ELIGIBILITY_TEMPLATE,
+    CLOSE_PANEL,
 )
