@@ -515,10 +515,17 @@ company_id: str = Depends(require_company_id)):
             prediction_confidence=prediction.get("confidence") if predicted_sub_status and prediction else None,
             requires_approval=_hitl_held,
         )
+    except HTTPException:
+        raise  # deixar FastAPI tratar (retorna 4xx/5xx)
+    except ValueError as e:
+        # Erro de validação de negócio — 422 explícito
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        return TransitionExecuteResponse(
-            success=False,
-            message=str(e),
-            candidate_id=request.vacancy_candidate_id,
-            new_stage=request.to_stage,
+        # Crash inesperado — logar e retornar 500 (não swallow como HTTP 200)
+        logger.error(
+            "[transition/execute] unhandled error: %s",
+            str(e),
+            exc_info=True,
+            extra={"vacancy_candidate_id": getattr(request, "vacancy_candidate_id", None)},
         )
+        raise HTTPException(status_code=500, detail="Erro interno ao processar transição")
