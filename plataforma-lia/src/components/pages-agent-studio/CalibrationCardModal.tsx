@@ -32,6 +32,14 @@ interface CalibrationCandidate {
   avatar_url: string | null
   total_experience_years: number
   skills: string[]
+  /** Tenure stats — chips de tempo de empresa/cargo. */
+  tenure_stats?: {
+    avg_months?: number
+    current_months?: number
+    total_months?: number
+  }
+  /** Auto-tags geradas — ex: ["Scale-up", "Fullstack", "Remoto ✓"]. */
+  auto_tags?: string[]
   experiences: Array<{
     title: string
     company: string
@@ -63,6 +71,14 @@ const MATCH_BADGE_KEYS: Record<string, string> = {
 }
 
 const REJECTION_REASON_KEYS = ["differentTechStack","insufficientSeniority","crudOnly","incompatibleLocation","irrelevantExperience"] as const
+
+/** Formata meses em representação compacta: "1a 4m" ou "8m". */
+function formatTenureMonths(months: number): string {
+  if (months < 12) return `${months}m`
+  const years = Math.floor(months / 12)
+  const rem = months % 12
+  return rem > 0 ? `${years}a ${rem}m` : `${years}a`
+}
 
 // ---------- Main Component ----------
 
@@ -291,21 +307,44 @@ export default function CalibrationCardModal({
                 </p>
               </div>
 
-              {/* Tags */}
+              {/* Skills */}
               {candidate.skills?.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-4">
+                <div className="flex flex-wrap gap-1.5 mb-3">
                   {candidate.skills.slice(0, 8).map(skill => (
                     <Chip density="relaxed" variant="neutral" muted key={skill} className="bg-lia-bg-tertiary text-lia-text-secondary">{skill}</Chip>
                   ))}
                 </div>
               )}
 
+              {/* Auto-tags geradas pelo backend */}
+              {candidate.auto_tags && candidate.auto_tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {candidate.auto_tags.map((tag, i) => (
+                    <span key={i} className="px-2 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan text-[11px] font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               {/* Experience stats */}
-              <div className="flex gap-6 mb-4 py-3 border-y border-lia-border-subtle">
+              <div className="flex gap-4 mb-4 py-3 border-y border-lia-border-subtle flex-wrap">
                 <div>
                   <p className={textStyles.caption}>{t('totalExperience')}</p>
                   <p className={textStyles.subtitle}>{candidate.total_experience_years}a</p>
                 </div>
+                {candidate.tenure_stats?.current_months !== undefined && (
+                  <div>
+                    <p className={textStyles.caption}>Cargo atual</p>
+                    <p className={textStyles.subtitle}>{formatTenureMonths(candidate.tenure_stats.current_months)}</p>
+                  </div>
+                )}
+                {candidate.tenure_stats?.avg_months !== undefined && (
+                  <div>
+                    <p className={textStyles.caption}>Média por empresa</p>
+                    <p className={textStyles.subtitle}>{formatTenureMonths(candidate.tenure_stats.avg_months)}</p>
+                  </div>
+                )}
               </div>
 
               {/* Experiences */}
