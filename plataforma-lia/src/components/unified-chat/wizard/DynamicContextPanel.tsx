@@ -84,6 +84,7 @@ export const SPLIT_STAGES: WizardStage[] = [
   "calibration",
   "handoff",
   "done",
+  "scheduling",
 ]
 
 /**
@@ -205,6 +206,8 @@ function renderPanel(
       return <HandoffPanel data={data} />
     case "done":
       return <DonePanel data={data} />
+    case "scheduling":
+      return <div className="p-4 text-sm text-lia-text-secondary">Agendamento de entrevistas...</div>
     default:
       return (
         <div className="p-4 text-sm text-lia-text-secondary">

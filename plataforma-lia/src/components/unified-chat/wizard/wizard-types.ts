@@ -50,6 +50,7 @@ export type WizardStage =
   | "calibration"
   | "handoff"
   | "done"
+  | "scheduling"
 
 export type ScreeningMode = "compact" | "full"
 
