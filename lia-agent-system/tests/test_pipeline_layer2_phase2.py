@@ -335,11 +335,13 @@ class TestMessageGeneration:
 
         result = MessageGenerator._build_personalization_data(context)
 
-        assert "72" in result
-        assert "80" in result
-        assert "liderança" in result
-        assert "SQL" in result
-        assert "proatividade" in result
+        # Contrato seguro (auditoria 2026-06-10): scores/gaps/notas internas NAO
+        # entram no prompt do LLM. So pontos fortes curados (positivos).
+        assert "72" not in result and "80" not in result and "65" not in result
+        assert "SQL" not in result          # gaps/development_areas fora
+        assert "inglês" not in result        # gap de entrevista fora
+        assert "proatividade" not in result  # nota verbatim de entrevistador fora
+        assert "liderança" in result and "comunicação" in result  # strengths mantidos
 
     def test_personalization_data_empty_context(self):
         from app.domains.automation.services.stage_transition_automation import MessageGenerator

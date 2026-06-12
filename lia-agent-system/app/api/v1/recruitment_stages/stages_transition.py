@@ -424,6 +424,20 @@ company_id: str = Depends(require_company_id)):
                         candidate_context = await aggregator.aggregate(request.vacancy_candidate_id)
                         job_context = candidate_context.get("job", {})
 
+                        # Assinatura do feedback = nome do CLIENTE (tenant), nunca "WeDoTalent".
+                        # Falha-soft: sem nome resolvido, o gerador usa "Equipe de Recrutamento".
+                        try:
+                            from sqlalchemy import select as _sa_select_co
+                            from app.models.company import Company as _Company
+                            _co_res = await stage_repo.db.execute(
+                                _sa_select_co(_Company.display_name, _Company.name).where(_Company.id == company_id)
+                            )
+                            _co_row = _co_res.first()
+                            if _co_row:
+                                job_context["company_name"] = _co_row[0] or _co_row[1] or ""
+                        except Exception as _co_err:
+                            logger.warning(f"[PIPELINE] could not resolve company display name: {_co_err}")
+
                         msg_type = "feedback_construtivo" if request.to_stage == "rejected" else "aprovacao"
 
                         msg_result = await MessageGenerator.generate(

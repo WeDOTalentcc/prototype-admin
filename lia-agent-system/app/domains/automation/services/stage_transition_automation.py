@@ -44,6 +44,27 @@ def normalize_rejection_substatus(code):
     return _LEGACY_REJECTION_SUBSTATUS_ALIASES.get(code, code)
 
 
+# Motivos de reprovacao de ALTO RISCO juridico: a IA NUNCA redige feedback sobre
+# eles (forca texto generico neutro). O motivo segue selecionavel/persistido p/
+# uso interno (funil/rastreio), mas nada sensivel chega ao candidato.
+# Decisao Paulo 2026-06-10 (auditoria de feedback). LGPD Art. 20 / CLT 373-A /
+# risco de difamacao.
+HIGH_RISK_REJECTION_SUBSTATUS = frozenset({
+    "negative_references",
+    "failed_background_check",
+    "failed_admission_exam",
+    "inadequate_attitude",
+    "lack_professionalism",
+})
+
+
+def is_high_risk_rejection(substatus) -> bool:
+    """True se o motivo de reprovacao e de alto risco juridico (IA nao redige)."""
+    if not substatus:
+        return False
+    return normalize_rejection_substatus(substatus) in HIGH_RISK_REJECTION_SUBSTATUS
+
+
 class SubStatusPredictor:
     """Predicts appropriate sub-status based on candidate context."""
     
@@ -357,6 +378,14 @@ class MessageGenerator:
         Returns:
             Dict with subject (if email), body, and metadata
         """
+        # Motivo de alto risco juridico -> IA NUNCA redige (feedback generico forcado).
+        if to_stage == 'rejected' and is_high_risk_rejection(substatus):
+            logger.info(
+                "[PIPELINE] motivo de alto risco juridico (%s) -> feedback generico, IA nao redige",
+                normalize_rejection_substatus(substatus),
+            )
+            return cls._generate_fallback(candidate_context, to_stage, substatus, job_context, channel)
+
         if not is_llm_available():
             logger.warning("Anthropic API key not configured, using template fallback")
             return cls._generate_fallback(candidate_context, to_stage, substatus, job_context, channel)
@@ -374,7 +403,8 @@ class MessageGenerator:
             
             personalization_data = cls._build_personalization_data(candidate_context)
             
-            prompt = f"""Assistente de recrutamento da WeDoTalent. Gere uma mensagem personalizada.
+            company_signature = job_context.get('company_name') or 'Equipe de Recrutamento'
+            prompt = f"""Assistente de recrutamento (atuando em nome de {company_signature}). Gere uma mensagem personalizada.
 
 CANDIDATO:
 - Nome: {candidate_name}
@@ -401,6 +431,8 @@ REGRAS DO QUE FAZER:
 
 REGRAS DO QUE NÃO FAZER:
 {cls.DONT_RULES}
+
+ASSINATURA: assine a mensagem como "{company_signature}". NUNCA mencione "WeDoTalent" no texto.
 
 {"Gere também um assunto para o email (máximo 60 caracteres)." if channel == 'email' else ""}
 
@@ -434,35 +466,23 @@ Responda em JSON com os campos: {'"subject" (para email), ' if channel == 'email
     
     @classmethod
     def _build_personalization_data(cls, context: dict[str, Any]) -> str:
-        """Build personalization data string from context."""
+        """Dados de personalizacao SEGUROS para o prompt do LLM.
+
+        Defesa em profundidade (auditoria 2026-06-10, decisao Paulo): NAO injetar
+        scores WSI, gaps de entrevista, nem notas verbatim de entrevistadores no
+        prompt — dado interno que nao deve chegar ao candidato ("o que nao entra,
+        nao vaza"). So pontos fortes curados (positivos) entram.
+        """
         parts = []
-        
-        if context.get('wsi_score'):
-            wsi = context['wsi_score']
-            parts.append(f"- Score WSI geral: {wsi.get('overall', 'N/A')}/100")
-            if wsi.get('technical'):
-                parts.append(f"- Score técnico: {wsi.get('technical')}/100")
-            if wsi.get('behavioral'):
-                parts.append(f"- Score comportamental: {wsi.get('behavioral')}/100")
-        
-        if context.get('lia_parecer'):
-            parecer = context['lia_parecer']
-            if parecer.get('strengths'):
-                parts.append(f"- Pontos fortes identificados: {', '.join(parecer['strengths'][:3])}")
-            if parecer.get('development_areas'):
-                parts.append(f"- Áreas de desenvolvimento: {', '.join(parecer['development_areas'][:2])}")
-        
-        if context.get('interview_notes'):
-            for note in context['interview_notes'][:2]:
-                stage_name = note.get('stage', 'Entrevista')
-                if note.get('strengths'):
-                    parts.append(f"- Pontos fortes ({stage_name}): {', '.join(note['strengths'][:2])}")
-                if note.get('gaps'):
-                    parts.append(f"- Gaps ({stage_name}): {', '.join(note['gaps'][:2])}")
-        
+
+        parecer = context.get('lia_parecer') or {}
+        strengths = parecer.get('strengths') or []
+        if strengths:
+            parts.append(f"- Pontos fortes identificados: {', '.join(strengths[:3])}")
+
         if not parts:
-            parts.append("- Dados detalhados não disponíveis, usar tom geral construtivo")
-        
+            parts.append("- Dados detalhados nao disponiveis, usar tom geral construtivo")
+
         return '\n'.join(parts)
     
     @classmethod
@@ -478,6 +498,7 @@ Responda em JSON com os campos: {'"subject" (para email), ' if channel == 'email
         candidate_name = candidate_context.get('name', 'Candidato')
         first_name = candidate_name.split()[0] if candidate_name else 'Candidato'
         job_title = job_context.get('title', 'a vaga')
+        company_signature = job_context.get('company_name') or 'Equipe de Recrutamento'
         
         if to_stage == 'rejected':
             body = f"""Olá {first_name},
@@ -491,7 +512,7 @@ Mantemos seu currículo em nosso banco de talentos para futuras oportunidades qu
 Desejamos sucesso em sua carreira!
 
 Atenciosamente,
-Equipe WeDoTalent"""
+{company_signature}"""
         else:
             body = f"""Olá {first_name},
 
@@ -500,7 +521,7 @@ Gostaríamos de informá-lo(a) sobre uma atualização em sua candidatura para {
 Em breve entraremos em contato com mais detalhes sobre os próximos passos.
 
 Atenciosamente,
-Equipe WeDoTalent"""
+{company_signature}"""
         
         return {
             'subject': f'Retorno sobre sua candidatura - {job_title}' if channel == 'email' else None,
