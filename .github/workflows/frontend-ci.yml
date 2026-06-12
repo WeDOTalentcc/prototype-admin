@@ -286,5 +286,43 @@ jobs:
         working-directory: plataforma-lia
         run: python3 scripts/check_hardcoded_strings_in_agent_ui.py --blocking
 
+
+      - name: No useState-for-server-data in wizard panel components (Mecanismo 4 -- BLOCKING)
+        # Sensor harness 2026-06-12 (Mecanismo 4 Adaptive Surface):
+        # DynamicContextPanel e paineis do wizard SAO views derivadas -- recebem
+        # dados via props do lia-float-context, nunca buscam dados proprios.
+        # Anti-pattern: useState(null)/useState([]) + useEffect+fetch no mesmo
+        # arquivo de panel (self-fetching). Viola o principio de
+        # "panel = view derivada, sem estado proprio de dados".
+        # Distingue de useState LEGITIMO: localData/draft/form (formulario)
+        # e estado de UI (open, selected, expanded) SAO ok.
+        # Baseline 0 violations na criacao (2026-06-12).
+        # Fix canonical: mover fetch para o parent DynamicContextPanel e
+        # passar os dados como prop para o panel.
+        working-directory: ${{ github.workspace }}
+        run: |
+          PANELS_DIR=plataforma-lia/src/components/unified-chat/wizard/panels
+          VIOLATIONS=''
+          for f in "$PANELS_DIR"/*.tsx; do
+            [[ "$f" == *"test"* || "$f" == *"__tests__"* ]] && continue
+            HAS_NULL_STATE=$(grep -n '= useState(null\|= useState(\[\])' "$f" 2>/dev/null | grep -v 'local[A-Z]\|[Dd]raft\|[Ff]orm\|localData' || true)
+            HAS_FETCH=$(grep -n 'useEffect\|fetch(\|axios\.' "$f" 2>/dev/null | grep -vE '^\s*//' || true)
+            if [ -n "$HAS_NULL_STATE" ] && [ -n "$HAS_FETCH" ]; then
+              VIOLATIONS="$VIOLATIONS$f\n"
+            fi
+          done
+          if [ -n "$VIOLATIONS" ]; then
+            echo "Panel components com useState para dados de servidor -- viola DynamicContextPanel como view derivada (Mecanismo 4)."
+            echo ""
+            echo "Principio: paineis recebem dados via props do contexto central."
+            echo "Anti-pattern: useState(null/[]) + useEffect+fetch no mesmo panel."
+            echo "Fix canonical: mover o fetch para o parent e passar como prop."
+            echo ""
+            echo "Violations:"
+            printf "%s" "$VIOLATIONS"
+            exit 1
+          fi
+          echo "OK: Nenhum panel com useState-para-dados-de-servidor (baseline 0)"
+
       - name: Build
         run: npm run build
