@@ -900,6 +900,8 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           </Button>
 
           {/* 4. Overflow › — Config, Idioma, Ajuda, HITL e futuros ícones */}
+          {/* isMounted guard prevents Radix useId() mismatch between SSR and client hydration */}
+          {isMounted && (
           <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -946,6 +948,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               </div>
             </PopoverContent>
           </Popover>
+          )}
 
         </div>
       </div>
