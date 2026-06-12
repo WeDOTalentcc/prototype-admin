@@ -43,13 +43,15 @@ function QBadge({ block }: { block?: string }) {
 }
 
 /**
- * WizardWsiCard — card inline no chat para stage `wsi_questions`.
+ * WizardWsiCard — card inline no chat para stage .
  * Lista colapsável com badges por tipo de pergunta.
  * Tokens DS LIA v4.2.1.
  * F4: AnimatePresence nas perguntas extras (slice(3+)).
+ * adaptive-surface: auto-expandido e sem botão "Ver todas" em surface=panel.
  */
 export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
-  const [expanded, setExpanded] = useState(false)
+  const surface = useToolSurface()
+  const [expanded, setExpanded] = useState(surface === "panel")
   const [expandedQ, setExpandedQ] = useState<number | null>(null)
 
   const questions = (data.questions as WsiQuestion[]) ?? []
@@ -57,8 +59,6 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
     | { technical?: number; behavioral?: number }
     | undefined
   const needsReview = questions.filter((q) => q.needs_manual_review).length
-
-  const surface = useToolSurface()
 
   if (questions.length === 0) return null
 
@@ -69,7 +69,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
     <div
       role="region"
       aria-label="Perguntas de triagem WSI"
-      className={cn("mt-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary", surface !== 'panel' && "overflow-hidden")}
+      className={cn("mt-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary", surface !== "panel" && "overflow-hidden")}
     >
       {/* Header */}
       <button
@@ -183,7 +183,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
           })}
         </AnimatePresence>
 
-        {!expanded && questions.length > 3 && (
+        {!expanded && questions.length > 3 && surface !== "panel" && (
           <button
             type="button"
             onClick={() => setExpanded(true)}

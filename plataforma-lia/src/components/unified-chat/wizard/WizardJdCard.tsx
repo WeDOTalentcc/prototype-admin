@@ -16,9 +16,11 @@ interface WizardJdCardProps {
  * Compacto por default, expande ao clicar para mostrar detalhes da JD enriquecida.
  * Tokens DS LIA v4.2.1 (sem cores hardcoded).
  * F4: accordion AnimatePresence com height animado.
+ * adaptive-surface: sem truncamentos e auto-expandido em surface=panel.
  */
 export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
-  const [expanded, setExpanded] = useState(false)
+  const surface = useToolSurface()
+  const [expanded, setExpanded] = useState(surface === "panel")
 
   const enriched = data.jd_enriched as Record<string, unknown> | undefined
   const score = (data.quality_score as number) ?? 0
@@ -35,15 +37,13 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
         ? "text-wedo-cyan"
         : "text-status-warning"
 
-  const surface = useToolSurface()
-
   if (!enriched) return null
 
   return (
     <div
       role="region"
       aria-label="Descrição da vaga enriquecida"
-      className={cn("mt-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary", surface !== 'panel' && "overflow-hidden")}
+      className={cn("mt-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary", surface !== "panel" && "overflow-hidden")}
     >
       {/* Header — sempre visível */}
       <button
@@ -85,7 +85,7 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
             className="overflow-hidden border-t border-lia-border-subtle px-3 py-3 space-y-3"
           >
             {aboutRole && (
-              <p className="text-xs text-lia-text-secondary leading-relaxed line-clamp-4">
+              <p className={cn("text-xs text-lia-text-secondary leading-relaxed", surface !== "panel" && "line-clamp-4")}>
                 {aboutRole}
               </p>
             )}
@@ -96,7 +96,7 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
                   Responsabilidades ({responsibilities.length})
                 </p>
                 <ul className="space-y-1">
-                  {responsibilities.slice(0, 5).map((r, i) => (
+                  {(surface === "panel" ? responsibilities : responsibilities.slice(0, 5)).map((r, i) => (
                     <li
                       key={i}
                       className="text-xs text-lia-text-secondary flex items-start gap-1.5"
