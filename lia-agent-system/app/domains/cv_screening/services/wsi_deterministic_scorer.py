@@ -689,7 +689,41 @@ def calculate_wsi_deterministic(
             flags_structured=flags_structured,
         )
 
-    is_behavioral = question_type == "behavioral"
+    # Dreyfus branch — fórmula canônica: 0.60×autodeclaracao + 0.40×context_score
+    # Não aplica STAR nem Bloom (autodeclaração é naturalmente concisa)
+    if question_framework.lower() == "dreyfus":
+        dreyfus_raw = 0.60 * autodeclaracao + 0.40 * context_score
+        dreyfus_penalty = -0.5 if (autodeclaracao >= 4.5 and context_score < 3.0) else 0.0
+        final_dreyfus = max(1.0, min(5.0, dreyfus_raw + dreyfus_penalty))
+        final_dreyfus = round(final_dreyfus, 2)
+        dreyfus_formula = (
+            f"dreyfus: 0.60×auto{autodeclaracao:.1f} + 0.40×ctx{context_score:.1f}"
+        )
+        if dreyfus_penalty:
+            dreyfus_formula += f" + penalty({dreyfus_penalty}) [inflation]"
+        dreyfus_formula += f" = {final_dreyfus:.2f}"
+        return DeterministicWSIResult(
+            autodeclaracao_score=autodeclaracao,
+            context_score=context_score,
+            bloom_level=bloom_level,
+            bloom_name=bloom_name,
+            dreyfus_level=dreyfus_level,
+            dreyfus_name=dreyfus_name,
+            evidences=evidences,
+            red_flags=red_flags,
+            penalty=dreyfus_penalty,
+            bonus=0.0,
+            final_score=final_dreyfus,
+            formula_applied=dreyfus_formula,
+            justification=f"Dreyfus autodeclaração: {dreyfus_name}. Contexto: {context_score:.1f}/5.",
+            formula_version="v2-dreyfus",
+            star_components={},
+            star_score=0.0,
+            bloom_alignment=bloom_align,
+            flags_structured=flags_structured,
+        )
+
+        is_behavioral = question_type == "behavioral"
     penalty = calculate_penalty(
         response_text, autodeclaracao, context_score,
         layer2=layer2_signals,

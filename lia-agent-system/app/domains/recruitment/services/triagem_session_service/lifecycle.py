@@ -462,17 +462,21 @@ async def complete_session(db: AsyncSession, token: str) -> dict[str, Any]:
             block = active_blocks[block_idx]
             block_type = block.get("block_type", "behavioral")
             competency = block.get("competency", "general")
+            block_candidate_pos = candidate_by_block.get(block_idx, []).index(msg) if msg in candidate_by_block.get(block_idx, []) else 0
+            _frameworks = block.get("question_frameworks", [])
+            question_framework = _frameworks[block_candidate_pos] if block_candidate_pos < len(_frameworks) else "CBI"
             score_result = _score_response_deterministic(
                 msg.content,
                 block_type,
                 competency,
+                question_framework=question_framework,
             )
             score_result["competency"] = competency
             score_result["block_type"] = block_type
             score_result["block_index"] = block_idx
             score_result["response_text"] = (msg.content or "")[:2000]
+            score_result["question_framework"] = question_framework
             block_lia_msgs = lia_by_block.get(block_idx, [])
-            block_candidate_pos = candidate_by_block.get(block_idx, []).index(msg) if msg in candidate_by_block.get(block_idx, []) else 0
             if block_lia_msgs and block_candidate_pos < len(block_lia_msgs):
                 score_result["question_text"] = (block_lia_msgs[block_candidate_pos].content or "")[:500]
             else:

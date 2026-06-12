@@ -44,6 +44,7 @@ def _build_wsi_blocks_from_question_set(questions_snapshot: list[dict[str, Any]]
     from app.domains.cv_screening.constants.wsi_constants import WSI_BLOCK_NAMES
 
     block_map: dict[int, list[str]] = {i: [] for i in range(6)}
+    framework_map: dict[int, list[str]] = {i: [] for i in range(6)}
     block_meta: dict[int, dict[str, str]] = {
         0: {"block_type": "behavioral", "competency": "initial_approach"},
         1: {"block_type": "behavioral", "competency": "motivation"},
@@ -58,12 +59,14 @@ def _build_wsi_blocks_from_question_set(questions_snapshot: list[dict[str, Any]]
         if not text:
             continue
 
+        framework = q.get("framework", "CBI")
         block_id = q.get("block_id")
         if block_id is not None:
             try:
                 bid = int(block_id)
                 if 0 <= bid <= 5:
                     block_map[bid].append(text)
+                    framework_map[bid].append(framework)
                     continue
             except (ValueError, TypeError):
                 pass
@@ -71,12 +74,16 @@ def _build_wsi_blocks_from_question_set(questions_snapshot: list[dict[str, Any]]
         category = q.get("category", "").lower()
         if category == "technical":
             block_map[3].append(text)
+            framework_map[3].append(framework)
         elif category in ("behavioral", "situational", "contextual"):
             block_map[4].append(text)
+            framework_map[4].append(framework)
         elif category == "company":
             block_map[2].append(text)
+            framework_map[2].append(framework)
         else:
             block_map[4].append(text)
+            framework_map[4].append(framework)
 
     blocks = []
     for idx in range(6):
@@ -96,6 +103,7 @@ def _build_wsi_blocks_from_question_set(questions_snapshot: list[dict[str, Any]]
             "block_type": meta["block_type"],
             "competency": meta["competency"],
             "questions": questions_for_block,
+            "question_frameworks": framework_map[idx] if framework_map[idx] else ["CBI"] * len(questions_for_block),
         })
 
     if not blocks:
@@ -166,7 +174,7 @@ async def _load_or_generate_blocks(
         )
         if generated_qs:
             snapshot = [
-                {"text": q.question_text, "category": _map_question_type_to_category(q.question_type), "block_id": None, "weight": q.weight}
+                {"text": q.question_text, "category": _map_question_type_to_category(q.question_type), "framework": getattr(q, "framework", "CBI"), "block_id": None, "weight": q.weight}
                 for q in generated_qs
             ]
             blocks = _build_wsi_blocks_from_question_set(snapshot)
