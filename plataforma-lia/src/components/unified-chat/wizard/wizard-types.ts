@@ -81,6 +81,10 @@ export type WizardStagePayload = WizardStagePayloadContract
 
 export interface IntakeData {
   raw_input: string
+  /** W1-B (2026-06-12) -- vaga afirmativa detectada via NLP no intake */
+  is_affirmative?: boolean
+  affirmative_criteria_primary?: "disability" | "gender" | "race_ethnicity" | "lgbtqia" | "indigenous" | "refugee" | "other"
+  affirmative_description?: string
 }
 
 export interface JdEnrichmentData {
