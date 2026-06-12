@@ -823,6 +823,54 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 auto_advance,
             )
 
+        # W1-H (2026-06-12): dispatch custom feedback_template from screening_config.
+        # Fail-soft: erros nao devem abortar processamento do evento principal.
+        try:
+            from app.models.job_vacancy import JobVacancy as _WH_JV
+
+            _wh_vac = await db.get(_WH_JV, vacancy_id)
+            _wh_templates = {}
+            if _wh_vac and _wh_vac.screening_config:
+                _sc = _wh_vac.screening_config
+                if isinstance(_sc, dict):
+                    _wh_templates = _sc.get("feedback_templates", {}) or {}
+
+            if _wh_templates and decision != "review":
+                _wh_tmpl = _wh_templates.get(decision, "")
+                if _wh_tmpl:
+                    # Resolve candidate email (multi-tenancy fail-closed)
+                    from app.models.candidate import Candidate as _WH_Cand
+
+                    _wh_cand_result = await db.execute(
+                        select(_WH_Cand).where(
+                            _WH_Cand.id == candidate_id,
+                            _WH_Cand.company_id == company_id,
+                        )
+                    )
+                    _wh_cand = _wh_cand_result.scalar_one_or_none()
+
+                    if _wh_cand and _wh_cand.email:
+                        from app.domains.communication.services.communication_dispatcher import (
+                            CommunicationDispatcher as _WH_CD,
+                        )
+
+                        _wh_dispatcher = _WH_CD()
+                        await _wh_dispatcher.dispatch_message(
+                            company_id=company_id,
+                            recipient_email=_wh_cand.email,
+                            recipient_phone=getattr(_wh_cand, "phone", None),
+                            subject=f"Atualização sobre sua candidatura - {job_title}",
+                            message=_wh_tmpl,
+                            candidate_name=candidate_name or _wh_cand.name,
+                        )
+                        logger.info(
+                            "[EventHandler] Custom feedback_template dispatched candidate=%s decision=%s",
+                            candidate_id,
+                            decision,
+                        )
+        except Exception as _wh_exc:
+            logger.warning("[EventHandler] Custom feedback_template dispatch skipped: %s", _wh_exc)
+
         # A2b (2026-06-10): notifica recrutador via Teams DM ao completar triagem.
         # Fail-soft: erro de entrega Teams nao deve abortar processamento do evento.
         try:
