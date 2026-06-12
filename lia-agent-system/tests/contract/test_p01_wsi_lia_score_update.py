@@ -1,14 +1,11 @@
 """
 P0-1: WSI triagem completion deve atualizar vacancy_candidates.lia_score.
-
-Red test — falha antes do fix (nenhum código propaga wsi_final_score para vacancy_candidates.lia_score).
+TDD Red → Green — 5 testes de contrato.
 """
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-# ── helpers ──────────────────────────────────────────────────────────────────
 
 def _make_session(
     candidate_id="cand-111",
@@ -17,18 +14,41 @@ def _make_session(
     wsi_final_score=8.5,
     recommendation="aprovado",
 ):
-    session = MagicMock()
-    session.candidate_id = candidate_id
-    session.job_id = job_id
-    session.company_id = company_id
-    session.wsi_final_score = wsi_final_score
-    session.recommendation = recommendation
-    session.candidate_name = "Fulano Teste"
-    session.metadata_json = {}
-    return session
+    s = MagicMock()
+    s.candidate_id = candidate_id
+    s.job_id = job_id
+    s.company_id = company_id
+    s.wsi_final_score = wsi_final_score
+    s.recommendation = recommendation
+    s.candidate_name = "Fulano Teste"
+    s.metadata_json = {}
+    s.token = "tok-abc"
+    return s
 
 
-# ── tests ─────────────────────────────────────────────────────────────────────
+def _base_patches(mock_repo_instance):
+    """Patches comuns a todos os testes."""
+    return [
+        patch(
+            "app.domains.recruitment.services.triagem_session_service.completion._persist_wsi_results",
+            new_callable=AsyncMock,
+            return_value="wsi-session-abc",
+        ),
+        patch(
+            "app.domains.recruitment.services.triagem_session_service.completion._get_event_dispatcher",
+            return_value=MagicMock(on_screening_completed=AsyncMock()),
+        ),
+        # publish_platform_event é importado inline no try/except — mock no módulo real
+        patch(
+            "app.shared.messaging.platform_events.publish_platform_event",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "app.domains.candidates.repositories.vacancy_candidate_repository.VacancyCandidateRepository",
+            return_value=mock_repo_instance,
+        ),
+    ]
+
 
 class TestP01WsiUpdatesLiaScore:
     """P0-1: wsi_final_score (0-10) → vacancy_candidates.lia_score (0-100)."""
@@ -39,108 +59,76 @@ class TestP01WsiUpdatesLiaScore:
         from app.domains.recruitment.services.triagem_session_service.completion import (
             _trigger_post_completion,
         )
-
         session = _make_session(wsi_final_score=8.5)
         db = AsyncMock(spec=AsyncSession)
+        mock_repo = AsyncMock()
+        mock_repo.update_wsi_lia_score = AsyncMock(return_value=1)
 
-        with (
-            patch(
-                "app.domains.recruitment.services.triagem_session_service.completion._persist_wsi_results",
-                new_callable=AsyncMock,
-                return_value="wsi-session-abc",
-            ),
-            patch(
-                "app.domains.recruitment.services.triagem_session_service.completion._dispatch_screening_completed",
-                new_callable=AsyncMock,
-            ),
-            patch(
-                "app.domains.candidates.repositories.vacancy_candidate_repository.VacancyCandidateRepository"
-            ) as MockRepo,
-        ):
-            mock_repo_instance = AsyncMock()
-            mock_repo_instance.update_wsi_lia_score = AsyncMock(return_value=1)
-            MockRepo.return_value = mock_repo_instance
-
+        patches = _base_patches(mock_repo)
+        with patches[0], patches[1], patches[2], patches[3]:
             await _trigger_post_completion(db, session, response_scores=[])
 
-        mock_repo_instance.update_wsi_lia_score.assert_called_once()
-        call_kwargs = mock_repo_instance.update_wsi_lia_score.call_args
-        assert call_kwargs is not None, "update_wsi_lia_score nunca foi chamado (P0-1 não implementado)"
+        mock_repo.update_wsi_lia_score.assert_called_once(), (
+            "update_wsi_lia_score nunca chamado — P0-1 não implementado"
+        )
 
     @pytest.mark.asyncio
     async def test_lia_score_conversion_scale(self):
-        """wsi_final_score 0-10 deve ser convertido para lia_score 0-100 (×10)."""
+        """wsi_final_score × 10 = lia_score (escala 0-100)."""
         from app.domains.recruitment.services.triagem_session_service.completion import (
             _trigger_post_completion,
         )
-
         session = _make_session(wsi_final_score=7.5)
         db = AsyncMock(spec=AsyncSession)
+        captured = {}
 
-        captured_score = {}
-
-        async def capture_update(**kwargs):
-            captured_score.update(kwargs)
+        async def capture(**kwargs):
+            captured.update(kwargs)
             return 1
 
-        with (
-            patch(
-                "app.domains.recruitment.services.triagem_session_service.completion._persist_wsi_results",
-                new_callable=AsyncMock,
-                return_value="wsi-session-xyz",
-            ),
-            patch(
-                "app.domains.recruitment.services.triagem_session_service.completion._dispatch_screening_completed",
-                new_callable=AsyncMock,
-            ),
-            patch(
-                "app.domains.candidates.repositories.vacancy_candidate_repository.VacancyCandidateRepository"
-            ) as MockRepo,
-        ):
-            mock_repo_instance = AsyncMock()
-            mock_repo_instance.update_wsi_lia_score = AsyncMock(side_effect=capture_update)
-            MockRepo.return_value = mock_repo_instance
+        mock_repo = AsyncMock()
+        mock_repo.update_wsi_lia_score = AsyncMock(side_effect=capture)
 
+        patches = _base_patches(mock_repo)
+        with patches[0], patches[1], patches[2], patches[3]:
             await _trigger_post_completion(db, session, response_scores=[])
 
-        assert captured_score.get("lia_score") == 75.0, (
-            f"Escala errada: esperado 75.0 (7.5×10), recebido {captured_score.get('lia_score')}"
+        assert captured.get("lia_score") == 75.0, (
+            f"Escala errada: esperado 75.0, recebido {captured.get('lia_score')}"
         )
 
     @pytest.mark.asyncio
     async def test_skip_update_when_wsi_persistence_fails(self):
-        """Se _persist_wsi_results falha (retorna None), não deve chamar update_wsi_lia_score."""
+        """Se _persist_wsi_results retorna None, não chama update_wsi_lia_score."""
         from app.domains.recruitment.services.triagem_session_service.completion import (
             _trigger_post_completion,
         )
-
         session = _make_session(wsi_final_score=9.0)
         db = AsyncMock(spec=AsyncSession)
+        mock_repo = AsyncMock()
+        mock_repo.update_wsi_lia_score = AsyncMock(return_value=0)
 
         with (
             patch(
                 "app.domains.recruitment.services.triagem_session_service.completion._persist_wsi_results",
                 new_callable=AsyncMock,
-                return_value=None,  # persistência falhou
+                return_value=None,
             ),
             patch(
-                "app.domains.candidates.repositories.vacancy_candidate_repository.VacancyCandidateRepository"
-            ) as MockRepo,
+                "app.domains.candidates.repositories.vacancy_candidate_repository.VacancyCandidateRepository",
+                return_value=mock_repo,
+            ),
         ):
-            mock_repo_instance = AsyncMock()
-            MockRepo.return_value = mock_repo_instance
-
             await _trigger_post_completion(db, session, response_scores=[])
 
-        mock_repo_instance.update_wsi_lia_score.assert_not_called()
+        mock_repo.update_wsi_lia_score.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_update_uses_correct_ids(self):
-        """O update deve usar candidate_id, job_id e company_id corretos da sessão."""
+        """O update usa candidate_id, vacancy_id e company_id corretos da sessão."""
         from app.domains.recruitment.services.triagem_session_service.completion import (
             _trigger_post_completion,
         )
-
         session = _make_session(
             candidate_id="CAND-XYZ",
             job_id="JOB-ABC",
@@ -154,24 +142,11 @@ class TestP01WsiUpdatesLiaScore:
             captured.update(kwargs)
             return 1
 
-        with (
-            patch(
-                "app.domains.recruitment.services.triagem_session_service.completion._persist_wsi_results",
-                new_callable=AsyncMock,
-                return_value="wsi-ok",
-            ),
-            patch(
-                "app.domains.recruitment.services.triagem_session_service.completion._dispatch_screening_completed",
-                new_callable=AsyncMock,
-            ),
-            patch(
-                "app.domains.candidates.repositories.vacancy_candidate_repository.VacancyCandidateRepository"
-            ) as MockRepo,
-        ):
-            mock_repo_instance = AsyncMock()
-            mock_repo_instance.update_wsi_lia_score = AsyncMock(side_effect=capture)
-            MockRepo.return_value = mock_repo_instance
+        mock_repo = AsyncMock()
+        mock_repo.update_wsi_lia_score = AsyncMock(side_effect=capture)
 
+        patches = _base_patches(mock_repo)
+        with patches[0], patches[1], patches[2], patches[3]:
             await _trigger_post_completion(db, session, response_scores=[])
 
         assert captured.get("candidate_id") == "CAND-XYZ"
@@ -181,35 +156,19 @@ class TestP01WsiUpdatesLiaScore:
 
     @pytest.mark.asyncio
     async def test_update_fails_soft_does_not_raise(self):
-        """Se update_wsi_lia_score lança exceção, _trigger_post_completion não deve propagar (fail-soft)."""
+        """Se update_wsi_lia_score lança exceção, não propaga (fail-soft)."""
         from app.domains.recruitment.services.triagem_session_service.completion import (
             _trigger_post_completion,
         )
-
         session = _make_session(wsi_final_score=8.0)
         db = AsyncMock(spec=AsyncSession)
+        mock_repo = AsyncMock()
+        mock_repo.update_wsi_lia_score = AsyncMock(
+            side_effect=Exception("DB timeout simulado")
+        )
 
-        with (
-            patch(
-                "app.domains.recruitment.services.triagem_session_service.completion._persist_wsi_results",
-                new_callable=AsyncMock,
-                return_value="wsi-ok",
-            ),
-            patch(
-                "app.domains.recruitment.services.triagem_session_service.completion._dispatch_screening_completed",
-                new_callable=AsyncMock,
-            ),
-            patch(
-                "app.domains.candidates.repositories.vacancy_candidate_repository.VacancyCandidateRepository"
-            ) as MockRepo,
-        ):
-            mock_repo_instance = AsyncMock()
-            mock_repo_instance.update_wsi_lia_score = AsyncMock(
-                side_effect=Exception("DB timeout simulado")
-            )
-            MockRepo.return_value = mock_repo_instance
-
-            # Não deve levantar — fail-soft
+        patches = _base_patches(mock_repo)
+        with patches[0], patches[1], patches[2], patches[3]:
             result = await _trigger_post_completion(db, session, response_scores=[])
 
-        assert result is not None  # retornou normalmente
+        assert result is not None

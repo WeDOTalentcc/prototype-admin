@@ -436,6 +436,34 @@ class VacancyCandidateRepository:
         )
         await self.db.commit()
 
+    async def update_wsi_lia_score(
+        self,
+        candidate_id: str,
+        vacancy_id: str,
+        company_id: str,
+        lia_score: float,
+    ) -> int:
+        """P0-1: atualiza lia_score em vacancy_candidates após triagem WSI.
+
+        Multi-tenancy: company_id required, fail-closed via _require_company_id.
+        Retorna rowcount: 1 = atualizado, 0 = VacancyCandidate não encontrado.
+        Conversão de escala: wsi_final_score (0-10) × 10 = lia_score (0-100) — feita pelo caller.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                UPDATE vacancy_candidates
+                SET lia_score = :score,
+                    updated_at = NOW()
+                WHERE candidate_id::text = :cid
+                  AND vacancy_id::text = :vid
+                  AND company_id = :company_id
+            """),
+            {"score": lia_score, "cid": candidate_id, "vid": vacancy_id, "company_id": cid},
+        )
+        return result.rowcount
+
     async def get_pool_benchmarks(
         self,
         company_id: str,

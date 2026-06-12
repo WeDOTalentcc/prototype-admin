@@ -316,6 +316,37 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
             meta["wsi_channel"] = "web_chat"
             session.metadata_json = meta
             await db.flush()
+            # P0-1: retroalimentar vacancy_candidates.lia_score com score WSI.
+            # Conversão de escala: wsi_final_score (0-10) × 10 = lia_score (0-100).
+            # Fail-soft: erro de DB não aborta o fluxo principal de triagem.
+            if session.candidate_id and session.job_id and session.company_id:
+                try:
+                    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+                        VacancyCandidateRepository,
+                    )
+                    _vc_repo = VacancyCandidateRepository(db)
+                    _wsi_lia_score = round((session.wsi_final_score or 0.0) * 10.0, 1)
+                    _rowcount = await _vc_repo.update_wsi_lia_score(
+                        candidate_id=session.candidate_id,
+                        vacancy_id=session.job_id,
+                        company_id=session.company_id,
+                        lia_score=_wsi_lia_score,
+                    )
+                    if _rowcount:
+                        actions["lia_score_update"] = f"ok:{_wsi_lia_score}"
+                        logger.info(
+                            "[P0-1] lia_score atualizado: candidate=%s vacancy=%s score=%.1f",
+                            session.candidate_id, session.job_id, _wsi_lia_score,
+                        )
+                    else:
+                        actions["lia_score_update"] = "skipped_no_vc_row"
+                        logger.warning(
+                            "[P0-1] VacancyCandidate nao encontrado: candidate=%s vacancy=%s — lia_score nao atualizado",
+                            session.candidate_id, session.job_id,
+                        )
+                except Exception as _p01_exc:
+                    logger.error("[P0-1] lia_score update falhou (fail-soft): %s", _p01_exc)
+                    actions["lia_score_update"] = "failed"
         else:
             actions["wsi_persistence"] = "skipped"
     except Exception as e:
