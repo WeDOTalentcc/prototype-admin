@@ -2238,6 +2238,138 @@ SUGGEST_VARIABLE_COMPENSATION = WizardTool(
     handler=_handle_suggest_variable_compensation,
 )
 
+
+
+# ---------------------------------------------------------------------------
+# W1-B — Set Affirmative Fields
+# ---------------------------------------------------------------------------
+
+def _handle_set_affirmative_fields(
+    state: "JobCreationState",
+    tool_input: dict,
+    ctx: "WizardContext",
+) -> "ToolResult":
+    """Seta campos de vaga afirmativa a partir do que foi confirmado pelo recrutador."""
+    _reject_tenant_keys(tool_input)
+
+    is_affirmative = bool(tool_input.get("is_affirmative", False))
+    criteria_primary = tool_input.get("criteria_primary")
+    criteria_secondary = tool_input.get("criteria_secondary")
+    description = tool_input.get("description")
+    document_required = bool(tool_input.get("document_required", True))
+    document_types = tool_input.get("document_types") or []
+
+    if not is_affirmative:
+        return ToolResult(
+            llm_message="Vaga desmarcada como afirmativa.",
+            state_updates={
+                "is_affirmative": False,
+                "affirmative_criteria_primary": None,
+                "affirmative_criteria_secondary": None,
+                "affirmative_description": None,
+                "affirmative_document_required": True,
+                "affirmative_document_types": [],
+            },
+        )
+
+    if not criteria_primary:
+        return ToolResult(
+            llm_message=(
+                "Para configurar a vaga afirmativa preciso saber o critério principal. "
+                "Por favor informe: gênero (mulheres), raça/etnia (pessoas negras), "
+                "deficiência (PcD), lgbtqia+, 50+, indígena ou refugiado."
+            ),
+            error=False,
+        )
+
+    _CRITERIA_LABELS = {
+        "gender": "Gênero (Mulheres)",
+        "race_ethnicity": "Raça/Etnia",
+        "disability": "Pessoa com Deficiência (PcD)",
+        "lgbtqia": "LGBTQIA+",
+        "age": "50+ anos",
+        "indigenous": "Povos Indígenas",
+        "refugee": "Refugiados/Imigrantes",
+        "other": "Ação Afirmativa",
+    }
+
+    label_primary = _CRITERIA_LABELS.get(criteria_primary, criteria_primary)
+    label_secondary = _CRITERIA_LABELS.get(criteria_secondary, criteria_secondary) if criteria_secondary else None
+
+    criteria_info = label_primary
+    if label_secondary:
+        criteria_info += f" + {label_secondary}"
+
+    doc_info = ""
+    if document_required and document_types:
+        doc_info = f" Documentação exigida: {', '.join(document_types)}."
+
+    msg = (
+        f"Vaga configurada como afirmativa para: {criteria_info}."
+        + (f" Descrição: {description}." if description else "")
+        + doc_info
+        + " Os critérios serão aplicados durante a triagem de candidatos pelo FairnessGuard."
+    )
+
+    return ToolResult(
+        llm_message=msg,
+        state_updates={
+            "is_affirmative": True,
+            "affirmative_criteria_primary": criteria_primary,
+            "affirmative_criteria_secondary": criteria_secondary,
+            "affirmative_description": description,
+            "affirmative_document_required": document_required,
+            "affirmative_document_types": document_types,
+        },
+    )
+
+
+SET_AFFIRMATIVE_FIELDS = WizardTool(
+    name="set_affirmative_fields",
+    description=(
+        "Configura a vaga como afirmativa (ação afirmativa para grupos sub-representados). "
+        "Use quando o recrutador mencionar vaga afirmativa, PcD, mulheres, pessoas negras, "
+        "LGBTQIA+, 50+, indígenas, refugiados ou similares — ou para confirmar o que foi "
+        "detectado automaticamente pelo sistema no intake. Os campos são persistidos no "
+        "publish e ativam o FairnessGuard na triagem."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "is_affirmative": {
+                "type": "boolean",
+                "description": "True para ativar vaga afirmativa, False para desativar.",
+            },
+            "criteria_primary": {
+                "type": "string",
+                "enum": ["gender", "race_ethnicity", "disability", "lgbtqia", "age", "indigenous", "refugee", "other"],
+                "description": "Critério principal da ação afirmativa.",
+            },
+            "criteria_secondary": {
+                "type": "string",
+                "enum": ["gender", "race_ethnicity", "disability", "lgbtqia", "age", "indigenous", "refugee", "other"],
+                "description": "Critério secundário opcional (ex: mulheres negras = gender + race_ethnicity).",
+            },
+            "description": {
+                "type": "string",
+                "description": "Descrição livre da ação afirmativa (ex: 'Mulheres negras acima de 40 anos').",
+            },
+            "document_required": {
+                "type": "boolean",
+                "description": "Se exige documentação comprobatória do candidato (padrão: True).",
+            },
+            "document_types": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Tipos de documentos aceitos (ex: ['laudo_pcd', 'autodeclaracao_racial']).",
+            },
+        },
+        "required": ["is_affirmative"],
+        "additionalProperties": False,
+    },
+    handler=_handle_set_affirmative_fields,
+)
+
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
@@ -2255,5 +2387,6 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SEND_MANAGER_BRIEFING,
     SUGGEST_BENEFITS,
     SUGGEST_VARIABLE_COMPENSATION,
+    SET_AFFIRMATIVE_FIELDS,
     CLOSE_PANEL,
 )

@@ -28,6 +28,9 @@ const WsiQuestionsPanel = lazy(() =>
 const EligibilityPanel = lazy(() =>
   import("./panels/EligibilityPanel").then((m) => ({ default: m.EligibilityPanel }))
 )
+const AffirmativePanel = lazy(() =>
+  import("./panels/AffirmativePanel").then((m) => ({ default: m.AffirmativePanel }))
+)
 const ReviewPanel = lazy(() =>
   import("./panels/ReviewPanel").then((m) => ({ default: m.ReviewPanel }))
 )
@@ -79,6 +82,7 @@ export const SPLIT_STAGES: WizardStage[] = [
   "competency",
   "wsi_questions",
   "eligibility",
+  "affirmative",
   "review",
   "publish",
   "calibration",
@@ -190,6 +194,8 @@ function renderPanel(
       )
     case "eligibility":
       return <EligibilityPanel data={data} onUpdate={onUpdate} />
+    case "affirmative":
+      return <AffirmativePanel data={data} onUpdate={onUpdate} />
     case "review":
       return <ReviewPanel data={data} onUpdate={onUpdate} />
     case "publish":

@@ -45,6 +45,7 @@ export type WizardStage =
   | "competency"
   | "wsi_questions"
   | "eligibility"
+  | "affirmative"
   | "review"
   | "publish"
   | "calibration"
@@ -386,6 +387,7 @@ export const STAGE_LABELS: Record<WizardStage, string> = {
   competency: "Competencias e triagem",
   wsi_questions: "Perguntas WSI",
   eligibility: "Elegibilidade",
+  affirmative: "Vaga Afirmativa",
   review: "Revisao final",
   publish: "Publicacao",
   calibration: "Calibracao",
@@ -409,6 +411,7 @@ export const STAGE_PILL_LABELS: Record<WizardStage, string> = {
   competency: "Criando vaga · Competências",
   wsi_questions: "Criando vaga · Triagem",
   eligibility: "Criando vaga · Elegibilidade",
+  affirmative: "Criando vaga · Ação Afirmativa",
   review: "Criando vaga · Revisão",
   publish: "Criando vaga · Publicação",
   calibration: "Calibrando · Candidatos",
@@ -424,7 +427,7 @@ export const STAGE_ORDER: WizardStage[] = [
   // Stage formal entre jd_enrichment e bigfive.
   "pipeline_template",
   "bigfive", "salary", "competency",
-  "wsi_questions", "eligibility", "review", "publish", "calibration",
+  "wsi_questions", "eligibility", "affirmative", "review", "publish", "calibration",
   "handoff", "done",
 ]
 

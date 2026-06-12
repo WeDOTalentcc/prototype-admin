@@ -677,23 +677,32 @@ class JobCreationAPIClient:
         job_id: int,
         is_affirmative: bool,
         affirmative_criteria_primary: Optional[str] = None,
+        affirmative_criteria_secondary: Optional[str] = None,
         affirmative_description: Optional[str] = None,
+        affirmative_document_required: bool = True,
+        affirmative_document_types: Optional[List[str]] = None,
     ) -> "APIResponse":
         """Persiste campos de vaga afirmativa via UPDATE (nao vai no INSERT dev-local)."""
         if not self.base_url:
             return self._update_affirmative_local(
-                job_id, is_affirmative, affirmative_criteria_primary, affirmative_description
+                job_id, is_affirmative, affirmative_criteria_primary,
+                affirmative_criteria_secondary, affirmative_description,
+                affirmative_document_required, affirmative_document_types or [],
             )
         return self._request("PATCH", f"/api/v1/jobs/{job_id}", json_body={
             "job": {
                 "is_affirmative": is_affirmative,
                 "affirmative_criteria_primary": affirmative_criteria_primary,
+                "affirmative_criteria_secondary": affirmative_criteria_secondary,
                 "affirmative_description": affirmative_description,
+                "affirmative_document_required": affirmative_document_required,
+                "affirmative_document_types": affirmative_document_types or [],
             }
         })
 
     def _update_affirmative_local(
-        self, job_id, is_affirmative, criteria_primary, description
+        self, job_id, is_affirmative, criteria_primary, criteria_secondary,
+        description, document_required, document_types
     ) -> "APIResponse":
         """Dev-local: UPDATE direto via psycopg2."""
         try:
@@ -705,12 +714,16 @@ class JobCreationAPIClient:
                         UPDATE job_vacancies SET
                             is_affirmative = %s,
                             affirmative_criteria_primary = %s,
+                            affirmative_criteria_secondary = %s,
                             affirmative_description = %s,
+                            affirmative_document_required = %s,
+                            affirmative_document_types = %s,
                             updated_at = NOW()
                         WHERE id = %s
                         RETURNING id
                         """,
-                        (is_affirmative, criteria_primary, description, str(job_id)),
+                        (is_affirmative, criteria_primary, criteria_secondary,
+                         description, document_required, document_types, str(job_id)),
                     )
                     row = cur.fetchone()
                     conn.commit()

@@ -188,6 +188,15 @@ export function wizardUpdateToMessage(updates: Record<string, unknown>): string 
   if ("platforms" in updates) return "Plataformas: " + (updates.platforms as string[]).join(", ")
   if ("auto_screen" in updates) return "Auto-triagem: " + (updates.auto_screen ? "ativada" : "desativada")
   if ("questions" in updates) return "Atualizar perguntas de elegibilidade"
+  if ("is_affirmative" in updates) {
+    if (!updates.is_affirmative) return "Desativar vaga afirmativa"
+    const criteriaLabels: Record<string, string> = {
+      gender: "Gênero (Mulheres)", race_ethnicity: "Raça/Etnia", disability: "PcD",
+      lgbtqia: "LGBTQIA+", age: "50+", indigenous: "Indígenas", refugee: "Refugiados",
+    }
+    const primary = criteriaLabels[String(updates.affirmative_criteria_primary ?? "")] || ""
+    return "Confirmar vaga afirmativa" + (primary ? ": " + primary : "")
+  }
   // Fase 5b — edições de competência no painel (chips). O texto é só o espelho
   // legível; os dados estruturados viajam em context.right_panel_form e o
   // backend (intake_gate) lê confirmed_* com precedência sobre a sugestão.

@@ -249,7 +249,10 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                         job_id,
                         state.get("is_affirmative", False),
                         state.get("affirmative_criteria_primary"),
+                        state.get("affirmative_criteria_secondary"),
                         state.get("affirmative_description"),
+                        state.get("affirmative_document_required", True),
+                        state.get("affirmative_document_types") or [],
                     )
                 except Exception as _aff_err:
                     logger.warning(

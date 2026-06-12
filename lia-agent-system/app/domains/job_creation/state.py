@@ -252,7 +252,10 @@ class JobCreationState(TypedDict, total=False):
     # W1-B (2026-06-12): vaga afirmativa detectada via NLP no intake.
     is_affirmative: bool
     affirmative_criteria_primary: Optional[str]
+    affirmative_criteria_secondary: Optional[str]  # segundo critério (ex: mulheres negras = gender + race)
     affirmative_description: Optional[str]
+    affirmative_document_required: bool  # exige laudo/autodeclaração do candidato
+    affirmative_document_types: List[str]  # ex: ['laudo_pcd', 'autodeclaracao_racial']
 
     # --- T6 (Task #1088) review gate dual-confirmation ---
     # ``pending_publish_confirmation`` é setado por ``review_gate_node``
