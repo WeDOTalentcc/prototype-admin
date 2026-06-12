@@ -180,6 +180,11 @@ export function useUIAction(): UseUIActionReturn {
           return true;
         }
 
+        case "close_panel": {
+          window.dispatchEvent(new CustomEvent("lia:close_panel", { detail: {} }));
+          return true;
+        }
+
         case "scroll_to": {
           const element_id = params.element_id;
           if (typeof element_id !== "string" || !element_id) return false;

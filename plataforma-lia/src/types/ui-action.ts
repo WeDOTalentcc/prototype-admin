@@ -65,6 +65,10 @@ export type GlobalUIAction =
       };
     }
   | {
+  | {
+      type: "close_panel";
+      params: Record<string, never>;
+    }
       type: "scroll_to";
       params: {
         element_id: string;
@@ -170,6 +174,7 @@ export const GLOBAL_UI_ACTION_TYPES: readonly GlobalUIActionType[] = [
   "open_offer_review",
   "wizard_step",
   "open_panel",
+  "close_panel",
   "scroll_to",
   "settings_open_tab",
   "open_communication_modal",

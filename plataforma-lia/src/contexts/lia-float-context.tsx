@@ -1000,6 +1000,13 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, dynamicPanel: null }));
   }, []);
 
+  // tool close_panel: LIA fecha o painel lateral via chat.
+  useEffect(() => {
+    function handleClosePanel() { closeDynamicPanel(); }
+    window.addEventListener("lia:close_panel", handleClosePanel);
+    return () => window.removeEventListener("lia:close_panel", handleClosePanel);
+  }, [closeDynamicPanel]);
+
   // Bridge canonical (Fix B 2026-05-27 -- WIZARD_DEEP_DIVE P0-NOVO-#2):
   // Backend `agent_chat_ws.py` emite APENAS `wizard_stage` ao avancar de etapa
   // (nunca `panel_update`). `useChatSocket.ts:289` dispatcha o window event
