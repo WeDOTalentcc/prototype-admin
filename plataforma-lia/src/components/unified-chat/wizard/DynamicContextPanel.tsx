@@ -5,6 +5,7 @@ import { Minimize2 } from "lucide-react"
 import type { WizardStage } from "./wizard-types"
 import { STAGE_LABELS } from "./wizard-types"
 import { WizardErrorBoundary } from "./WizardErrorBoundary"
+import { ToolSurfaceContext } from "@/contexts/ToolSurfaceContext"
 
 // Lazy-load all panels for code splitting
 const IntakePanel = lazy(() =>
@@ -177,9 +178,11 @@ export function DynamicContextPanel({
           className="h-full animate-in fade-in slide-in-from-right-2 duration-200 ease-out motion-reduce:animate-none"
         >
           <WizardErrorBoundary>
-            <Suspense fallback={<PanelLoader />}>
-              {renderPanel(stage, data, requiresApproval, onApprove, onReject, onUpdate)}
-            </Suspense>
+            <ToolSurfaceContext.Provider value="panel">
+              <Suspense fallback={<PanelLoader />}>
+                {renderPanel(stage, data, requiresApproval, onApprove, onReject, onUpdate)}
+              </Suspense>
+            </ToolSurfaceContext.Provider>
           </WizardErrorBoundary>
         </div>
       </div>
