@@ -1532,8 +1532,9 @@ export function UnifiedChat({
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Switch Task Modal (⌘K) */}
       <SwitchTaskModal
