@@ -1143,6 +1143,375 @@ APPROVE_WSI_QUESTIONS = WizardTool(
 )
 
 
+
+
+# ── Eligibility tools (W1-A port from wizard_tool_registry.py) ───────────────
+
+_ELIGIBILITY_DB_TIMEOUT_S = 8.0
+
+
+def _handle_suggest_eligibility_templates(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Sugere templates de elegibilidade canonical para a vaga em criação.
+
+    Lê ``industry``, ``work_model`` e ``languages`` dos parâmetros opcionais;
+    usa ``ctx.company_id`` para escopo multi-tenant. Operação read-only.
+    Retorna top-10 templates por relevância (score interno).
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    job_industry = (tool_input.get("industry") or "").lower()
+    work_model = (tool_input.get("work_model") or "").lower()
+    languages = tool_input.get("languages") or []
+    company_id = ctx.company_id
+
+    PRIORITY_CATEGORIES = ["system_default", "eligibility", "availability", "compliance"]
+
+    from app.core.database import AsyncSessionLocal
+    from app.domains.cv_screening.repositories.eligibility_question_template_repository import (
+        EligibilityQuestionTemplateRepository,
+    )
+    from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+
+    async def _fetch():
+        async with AsyncSessionLocal() as db:
+            repo = EligibilityQuestionTemplateRepository(db)
+            return await repo.list_for_company(company_id=company_id, include_master=True)
+
+    try:
+        all_items = run_coro_in_threadpool(lambda: _fetch(), timeout=_ELIGIBILITY_DB_TIMEOUT_S)
+    except Exception as exc:  # noqa: BLE001 — fail-loud
+        logger.warning("[WizardServiceTools] suggest_eligibility_templates failed: %s", exc)
+        return ToolResult(
+            llm_message=f"Não consegui buscar os templates de elegibilidade ({exc}).",
+            error=True,
+        )
+
+    suggestions = []
+    for item in all_items:
+        data = item.data or {}
+        category = data.get("category", "")
+        score = 0
+        if category in PRIORITY_CATEGORIES:
+            score += 3
+        linked = data.get("linkedField")
+        if linked == "workModel" and work_model:
+            score += 5
+        if linked == "languages" and languages:
+            score += 5
+        if linked == "location" and work_model in ("hibrido", "presencial"):
+            score += 4
+        if score > 0:
+            suggestions.append({
+                "id": str(item.id),
+                "question": data.get("question", ""),
+                "category": category,
+                "is_master": item.is_master_template,
+                "score": score,
+            })
+
+    suggestions.sort(key=lambda s: s["score"], reverse=True)
+    top = suggestions[:10]
+
+    return ToolResult(
+        llm_message=(
+            f"{len(top)} template(s) de elegibilidade sugerido(s) "
+            f"(top 10 de {len(all_items)} no catálogo da empresa). "
+            "Apresente as opções ao recrutador e aplique com apply_eligibility_template."
+        ),
+        state_updates={},
+        data={
+            "suggestions": top,
+            "total_in_catalog": len(all_items),
+            "industry_used": job_industry or None,
+            "work_model_used": work_model or None,
+        },
+    )
+
+
+def _handle_apply_eligibility_template_to_vacancy(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Aplica template de elegibilidade canonical à vaga em criação (snapshot B1).
+
+    Copia o ``data`` do template e retorna o snapshot para ser adicionado a
+    ``eligibility_questions`` no state. NÃO escreve no DB — a persistência
+    ocorre no publish_job (save_job_draft).
+
+    Parâmetros:
+        template_id: UUID do template (obrigatório).
+        vacancy_id: UUID da vaga (opcional — usado só para logging).
+    """
+    import uuid as _uuid
+
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    template_id_raw = tool_input.get("template_id")
+    vacancy_id = tool_input.get("vacancy_id")
+    company_id = ctx.company_id
+
+    if not template_id_raw:
+        return ToolResult(
+            llm_message="template_id é obrigatório para aplicar o template.",
+            error=True,
+        )
+
+    try:
+        template_uuid = (
+            _uuid.UUID(template_id_raw)
+            if isinstance(template_id_raw, str)
+            else template_id_raw
+        )
+    except (ValueError, TypeError):
+        return ToolResult(
+            llm_message=f"template_id inválido: {template_id_raw!r}. Informe um UUID válido.",
+            error=True,
+        )
+
+    from app.core.database import AsyncSessionLocal
+    from app.domains.cv_screening.repositories.eligibility_question_template_repository import (
+        EligibilityQuestionTemplateRepository,
+    )
+    from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+
+    async def _fetch():
+        async with AsyncSessionLocal() as db:
+            repo = EligibilityQuestionTemplateRepository(db)
+            return await repo.get_by_id(template_uuid, company_id)
+
+    try:
+        template = run_coro_in_threadpool(lambda: _fetch(), timeout=_ELIGIBILITY_DB_TIMEOUT_S)
+    except Exception as exc:  # noqa: BLE001 — fail-loud
+        logger.warning("[WizardServiceTools] apply_eligibility_template failed: %s", exc)
+        return ToolResult(
+            llm_message=f"Erro ao buscar o template ({exc}).",
+            error=True,
+        )
+
+    if not template:
+        return ToolResult(
+            llm_message="Template não encontrado ou fora do escopo da empresa.",
+            error=True,
+        )
+
+    snapshot = dict(template.data or {})
+    snapshot["_template_id"] = str(template.id)
+    snapshot["_is_master_origin"] = template.is_master_template
+
+    current = list(state.get("eligibility_questions") or [])
+    current.append(snapshot)
+
+    return ToolResult(
+        llm_message=(
+            f"Template '{snapshot.get('question', '')[:60]}' aplicado à vaga "
+            f"(snapshot canonical B1; {len(current)} pergunta(s) de elegibilidade no total). "
+            "Persistência ocorre ao publicar."
+        ),
+        state_updates={"eligibility_questions": current},
+        data={
+            "vacancy_id": vacancy_id,
+            "template_id": str(template.id),
+            "snapshot": snapshot,
+            "is_master_origin": template.is_master_template,
+            "total_eligibility_questions": len(current),
+        },
+    )
+
+
+def _handle_create_custom_eligibility_template(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Cria template de elegibilidade custom via wizard conversacional.
+
+    Persistido per-company no DB. Qualquer recrutador/admin pode criar
+    (decisão Paulo C 2026-05-20). Após criar, o template fica disponível
+    no catálogo da empresa para reutilização futura.
+
+    Parâmetros obrigatórios: question (str, mín 3 chars).
+    Parâmetros opcionais: type, category, eliminatory, eliminatoryAnswer,
+        contextHint, options.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    question = (tool_input.get("question") or "").strip()
+    if not question or len(question) < 3:
+        return ToolResult(
+            llm_message="Pergunta obrigatória (mínimo 3 caracteres).",
+            error=True,
+        )
+
+    company_id = ctx.company_id
+    user_id = ctx.user_id
+    question_type = tool_input.get("type") or "yes_no"
+    category = tool_input.get("category") or "general"
+
+    data = {
+        "question": question,
+        "type": question_type,
+        "category": category,
+        "contextHint": tool_input.get("contextHint"),
+        "eliminatory": bool(tool_input.get("eliminatory", False)),
+        "eliminatoryAnswer": tool_input.get("eliminatoryAnswer"),
+    }
+    if tool_input.get("options"):
+        data["options"] = tool_input["options"]
+
+    from app.core.database import AsyncSessionLocal
+    from app.domains.cv_screening.repositories.eligibility_question_template_repository import (
+        EligibilityQuestionTemplateRepository,
+    )
+    from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+
+    async def _create():
+        async with AsyncSessionLocal() as db:
+            repo = EligibilityQuestionTemplateRepository(db)
+            template = await repo.create_custom(
+                company_id=company_id,
+                data=data,
+                created_by=str(user_id) if user_id else None,
+            )
+            await db.commit()
+            return template
+
+    try:
+        template = run_coro_in_threadpool(lambda: _create(), timeout=_ELIGIBILITY_DB_TIMEOUT_S)
+    except Exception as exc:  # noqa: BLE001 — fail-loud
+        logger.warning("[WizardServiceTools] create_custom_eligibility_template failed: %s", exc)
+        return ToolResult(
+            llm_message=f"Falha ao criar template de elegibilidade ({exc}).",
+            error=True,
+        )
+
+    return ToolResult(
+        llm_message=(
+            f"Template de elegibilidade criado com sucesso (ID: {template.id}). "
+            "Ele já está disponível no catálogo da empresa. "
+            "Use apply_eligibility_template para adicioná-lo à vaga atual."
+        ),
+        state_updates={},
+        data={
+            "id": str(template.id),
+            "company_id": template.company_id,
+            "is_master_template": False,
+            "question": data["question"],
+            "type": data["type"],
+            "category": data["category"],
+            "eliminatory": data["eliminatory"],
+        },
+    )
+
+
+SUGGEST_ELIGIBILITY_TEMPLATES = WizardTool(
+    name="suggest_eligibility_templates",
+    description=(
+        "Busca templates de perguntas de elegibilidade do catálogo da empresa "
+        "relevantes para a vaga em criação. Filtra por setor (industry), "
+        "modelo de trabalho (work_model) e idiomas (languages). Retorna até 10 "
+        "sugestões ordenadas por relevância. Use para apresentar ao recrutador "
+        "antes de aplicar com apply_eligibility_template."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "industry": {
+                "type": "string",
+                "description": "Setor da vaga (ex: tecnologia, saúde, financeiro).",
+            },
+            "work_model": {
+                "type": "string",
+                "description": "Modelo de trabalho (remoto, hibrido, presencial).",
+            },
+            "languages": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Idiomas exigidos pela vaga (ex: ['inglês', 'espanhol']).",
+            },
+        },
+        "additionalProperties": False,
+    },
+    handler=_handle_suggest_eligibility_templates,
+)
+
+APPLY_ELIGIBILITY_TEMPLATE = WizardTool(
+    name="apply_eligibility_template",
+    description=(
+        "Aplica um template de pergunta de elegibilidade à vaga em criação. "
+        "Copia o snapshot do template para eligibility_questions no state "
+        "(persistência ocorre ao publicar). Use após o recrutador escolher "
+        "um template de suggest_eligibility_templates."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "template_id": {
+                "type": "string",
+                "description": "UUID do template de elegibilidade a aplicar.",
+            },
+            "vacancy_id": {
+                "type": "string",
+                "description": "UUID da vaga (opcional — para logging).",
+            },
+        },
+        "required": ["template_id"],
+        "additionalProperties": False,
+    },
+    handler=_handle_apply_eligibility_template_to_vacancy,
+)
+
+CREATE_CUSTOM_ELIGIBILITY_TEMPLATE = WizardTool(
+    name="create_custom_eligibility_template",
+    description=(
+        "Cria um novo template de pergunta de elegibilidade customizado para a "
+        "empresa. Use quando o recrutador quiser uma pergunta eliminatória que "
+        "não existe no catálogo. O template criado fica disponível para "
+        "reutilização futura."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "question": {
+                "type": "string",
+                "description": "Texto da pergunta de elegibilidade (mín 3 chars).",
+            },
+            "type": {
+                "type": "string",
+                "description": "Tipo da pergunta (yes_no, multiple_choice, etc.).",
+            },
+            "category": {
+                "type": "string",
+                "description": "Categoria (availability, compliance, work_model, legal, general).",
+            },
+            "eliminatory": {
+                "type": "boolean",
+                "description": "Se true, candidatos que não atendem são eliminados.",
+            },
+            "eliminatoryAnswer": {
+                "type": "string",
+                "description": "Resposta correta para elegibilidade (ex: 'sim', 'nao').",
+            },
+            "contextHint": {
+                "type": "string",
+                "description": "Contexto adicional para a pergunta (opcional).",
+            },
+            "options": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Opções de resposta para multiple_choice (opcional).",
+            },
+        },
+        "required": ["question"],
+        "additionalProperties": False,
+    },
+    handler=_handle_create_custom_eligibility_template,
+)
+
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
@@ -1154,4 +1523,7 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     EDIT_WSI_QUESTION,
     ADD_WSI_QUESTION,
     APPROVE_WSI_QUESTIONS,
+    SUGGEST_ELIGIBILITY_TEMPLATES,
+    APPLY_ELIGIBILITY_TEMPLATE,
+    CREATE_CUSTOM_ELIGIBILITY_TEMPLATE,
 )
