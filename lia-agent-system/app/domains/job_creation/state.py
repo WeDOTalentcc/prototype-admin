@@ -139,6 +139,7 @@ class JobCreationState(TypedDict, total=False):
     parsed_manager_email: Optional[str]  # email do gestor (FASE 5 ficha viva)
     parsed_recruiter_name: Optional[str]  # recrutador responsavel (W0-A)
     parsed_recruiter_email: Optional[str]  # email do recrutador (W0-A)
+    jd_similar_reuse_id: Optional[str]  # ID da JD similar reutilizada pelo recruiter (W0-B)
     intake_confidence: float
 
     # --- F1: JD Enrichment ---

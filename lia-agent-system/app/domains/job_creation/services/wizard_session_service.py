@@ -660,6 +660,10 @@ class WizardSessionService:
                 state["parsed_recruiter_name"] = ctx["user_name"]
             if ctx.get("user_email"):
                 state["parsed_recruiter_email"] = ctx["user_email"]
+            # W0-B: extract jd_similar_reuse_id from right_panel_form if present
+            _rpf = ctx.get("right_panel_form") or {}
+            if _rpf.get("jd_similar_reuse_id"):
+                state["jd_similar_reuse_id"] = str(_rpf["jd_similar_reuse_id"])
             logger.info(
                 "[WizardSession] Continuing session thread=%s stage=%s conv_turns=%d",
                 thread_id,
@@ -691,6 +695,10 @@ class WizardSessionService:
         # W0-A: recruiter identity from session user (passed via context by SSE/REST endpoint)
         state["parsed_recruiter_name"] = ctx.get("user_name") or None
         state["parsed_recruiter_email"] = ctx.get("user_email") or None
+        # W0-B: extract jd_similar_reuse_id from right_panel_form if present
+        _rpf = ctx.get("right_panel_form") or {}
+        if _rpf.get("jd_similar_reuse_id"):
+            state["jd_similar_reuse_id"] = str(_rpf["jd_similar_reuse_id"])
         return state
 
     # ── Task #1127 (T1.1 + T2.1 + T2.2) — Supervisor pre-graph ────────

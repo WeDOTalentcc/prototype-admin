@@ -445,4 +445,27 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 str(_pat_exc)[:200],
             )
 
+    # W0-B — JD Similar reuse tracking: if recruiter reused an existing JD, close the learning loop
+    if not error and job_id:
+        _reuse_id = (
+            state.get("jd_similar_reuse_id")
+            or (state.get("right_panel_form") or {}).get("jd_similar_reuse_id")
+        )
+        if _reuse_id:
+            try:
+                from app.domains.job_creation.services.jd_similar_service import (
+                    increment_reuse_fire_and_forget,
+                )
+                _reuse_company = str(state.get("workspace_id") or state.get("company_id") or "")
+                if _reuse_company:
+                    increment_reuse_fire_and_forget(
+                        company_id=_reuse_company,
+                        record_id=str(_reuse_id),
+                    )
+            except Exception as _reuse_exc:  # pragma: no cover - never block publish
+                logger.warning(
+                    "[JobCreation:publish] JdSimilar reuse tracking failed (non-blocking): %s",
+                    str(_reuse_exc)[:200],
+                )
+
     return {**state, **updates}
