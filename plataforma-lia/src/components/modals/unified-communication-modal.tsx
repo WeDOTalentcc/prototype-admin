@@ -26,7 +26,8 @@ export function UnifiedCommunicationModal({
   onSend,
   companyId,
   selectedCandidates = [],
-  situation: explicitSituation
+  situation: explicitSituation,
+  aiFeedbackContext
 }: UnifiedCommunicationModalProps) {
   const {
     isBulkMode,
@@ -65,7 +66,8 @@ export function UnifiedCommunicationModal({
     onSend,
     companyId,
     selectedCandidates,
-    explicitSituation
+    explicitSituation,
+    aiFeedbackContext
   })
 
   if (!isOpen || (!candidate && selectedCandidates.length === 0)) return null

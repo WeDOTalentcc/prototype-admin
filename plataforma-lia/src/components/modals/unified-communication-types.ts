@@ -28,6 +28,7 @@ export interface UnifiedCommunicationModalProps {
   companyId: string
   selectedCandidates?: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>
   situation?: TemplateSituation
+  aiFeedbackContext?: { vacancyCandidateId: string; toStage: string; subStatus?: string | null } | null
 }
 
 export interface CommunicationResult {
