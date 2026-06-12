@@ -66,6 +66,8 @@ WIZARD_STAGE_NAMES: tuple[str, ...] = (
     "publish",
     "calibration",
     "handoff",
+    "done",
+    "scheduling",
 )
 
 
