@@ -65,10 +65,10 @@ export type GlobalUIAction =
       };
     }
   | {
-  | {
       type: "close_panel";
       params: Record<string, never>;
     }
+  | {
       type: "scroll_to";
       params: {
         element_id: string;
