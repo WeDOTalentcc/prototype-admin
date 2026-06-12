@@ -747,16 +747,43 @@ def _build_close_ui_definition() -> "ToolDefinition":
     )
 
 
+
+async def _wrap_close_panel(**kwargs):
+    """Fecha o painel lateral aberto pela LIA."""
+    return {
+        "success": True,
+        "data": {
+            "ui_action": "close_panel",
+            "ui_action_params": {},
+        },
+        "message": "Painel lateral fechado.",
+    }
+
+
+def _build_close_panel_definition():
+    return ToolDefinition(
+        name="close_panel",
+        description=(
+            "Fecha o painel lateral (wizard, perfil, vaga) aberto pela LIA. "
+            "Use quando o usuario pedir para fechar ou dispensar o painel. "
+            "Nao precisa de parametros."
+        ),
+        parameters={"type": "object", "properties": {}, "required": []},
+        output_schema=ToolOutput,
+        function=_wrap_close_panel,
+    )
+
+
 def get_ui_tools() -> list[ToolDefinition]:
     """ToolDefinitions de UI (open_ui + apply_table_state + select_rows). Federadas no recruiter_copilot."""
-    return [_build_open_ui_definition(), _build_close_ui_definition(), _build_apply_table_state_definition(), _build_select_rows_definition()]
+    return [_build_open_ui_definition(), _build_close_ui_definition(), _build_close_panel_definition(), _build_apply_table_state_definition(), _build_select_rows_definition()]
 
 
 def get_open_ui_tools() -> list[ToolDefinition]:
     """So open_ui (abre modal / navega). capability_map-gated + HITL nas acoes
     sensiveis -> seguro p/ conceder a qualquer agente CONVERSACIONAL via grant
     explicito no _get_tools do agente (least-privilege, removivel)."""
-    return [_build_open_ui_definition(), _build_close_ui_definition()]
+    return [_build_open_ui_definition(), _build_close_ui_definition(), _build_close_panel_definition()]
 
 
 def get_table_state_tools() -> list[ToolDefinition]:
