@@ -326,7 +326,7 @@ function CandidateCard({
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Adicione um comentário para a LIA aprender melhor (opcional)"
+            placeholder="Por que gostou ou não deste perfil? (opcional)"
             rows={2}
             className="w-full text-[11px] text-lia-text-primary placeholder:text-lia-text-disabled bg-lia-bg-secondary border border-lia-border-subtle rounded px-2 py-1.5 resize-none focus:outline-none focus:ring-1 focus:ring-wedo-cyan/40"
           />
