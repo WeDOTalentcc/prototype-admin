@@ -663,6 +663,49 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
         except Exception as exc:
             logger.warning("[EventHandler] Failed to check automation rules: %s", exc)
 
+        # W2-C: ler auto_approval_preset/limit/paused do screening_config por-vaga.
+        # Sobrescreve auto_advance se a vaga atingiu cota ou está pausada.
+        _auto_approvals_count = 0
+        _auto_approval_limit = None  # None = sem cota por-vaga (só usa global)
+        try:
+            from app.models.job_vacancy import JobVacancy as _W2C_JV
+
+            _w2c_vac = await db.get(_W2C_JV, vacancy_id)
+            if _w2c_vac and _w2c_vac.screening_config:
+                _sc_settings = {}
+                _sc = _w2c_vac.screening_config
+                if isinstance(_sc, dict):
+                    _sc_settings = _sc.get("settings", {}) or {}
+
+                # Pausado explicitamente → bloqueia auto-advance para esta vaga
+                if _sc_settings.get("auto_approval_paused", False):
+                    auto_advance = False
+                    logger.info(
+                        "[EventHandler] auto_advance BLOCKED: auto_approval_paused=True vaga=%s",
+                        vacancy_id,
+                    )
+                else:
+                    # Resolver limite: preset → número canônico (espelha approvalPresetToLimit FE)
+                    _preset = _sc_settings.get("auto_approval_preset", "recommended")
+                    _PRESET_LIMITS = {"conservative": 5, "recommended": 10, "autonomous": 25}
+                    _auto_approval_limit = _sc_settings.get(
+                        "auto_approval_limit",
+                        _PRESET_LIMITS.get(_preset, 10),
+                    )
+                    _auto_approvals_count = int(_sc_settings.get("auto_approvals_count", 0) or 0)
+
+                    if _auto_approvals_count >= _auto_approval_limit:
+                        auto_advance = False
+                        logger.info(
+                            "[EventHandler] auto_advance BLOCKED: cota atingida count=%d limit=%d vaga=%s",
+                            _auto_approvals_count,
+                            _auto_approval_limit,
+                            vacancy_id,
+                        )
+        except Exception as _w2c_exc:
+            logger.warning("[EventHandler] W2-C screening_config read error (fail-open): %s", _w2c_exc)
+
+
         from app.domains.automation.services.automation_handlers import (
             handle_screening_completed,
         )
@@ -736,6 +779,29 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                     )
                 except Exception as exc:
                     logger.warning("[EventHandler] Auto-advance failed: %s", exc)
+
+                    # W2-C: incrementar auto_approvals_count no JSONB por-vaga (fail-soft).
+                    if _auto_approval_limit is not None:
+                        try:
+                            from app.models.job_vacancy import JobVacancy as _W2C_JV2
+
+                            _w2c_vac2 = await db.get(_W2C_JV2, vacancy_id)
+                            if _w2c_vac2 and _w2c_vac2.screening_config:
+                                _sc2 = dict(_w2c_vac2.screening_config)
+                                _s2 = dict(_sc2.get("settings", {}) or {})
+                                _s2["auto_approvals_count"] = _auto_approvals_count + 1
+                                _sc2["settings"] = _s2
+                                _w2c_vac2.screening_config = _sc2
+                                await db.flush()
+                                logger.info(
+                                    "[EventHandler] auto_approvals_count incremented to %d/%d vaga=%s",
+                                    _auto_approvals_count + 1,
+                                    _auto_approval_limit,
+                                    vacancy_id,
+                                )
+                        except Exception as _w2c_cnt_exc:
+                            logger.warning("[EventHandler] W2-C count increment error (fail-soft): %s", _w2c_cnt_exc)
+
 
         elif decision == "rejected":
             await handle_screening_completed(
