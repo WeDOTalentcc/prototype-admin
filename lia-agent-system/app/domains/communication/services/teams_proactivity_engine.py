@@ -429,3 +429,15 @@ class TeamsProactivityEngine:
 
 
 teams_proactivity_engine = TeamsProactivityEngine()
+
+
+async def _safe_teams_hook(coro_func, **kwargs):
+    # Dispara hook Teams sem propagar excecoes (fire-and-forget).
+    # Uso: asyncio.create_task(_safe_teams_hook(engine.on_candidate_applied, ...))
+    try:
+        await coro_func(**kwargs)
+    except Exception as _exc:
+        import logging as _log
+        _log.getLogger(__name__).warning(
+            "Teams hook falhou (ignorado): %s", _exc, exc_info=False
+        )

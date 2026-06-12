@@ -389,6 +389,16 @@ async def add_candidate_to_vacancy(
                 candidate_id=candidate_id, job_vacancy_id=job_id,
             )
 
+            # Teams fire-and-forget hook (candidatura)
+            try:
+                import asyncio as _at
+                from app.domains.communication.services.teams_proactivity_engine import _safe_teams_hook as _sth, teams_proactivity_engine as _te
+                _lp = _at.get_event_loop()
+                if _lp.is_running():
+                    _lp.create_task(_sth(_te.on_candidate_applied, candidate_id=candidate_id, candidate_name=candidate_name, vacancy_id=job_id, vacancy_title=job_title, company_id=str(company_id)))
+            except Exception:
+                pass
+
             return {
                 "success": True,
                 "message": f"✅ {candidate_name} foi adicionado à vaga '{job_title}' na etapa '{initial_stage}'.",

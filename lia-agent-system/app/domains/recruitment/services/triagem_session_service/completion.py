@@ -266,6 +266,26 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
     except Exception as e:
         logger.warning(f"[Triagem] Failed to send Teams recruiter notification: {e}")
 
+    # TeamsProactivityEngine fire-and-forget hook (triagem concluida via DM)
+    try:
+        import asyncio as _at
+        from app.domains.communication.services.teams_proactivity_engine import _safe_teams_hook as _sth, teams_proactivity_engine as _te
+        _lp = _at.get_event_loop()
+        if _lp.is_running():
+            _lp.create_task(_sth(
+                _te.on_screening_complete,
+                candidate_id=session.candidate_id or "",
+                candidate_name=session.candidate_name or "Candidato",
+                vacancy_id=session.job_id or "",
+                job_title=session.job_title or "Vaga",
+                match_score=float(session.wsi_final_score or 0.0),
+                recommendation=session.recommendation or "pendente",
+                company_id=str(session.company_id or ""),
+            ))
+    except Exception:
+        pass  # Teams hook nao e obrigatorio, nunca bloqueia fluxo principal
+
+
     try:
         from app.services.notification_service import (
             NotificationType,
@@ -350,6 +370,33 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
                 except Exception as _p01_exc:
                     logger.error("[P0-1] lia_score update falhou (fail-soft): %s", _p01_exc)
                     actions["lia_score_update"] = "failed"
+            # 2.2: criar LiaOpinion tipo "wsi" — parecer estruturado no parecer de candidato.
+            # Fail-soft: falha no insert nao aborta o fluxo de triagem.
+            try:
+                from app.domains.pipeline.repositories.lia_opinion_repository import (
+                    LiaOpinionRepository,
+                )
+                from app.domains.cv_screening.constants.wsi_scale import (
+                    wsi_score_to_lia_scale as _wsi_scale_fn,
+                )
+                _lio_repo = LiaOpinionRepository(db)
+                _wsi_lia_score_22 = _wsi_scale_fn(session.wsi_final_score or 0.0)
+                await _lio_repo.create_wsi_opinion(
+                    candidate_id=session.candidate_id,
+                    company_id=session.company_id,
+                    wsi_score=_wsi_lia_score_22,
+                    job_vacancy_id=session.job_id,
+                    wsi_screening_id=wsi_session_id,
+                    recommendation=getattr(session, "recommendation", None),
+                )
+                actions["lia_opinion_created"] = f"ok:{_wsi_lia_score_22}"
+                logger.info(
+                    "[2.2] LiaOpinion WSI criado: candidate=%s score=%.1f",
+                    session.candidate_id, _wsi_lia_score_22,
+                )
+            except Exception as _22_exc:
+                logger.error("[2.2] LiaOpinion criação falhou (fail-soft): %s", _22_exc)
+                actions["lia_opinion_created"] = "failed"
         else:
             actions["wsi_persistence"] = "skipped"
     except Exception as e:
