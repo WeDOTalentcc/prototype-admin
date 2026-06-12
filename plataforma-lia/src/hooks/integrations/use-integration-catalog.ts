@@ -26,6 +26,7 @@ export type IntegrationCategory =
   | "communication"
   | "crm_hris"
   | "mcps_apis"
+  | "job_board"
 
 export type IntegrationStatus = "production" | "coming_soon" | "deprecated"
 
