@@ -76,6 +76,8 @@ interface Props {
    * `requestRegeneration` + `sendMessage(prevUserText, …, { regenerateOf })`.
    */
   onRegenerate?: (messageId: string) => void
+  /** F2 wizard: expande o painel lateral ao clicar em "Abrir no painel" dentro de WizardJdCard */
+  onOpenPanel?: () => void
 }
 
 function MessageActions({
@@ -308,6 +310,7 @@ export function UnifiedMessageList({
   conversationId,
   onChipClick,
   onRegenerate,
+  onOpenPanel,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -606,6 +609,7 @@ export function UnifiedMessageList({
                 {hasWizardJdCard && (
                   <WizardJdCard
                     data={meta!.wizardStageData as Record<string, unknown>}
+                    onOpenPanel={onOpenPanel}
                   />
                 )}
 

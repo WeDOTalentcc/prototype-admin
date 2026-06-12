@@ -1336,6 +1336,7 @@ export function UnifiedChat({
             conversationId={chatConversationId}
             onChipClick={(value) => sendChatMessage(value)}
             onRegenerate={handleRegenerate}
+            onOpenPanel={() => setWizardPanelMode("expanded")}
           />
         ) : (
           <UnifiedChatEmptyState
