@@ -46,7 +46,7 @@ export const SURFACE_CONFIG: Record<string, SurfaceConfig> = {
     hitl: false,
   },
   list_jobs: {
-    default_surface: 'inline',
+    default_surface: 'panel',
     fallback_surface: 'inline-card',
     can_show_both: true,
     hitl: false,
