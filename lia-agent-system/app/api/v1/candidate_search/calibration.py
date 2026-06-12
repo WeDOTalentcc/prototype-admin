@@ -34,7 +34,7 @@ async def get_screening_repo(db: AsyncSession = Depends(get_db)) -> ScreeningRep
 class CalibrationFeedbackRequest(WeDoBaseModel):
     """Request para feedback de calibração."""
     candidate_id: str = Field(..., description="ID do candidato")
-    feedback: str = Field(..., pattern="^(like|dislike)$", description="Tipo: 'like' ou 'dislike'")
+    feedback: str = Field(..., pattern="^(like|dislike|skip)$", description="Tipo: 'like' ou 'dislike'")
     vacancy_id: str | None = Field(None, description="ID da vaga (opcional)")
     session_id: str | None = Field(None, description="ID da sessão de calibração")
     reason: str | None = Field(None, description="Motivo do feedback")
@@ -170,8 +170,9 @@ company_id: str = Depends(require_company_id)):
 
         if request.feedback.lower() == "like":
             session.likes_count = (session.likes_count or 0) + 1
-        else:
+        elif request.feedback.lower() == "dislike":
             session.dislikes_count = (session.dislikes_count or 0) + 1
+        # skip: nao conta como like nem dislike, mas conta em total_shown
         session.total_shown = (session.total_shown or 0) + 1
 
         min_feedbacks = session.min_feedbacks_required or 5
