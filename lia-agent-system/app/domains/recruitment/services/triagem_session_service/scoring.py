@@ -10,8 +10,22 @@ logger = logging.getLogger(__name__)
 _DEFAULT_TECH_WEIGHT = 0.625  # pleno default
 _DEFAULT_BEHAV_WEIGHT = 1.0 - _DEFAULT_TECH_WEIGHT
 
+# Blocos administrativos do WSI_BLOCKS_FALLBACK que NÃO representam competências técnicas
+# ou comportamentais e portanto NÃO devem entrar no cálculo de score.
+# Bloco 0: perguntas de disponibilidade/salário (abordagem inicial).
+# Bloco 5: perguntas de encerramento/planos futuros.
+SCORING_SKIP_BLOCK_INDICES: frozenset[int] = frozenset({0, 5})
 
-def _score_response_deterministic(response_text: str, block_type: str, competency: str) -> dict[str, Any]:
+# Score neutro aplicado quando todos os blocos são admin (fallback de emergência extremo).
+_NEUTRAL_SCORE_ADMIN_ONLY = 3.0  # × 2.0 = 6.0 → "aguardando"
+
+
+def _score_response_deterministic(
+    response_text: str,
+    block_type: str,
+    competency: str,
+    question_framework: str = "CBI",
+) -> dict[str, Any]:
     try:
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
             calculate_wsi_deterministic,
@@ -19,6 +33,7 @@ def _score_response_deterministic(response_text: str, block_type: str, competenc
         result = calculate_wsi_deterministic(
             response_text=response_text,
             competency_name=competency,
+            question_framework=question_framework,
         )
         return {
             "score": result.final_score,
@@ -104,6 +119,11 @@ def _calculate_final_score(
     behavioral_scores = []
 
     for rs in response_scores:
+        # Blocos 0 e 5 contêm perguntas administrativas (disponibilidade, salário,
+        # encerramento) que não avaliam competências — excluir do cálculo de score.
+        if rs.get("block_index") in SCORING_SKIP_BLOCK_INDICES:
+            continue
+
         score = rs.get("score", 3.0)
         block_type = rs.get("block_type", "behavioral")
         # F9-1 - trait_weight do ranking F3; padrao 1.0 = pesos uniformes
@@ -112,6 +132,15 @@ def _calculate_final_score(
             technical_scores.append(("", score, 1.0))
         else:
             behavioral_scores.append(("", score, trait_weight))
+
+    # Se após filtrar admin só restam listas vazias (fallback de emergência extremo),
+    # usar score neutro "aguardando" em vez de reprovar candidato por perguntas admin.
+    if not technical_scores and not behavioral_scores:
+        logger.warning(
+            "[Triagem] Todas as respostas são de blocos admin (0/5) — usando score neutro. "
+            "Provável uso do WSI_BLOCKS_FALLBACK de emergência sem question set versionado."
+        )
+        return round(_NEUTRAL_SCORE_ADMIN_ONLY * 2.0, 1), "aguardando"
 
     try:
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
@@ -135,8 +164,9 @@ def _calculate_final_score(
         return scaled, recommendation
     except Exception as exc:
         logger.warning(f"[Triagem] Final score calculation failed: {exc}")
-        if response_scores:
-            avg = sum(rs.get("score", 3.0) for rs in response_scores) / len(response_scores)
+        if technical_scores or behavioral_scores:
+            all_scores = [s for _, s, _ in technical_scores + behavioral_scores]
+            avg = sum(all_scores) / len(all_scores)
             scaled = round(avg * 2.0, 1)
         else:
             scaled = 6.0
