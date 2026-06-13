@@ -430,3 +430,44 @@ def test_fairness_guard_check_implicit_bias_uses_db_policy_terms():
     }
     warnings = guard.check_implicit_bias("busco perfil com termo_customizado_do_tenant", effective_policy)
     assert any("termo_customizado_do_tenant" in w for w in warnings)
+
+
+# --- Tests for FairnessGuard -> policy_violations bridge ---
+
+def test_fairness_audit_log_and_policy_violations_are_complementary():
+    """
+    fairness_audit_log (operacional) e fairness_policy_violations (regulatorio)
+    tem propositos diferentes e AMBAS devem existir.
+    """
+    import sys
+    project_root = "/home/runner/workspace/lia-agent-system"
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
+    from lia_models.fairness_audit import FairnessAuditLog
+    from lia_models.fairness_policies import FairnessPolicyViolation
+
+    audit_fields = {c.key for c in FairnessAuditLog.__table__.columns}
+    assert "recruiter_id" in audit_fields
+    assert "job_id" in audit_fields
+    assert "blocked_terms" in audit_fields
+
+    violation_fields = {c.key for c in FairnessPolicyViolation.__table__.columns}
+    assert "rule_id" in violation_fields
+    assert "rule_type" in violation_fields
+    assert "fairness_audit_log_id" in violation_fields
+
+
+def test_policy_violation_has_fairness_audit_log_id_field():
+    """FairnessPolicyViolation tem campo de link para fairness_audit_log."""
+    import sys
+    project_root = "/home/runner/workspace/lia-agent-system"
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
+    from lia_models.fairness_policies import FairnessPolicyViolation
+    cols = {c.key for c in FairnessPolicyViolation.__table__.columns}
+    assert "fairness_audit_log_id" in cols, (
+        "FairnessPolicyViolation deve ter fairness_audit_log_id para linkar "
+        "trail regulatorio -> log operacional"
+    )

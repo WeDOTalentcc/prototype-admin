@@ -142,6 +142,12 @@ class FairnessPolicyViolation(Base):
     was_blocked = Column(Boolean, nullable=False, default=True)
     detected_at = Column(DateTime, nullable=False, server_default=text("NOW()"))
     correlation_id = Column(String(80), nullable=True, index=True)
+    fairness_audit_log_id = Column(
+        UUID(as_uuid=True),
+        nullable=True,
+        index=True,
+        comment="FK para fairness_audit_log - link regulatorio -> operacional",
+    )
 
     __table_args__ = (
         Index("ix_violations_company_domain_detected", "company_id", "domain", "detected_at"),

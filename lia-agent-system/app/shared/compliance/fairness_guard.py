@@ -1179,6 +1179,41 @@ class FairnessGuard:
                 result.is_blocked, result.category, context_str, len(result.soft_warnings or []),
             )
 
+            # --- NOVO: trail regulatorio em fairness_policy_violations ---
+            # Gravado apenas quando ha bloqueio real (is_blocked=True).
+            # Soft warnings ficam so em fairness_audit_log (nao sao violacoes de politica).
+            if result.is_blocked and company_id:
+                try:
+                    from lia_models.fairness_policies import FairnessPolicyViolation
+                    violation = FairnessPolicyViolation(
+                        id=_uuid.uuid4(),
+                        company_id=_uuid.UUID(company_id),
+                        domain=context_str,
+                        rule_id=None,
+                        rule_type="linguistic_banlist",
+                        violation_type=f"category_blocked:{result.category or 'unknown'}",
+                        input_snapshot_hash=query_hash,
+                        decision_context={
+                            "category": result.category,
+                            "blocked_terms": (result.blocked_terms or [])[:5],
+                            "confidence": result.confidence,
+                            "context": context_str,
+                        },
+                        was_blocked=True,
+                        fairness_audit_log_id=record.id,
+                        correlation_id=None,
+                    )
+                    session.add(violation)
+                    logger.debug(
+                        "FairnessGuard policy violation logged: category=%s audit_log_id=%s",
+                        result.category, record.id,
+                    )
+                except Exception as _viol_exc:
+                    # Fail-open: falha no trail regulatorio nao derruba o audit operacional
+                    logger.warning(
+                        "FairnessGuard policy_violations write failed (non-blocking): %s", _viol_exc
+                    )
+
         try:
             if db is not None:
                 await _persist(db)
