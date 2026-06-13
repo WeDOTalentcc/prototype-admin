@@ -12,6 +12,8 @@ import { OutreachCard } from "./OutreachCard"
 import { WizardPublishedJobCard } from "./wizard/WizardPublishedJobCard"
 import { WizardPipelineTemplateCard } from "./wizard/WizardPipelineTemplateCard"
 import { WizardJdCard } from "./wizard/WizardJdCard"
+import { WizardIntakeCard } from "./wizard/WizardIntakeCard"
+import { WizardCompetencyCard } from "./wizard/WizardCompetencyCard"
 import { WizardWsiCard } from "./wizard/WizardWsiCard"
 import { WizardCalibrationCard } from "./wizard/WizardCalibrationCard"
 import { WebsiteProposalCard } from "./WebsiteProposalCard"
@@ -550,6 +552,11 @@ export function UnifiedMessageList({
           meta?.type === "wizard_stage_card" && meta?.wizardStage === "wsi_questions"
         const hasWizardCalibrationCard =
           meta?.type === "wizard_stage_card" && meta?.wizardStage === "calibration"
+
+        const hasWizardIntakeCard =
+          meta?.type === "wizard_stage_card" && meta?.wizardStage === "intake"
+        const hasWizardCompetencyCard =
+          meta?.type === "wizard_stage_card" && meta?.wizardStage === "competency"
         const hasWebsiteProposal =
           meta?.type === "website_proposal" && meta?.websiteProposal != null
         const hasCandidateProfile =
@@ -756,6 +763,22 @@ export function UnifiedMessageList({
                 {hasWebsiteProposal && (
                   <WebsiteProposalCard
                     data={meta!.websiteProposal as import("@/components/unified-chat/WebsiteProposalCard").WebsiteProposalCardData}
+                  />
+                )}
+
+                                {/* Intake card — ficha viva with parsed fields from stage intake. */}
+                {hasWizardIntakeCard && (
+                  <WizardIntakeCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                    onOpenPanel={onOpenPanel}
+                  />
+                )}
+
+                {/* Competency card — mapped competencies with tech/behavioral badges. */}
+                {hasWizardCompetencyCard && (
+                  <WizardCompetencyCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                    onOpenPanel={onOpenPanel}
                   />
                 )}
 
