@@ -1,9 +1,9 @@
-"""Endpoints de configuração de alertas por vaga.
+"""Endpoints de configuracao de alertas por vaga.
 
-Permite que um recrutador sobrescreva a frequência global de alertas
-para uma vaga específica. Pattern canônico:
+Permite que um recrutador sobrescreva a frequencia global de alertas
+para uma vaga especifica. Pattern canonico:
 - company_id vem do JWT via require_company_id
-- user_id passado como query param (mesmo padrão de alerts.py)
+- user_id passado como query param (mesmo padrao de alerts.py)
 """
 from fastapi import APIRouter, Depends, Query
 from pydantic import ConfigDict
@@ -36,7 +36,7 @@ async def get_vacancy_alert_preferences(
     db: AsyncSession = Depends(get_db),
     company_id: str = Depends(require_company_id),
 ):
-    """Retorna preferências de alerta do recrutador para esta vaga."""
+    """Retorna preferencias de alerta do recrutador para esta vaga."""
     from libs.models.lia_models.vacancy_alert_config import VacancyAlertConfig
     stmt = select(VacancyAlertConfig).where(
         and_(
@@ -62,7 +62,7 @@ async def update_vacancy_alert_preferences(
     db: AsyncSession = Depends(get_db),
     company_id: str = Depends(require_company_id),
 ):
-    """Salva preferências de alerta do recrutador para esta vaga (upsert).
+    """Salva preferencias de alerta do recrutador para esta vaga (upsert).
 
     multi-tenancy: company_id do JWT, nunca do payload.
     """
@@ -90,3 +90,68 @@ async def update_vacancy_alert_preferences(
             ))
     await db.commit()
     return {"status": "ok", "vacancy_id": vacancy_id, "updated": len(payload.preferences)}
+
+
+@router.get("/preview")
+async def preview_alert(
+    alert_type: str,
+    vacancy_id: str | None = None,
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Retorna preview do alerta: count de candidatos no estado alvo nas ultimas 24h.
+
+    Usado pelo badge live no FE para mostrar contagem near-realtime.
+    """
+    from sqlalchemy import text
+
+    if alert_type == "new_candidate":
+        stmt = text(
+            "SELECT COUNT(*) FROM vacancy_candidates"
+            " WHERE company_id = :company_id"
+            " AND (:vacancy_id IS NULL OR vacancy_id = CAST(:vacancy_id AS UUID))"
+            " AND created_at >= NOW() - INTERVAL '24 hours'"
+        )
+        result = await db.execute(stmt, {"company_id": company_id, "vacancy_id": vacancy_id})
+        count = result.scalar() or 0
+        return {
+            "alert_type": alert_type,
+            "preview_count": count,
+            "description": f"{count} novo(s) candidato(s) nas ultimas 24h",
+        }
+
+    elif alert_type == "screening_complete":
+        stmt = text(
+            "SELECT COUNT(*) FROM vacancy_candidates"
+            " WHERE company_id = :company_id"
+            " AND (:vacancy_id IS NULL OR vacancy_id = CAST(:vacancy_id AS UUID))"
+            " AND screening_completed_at >= NOW() - INTERVAL '24 hours'"
+        )
+        result = await db.execute(stmt, {"company_id": company_id, "vacancy_id": vacancy_id})
+        count = result.scalar() or 0
+        return {
+            "alert_type": alert_type,
+            "preview_count": count,
+            "description": f"{count} triagem(ns) concluida(s) nas ultimas 24h",
+        }
+
+    elif alert_type == "stage_change":
+        stmt = text(
+            "SELECT COUNT(*) FROM vacancy_candidates"
+            " WHERE company_id = :company_id"
+            " AND (:vacancy_id IS NULL OR vacancy_id = CAST(:vacancy_id AS UUID))"
+            " AND stage_entered_at >= NOW() - INTERVAL '24 hours'"
+        )
+        result = await db.execute(stmt, {"company_id": company_id, "vacancy_id": vacancy_id})
+        count = result.scalar() or 0
+        return {
+            "alert_type": alert_type,
+            "preview_count": count,
+            "description": f"{count} mudanca(s) de etapa nas ultimas 24h",
+        }
+
+    return {
+        "alert_type": alert_type,
+        "preview_count": 0,
+        "description": "Preview nao disponivel para este tipo de alerta",
+    }
