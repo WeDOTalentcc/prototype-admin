@@ -33,6 +33,7 @@ from app.api.v1 import (
     agent_monitoring,
     ai_consumption,
     alerts,
+    vacancy_alerts,
     analysis,
     applications,
     approvals,
@@ -456,6 +457,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(reports.router, prefix="/api/v1", tags=["reports"])
     app.include_router(dashboard_data.router, prefix="/api/v1", tags=["dashboard"])
     app.include_router(alerts.router, prefix="/api/v1", tags=["alerts"])
+    app.include_router(vacancy_alerts.router, prefix="/api/v1", tags=["alerts"])
     app.include_router(agent_monitoring.router, prefix="/api/v1", tags=["agent-monitoring"])
     app.include_router(saturation.router, prefix="/api/v1", tags=["saturation"])
     app.include_router(fairness_reports.router, prefix="/api/v1", tags=["fairness-reports"])
