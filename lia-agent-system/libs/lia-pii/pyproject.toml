@@ -1,0 +1,17 @@
+[project]
+name = "lia-pii"
+version = "0.1.0"
+description = "PII masking, field visibility, LGPD consent — WeDOTalent"
+requires-python = ">=3.11"
+dependencies = [
+    # presidio-analyzer and spacy model are optional (NER layer 4).
+    # They are not listed here to avoid making them hard-deps at install time.
+    # The code loads them lazily with fail-loud (CRITICAL log) when absent.
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["lia_pii"]
