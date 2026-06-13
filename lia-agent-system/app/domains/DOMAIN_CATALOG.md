@@ -36,9 +36,9 @@ Implementação completa com `agents/` (ReActAgent), `services/`, `tools/` e `do
 | `interview_scheduling` | `interview_scheduling` | 51 | Agendamento de entrevistas e integração com calendários |
 | `job_management` | `job_management` | 175 | Ciclo de vida de vagas: CRUD, pipeline, configuração, publicação |
 | `offer` | `offer` | 33 | Ciclo de vida de cartas-oferta: criação, edição, envio ao candidato, cancelamento |
-| `pipeline` | `pipeline_transition` | 59 | Visualização de pipeline e movimentação de candidatos entre etapas |
+| `pipeline` | `pipeline_transition` | 58 | Visualização de pipeline e movimentação de candidatos entre etapas |
 | `recruiter_assistant` | `recruiter_assistant` | 101 | Assistente geral de recrutamento (domínio de fallback do CascadedRouter) |
-| `sourcing` | `sourcing` | 129 | Sourcing de candidatos em múltiplos canais (Pearch, Apify, LinkedIn, banco interno) |
+| `sourcing` | `sourcing` | 127 | Sourcing de candidatos em múltiplos canais (Pearch, Apify, LinkedIn, banco interno) |
 | `talent_pool` | `talent_pool` | 23 | Gestão de pools de talentos: criação, listagem, movimentação de candidatos |
 
 > **Nota `hiring_policy` + `policy/`:** `hiring_policy/` é o domain registrado no DomainRegistry (`domain_id="hiring_policy"`), com `HiringPolicyDomain`, agents, tools e repos completos. `policy/` é um Service Domain (sem `domain.py`) que contém o motor de regras — `PolicyEngineService`, `PolicySetupAgent`, FairnessGuard setorial — consumido por `hiring_policy/` e outros domínios.
@@ -83,7 +83,7 @@ Proveem acesso a dados e lógica de negócio via `services/` e `repositories/`.
 | `credits` | 18 | Rastreamento de consumo de créditos/tokens por tenant |
 | `integrations_hub` | 22 | Hub central de integrações externas (catálogo, status, configuração) |
 | `lgpd` | 32 | Proteção de dados, purge LGPD/GDPR, compliance Art. 16 |
-| `modules` | 12 | Feature gating — controle de acesso a módulos por tier/tenant |
+| `modules` | 11 | Feature gating — controle de acesso a módulos por tier/tenant |
 | `persona` | 10 | Gerenciamento de personas da LIA por tenant |
 | `policy` | 14 | **Motor canônico de políticas de contratação.** `PolicyEngineService` (BusinessRule / RateLimitRule / EscalationRule), `PolicySetupAgent` (setup via chat), FairnessGuard setorial (`ALPHA1_SECTOR_RULES`). Consumido por `hiring_policy/`, `job_creation/`, `orchestrator/`, `fairness_guard` |
 | `recruitment` | 54 | Dados e fluxos do processo seletivo |
@@ -106,3 +106,9 @@ Lógica de serviço substancial já implementada. **Não têm `domain.py` por de
 ## Orphaned / Minimal (0)
 
 Nenhum. `autonomous/` e `triagem/` removidos (Sprint 13 cleanup).
+
+---
+
+## Changelog
+
+- **Sprint 13 (2026-06-13):** Removidos `autonomous/` e `triagem/` (órfãos). Consolidado `policy` → `hiring_policy` (domain_id único). Removidos 4 dead-code items: `pipeline/kanban_assistant_service.py`, `sourcing/tools.py`, `sourcing/prompts.py`, `modules/routes/`. Adicionado `__domain_type__` a 8 domínios. Removidos diretórios vazios pós-T14. Total: 38 → 36 domínios.
