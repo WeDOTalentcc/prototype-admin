@@ -139,7 +139,7 @@ async def _wrap_get_negotiation_context(
         return {"error": "db session nao disponivel"}
 
     from app.domains.offer.repositories.offer_repository import OfferRepository
-    from app.domains.offer.repositories.hiring_policy_repository import HiringPolicyRepository
+    from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository
     from libs.models.lia_models.company_hiring_policy import OFFER_RULES_DEFAULTS
 
     offer = await OfferRepository(db).get_by_id(UUID(offer_id), company_id)
@@ -168,9 +168,8 @@ async def _wrap_suggest_next_start_date(
     if not db:
         return {"error": "db session nao disponivel"}
 
-    from app.domains.offer.services.offer_service import OfferService
-    svc = OfferService(db)
-    next_date = await svc.compute_next_start_date(company_id, db)
+    from app.domains.offer.services.offer_service import compute_next_start_date_for_company
+    next_date = await compute_next_start_date_for_company(company_id, db)
 
     return {
         "suggested_date": next_date.isoformat(),

@@ -126,6 +126,48 @@ def compute_default_start_date() -> date:
     return (datetime.utcnow() + timedelta(days=_WORKING_DAYS_BUFFER)).date()
 
 
+
+async def compute_next_start_date_for_company(company_id: str, db) -> "date":
+    """Compute next valid start date per offer_rules.
+
+    Reads CompanyHiringPolicy.offer_rules fields:
+      allowed_start_day_of_month, min_notice_days, onboarding_blackout_periods.
+    Falls back to compute_default_start_date() when no rules configured.
+    Used by OfferConciergeAgent.suggest_next_start_date tool.
+    """
+    from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository
+
+    policy = await HiringPolicyRepository(db).get_by_company_id(company_id)
+    rules = (policy.offer_rules if policy else None) or {}
+
+    allowed_days = rules.get("allowed_start_day_of_month", [])
+    min_notice = int(rules.get("min_notice_days", 30))
+    blackouts = rules.get("onboarding_blackout_periods", [])
+
+    base = (datetime.utcnow() + timedelta(days=min_notice)).date()
+
+    if not allowed_days:
+        return base
+
+    from datetime import date as _date
+    candidate = base
+    for _ in range(90):
+        if candidate.day in allowed_days:
+            blocked = False
+            for blk in blackouts:
+                try:
+                    if _date.fromisoformat(blk["start"]) <= candidate <= _date.fromisoformat(blk["end"]):
+                        blocked = True
+                        break
+                except (KeyError, ValueError):
+                    pass
+            if not blocked:
+                return candidate
+        candidate = candidate + timedelta(days=1)
+
+    return base
+
+
 def compute_response_deadline(validity_days: int) -> datetime:
     """Sprint F.4 #42 canonical-remap: canonical column is ``response_deadline``
     (absolute DateTime), not ``expires_at``/``validity_days``."""
@@ -885,7 +927,16 @@ class OfferService:
         # direct canonical columns. Append a multi-channel record to sent_via
         # JSONB array (canonical pattern for multi-channel send tracking).
         now = datetime.utcnow()
-        proposal.sent_at = now
+        # P0-1 (Migration 266): generate portal token + acceptance_url on first send
+        import uuid as _uuid_mod
+        import os as _os_mod
+        if not proposal.candidate_token:
+            proposal.candidate_token = _uuid_mod.uuid4()
+        if not proposal.acceptance_url:
+            base_url = _os_mod.environ.get("PORTAL_BASE_URL", "").rstrip("/")
+            if base_url:
+                proposal.acceptance_url = f"{base_url}/portal/proposta/{proposal.candidate_token}"
+                proposal.sent_at = now
         sent_via = list(proposal.sent_via or [])
         sent_via.append({
             "channel": "email",
@@ -937,6 +988,7 @@ class OfferService:
             "department": job.get("department", ""),
             "manager_name": job.get("manager", ""),
             "company_name": job.get("company_name", "WeDOTalent"),
+            "offer_link": proposal.acceptance_url or "",
             "offered_salary_formatted": (
                 f"{currency} {float(salary):,.2f}" if salary else ""
             ),
