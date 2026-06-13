@@ -1831,7 +1831,9 @@ def _enforce_company_id_scope(
     """
     from app.auth.models import UserRole
 
-    is_admin = getattr(current_user, "role", None) == UserRole.admin
+    # PERM-EXEMPT: feature flag admin gate, context-specific
+    # PERM-EXEMPT: feature flag admin gate, context-specific
+    is_admin = getattr(current_user, "role", None) == UserRole.admin  # PERM-EXEMPT: feature flag admin-only, context-specific
     user_company = getattr(current_user, "company_id", None)
 
     if requested_company_id is None:

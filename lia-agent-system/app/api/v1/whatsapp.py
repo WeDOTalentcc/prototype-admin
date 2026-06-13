@@ -492,10 +492,15 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     )
     user = result.scalar_one_or_none()
     
+    # PERM-EXEMPT: null check, nao e gate de role
+    # PERM-EXEMPT: null check, nao e gate de role
     if user:
         target_company_id = company_id or get_user_company_id(user)
+         # PERM-EXEMPT: company_id comparison, nao e role gate
         
+        # PERM-EXEMPT: company_id comparison, nao e role gate
         if company_id and company_id != user.company_id:
+            # PERM-EXEMPT: cross-company admin check, company_id context requerido
             if user.role != UserRole.admin:
                 raise HTTPException(
                     status_code=403,

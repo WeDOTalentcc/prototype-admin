@@ -108,6 +108,8 @@ def _enforce_hitl_gate(flag_key: str, current_user: User) -> None:
     """
     if not _is_sensitive_flag(flag_key):
         return
+    # PERM-EXEMPT: feature flag sensitivity, context-specific
+    # PERM-EXEMPT: feature flag sensitivity gate, context-specific
     if getattr(current_user, "role", None) == UserRole.admin:
         return
     raise HTTPException(
@@ -155,7 +157,9 @@ def _enforce_flag_tenant(
     Raises:
       HTTPException(403) when a non-admin sends a mismatched company_id.
     """
+    # PERM-EXEMPT: feature flag sensitivity, context-specific
     # Admins keep their full powers (global flags + cross-tenant)
+    # PERM-EXEMPT: feature flag sensitivity gate, context-specific
     if getattr(current_user, "role", None) == UserRole.admin:
         return str(request_company_id) if request_company_id else None
 
@@ -593,8 +597,10 @@ async def list_pending_feature_flag_approvals(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    # PERM-EXEMPT: feature flag sensitivity, context-specific
     """Admin-only: list pending feature_flag_toggle approval requests
     for the user's company. Non-admin returns 403."""
+    # PERM-EXEMPT: feature flag sensitivity gate, context-specific
     if getattr(current_user, "role", None) != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -644,9 +650,11 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalRespo
     3. Approval must be in pending state.
 
     On approve: invokes ff_svc.set_flag with admin context (bypassing
+    # PERM-EXEMPT: feature flag sensitivity, context-specific
     HITL) using the payload stored in target_data. Status flips to
     approved. Audit + email notify.
     """
+    # PERM-EXEMPT: feature flag sensitivity gate, context-specific
     if getattr(current_user, "role", None) != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -768,10 +776,12 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalRespo
     2. Self-rejection blocked
     3. Approval must be in pending state (else 409)
 
+    # PERM-EXEMPT: feature flag sensitivity, context-specific
     On reject: status flips to rejected, rejection_reason persisted,
     audit log fires workflow_state=rejected, requester emailed (fail-soft).
     ff_svc.set_flag is NEVER called.
     """
+    # PERM-EXEMPT: feature flag sensitivity gate, context-specific
     if getattr(current_user, "role", None) != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -46,6 +46,7 @@ def check(block: bool = False) -> int:
             continue
         try:
             source = py_file.read_text(encoding="utf-8")
+            source_lines = source.splitlines()
             tree = ast.parse(source)
         except Exception:
             continue

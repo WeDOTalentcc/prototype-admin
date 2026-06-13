@@ -121,4 +121,14 @@ DEFAULT_ROLE_PERMISSIONS: list = [
     *_deny("viewer",  "offer",         "create", "update", "delete"),
     *_deny("viewer",  "policy",        "create", "update", "delete"),
     *_deny("viewer",  "admin",         "create", "update", "delete"),
+
+    # digest -- envio/visualizacao de digests (admin-only para outros usuarios)
+    *_allow("admin",            "digest", "read", "send_self", "send_others", "send_all"),
+    *_allow("wedotalent_admin", "digest", "read", "send_self", "send_others", "send_all"),
+    *_allow("recruiter",        "digest", "read", "send_self"),
+    *_deny("recruiter",         "digest", "send_others", "send_all"),
+    *_allow("manager",          "digest", "read", "send_self"),
+    *_deny("manager",           "digest", "send_others", "send_all"),
+    *_allow("viewer",           "digest", "read"),
+    *_deny("viewer",            "digest", "send_self", "send_others", "send_all"),
 ]

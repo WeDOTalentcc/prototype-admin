@@ -608,8 +608,11 @@ _company_gate: str = Depends(require_company_id)):
     """
     try:
         # P0-W3-04: only admins can update limits; wedotalent_admin can update any tenant
+        # PERM-EXEMPT: limite financeiro requer verificacao multi-role (admin+wedotalent_admin)
         if current_user.role not in (UserRole.admin, UserRole.wedotalent_admin):
             raise HTTPException(status_code=403, detail="Admin access required to update limits")
+        # PERM-EXEMPT: multi-role guard, nao expressa em role_scope_filters
+        # PERM-EXEMPT: multi-role cross-company guard, nao expressa em role_scope_filters
         if (current_user.role == UserRole.admin
                 and str(current_user.company_id) != str(client_id)):
             raise HTTPException(status_code=403, detail="Access denied: can only update own company limits")

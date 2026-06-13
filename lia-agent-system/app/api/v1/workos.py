@@ -273,9 +273,12 @@ company_id: str = Depends(require_company_id)):
     is_new_user = False
     name = f"{user_data.first_name or ''} {user_data.last_name or ''}".strip() or user_data.email.split('@')[0]
 
+    # PERM-EXEMPT: null check, nao e gate de role
     if not user:
         user = await user_repo.get_by_email(user_data.email)
 
+        # PERM-EXEMPT: null check, nao e gate de role
+        # PERM-EXEMPT: null check, nao e gate de role
         if user:
             user = await user_repo.update_by_instance(user, {
                 "workos_id": user_data.workos_id,

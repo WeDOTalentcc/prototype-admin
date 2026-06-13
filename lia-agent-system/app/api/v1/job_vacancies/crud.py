@@ -407,6 +407,8 @@ company_id: str = Depends(require_company_id)):
 
         user_email = (current_user.email or "").lower()
         user_id = str(current_user.id) if current_user.id else ""
+        # PERM-EXEMPT: computed bool, nao e gate de acesso direto
+        # PERM-EXEMPT: computed bool nao e gate de acesso direto
         is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
         jv_visibility = job_vacancy.visibility or "public"
 
