@@ -106,6 +106,9 @@ def derive_thread_id(company_id: str | None, session_id: str) -> str:
     return f"{_WIZ_PREFIX}-{company_token}-{session_id}"
 
 
+_TERMINAL_STAGES = frozenset({"completed", "handoff", "done"})
+
+
 async def is_wizard_session_active(
     company_id: str | None, session_id: str
 ) -> bool:
@@ -184,7 +187,7 @@ async def is_wizard_session_active(
         return False
     values = snapshot.values
     stage = (values.get("current_stage") or "").lower()
-    if stage == "completed":
+    if stage in _TERMINAL_STAGES:
         return False
     # Active iff there is conversational state OR a non-terminal stage.
     return bool(values.get("conversation_messages") or stage)

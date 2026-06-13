@@ -1307,6 +1307,24 @@ class WizardSessionService:
             )
             payload = {}
 
+        # ── Fix: mark wizard checkpoint as completed after handoff ──────
+        # Same fix as the graph path — the orchestrator persists
+        # current_stage="handoff" but never transitions to "completed".
+        if stage == "handoff" and thread_id:
+            try:
+                await cls._persist_orchestrator_state(
+                    thread_id, {"current_stage": "completed"}
+                )
+                logger.info(
+                    "[WizardOrchestrator] marked checkpoint completed after "
+                    "handoff thread=%s", thread_id,
+                )
+            except Exception as _mark_exc:
+                logger.warning(
+                    "[WizardOrchestrator] failed to mark checkpoint completed "
+                    "(fail-open): %s", _mark_exc,
+                )
+
         logger.info(
             "[WizardOrchestrator] turn done thread=%s tools=%s iters=%d "
             "fairness_blocked=%s error=%s",
@@ -1840,6 +1858,34 @@ class WizardSessionService:
                     "[WizardSession] wizard_stage sync failed (fail-open): %s", _ws_exc,
                 )
 
+
+        # ── Fix: mark wizard checkpoint as completed after handoff ──────
+        # handoff_node sets current_stage="handoff" for the WS payload,
+        # but never transitions to "completed". Without this, the
+        # checkpointer keeps the session "active" and the next page load
+        # rehydrates the stale handoff panel ("Vaga publicada" on a fresh
+        # conversation). We update the checkpoint AFTER the learning loop
+        # and wizard_stage sync (which both check for "handoff") so they
+        # see the original stage, then mark as terminal.
+        if result.get("current_stage") == "handoff" and thread_id:
+            try:
+                import asyncio as _asyncio_mark
+                _mark_config = {"configurable": {"thread_id": thread_id}}
+                await _asyncio_mark.to_thread(
+                    wiz_g._graph.update_state,
+                    _mark_config,
+                    {"current_stage": "completed"},
+                )
+                logger.info(
+                    "[WizardSession] marked checkpoint completed after handoff "
+                    "thread=%s session=%s",
+                    thread_id, session_id,
+                )
+            except Exception as _mark_exc:
+                logger.warning(
+                    "[WizardSession] failed to mark checkpoint completed "
+                    "(fail-open, TTL will expire): %s", _mark_exc,
+                )
 
         stage_payload = result.get("ws_stage_payload") or {}
         stage_data = stage_payload.get("data") or {}
