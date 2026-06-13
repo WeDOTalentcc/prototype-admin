@@ -187,6 +187,7 @@ _TOP_LEVEL_EXCEPTIONS: dict[str, set[str]] = {
         "_audit_helper.py",
         "reasoning_trace_builder.py",
         "whatsapp_agent_plugin.py",
+        "platform_tools_loader.py",
     },
     "job_creation": {
         "api_client.py",
