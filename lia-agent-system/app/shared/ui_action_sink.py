@@ -58,12 +58,17 @@ def append_from_result(result: Any) -> None:
         action = data.get("ui_action")
         if not action or action not in _actionable():
             return
-        _sink.set(
-            {
+        entry = {
                 "ui_action": action,
                 "ui_action_params": data.get("ui_action_params"),
             }
-        )
+        # T7 (2026-06-13): captura seed_source para start_wizard_seeded
+        # (diretiva de start_creation_from_source). Sem isso a semente se
+        # perdia no caminho federado (LangGraph ReAct → SSE).
+        _seed = data.get("seed_source")
+        if _seed is not None:
+            entry["seed_source"] = _seed
+        _sink.set(entry)
     except Exception:
         # tee defensivo: jamais propaga erro pro caminho de execucao da tool.
         return

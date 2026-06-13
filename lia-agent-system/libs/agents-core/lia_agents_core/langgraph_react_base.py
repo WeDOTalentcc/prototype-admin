@@ -385,11 +385,16 @@ class LangGraphReActBase(LangGraphBase):
             from app.shared.ui_action_sink import drain_sink as _uia_drain
             _uia_directive = _uia_drain()
             if _uia_directive:
-                output.metadata = {
+                _uia_meta = {
                     **(output.metadata or {}),
                     "ui_action": _uia_directive.get("ui_action"),
                     "ui_action_params": _uia_directive.get("ui_action_params"),
                 }
+                # T7 (2026-06-13): propaga seed_source para que o SSE handler
+                # possa delegar ao WizardSessionService (start_wizard_seeded).
+                if _uia_directive.get("seed_source") is not None:
+                    _uia_meta["seed_source"] = _uia_directive["seed_source"]
+                output.metadata = _uia_meta
         except Exception as _uiadrain_exc:
             logger.debug("[%s] ui_action drain falhou (fail-open): %s", self.__class__.__name__, _uiadrain_exc)
 

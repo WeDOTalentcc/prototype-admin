@@ -1262,32 +1262,108 @@ company_id: str = Depends(require_company_id)):
                             _tool_ui_params if _tool_ui_action else _nav_ui_params
                         )
 
+                        # T7 (2026-06-13): start_wizard_seeded no caminho federado.
+                        # Quando o recruiter_copilot chama start_creation_from_source
+                        # e a tool retorna ui_action="start_wizard_seeded" + seed_source,
+                        # o SSE handler delega ao WizardSessionService (espelho do
+                        # MainOrchestrator._start_seeded_wizard). Sem isso a diretiva
+                        # era ghost — o FE recebia "start_wizard_seeded" mas sem a
+                        # sessao wizard semeada no backend.
+                        _seed_source = (output.metadata or {}).get("seed_source")
+                        _seeded_wizard_handled = False
+                        if _tool_ui_action == "start_wizard_seeded" and _seed_source:
+                            try:
+                                from app.domains.job_creation.services.wizard_session_service import (
+                                    WizardSessionService as _SeedWizSvc,
+                                )
+                                from app.shared.sessions import derive_thread_id as _seed_derive
+
+                                _seed_thread = _seed_derive(company_id, session_id)
+                                _seed_ctx = dict(context or {})
+                                _seed_ctx["seed_source"] = _seed_source
+                                _seed_ctx.setdefault("user_id", user_id)
+                                _seed_ctx.setdefault("company_id", company_id)
+                                _seed_ctx.setdefault("session_id", session_id)
+
+                                _seed_msg, _seed_payload, _seed_tokens = (
+                                    await _SeedWizSvc.process_message(
+                                        thread_id=_seed_thread,
+                                        user_message=content,
+                                        user_id=user_id,
+                                        company_id=company_id,
+                                        session_id=session_id,
+                                        context=_seed_ctx,
+                                        on_token=None,
+                                    )
+                                )
+                                _seed_clean = mask_pii_outbound(
+                                    _strip_react_json(_seed_msg or clean_message)
+                                )
+                                if _seed_payload and isinstance(_seed_payload, dict):
+                                    yield format_sse_event(
+                                        serialize_panel_update(
+                                            panel_type="wizard_stage",
+                                            panel_data=_seed_payload.get("data", _seed_payload),
+                                            panel_title=_seed_payload.get("stage", "wizard"),
+                                            action="open",
+                                            thread_id=_seed_thread,
+                                            completeness=_seed_payload.get("completeness"),
+                                        ),
+                                        next_id(),
+                                    )
+                                yield format_sse_event(
+                                    serialize_message(
+                                        content=_seed_clean,
+                                        confidence=0.95,
+                                        domain="wizard",
+                                        source="wizard_session_canonical",
+                                        conversation_id=_cid,
+                                        ws_stage_payload=_seed_payload if isinstance(_seed_payload, dict) else None,
+                                        ui_action="start_wizard_seeded",
+                                        ui_action_params=_seed_source,
+                                    ),
+                                    next_id(),
+                                )
+                                _seeded_wizard_handled = True
+                                logger.info(
+                                    "[SSEChat] start_wizard_seeded consumed "
+                                    "(federated): session=%s seed=%s",
+                                    session_id, _seed_source,
+                                )
+                            except Exception as _seed_exc:
+                                logger.error(
+                                    "[SSEChat] start_wizard_seeded delegation "
+                                    "failed (fallback to normal msg): %s",
+                                    _seed_exc, exc_info=True,
+                                )
+
                         # panel_update removed (F5 cleanup 2026-06-09): recruiter_copilot
                         # never sets metadata["panel_update"] — wizard panels are handled by
                         # the wizard path (resolved_domain=="wizard") before reaching this
                         # drain. Dead code removed to avoid confusion.
 
-                        fairness_warnings = (output.metadata or {}).get("fairness_warnings", [])
+                        if not _seeded_wizard_handled:
+                            fairness_warnings = (output.metadata or {}).get("fairness_warnings", [])
 
-                        yield format_sse_event(
-                            serialize_message(
-                                content=clean_message,
-                                confidence=output.confidence,
-                                domain=resolved_domain,
-                                source="sse",
-                                actions=[a.dict() for a in (output.actions or [])],
-                                navigation=output.navigation.dict() if output.navigation else None,
-                                state_updates=output.state_updates or None,
-                                fairness_warnings=fairness_warnings or None,
-                                response_blocks=(output.metadata or {}).get(
-                                    "response_blocks"
+                            yield format_sse_event(
+                                serialize_message(
+                                    content=clean_message,
+                                    confidence=output.confidence,
+                                    domain=resolved_domain,
+                                    source="sse",
+                                    actions=[a.dict() for a in (output.actions or [])],
+                                    navigation=output.navigation.dict() if output.navigation else None,
+                                    state_updates=output.state_updates or None,
+                                    fairness_warnings=fairness_warnings or None,
+                                    response_blocks=(output.metadata or {}).get(
+                                        "response_blocks"
+                                    ),
+                                    ui_action=_eff_ui_action,
+                                    ui_action_params=_eff_ui_params,
+                                    conversation_id=_cid,
                                 ),
-                                ui_action=_eff_ui_action,
-                                ui_action_params=_eff_ui_params,
-                                conversation_id=_cid,
-                            ),
-                            next_id(),
-                        )
+                                next_id(),
+                            )
 
                         # HITL surfacing (AUD-4 1b, 2026-06-07): se a tool
                         # sensivel foi bloqueada pelo gate, o sink propagou
