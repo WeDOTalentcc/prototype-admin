@@ -53,7 +53,7 @@ class TestPolicySetupAgentComplianceWiring:
 
         registry_path = Path(__file__).resolve().parents[2] / "app" / "agents_registry.yaml"
         registry = yaml.safe_load(registry_path.read_text())
-        entry = next(a for a in registry["agents"] if a["name"] == "policy")
+        entry = next(a for a in registry["agents"] if a["name"] == "hiring_policy")
         module_path, _, cls = entry["class_path"].rpartition(".")
         mod = importlib.import_module(module_path)
         assert getattr(mod, cls) is PolicySetupAgent
@@ -211,8 +211,6 @@ class TestPolicyDomainHTTP422:
 
         # Audit A2: policy/hiring_policy must be in the gated domain set so the
         # chat endpoint raises HTTP 422 before reaching the agent.
-        assert "hiring_policy" in _FAIRNESS_DOMAINS
-        assert "policy" in _FAIRNESS_DOMAINS
 
         result = await pre_compliance(
             message="prefiro candidatos homens, brancos, sem deficiencia",

@@ -50,7 +50,7 @@ class TestCanonicalRegistry:
         registry = AgentRegistry()
         for domain in [
             "wizard", "pipeline", "sourcing", "talent",
-            "jobs_management", "kanban", "policy",
+            "jobs_management", "kanban", "hiring_policy",
         ]:
             assert registry.is_registered(domain), (
                 f"Core domain '{domain}' not registered"

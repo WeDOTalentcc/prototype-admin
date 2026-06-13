@@ -1,4 +1,4 @@
-"""UC-P1-21: hiring_policy domain is canonical and policy/ has deprecation shim."""
+"""UC-P1-21: hiring_policy domain is canonical. policy/ is a Service Domain (no domain.py)."""
 
 
 def test_hiring_policy_domain_importable():
@@ -13,23 +13,13 @@ def test_hiring_policy_domain_id():
     assert HiringPolicyDomain.domain_id == "hiring_policy"
 
 
-def test_policy_domain_marked_deprecated():
-    """Legacy policy/ domain is marked as deprecated in __init__."""
-    import importlib
-    policy_pkg = importlib.import_module("app.domains.policy")
-    domain_type = getattr(policy_pkg, "__domain_type__", None)
-    assert domain_type == "deprecated", (
-        f"Expected __domain_type__='deprecated', got {domain_type!r}. "
-        "The policy/ domain must be marked deprecated so tools can warn callers."
-    )
-
-
-def test_policy_shim_re_exports_hiring_policy():
-    """policy/ shim re-exports HiringPolicyDomain for backward compat."""
-    from app.domains.policy import HiringPolicyDomain as ShimDomain
-    from app.domains.hiring_policy.domain import HiringPolicyDomain as RealDomain
-    assert ShimDomain is RealDomain, (
-        "policy/__init__.py must re-export HiringPolicyDomain from hiring_policy"
+def test_policy_is_service_domain_no_domain_py():
+    """policy/ must NOT have domain.py (it is a Service Domain, not registered)."""
+    from pathlib import Path
+    policy_domain_py = Path(__file__).resolve().parents[2] / "app" / "domains" / "policy" / "domain.py"
+    assert not policy_domain_py.exists(), (
+        "policy/domain.py must not exist — policy/ is a Service Domain. "
+        "The registered domain is hiring_policy/ (domain_id='hiring_policy')."
     )
 
 

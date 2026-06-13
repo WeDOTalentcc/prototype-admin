@@ -532,8 +532,8 @@ class TestPolicyHITL:
             "PolicyReActAgent deve marcar hitl_pending no metadata"
 
         # Verificar que o domínio correto é usado
-        assert 'domain="policy"' in source or "domain='policy'" in source, \
-            "PolicyReActAgent deve usar domain='policy' no HITL"
+        assert 'domain="hiring_policy"' in source or "domain='hiring_policy'" in source, \
+            "PolicyReActAgent deve usar domain='hiring_policy' no HITL"
 
     @pytest.mark.asyncio
     async def test_hitl_not_called_when_no_policy_updates(self):

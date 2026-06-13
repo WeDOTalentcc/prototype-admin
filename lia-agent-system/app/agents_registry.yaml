@@ -63,8 +63,8 @@ agents:
 
   # R-004 (2026-05-07): apontava para app.domains.policy.agents.policy_agent.PolicySetupAgent
   # (módulo inexistente). Real é hiring_policy.PolicyReActAgent.
-  - name: policy
-    domain: policy
+  - name: hiring_policy
+    domain: hiring_policy
     class_path: app.domains.hiring_policy.agents.policy_react_agent.PolicyReActAgent
     model_id: claude-haiku-4-5-20251001
     system_prompt_path: null

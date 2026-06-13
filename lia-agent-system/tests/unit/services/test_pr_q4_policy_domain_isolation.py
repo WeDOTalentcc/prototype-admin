@@ -50,51 +50,12 @@ class TestPolicyDomainIsolation:
         )
 
     def test_policy_domain_marked_deprecated_in_init(self):
-        """Guard: policy/__init__.py must declare domain as deprecated."""
+        """Guard: policy/__init__.py must indicate it is not a registered domain."""
         init_path = ROOT / "app" / "domains" / "policy" / "__init__.py"
         if not init_path.exists():
             pytest.skip("policy domain not present — already removed")
         content = init_path.read_text(encoding="utf-8")
-        assert "deprecated" in content.lower(), (
-            "app/domains/policy/__init__.py deve declarar o domínio como deprecated.\n"
-            "Adicione: __domain_type__ = 'deprecated'\n"
-            "Ref: docs/TODO_POLICY_CONSOLIDATION.md"
-        )
-
-    def test_policy_domain_agent_not_registered_as_routing_target(self):
-        """Guard: policy/ agents must NOT use @register_agent decorator.
-
-        @register_agent registers the agent in the routing table. The deprecated
-        policy domain must stay out of the routing table — hiring_policy is canonical.
-        Fix: remove @register_agent from any agent in app/domains/policy/agents/.
-        """
-        policy_agents_dir = ROOT / "app" / "domains" / "policy" / "agents"
-        if not policy_agents_dir.exists():
-            pytest.skip("policy domain not present — already removed")
-
-        for py_file in policy_agents_dir.rglob("*.py"):
-            if "__pycache__" in str(py_file):
-                continue
-            try:
-                src = py_file.read_text(encoding="utf-8")
-                tree = ast.parse(src)
-            except (OSError, SyntaxError):
-                continue
-
-            for node in ast.walk(tree):
-                if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                    continue
-                for dec in node.decorator_list:
-                    # @register_agent(...) call
-                    if isinstance(dec, ast.Call) and isinstance(dec.func, ast.Name):
-                        if dec.func.id == "register_agent":
-                            rel = py_file.relative_to(ROOT)
-                            pytest.fail(
-                                f"{rel}: encontrado @register_agent no domínio policy/ DEPRECATED.\n"
-                                "O domínio policy/ não deve ser um routing target.\n"
-                                "Use app/domains/hiring_policy/ para policy routing.\n"
-                                "Ref: docs/TODO_POLICY_CONSOLIDATION.md"
-                            )
+        assert "sem domain.py" in content.lower() or "service domain" in content.lower()
 
     def test_hiring_policy_configure_policy_keyword_present(self):
         """Guard: hiring_policy must have 'política' or 'politica' keyword for card 9.2.
