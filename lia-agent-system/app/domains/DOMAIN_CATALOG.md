@@ -1,115 +1,111 @@
 # LIA Platform — Domain Catalog
 
 Classification of all directories under `app/domains/`.
+Support files (`base.py`, `compliance_base.py`, `registry.py`, `workflow.py`) não são listados.
 
 ## Classification Criteria
 
 | Type | Criteria | Count |
 |------|----------|-------|
-| **Agentic** | Has `domain.py` with `@register_domain`, routable by CascadedRouter, full DomainPrompt implementation | 13 |
-| **Micro-Action** | Has `domain.py` with `@register_domain`, lightweight (3-4 files), action-oriented | 3 |
-| **Service** | Has `services/` with business logic but no `domain.py` — data access + domain services | 9 |
-| **Agent Studio em Desenvolvimento** | Lógica de serviço pronta; sem `domain.py` por decisão arquitetural — serão criados como agentes no Agent Studio, não como agentic domains canônicos | 3 |
-| **Canonical Active (legacy path)** | `policy/` — motor canônico em uso; `autonomous/` — código órfão (Tier 6 removido Sprint 12.3-B) | 2 |
+| **Agentic** | `domain.py` com `@register_domain`, roteável pelo CascadedRouter, tem `agents/` com ReActAgent | 16 |
+| **Special Agentic** | `domain.py` com `@register_domain`, arquitetura não-padrão (LangGraph nodes ou platform) | 2 |
+| **Micro-Action** | `domain.py` com `@register_domain`, ≤10 arquivos, sem `agents/` | 2 |
+| **Service** | Sem `domain.py` — apenas `services/` e `repositories/`, não roteável | 12 |
+| **Agent Studio em Desenvolvimento** | Sem `domain.py` — lógica de serviço pronta; serão custom agents no Agent Studio | 4 |
+| **Orphaned/Minimal** | Sem roteamento ativo ou stub mínimo sem implementação real | 2 |
 
-Total: 30 domains ativos + arquivos de suporte (`base.py`, `compliance_base.py`, `registry.py`, `workflow.py`)
-
-> **2026-06-10 — limpeza de namespace:** 27 diretórios-fantasma de repository stubs
-> foram deletados de `app/domains/`. Seus repositórios já estavam consolidados em
-> `app/repositories/` — ver lá. Dirs deletados: `admin`, `admin_settings`, `agent_memory`,
-> `approvals`, `auth`, `bulk_actions`, `candidate_lists`, `chat`, `clients`, `client_users`,
-> `company_culture`, `data_subject`, `email_templates`, `goals`, `health_check`,
-> `job_vacancies_analytics`, `journey_mapping`, `lia_assistant`, `notifications`,
-> `observability`, `opinions`, `recruitment_journey`, `saas_metrics`, `shared_searches`,
-> `tasks`, `technical_tests`, `trust_center`.
-> Repositórios CRUD agora em `app/repositories/` (namespace único, ~40 arquivos).
+**Total: 38 diretórios de domínio.**
 
 ---
 
-## Agentic Domains (13)
+## Agentic Domains (16)
 
-Registered in `DomainRegistry` via `@register_domain`. Routable by CascadedRouter.
-Full implementations with agents/, services/, tools/, and comprehensive domain logic.
+Registrados no `DomainRegistry` via `@register_domain`. Roteáveis pelo CascadedRouter.
+Implementação completa com `agents/` (ReActAgent), `services/`, `tools/` e `domain.py`.
 
-| Domain | domain_id | Files | Description |
-|--------|-----------|-------|-------------|
-| `analytics` | analytics | 68 | Recruitment analytics, reports, dashboards |
-| `ats_integration` | ats_integration | 25 | ATS system integration and sync |
-| `automation` | automation | 37 | Tasks, reminders, notes, workflow automation |
-| `communication` | communication | 75 | Email, WhatsApp, Teams messaging |
-| `cv_screening` | cv_screening | 80 | CV analysis, WSI evaluation, candidate scoring |
-| `hiring_policy` | hiring_policy | 14 | Entry point registrado no DomainRegistry — delega para o motor real em `policy/`. **NÃO é substituto de `policy/`** (ver nota abaixo). |
-| `interview_scheduling` | interview_scheduling | 25 | Interview scheduling and calendar management |
-| `job_creation` | job_creation | 13 | Wizard-driven job creation (conditional on deps) |
-| `job_management` | job_management | 69 | Job lifecycle management (CRUD, pipeline config) |
-| `pipeline` | pipeline_transition | 21 | Pipeline visualization and candidate movement |
-| `recruiter_assistant` | recruiter_assistant | 38 | General recruiter assistant (fallback domain) |
-| `sourcing` | sourcing | 49 | Candidate sourcing across channels |
-| `agent_studio` | agent_studio | 4 | Custom agent creation and management |
+| Domain | `domain_id` | Arquivos | Descrição |
+|--------|-------------|----------|-----------|
+| `analytics` | `analytics` | 161 | Analytics de recrutamento, relatórios, dashboards de KPIs |
+| `ats_integration` | `ats_integration` | 60 | Integração e sincronização com sistemas ATS externos (Gupy, Pandapé, Merge) |
+| `automation` | `automation` | 82 | Tarefas, lembretes, notas e automação de fluxos de trabalho |
+| `candidate_self_service` | `candidate_self_service` | 35 | Portal de autoatendimento: candidato consulta status do próprio processo seletivo (LGPD Art. 20) |
+| `communication` | `communication` | 172 | Mensageria multicanal: e-mail, WhatsApp, Teams |
+| `company_settings` | `company_settings` | 23 | Configurações institucionais da empresa via chat (CompanySettingsReActAgent); dados, cultura, benefícios, workforce planning |
+| `cv_screening` | `cv_screening` | 194 | Análise de currículo, avaliação WSI, scoring de candidatos |
+| `hiring_policy` | `hiring_policy` | 29 | Entry point de roteamento conversacional para tópicos de política de contratação. **Delega ao motor real em `policy/`** — não contém lógica de negócio própria |
+| `interview_scheduling` | `interview_scheduling` | 51 | Agendamento de entrevistas e integração com calendários |
+| `job_management` | `job_management` | 175 | Ciclo de vida de vagas: CRUD, pipeline, configuração, publicação |
+| `offer` | `offer` | 33 | Ciclo de vida de cartas-oferta: criação, edição, envio ao candidato, cancelamento |
+| `pipeline` | `pipeline_transition` | 59 | Visualização de pipeline e movimentação de candidatos entre etapas |
+| `policy` | `policy` | 28 | **Motor canônico de políticas de contratação.** `PolicyEngineService` (BusinessRule / RateLimitRule / EscalationRule), `PolicySetupAgent` (setup via chat), FairnessGuard setorial (`ALPHA1_SECTOR_RULES`). Toda lógica nova de política vai aqui — **nunca em `hiring_policy/`** |
+| `recruiter_assistant` | `recruiter_assistant` | 101 | Assistente geral de recrutamento (domínio de fallback do CascadedRouter) |
+| `sourcing` | `sourcing` | 129 | Sourcing de candidatos em múltiplos canais (Pearch, Apify, LinkedIn, banco interno) |
+| `talent_pool` | `talent_pool` | 23 | Gestão de pools de talentos: criação, listagem, movimentação de candidatos |
 
-> **Nota `hiring_policy` vs `policy/`:** `hiring_policy/` é um entry point fino (~40 LOC)
-> registrado no DomainRegistry para roteamento conversacional de tópicos de política de
-> contratação. O motor real — regras de negócio, FairnessGuard setorial, `PolicySetupAgent`,
-> `PolicyEngineService` — vive integralmente em `app/domains/policy/` (2.343 LOC).
-> Qualquer lógica nova de política de contratação vai em `policy/`, nunca em `hiring_policy/`.
-
----
-
-## Micro-Action Domains (3)
-
-Registered in `DomainRegistry` via `@register_domain`. Lightweight action stubs
-with minimal implementation (3-4 files, no agents/ or services/ directories).
-
-| Domain | domain_id | Files | Description |
-|--------|-----------|-------|-------------|
-| `digital_twin` | digital_twin | 3 | Digital twin creation and evaluation |
-| `recruitment_campaign` | recruitment_campaign | 3 | Multi-stage recruitment campaigns |
-| `talent_pool` | talent_pool | 3 | Talent pool management |
+> **Nota `hiring_policy` vs `policy`:** `hiring_policy/` é um entry point fino (~40 LOC) que apenas roteia intenções conversacionais. O motor real — regras de negócio, FairnessGuard, `PolicySetupAgent`, `PolicyEngineService` — vive integralmente em `policy/`. Qualquer lógica nova vai em `policy/`.
 
 ---
 
-## Service Domains (9)
+## Special Agentic Domains (2)
 
-Provide data access and business logic services. Not routable by CascadedRouter.
-Not registered in DomainRegistry.
+Registrados no `DomainRegistry` via `@register_domain` e roteáveis, mas com arquitetura interna não-padrão.
 
-| Domain | Files | Description |
-|--------|-------|-------------|
-| `ai` | 29 | LLM services, response cache, RAG pipeline, prompt management |
-| `billing` | 6 | Billing and subscription management |
-| `candidates` | 14 | Candidate CRUD and profile services |
-| `company` | 31 | Company settings and configuration |
-| `compliance` | — | Compliance audit records |
-| `consent` | — | User consent records (LGPD) |
-| `credits` | 7 | Credit/token consumption tracking |
-| `lgpd` | 11 | LGPD/GDPR data protection and purge compliance |
-| `modules` | 4 | Module gating / feature flags |
-| `recruitment` | 24 | Recruitment process data and workflows |
+| Domain | `domain_id` | Arquivos | Arquitetura | Descrição |
+|--------|-------------|----------|-------------|-----------|
+| `agent_studio` | `agent_studio` | 27 | Platform domain — sem `agents/` internos; contém `custom_agent_runtime.py`, `actions.py` | Plataforma de criação e gerenciamento de agentes customizados por tenant. É o próprio sistema que hospeda outros agentes |
+| `job_creation` | `job_creation` | 167 | LangGraph wizard — usa `nodes/` + `orchestrator/` + `graph.py` em vez de `agents/`. Fluxo linear com 15 nós e 4 gates HITL | Wizard de criação de vaga. **Fluxo canônico inviolável** — Plan & Execute nunca cria vaga. Detalhes: `docs/architecture/wizard-flow.md` |
 
 ---
 
-## Agent Studio em Desenvolvimento (3)
+## Micro-Action Domains (2)
 
-Domínios com lógica de serviço substancial já implementada. **Não têm `domain.py` por
-decisão arquitetural**: serão criados como agentes customizados no **Agent Studio**
-(`agent_studio` domain), não promovidos ao namespace de agentic domains canônicos.
+Registrados no `DomainRegistry`. Implementação mínima: apenas `domain.py` + `actions.py`. Sem `agents/`, `services/` ou `tools/`.
 
-| Domain | Conteúdo atual | Plano |
-|--------|---------------|-------|
-| `interview_intelligence` | `services/`: bias_detector, comparative_analysis, feedback_generator, interview_wsi, strategic_opinion, transcription (7 arquivos, ~2.026 LOC). `repositories/`: interview_repository | Agent Studio — agente de inteligência de entrevistas |
-| `voice` | `services/`: gemini_live_audio, voice_core_orchestrator, voice_screening, voice_service, realtime_credit_session (10 arquivos, ~2.059 LOC). `plugins/`: data_collection, studio_voice, wsi_voice. `protocols/`: voice_core_plugin | Agent Studio — agente de triagem por voz |
-| `talent_intelligence` | `services/`: skills_ontology_engine. `tools/`: candidate_nurture, internal_mobility, interview_intelligence_tools, market_intelligence, skills_ontology, workforce_planning + registry (8 arquivos) | Agent Studio — agente de inteligência de talentos |
-
-> **Por que Agent Studio e não agentic domain?** Esses módulos têm escopo especializado e
-> interface rica o suficiente para serem agentes autônomos configuráveis por tenant — o
-> modelo de Agent Studio. Isso evita adicionar um 17º+ ReActAgent canônico ao inventário
-> sentinela (`test_tenant_aware_rollout_t_d.py`) sem necessidade.
+| Domain | `domain_id` | Arquivos | Descrição |
+|--------|-------------|----------|-----------|
+| `digital_twin` | `digital_twin` | 7 | Criação e avaliação de digital twin de candidato |
+| `recruitment_campaign` | `recruitment_campaign` | 7 | Campanhas de recrutamento multi-etapa |
 
 ---
 
-## Canonical Active — Legacy Path (2)
+## Service Domains (12)
 
-| Domain | Status | Notes |
-|--------|--------|-------|
-| `policy` | **Canonical Active** | Motor canônico de políticas de contratação (13 files, 2.343 LOC) + 1.167 LOC em endpoints v1 (`app/api/v1/policy_engine.py`, `global_policies.py`, `policies.py`). Cobre `PolicyEngineService` (BusinessRule/RateLimitRule/EscalationRule), `PolicySetupAgent` (chat-driven setup), `ALPHA1_SECTOR_RULES` (FairnessGuard setorial). `hiring_policy/` é entry point de roteamento — **NÃO substitui** `policy/`. |
-| `autonomous` | **Código órfão** (sem roteamento ativo) | Tier 6 do CascadedRouter foi **REMOVIDO em Sprint 12.3-B** (2026-05-24). O env `AUTONOMOUS_REACT_ENABLED` nunca foi SET em prod (invocações = 0 nos canary metrics). O helper `_route_via_autonomous_agent` e `autonomous_react_agent.py` foram removidos em Sprint 12.6 (T13). O diretório `app/domains/autonomous/agents/` ainda existe mas **não é roteado por nenhum caller ativo**. Candidato a remoção completa na próxima limpeza de namespace. |
+Proveem acesso a dados e lógica de negócio via `services/` e `repositories/`.
+**Não têm `domain.py`** — não são roteáveis pelo CascadedRouter.
+
+| Domain | Arquivos | Descrição |
+|--------|----------|-----------|
+| `ai` | 64 | Serviços LLM, cache de resposta, pipeline RAG, gerenciamento de prompts |
+| `billing` | 32 | Assinaturas e cobrança |
+| `candidates` | 30 | CRUD de candidatos e serviços de perfil |
+| `company` | 74 | Configurações e perfil de empresa (dados brutos; lógica conversacional em `company_settings/`) |
+| `compliance` | 9 | Registros de auditoria de compliance |
+| `consent` | 9 | Registros de consentimento do usuário (LGPD) |
+| `credits` | 18 | Rastreamento de consumo de créditos/tokens por tenant |
+| `integrations_hub` | 22 | Hub central de integrações externas (catálogo, status, configuração) |
+| `lgpd` | 32 | Proteção de dados, purge LGPD/GDPR, compliance Art. 16 |
+| `modules` | 12 | Feature gating — controle de acesso a módulos por tier/tenant |
+| `persona` | 10 | Gerenciamento de personas da LIA por tenant |
+| `recruitment` | 54 | Dados e fluxos do processo seletivo |
+
+---
+
+## Agent Studio em Desenvolvimento (4)
+
+Lógica de serviço substancial já implementada. **Não têm `domain.py` por decisão arquitetural**: serão criados como agentes customizados no Agent Studio (`agent_studio` domain), sem promover ao namespace de agentic domains canônicos (preserva o inventário sentinela de 16 ReActAgents em `test_tenant_aware_rollout_t_d.py`).
+
+| Domain | Arquivos | Conteúdo atual | Plano |
+|--------|----------|----------------|-------|
+| `interview_intelligence` | 20 | `services/`: bias_detector, comparative_analysis, feedback_generator, interview_wsi, strategic_opinion, transcription | Agente de inteligência de entrevistas no Agent Studio |
+| `talent_intelligence` | 22 | `services/`: skills_ontology_engine. `tools/`: candidate_nurture, internal_mobility, interview_intelligence_tools, market_intelligence, skills_ontology, workforce_planning | Agente de inteligência de talentos no Agent Studio |
+| `voice` | 40 | `services/`: gemini_live_audio, voice_core_orchestrator, voice_screening, voice_service, realtime_credit_session. `plugins/`: data_collection, studio_voice, wsi_voice. `protocols/`: voice_core_plugin | Agente de triagem por voz no Agent Studio |
+| `workforce` | 13 | `agents/`: workforce_tool_registry. `services/`: headcount_import_service | Agente de planejamento de workforce no Agent Studio |
+
+---
+
+## Orphaned / Minimal (2)
+
+| Domain | Arquivos | Status |
+|--------|----------|--------|
+| `autonomous` | 4 | **Código órfão.** O Tier 6 do CascadedRouter foi removido (Sprint 12.3-B). `AUTONOMOUS_REACT_ENABLED` nunca foi SET em prod (invocações = 0). `_route_via_autonomous_agent` e `autonomous_react_agent.py` foram removidos em Sprint 12.6. O diretório `agents/` ainda existe mas **não é roteado por nenhum caller ativo**. Candidato a remoção |
+| `triagem` | 5 | **Stub mínimo.** Contém apenas `__init__.py` + `repositories/` sem serviços ou agentes. Sem roteamento |
