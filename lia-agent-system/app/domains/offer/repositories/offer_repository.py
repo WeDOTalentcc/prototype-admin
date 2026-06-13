@@ -88,6 +88,20 @@ class OfferRepository:
         )
         return list(result.scalars().all())
 
+    async def list_by_job(
+        self, company_id: str, job_vacancy_id: UUID, limit: int = 50
+    ) -> list[OfferProposal]:
+        """List all offers for a given job vacancy (multi-tenant scoped)."""
+        result = await self._db.execute(
+            select(OfferProposal).where(
+                and_(
+                    OfferProposal.company_id == company_id,
+                    OfferProposal.job_vacancy_id == job_vacancy_id,
+                )
+            ).order_by(OfferProposal.created_at.desc()).limit(limit)
+        )
+        return list(result.scalars().all())
+
     async def list_by_candidate(
         self, company_id: str, candidate_id: str
     ) -> list[OfferProposal]:

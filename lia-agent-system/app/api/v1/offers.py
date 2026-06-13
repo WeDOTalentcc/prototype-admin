@@ -12,7 +12,7 @@ Routes:
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_tenant_db
@@ -21,6 +21,7 @@ from app.schemas.offer import (
     OfferCancelRequest,
     OfferDraftCreate,
     OfferDraftResponse,
+    OfferDraftListResponse,
     OfferDraftUpdate,
     OfferPrepareManualResponse,
     OfferSendAutoResponse,
@@ -29,6 +30,23 @@ from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/offers", tags=["offers"])
 logger = logging.getLogger(__name__)
+
+
+@router.get("/drafts", response_model=OfferDraftListResponse)
+async def list_offer_drafts(
+    job_vacancy_id: UUID = Query(..., description="Filter by job vacancy"),
+    limit: int = Query(default=50, ge=1, le=200),
+    db: AsyncSession = Depends(get_tenant_db),
+    current_user=Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+):
+    """List all offer proposals for a job vacancy (multi-tenant scoped)."""
+    company_id = current_user.company_id
+    from app.domains.offer.repositories.offer_repository import OfferRepository
+    repo = OfferRepository(db)
+    proposals = await repo.list_by_job(company_id, job_vacancy_id, limit=limit)
+    items = [OfferDraftResponse.model_validate(p) for p in proposals]
+    return OfferDraftListResponse(offers=items)
 
 
 @router.post("/drafts", response_model=OfferDraftResponse, status_code=status.HTTP_201_CREATED)
