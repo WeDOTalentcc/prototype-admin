@@ -103,3 +103,23 @@ class TestWizardPromptAutoFill:
         assert "proativamente" in prompt.lower() or "proativo" in prompt.lower(), (
             "System prompt must instruct proactive auto-fill from company context"
         )
+
+
+class TestWizardPromptManagerBriefing:
+    """Pin: system prompt must instruct proactive manager briefing after publish."""
+
+    def test_send_manager_briefing_tool_mentioned(self):
+        prompt = _get_system_prompt_base()
+        assert "send_manager_briefing" in prompt, (
+            "System prompt must mention send_manager_briefing tool in the "
+            "'Stage done' section so the LLM proactively offers to send "
+            "an executive briefing to the hiring manager after publishing."
+        )
+
+    def test_briefing_proactive_offer(self):
+        prompt = _get_system_prompt_base()
+        assert "briefing" in prompt.lower() and "gestor" in prompt.lower(), (
+            "System prompt must instruct the LLM to proactively offer "
+            "a briefing to the hiring manager (gestor) after publish."
+        )
+

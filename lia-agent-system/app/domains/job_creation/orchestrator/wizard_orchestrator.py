@@ -232,6 +232,13 @@ _SYSTEM_PROMPT_BASE = (
     "Você pode mencionar que há um botão 'Fechar painel' disponível se o "
     "recrutador quiser continuar pelo chat sem o painel lateral. "
     "NÃO afirme que vai fechar o painel você mesmo — o botão no painel faz isso."
+    "\n\n"
+    "## Briefing para o gestor\n"
+    "Após publicar a vaga com sucesso, ofereça proativamente ao recrutador: "
+    "'Deseja que eu envie um briefing executivo para o gestor da vaga?' "
+    "Use a tool `send_manager_briefing` para isso. Se o e-mail do gestor "
+    "foi informado no intake, um briefing básico já foi enviado automaticamente "
+    "— ofereça enviar a versão completa com contexto de triagem e cultura.\n"
 
     "\n\n"
     "## Valores can\u00f4nicos de triagem (NUNCA inventar)\n"
