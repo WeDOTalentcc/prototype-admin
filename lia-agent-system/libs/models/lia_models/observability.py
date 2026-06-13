@@ -198,6 +198,8 @@ class AIInferenceLog(Base):
     
     feature_attributions = Column(JSON, default=dict)
     bias_flags = Column(JSON, default=list)
+    # G5 Sprint — LGPD Art.37V rastreabilidade request→LLM→decisão (migration 280)
+    correlation_id = Column(String(80), nullable=True, index=True)
     
     created_at = Column(DateTime, server_default=func.now(), index=True)
     
@@ -251,6 +253,8 @@ class DataAccessLog(Base):
     
     ip_address = Column(String(45), nullable=True)
     user_agent = Column(String(500), nullable=True)
+    # G5 Sprint — LGPD Art.37V rastreabilidade request→acesso PII (migration 280)
+    correlation_id = Column(String(80), nullable=True, index=True)
     
     created_at = Column(DateTime, server_default=func.now(), index=True)
     
@@ -774,6 +778,8 @@ class AutomatedDecisionExplanation(Base):
     human_review_completed_at = Column(DateTime, nullable=True)
     human_review_decision = Column(Text, nullable=True)
     human_reviewer_id = Column(UUID(as_uuid=True), nullable=True)
+    # G5 Sprint — LGPD Art.37V rastreabilidade request→decisão automatizada (migration 280)
+    correlation_id = Column(String(80), nullable=True, index=True)
     
     created_at = Column(DateTime, server_default=func.now(), index=True)
     
