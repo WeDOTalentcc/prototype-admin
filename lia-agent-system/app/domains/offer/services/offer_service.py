@@ -1005,6 +1005,67 @@ class OfferService:
             "work_model": job.get("work_model", ""),
         }
 
+    async def check_hitl_threshold(
+        self,
+        counter_salary: float,
+        original_salary: float,
+        offer_rules: dict,
+    ) -> dict:
+        """3.6 — HITL threshold check para negociacao autonoma N3.
+
+        Se delta% <= negotiation_hitl_threshold_pct: agente pode auto-responder.
+        Se delta% > threshold: escala para aprovacao HITL do recrutador.
+
+        Returns dict: within_threshold, delta_pct, threshold_pct.
+        """
+        threshold_pct = float(offer_rules.get("negotiation_hitl_threshold_pct", 10.0))
+        if original_salary <= 0:
+            return {"within_threshold": False, "delta_pct": None, "threshold_pct": threshold_pct}
+        delta_pct = abs(counter_salary - original_salary) / original_salary * 100
+        return {
+            "within_threshold": delta_pct <= threshold_pct,
+            "delta_pct": round(delta_pct, 2),
+            "threshold_pct": threshold_pct,
+        }
+
+    async def get_learning_context(
+        self,
+        company_id: str,
+        *,
+        limit: int = 200,
+    ) -> dict:
+        """3.2 — Padroes anonimizados de negociacao (N >= 10, ADR-LGPD-001 Art. 12 para 1).
+
+        Retorna estatisticas agregadas para o argumentario do agente concierge.
+        Dados individuais NUNCA expostos — so agregados.
+        """
+        from app.domains.offer.repositories.offer_negotiation_event_repository import (
+            OfferNegotiationEventRepository,
+        )
+        events = await OfferNegotiationEventRepository(self._db).get_learning_data(
+            company_id, limit=limit
+        )
+        if len(events) < 10:  # ADR-LGPD-001 gate
+            return {
+                "sample_count": len(events),
+                "insufficient_data": True,
+                "message": "Menos de 10 negociacoes concluidas — padroes nao disponiveis ainda.",
+            }
+        accepted = [e for e in events if e.get("event_type") == "accepted"]
+        counter = [e for e in events if e.get("event_type") == "counter_proposed"]
+        declined = [e for e in events if e.get("event_type") == "declined"]
+        round_numbers = [e.get("round_number", 0) for e in counter if e.get("round_number")]
+        avg_rounds = round(sum(round_numbers) / len(round_numbers), 1) if round_numbers else 0
+        acceptance_rate = round(len(accepted) / len(events) * 100, 1) if events else 0
+        return {
+            "sample_count": len(events),
+            "insufficient_data": False,
+            "acceptance_rate_pct": acceptance_rate,
+            "avg_rounds_to_accept": avg_rounds,
+            "counter_proposal_rate_pct": round(len(counter) / len(events) * 100, 1),
+            "decline_rate_pct": round(len(declined) / len(events) * 100, 1),
+        }
+
     async def mark_expired(
         self,
         offer_id: "UUID",

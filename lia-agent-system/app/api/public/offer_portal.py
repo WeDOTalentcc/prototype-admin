@@ -59,14 +59,28 @@ class OfferPortalView(WeDoBaseModel):
 class OfferRespostaRequest(WeDoBaseModel):
     acao: str = Field(
         ...,
-        description="'aceitar' ou 'recusar'",
-        pattern="^(aceitar|recusar)$",
+        description="'aceitar', 'recusar' ou 'contraproposta' (N3 — requer negotiation_enabled)",
+        pattern="^(aceitar|recusar|contraproposta)$",
     )
     notas: str | None = Field(
         None,
         max_length=_MAX_RESPONSE_NOTES_LEN,
         description="Observações livres do candidato (opcional)",
     )
+    counter_salary: float | None = Field(
+        None,
+        gt=0,
+        le=9_999_999,
+        description="Valor salarial proposto pelo candidato (obrigatório quando acao='contraproposta')",
+    )
+
+    @classmethod
+    def model_post_init(cls, __context) -> None:
+        pass  # WeDoBaseModel compat
+
+    def validate_counter(self) -> None:
+        if self.acao == "contraproposta" and self.counter_salary is None:
+            raise ValueError("counter_salary é obrigatório quando acao='contraproposta'")
 
 
 class OfferRespostaResponse(WeDoBaseModel):
@@ -236,6 +250,74 @@ async def responder_proposta(
         event_type = "accepted"
         mensagem = "Proposta aceita com sucesso! O recrutador será notificado."
         next_steps = "Você receberá mais instruções sobre o processo de admissão em breve."
+    elif body.acao == "contraproposta":
+        # N3 — Agente Negociador: valida negotiation_enabled + rounds limit
+        body.validate_counter()
+        from app.domains.repositories.hiring_policy_repository import HiringPolicyRepository
+        policy = await HiringPolicyRepository(db).get_by_company(offer.company_id)
+        offer_rules = (policy.offer_rules if policy else None) or {}
+        if not offer_rules.get("negotiation_enabled", False):
+            raise HTTPException(
+                status_code=403,
+                detail="Negociação autônoma não está habilitada para esta proposta. Entre em contato com o recrutador.",
+            )
+        max_rounds = int(offer_rules.get("counter_proposal_max_rounds", 2))
+        current_round = int(offer.current_round or 0)
+        if current_round >= max_rounds:
+            # Encerramento automático após limite de rodadas
+            offer.status = "declined"
+            offer.declined_at = now
+            offer.candidate_responded_at = now
+            offer.decline_reason = f"Limite de {max_rounds} rodada(s) de negociação atingido."
+            event_type = "declined"
+            mensagem = (
+                f"Infelizmente atingimos o limite de {max_rounds} rodada(s) de negociação. "
+                "O recrutador será notificado e entrará em contato."
+            )
+            next_steps = None
+        else:
+            offer.status = "counter_proposed"
+            offer.current_round = current_round + 1
+            import json as _json
+            rounds = list(offer.rounds or [])
+            rounds.append({
+                "round": current_round + 1,
+                "actor": "candidate",
+                "salary_counter": body.counter_salary,
+                "notes": body.notas,
+                "at": now.isoformat(),
+            })
+            offer.rounds = rounds
+            event_type = "counter_proposed"
+            # HITL threshold check — 3.6
+            original_salary = float(offer.salary or 0)
+            threshold_pct = float(offer_rules.get("negotiation_hitl_threshold_pct", 10.0))
+            if original_salary > 0:
+                delta_pct = abs(body.counter_salary - original_salary) / original_salary * 100
+                within_threshold = delta_pct <= threshold_pct
+            else:
+                within_threshold = False  # fail-closed sem salário base
+            mensagem = (
+                "Sua contraproposta foi registrada! O recrutador ou a IA de negociação "
+                "irá analisar e retornar em breve."
+            )
+            next_steps = "Aguarde o contato do recrutador ou da LIA com a resposta."
+            # Notificar via Teams para HITL (fail-soft)
+            try:
+                from app.domains.communication.services.teams_service import TeamsService
+                await TeamsService().on_offer_escalation_tool(
+                    offer_id=str(offer.id),
+                    pending_id=None,
+                    reason=(
+                        f"Contraproposta recebida (rodada {current_round + 1}/{max_rounds}). "
+                        f"Salário proposto: R$ {body.counter_salary:,.2f}. "
+                        f"{'Auto-aprovável (dentro de {:.0f}%)'.format(threshold_pct) if within_threshold else 'Requer aprovação HITL (acima do threshold de {:.0f}%)'.format(threshold_pct)}"
+                    ),
+                    company_id=offer.company_id,
+                    counter_salary=body.counter_salary,
+                )
+            except Exception as _e:
+                logger.debug("[offer_portal] Teams counter-proposal notify skipped: %s", _e)
     else:
         offer.status = "declined"
         offer.declined_at = now
@@ -255,7 +337,9 @@ async def responder_proposta(
         actor="candidate",
         round_number=int(offer.current_round or 0),
         notes=body.notas,
-        fairness_snapshot={"check": "portal_response"},
+        salary_counter=getattr(body, "counter_salary", None),
+        salary_proposed=float(offer.salary or 0) if offer.salary else None,
+        fairness_snapshot={"check": "portal_response", "acao": body.acao},
     )
     await db.flush()
 
