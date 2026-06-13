@@ -126,3 +126,7 @@ weasyprint>=60.0
 # modelo inglês em runtime, falha e o nome vaza sem máscara). Ver app/shared/pii_masking.py.
 presidio-analyzer==2.2.362
 pt-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl
+
+# Local libs (UV workspace) — instalar explicitamente para deploy Replit
+-e ./libs/lia-llm
+-e ./libs/lia-pii
