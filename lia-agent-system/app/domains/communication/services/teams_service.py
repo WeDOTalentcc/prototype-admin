@@ -613,6 +613,43 @@ class TeamsService:
             logger.debug("[teams_service] automation trigger OFFER_EXPIRED skipped: %s", _e)
 
 
+    async def on_offer_escalation_tool(
+        self,
+        offer_id: str,
+        pending_id: str,
+        reason: str,
+        company_id: str,
+        counter_salary: "float | None" = None,
+    ) -> None:
+        """Notify recruiter via Teams when concierge escalates for HITL approval."""
+        try:
+            db_gen = get_db()
+            db = await db_gen.__anext__()
+            webhook_url, _ = await resolve_tenant_teams_webhook_url(company_id, db)
+            await db_gen.aclose()
+        except Exception:
+            webhook_url = None
+
+        if not webhook_url:
+            return
+
+        facts = [
+            {"name": "Motivo", "value": reason[:200]},
+            {"name": "Pending ID", "value": pending_id[:16] + "..."},
+        ]
+        if counter_salary is not None:
+            facts.append({"name": "Contraproposta salarial", "value": f"R$ {counter_salary:,.2f}"})
+
+        await self.send_alert(
+            title="🤝 Aprovação necessária — Proposta de Oferta",
+            message="O agente de proposta solicita sua aprovação antes de prosseguir.",
+            severity=AlertSeverity.WARNING,
+            webhook_url=webhook_url,
+            facts=facts,
+            source="Offer Concierge Agent",
+        )
+
+
     async def test_connection(self, webhook_url: str | None = None) -> dict[str, Any]:
         """
         Test Teams webhook connection by sending a test message.
