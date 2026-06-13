@@ -480,7 +480,7 @@ async def list_candidates(
         # aos candidatos vinculados à vaga (vacancy_candidates), via o path `ids=`.
         # Antes o board do Kanban lia a lista GLOBAL (sem filtro de vaga).
         effective_skip = offset if offset > 0 else skip
-        vc_map: dict[str, str] = {}
+        vc_map: dict[str, dict] = {}
         if vacancy_id:
             vc_ids = await vacancy_candidate_repo.list_candidate_ids_for_vacancy(
                 vacancy_id, company_id
@@ -506,7 +506,13 @@ async def list_candidates(
         for c in candidates:
             serialized = apply_pii_field_visibility(_serialize_candidate(c), current_user, role_defaults)
             if vc_map and str(c.id) in vc_map:
-                serialized["vc_id"] = vc_map[str(c.id)]
+                _vc_entry = vc_map[str(c.id)]
+                if isinstance(_vc_entry, dict):
+                    serialized["vc_id"] = _vc_entry.get("vc_id")
+                    serialized["match_score"] = _vc_entry.get("match_score")
+                else:
+                    # legado: vc_map ainda retorna string (não deveria, mas defensive)
+                    serialized["vc_id"] = _vc_entry
             items.append(serialized)
         logger.info(
             f"[FUNIL-DEBUG] RETURN vacancy_id={vacancy_id!r} total={total} "
