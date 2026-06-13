@@ -203,6 +203,11 @@ export function LinkedInConnectModal({
           </DialogTitle>
           <DialogDescription>
             Configure suas credenciais do LinkedIn para publicar vagas automaticamente.
+            {!status?.connected && (
+              <span className="block mt-1 text-xs">
+                Vá ao LinkedIn Developer Portal &gt; seu app &gt; Auth &gt; OAuth 2.0 Tools &gt; gere um token com scope <code className="bg-lia-bg-tertiary px-1 rounded">w_organization_social</code>.
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -236,7 +241,7 @@ export function LinkedInConnectModal({
               </Label>
               <Textarea
                 id="li-access-token"
-                placeholder="AQVJ..."
+                placeholder={status?.connected ? "Token salvo — cole aqui só para substituir" : "AQVJ..."}
                 value={accessToken}
                 onChange={(e) => setAccessToken(e.target.value)}
                 rows={3}
@@ -245,8 +250,8 @@ export function LinkedInConnectModal({
               />
               <p id="li-access-token-hint" className="text-xs text-lia-text-tertiary">
                 {status?.connected
-                  ? "Deixe em branco para manter o token atual. Cole um novo token para atualizar."
-                  : "Cole seu access_token do LinkedIn Developer Portal."}
+                  ? "\u2705 Token salvo no servidor (criptografado). Deixe em branco para manter ou cole um novo para substituir."
+                  : "Cole o access_token gerado no LinkedIn Developer Portal (menu OAuth 2.0 Tools > Generate token com scope w_organization_social)."}
               </p>
             </div>
 
@@ -263,7 +268,7 @@ export function LinkedInConnectModal({
                 className="font-mono"
               />
               <p className="text-xs text-lia-text-tertiary">
-                ID numérico da sua organização no LinkedIn.{" "}
+                ID numérico da organização (só números, ex: 7708382). Não confundir com o Client ID do app (alfanumérico).{" "}
                 <a
                   href="https://www.linkedin.com/company/admin/overview/"
                   target="_blank"
