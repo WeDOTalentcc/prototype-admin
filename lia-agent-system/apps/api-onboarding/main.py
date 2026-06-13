@@ -14,17 +14,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.core.sentry import init_sentry
+from app.core.sentry import init_sentry  # MONOLITH-IMPORT: needs lib extraction (no lia-config equiv yet)
 init_sentry()
 
-from app.core.config import settings
-from app.core.database import init_db
-from app.core.logging_config import configure_logging
-from app.shared.pii_masking import install_global_pii_masking
-from app.config.langsmith import configure_langsmith
-from app.middleware.rate_limiter import RateLimitMiddleware
-from app.middleware.request_id import RequestIdMiddleware
-from app.core.logging_middleware import StructuredLoggingMiddleware
+from app.core.config import settings  # MONOLITH-IMPORT: lia_config.config.settings exists — migrate when sub-app is standalone
+from app.core.database import init_db  # MONOLITH-IMPORT: lia_config.database has get_db but not init_db
+from app.core.logging_config import configure_logging  # MONOLITH-IMPORT: needs lib extraction (no lia-utils equiv yet)
+from app.shared.pii_masking import install_global_pii_masking  # MONOLITH-IMPORT: needs lib extraction
+from app.config.langsmith import configure_langsmith  # MONOLITH-IMPORT: needs lib extraction
+from app.middleware.rate_limiter import RateLimitMiddleware  # MONOLITH-IMPORT: needs lib extraction
+from app.middleware.request_id import RequestIdMiddleware  # MONOLITH-IMPORT: needs lib extraction
+from app.core.logging_middleware import StructuredLoggingMiddleware  # MONOLITH-IMPORT: needs lib extraction
 
 configure_langsmith()
 configure_logging()
