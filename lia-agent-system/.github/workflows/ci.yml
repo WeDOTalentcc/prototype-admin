@@ -123,6 +123,14 @@ jobs:
       - name: ADR-029 — tenant key leak in tool schemas
         run: python3 scripts/check_no_tenant_in_tool_schemas.py --block
 
+      # Domain structure conformance (BLOCKING). Ensures every domain under
+      # app/domains/ follows the canonical directory layout (services/, repos,
+      # __init__.py, etc.). Catches structural drift before it compounds.
+      - name: Domain structure conformance
+        run: |
+          python -m pytest tests/contract/test_domain_structure_conformance.py \
+            -v --tb=short --no-header --no-cov
+
       - name: Security scan (bandit)
         continue-on-error: true
         run: |

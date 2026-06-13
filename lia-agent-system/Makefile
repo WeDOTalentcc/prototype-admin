@@ -24,7 +24,7 @@ smoke:	## Contract smoke test em 1798 endpoints (~34s, requires uvicorn:8001)
 smoke-quick:	## Smoke test em subset GETs apenas (~10s, faster iteration)
 	python3 -m pytest tests/contract/test_endpoint_smoke.py --no-header -q --tb=line -k "GET"
 
-check-all: check-pydantic check-imports check-benefit-taxonomy smoke	## Roda todos os sensors canonical em sequência (~35s total)
+check-all: check-pydantic check-imports check-benefit-taxonomy check-domain-conformance smoke	## Roda todos os sensors canonical em sequência (~35s total)
 	@echo "✅ All sensors passed"
 
 sensors: check-all	## Alias para check-all
@@ -41,6 +41,10 @@ check-imports:	## Sensor canonical import paths (no libs.models.lia_models drift
 check-benefit-taxonomy:	## AST sensor taxonomia canonical benefícios (baseline 0 — 2026-05-24)
 	@echo "▶ Benefit Taxonomy drift sensor — BLOCKING (baseline=0)"
 	python3 scripts/check_no_duplicate_benefit_taxonomy.py --blocking
+
+check-domain-conformance:	## Domain structure conformance (BLOCKING, ~2s)
+	@echo "▶ Domain structure conformance — canonical directory layout"
+	python3 -m pytest tests/contract/test_domain_structure_conformance.py -v --tb=short --no-header --no-cov
 
 # ─── Quick reference ──────────────────────────────────────────────────────────
 # Pre-commit hook (auto-roda em git commit):
