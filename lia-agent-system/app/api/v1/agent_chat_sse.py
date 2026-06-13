@@ -1096,7 +1096,12 @@ company_id: str = Depends(require_company_id)):
                     )
                     if federated_scoping_enabled():
                         _pg = context.get("page_type") or (context.get("view_context") or {}).get("page_type")
-                        set_active_scope(scope_for_context(_pg, resolved_domain))
+                        # Context selector fix (2026-06-13): prefere metadata.domain_hint
+                        # (sinal explícito do FE — "Foco em Vaga"/"Foco em Candidato") sobre
+                        # resolved_domain, que no caminho LIA_FEDERATED_PRIMARY é "auto".
+                        from app.orchestrator.context.view_context import effective_domain_for_scope
+                        _eff_domain = effective_domain_for_scope(context, resolved_domain)
+                        set_active_scope(scope_for_context(_pg, _eff_domain))
                 except Exception:
                     pass
                 # F5 memory (2026-06-09): _ctx_prefix/_eff_content hoisted p/ escopo

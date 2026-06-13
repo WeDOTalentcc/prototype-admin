@@ -149,3 +149,19 @@ def view_context_from_context(ctx: dict | None) -> dict | None:
                 "label": meta_entity_ids.get("entity_label", ""),
             }
     return synth or None
+
+
+def effective_domain_for_scope(context: dict | None, resolved_domain: str | None) -> str | None:
+    """Prefere metadata.domain_hint (sinal explícito do FE) sobre resolved_domain
+    para derivar o PromptScope do turno no caminho federado.
+
+    domain_hint é sinal EXPLÍCITO do recrutador (card "Foco em Vaga" / "Foco em Candidato").
+    resolved_domain é o resultado do router — pode ser "auto" no caminho federado
+    (LIA_FEDERATED_PRIMARY) porque o CascadedRouter é pulado para domínios não-especiais.
+    O sinal explícito do FE ganha.
+
+    Regra: page_type ainda prevalece sobre domain_hint (via scope_for_context existente).
+    Esta função só resolve o effective_domain; scope_for_context aplica a precedência final.
+    """
+    domain_hint = ((context or {}).get("metadata") or {}).get("domain_hint")
+    return domain_hint if isinstance(domain_hint, str) and domain_hint else resolved_domain
