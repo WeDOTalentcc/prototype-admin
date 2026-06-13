@@ -175,6 +175,76 @@ def _handle_enrich_job_description(
     used_fallback = False
     fallback_reason: Optional[str] = None
 
+    # ── T5: Learning loop — inject similar past JDs as context ──────────
+    _company_context = state.get("company_context", "")
+    _company_id_enrich = state.get("company_id") or (ctx.company_id if ctx else "")
+    if _company_id_enrich and title:
+        try:
+            from app.domains.job_creation.helpers.async_audit import (
+                run_coro_in_threadpool,
+            )
+            from app.core.database import AsyncSessionLocal
+            from app.domains.job_creation.repositories.jd_similar_history_repository import (
+                JdSimilarHistoryRepository,
+            )
+            from app.domains.job_creation.services.jd_similar_service import (
+                JdSimilarService,
+            )
+            from app.shared.intelligence.embedding_service import EmbeddingService
+
+            async def _fetch_similar_jds():
+                async with AsyncSessionLocal() as _db:
+                    _repo = JdSimilarHistoryRepository(_db)
+                    _emb_svc = EmbeddingService()
+                    _svc = JdSimilarService(repository=_repo, embedding_service=_emb_svc)
+                    return await _svc.find_similar(
+                        company_id=_company_id_enrich,
+                        title=title,
+                        department=department or None,
+                        limit=3,
+                    )
+
+            _similar_jds = run_coro_in_threadpool(
+                lambda: _fetch_similar_jds(), timeout=8,
+            )
+            if _similar_jds:
+                _parts = []
+                for _sj in _similar_jds:
+                    _line = f"- **{_sj.get('title', '?')}**"
+                    if _sj.get("department"):
+                        _line += f" ({_sj['department']}"
+                        if _sj.get("seniority_level"):
+                            _line += f", {_sj['seniority_level']}"
+                        _line += ")"
+                    elif _sj.get("seniority_level"):
+                        _line += f" ({_sj['seniority_level']})"
+                    if _sj.get("was_filled"):
+                        _fill = _sj.get("time_to_fill_days")
+                        _cands = _sj.get("candidates_count", 0)
+                        _line += f" — preenchida"
+                        if _fill:
+                            _line += f" em {_fill} dias"
+                        if _cands:
+                            _line += f", {_cands} candidatos"
+                    sim = _sj.get("similarity")
+                    if sim is not None:
+                        _line += f" [similaridade: {sim:.0%}]"
+                    _parts.append(_line)
+                _similar_ctx = (
+                    "\n\n## Vagas similares anteriores desta empresa\n"
+                    + "\n".join(_parts)
+                )
+                _company_context = (_company_context + _similar_ctx) if _company_context else _similar_ctx.lstrip()
+                logger.info(
+                    "[WizardServiceTools:T5] Injected %d similar JDs into enrich context",
+                    len(_similar_jds),
+                )
+        except Exception as exc:  # noqa: BLE001 — fail-soft (learning loop is non-critical)
+            logger.warning(
+                "[WizardServiceTools:T5] Similar JD fetch failed (continuing without): %s",
+                str(exc)[:200],
+            )
+
     try:
         with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
             _fut = _ex.submit(
@@ -187,7 +257,7 @@ def _handle_enrich_job_description(
                 confirmed_behavioral=confirmed_behav,
                 confirmed_responsibilities=confirmed_resp,
                 screening_mode=screening_mode,
-                company_context=state.get("company_context", ""),
+                company_context=_company_context,
             )
             enriched_obj, quality_score, warnings = _fut.result(timeout=_JD_TIMEOUT_S)
     except _cf.TimeoutError:
