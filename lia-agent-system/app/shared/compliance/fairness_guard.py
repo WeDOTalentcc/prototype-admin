@@ -661,6 +661,16 @@ class FairnessGuard:
         if not query or not query.strip():
             return FairnessCheckResult(is_blocked=False, original_query=query)
 
+        # Wire fairness_policy_service (fail-open) — validate_query_filters check
+        try:
+            from app.shared.compliance.fairness_policy_service import _get_fairness_service
+            _fairness_service = _get_fairness_service()
+            _violations = _fairness_service.validate_query_filters({"query": query}, effective_policy={})
+            if _violations:
+                logger.warning("[FairnessGuard] Policy violations: %s", _violations)
+        except Exception as _exc:
+            logger.debug("[FairnessGuard] fairness_policy_service skip: %s", _exc)
+
         query_lower = query.lower().strip()
         query_normalized = _normalize_text(query_lower)
         blocked_terms = []
