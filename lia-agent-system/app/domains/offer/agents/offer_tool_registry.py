@@ -75,6 +75,29 @@ def get_offer_concierge_tools():
                 "when_not_to_use: consultar salario ou dados da vaga."
             ),
         ),
+        StructuredTool.from_function(
+            coroutine=_wrap_draft_response_to_candidate,
+            name="draft_response_to_candidate",
+            description=(
+                "N3 NEGOCIADOR: Gera rascunho de resposta para enviar ao candidato em negociacao. "
+                "Usa contexto da proposta + historico de rodadas + benefits argumentario. "
+                "HITL obrigatorio: o recrutador SEMPRE revisa antes do envio (NUNCA enviar direto). "
+                "when_to_use: redigir mensagem de contra-oferta, aceitar proposta do candidato, "
+                "comunicar limite de rodadas. "
+                "when_not_to_use: consulta de status ou informacao (use get_offer_status)."
+            ),
+        ),
+        StructuredTool.from_function(
+            coroutine=_wrap_get_learning_context,
+            name="get_learning_context",
+            description=(
+                "N3 NEGOCIADOR: Retorna padroes anonimizados de negociacoes anteriores desta empresa. "
+                "Disponivel so apos N>=10 negociacoes concluidas (ADR-LGPD-001). "
+                "Use para calibrar argumentario: taxa de aceitacao, media de rodadas, faixas comuns. "
+                "when_to_use: preparar estrategia de negociacao. "
+                "when_not_to_use: consultas informacionais (N2)."
+            ),
+        ),
     ]
     return tools
 
@@ -309,3 +332,109 @@ async def _wrap_get_benefit_details(
         "total": len(result),
         "tip": "Use pitch para argumentar com o candidato sobre o valor deste beneficio.",
     }
+
+
+@tool_handler("offer")
+async def _wrap_draft_response_to_candidate(
+    offer_id: str,
+    company_id: str,
+    tone: str = "neutral",
+    counter_salary: float | None = None,
+    message_context: str | None = None,
+    **kwargs: Any,
+) -> dict:
+    """3.3 N3 — Gera rascunho de resposta ao candidato via LLM interno.
+
+    tone: "accept_counter" | "decline_final" | "counter_offer" | "neutral"
+    counter_salary: salario proposto pela empresa (se counter_offer)
+    message_context: contexto adicional (ex: "candidato pediu home office")
+
+    HITL invariante: draft nunca enviado diretamente — sempre para aprovacao do recrutador.
+    """
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from app.domains.offer.repositories.offer_repository import OfferRepository
+    from app.domains.offer.repositories.offer_negotiation_event_repository import (
+        OfferNegotiationEventRepository,
+    )
+    db: AsyncSession = kwargs.get("db")
+    if not db:
+        return {"error": "db session nao disponivel"}
+
+    from uuid import UUID as _UUID
+    offer = await OfferRepository(db).get_by_id(_UUID(offer_id), company_id)
+    if not offer:
+        return {"error": f"Oferta {offer_id} nao encontrada"}
+
+    events = await OfferNegotiationEventRepository(db).get_by_offer(_UUID(offer_id))
+    current_round = int(offer.current_round or 0)
+    original_salary = float(offer.salary or 0)
+
+    # Build context for the draft
+    context_parts = [
+        f"Cargo: {offer.job_title or 'nao especificado'}",
+        f"Candidato: {offer.candidate_name or 'nao especificado'}",
+        f"Salario original da oferta: R$ {original_salary:,.2f}" if original_salary else "",
+        f"Rodada atual: {current_round}",
+        f"Tom solicitado: {tone}",
+    ]
+    if counter_salary:
+        context_parts.append(f"Salario proposto pela empresa nesta rodada: R$ {counter_salary:,.2f}")
+    if message_context:
+        context_parts.append(f"Contexto adicional: {message_context}")
+
+    # Select template by tone
+    tone_templates = {
+        "accept_counter": (
+            "Prezado(a) {name}, ficamos contentes com seu interesse e aceitamos sua proposta. "
+            "Confirme sua aceitacao pelo portal para seguirmos com o processo de admissao."
+        ),
+        "decline_final": (
+            "Prezado(a) {name}, agradecemos seu interesse. Infelizmente nao podemos avancar "
+            "com as condicoes propostas no momento. Desejamos sucesso em sua jornada profissional."
+        ),
+        "counter_offer": (
+            "Prezado(a) {name}, analisamos sua proposta e, considerando as politicas internas e "
+            "a estrutura de beneficios, nossa proposta e de R$ {salary:,.2f}. "
+            "O pacote completo inclui os beneficios detalhados na carta. "
+            "Aguardamos sua decisao pelo portal."
+        ),
+        "neutral": (
+            "Prezado(a) {name}, estamos acompanhando sua proposta e retornaremos em breve "
+            "com uma resposta formal pelo recrutador responsavel."
+        ),
+    }
+
+    template = tone_templates.get(tone, tone_templates["neutral"])
+    draft = template.format(
+        name=offer.candidate_name or "Candidato(a)",
+        salary=counter_salary or original_salary,
+    )
+
+    return {
+        "draft": draft,
+        "tone": tone,
+        "offer_id": offer_id,
+        "round": current_round,
+        "requires_hitl_approval": True,
+        "warning": "NUNCA enviar este rascunho diretamente. Requer aprovacao do recrutador.",
+        "context_used": [p for p in context_parts if p],
+    }
+
+
+@tool_handler("offer")
+async def _wrap_get_learning_context(
+    company_id: str,
+    **kwargs: Any,
+) -> dict:
+    """3.2+3.8 — Padroes anonimizados de negociacao para argumentario N3.
+
+    ADR-LGPD-001: so disponivel com N >= 10 negociacoes concluidas.
+    Dados individuais NUNCA expostos — so agregados.
+    """
+    db = kwargs.get("db")
+    if not db:
+        return {"error": "db session nao disponivel"}
+    from app.domains.offer.services.offer_service import OfferService
+    service = OfferService(db)
+    return await service.get_learning_context(company_id)
+
