@@ -62,6 +62,12 @@ class OfferRepository:
         await self._db.refresh(proposal)
         return proposal
 
+    async def get_by_candidate_token(self, token) -> OfferProposal | None:
+        result = await self._db.execute(
+            select(OfferProposal).where(OfferProposal.candidate_token == token)
+        )
+        return result.scalar_one_or_none()
+
     async def list_by_candidate(
         self, company_id: str, candidate_id: str
     ) -> list[OfferProposal]:

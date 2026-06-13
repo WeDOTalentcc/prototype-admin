@@ -9,6 +9,7 @@ from app.api import orchestrator_routes, wsi_endpoints
 
 # ── Public routes ─────────────────────────────────────────────────────────────
 from app.api.public import candidate_portal
+from app.api.public import offer_portal as public_offer_portal
 from app.api.public import shared_searches as public_shared_searches
 
 # ── Bulk import from app.api.v1 ──────────────────────────────────────────────
@@ -665,4 +666,5 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(rh_dashboard_router, prefix="/api/v1", tags=["rh-dashboard"])
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
     app.include_router(candidate_portal.router, tags=["candidate-portal"])
+    app.include_router(public_offer_portal.router, tags=["offer-portal"])
     app.include_router(inline_chat_router, prefix="/api/v1/inline-chat", tags=["inline-chat"])
