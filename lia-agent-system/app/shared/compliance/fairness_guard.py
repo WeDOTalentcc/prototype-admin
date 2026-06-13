@@ -47,6 +47,14 @@ def _normalize_text(text: str) -> str:
     return unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode('ascii')
 
 
+# ---------------------------------------------------------------------------
+# FALLBACK DE EMERGENCIA — fonte canonica: fairness_policy_rules (Regra 7,
+# rule_type=linguistic_banlist, action=warn, terms_pt/terms_en).
+# Este dict e usado por check_implicit_bias() quando effective_policy nao esta
+# disponivel (DB offline, startup, testes unitarios sem DB).
+# Para adicionar/remover termos em producao: usar a API /fairness/fairness-policies
+# (nao editar este arquivo).
+# ---------------------------------------------------------------------------
 IMPLICIT_BIAS_TERMS: dict[str, str] = {
     # Chaves sem acentuação — _normalize_text() normaliza antes da busca
     "boa aparencia": "O termo 'boa aparência' pode configurar discriminação estética (Lei 12.984/14). Use critérios objetivos de apresentação profissional.",
@@ -86,6 +94,7 @@ IMPLICIT_BIAS_TERMS: dict[str, str] = {
 }
 
 
+# FALLBACK DE EMERGENCIA (EN) — ver comentario acima para IMPLICIT_BIAS_TERMS.
 IMPLICIT_BIAS_TERMS_EN: dict = {
     # Age proxies
     "young and dynamic":        "May indicate age bias. Use objective competency criteria.",

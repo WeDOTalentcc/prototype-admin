@@ -28,6 +28,9 @@ logger = logging.getLogger(__name__)
 
 _WSI_TECHNICAL_WEIGHT_DEFAULT = 0.70
 _WSI_BEHAVIORAL_WEIGHT_DEFAULT = 0.30
+# FALLBACK DE EMERGENCIA — threshold canonico vive em fairness_policy_rules (Regra 4 e 9).
+# Usado APENAS quando threshold_resolver + DB estao indisponiveis (_apply_fairness_gate fallback).
+# Nao alterar este valor sem tambem atualizar a Regra 4 do seed (platform_general/decision_threshold).
 _SCORE_THRESHOLDS = {"auto_approve": 75, "review": 55}
 
 
@@ -76,6 +79,9 @@ def _calculate_wsi_score(
 
 
 def _determine_recommendation(score: float) -> str:
+    """Label de recomendacao para exibicao. Usa _SCORE_THRESHOLDS como fallback.
+    Decisoes de aprovacao real passam por _apply_fairness_gate (cascata canonica).
+    """
     if score >= _SCORE_THRESHOLDS["auto_approve"]:
         return "avançar"
     if score >= _SCORE_THRESHOLDS["review"]:
@@ -405,14 +411,11 @@ async def run_batch(
     for i, item in enumerate(ranking, 1):
         item["rank"] = i
         score = item["rubric_score"]
-        if score >= _SCORE_THRESHOLDS["auto_approve"]:
-            item["status"], _gate_reason = await _apply_fairness_gate(score, company_id)
-            if _gate_reason:
-                item["fairness_gate_reason"] = _gate_reason
-        elif score >= _SCORE_THRESHOLDS["review"]:
-            item["status"] = "Revisão"
-        else:
-            item["status"] = "Reprovado"
+        # Todos os candidatos passam pelo gate — ele resolve thresholds via cascata canonica
+        # (platform -> sector -> tenant). Fallback hardcoded so ativa se DB indisponivel.
+        item["status"], _gate_reason = await _apply_fairness_gate(score, company_id)
+        if _gate_reason:
+            item["fairness_gate_reason"] = _gate_reason
 
     approved = sum(1 for r in ranking if r.get("status") == "Aprovado")
     review = sum(1 for r in ranking if r.get("status") == "Revisão")

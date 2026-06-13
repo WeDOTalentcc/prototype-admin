@@ -48,49 +48,19 @@ logger = logging.getLogger(__name__)
 # Regras setoriais Alpha 1 — Sprint III.8
 # ---------------------------------------------------------------------------
 
+# ALPHA1_SECTOR_RULES — campos de threshold removidos em 2026-06-13.
+# hitl_threshold, auto_approve_threshold e max_pipeline_days vivem agora em:
+#   fairness_policy_rules (Regra 9, platform_domain/screening, rule_type=decision_threshold)
+# Os campos remanescentes sao exclusivos desta estrutura:
+#   - autonomy_level: usado por policy_engine_service para logica de orquestracao
+#   - fairness_layer3_enabled: usado por FairnessGuard.check_with_sector()
 ALPHA1_SECTOR_RULES: dict = {
-    "tech": {
-        "autonomy_level": "high",
-        "hitl_threshold": 0.65,
-        "auto_approve_threshold": 0.85,
-        "max_pipeline_days": 30,
-        "fairness_layer3_enabled": True,
-    },
-    "varejo": {
-        "autonomy_level": "medium",
-        "hitl_threshold": 0.70,
-        "auto_approve_threshold": 0.80,
-        "max_pipeline_days": 21,
-        "fairness_layer3_enabled": True,
-    },
-    "logistica": {
-        "autonomy_level": "medium",
-        "hitl_threshold": 0.70,
-        "auto_approve_threshold": 0.80,
-        "max_pipeline_days": 14,
-        "fairness_layer3_enabled": True,
-    },
-    "financeiro": {
-        "autonomy_level": "low",
-        "hitl_threshold": 0.80,
-        "auto_approve_threshold": 0.90,
-        "max_pipeline_days": 45,
-        "fairness_layer3_enabled": True,
-    },
-    "saude": {
-        "autonomy_level": "low",
-        "hitl_threshold": 0.80,
-        "auto_approve_threshold": 0.90,
-        "max_pipeline_days": 45,
-        "fairness_layer3_enabled": True,
-    },
-    "rpo": {
-        "autonomy_level": "high",
-        "hitl_threshold": 0.60,
-        "auto_approve_threshold": 0.82,
-        "max_pipeline_days": 25,
-        "fairness_layer3_enabled": True,
-    },
+    "tech":       {"autonomy_level": "high",    "fairness_layer3_enabled": True},
+    "varejo":     {"autonomy_level": "medium",  "fairness_layer3_enabled": True},
+    "logistica":  {"autonomy_level": "medium",  "fairness_layer3_enabled": True},
+    "financeiro": {"autonomy_level": "low",     "fairness_layer3_enabled": True},
+    "saude":      {"autonomy_level": "low",     "fairness_layer3_enabled": True},
+    "rpo":        {"autonomy_level": "high",    "fairness_layer3_enabled": True},
 }
 
 
