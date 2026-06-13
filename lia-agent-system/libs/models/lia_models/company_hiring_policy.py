@@ -45,6 +45,7 @@ COMMUNICATION_RULES_DEFAULTS = {
     "briefing_frequency": "daily",   # B1 canonical — lido por briefing_dispatch.py
     "digest_enabled": True,           # B2 opt-in digest — gated em WeeklyDigestService
     "show_wedotalent_branding": True,   # Phase 1a: "Powered by WeDOTalent" footer in InterviewLobby
+    "preferred_data_channel": "email",   # Fase 7: canal padrão de coleta de dados do candidato (email/web/whatsapp/voice)
 }
 
 SCREENING_RULES_DEFAULTS = {
