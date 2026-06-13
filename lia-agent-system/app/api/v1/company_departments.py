@@ -1,3 +1,4 @@
+from app.middleware.request_id import get_correlation_id
 import logging
 import uuid
 from datetime import datetime
@@ -84,7 +85,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         department = await dept_repo.create(dept_data)
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created department: {department.name}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_create", actor=str(getattr(current_user, "id", "system")), target_id=str(department.id), target_type="department")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="department_create", actor=str(getattr(current_user, "id", "system")), target_id=str(department.id), target_type="department")  # P1-W2-06
         return department
     except HTTPException:
         raise
@@ -113,7 +114,7 @@ current_user: User = Depends(get_current_user_or_demo),
             raise HTTPException(status_code=404, detail="Department not found")
         # Sprint 7.2 RBAC: mutation gate
         await assert_mutation_allowed(department, current_user, resource_label="departamento")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_update", actor=str(getattr(current_user, "id", "system")), target_id=str(department_id), target_type="department")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="department_update", actor=str(getattr(current_user, "id", "system")), target_id=str(department_id), target_type="department")  # P1-W2-06
         return department
     except HTTPException:
         raise
@@ -143,7 +144,7 @@ async def delete_department(
         )
         if not deleted:
             raise HTTPException(status_code=404, detail="Department not found")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_delete", actor=str(getattr(current_user, "id", "system")), target_id=str(department_id), target_type="department")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="department_delete", actor=str(getattr(current_user, "id", "system")), target_id=str(department_id), target_type="department")  # P1-W2-06
         return {"success": True, "message": "Department deleted"}
     except HTTPException:
         raise
@@ -254,7 +255,7 @@ current_user: User = Depends(get_current_user_or_demo),
             raise HTTPException(status_code=404, detail="Department member not found")
         # Sprint 7.2 RBAC: mutation gate
         await assert_mutation_allowed(member, current_user, resource_label="colaborador")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_member_update", actor="system", target_id=str(member_id), target_type="department_member")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="department_member_update", actor="system", target_id=str(member_id), target_type="department_member")  # P1-W2-06
         return member
     except HTTPException:
         raise
@@ -284,7 +285,7 @@ async def delete_department_member(
         )
         if not deleted:
             raise HTTPException(status_code=404, detail="Department member not found")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_member_delete", actor="system", target_id=str(member_id), target_type="department_member")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="department_member_delete", actor="system", target_id=str(member_id), target_type="department_member")  # P1-W2-06
         return {"success": True, "message": "Department member deleted"}
     except HTTPException:
         raise

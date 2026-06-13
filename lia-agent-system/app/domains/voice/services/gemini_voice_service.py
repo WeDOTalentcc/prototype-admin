@@ -5,6 +5,7 @@ Transcrição de áudio usando Gemini Flash 2.5 via Replit AI Integrations.
 Suporta múltiplos formatos de áudio e vídeo.
 """
 
+from app.shared.llm_models import CANONICAL_GEMINI_FLASH_MODEL
 import logging
 import os
 
@@ -139,7 +140,7 @@ Forneça apenas a transcrição, sem introdução ou explicações."""
         
         try:
             response = self._llm_service.generate_native_gemini_sync(
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 contents=[
                     prompt,
                     types.Part(
@@ -160,7 +161,7 @@ Forneça apenas a transcrição, sem introdução ou explicações."""
                 "language": language,
                 "mime_type": mime_type,
                 "size_bytes": len(audio_data),
-                "model": "gemini-2.5-flash"
+                "model": CANONICAL_GEMINI_FLASH_MODEL
             }
             
         except Exception as e:
@@ -229,7 +230,7 @@ Parágrafo 3: Próximos passos ou recomendações (se mencionado)"""
         
         try:
             response = self._llm_service.generate_native_gemini_sync(
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 contents=[
                     prompt,
                     types.Part(
@@ -250,7 +251,7 @@ Parágrafo 3: Próximos passos ou recomendações (se mencionado)"""
                 "analysis_type": analysis_type,
                 "mime_type": mime_type,
                 "size_bytes": len(audio_data),
-                "model": "gemini-2.5-flash"
+                "model": CANONICAL_GEMINI_FLASH_MODEL
             }
             
         except Exception as e:
@@ -310,7 +311,7 @@ Sugestões para follow-up ou próximas etapas."""
 
         try:
             response = self._llm_service.generate_native_gemini_sync(
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 contents=[
                     prompt,
                     types.Part(
@@ -332,7 +333,7 @@ Sugestões para follow-up ou próximas etapas."""
                 "questions_count": len(questions) if questions else 0,
                 "mime_type": mime_type,
                 "size_bytes": len(audio_data),
-                "model": "gemini-2.5-flash"
+                "model": CANONICAL_GEMINI_FLASH_MODEL
             }
             
         except Exception as e:

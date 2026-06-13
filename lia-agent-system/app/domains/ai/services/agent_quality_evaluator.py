@@ -15,6 +15,7 @@ Referências:
 - Crença #11 (Anti-sycophancy) — benchmarks setoriais injetados no prompt
 """
 from __future__ import annotations
+from app.shared.llm_models import CANONICAL_HAIKU_MODEL
 
 import logging
 import os
@@ -176,7 +177,7 @@ class AgentQualityEvaluator:
 
             client = anthropic.AsyncAnthropic()
             response = await client.messages.create(
-                model="claude-haiku-20240307",
+                model=CANONICAL_HAIKU_MODEL  # was claude-haiku-20240307 (deprecated),
                 max_tokens=10,
                 messages=[{"role": "user", "content": prompt}],
             )

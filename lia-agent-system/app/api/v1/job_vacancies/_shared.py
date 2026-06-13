@@ -209,6 +209,46 @@ def generate_slug(title: str, company_name: str = "") -> str:
 # SHARED PYDANTIC SCHEMAS
 # =============================================
 
+
+
+# ── Stakeholder validation (T10) ──────────────────────────────────────────
+
+import re as _re_mod
+
+_EMAIL_RE = _re_mod.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+_VALID_STAKEHOLDER_ROLES = {"hr_bp", "dept_head", "committee_member", "interviewer", "other"}
+
+
+def _validate_stakeholders_list(v: list[dict] | None) -> list[dict] | None:
+    if v is None:
+        return v
+    if not isinstance(v, list):
+        raise ValueError("stakeholders deve ser uma lista")
+    if len(v) > 20:
+        raise ValueError("Maximo de 20 stakeholders por vaga")
+    validated = []
+    for i, item in enumerate(v):
+        if not isinstance(item, dict):
+            raise ValueError(f"stakeholders[{i}] deve ser um objeto")
+        name = item.get("name")
+        email = item.get("email")
+        role = item.get("role", "other")
+        if not name or not isinstance(name, str) or len(name.strip()) < 2:
+            raise ValueError(f"stakeholders[{i}].name e obrigatorio (min 2 chars)")
+        if not email or not isinstance(email, str) or not _EMAIL_RE.match(email.strip()):
+            raise ValueError(f"stakeholders[{i}].email invalido: {email!r}")
+        if role and role not in _VALID_STAKEHOLDER_ROLES:
+            raise ValueError(
+                f"stakeholders[{i}].role invalido: {role!r}. "
+                f"Aceitos: {sorted(_VALID_STAKEHOLDER_ROLES)}"
+            )
+        validated.append({
+            "name": name.strip(),
+            "email": email.strip().lower(),
+            "role": role or "other",
+        })
+    return validated
+
 class JobVacancyCreate(WeDoBaseModel):
     """Schema for creating a job vacancy directly (not via conversation)."""
     title: str = Field(..., min_length=1, max_length=255)
@@ -235,6 +275,7 @@ class JobVacancyCreate(WeDoBaseModel):
     manager_email: str | None = None
     recruiter: str | None = None
     recruiter_email: str | None = None
+    stakeholders: list[dict] | None = None
     is_confidential: bool = False
     visibility: str = "public"
     access_list: list[str] | None = []
@@ -258,6 +299,11 @@ class JobVacancyCreate(WeDoBaseModel):
     affirmative_document_types: list[str] | None = []
     bonus_range: dict | None = None
     conversation_id: str | None = None
+
+    @field_validator("stakeholders", mode="before")
+    @classmethod
+    def _validate_stakeholders(cls, v):
+        return _validate_stakeholders_list(v)
 
 
 class JobVacancyUpdate(WeDoBaseModel):
@@ -284,6 +330,7 @@ class JobVacancyUpdate(WeDoBaseModel):
     manager_email: str | None = None
     recruiter: str | None = None
     recruiter_email: str | None = None
+    stakeholders: list[dict] | None = None
     is_confidential: bool | None = None
     visibility: str | None = None
     access_list: list[str] | None = None
@@ -317,6 +364,11 @@ class JobVacancyUpdate(WeDoBaseModel):
     deadline_screening: datetime | None = None
     deadline_shortlist: datetime | None = None
     deadline_closing: datetime | None = None
+
+    @field_validator("stakeholders", mode="before")
+    @classmethod
+    def _validate_stakeholders(cls, v):
+        return _validate_stakeholders_list(v)
 
 
 class JobVacancyResponse(BaseModel):
@@ -387,6 +439,7 @@ class JobVacancyResponse(BaseModel):
     manager_email: str | None = None
     recruiter: str | None = None
     recruiter_email: str | None = None
+    stakeholders: list[dict] | None = []
     is_confidential: bool = False
     visibility: str = "public"
     access_list: list[str] | None = []

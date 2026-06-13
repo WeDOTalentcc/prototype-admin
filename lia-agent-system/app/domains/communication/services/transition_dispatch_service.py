@@ -2,6 +2,7 @@
 Transition Dispatch Service - Deterministic auto-dispatch for pipeline transitions.
 Layer 1: Template-based message dispatch without AI interpretation.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import re
 import uuid
@@ -937,7 +938,7 @@ class TransitionDispatchService:
                 from app.shared.compliance.audit_service import get_audit_service
                 import uuid as _uuid
                 await get_audit_service().log_action(
-                    trace_id=str(_uuid.uuid4()),
+                    trace_id=get_correlation_id(),
                     company_id=company_id,
                     action_type="jd_similar_mark_filled",
                     actor="hook:conclusion_hired",
@@ -1240,7 +1241,7 @@ class TransitionDispatchService:
                 from app.shared.compliance.audit_service import get_audit_service
                 import uuid as _uuid
                 await get_audit_service().log_action(
-                    trace_id=str(_uuid.uuid4()),
+                    trace_id=get_correlation_id(),
                     company_id=company_id,
                     action_type="wsi_effectiveness_write_gated",
                     actor="hook:conclusion_hired",

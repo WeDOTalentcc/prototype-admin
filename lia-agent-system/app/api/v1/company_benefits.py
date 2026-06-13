@@ -1,3 +1,4 @@
+from app.middleware.request_id import get_correlation_id
 from typing import Literal
 """
 Company Benefits API endpoints.
@@ -477,7 +478,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         try:
             from app.shared.compliance.audit_service import AuditService as _AS
             await _AS().log_action(
-                trace_id=str(_uuid_module.uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(effective_company_id),
                 action_type="company_benefits_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -721,7 +722,7 @@ company_id: str = Depends(require_company_id)):
         try:
             from app.shared.compliance.audit_service import AuditService as _AS
             await _AS().log_action(
-                trace_id=str(_uuid_module.uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(company_id),
                 action_type="company_benefits_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -779,7 +780,7 @@ company_id: str = Depends(require_company_id)):
         try:
             from app.shared.compliance.audit_service import AuditService as _AS
             await _AS().log_action(
-                trace_id=str(_uuid_module.uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(company_id),
                 action_type="company_benefits_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),

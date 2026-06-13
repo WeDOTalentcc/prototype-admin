@@ -1,4 +1,5 @@
 """Recruitment stages CRUD endpoints — multi-tenant."""
+from app.middleware.request_id import get_correlation_id
 import uuid
 import logging
 
@@ -98,7 +99,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created stage: {stage.name} for company {effective_company_id}")
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=effective_company_id, action_type="pipeline_stage_created", actor=str(getattr(current_user, "id", "system")), target_id=str(new_stage.id), target_type="recruitment_stage", metadata={"stage_name": stage.name, "action_behavior": stage.action_behavior})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=effective_company_id, action_type="pipeline_stage_created", actor=str(getattr(current_user, "id", "system")), target_id=str(new_stage.id), target_type="recruitment_stage", metadata={"stage_name": stage.name, "action_behavior": stage.action_behavior})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return new_stage.to_dict()
@@ -135,7 +136,7 @@ company_id: str = Depends(require_company_id)):
         updated = await stage_repo.update(uuid.UUID(stage_id), update_data)
 
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(getattr(current_user, "company_id", "")), action_type="pipeline_stage_updated", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"updates": list(update_data.keys())})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=str(getattr(current_user, "company_id", "")), action_type="pipeline_stage_updated", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"updates": list(update_data.keys())})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return updated.to_dict()
@@ -174,7 +175,7 @@ company_id: str = Depends(require_company_id)):
             await stage_repo.soft_delete(uuid.UUID(stage_id))
 
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(getattr(current_user, "company_id", "")), action_type="pipeline_stage_deleted", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"hard_delete": hard_delete})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=str(getattr(current_user, "company_id", "")), action_type="pipeline_stage_deleted", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"hard_delete": hard_delete})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "deleted": stage_id}
@@ -323,7 +324,7 @@ company_id: str = Depends(require_company_id)):
         await stage_repo.update_fields(stage_id, updates)
 
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(company_id), action_type="pipeline_stage_updated", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"inline_edit": True, "updates": list(updates.keys())})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=str(company_id), action_type="pipeline_stage_updated", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"inline_edit": True, "updates": list(updates.keys())})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
@@ -367,7 +368,7 @@ company_id: str = Depends(require_company_id)):
         await stage_repo.hard_delete_by_id_str(stage_id)
 
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(company_id), action_type="pipeline_stage_deleted", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"hard_delete": True, "custom_remove": True})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=str(company_id), action_type="pipeline_stage_deleted", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"hard_delete": True, "custom_remove": True})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "stage_id": stage_id, "removed": True}
@@ -404,7 +405,7 @@ company_id: str = Depends(require_company_id)):
         items = [{"stage_id": item.stage_id, "new_order": item.new_order} for item in payload.stages]
         await stage_repo.reorder(items)
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(company_id), action_type="pipeline_stages_reordered", actor=str(getattr(current_user, "id", "system")), target_type="recruitment_stage", metadata={"reordered_count": len(payload.stages)})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=str(company_id), action_type="pipeline_stages_reordered", actor=str(getattr(current_user, "id", "system")), target_type="recruitment_stage", metadata={"reordered_count": len(payload.stages)})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "reordered": len(payload.stages)}

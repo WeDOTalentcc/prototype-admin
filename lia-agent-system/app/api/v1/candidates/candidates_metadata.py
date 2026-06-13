@@ -547,25 +547,22 @@ company_id: str = Depends(require_company_id)):
             # vacancy_candidate.company_id (row do tenant), NUNCA do request.
             if current_stage != new_stage:
                 try:
-                    from app.shared.messaging.platform_events import (
-                        StageChangedEvent,
-                        publish_platform_event,
-                    )
-
+                    from lia_events.schemas import StageChangedEvent
+                    from app.shared.messaging.events_outbox_service import get_events_outbox_service
                     _evt_company_id = str(
                         getattr(vacancy_candidate, "company_id", "") or company_id
                     )
-                    await publish_platform_event(
-                        StageChangedEvent(
-                            company_id=_evt_company_id,
-                            payload={
-                                "candidate_id": str(candidate_id),
-                                "vacancy_id": str(vacancy_candidate.vacancy_id),
-                                "from_stage": current_stage or "unknown",
-                                "to_stage": new_stage,
-                            },
-                        )
+                    _evt = StageChangedEvent(
+                        company_id=_evt_company_id,
+                        payload={
+                            "candidate_id": str(candidate_id),
+                            "vacancy_id": str(vacancy_candidate.vacancy_id),
+                            "from_stage": current_stage or "unknown",
+                            "to_stage": new_stage,
+                        },
+                        source_api="lia-agent-system",
                     )
+                    await get_events_outbox_service().publish_via_outbox(_evt, candidate_repo.db)
                 except Exception as _evt_err:  # noqa: BLE001
                     logger.error(
                         "[C1.3] publish stage_changed (screening) failed "

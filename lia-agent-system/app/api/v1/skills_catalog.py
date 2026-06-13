@@ -11,6 +11,7 @@ Endpoints:
 - POST /wizard/suggest-skills - Get intelligent skill suggestions
 - POST /wizard/record-skill-usage - Record skill usage for learning loop
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 from typing import Any
 
@@ -299,7 +300,7 @@ company_id: str = Depends(require_company_id)) -> AddSkillResponse:
             from app.shared.compliance.audit_service import AuditService as _AS
             import uuid as _uuid
             await _AS().log_action(
-                trace_id=str(_uuid.uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(company_id),
                 action_type="company_tech_stack_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -364,7 +365,7 @@ company_id: str = Depends(require_company_id)) -> SyncTechStackResponse:
             from app.shared.compliance.audit_service import AuditService as _AS
             import uuid as _uuid
             await _AS().log_action(
-                trace_id=str(_uuid.uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(company_id),
                 action_type="company_tech_stack_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),

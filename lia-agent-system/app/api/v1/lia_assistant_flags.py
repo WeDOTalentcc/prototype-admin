@@ -4,6 +4,7 @@ LIA Assistant — Feature Flags endpoints.
 Extracted from lia_assistant.py (Phase 5 decomposition).
 All routes share prefix="/lia" to preserve existing /api/v1/lia/feature-flags/* URLs.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import uuid
 from datetime import datetime as dt
@@ -236,7 +237,7 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagResponse:
                 )
                 if tenant_id:
                     await AuditService().log_action(
-                        trace_id=str(uuid_uuid4()),
+                        trace_id=get_correlation_id(),
                         company_id=str(tenant_id),
                         action_type="feature_flag_change",
                         actor=str(actor_id),
@@ -558,7 +559,7 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalRespo
     try:
         from app.shared.compliance.audit_service import AuditService
         await AuditService().log_action(
-            trace_id=str(uuid_uuid4()),
+            trace_id=get_correlation_id(),
             company_id=company_id,
             action_type="feature_flag_change",
             actor=str(requester_id),
@@ -718,7 +719,7 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalRespo
     try:
         from app.shared.compliance.audit_service import AuditService
         await AuditService().log_action(
-            trace_id=str(uuid_uuid4()),
+            trace_id=get_correlation_id(),
             company_id=str(approval.company_id),
             action_type="feature_flag_change",
             actor=str(getattr(current_user, "id", "admin")),
@@ -814,7 +815,7 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalRespo
     try:
         from app.shared.compliance.audit_service import AuditService
         await AuditService().log_action(
-            trace_id=str(uuid_uuid4()),
+            trace_id=get_correlation_id(),
             company_id=str(approval.company_id),
             action_type="feature_flag_change",
             actor=str(getattr(current_user, "id", "admin")),
@@ -890,7 +891,7 @@ async def sweep_expired_approvals(
             from app.shared.compliance.audit_service import AuditService
             payload = approval.target_data or {}
             await AuditService().log_action(
-                trace_id=str(uuid_uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(company_id),
                 action_type="feature_flag_change",
                 actor="system:expiry_sweep",

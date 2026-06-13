@@ -1184,6 +1184,9 @@ class WizardSessionService:
             # Gestor (não cobertos por _ficha_data) — painel renderiza estes.
             data["parsed_manager_name"] = new_state.get("parsed_manager_name")
             data["parsed_manager_email"] = new_state.get("parsed_manager_email")
+            # T10: stakeholders/envolvidos adicionais
+            if new_state.get("parsed_stakeholders"):
+                data["parsed_stakeholders"] = new_state["parsed_stakeholders"]
             # Responsabilidades confirmadas (item #2) — surfacar pro painel.
             if new_state.get("confirmed_responsibilities"):
                 data["confirmed_responsibilities"] = new_state.get("confirmed_responsibilities")

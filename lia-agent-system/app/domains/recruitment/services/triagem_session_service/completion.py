@@ -614,23 +614,22 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
             # A2b: publica no barramento Redis para Teams DM + bell notification.
             # Fail-soft: erro de Redis nao aborta o fluxo principal de triagem.
             try:
-                from app.shared.messaging.platform_events import (
-                    ScreeningCompletedEvent,
-                    publish_platform_event,
-                )
-                await publish_platform_event(ScreeningCompletedEvent(
+                from lia_events.schemas import ScreeningCompletedEvent
+                from app.shared.messaging.events_outbox_service import get_events_outbox_service
+                _evt = ScreeningCompletedEvent(
                     company_id=session.company_id,
                     payload={
                         "candidate_id": session.candidate_id,
                         "vacancy_id": session.job_id,
-                        "candidate_name": session.candidate_name or "",
                         "wsi_final_score": score_val,
                         "wsi_scores": wsi_scores,
                     },
-                ))
-                actions["redis_event"] = "screening.wsi.completed_published"
+                    source_api="lia-agent-system",
+                )
+                await get_events_outbox_service().publish_via_outbox(_evt, db)
+                actions["redis_event"] = "screening.wsi.completed_outbox"
                 logger.info(
-                    "[Triagem] A2b: screening.wsi.completed published to Redis"
+                    "[Triagem] A2b: screening.wsi.completed queued via outbox"
                     " for candidate=%s", session.candidate_id,
                 )
             except Exception as _a2b_exc:

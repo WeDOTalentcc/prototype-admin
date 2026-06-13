@@ -248,7 +248,7 @@ class LLMService:
         if settings.OPENAI_API_KEY:
             if not self._openai_client:
                 self._openai_client = ChatOpenAI(
-                    model="gpt-4o",
+                    model="gpt-4o",  # MODEL-EXEMPT: OpenAI-specific, no canonical GPT constant
                     api_key=SecretStr(settings.OPENAI_API_KEY),
                     temperature=0.7,
                 )

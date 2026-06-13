@@ -2,6 +2,7 @@
 Teams <-> Orchestrator bridge.
 Connects incoming Teams messages to the full LIA orchestrator (same as floating chat).
 """
+from app.shared.llm_models import CANONICAL_GEMINI_FLASH_MODEL
 import logging
 from typing import Any
 
@@ -282,7 +283,7 @@ class TeamsOrchestratorBridge:
                 ]
                 response = await llm_service.generate_native_gemini(
                     contents=contents,
-                    model="gemini-2.5-flash",
+                    model=CANONICAL_GEMINI_FLASH_MODEL,
                 )
                 description = response.text if hasattr(response, "text") else str(response)
                 msg = f"Imagem recebida: {filename}\n\n{description}\n\nPara usar na plataforma, acesse o painel web."
@@ -390,7 +391,7 @@ class TeamsOrchestratorBridge:
                 ]
                 response = await llm_service.generate_native_gemini(
                     contents=contents,
-                    model="gemini-2.5-flash",
+                    model=CANONICAL_GEMINI_FLASH_MODEL,
                 )
                 transcription = response.text.strip() if (hasattr(response, "text") and response.text) else ""
 

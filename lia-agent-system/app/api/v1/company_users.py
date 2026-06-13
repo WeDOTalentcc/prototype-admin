@@ -2,6 +2,7 @@
 Company Users API endpoints — user management, global search settings,
 catalog status, and Smart Wizard greeting.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import os
 import uuid
@@ -178,7 +179,7 @@ async def create_user(
         )
 
         logger.info(f"Created user with invitation: {user.id} for company {company_id}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_invite", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="user_invite", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06
         return user
     except HTTPException:
         raise
@@ -265,7 +266,7 @@ company_id: str = Depends(require_company_id)):
 
         user = await user_repo.update(user_uuid, update_data, company_id=company_id)
         logger.info(f"Updated user: {user.id} with permissions: {user.permissions}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_update", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="user_update", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06
         return user
     except HTTPException:
         raise
@@ -300,7 +301,7 @@ company_id: str = Depends(require_company_id)):
         await user_repo.delete(user_uuid, company_id=company_id)
         # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Deleted user: {email}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_delete", actor=str(getattr(current_user, "id", "system")), target_id=str(user_uuid), target_type="user")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="user_delete", actor=str(getattr(current_user, "id", "system")), target_id=str(user_uuid), target_type="user")  # P1-W2-06
         return None
     except HTTPException:
         raise
@@ -360,7 +361,7 @@ async def resend_invitation(
 
         actor_id = str(getattr(current_user, "id", "system"))
         logger.info(f"Resent invitation to user: {user.id} by actor: {actor_id}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_invitation_resend", actor=actor_id, target_id=str(user.id), target_type="user")  # P1-W2-05+W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="user_invitation_resend", actor=actor_id, target_id=str(user.id), target_type="user")  # P1-W2-05+W2-06
         return {"success": True, "message": "Invitation email resent successfully"}
     except HTTPException:
         raise

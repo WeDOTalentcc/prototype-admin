@@ -5,6 +5,7 @@ Manages company-level communication configurations including email signatures,
 LGPD sending hours, message limits, and channel preferences.
 """
 
+from app.middleware.request_id import get_correlation_id
 import logging
 from datetime import datetime
 
@@ -144,7 +145,7 @@ async def update_communication_settings(
         try:
             updated_fields = data.model_dump(exclude_unset=True)
             action = "communication_signature_updated" if "signature" in updated_fields or "signature_html" in updated_fields else "communication_settings_updated"
-            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type=action, actor="system", target_type="communication_settings", metadata={"fields_updated": list(updated_fields.keys())})  # P1-W2-03
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type=action, actor="system", target_type="communication_settings", metadata={"fields_updated": list(updated_fields.keys())})  # P1-W2-03
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         

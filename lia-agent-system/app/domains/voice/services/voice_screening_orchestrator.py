@@ -39,6 +39,7 @@ Session persistence:
 """
 
 
+from app.shared.llm_models import CANONICAL_GEMINI_FLASH_MODEL
 import json
 import logging
 from dataclasses import dataclass, field
@@ -1681,7 +1682,7 @@ class VoiceCoreOrchestrator:
 
             response = self._llm_service.generate_native_gemini_sync(
                 contents=conversation_history,
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
                     temperature=0.7,

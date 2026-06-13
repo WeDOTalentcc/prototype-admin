@@ -241,6 +241,8 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 # W3-B: confidentiality + visibility
                 "masked_company_name": state.get("masked_company_name"),
                 "visibility": state.get("visibility") or "public",
+                # T10: stakeholders/envolvidos adicionais
+                "stakeholders": state.get("parsed_stakeholders") or [],
             }
             resp = cb_wrap(api.create_job, job_data)
             if resp.success and resp.data:

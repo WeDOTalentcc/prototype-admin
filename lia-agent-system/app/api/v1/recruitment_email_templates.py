@@ -2,6 +2,7 @@
 Recruitment Email Templates API endpoints.
 Provides CRUD operations for pipeline stage email templates.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import uuid as uuid_module
 from datetime import datetime
@@ -291,7 +292,7 @@ company_id: str = Depends(require_company_id)):
 
         updated = await repo.update(template, update_fields)
         try:
-            await AuditService().log_action(trace_id=str(uuid_module.uuid4()), company_id=company_id, action_type="communication_template_updated", actor="system", target_id=template_id, target_type="email_template", metadata={"fields_updated": list(update_fields.keys())})  # P1-W2-03
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="communication_template_updated", actor="system", target_id=template_id, target_type="email_template", metadata={"fields_updated": list(update_fields.keys())})  # P1-W2-03
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return template_to_response(updated)
@@ -458,7 +459,7 @@ company_id: str = Depends(require_company_id)):
         await repo.delete(template)
 
         try:
-            await AuditService().log_action(trace_id=str(uuid_module.uuid4()), company_id=company_id, action_type="communication_template_deleted", actor="system", target_id=template_id, target_type="email_template")  # P1-W2-03
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="communication_template_deleted", actor="system", target_id=template_id, target_type="email_template")  # P1-W2-03
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"message": "Template deleted successfully", "id": template_id}

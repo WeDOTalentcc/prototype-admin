@@ -9,6 +9,7 @@ Supports:
 
 Cost: Gemini audio/video input pricing (much cheaper than dedicated STT).
 """
+from app.shared.llm_models import CANONICAL_GEMINI_FLASH_MODEL
 import asyncio
 import ipaddress
 import logging
@@ -179,7 +180,7 @@ class TranscriptionService:
 
         response = await asyncio.to_thread(
             client.models.generate_content,
-            model="gemini-2.5-flash",
+            model=CANONICAL_GEMINI_FLASH_MODEL,
             contents=[uploaded_file, prompt],
         )
         text = response.text or ""
@@ -192,7 +193,7 @@ class TranscriptionService:
             snippet = transcript_text[:500]
             response = await asyncio.to_thread(
                 client.models.generate_content,
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 contents=[LANGUAGE_DETECT_PROMPT, snippet],
             )
             lang = (response.text or "").strip()

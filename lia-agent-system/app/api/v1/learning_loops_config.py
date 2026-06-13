@@ -11,6 +11,7 @@ ADR-001: usa CompanyHiringPolicyRepository (TODO: extrair em PR separado;
 por ora query direta segue padrao do automation_rules existente).
 ADR-006: nenhum log com PII.
 """
+from app.middleware.request_id import get_correlation_id
 from __future__ import annotations
 
 from typing import Any
@@ -210,7 +211,7 @@ async def patch_config(
         from app.shared.compliance.audit_service import get_audit_service
         import uuid as _uuid
         await get_audit_service().log_action(
-            trace_id=str(_uuid.uuid4()),
+            trace_id=get_correlation_id(),
             company_id=company_id,
             action_type="feature_flag_change",
             actor="api:learning_loops_config",

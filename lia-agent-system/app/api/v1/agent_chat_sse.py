@@ -22,6 +22,7 @@ the client re-sends the original message.
 import asyncio
 import json
 import logging
+import os
 from typing import Any
 
 from fastapi import APIRouter, Header, HTTPException, Query, Request
@@ -549,6 +550,181 @@ company_id: str = Depends(require_company_id)):
             )
             return
 
+        # ── T12: Post-wizard continuation check (before routing) ──────
+        # When a composite request like "crie e publique" was parked and
+        # the wizard already finished (status=awaiting_confirmation), the
+        # next recruiter message may be a Y/N reply. Intercept it BEFORE
+        # routing to wizard/agent so the continuation can be consumed.
+        if os.environ.get("LIA_POST_WIZARD_CONTINUATION", "1") == "1":
+            try:
+                from app.orchestrator.routing.post_wizard_continuation import (
+                    get_continuation as _pwc_get,
+                    clear_continuation as _pwc_clear,
+                    dispatch_for as _pwc_dispatch,
+                )
+                from app.orchestrator.routing.confirmation_classifier import (
+                    classify_confirmation as _pwc_classify,
+                )
+
+                _pwc_state = _pwc_get(req.conversation_id or session_id)
+                if _pwc_state is not None and _pwc_state.awaiting_confirmation:
+                    _pwc_decision = _pwc_classify(content)
+                    _pwc_conv_id = req.conversation_id or session_id
+                    logger.info(
+                        "[SSEChat-T12] continuation reply classified=%s conv=%s kind=%s",
+                        _pwc_decision,
+                        _pwc_conv_id,
+                        (_pwc_state.collected_params or {}).get("continuation_kind"),
+                    )
+
+                    if _pwc_decision == "no":
+                        _pwc_clear(_pwc_conv_id)
+                        yield format_sse_event(
+                            serialize_message(
+                                content=(
+                                    "Combinado \u2014 a vaga fica como est\u00e1 por enquanto. "
+                                    "Quando quiser seguir, \u00e9 s\u00f3 me avisar."
+                                ),
+                                confidence=0.95,
+                                domain="post_wizard_continuation",
+                                source="continuation_declined",
+                                conversation_id=_pwc_conv_id,
+                            ),
+                            next_id(),
+                        )
+                        return
+
+                    if _pwc_decision == "ambiguous":
+                        yield format_sse_event(
+                            serialize_message(
+                                content=(
+                                    "S\u00f3 pra confirmar: quer que eu siga com essa "
+                                    "etapa agora? Responda *sim* ou *agora n\u00e3o*."
+                                ),
+                                confidence=0.95,
+                                domain="post_wizard_continuation",
+                                source="continuation_clarify",
+                                conversation_id=_pwc_conv_id,
+                            ),
+                            next_id(),
+                        )
+                        return
+
+                    if _pwc_decision == "yes":
+                        _pwc_params = dict(_pwc_state.collected_params or {})
+                        _pwc_connected = bool(_pwc_params.get("continuation_connected"))
+                        _pwc_disp = _pwc_dispatch(_pwc_params.get("continuation_kind"))
+                        _pwc_job_id = _pwc_params.get("job_id")
+                        _pwc_clear(_pwc_conv_id)
+
+                        if not _pwc_connected or not _pwc_disp:
+                            yield format_sse_event(
+                                serialize_message(
+                                    content=(
+                                        "Essa etapa ainda n\u00e3o est\u00e1 conectada para "
+                                        "execu\u00e7\u00e3o autom\u00e1tica \u2014 por enquanto voc\u00ea "
+                                        "precisa faz\u00ea-la manualmente. Posso ajudar "
+                                        "em mais alguma coisa?"
+                                    ),
+                                    confidence=0.95,
+                                    domain="post_wizard_continuation",
+                                    source="continuation_not_connected",
+                                    conversation_id=_pwc_conv_id,
+                                ),
+                                next_id(),
+                            )
+                            return
+
+                        # Execute via PlanExecutor (same as supervisor path)
+                        _pwc_domain_id, _pwc_action_id, _pwc_label = _pwc_disp
+                        try:
+                            from app.domains.registry import DomainRegistry
+                            from app.domains.workflow import DomainWorkflow
+                            from app.shared.execution.execution_plan import (
+                                AgentTask,
+                                ExecutionPlan,
+                            )
+                            from app.shared.execution.plan_executor import PlanExecutor
+
+                            _pwc_plan = ExecutionPlan(
+                                plan_id=f"continuation_{_pwc_conv_id}"
+                            )
+                            _pwc_plan.detected_pattern = (
+                                f"post_wizard_{_pwc_params.get('continuation_kind')}"
+                            )
+                            _pwc_plan.add_task(
+                                AgentTask(
+                                    task_id="task_0",
+                                    domain_id=_pwc_domain_id,
+                                    action_id=_pwc_action_id,
+                                    params=(
+                                        {"job_id": _pwc_job_id}
+                                        if _pwc_job_id
+                                        else {}
+                                    ),
+                                )
+                            )
+                            _pwc_executor = PlanExecutor(
+                                domain_registry=DomainRegistry(),
+                                domain_workflow=DomainWorkflow(),
+                            )
+                            _pwc_completed = await _pwc_executor.execute(
+                                _pwc_plan,
+                                user_id=str(user_id or "system"),
+                                session_id=_pwc_conv_id,
+                                tenant_id=str(company_id) if company_id else None,
+                                base_context=(
+                                    {"job_id": _pwc_job_id}
+                                    if _pwc_job_id
+                                    else None
+                                ),
+                            )
+                            _pwc_resp = _pwc_executor.build_consolidated_response(
+                                _pwc_completed
+                            )
+                            logger.info(
+                                "[SSEChat-T12] continuation executed kind=%s "
+                                "job_id=%s status=%s",
+                                _pwc_params.get("continuation_kind"),
+                                _pwc_job_id,
+                                _pwc_completed.status.value,
+                            )
+                            yield format_sse_event(
+                                serialize_message(
+                                    content=_pwc_resp.message,
+                                    confidence=0.95,
+                                    domain="post_wizard_continuation",
+                                    source="continuation_executed",
+                                    conversation_id=_pwc_conv_id,
+                                ),
+                                next_id(),
+                            )
+                        except Exception as _pwc_exec_exc:
+                            logger.error(
+                                "[SSEChat-T12] continuation execution failed: %s",
+                                _pwc_exec_exc,
+                                exc_info=True,
+                            )
+                            yield format_sse_event(
+                                serialize_message(
+                                    content=(
+                                        f"N\u00e3o consegui {_pwc_label} agora \u2014 "
+                                        "tente novamente em instantes."
+                                    ),
+                                    confidence=0.5,
+                                    domain="post_wizard_continuation",
+                                    source="continuation_exec_error",
+                                    conversation_id=_pwc_conv_id,
+                                ),
+                                next_id(),
+                            )
+                        return
+            except Exception as _pwc_exc:
+                logger.debug(
+                    "[SSEChat-T12] post-wizard continuation check skipped: %s",
+                    _pwc_exc,
+                )
+
         if resolved_domain == "kanban":
             from app.api.v1.chat_shared import _subagent_for_kanban
             resolved_domain = _subagent_for_kanban(content)
@@ -579,6 +755,43 @@ company_id: str = Depends(require_company_id)):
                 # Task #1080: canonical pure derive (no context dict honor).
                 from app.shared.sessions import derive_thread_id as _derive_tid
                 _wiz_thread_id = _derive_tid(company_id, session_id)
+                # ── T12: Disambiguator at wizard bootstrap ──────────────────
+                # Detect composite phrases ("crie e publique") on the FIRST
+                # message to the wizard (new session, no existing checkpoint).
+                # Parks the continuation so LIA can offer it after wizard finishes.
+                if os.environ.get("LIA_POST_WIZARD_CONTINUATION", "1") == "1":
+                    try:
+                        from app.shared.sessions import is_wizard_session_active as _t12_is_active
+                        _t12_is_new = not await _t12_is_active(company_id, session_id)
+                        if _t12_is_new:
+                            from app.orchestrator.routing.job_creation_disambiguator import (
+                                detect_job_creation as _t12_detect,
+                            )
+                            from app.orchestrator.routing.post_wizard_continuation import (
+                                store_continuation as _t12_store,
+                            )
+                            _t12_detection = _t12_detect(content)
+                            if (
+                                _t12_detection is not None
+                                and _t12_detection.continuation_text
+                            ):
+                                _t12_store(
+                                    req.conversation_id or session_id,
+                                    company_id,
+                                    _t12_detection,
+                                    content,
+                                )
+                                logger.info(
+                                    "[SSEChat-T12] continuation stored conv=%s kind=%s text=%s",
+                                    req.conversation_id or session_id,
+                                    _t12_detection.continuation_kind,
+                                    _t12_detection.continuation_text,
+                                )
+                    except Exception as _t12_store_exc:
+                        logger.debug(
+                            "[SSEChat-T12] disambiguator skipped: %s", _t12_store_exc,
+                        )
+
                 async def _run_wizard():
                     return await WizardSessionService.process_message(
                         thread_id=_wiz_thread_id,
@@ -638,6 +851,47 @@ company_id: str = Depends(require_company_id)):
                         ),
                         next_id(),
                     )
+
+                # ── T12: Post-wizard continuation OFFER ──────────────────────
+                # When the wizard reaches a terminal stage and a composite
+                # continuation was parked at bootstrap, LIA proactively offers
+                # the remaining task in the chat.
+                if os.environ.get("LIA_POST_WIZARD_CONTINUATION", "1") == "1":
+                    try:
+                        _t12_stage = (
+                            (_wiz_payload or {}).get("stage", "")
+                            if isinstance(_wiz_payload, dict)
+                            else ""
+                        )
+                        _T12_DONE_STAGES = {"done", "completed", "finished", "handoff"}
+                        if _t12_stage in _T12_DONE_STAGES:
+                            from app.orchestrator.routing.post_wizard_continuation import (
+                                mark_offered as _t12_mark,
+                                build_offer_message as _t12_build_offer,
+                                get_continuation as _t12_get_cont,
+                            )
+                            _t12_cont = _t12_get_cont(req.conversation_id or session_id)
+                            if _t12_cont is not None:
+                                _t12_job_id = None
+                                if isinstance(_wiz_payload, dict):
+                                    _t12_job_id = _wiz_payload.get("job_vacancy_id") or (
+                                        _wiz_payload.get("data") or {}
+                                    ).get("job_id")
+                                _t12_offered = _t12_mark(
+                                    req.conversation_id or session_id, _t12_job_id,
+                                )
+                                if _t12_offered is not None:
+                                    _wiz_clean = _wiz_clean + _t12_build_offer(_t12_offered)
+                                    logger.info(
+                                        "[SSEChat-T12] offer surfaced conv=%s stage=%s job_id=%s",
+                                        req.conversation_id or session_id,
+                                        _t12_stage,
+                                        _t12_job_id,
+                                    )
+                    except Exception as _t12_offer_exc:
+                        logger.debug(
+                            "[SSEChat-T12] post-wizard offer skipped: %s", _t12_offer_exc,
+                        )
 
                 yield format_sse_event(
                     serialize_message(

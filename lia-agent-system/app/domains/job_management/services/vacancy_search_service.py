@@ -6,6 +6,7 @@ Provides functionality to:
 - Search previous vacancies by criteria
 - Apply adjustments to reused vacancies
 """
+from app.shared.llm_models import CANONICAL_GEMINI_FLASH_MODEL
 import json
 import logging
 import re
@@ -97,7 +98,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             gemini = self._llm_service.gemini_native
             response = await gemini.aio.models.generate_content(
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 contents=prompt
             )
             
@@ -336,7 +337,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             gemini = self._llm_service.gemini_native
             response = await gemini.aio.models.generate_content(
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 contents=prompt
             )
             

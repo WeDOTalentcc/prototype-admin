@@ -923,23 +923,23 @@ async def update_candidate_stage(
         # vacancy_candidate.company_id (row do tenant), NUNCA do request.
         if previous_stage != vacancy_candidate.stage:
             try:
-                from app.shared.messaging.platform_events import (
-                    StageChangedEvent,
-                    publish_platform_event,
-                )
-
+                from lia_events.schemas import StageChangedEvent
+                from app.shared.messaging.events_outbox_service import get_events_outbox_service
+                from lia_config.database import AsyncSessionLocal
                 _evt_company_id = str(getattr(vacancy_candidate, "company_id", "") or company_id)
-                await publish_platform_event(
-                    StageChangedEvent(
-                        company_id=_evt_company_id,
-                        payload={
-                            "candidate_id": str(candidate.id),
-                            "vacancy_id": str(vacancy_candidate.vacancy_id),
-                            "from_stage": previous_stage,
-                            "to_stage": vacancy_candidate.stage,
-                        },
-                    )
+                _evt = StageChangedEvent(
+                    company_id=_evt_company_id,
+                    payload={
+                        "candidate_id": str(candidate.id),
+                        "vacancy_id": str(vacancy_candidate.vacancy_id),
+                        "from_stage": previous_stage,
+                        "to_stage": vacancy_candidate.stage,
+                    },
+                    source_api="lia-agent-system",
                 )
+                async with AsyncSessionLocal() as _evt_db:
+                    await get_events_outbox_service().publish_via_outbox(_evt, _evt_db)
+                    await _evt_db.commit()
             except Exception as _evt_err:  # noqa: BLE001
                 logger.error(
                     "[C1.3] publish stage_changed failed (transicao prossegue): %s",

@@ -5,6 +5,7 @@ company_compensation_components: CRUD item-centric + escopo granular (contrato,
 departamento, area, filial/CNPJ) + vigencia. company_id SEMPRE do JWT.
 GET /map devolve {nivel: faixa-base} p/ o preview de R$ da verba.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import uuid as _uuid_module
 from datetime import date
@@ -118,7 +119,7 @@ async def _audit(current_user, company_id, target_id, operation):
     try:
         from app.shared.compliance.audit_service import AuditService as _AS
         await _AS().log_action(
-            trace_id=str(_uuid_module.uuid4()),
+            trace_id=get_correlation_id(),
             company_id=str(company_id),
             action_type="salary_bands_update",
             actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),

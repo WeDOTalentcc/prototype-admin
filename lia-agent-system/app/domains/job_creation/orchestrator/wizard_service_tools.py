@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from typing import Any, Optional
 
 from app.domains.job_creation.orchestrator.wizard_tools import (
@@ -2599,6 +2600,132 @@ INFER_DEPARTMENT = WizardTool(
 )
 
 
+
+
+# ---------------------------------------------------------------------------
+# T10 — Set Stakeholders (envolvidos adicionais)
+# ---------------------------------------------------------------------------
+
+_EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+_VALID_STAKEHOLDER_ROLES = {"hr_bp", "dept_head", "committee_member", "interviewer", "other"}
+
+
+def _handle_set_stakeholders(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Define os stakeholders/envolvidos adicionais da vaga.
+
+    Aceita lista de {name, email, role?}. Valida emails e roles.
+    Multi-tenancy: company_id proibido no input (sempre do ctx).
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    raw_stakeholders = tool_input.get("stakeholders")
+    if not raw_stakeholders or not isinstance(raw_stakeholders, list):
+        return ToolResult(
+            llm_message="stakeholders deve ser uma lista com ao menos 1 envolvido.",
+            error=True,
+        )
+
+    if len(raw_stakeholders) > 20:
+        return ToolResult(
+            llm_message="Maximo de 20 stakeholders por vaga.",
+            error=True,
+        )
+
+    validated = []
+    errors = []
+    for i, item in enumerate(raw_stakeholders):
+        if not isinstance(item, dict):
+            errors.append(f"stakeholders[{i}] deve ser um objeto")
+            continue
+        name = (item.get("name") or "").strip()
+        email = (item.get("email") or "").strip().lower()
+        role = (item.get("role") or "other").strip().lower()
+
+        if not name or len(name) < 2:
+            errors.append(f"stakeholders[{i}].name obrigatorio (min 2 chars)")
+            continue
+        if not email or not _EMAIL_PATTERN.match(email):
+            errors.append(f"stakeholders[{i}].email invalido: {email!r}")
+            continue
+        if role not in _VALID_STAKEHOLDER_ROLES:
+            errors.append(
+                f"stakeholders[{i}].role invalido: {role!r}. "
+                f"Aceitos: {sorted(_VALID_STAKEHOLDER_ROLES)}"
+            )
+            continue
+        validated.append({"name": name, "email": email, "role": role})
+
+    if errors:
+        return ToolResult(llm_message="; ".join(errors), error=True)
+
+    if not validated:
+        return ToolResult(
+            llm_message="Nenhum stakeholder valido fornecido.",
+            error=True,
+        )
+
+    # Build confirmation message
+    role_labels = {
+        "hr_bp": "HRBP",
+        "dept_head": "Lider de Area",
+        "committee_member": "Comite",
+        "interviewer": "Entrevistador",
+        "other": "Outro",
+    }
+    parts = []
+    for s in validated:
+        label = role_labels.get(s["role"], s["role"])
+        parts.append(f"- {s['name']} ({s['email']}) — {label}")
+    listing = "\n".join(parts)
+
+    return ToolResult(
+        llm_message=(
+            f"Stakeholders registrados ({len(validated)}):\n{listing}\n\n"
+            "Esses envolvidos receberao notificacoes sobre a vaga."
+        ),
+        state_updates={"parsed_stakeholders": validated},
+    )
+
+
+SET_STAKEHOLDERS = WizardTool(
+    name="set_stakeholders",
+    description=(
+        "Define os stakeholders/envolvidos adicionais da vaga (alem do gestor e "
+        "recrutador). Exemplos: HRBP, lider de area, membro de comite de "
+        "contratacao, entrevistador. Use quando o recrutador mencionar outras "
+        "pessoas envolvidas no processo seletivo."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "stakeholders": {
+                "type": "array",
+                "description": "Lista de envolvidos adicionais",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string", "description": "Nome completo"},
+                        "email": {"type": "string", "description": "Email profissional"},
+                        "role": {
+                            "type": "string",
+                            "enum": ["hr_bp", "dept_head", "committee_member", "interviewer", "other"],
+                            "description": "Papel: hr_bp (HRBP), dept_head (Lider de Area), committee_member (Comite), interviewer (Entrevistador), other (Outro)",
+                        },
+                    },
+                    "required": ["name", "email"],
+                },
+            },
+        },
+        "required": ["stakeholders"],
+        "additionalProperties": False,
+    },
+    handler=_handle_set_stakeholders,
+)
+
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
@@ -2620,5 +2747,6 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     ADD_BANK_QUESTION,
     SET_AFFIRMATIVE_FIELDS,
     INFER_DEPARTMENT,
+    SET_STAKEHOLDERS,
     CLOSE_PANEL,
 )

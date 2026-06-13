@@ -6,6 +6,7 @@ Routes:
   POST /analyze-response
   POST /complete-screening
 """
+from app.shared.llm_models import CANONICAL_SONNET_MODEL
 import json
 import logging
 import uuid
@@ -191,7 +192,7 @@ Return ONLY valid JSON:
 
         response = await _run_anthropic_sync(
             client,
-            model="claude-sonnet-4-6",
+            model=CANONICAL_SONNET_MODEL,
             max_tokens=1024,
             messages=[{"role": "user", "content": prompt}],
             timeout=30.0

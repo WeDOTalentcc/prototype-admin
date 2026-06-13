@@ -461,24 +461,24 @@ company_id: str = Depends(require_company_id)):
         # REGRA 4: fail-soft mas LOUD. Multi-tenancy: company_id de
         # job.company_id (contexto tenant), NUNCA do payload do request.
         try:
-            from app.shared.messaging.platform_events import (
-                CandidateAppliedEvent,
-                publish_platform_event,
+            from lia_events.schemas import CandidateAppliedEvent
+            from app.shared.messaging.events_outbox_service import get_events_outbox_service
+            from lia_config.database import AsyncSessionLocal
+            _evt = CandidateAppliedEvent(
+                company_id=str(job.company_id),
+                payload={
+                    "candidate_id": str(candidate.id),
+                    "vacancy_id": str(job.id),
+                },
+                source_api="lia-agent-system",
             )
-
-            await publish_platform_event(
-                CandidateAppliedEvent(
-                    company_id=str(job.company_id),
-                    payload={
-                        "candidate_id": str(candidate.id),
-                        "vacancy_id": str(job.id),
-                    },
-                )
-            )
-        except Exception as _evt_err:  # noqa: BLE001
+            async with AsyncSessionLocal() as _evt_db:
+                await get_events_outbox_service().publish_via_outbox(_evt, _evt_db)
+                await _evt_db.commit()
+        except Exception as _evt_err:  # noqa: BLE001  # REGRA-4-EXEMPT: event dispatch é best-effort
             logger.error(
-                "[C1.3] publish candidate_applied (web) failed (apply prossegue): %s",
-                _evt_err,
+                "[C1.3] publish candidate_applied outbox (web) failed (apply prossegue): %s",
+                type(_evt_err).__name__,
                 exc_info=True,
             )
 

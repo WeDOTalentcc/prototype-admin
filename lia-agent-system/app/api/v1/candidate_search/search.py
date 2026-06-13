@@ -1,4 +1,5 @@
 """Candidate search route: POST /candidates"""
+from app.middleware.request_id import get_correlation_id
 import asyncio
 import os
 import time as _time
@@ -219,7 +220,7 @@ company_id: str = Depends(require_company_id)):
                     import uuid as _uuid
                     from app.shared.compliance.audit_service import AuditService
                     await AuditService().log_action(
-                        trace_id=str(_uuid.uuid4()),
+                        trace_id=get_correlation_id(),
                         company_id=str(_company_id_audit) if _company_id_audit else "unattributed",
                         action_type="pearch.search.timeout",
                         actor="api:search_candidates",

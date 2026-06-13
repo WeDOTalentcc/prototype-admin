@@ -91,6 +91,9 @@ class JobVacancy(Base):
     manager_email = Column(String(255), nullable=True)
     recruiter = Column(String(255), nullable=True)
     recruiter_email = Column(String(255), nullable=True)
+    # T10 — Stakeholders/envolvidos adicionais (HRBP, líder de área, comitê, etc.)
+    # Format: [{"name": "Ana Silva", "email": "ana@co.com", "role": "hr_bp"}, ...]
+    stakeholders = Column(JSON, default=list, server_default="[]", nullable=False)
     created_by = Column(String(255), nullable=True)  # User who created via LIA
     
     # NEW: Organizational Structure

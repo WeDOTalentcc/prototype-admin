@@ -35,3 +35,4 @@ CANONICAL_SONNET_MODEL: str = "claude-sonnet-4-5-20250929"
 generation step than Haiku (e.g. wizard meta-question conversational
 replies). Cheap path stays Haiku; Sonnet is reserved for handlers that
 must produce a multi-sentence, tenant-aware reply."""
+CANONICAL_GEMINI_FLASH_MODEL: str = "gemini-2.5-flash"

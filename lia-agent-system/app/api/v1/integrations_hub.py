@@ -1,6 +1,7 @@
 """
 Integration Hub API endpoints for centralized integration management.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 from datetime import datetime
 
@@ -250,7 +251,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created integration connection: {connection.id} for provider {provider.name}")
         try:
-            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type="integration_connection_created", actor="system", target_id=str(connection.id), target_type="integration_connection", metadata={"provider_id": request.provider_id, "auth_type": request.auth_type, "sync_enabled": request.sync_enabled})  # P1-W3-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="integration_connection_created", actor="system", target_id=str(connection.id), target_type="integration_connection", metadata={"provider_id": request.provider_id, "auth_type": request.auth_type, "sync_enabled": request.sync_enabled})  # P1-W3-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return _connection_to_response(connection, provider)
@@ -291,7 +292,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         )
 
         try:
-            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type="integration_connection_updated", actor="system", target_id=connection_id, target_type="integration_connection", metadata={"sync_enabled": request.sync_enabled})  # P1-W3-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="integration_connection_updated", actor="system", target_id=connection_id, target_type="integration_connection", metadata={"sync_enabled": request.sync_enabled})  # P1-W3-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return _connection_to_response(connection, provider)
@@ -320,7 +321,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
         logger.info(f"Deleted integration connection: {connection_id}")
         try:
-            await AuditService().log_action(trace_id=str(_uuid_mod.uuid4()), company_id=company_id, action_type="integration_connection_deleted", actor="system", target_id=connection_id, target_type="integration_connection")  # P1-W3-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="integration_connection_deleted", actor="system", target_id=connection_id, target_type="integration_connection")  # P1-W3-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "message": "Connection deleted successfully"}
