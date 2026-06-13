@@ -40,6 +40,11 @@ from typing import Any, Callable, Optional
 
 logger = logging.getLogger(__name__)
 
+from app.domains.job_creation.services.seniority_resolver import (
+    _infer_from_title,
+    SENIORITY_DISPLAY_NAMES,
+)
+
 
 # ── Contratos ────────────────────────────────────────────────────────────
 
@@ -264,6 +269,22 @@ def _handle_set_job_fields(
             return ToolResult(llm_message=err, error=True)
         updates[_FIELD_TO_STATE_KEY[name]] = norm
         applied.append(f"{name}={norm!r}")
+
+    # T4: Seniority inference from title (deterministic, no DB)
+    if "parsed_title" in updates and "parsed_seniority" not in updates:
+        _title = updates["parsed_title"]
+        _inferred_level, _inferred_conf = _infer_from_title(_title)
+        if _inferred_level and _inferred_conf >= 0.8:
+            _display = SENIORITY_DISPLAY_NAMES.get(_inferred_level, _inferred_level)
+            updates["parsed_seniority"] = _inferred_level
+            applied.append(
+                f"seniority={_inferred_level!r} (inferido do titulo, "
+                f"confianca {_inferred_conf:.0%})"
+            )
+            notes.append(
+                f"Senioridade inferida do titulo: {_display}. "
+                f"Confirme ou ajuste se necessario."
+            )
 
     if _server_managed_note:
         notes.append(_server_managed_note)
