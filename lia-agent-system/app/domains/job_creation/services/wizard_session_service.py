@@ -1315,7 +1315,8 @@ class WizardSessionService:
             )
         except Exception as exc:  # noqa: BLE001 — payload é best-effort
             logger.warning(
-                "[WizardOrchestrator] payload build failed: %s", exc
+                "[WizardOrchestrator] payload build failed: %s", exc,
+                exc_info=True,
             )
             payload = {}
 
