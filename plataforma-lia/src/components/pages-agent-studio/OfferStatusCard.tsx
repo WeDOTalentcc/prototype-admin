@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CheckCircle2, Clock, Send, Loader2, XCircle, Plus, ChevronDown } from "lucide-react"
+import { CheckCircle2, Clock, Send, Loader2, XCircle, Plus, ChevronDown, RefreshCw } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 interface Job {
@@ -21,24 +21,28 @@ interface Offer {
   salary: number | null
   currency: string
   sent_at: string | null
-  responded_at: string | null
-  candidate_response: string | null
 }
 
 const STATUS_LABEL: Record<string, string> = {
   draft: "Rascunho",
   sent: "Enviada — aguardando resposta",
+  viewed: "Visualizada pelo candidato",
   accepted: "Aceita pelo candidato",
-  rejected: "Recusada pelo candidato",
-  withdrawn: "Retirada",
+  declined: "Recusada pelo candidato",
+  counter_proposed: "Contraproposta recebida",
+  expired: "Expirada",
+  cancelled: "Cancelada",
 }
 
 const STATUS_ICON: Record<string, React.ReactNode> = {
   draft: <Clock className="w-4 h-4 text-wedo-orange" />,
   sent: <Clock className="w-4 h-4 text-lia-text-primary" />,
+  viewed: <Clock className="w-4 h-4 text-lia-text-secondary" />,
   accepted: <CheckCircle2 className="w-4 h-4 text-wedo-green" />,
-  rejected: <XCircle className="w-4 h-4 text-lia-text-tertiary" />,
-  withdrawn: <XCircle className="w-4 h-4 text-lia-border-default" />,
+  declined: <XCircle className="w-4 h-4 text-lia-text-tertiary" />,
+  counter_proposed: <RefreshCw className="w-4 h-4 text-wedo-orange" />,
+  expired: <XCircle className="w-4 h-4 text-lia-border-default" />,
+  cancelled: <XCircle className="w-4 h-4 text-lia-border-default" />,
 }
 
 export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
@@ -52,7 +56,6 @@ export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
   const [candidateId, setCandidateId] = useState("")
   const [salary, setSalary] = useState("")
 
-  // Sync if parent supplies jobId after initial render
   useEffect(() => {
     if (jobId && !selectedJobId) setSelectedJobId(jobId)
   }, [jobId, selectedJobId])
@@ -61,7 +64,7 @@ export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
     setLoading(true)
     try {
       const res = await fetch(
-        `/api/backend-proxy/job-offers?job_vacancy_id=${encodeURIComponent(jid)}&limit=20`,
+        `/api/backend-proxy/offers/drafts?job_vacancy_id=${encodeURIComponent(jid)}&limit=20`,
         { credentials: "include" }
       )
       if (res.ok) {
@@ -84,14 +87,14 @@ export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
     setActionLoading("create")
     setError(null)
     try {
-      const res = await fetch("/api/backend-proxy/job-offers", {
+      const res = await fetch("/api/backend-proxy/offers/drafts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           job_vacancy_id: selectedJobId,
           candidate_id: candidateId.trim(),
-          salary: salary ? parseFloat(salary) : null,
+          salary: salary ? parseFloat(salary) : undefined,
         }),
       })
       if (!res.ok) {
@@ -109,11 +112,23 @@ export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
     }
   }
 
-  const handleAction = async (offerId: string, action: "send" | "withdraw") => {
-    setActionLoading(offerId + action)
+  const handleSend = async (offerId: string) => {
+    setActionLoading(offerId + "send")
     try {
-      await fetch(`/api/backend-proxy/job-offers/${offerId}/${action}`, {
-        method: "PATCH",
+      await fetch(`/api/backend-proxy/offers/drafts/${offerId}/send`, {
+        method: "POST",
+        credentials: "include",
+      })
+      if (selectedJobId) await loadOffers(selectedJobId)
+    } catch { /* silently skip */ }
+    finally { setActionLoading(null) }
+  }
+
+  const handleWithdraw = async (offerId: string) => {
+    setActionLoading(offerId + "withdraw")
+    try {
+      await fetch(`/api/backend-proxy/offers/drafts/${offerId}`, {
+        method: "DELETE",
         credentials: "include",
       })
       if (selectedJobId) await loadOffers(selectedJobId)
@@ -184,14 +199,14 @@ export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
                   </p>
                   <p className="text-micro text-lia-text-tertiary truncate">
                     Candidato: {offer.candidate_id.slice(0, 8)}…
-                    {offer.salary ? ` · R$ ${offer.salary.toLocaleString("pt-BR")}` : ""}
+                    {offer.salary ? ` · R$ ${Number(offer.salary).toLocaleString("pt-BR")}` : ""}
                   </p>
                 </div>
                 {offer.status === "draft" && (
                   <button
                     type="button"
                     disabled={actionLoading === offer.id + "send"}
-                    onClick={() => handleAction(offer.id, "send")}
+                    onClick={() => handleSend(offer.id)}
                     className="text-micro font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover rounded-md px-2.5 py-1.5 transition-colors disabled:opacity-50 flex items-center gap-1"
                   >
                     {actionLoading === offer.id + "send"
@@ -204,10 +219,10 @@ export function OfferStatusCard({ jobId, jobs = [] }: OfferStatusCardProps) {
                   <button
                     type="button"
                     disabled={actionLoading === offer.id + "withdraw"}
-                    onClick={() => handleAction(offer.id, "withdraw")}
+                    onClick={() => handleWithdraw(offer.id)}
                     className="text-micro text-lia-text-tertiary hover:text-status-error rounded-md px-2 py-1.5 transition-colors disabled:opacity-50"
                   >
-                    Retirar
+                    Cancelar
                   </button>
                 )}
               </div>
