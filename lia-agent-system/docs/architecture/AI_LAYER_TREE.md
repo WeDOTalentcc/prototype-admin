@@ -1,12 +1,17 @@
 # LIA AI Layer — Architecture Tree
 
 > **Fonte-da-verdade = código.** This document was produced by walking the real
-> filesystem of `lia-agent-system/app/` and `lia-agent-system/libs/agents-core/`
-> (not by trusting `ARCHITECTURE.md`, `ARCHITECTURE_TARGET*.md`, or the
-> `LIA_REFACTORING_REPORT*.md` files, several of which describe aspirational
-> target states). Every path shown below exists in the tree at the time of
-> writing. Noise (`__pycache__`, `*.pyc`, test internals, migration internals)
-> is collapsed or omitted.
+> filesystem of `lia-agent-system/app/`, `lia-agent-system/libs/`, and
+> `lia-agent-system/apps/` (not by trusting `ARCHITECTURE.md`,
+> `ARCHITECTURE_TARGET*.md`, or the `LIA_REFACTORING_REPORT*.md` files, several
+> of which describe aspirational target states). Every path shown below exists
+> in the tree at the time of writing. Noise (`__pycache__`, `*.pyc`, test
+> internals, migration internals) is collapsed or omitted.
+>
+> **Última revisão completa: 2026-06-13.** Atualizado para o estado ADR-031:
+> 7 sub-apps Strangler Fig (`apps/`), 11 libs, categoria Tool-Library Agentic
+> (3 domínios promovidos), 19 `@register_domain` total, 38 platform tools
+> (23 read + 8 write + 7 HITL-gated). Ver `docs/architecture/ADR-031-canonical-domain-architecture.md`.
 
 The AI layer is a FastAPI service that turns recruiter/candidate natural-language
 input into routed, tenant-scoped, compliance-wrapped agent executions. A request
@@ -206,7 +211,10 @@ Termos usados neste documento com significado específico ao projeto.
 | **ContextVar** | `contextvars.ContextVar` do Python. Variável isolada por contexto de request (equivalente a thread-local em async). Usado para `_current_company_id`, `_active_vacancy_id`, etc. |
 | **Persona** | Nome + tom configuráveis por tenant para a IA. "LIA" é o padrão; cada empresa pode renomear. Veja §0.2. |
 | **Action Register** | Registro de ações pendentes de implementação ou correção. Veja §16. |
-| **ADR** | Architecture Decision Record. Documento que registra uma decisão arquitetural com contexto, alternativas e consequências. Em `docs/specs/ai/ADR-*.md`. |
+| **ADR** | Architecture Decision Record. Documento que registra uma decisão arquitetural com contexto, alternativas e consequências. Em `docs/specs/ai/ADR-*.md` e `docs/architecture/ADR-*.md`. |
+| **Tool-Library Agentic** | Domain class (ADR-031): tem `domain.py` + `@register_domain` + `ComplianceDomainPrompt` + `tools/` mas `execute()` raises `NotImplementedError`. Serve como biblioteca de tools para o Agent Studio — não é um ReActAgent conversacional. |
+| **Strangler Fig** | Padrão arquitetural para decompor progressivamente `app/` em sub-apps independentes em `apps/`. Cada sub-app assume uma fatia de funcionalidade; marcadores `MONOLITH-IMPORT` rastreiam o acoplamento restante. |
+| **MONOLITH-IMPORT** | Marcador de comentário inline (~64 arquivos em 2026-06-13) indicando que uma dependência é importada diretamente do monolito `app/` e deve ser extraída para um pacote `libs/` compartilhado. |
 
 ---
 
@@ -231,6 +239,28 @@ lia-agent-system/
 `main.py` imports `app.shared.llm_bootstrap.install_llm_guards` **first** — before
 any module instantiates an LLM client — so every SDK call is monkey-patched for
 PII stripping, per-tenant credit gating, and audit logging.
+
+### 1.1 Strangler Fig sub-apps — `apps/`
+
+O monolito `app/` está sendo progressivamente decomposto em sub-apps independentes
+sob `apps/` (padrão Strangler Fig). Cada sub-app é independentemente deployável
+com seu próprio `main.py`, `Dockerfile`, `pyproject.toml` e `CLAUDE.md`.
+
+```
+apps/
+├── api-admin/        # Admin endpoints (role: wedotalent_admin)
+├── api-agentes/      # Agent execution + chat SSE
+├── api-comunicacao/  # Email / WhatsApp / Teams
+├── api-funil/        # Talent funnel + pipeline
+├── api-onboarding/   # Company/tenant onboarding
+├── api-triagem/      # Candidate screening + WSI
+└── api-vagas/        # Job management
+```
+
+Marcadores `MONOLITH-IMPORT` (~64 arquivos em 2026-06-13) rastreiam infraestrutura
+ainda importada diretamente de `app/` que deve ser extraída para `libs/`. A
+arquitetura canônica de domínio está em
+`docs/architecture/ADR-031-canonical-domain-architecture.md`.
 
 ---
 
@@ -368,11 +398,19 @@ without following the T-D pattern (TenantAwareAgentMixin) breaks the build.
 
 ## 4. Domains — `app/domains/`
 
-**65 directories** no filesystem atual (o `DOMAIN_CATALOG.md` registra 59 — desatualizado desde Sprint 11; os 6 domínios adicionais são stubs pós-Sprint criados sem catalogar), classified as: **13 Agentic** + **3
-Micro-Action** (= 16 `@register_domain`), **11 Service**, **30 Repository-stub**,
-**2 Canonical-Active-legacy**. Registration is via `@register_domain` in
-`app/domains/registry.py`; base contracts in `app/domains/base.py` and
-`app/domains/compliance_base.py` (all domains MUST extend `ComplianceDomainPrompt`).
+**65 directories** no filesystem atual, classified as: **13 Agentic** + **3 Micro-Action**
++ **3 Tool-Library Agentic** (= **19 `@register_domain`** total), **8 Service** (pure,
+non-registered), **29 Repository-stub**, **2 Canonical-Active-legacy**.
+Registration is via `@register_domain` in `app/domains/registry.py`; base contracts
+in `app/domains/base.py` and `app/domains/compliance_base.py` (all domains MUST
+extend `ComplianceDomainPrompt`).
+
+> **Tool-Library Agentic (ADR-031):** `interview_intelligence`, `talent_intelligence`,
+> `workforce` — têm `domain.py` + `@register_domain` + `ComplianceDomainPrompt` +
+> `tools/` mas `execute()` raises `NotImplementedError`. Servem como carregadores de
+> tools para o Agent Studio (`platform_tools.yaml`): 5 + 15 + 1 tools respectivamente.
+> Ativação via `ModuleService.seed_beta_modules` ou `POST /modules/company/{id}/activate`.
+> ADR canônico: `docs/architecture/ADR-031-canonical-domain-architecture.md`.
 
 Each domain shows only the canonical sub-parts that **actually exist**.
 AI-heavy domains are flagged ⭐.
@@ -508,29 +546,38 @@ app/domains/
     └── repositories/
 ```
 
+### Tool-Library Agentic domains (`@register_domain`, tools/ — execute() → NotImplementedError)
+
+```
+├── interview_intelligence/ ⭐     # bias_detector, comparative_analysis, strategic_opinion,
+│   ├── domain.py                  #   interview_wsi, feedback_generator, transcription
+│   └── tools/                    #   5 tools in Agent Studio platform_tools.yaml
+├── talent_intelligence/ ⭐        # skills ontology, internal mobility, workforce planning,
+│   ├── domain.py                  #   market intel, candidate nurture, proximity embeddings
+│   └── tools/                    #   15 tools in Agent Studio platform_tools.yaml
+└── workforce/                     # workforce planning tools
+    ├── domain.py
+    └── tools/                    #   1 tool in Agent Studio platform_tools.yaml
+```
+
+> Não são ReActAgents conversacionais. Contribuem tools ao registry do Agent Studio.
+> Ativação via `ModuleService` (todos em `initial_status=beta`).
+
 ### Service domains (business logic, not orchestrator-routable)
 
 ```
 ├── ai/                            # LLMService, response cache, prompt mgmt
 │   ├── repositories/
 │   └── services/
-├── interview_intelligence/ ⭐     # bias_detector, comparative_analysis,
-│   │                              #   strategic_opinion, interview_wsi,
-│   │                              #   feedback_generator, transcription
-│   └── services/
 ├── voice/ ⭐                      # gemini_live_audio, voice_screening_orchestrator,
 │   │                              #   voice_core_orchestrator, realtime_credit_session
+│   │                              #   (promotion candidate → add domain.py + @register_domain)
 │   ├── services/
 │   ├── plugins/
 │   ├── protocols/
 │   ├── schemas/
 │   └── repositories/
 ├── persona/ ⭐                    # ai_persona_service + validators
-│   └── services/
-├── talent_intelligence/ ⭐        # skills ontology, internal mobility, workforce
-│   │                              #   planning, market intel, candidate nurture,
-│   │                              #   interview_intelligence_tools (cross-call)
-│   ├── tools/
 │   └── services/
 ├── company/
 ├── candidates/
@@ -581,7 +628,8 @@ app/domains/
 #   chat, clients, client_users, company_culture, data_subject, email_templates, goals,
 #   health_check, job_vacancies_analytics, journey_mapping, lia_assistant, notifications,
 #   observability, recruitment_journey, saas_metrics, shared_searches, tasks,
-#   technical_tests, triagem, trust_center, workforce
+#   technical_tests, triagem, trust_center
+#   (workforce reclassificado → Tool-Library Agentic em 2026-06-13)
 ```
 
 > Files of note: `app/domains/registry.py` (DomainRegistry singleton +
@@ -796,9 +844,24 @@ libs/agents-core/lia_agents_core/
 └── sourcing_engagement_nodes.py
 ```
 
-> Sibling `libs/` packages (`audit`, `config`, `messaging`, `models`, `schemas`,
-> `services`, `utils`) provide shared infra (e.g. `lia_config.database`,
-> `lia_models`) consumed across the AI layer.
+> **`libs/` — 11 pacotes irmãos** ao lado de `agents-core` (2026-06-13):
+>
+> | Pacote | Módulos principais |
+> |---|---|
+> | `audit` | audit_callback, audit_models, audit_storage, audit_writer |
+> | `config` | config (settings), database (SQLAlchemy engine), celery_app |
+> | `events` | platform event bus primitives |
+> | `lia-llm` | model tiers, safe_response, provider shims |
+> | `lia-pii` | field_catalog, field_visibility, masking (PII canônico) |
+> | `messaging` | email, teams, whatsapp, notification_service |
+> | `models` | 170+ modelos SQLAlchemy — fonte única de verdade do schema DB |
+> | `schemas` | ATS / Rails sync DTOs |
+> | `services` | primitivas de service cross-layer |
+> | `utils` | datetime_helpers, skill_classifier |
+>
+> Importados via caminhos absolutos (`from lia_models.*`, `from lia_config.database import *`, etc.).
+> O pacote `libs/models` é a **camada canônica de tipos de dados** — nenhuma definição
+> `__tablename__` existe em `app/domains/`.
 
 ---
 
@@ -1185,20 +1248,25 @@ transitions) · `recruiter_assistant` (general copilot + fallback) · `sourcing`
 digital-twin creation/eval) · `recruitment_campaign` (multi-stage campaigns) ·
 `talent_pool` (pool management).
 
-**Service (11, business logic, not router-routable):** `ai` (LLM services,
+**Tool-Library Agentic (3, `@register_domain`, sem execute()):**
+`interview_intelligence` (bias detection, comparative analysis — 5 tools) ·
+`talent_intelligence` (skills ontology, internal mobility, workforce planning — 15 tools) ·
+`workforce` (workforce planning tools — 1 tool). Todos contribuem ao Agent Studio
+`platform_tools.yaml` e devem ser ativados via `ModuleService`.
+
+**Service (8, business logic, não `@register_domain`):** `ai` (LLM services,
 response cache, prompt mgmt) · `billing` · `candidates` (candidate CRUD) ·
 `company` (company config) · `credits` (token consumption) · `integrations_hub`
-(third-party integration mgmt) · `interview_intelligence` (bias detection,
-comparative analysis; promotion candidate) · `lgpd` (data-protection compliance) ·
+(third-party integration mgmt) · `lgpd` (data-protection compliance) ·
 `modules` (feature gating) · `recruitment` (process data) · `voice` (voice
-screening; promotion candidate). Also AI-relevant: `persona` (AI persona
-personalization), `talent_intelligence` (skills ontology, internal mobility,
-workforce planning), `offer` (offer mgmt with SOX audit), `candidate_self_service`,
-`company_settings`.
+screening — promotion candidate: add `domain.py` + `@register_domain`).
+Also AI-relevant: `persona` (AI persona), `offer` (offer mgmt with SOX audit),
+`candidate_self_service`, `company_settings`.
 
-🟡 **Repository-stub (30):** pure CRUD (`__init__.py` + `dependencies.py` +
+🟡 **Repository-stub (29):** pure CRUD (`__init__.py` + `dependencies.py` +
 `repositories/` only). Consumed by agentic domains and routes; not agents. Full
-list in `DOMAIN_CATALOG.md`.
+list in `DOMAIN_CATALOG.md`. (`workforce` reclassificado para Tool-Library Agentic
+em 2026-06-13.)
 
 🟡 **Canonical-active legacy (2):** `autonomous` (ReAct fallback) and `policy` (the
 real `PolicyEngineService` + `PolicySetupAgent` + sector FairnessGuard rules).
@@ -1436,6 +1504,12 @@ layer. 🔵 **NOTE** — the main remaining work is shifting some advanced filte
 service layer down into `CustomAgentRepository`; the core lifecycle, runtime, and
 guardrails are solid.
 
+> **Platform tools count (2026-06-13):** `platform_tools.yaml` registra **38 tools
+> total**: 23 read + 8 write no dict `tools:` (= 31 tools regulares) + 7 tools
+> HITL-gated em uma seção separada `hitl_required:`. Os 3 domínios Tool-Library
+> Agentic contribuem 21 dos 31 `tools:` (interview_intelligence: 5,
+> talent_intelligence: 15, workforce: 1). Total acessível a um custom agent = 38.
+
 ---
 
 ## 14. Enterprise-architecture diagnosis
@@ -1486,10 +1560,11 @@ consistency (form), not capability (function): everything works.
   + `PolicySetupAgent` + sector FairnessGuard rules) - a reader cannot tell from
   the namespace where hiring rules are actually enforced. `hiring_policy` does NOT
   replace `policy`.
-- 🟡 **Migration debt.** `interview_intelligence` and `voice` carry agentic-grade
-  logic (2026 / 1725 LOC) but are still classified as service domains (promotion
-  candidates). `talent_intelligence` similarly has tools/services without a
-  `domain.py`.
+- 🟡 **Migration debt (parcial).** `voice` (1725 LOC) é o promotion candidate
+  restante — add `domain.py` + `@register_domain` para completar a transição.
+  `interview_intelligence`, `talent_intelligence` e `workforce` foram promovidos
+  para **Tool-Library Agentic** (2026-06-13): têm `domain.py` + `@register_domain`
+  + `ComplianceDomainPrompt` + `tools/`; `execute()` é stub planejado. Ver ADR-031.
 - 🟡 **Two overlapping "16"s.** The 16 routable ReActAgents and the 16
   `@register_domain` domains are different sets (§10.1), which is a recurring source
   of confusion.
@@ -1587,7 +1662,7 @@ blockers; they are the cleanup backlog behind the §14 diagnosis.
 | 4 | ✅ | ~~BYOK gap: embeddings e o cache de roteamento sempre usam a chave da plataforma~~ **RESOLVIDO (Gap E, commit `b833358ad`)**: `company_id` propagado em 3 call sites (VectorSemanticCache, rag generate_embedding, memory_service). Gap 4 (alias dead-code) não tocado. | §8.1, §8.3 | `app/orchestrator/memory/vector_semantic_cache.py`, `app/domains/ai/services/rag_pipeline_service.py` |
 | 5 | 🟡 | 30 repository stubs pollute `app/domains/`; relocate to a data-access namespace | §4, §14.2, §15 | the 30 stub dirs + sensors `scripts/check_stub_invariants.py`, `validate_stubs.py`, `check_canonical_domain_structure.py`, `check_no_imports_from_deprecated.py` + `app/shared/tool_catalog.py` |
 | 6 | 🟡 | `hiring_policy` vs `policy` ownership overlap (where are hiring rules actually enforced?) | §4, §10.2, §14.2 | `app/domains/hiring_policy/`, `app/domains/policy/` |
-| 7 | 🟡 | Promote `interview_intelligence` / `voice` / `talent_intelligence` to the canonical agentic shape | §4, §10.2, §14.2 | those domain dirs (add `domain.py` + `@register_domain`) |
+| 7 | ✅ | **`interview_intelligence`, `talent_intelligence`, `workforce` promovidos para Tool-Library Agentic** (2026-06-13): os 3 têm `domain.py` + `@register_domain` + `ComplianceDomainPrompt` + `tools/`. Restante: promover `voice` para a forma agentica completa. | §4, §10.2, §14.2 | `app/domains/voice/` (add `domain.py` + `@register_domain`) |
 | 8 | 🟡 | Two different "16"s (routable agents vs `@register_domain` domains) confuse readers | §10.1, §14.2 | doc-level + `app/domains/DOMAIN_CATALOG.md` |
 | 9 | 🔵 | Agent Studio: move advanced filter logic from the service layer into `CustomAgentRepository` | §13 | `app/domains/agent_studio/` |
 | 10 | 🔵 | `workforce` is a stub with `agents/` + a dynamic string path; handle separately from the pure stubs | §15.4 | `app/domains/workforce/`, `app/shared/tool_catalog.py` |
@@ -1601,6 +1676,9 @@ blockers; they are the cleanup backlog behind the §14 diagnosis.
 | 18 | ✅ | **Sprint 3 — sensor de governança (commit `a936a1b7e`)**: `scripts/check_require_company_justified.py` (AST, blocking, baseline 0, 4 testes) — toda exceção ao fail-closed de tenant (`require_company=False`) exige justificativa inline auditável (LGPD/SOX). É feedforward de governança, não detector de vazamento. | §14.2 | `scripts/check_require_company_justified.py`, `.github/workflows/ci.yml` |
 | 19 | 🟡 | **HITL fragmentado por caller (descoberto 2026-06-09, consolidação)**: não há chokepoint único — federado usa `_HITL_ACTION_TYPES`, supervisor usa `intents_config`, `tool_handler` tem `requires_confirmation` (não usado nas escritas do federado). Funciona hoje, mas ao "cobrir tudo" o ideal é mover o HITL para o chokepoint do `tool_handler` (gate universal, qualquer caller). Mitigado por enquanto pelo sensor G-FED-HITL (commit `f4b0bbff5`). | §12.3 | `app/shared/tool_handler.py`, `recruiter_copilot_react_agent.py`, `app/orchestrator/.../intents_config.py` |
 | 20 | ✅ | **Consolidação: sensor G-FED-HITL (commit `f4b0bbff5`)**: toda tool de escrita do federado (`_FEDERATION_SPEC`) exige gate HITL — prepara o "copiloto onipotente" com segurança. AST, blocking, baseline 0. | §12.3 | `scripts/check_federated_hitl_coverage.py`, `.github/workflows/ci.yml` |
+
+| 21 | ✅ | **ADR-031 criado (2026-06-13):** `docs/architecture/ADR-031-canonical-domain-architecture.md` documenta a arquitetura canônica de domínios (13 agentic + 3 micro-action + 3 tool-library = 19 registered, 8 service, 29 repository-stub) e a estratégia Strangler Fig para decomposição do monolito em `apps/`. | §4, §7 | `docs/architecture/ADR-031-canonical-domain-architecture.md` |
+| 22 | 🔵 | **Strangler Fig progress tracking:** 7 sub-apps em `apps/` + ~64 `MONOLITH-IMPORT` markers. Extrair para `libs/` à medida que cada domínio migra. | §1.1 | `apps/*/`, `libs/` |
 
 ---
 
