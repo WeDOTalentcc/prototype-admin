@@ -270,6 +270,15 @@ class AutomationScheduler:
             )
 
             # Frente C — detectores proativos (15) por empresa, independente do MonitoringLoop
+
+            self.scheduler.add_job(
+                self.run_expire_pending_offers,
+                IntervalTrigger(hours=1),
+                id="expire_pending_offers",
+                name="2.13 — Expirar propostas com deadline vencido",
+                replace_existing=True,
+            )
+
             self.scheduler.add_job(
                 self.run_proactive_detection,
                 IntervalTrigger(hours=1),
@@ -1128,6 +1137,50 @@ Equipe de Recrutamento
             except Exception:
                 pass
             logger.error("M2 expire_trials failed: %s", exc)
+
+    async def run_expire_pending_offers(self) -> None:
+        """2.13 — Mark offers as expired when response_deadline passed.
+
+        Runs hourly. Queries ALL tenants for pending offers with deadline < now.
+        For each: marks status=expired + fires OFFER_EXPIRED trigger (fail-soft).
+        """
+        try:
+            from app.core.database import async_session_factory
+            from app.domains.offer.repositories.offer_repository import OfferRepository
+            from app.domains.offer.services.offer_service import OfferService
+
+            async with async_session_factory() as db:
+                repo = OfferRepository(db)
+                expired_offers = await repo.list_deadline_passed(limit=500)
+
+                if not expired_offers:
+                    logger.debug("[expire_offers] no pending expired offers found")
+                    return
+
+                logger.info("[expire_offers] found %d offers to expire", len(expired_offers))
+
+                for offer in expired_offers:
+                    try:
+                        svc = OfferService(db)
+                        await svc.mark_expired(
+                            offer_id=offer.id,
+                            company_id=offer.company_id,
+                        )
+                        await db.commit()
+                        logger.info(
+                            "[expire_offers] expired offer=%s company=%s candidate=%s",
+                            offer.id, offer.company_id, offer.candidate_name,
+                        )
+                    except Exception as _e:
+                        await db.rollback()
+                        logger.warning(
+                            "[expire_offers] failed to expire offer=%s: %s",
+                            offer.id, _e,
+                        )
+
+        except Exception as exc:
+            logger.error("[expire_offers] scheduler job failed: %s", exc)
+
 
     async def run_lgpd_cleanup(self):
         """

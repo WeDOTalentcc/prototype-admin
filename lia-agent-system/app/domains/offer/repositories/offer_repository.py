@@ -68,6 +68,26 @@ class OfferRepository:
         )
         return result.scalar_one_or_none()
 
+
+    async def list_deadline_passed(self, limit: int = 500) -> list[OfferProposal]:
+        """ADR-001: find offers where response_deadline < now and status pending.
+
+        Cross-tenant: intentionally no company_id filter — scheduler processes
+        all tenants. Each returned offer carries its own company_id.
+        """
+        from datetime import datetime as _dt
+        now = _dt.utcnow()
+        result = await self._db.execute(
+            select(OfferProposal).where(
+                and_(
+                    OfferProposal.status.in_(["sent", "viewed"]),
+                    OfferProposal.response_deadline.isnot(None),
+                    OfferProposal.response_deadline < now,
+                )
+            ).limit(limit)
+        )
+        return list(result.scalars().all())
+
     async def list_by_candidate(
         self, company_id: str, candidate_id: str
     ) -> list[OfferProposal]:
