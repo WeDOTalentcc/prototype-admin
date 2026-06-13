@@ -280,10 +280,17 @@ export function useWizardChatCards(options: UseWizardChatCardsOptions): void {
   // stage name and full payload so UnifiedMessageList can dispatch to
   // the right card component (WizardIntakeCard, WizardJdCard, etc.).
   const stageCardInsertedRef = useRef(false)
+  const prevStageForCardRef = useRef<WizardStage | null>(null)
 
   useEffect(() => {
     const isCardStage =
       wizardStage != null && STAGE_CARD_STAGES.has(wizardStage)
+
+    // Reset latch on stage transition so the new stage can inject
+    if (wizardStage !== prevStageForCardRef.current) {
+      stageCardInsertedRef.current = false
+      prevStageForCardRef.current = wizardStage
+    }
 
     if (!isCardStage || !wizardStageData) {
       // Reset latch when leaving a card-eligible stage so the next
