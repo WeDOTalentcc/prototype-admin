@@ -409,6 +409,40 @@ def _handle_set_screening_mode(
     )
 
 
+
+def _handle_set_screening_deadline(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Define o prazo de triagem em horas. Default da empresa: 48h."""
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    hours = tool_input.get("hours")
+    if not hours or not isinstance(hours, (int, float)):
+        return ToolResult(
+            llm_message="Erro: informe o prazo em horas (ex: 48).",
+            error=True,
+        )
+    hours = int(hours)
+    if hours < 12 or hours > 720:
+        return ToolResult(
+            llm_message="Erro: prazo deve ser entre 12h e 720h (30 dias).",
+            error=True,
+        )
+    if hours <= 24:
+        display = f"{hours}h"
+    elif hours % 24 == 0:
+        days = hours // 24
+        display = f"{days} dia{'s' if days > 1 else ''}"
+    else:
+        display = f"{hours}h (~{hours // 24} dias)"
+    return ToolResult(
+        llm_message=f"Prazo de triagem definido: {display} a partir da publicacao.",
+        state_updates={"screening_deadline_hours": hours},
+    )
+
+
 def _handle_confirm_competencies(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -790,6 +824,27 @@ SET_SCREENING_MODE = WizardTool(
     handler=_handle_set_screening_mode,
 )
 
+SET_SCREENING_DEADLINE = WizardTool(
+    name="set_screening_deadline",
+    description=(
+        "Define o prazo de triagem (em horas) a partir da publicacao da vaga. "
+        "Default da empresa: 48h. Presets comuns: 24, 48, 72, 96, 120, 168 (7 dias). "
+        "O recrutador pode ajustar livremente entre 12h e 720h (30 dias)."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "hours": {
+                "type": "integer",
+                "description": "Prazo em horas (12-720). Ex: 48 = 2 dias, 168 = 7 dias.",
+            },
+        },
+        "required": ["hours"],
+        "additionalProperties": False,
+    },
+    handler=_handle_set_screening_deadline,
+)
+
 CONFIRM_COMPETENCIES = WizardTool(
     name="confirm_competencies",
     description=(
@@ -980,6 +1035,7 @@ GET_WIZARD_STATUS = WizardTool(
 PURE_TOOLS: tuple[WizardTool, ...] = (
     SET_JOB_FIELDS,
     SET_SCREENING_MODE,
+    SET_SCREENING_DEADLINE,
     CONFIRM_COMPETENCIES,
     UPDATE_COMPETENCIES,
     CONFIRM_RESPONSIBILITIES,

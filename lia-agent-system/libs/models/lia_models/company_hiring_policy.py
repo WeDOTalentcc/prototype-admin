@@ -49,6 +49,7 @@ COMMUNICATION_RULES_DEFAULTS = {
 }
 
 SCREENING_RULES_DEFAULTS = {
+    "screening_deadline_default_hours": 48,
     "experience_policy": "per_job",
     "minimum_compatibility_score": 0,   # P3a — reclassificado de narrativo (0 = sem corte)
     "default_screening_questions": [],
