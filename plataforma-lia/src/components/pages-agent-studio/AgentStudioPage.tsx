@@ -582,8 +582,7 @@ export default function AgentStudioPage({
     setActiveTab("marketplace")
   } else if (slug === "nps") {
     router.push(firstJobId ? `/${locale}/jobs/${firstJobId}` : `/${locale}/jobs`)
-  }/jobs/${firstJobId}` : `/${locale}/jobs`)
-    }
+  }
   }
 
   const studioTabs: PageTab[] = [
