@@ -50,4 +50,28 @@ export const offersApi = {
       method: "DELETE",
       body: JSON.stringify({ reason }),
     }),
+
+  getStatus: (offerId: string) =>
+    apiFetch<{
+      offer_id: string
+      status: string
+      sent_at: string | null
+      candidate_viewed_at: string | null
+      accepted_at: string | null
+      declined_at: string | null
+      response_deadline: string | null
+      offer_link: string | null
+    }>(`${BASE}/drafts/${offerId}/status`),
+
+  getByCandidate: (candidateId: string) =>
+    apiFetch<{
+      offer_id: string
+      status: string
+      sent_at: string | null
+      candidate_viewed_at: string | null
+      accepted_at: string | null
+      declined_at: string | null
+      response_deadline: string | null
+      offer_link: string | null
+    } | null>(`${BASE}/by-candidate/${candidateId}`),
 }

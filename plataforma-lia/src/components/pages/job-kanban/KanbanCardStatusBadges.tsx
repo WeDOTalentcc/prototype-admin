@@ -6,6 +6,7 @@ import { useLocale } from "next-intl"
 import { KanbanChip, type KanbanChipVariant } from "./KanbanChip"
 import { AISuggestionBadge } from "@/components/ai"
 import { OverrideApproveButton } from "@/components/kanban/components/OverrideApproveButton"
+import { OfferStatusBadgeConnected } from "@/components/offer/OfferStatusBadgeConnected"
 import {
   User,
   BrainCircuit,
@@ -388,6 +389,7 @@ export function KanbanCardStatusBadges({
                 label={t('inNegotiation')}
               />
             )}
+            <OfferStatusBadgeConnected candidateId={candidate.id} />
           </>
         )}
 

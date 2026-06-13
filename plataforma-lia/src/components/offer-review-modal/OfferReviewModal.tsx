@@ -24,6 +24,7 @@ import { JobDataPanel } from "./JobDataPanel"
 import { OfferDataForm } from "./OfferDataForm"
 import { OfferHITLBanner, type ConfirmState } from "./OfferHITLBanner"
 import type { OfferDraftUpdate } from "@/types/offer"
+import { OfferStatusTracker } from "@/components/offer/OfferStatusTracker"
 
 const DEBOUNCE_MS = 600
 
@@ -170,17 +171,10 @@ export function OfferReviewModal() {
           />
         </div>
 
-        {/* Copy-link field shown after successful send (P1-9 fix) */}
-        {confirmState === "success" && offerLink && (
-          <div className="mx-6 mb-1 flex items-center gap-2 text-xs bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-            <span className="flex-1 truncate font-mono text-green-800">{offerLink}</span>
-            <button
-              type="button"
-              onClick={() => navigator.clipboard.writeText(offerLink).catch(() => {})}
-              className="shrink-0 px-2 py-1 rounded bg-green-100 hover:bg-green-200 text-green-700 font-medium transition-colors"
-            >
-              Copiar link
-            </button>
+        {/* OfferStatusTracker: polling timeline after send (P1-9 upgrade) */}
+        {confirmState === "success" && draft?.id && (
+          <div className="mx-6 mb-1">
+            <OfferStatusTracker offerId={draft.id} />
           </div>
         )}
 

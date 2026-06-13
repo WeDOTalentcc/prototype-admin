@@ -190,3 +190,68 @@ company_id: str = Depends(require_company_id)):
     if not cancelled:
         raise HTTPException(status_code=404, detail="Proposta nao encontrada")
     await db.commit()
+
+
+class OfferStatusResponse(BaseModel):
+    offer_id: UUID
+    status: str
+    sent_at: "datetime | None" = None
+    candidate_viewed_at: "datetime | None" = None
+    accepted_at: "datetime | None" = None
+    declined_at: "datetime | None" = None
+    response_deadline: "datetime | None" = None
+    offer_link: str | None = None
+
+
+@router.get("/drafts/{offer_id}/status", response_model=OfferStatusResponse)
+async def get_offer_status(
+    offer_id: UUID,
+    db: AsyncSession = Depends(get_tenant_db),
+    current_user=Depends(get_current_user),
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: company_id from current_user (sensor false positive)
+    """Lightweight status endpoint — polled by OfferStatusTracker FE component."""
+    from app.domains.offer.services.offer_service import OfferService
+    company_id = current_user.company_id
+    svc = OfferService(db)
+    proposal = await svc.get_draft(offer_id, company_id)
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposta nao encontrada")
+    return OfferStatusResponse(
+        offer_id=proposal.id,
+        status=proposal.status,
+        sent_at=proposal.sent_at,
+        candidate_viewed_at=proposal.candidate_viewed_at,
+        accepted_at=proposal.accepted_at,
+        declined_at=proposal.declined_at,
+        response_deadline=proposal.response_deadline,
+        offer_link=proposal.acceptance_url,
+    )
+
+
+@router.get("/by-candidate/{candidate_id}", response_model=OfferStatusResponse | None)
+async def get_offer_by_candidate(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_tenant_db),
+    current_user=Depends(get_current_user),
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: company_id from current_user (sensor false positive)
+    """Latest offer for a candidate — polled by OfferStatusBadge in kanban."""
+    from app.domains.offer.repositories.offer_repository import OfferRepository
+    company_id = current_user.company_id
+    repo = OfferRepository(db)
+    proposals = await repo.list_by_candidate(company_id, candidate_id)
+    if not proposals:
+        return None
+    # Prefer most-recent non-draft (sent/accepted/etc)
+    proposal = next((p for p in proposals if p.status != "draft"), proposals[0])
+    return OfferStatusResponse(
+        offer_id=proposal.id,
+        status=proposal.status,
+        sent_at=proposal.sent_at,
+        candidate_viewed_at=proposal.candidate_viewed_at,
+        accepted_at=proposal.accepted_at,
+        declined_at=proposal.declined_at,
+        response_deadline=proposal.response_deadline,
+        offer_link=proposal.acceptance_url,
+    )
