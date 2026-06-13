@@ -471,6 +471,148 @@ class TeamsService:
                 "error": str(e)
             }
     
+    # ── Offer event notifications (called from offer_portal.py, fail-soft) ──
+
+    async def on_offer_viewed(
+        self,
+        offer_id: str,
+        company_id: str,
+        candidate_name: str,
+    ) -> None:
+        """Notify recruiter when candidate opens the offer portal link."""
+        try:
+            db_gen = get_db()
+            db = await db_gen.__anext__()
+            webhook_url, _ = await resolve_tenant_teams_webhook_url(company_id, db)
+            await db_gen.aclose()
+        except Exception:
+            webhook_url = None
+
+        if webhook_url:
+            await self.send_alert(
+                title="👁️ Proposta visualizada",
+                message=f"{candidate_name} abriu o link da proposta.",
+                severity=AlertSeverity.INFO,
+                webhook_url=webhook_url,
+                facts=[
+                    {"name": "Candidato", "value": candidate_name},
+                    {"name": "Proposta ID", "value": offer_id[:8] + "..."},
+                ],
+                source="Offer Portal",
+            )
+
+        # Fire automation trigger OFFER_VIEWED
+        try:
+            from app.domains.automation.services.automation_trigger_service import automation_trigger_service
+            from app.shared.automation.trigger_types_canonical import TriggerType
+            await automation_trigger_service.fire_offer_trigger(
+                trigger_type=TriggerType.OFFER_VIEWED,
+                offer_id=offer_id,
+                company_id=company_id,
+                candidate_name=candidate_name,
+                metadata={"event": "offer_viewed"},
+            )
+        except Exception as _e:
+            logger.debug("[teams_service] automation trigger OFFER_VIEWED skipped: %s", _e)
+
+    async def on_offer_responded(
+        self,
+        offer_id: str,
+        company_id: str,
+        candidate_name: str,
+        acao: str,
+        notas: str | None = None,
+    ) -> None:
+        """Notify recruiter when candidate accepts or declines via portal."""
+        is_accepted = acao == "aceitar"
+        severity = AlertSeverity.SUCCESS if is_accepted else AlertSeverity.WARNING
+        emoji = "✅" if is_accepted else "❌"
+        acao_label = "aceitou" if is_accepted else "recusou"
+
+        try:
+            db_gen = get_db()
+            db = await db_gen.__anext__()
+            webhook_url, _ = await resolve_tenant_teams_webhook_url(company_id, db)
+            await db_gen.aclose()
+        except Exception:
+            webhook_url = None
+
+        if webhook_url:
+            facts = [
+                {"name": "Candidato", "value": candidate_name},
+                {"name": "Decisão", "value": acao_label.capitalize()},
+                {"name": "Proposta ID", "value": offer_id[:8] + "..."},
+            ]
+            if notas:
+                facts.append({"name": "Observações", "value": notas[:200]})
+            await self.send_alert(
+                title=f"{emoji} Proposta {acao_label}",
+                message=f"{candidate_name} {acao_label} a proposta.",
+                severity=severity,
+                webhook_url=webhook_url,
+                facts=facts,
+                source="Offer Portal",
+            )
+
+        # Fire OFFER_DECLINED or let OFFER_ACCEPTED flow through existing handler
+        trigger_type_str = "offer_declined" if not is_accepted else "offer_accepted"
+        try:
+            from app.domains.automation.services.automation_trigger_service import automation_trigger_service
+            from app.shared.automation.trigger_types_canonical import TriggerType
+            tt = TriggerType.OFFER_DECLINED if not is_accepted else TriggerType.OFFER_ACCEPTED
+            await automation_trigger_service.fire_offer_trigger(
+                trigger_type=tt,
+                offer_id=offer_id,
+                company_id=company_id,
+                candidate_name=candidate_name,
+                metadata={"event": trigger_type_str, "notas": notas},
+            )
+        except Exception as _e:
+            logger.debug("[teams_service] automation trigger %s skipped: %s", trigger_type_str, _e)
+
+
+    async def on_offer_expired(
+        self,
+        offer_id: str,
+        company_id: str,
+        candidate_name: str,
+    ) -> None:
+        """Notify recruiter when an offer expires without candidate response."""
+        try:
+            db_gen = get_db()
+            db = await db_gen.__anext__()
+            webhook_url, _ = await resolve_tenant_teams_webhook_url(company_id, db)
+            await db_gen.aclose()
+        except Exception:
+            webhook_url = None
+
+        if webhook_url:
+            await self.send_alert(
+                title="⏰ Proposta expirada",
+                message=f"A proposta para {candidate_name} expirou sem resposta.",
+                severity=AlertSeverity.WARNING,
+                webhook_url=webhook_url,
+                facts=[
+                    {"name": "Candidato", "value": candidate_name},
+                    {"name": "Proposta ID", "value": offer_id[:8] + "..."},
+                ],
+                source="Offer Service",
+            )
+
+        try:
+            from app.domains.automation.services.automation_trigger_service import automation_trigger_service
+            from app.shared.automation.trigger_types_canonical import TriggerType
+            await automation_trigger_service.fire_offer_trigger(
+                trigger_type=TriggerType.OFFER_EXPIRED,
+                offer_id=offer_id,
+                company_id=company_id,
+                candidate_name=candidate_name,
+                metadata={"event": "offer_expired"},
+            )
+        except Exception as _e:
+            logger.debug("[teams_service] automation trigger OFFER_EXPIRED skipped: %s", _e)
+
+
     async def test_connection(self, webhook_url: str | None = None) -> dict[str, Any]:
         """
         Test Teams webhook connection by sending a test message.

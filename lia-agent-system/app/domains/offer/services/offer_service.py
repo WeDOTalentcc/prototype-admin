@@ -1004,3 +1004,37 @@ class OfferService:
             "contract_type": job.get("contract_type", ""),
             "work_model": job.get("work_model", ""),
         }
+
+    async def mark_expired(
+        self,
+        offer_id: "UUID",
+        company_id: str,
+    ) -> "OfferProposal | None":
+        """Mark sent offer as expired when response_deadline passed.
+
+        Called by offer expiry scheduler. Fires OFFER_EXPIRED trigger (fail-soft).
+        """
+        from datetime import datetime as _dt
+        proposal = await self._repo.get_by_id(offer_id, company_id)
+        if not proposal:
+            return None
+        if proposal.status not in ("sent", "viewed"):
+            return proposal  # already resolved, idempotent
+
+        proposal.status = "expired"
+        await self._repo.update(proposal)
+        await self._db.flush()
+
+        try:
+            from app.domains.communication.services.teams_service import TeamsService
+            from app.shared.automation.trigger_types_canonical import TriggerType
+            await TeamsService().on_offer_expired(
+                offer_id=str(offer_id),
+                company_id=company_id,
+                candidate_name=proposal.candidate_name or "",
+            )
+        except Exception as _e:
+            import logging as _l
+            _l.getLogger(__name__).debug("[offer_service] OFFER_EXPIRED notify failed: %s", _e)
+
+        return proposal
