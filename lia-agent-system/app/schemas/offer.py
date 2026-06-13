@@ -172,10 +172,11 @@ class OfferSendAutoRequest(WeDoBaseModel):
 
 class OfferSendAutoResponse(BaseModel):
     offer_id: UUID
-    status: str  # "sent"
-    email_log_id: UUID
+    status: str  # sent
+    email_log_id: UUID | None
     sent_at: datetime
     message: str
+    offer_link: str | None = None
 
 
 class OfferPrepareManualResponse(BaseModel):

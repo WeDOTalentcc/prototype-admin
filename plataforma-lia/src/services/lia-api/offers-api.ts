@@ -34,7 +34,7 @@ export const offersApi = {
     }),
 
   sendAuto: (offerId: string) =>
-    apiFetch<{ offer_id: string; status: string; email_log_id: string; sent_at: string; message: string }>(
+    apiFetch<{ offer_id: string; status: string; email_log_id: string | null; sent_at: string; message: string; offer_link?: string }>(
       `${BASE}/drafts/${offerId}/send`,
       { method: "POST" }
     ),

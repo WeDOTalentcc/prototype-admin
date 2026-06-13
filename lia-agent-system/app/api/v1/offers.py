@@ -132,9 +132,10 @@ company_id: str = Depends(require_company_id)):
     return OfferSendAutoResponse(
         offer_id=offer_id,
         status="sent",
-        email_log_id=_UUID(result["email_log_id"]) if result.get("email_log_id") else offer_id,
+        email_log_id=_UUID(result["email_log_id"]) if result.get("email_log_id") else None,
         sent_at=datetime.utcnow(),
         message=result.get("message", "Enviado"),
+        offer_link=result.get("offer_link"),
     )
 
 
