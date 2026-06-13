@@ -276,6 +276,10 @@ export default {
           '0%, 100%': { opacity: '0.6', transform: 'scale(1)' },
           '50%':      { opacity: '1',   transform: 'scale(1.2)' },
         },
+        'pulse-dot': {
+          '0%, 80%, 100%': { opacity: '0.2', transform: 'scale(0.8)' },
+          '40%':           { opacity: '1',   transform: 'scale(1)' },
+        },
       },
       animation: {
         'fade-in-up':       'fade-in-up 0.3s ease-out',

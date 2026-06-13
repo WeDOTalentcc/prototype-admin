@@ -17,12 +17,12 @@ interface ThinkingStepsCardProps {
 export function ActivityDots({ className }: { className?: string }) {
   return (
     <span
-      className={`inline-flex gap-0.5 items-center ${className ?? ""}`}
+      className={`inline-flex gap-1 items-center ${className ?? ""}`}
       aria-hidden="true"
     >
-      <span className="w-1 h-1 rounded-full bg-lia-text-secondary/60 animate-bounce [animation-delay:-0.3s] motion-reduce:animate-none" />
-      <span className="w-1 h-1 rounded-full bg-lia-text-secondary/60 animate-bounce [animation-delay:-0.15s] motion-reduce:animate-none" />
-      <span className="w-1 h-1 rounded-full bg-lia-text-secondary/60 animate-bounce motion-reduce:animate-none" />
+      <span className="w-1.5 h-1.5 rounded-full bg-lia-text-secondary animate-[pulse-dot_1.4s_ease-in-out_infinite]" />
+      <span className="w-1.5 h-1.5 rounded-full bg-lia-text-secondary animate-[pulse-dot_1.4s_ease-in-out_0.2s_infinite]" />
+      <span className="w-1.5 h-1.5 rounded-full bg-lia-text-secondary animate-[pulse-dot_1.4s_ease-in-out_0.4s_infinite]" />
     </span>
   )
 }
