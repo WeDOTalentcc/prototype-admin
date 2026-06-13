@@ -171,20 +171,23 @@ async def _aggregate(company_id: str, job_id: str | None, db: AsyncSession) -> d
     except Exception as e:
         logger.warning("[StudioSummary] calibration query failed: %s", e)
 
-    # offer — count draft+sent offers for this job
+    # offer -- count draft+sent offers for this job (canonical OfferProposal)
     try:
-        from app.repositories.job_offer_repository import JobOfferRepository
-        offer_repo = JobOfferRepository(db)
-        counts = await offer_repo.count_by_status(company_id, job_vacancy_id=job_id)
-        total_offers = sum(counts.get(s, 0) for s in ("draft", "sent", "accepted", "rejected"))
-        sent = counts.get("sent", 0)
-        accepted = counts.get("accepted", 0)
-        if accepted > 0:
-            services["offer"] = {"status": "active", "metric": f"{accepted} aceita{'' if accepted == 1 else 's'}"}
-        elif sent > 0:
-            services["offer"] = {"status": "configured", "metric": f"{sent} enviada{'' if sent == 1 else 's'}"}
-        elif total_offers > 0:
-            services["offer"] = {"status": "configured", "metric": f"{total_offers} rascunho{'' if total_offers == 1 else 's'}"}
+        if job_id:
+            from uuid import UUID as _UUID
+            from app.domains.offer.repositories.offer_repository import OfferRepository
+            offer_repo = OfferRepository(db)
+            proposals = await offer_repo.list_by_job(company_id, _UUID(job_id), limit=50)
+            accepted = sum(1 for p in proposals if p.status == "accepted")
+            sent = sum(1 for p in proposals if p.status == "sent")
+            drafts = sum(1 for p in proposals if p.status == "draft")
+            total_offers = accepted + sent + drafts
+            if accepted > 0:
+                services["offer"] = {"status": "active", "metric": f"{accepted} aceita" + ("" if accepted == 1 else "s")}
+            elif sent > 0:
+                services["offer"] = {"status": "configured", "metric": f"{sent} enviada" + ("" if sent == 1 else "s")}
+            elif total_offers > 0:
+                services["offer"] = {"status": "configured", "metric": f"{total_offers} rascunho" + ("" if total_offers == 1 else "s")}
     except Exception as e:
         logger.warning("[StudioSummary] offer query failed: %s", e)
 
