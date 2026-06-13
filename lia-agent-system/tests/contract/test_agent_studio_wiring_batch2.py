@@ -43,9 +43,12 @@ class TestTalentIntelligenceToolRegistry:
             assert callable(tool.function), f"{tool.name} not callable"
 
     def test_loader_in_custom_agent_runtime(self):
-        src = pathlib.Path("app/domains/agent_studio/custom_agent_runtime.py").read_text()
-        assert '"talent_intelligence"' in src
-        assert "get_talent_intelligence_tools" in src
+        from app.domains.agent_studio.platform_tools_loader import (
+            get_domain_tool_loaders,
+        )
+        loaders = get_domain_tool_loaders()
+        assert "talent_intelligence" in loaders
+        assert "get_talent_intelligence_tools" in loaders["talent_intelligence"]
 
 
 class TestWorkforceToolRegistry:
@@ -70,9 +73,12 @@ class TestWorkforceToolRegistry:
         assert callable(get_workforce_tools()[0].function)
 
     def test_loader_in_custom_agent_runtime(self):
-        src = pathlib.Path("app/domains/agent_studio/custom_agent_runtime.py").read_text()
-        assert '"workforce"' in src
-        assert "get_workforce_tools" in src
+        from app.domains.agent_studio.platform_tools_loader import (
+            get_domain_tool_loaders,
+        )
+        loaders = get_domain_tool_loaders()
+        assert "workforce" in loaders
+        assert "get_workforce_tools" in loaders["workforce"]
 
 
 class TestBatch2MigrationSyntax:
@@ -108,6 +114,9 @@ class TestDomainToolLoadersComplete:
     """Verify all 3 Agent Studio Development domains are wired."""
 
     def test_all_three_domains_in_loaders(self):
-        src = pathlib.Path("app/domains/agent_studio/custom_agent_runtime.py").read_text()
+        from app.domains.agent_studio.platform_tools_loader import (
+            get_domain_tool_loaders,
+        )
+        loaders = get_domain_tool_loaders()
         for domain in ["interview_intelligence", "talent_intelligence", "workforce"]:
-            assert f'"{domain}"' in src, f"{domain} missing from domain_tool_loaders"
+            assert domain in loaders, f"{domain} missing from domain_tool_loaders"

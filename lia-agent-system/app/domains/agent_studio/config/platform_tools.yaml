@@ -1,0 +1,95 @@
+# Platform Tools Registry — Agent Studio
+#
+# Single source of truth for the 3 registries that were previously
+# Python dicts in custom_agent_runtime.py:
+#   1. PLATFORM_TOOLS_REGISTRY  → tools[].access  (read|write)
+#   2. HITL_REQUIRED_TOOLS      → tools[].hitl     (true)
+#   3. domain_tool_loaders      → domains[].loader
+#
+# Consumers:
+#   - custom_agent_runtime.py  (via platform_tools_loader.py)
+#   - tests/contract/test_platform_tools_yaml.py
+
+# ─────────────────────────────────────────────────────────────────────
+# Platform tools: tools available to ALL custom agents regardless of
+# domain. Each tool has an access level (read or write) and optionally
+# requires HITL confirmation before execution.
+# ─────────────────────────────────────────────────────────────────────
+tools:
+  # ── Core platform tools ──────────────────────────────────────────
+  search_candidates:        { access: read }
+  list_jobs:                { access: read }
+  get_job_details:          { access: read }
+  get_candidate_details:    { access: read }
+  summarize_context:        { access: read }
+  clarify_request:          { access: read }
+  get_evaluation_criteria:  { access: read }
+  get_pipeline_summary:     { access: read }
+  search_talent_pool:       { access: read }
+  get_company_culture:      { access: read }
+  get_analytics_summary:    { access: read }
+  move_candidate:           { access: write }
+  create_note:              { access: write }
+  send_email:               { access: write }
+  update_candidate_field:   { access: write }
+  schedule_interview:       { access: write }
+
+  # ── Talent Intelligence tools ────────────────────────────────────
+  infer_related_skills:              { access: read }
+  get_skill_adjacencies:             { access: read }
+  analyze_skill_gaps:                { access: read }
+  map_candidate_skills_to_ontology:  { access: read }
+  get_market_intelligence:           { access: read }
+  forecast_hiring_needs:             { access: read }
+  match_internal_candidates:         { access: read }
+  create_nurture_sequence:           { access: write }
+  get_engagement_metrics:            { access: read }
+  suggest_reengagement:              { access: read }
+
+  # ── Interview Intelligence tools ─────────────────────────────────
+  analyze_interview_recording:       { access: read }
+  detect_interview_bias:             { access: read }
+  compare_interview_performance:     { access: read }
+  generate_candidate_feedback:       { access: write }
+  generate_interview_opinion:        { access: write }
+
+# ─────────────────────────────────────────────────────────────────────
+# HITL-required tools: tools that NEVER execute without explicit human
+# approval in Agent Studio. The gate in _tenant_safe_wrapper intercepts
+# before execution and returns hitl_pending instead of side-effecting.
+# ─────────────────────────────────────────────────────────────────────
+hitl_required:
+  - publish_job
+  - send_offer
+  - reject_candidate
+  - bulk_update_candidates
+  - send_email_bulk
+  - bulk_reject_candidates
+  - send_whatsapp_bulk
+
+# ─────────────────────────────────────────────────────────────────────
+# Domain tool loaders: maps a domain name to the dotted import path of
+# its get_*_tools() function. Used by CustomAgentRuntime._get_tools()
+# to dynamically load domain-specific tools via importlib.
+# ─────────────────────────────────────────────────────────────────────
+domains:
+  sourcing:
+    loader: app.domains.sourcing.agents.sourcing_tool_registry.get_sourcing_tools
+  pipeline:
+    loader: app.domains.pipeline.agents.pipeline_tool_registry.get_pipeline_transition_tools
+  screening:
+    loader: app.domains.cv_screening.agents.pipeline_tool_registry.get_pipeline_tools
+  communication:
+    loader: app.domains.communication.agents.communication_tool_registry.get_communication_tools
+  analytics:
+    loader: app.domains.analytics.agents.analytics_tool_registry.get_analytics_tools
+  job_management:
+    loader: app.domains.job_management.agents.wizard_tool_registry.get_wizard_tools
+  automation:
+    loader: app.domains.automation.agents.automation_tool_registry.get_automation_tools
+  interview_intelligence:
+    loader: app.domains.interview_intelligence.tools.registry.get_interview_intelligence_tools
+  talent_intelligence:
+    loader: app.domains.talent_intelligence.tools.registry.get_talent_intelligence_tools
+  workforce:
+    loader: app.domains.workforce.agents.workforce_tool_registry.get_workforce_tools

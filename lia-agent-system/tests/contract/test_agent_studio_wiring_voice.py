@@ -87,16 +87,16 @@ class TestAllFourDomainsWired:
     """Final check: all 4 Agent Studio Development domains accounted for."""
 
     def test_interview_intelligence_wired(self):
-        src = pathlib.Path("app/domains/agent_studio/custom_agent_runtime.py").read_text()
-        assert '"interview_intelligence"' in src
+        from app.domains.agent_studio.platform_tools_loader import get_domain_tool_loaders
+        assert "interview_intelligence" in get_domain_tool_loaders()
 
     def test_talent_intelligence_wired(self):
-        src = pathlib.Path("app/domains/agent_studio/custom_agent_runtime.py").read_text()
-        assert '"talent_intelligence"' in src
+        from app.domains.agent_studio.platform_tools_loader import get_domain_tool_loaders
+        assert "talent_intelligence" in get_domain_tool_loaders()
 
     def test_workforce_wired(self):
-        src = pathlib.Path("app/domains/agent_studio/custom_agent_runtime.py").read_text()
-        assert '"workforce"' in src
+        from app.domains.agent_studio.platform_tools_loader import get_domain_tool_loaders
+        assert "workforce" in get_domain_tool_loaders()
 
     def test_voice_has_studio_plugin(self):
         from app.domains.voice.plugins.studio_voice_plugin import StudioVoicePlugin

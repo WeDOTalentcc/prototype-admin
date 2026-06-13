@@ -71,11 +71,11 @@ class TestDomainToolLoadersEntry:
         assert callable(func)
 
     def test_loader_in_custom_agent_runtime(self):
-        import ast
-        import pathlib
-
-        src = pathlib.Path("app/domains/agent_studio/custom_agent_runtime.py").read_text()
-        assert "interview_intelligence" in src, (
+        from app.domains.agent_studio.platform_tools_loader import (
+            get_domain_tool_loaders,
+        )
+        loaders = get_domain_tool_loaders()
+        assert "interview_intelligence" in loaders, (
             "domain_tool_loaders missing interview_intelligence entry"
         )
 
@@ -95,11 +95,12 @@ class TestPlatformToolsRegistryAlignment:
         from app.domains.interview_intelligence.tools.registry import (
             get_interview_intelligence_tools,
         )
-        import pathlib
-
-        src = pathlib.Path("app/domains/agent_studio/custom_agent_runtime.py").read_text()
+        from app.domains.agent_studio.platform_tools_loader import (
+            get_platform_tools_registry,
+        )
+        registry = get_platform_tools_registry()
         tool_names = {t.name for t in get_interview_intelligence_tools()}
-        missing = {name for name in tool_names if f'"{name}"' not in src}
+        missing = tool_names - set(registry.keys())
         assert not missing, f"Tools missing from PLATFORM_TOOLS_REGISTRY: {missing}"
 
 

@@ -19,66 +19,19 @@ logger = logging.getLogger(__name__)
 from app.middleware.auth_enforcement import _current_company_id as _CURRENT_COMPANY_ID  # noqa: F401
 from app.shared.observability.tracing import trace_span
 
-PLATFORM_TOOLS_REGISTRY: dict[str, str] = {
-    # ── Core platform tools (16) ───────────────────────────────────────────────
-    "search_candidates": "read",
-    "list_jobs": "read",
-    "get_job_details": "read",
-    "get_candidate_details": "read",
-    "summarize_context": "read",
-    "clarify_request": "read",
-    "get_evaluation_criteria": "read",  # Wave 3 #24 audit 2026-05-22
-    "get_pipeline_summary": "read",     # Wave 3 #25 audit 2026-05-22
-    "search_talent_pool": "read",       # Wave 3+ audit 2026-05-22
-    "get_company_culture": "read",      # Wave 3+ audit 2026-05-22
-    "get_analytics_summary": "read",    # Wave 3+ audit 2026-05-22
-    "move_candidate": "write",
-    "create_note": "write",             # Wave 3+ audit 2026-05-22
-    "send_email": "write",
-    "update_candidate_field": "write",
-    "schedule_interview": "write",
-    # ── TalentIntelligence tools (15) — Fase B 2026-06-09 ─────────────────────
-    # Skill analysis (read-only analytics)
-    "infer_related_skills": "read",
-    "get_skill_adjacencies": "read",
-    "analyze_skill_gaps": "read",
-    "map_candidate_skills_to_ontology": "read",
-    # Workforce & market intelligence
-    "get_market_intelligence": "read",
-    "forecast_hiring_needs": "read",
-    "match_internal_candidates": "read",
-    # Candidate nurture & engagement
-    "create_nurture_sequence": "write",
-    "get_engagement_metrics": "read",
-    "suggest_reengagement": "read",
-    # Interview intelligence
-    "analyze_interview_recording": "read",
-    "detect_interview_bias": "read",
-    "compare_interview_performance": "read",
-    "generate_candidate_feedback": "write",
-    "generate_interview_opinion": "write",
-}
+# Platform tools registry loaded from config/platform_tools.yaml (single source of truth).
+# Migrated from inline Python dict to declarative YAML — see platform_tools_loader.py.
+from app.domains.agent_studio.platform_tools_loader import (
+    get_platform_tools_registry as _load_registry,
+    get_hitl_required_tools as _load_hitl,
+    get_domain_tool_loaders as _load_domain_loaders,
+    get_available_tool_names,
+)
+
+PLATFORM_TOOLS_REGISTRY: dict[str, str] = _load_registry()
 
 
-def get_available_tool_names() -> list[str]:
-    return list(PLATFORM_TOOLS_REGISTRY.keys())
-
-
-# ── P0-1 Onda 0 (2026-06-12): HITL_REQUIRED_TOOLS ──────────────────────────
-# Frozenset de tools sensíveis que NUNCA executam sem aprovação humana explícita
-# no Agent Studio. O gate em _get_tools/_tenant_safe_wrapper intercepta antes
-# da execução e retorna hitl_pending em vez de executar o side-effect.
-# Espelha hitl_preflight do chat principal (app/shared/services/hitl_service.py).
-# Exportado em nível de módulo para que testes de contrato possam importar diretamente.
-HITL_REQUIRED_TOOLS: frozenset[str] = frozenset({
-    "publish_job",
-    "send_offer",
-    "reject_candidate",
-    "bulk_update_candidates",
-    "send_email_bulk",
-    "bulk_reject_candidates",
-    "send_whatsapp_bulk",
-})
+HITL_REQUIRED_TOOLS: frozenset[str] = _load_hitl()
 
 
 # ── P0-2 Onda 0 (2026-06-12): review gate constants ──────────────────────────
@@ -221,21 +174,7 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
         "advance_campaign_stage", "move_pool_to_job",
     })
 
-    # ── P0-1 Onda 0 (2026-06-12): HITL_REQUIRED_TOOLS — tools sensíveis que NUNCA ──
-    # executam sem aprovação humana explícita. LLM custom NÃO pode invocar publish_job,
-    # send_offer, reject_candidate etc. diretamente. O gate abaixo retorna hitl_pending
-    # (não um erro genérico de confirm=True), permitindo que o frontend renderize um
-    # card de aprovação específico para essas ações de alto impacto.
-    # Espelha hitl_preflight do chat principal (app/shared/services/hitl_service.py).
-    HITL_REQUIRED_TOOLS: frozenset[str] = frozenset({
-        "publish_job",
-        "send_offer",
-        "reject_candidate",
-        "bulk_update_candidates",
-        "send_email_bulk",
-        "bulk_reject_candidates",
-        "send_whatsapp_bulk",
-    })
+    # HITL_REQUIRED_TOOLS loaded from config/platform_tools.yaml (module-level)
 
     def _get_tools(self) -> list:
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
@@ -245,18 +184,7 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
 
         # Pool 2: Domain-specific tools based on agent domain
         domain = self._domain.split(":")[0] if ":" in self._domain else self._domain
-        domain_tool_loaders = {
-            "sourcing": "app.domains.sourcing.agents.sourcing_tool_registry.get_sourcing_tools",
-            "pipeline": "app.domains.pipeline.agents.pipeline_tool_registry.get_pipeline_tools",
-            "screening": "app.domains.cv_screening.agents.pipeline_tool_registry.get_pipeline_tools",
-            "communication": "app.domains.communication.agents.communication_tool_registry.get_communication_tools",
-            "analytics": "app.domains.analytics.agents.analytics_tool_registry.get_analytics_tools",
-            "job_management": "app.domains.job_management.agents.wizard_tool_registry.get_wizard_tools",
-            "automation": "app.domains.automation.agents.automation_tool_registry.get_automation_tools",
-            "interview_intelligence": "app.domains.interview_intelligence.tools.registry.get_interview_intelligence_tools",
-            "talent_intelligence": "app.domains.talent_intelligence.tools.registry.get_talent_intelligence_tools",
-            "workforce": "app.domains.workforce.agents.workforce_tool_registry.get_workforce_tools",
-        }
+        domain_tool_loaders = _load_domain_loaders()
         loader_path = domain_tool_loaders.get(domain)
         if loader_path:
             try:
