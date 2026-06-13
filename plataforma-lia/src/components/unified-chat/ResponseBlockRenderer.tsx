@@ -563,7 +563,7 @@ export function ResponseBlockRenderer({
         try {
           return (
             <div
-              key={block.block_id || i}
+              key={block.block_id ? `${block.block_id}-${i}` : i}
               className="animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none"
               style={{
                 animationDelay: `${Math.min(i, 6) * 50}ms`,
