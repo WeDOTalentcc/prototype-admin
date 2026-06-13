@@ -68,7 +68,7 @@ _PUBLISH_ONLY_RE = re.compile(
 # executed after the wizard finishes. Anything not here is captured as text but
 # flagged ``continuation_connected=False`` (offer signals it explicitly).
 CONNECTED_CONTINUATIONS: dict[str, re.Pattern[str]] = {
-    "publish_job": re.compile(r"public", re.IGNORECASE),
+    "publish_job": re.compile(r"publi[cq]", re.IGNORECASE),
     "sync_job": re.compile(r"sincroniz|sync|integra", re.IGNORECASE),
 }
 
