@@ -807,7 +807,9 @@ export function UnifiedChat({
     setInputText("");
     setAttachedFile(null);
 
-    detectNavIntent(text).then((result) => {
+    // Fix defect #8: skip navigation intent when wizard is active —
+    // mid-wizard messages should not trigger page navigation hints.
+    if (!dynamicPanel) detectNavIntent(text).then((result) => {
       // BUG-18 fix: 0.85 era muito alto — frases naturais como "me leva pra vagas"
       // atingiam no máximo ~0.70 mesmo após fix do dampening no backend.
       // 0.65 captura imperativos de navegação sem falso-positivar perguntas genéricas.

@@ -1318,7 +1318,17 @@ class WizardSessionService:
                 "[WizardOrchestrator] payload build failed: %s", exc,
                 exc_info=True,
             )
-            payload = {}
+            # FIX defect #1: NEVER set payload = {} — empty dict is falsy,
+            # SSE handler skips panel_update, panel disappears. Build a
+            # minimal valid payload so the panel stays alive.
+            payload = {
+                "type": "wizard_stage",
+                "stage": stage,
+                "data": {
+                    "message": result.reply or "[Estado do wizard em atualização]",
+                },
+                "requires_approval": False,
+            }
 
         # ── Fix: mark wizard checkpoint as completed after handoff ──────
         # Same fix as the graph path — the orchestrator persists
