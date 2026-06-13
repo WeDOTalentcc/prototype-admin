@@ -16,7 +16,7 @@ One record per company (company_id is unique).
 """
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text, Integer, Float, Index
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 import uuid
 
 from lia_config.database import Base
@@ -52,6 +52,13 @@ SCREENING_RULES_DEFAULTS = {
     "experience_policy": "per_job",
     "minimum_compatibility_score": 0,   # P3a — reclassificado de narrativo (0 = sem corte)
     "default_screening_questions": [],
+    # Thresholds de aprovação automática — None = usa padrão da plataforma (fairness_policy_rules)
+    # Tenant pode configurar valor >= ao mínimo da plataforma (nunca abaixo)
+    # auto_approve_threshold: 0.0-1.0 (equivalente a score/100)
+    # review_threshold: 0.0-1.0 — candidatos entre review e auto_approve vão para revisão humana
+    "auto_approve_threshold": None,   # None → usa fairness_policy_rules decision_threshold
+    "review_threshold": None,         # None → usa 73% do auto_approve_threshold
+    "sector": None,                   # setor da empresa (tech/varejo/financeiro/saude/logistica/rpo)
 }
 
 AUTOMATION_RULES_DEFAULTS = {
@@ -69,12 +76,25 @@ AUTOMATION_RULES_DEFAULTS = {
     },
 }
 
+
+OFFER_RULES_DEFAULTS = {
+    "allowed_start_day_of_month": [1, 15],
+    "onboarding_blackout_periods": [],
+    "min_notice_days": 30,
+    "negotiation_enabled": False,
+    "salary_flex_pct_max": 0,
+    "benefits_flex_items": [],
+    "negotiation_hitl_threshold_pct": 5,
+    "counter_proposal_max_rounds": 2,
+}
+
 ALL_DEFAULTS = {
     "pipeline_rules": PIPELINE_RULES_DEFAULTS,
     "scheduling_rules": SCHEDULING_RULES_DEFAULTS,
     "communication_rules": COMMUNICATION_RULES_DEFAULTS,
     "screening_rules": SCREENING_RULES_DEFAULTS,
     "automation_rules": AUTOMATION_RULES_DEFAULTS,
+    "offer_rules": OFFER_RULES_DEFAULTS,
     "pipeline_templates": [],
     "learned_patterns": [],
 }
@@ -98,6 +118,9 @@ class CompanyHiringPolicy(Base):
 
     # Per-role PII visibility defaults (2026-06-06): {role: {field: bool}}.
     pii_visibility_defaults = Column(JSON, default=lambda: {})
+
+    # N2/N3 offer configuration block — negociação, dias de início, aviso prévio
+    offer_rules = Column(JSONB, default=lambda: OFFER_RULES_DEFAULTS.copy())
     # P3b (2026-06-01): instruções narrativas do recrutador por conceito de
     # política (texto livre que orienta a LIA). SEPARADO dos 5 blocos de gate —
     # nunca alimenta um if/gate, só o system prompt. Invariante de segurança.
@@ -136,6 +159,7 @@ class CompanyHiringPolicy(Base):
             "pipeline_templates": self.pipeline_templates or [],
             "learned_patterns": self.learned_patterns or [],
             "answered_questions": self.answered_questions or [],
+            "offer_rules": self.offer_rules or OFFER_RULES_DEFAULTS,
             "setup_progress": self.setup_progress or 0,
             "setup_completed_at": self.setup_completed_at.isoformat() if self.setup_completed_at else None,
             "created_by": self.created_by,

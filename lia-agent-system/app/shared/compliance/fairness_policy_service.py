@@ -143,26 +143,51 @@ class FairnessPolicyService:
 
     def validate_query_filters(self, filters: dict, effective_policy: dict) -> list[str]:
         """
-        Checks if filters contain terms from 'linguistic_banlist' rules.
+        Verifica se filters contêm termos de 'linguistic_banlist' rules.
 
-        Returns list of violations found (empty = OK).
+        Suporta dois formatos de body_json:
+        - {"terms": [...]} -- lista direta
+        - {"terms_pt": [...], "terms_en": [...]} -- separados por idioma (Regra 7 do seed)
+        - {"categories": {...}} -- categorias de regex (Regras 5/6) -- delega ao FairnessGuard
+
+        Returns list of violations (vazia = OK).
         """
         violations: list[str] = []
-        banlist_terms: list[str] = []
-
-        for rule in effective_policy.get("linguistic_banlist", []):
-            terms = rule.get("body_json", {}).get("terms", [])
-            banlist_terms.extend(t.lower() for t in terms)
-
-        if not banlist_terms:
-            return violations
-
-        # Also check FairnessGuard implicit bias terms as a fallback
         text_to_check = " ".join(str(v) for v in filters.values()).lower()
 
-        for term in banlist_terms:
-            if term in text_to_check:
-                violations.append(f"Termo banido detectado: '{term}'")
+        for rule in effective_policy.get("linguistic_banlist", []):
+            body = rule.get("body_json", {})
+
+            # Formato 1: lista direta {"terms": [...]}
+            direct_terms = body.get("terms", [])
+
+            # Formato 2: separados por idioma {"terms_pt": [...], "terms_en": [...]}
+            pt_terms = body.get("terms_pt", [])
+            en_terms = body.get("terms_en", [])
+
+            all_terms = direct_terms + pt_terms + en_terms
+
+            for term in all_terms:
+                if term.lower() in text_to_check:
+                    violations.append(f"Termo discriminatorio detectado: '{term}'")
+
+            # Formato 3: categorias de regex (Regras 5/6) -- delega ao FairnessGuard
+            categories = body.get("categories")
+            if categories and body.get("detection_mode") in ("regex_hard_block", "regex_warn"):
+                try:
+                    from app.shared.compliance.fairness_guard import FairnessGuard
+                    guard = FairnessGuard(strict=False)
+                    for query_val in filters.values():
+                        if not isinstance(query_val, str):
+                            continue
+                        result = guard.check(query_val)
+                        if result.is_blocked:
+                            violations.append(
+                                f"Categoria discriminatoria detectada: "
+                                f"'{result.category}' -- termos: {result.blocked_terms[:3]}"
+                            )
+                except Exception as exc:
+                    logger.debug("[validate_query_filters] FairnessGuard skip: %s", exc)
 
         return violations
 

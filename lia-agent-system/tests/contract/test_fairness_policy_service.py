@@ -325,3 +325,108 @@ class TestDefaultRules:
             assert rule["rule_type"] in valid_rule_types, f"{prefix}: invalid rule_type '{rule['rule_type']}'"
             assert isinstance(rule["body_json"], dict), f"{prefix}: body_json must be dict"
             assert isinstance(rule["is_locked"], bool), f"{prefix}: is_locked must be bool"
+
+
+# --- Tests for ThresholdResolver ---
+
+def test_threshold_resolver_returns_hardcoded_fallback_when_service_unavailable():
+    """ThresholdResolver retorna fallback quando DB/service indisponivel."""
+    import asyncio
+    from unittest.mock import AsyncMock, patch
+
+    async def _run():
+        from app.shared.compliance.threshold_resolver import resolve_screening_thresholds
+        with patch("app.shared.compliance.threshold_resolver._get_platform_floor",
+                   new_callable=AsyncMock, return_value={"auto_approve": 0.75, "review": 0.55, "source": "fallback"}):
+            with patch("app.shared.compliance.threshold_resolver._get_tenant_config",
+                       new_callable=AsyncMock, return_value={}):
+                result = await resolve_screening_thresholds("tenant_x", None, AsyncMock())
+        assert result["auto_approve"] == 0.75
+        assert result["review"] == 0.55
+
+    asyncio.get_event_loop().run_until_complete(_run())
+
+
+def test_threshold_resolver_tenant_cannot_lower_floor():
+    """Tenant nao pode afrouxar o threshold minimo da plataforma."""
+    import asyncio
+    from unittest.mock import AsyncMock, patch
+
+    async def _run():
+        from app.shared.compliance.threshold_resolver import resolve_screening_thresholds
+        with patch("app.shared.compliance.threshold_resolver._get_platform_floor",
+                   new_callable=AsyncMock, return_value={"auto_approve": 0.90, "review": 0.65, "source": "sector"}):
+            with patch("app.shared.compliance.threshold_resolver._get_tenant_config",
+                       new_callable=AsyncMock, return_value={"auto_approve_threshold": 0.70}):
+                result = await resolve_screening_thresholds("tenant_x", "financeiro", AsyncMock())
+        # Tenant tentou 0.70 mas plataforma/setor exige 0.90 -> usa 0.90
+        assert result["auto_approve"] == 0.90
+
+    asyncio.get_event_loop().run_until_complete(_run())
+
+
+def test_threshold_resolver_tenant_can_increase_threshold():
+    """Tenant pode endurecer o threshold (subir acima do minimo)."""
+    import asyncio
+    from unittest.mock import AsyncMock, patch
+
+    async def _run():
+        from app.shared.compliance.threshold_resolver import resolve_screening_thresholds
+        with patch("app.shared.compliance.threshold_resolver._get_platform_floor",
+                   new_callable=AsyncMock, return_value={"auto_approve": 0.75, "review": 0.55, "source": "platform"}):
+            with patch("app.shared.compliance.threshold_resolver._get_tenant_config",
+                       new_callable=AsyncMock, return_value={"auto_approve_threshold": 0.88}):
+                result = await resolve_screening_thresholds("tenant_x", None, AsyncMock())
+        assert result["auto_approve"] == 0.88
+        assert result["source"] == "tenant"
+
+    asyncio.get_event_loop().run_until_complete(_run())
+
+
+def test_validate_query_filters_uses_terms_pt_from_policy():
+    """validate_query_filters detecta termos_pt do effective_policy do banco."""
+    import sys, os
+    project_root = "/home/runner/workspace/lia-agent-system"
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
+    from app.shared.compliance.fairness_policy_service import FairnessPolicyService
+    svc = FairnessPolicyService()
+    effective_policy = {
+        "linguistic_banlist": [
+            {
+                "scope": "platform_general",
+                "body_json": {
+                    "action": "warn",
+                    "terms_pt": ["boa aparencia", "energia jovem"],
+                    "terms_en": ["young blood"],
+                }
+            }
+        ]
+    }
+    violations = svc.validate_query_filters({"query": "preciso de boa aparencia no candidato"}, effective_policy)
+    assert len(violations) == 1
+    assert "boa aparencia" in violations[0]
+
+
+def test_fairness_guard_check_implicit_bias_uses_db_policy_terms():
+    """check_implicit_bias usa termos do effective_policy quando fornecido."""
+    import sys
+    project_root = "/home/runner/workspace/lia-agent-system"
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
+    from app.shared.compliance.fairness_guard import FairnessGuard
+    guard = FairnessGuard(strict=False)
+    effective_policy = {
+        "linguistic_banlist": [
+            {
+                "body_json": {
+                    "action": "warn",
+                    "terms_pt": ["termo_customizado_do_tenant"],
+                }
+            }
+        ]
+    }
+    warnings = guard.check_implicit_bias("busco perfil com termo_customizado_do_tenant", effective_policy)
+    assert any("termo_customizado_do_tenant" in w for w in warnings)

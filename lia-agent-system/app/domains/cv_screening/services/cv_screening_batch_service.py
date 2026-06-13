@@ -229,59 +229,73 @@ async def _apply_fairness_gate(
     score: float,
     company_id: str,
     domain: str = "screening",
+    sector: str | None = None,
 ) -> tuple:
-    """Verifica FairnessPolicyService.allows_automated() antes de aprovar automaticamente.
-
-    Returns:
-        (status, reason) where status in {"Aprovado", "Revisao", "Reprovado"}
-        reason = None se aprovado; str com motivo se foi para revisao por fairness gate
     """
-    if score >= _SCORE_THRESHOLDS["auto_approve"]:
-        default_status = "Aprovado"
-    elif score >= _SCORE_THRESHOLDS["review"]:
-        default_status = "Revisão"
-    else:
-        default_status = "Reprovado"
+    Resolve thresholds via cascata canônica (platform -> sector -> tenant)
+    e verifica FairnessPolicyService.allows_automated() para aprovações automáticas.
 
-    if default_status != "Aprovado":
-        return default_status, None
-
+    score: 0-100 (escala da rubric)
+    Returns: (status, reason) -- status in {"Aprovado", "Revisao", "Reprovado"}
+    """
     try:
+        from app.shared.compliance.threshold_resolver import resolve_screening_thresholds
         from app.shared.compliance.fairness_policy_service import _get_fairness_service
         from app.core.database import AsyncSessionLocal as _ASL
 
-        confidence = score / 100.0
-
         async with _ASL() as _db:
-            svc = _get_fairness_service()
-            effective_policy = await svc.load_effective_policy(
-                tenant_id=company_id,
-                domain=domain,
+            # 1. Resolver thresholds pela cascata
+            thresholds = await resolve_screening_thresholds(
+                company_id=company_id,
+                sector=sector,
                 db=_db,
             )
-            allowed, reason = await svc.allows_automated(
-                decision_type="screening_score",
-                confidence=confidence,
-                effective_policy=effective_policy,
-                tenant_id=company_id,
-                domain=domain,
-                db=_db,
-            )
+            auto_approve_pct = thresholds["auto_approve"] * 100  # volta para escala 0-100
+            review_pct = thresholds["review"] * 100
 
-        if not allowed:
-            logger.info(
-                "[CVScreeningBatch] FairnessGate override: score=%.1f blocked -- %s",
-                score, reason,
-            )
-            return "Revisão", reason
+            # 2. Determinar status base
+            if score >= auto_approve_pct:
+                # 3. Gate de fairness apenas para aprovacoes automaticas
+                confidence = score / 100.0
+                svc = _get_fairness_service()
+                effective_policy = await svc.load_effective_policy(
+                    tenant_id=company_id,
+                    domain=domain,
+                    db=_db,
+                )
+                allowed, reason = await svc.allows_automated(
+                    decision_type="screening_score",
+                    confidence=confidence,
+                    effective_policy=effective_policy,
+                    tenant_id=company_id,
+                    domain=domain,
+                    db=_db,
+                )
+                if not allowed:
+                    logger.info(
+                        "[CVScreeningBatch] FairnessGate override: score=%.1f "
+                        "threshold_source=%s blocked -- %s",
+                        score, thresholds.get("source"), reason,
+                    )
+                    return "Revisao", reason
+                return "Aprovado", None
 
-        return "Aprovado", None
+            elif score >= review_pct:
+                return "Revisao", None
+            else:
+                return "Reprovado", None
 
     except Exception as exc:
+        # Fail-open: usa _SCORE_THRESHOLDS como fallback de emergencia
         logger.warning(
-            "[CVScreeningBatch] FairnessGate unavailable (fail-open): %s", exc
+            "[CVScreeningBatch] ThresholdResolver + FairnessGate unavailable "
+            "(fail-open, usando hardcoded): %s", exc
         )
-        return default_status, None
+        if score >= _SCORE_THRESHOLDS["auto_approve"]:
+            return "Aprovado", None
+        elif score >= _SCORE_THRESHOLDS["review"]:
+            return "Revisao", None
+        return "Reprovado", None
 
 
 async def run_batch(

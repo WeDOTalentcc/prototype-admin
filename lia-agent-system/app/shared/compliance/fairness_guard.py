@@ -719,7 +719,23 @@ class FairnessGuard:
         """Alias semântico para check() — verifica Camada 1 (padrões explícitos de viés)."""
         return self.check(text)
 
-    def check_implicit_bias(self, text: str) -> list[str]:
+    @staticmethod
+    def _get_banlist_terms_from_policy(effective_policy: dict) -> dict:
+        """
+        Extrai termos soft de linguistic_banlist do effective_policy (do banco).
+        Retorna dict{term: "warn"} compatível com IMPLICIT_BIAS_TERMS.
+        Retorna {} se policy não tiver termos soft.
+        """
+        terms: dict = {}
+        for rule in effective_policy.get("linguistic_banlist", []):
+            body = rule.get("body_json", {})
+            if body.get("action") != "warn":
+                continue  # só termos soft (action=warn)
+            for term in body.get("terms_pt", []) + body.get("terms_en", []) + body.get("terms", []):
+                terms[term] = "warn"  # valor placeholder -- a mensagem educativa fica no guard
+        return terms
+
+    def check_implicit_bias(self, text: str, effective_policy: dict | None = None) -> list[str]:
         if not text or not text.strip():
             return []
 
@@ -727,16 +743,27 @@ class FairnessGuard:
         text_normalized = _normalize_text(text_lower)
         warnings = []
 
-        for term, warning_message in {**IMPLICIT_BIAS_TERMS, **IMPLICIT_BIAS_TERMS_EN}.items():
+        # Fonte canônica: DB via effective_policy (quando disponível)
+        if effective_policy:
+            db_terms = self._get_banlist_terms_from_policy(effective_policy)
+        else:
+            db_terms = {}
+
+        # Merge: DB (canônico) + hardcoded (fallback/complemento)
+        # Se DB tem termos, eles têm precedência; hardcoded preenche o que DB não tem
+        all_terms = {**IMPLICIT_BIAS_TERMS, **IMPLICIT_BIAS_TERMS_EN, **db_terms}
+
+        for term, warning_message in all_terms.items():
             term_lower = term.lower()
             term_normalized = _normalize_text(term_lower)
             if term_lower in text_lower or term_normalized in text_normalized:
-                if warning_message not in warnings:
-                    warnings.append(warning_message)
+                msg = warning_message if isinstance(warning_message, str) and len(warning_message) > 10 else (
+                    f"Termo '{term}' pode indicar vies implicito. Use criterios objetivos."
+                )
+                if msg not in warnings:
+                    warnings.append(msg)
 
         if warnings:
-            # LGPD: logar apenas contagem e tamanho — nunca fragmentos do texto
-            # (pode conter dados do candidato gerados pelo LLM)
             logger.info(
                 "FairnessGuard implicit bias detected: %d warnings for text_len=%d",
                 len(warnings), len(text),
