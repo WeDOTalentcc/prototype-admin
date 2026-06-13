@@ -12,6 +12,7 @@ import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
 import { CultureApprovalBanner } from "@/components/settings/CultureApprovalBanner"
 import { LearningLoopsPanel } from "@/components/settings/LearningLoopsPanel"
 import { LiaFieldsConfigPanel } from "@/components/settings/LiaFieldsConfigPanel"
+import { ContratacaoHub } from "@/components/settings/ContratacaoHub"
 import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import type { ProposedSaves } from "@/lib/website-proposal-mapper"
@@ -163,6 +164,10 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   // Audit 2026-05-20 Tema D / P1.8: 34 canonical LIA field definitions.
   if (activeSubsection === "instrucoes-lia") {
     return <LiaFieldsConfigPanel />
+  }
+
+  if (activeSubsection === "contratacao") {
+    return <ContratacaoHub />
   }
 
   // ─── LOADING STATE ────────────────────────────────────────────

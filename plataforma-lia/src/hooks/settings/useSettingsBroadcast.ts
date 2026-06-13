@@ -24,6 +24,7 @@ export const SETTINGS_QUERY_KEYS = {
   automations: (companyId: string) => ["automations", companyId] as const,
   digestSchedule: () => ["digest-schedule"] as const,
   digestScheduleCompany: () => ["digest-schedule-company"] as const,
+  offerRules: () => ["offer-rules"] as const,
 } as const
 
 export type SettingsBroadcastDetail = {
