@@ -5996,6 +5996,20 @@
         "activeCount": "{active} of {total} active",
         "activeCountAria": "{active} of {total} alerts active",
         "viewHistory": "View notification history"
+      },
+      "dataChannel": {
+        "title": "Data Collection Channel",
+        "description": "Default channel for requesting data from candidates. Can be overridden per vacancy.",
+        "channelEmail": "Email",
+        "channelEmailDesc": "Sends data portal link via email",
+        "channelWeb": "Web Portal",
+        "channelWebDesc": "Candidate accesses data portal via direct link",
+        "channelWhatsapp": "WhatsApp",
+        "channelWhatsappDesc": "Collection via interactive WhatsApp message",
+        "channelVoice": "Voice Call",
+        "channelVoiceDesc": "Collection via AI-powered phone call",
+        "saveSuccess": "Data collection channel updated successfully",
+        "saveError": "Failed to update data collection channel"
       }
     },
     "integrations": {

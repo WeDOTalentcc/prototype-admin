@@ -5996,6 +5996,20 @@
         "activeCount": "{active} de {total} ativos",
         "activeCountAria": "{active} de {total} alertas ativos",
         "viewHistory": "Ver histórico de notificações"
+      },
+      "dataChannel": {
+        "title": "Canal de Coleta de Dados",
+        "description": "Canal padrão para solicitar dados ao candidato. Pode ser sobrescrito por vaga.",
+        "channelEmail": "E-mail",
+        "channelEmailDesc": "Envia link do portal de dados por e-mail",
+        "channelWeb": "Portal Web",
+        "channelWebDesc": "Candidato acessa o portal de dados pelo link direto",
+        "channelWhatsapp": "WhatsApp",
+        "channelWhatsappDesc": "Coleta via mensagem interativa no WhatsApp",
+        "channelVoice": "Ligação por Voz",
+        "channelVoiceDesc": "Coleta via ligação telefônica com IA",
+        "saveSuccess": "Canal de coleta atualizado com sucesso",
+        "saveError": "Erro ao atualizar canal de coleta"
       }
     },
     "integrations": {

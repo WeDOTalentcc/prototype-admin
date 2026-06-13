@@ -21,6 +21,7 @@ import { useCommunicationHub } from './communication-hub/useCommunicationHub'
 import { TemplatesTab } from './communication-hub/TemplatesTab'
 import { SignatureTab } from './communication-hub/SignatureTab'
 import { AlertPreferencesPanel } from './AlertPreferencesPanel'
+import { DataChannelSettings } from './DataChannelSettings'
 
 export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: CommunicationHubProps) {
   const t = useTranslations("settings")
@@ -85,7 +86,10 @@ export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: Com
         )
       case 'alerts':
         return (
-          <AlertPreferencesPanel />
+          <div className="space-y-6">
+            <AlertPreferencesPanel />
+            <DataChannelSettings />
+          </div>
         )
       default:
         return null
