@@ -8,35 +8,38 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies from monorepo root
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install uv for fast dependency management
+RUN pip install --no-cache-dir uv
 
-# Install internal libs (order: config first, then dependents)
-COPY libs/config libs/config
-COPY libs/utils libs/utils
-COPY libs/audit libs/audit
-COPY libs/messaging libs/messaging
-COPY libs/models libs/models
-COPY libs/agents-core libs/agents-core
-COPY libs/services libs/services
-COPY libs/contexts libs/contexts
-COPY libs/auth libs/auth
-RUN pip install --no-cache-dir \
+# Copy workspace pyproject (UV workspace resolution)
+COPY pyproject.toml uv.lock* ./
+
+# Install workspace libs (ordered by dependency)
+COPY libs/ libs/
+RUN uv pip install --system \
     -e libs/config \
     -e libs/utils \
     -e libs/audit \
     -e libs/messaging \
     -e libs/models \
-    -e libs/agents-core \
+    -e libs/schemas \
     -e libs/services \
-    -e libs/contexts \
-    -e libs/auth
+    -e libs/events
+
+# Install api-onboarding deps
+COPY apps/api-onboarding/pyproject.toml apps/api-onboarding/pyproject.toml
+RUN uv pip install --system -e apps/api-onboarding
 
 # Copy application code
 COPY app/ app/
-COPY apps/ apps/
+COPY apps/api-onboarding/ apps/api-onboarding/
+
+ENV PYTHONPATH=/workspace
 
 EXPOSE 8003
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003", "--app-dir", "apps/api-onboarding"]
+CMD ["uvicorn", "main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8003", \
+     "--app-dir", "apps/api-onboarding", \
+     "--workers", "2"]
