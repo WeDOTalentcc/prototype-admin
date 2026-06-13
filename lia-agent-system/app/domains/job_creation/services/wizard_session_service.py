@@ -1044,6 +1044,21 @@ class WizardSessionService:
         from app.domains.job_creation.state import calculate_completeness
 
         state = dict(prior_state or {})
+
+        # ── Terminal stage guard (belt-and-suspenders) ─────────────────
+        _prior_stage = state.get('current_stage', '')
+        if _prior_stage in {'handoff', 'completed', 'done'}:
+            logger.info(
+                "[WizardOrchestrator] terminal stage guard: stage=%s "
+                "thread=%s — returning early (wizard finished)",
+                _prior_stage, thread_id,
+            )
+            return (
+                "A vaga anterior já foi finalizada. Posso te ajudar a criar "
+                "uma nova vaga — é só me dizer o cargo e as informações básicas.",
+                {},
+                0,
+            )
         # Carrega campos do context (right_panel_form, tenant snippet) p/ o state.
         for k in _CONTEXT_CARRY_KEYS:
             if context and context.get(k) is not None:
@@ -1406,6 +1421,19 @@ class WizardSessionService:
         _prior_stage = None
         if isinstance(prior_state, dict):
             _prior_stage = prior_state.get("current_stage")
+        # ── Terminal stage guard (graph path) ─────────────────────
+        if _prior_stage in ('handoff', 'completed', 'done'):
+            logger.info(
+                "[WizardSession] terminal stage guard (graph): stage=%s "
+                "thread=%s — returning early",
+                _prior_stage, thread_id,
+            )
+            return (
+                "A vaga anterior já foi finalizada. Posso te ajudar a criar "
+                "uma nova vaga — é só me dizer o cargo e as informações básicas.",
+                {},
+                0,
+            )
         _skip_supervisor = _compute_supervisor_skip(user_message, _prior_stage)
         _msg_len = len((user_message or "").strip())
         # Sprint F.4 (iter 3) — diagnostic INFO so we can see supervisor
