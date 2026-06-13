@@ -5,6 +5,23 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
+
+
+def adaptive_k(scores: list[float], max_k: int = 20, min_quality: float = 0.3) -> int:
+    """5.0: trunca resultados no 'joelho' da curva de similaridade.
+    Se top score < min_quality, retorna 0 (nenhum resultado é bom o suficiente).
+    Corta onde score cai abaixo de min_quality * top_score."""
+    if not scores or max_k <= 0:
+        return 0
+    top = scores[0]
+    if top < min_quality:
+        return 0
+    threshold = top * min_quality
+    for i, s in enumerate(scores):
+        if s < threshold:
+            return min(i, max_k)
+    return min(len(scores), max_k)
+
 class CandidateEmbeddingService:
     def build_embedding_text(self, candidate: dict[str, Any]) -> str:
         """Monta texto canônico para embedding a partir de dados do candidato.
