@@ -13,6 +13,7 @@ members = [
     "lia-agents-core",
     "lia-audit",
     "lia-config",
+    "lia-events",
     "lia-messaging",
     "lia-models",
     "lia-schemas",
@@ -2040,6 +2041,7 @@ dependencies = [
     { name = "lia-agents-core" },
     { name = "lia-audit" },
     { name = "lia-config" },
+    { name = "lia-events" },
     { name = "lia-messaging" },
     { name = "lia-models" },
     { name = "lia-services" },
@@ -2111,6 +2113,7 @@ requires-dist = [
     { name = "lia-agents-core", editable = "libs/agents-core" },
     { name = "lia-audit", editable = "libs/audit" },
     { name = "lia-config", editable = "libs/config" },
+    { name = "lia-events", editable = "libs/events" },
     { name = "lia-messaging", editable = "libs/messaging" },
     { name = "lia-models", editable = "libs/models" },
     { name = "lia-services", editable = "libs/services" },
@@ -2209,6 +2212,17 @@ requires-dist = [
     { name = "redis", specifier = ">=5.2.0" },
     { name = "sqlalchemy", specifier = ">=2.0.36" },
 ]
+
+[[package]]
+name = "lia-events"
+version = "0.1.0"
+source = { editable = "libs/events" }
+dependencies = [
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pydantic", specifier = ">=2.0" }]
 
 [[package]]
 name = "lia-messaging"

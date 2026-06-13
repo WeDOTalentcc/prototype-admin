@@ -81,6 +81,7 @@ dependencies = [
     "lia-audit",
     "lia-messaging",
     "lia-models",
+    "lia-events",
     "lia-agents-core",
     "lia-services",
 ]
@@ -100,6 +101,7 @@ lia-utils       = { workspace = true }
 lia-audit       = { workspace = true }
 lia-messaging   = { workspace = true }
 lia-models      = { workspace = true }
+lia-events      = { workspace = true }
 lia-agents-core = { workspace = true }
 lia-services    = { workspace = true }
 
