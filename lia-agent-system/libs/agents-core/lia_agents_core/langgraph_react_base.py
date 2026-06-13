@@ -312,6 +312,15 @@ class LangGraphReActBase(LangGraphBase):
         except Exception as e:
             logger.debug("[LIA-C05] FairnessGuard check skipped (fail-open): %s", e)
 
+        # Canonical reasoning phases (2026-06-13): emit understanding/composing
+        # so ALL domain agents (recruiter_copilot, talent, kanban, etc.) feed
+        # the multistep timeline instead of falling back to static Pensando.
+        if streaming_cb and hasattr(streaming_cb, "emit_reasoning_step"):
+            try:
+                streaming_cb.emit_reasoning_step("understanding")
+            except Exception:
+                pass
+
         import time as _time
         _t0 = _time.monotonic()
         try:
@@ -327,6 +336,12 @@ class LangGraphReActBase(LangGraphBase):
             raise
 
         _duration = _time.monotonic() - _t0
+
+        if streaming_cb and hasattr(streaming_cb, "emit_reasoning_step"):
+            try:
+                streaming_cb.emit_reasoning_step("composing")
+            except Exception:
+                pass
 
         output = self._state_to_output(result, input)
 
