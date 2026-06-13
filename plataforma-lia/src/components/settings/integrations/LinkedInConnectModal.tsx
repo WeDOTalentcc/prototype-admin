@@ -104,7 +104,8 @@ export function LinkedInConnectModal({
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleSave = useCallback(async () => {
-    if (!accessToken.trim()) {
+    // Allow empty token when already connected (update only org_id/posting_type)
+    if (!accessToken.trim() && !status?.connected) {
       setSaveError("Cole o access_token do LinkedIn antes de salvar.")
       return
     }

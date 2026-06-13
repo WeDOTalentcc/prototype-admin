@@ -188,8 +188,7 @@ async def connect_linkedin(
     Credentials stored:
         access_token, org_id, org_urn, posting_type
     """
-    if not request.access_token.strip():
-        raise HTTPException(status_code=422, detail="access_token não pode ser vazio")
+    updating_only = not request.access_token.strip()
     if not request.org_id.strip().isdigit():
         raise HTTPException(
             status_code=422,
@@ -201,26 +200,7 @@ async def connect_linkedin(
             detail="posting_type deve ser 'job_posting' ou 'social_only'",
         )
 
-    credentials = {
-        "access_token": request.access_token.strip(),
-        "org_id": request.org_id.strip(),
-        "org_urn": f"urn:li:organization:{request.org_id.strip()}",
-        "posting_type": request.posting_type,
-    }
-
-    try:
-        encrypted = encrypt_credentials(credentials)
-    except CredentialsEncryptionError as exc:
-        logger.error(
-            "[linkedin] credentials encryption failed for company %s: %s",
-            company_id,
-            exc,
-        )
-        raise HTTPException(
-            status_code=500,
-            detail="Erro ao criptografar credenciais",
-        ) from exc
-
+    # If updating_only (no new token provided), keep existing token and update posting_type
     try:
         provider = await _get_or_create_linkedin_provider(db)
         result = await db.execute(
@@ -230,6 +210,48 @@ async def connect_linkedin(
             )
         )
         conn = result.scalar_one_or_none()
+
+        if updating_only:
+            # Must already be connected to do a partial update
+            if conn is None or conn.status != IntegrationStatus.CONNECTED:
+                raise HTTPException(
+                    status_code=422,
+                    detail="access_token é obrigatório para a primeira configuração",
+                )
+            try:
+                existing_creds = decrypt_credentials(conn.credentials_encrypted)
+            except CredentialsEncryptionError:
+                raise HTTPException(
+                    status_code=422,
+                    detail="access_token é obrigatório — não foi possível recuperar o token existente",
+                )
+            credentials = {
+                "access_token": existing_creds["access_token"],
+                "org_id": request.org_id.strip(),
+                "org_urn": f"urn:li:organization:{request.org_id.strip()}",
+                "posting_type": request.posting_type,
+            }
+        else:
+            credentials = {
+                "access_token": request.access_token.strip(),
+                "org_id": request.org_id.strip(),
+                "org_urn": f"urn:li:organization:{request.org_id.strip()}",
+                "posting_type": request.posting_type,
+            }
+
+        try:
+            encrypted = encrypt_credentials(credentials)
+        except CredentialsEncryptionError as exc:
+            logger.error(
+                "[linkedin] credentials encryption failed for company %s: %s",
+                company_id,
+                exc,
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Erro ao criptografar credenciais",
+            ) from exc
+
         if conn is None:
             conn = IntegrationConnection(
                 id=uuid.uuid4(),
@@ -282,7 +304,7 @@ async def disconnect_linkedin(
         return {"success": True, "connected": False, "message": "Não estava conectado"}
 
     try:
-        conn.status = IntegrationStatus.DISCONNECTED
+        conn.status = IntegrationStatus.NOT_CONNECTED
         conn.credentials_encrypted = None
         await db.commit()
     except Exception as exc:
