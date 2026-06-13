@@ -145,13 +145,13 @@ _EMPLOYMENT_NORMALIZE: dict[str, str] = {
 
 # Campos de intake que set_job_fields aceita. Cada um mapeia para a chave
 # canonical do JobCreationState.
-# manager_name NAO entra aqui: e capturado deterministicamente no servidor
-# (wizard layer), NUNCA pelo LLM -- ele nao ve o nome (mascarado por LGPD) e
-# o inventava (audit 2026-06-05). manager_email idem (ignorado quando
-# mascarado, capturado no servidor).
+# Campos de responsáveis (T9): manager_name, manager_email, recruiter,
+# recruiter_email são settáveis pelo LLM. PII masking em emails preservada
+# (placeholder ignorado silenciosamente quando mascarado).
 _SETTABLE_JOB_FIELDS: frozenset[str] = frozenset({
     "title", "department", "seniority", "location", "model",
-    "employment_type", "manager_email",
+    "employment_type", "manager_name", "manager_email",
+    "recruiter", "recruiter_email",
 })
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -190,6 +190,11 @@ def _normalize_field(name: str, value: str) -> tuple[Optional[str], Optional[str
             return None, f"Email do gestor '{v}' é inválido."
         return v, None
 
+    if name == "recruiter_email":
+        if not _EMAIL_RE.match(v):
+            return None, f"Email do recrutador '{v}' é inválido."
+        return v, None
+
     return v, None
 
 
@@ -203,6 +208,8 @@ _FIELD_TO_STATE_KEY: dict[str, str] = {
     "employment_type": "parsed_employment_type",
     "manager_name": "parsed_manager_name",
     "manager_email": "parsed_manager_email",
+    "recruiter": "parsed_recruiter",
+    "recruiter_email": "parsed_recruiter_email",
 }
 
 
@@ -229,17 +236,9 @@ def _handle_set_job_fields(
     if tenant_err:
         return ToolResult(llm_message=tenant_err, error=True)
 
-    # Nome do gestor e capturado deterministicamente no servidor (audit
-    # 2026-06-05) -- NUNCA pelo LLM (ele nao ve o nome, mascarado por LGPD, e
-    # inventava). Se o LLM tentar setar, ignora silenciosamente com nota.
+    # Campos de responsáveis (T9): manager_name, manager_email, recruiter,
+    # recruiter_email são todos settáveis pelo LLM.
     _server_managed_note = None
-    if "manager_name" in tool_input:
-        tool_input = {k: v for k, v in tool_input.items() if k != "manager_name"}
-        _server_managed_note = (
-            "O nome do gestor e capturado automaticamente do texto -- nao "
-            "precisa setar nem inventar; confira a ficha viva para ver o que "
-            "foi registrado."
-        )
 
     unknown = [k for k in tool_input if k not in _SETTABLE_JOB_FIELDS]
     if unknown:
@@ -255,11 +254,11 @@ def _handle_set_job_fields(
     applied: list[str] = []
     notes: list[str] = []
     for name, raw in tool_input.items():
-        # Email do gestor mascarado: ignorar (capturado deterministicamente
-        # no servidor). Não erra — apenas informa o LLM para não insistir.
-        if name == "manager_email" and _is_masked_pii(str(raw)):
+        # Email mascarado (LGPD strip no inbound): ignorar placeholder.
+        if name in ("manager_email", "recruiter_email") and _is_masked_pii(str(raw)):
+            _label = "gestor" if name == "manager_email" else "recrutador"
             notes.append(
-                "O email do gestor é capturado automaticamente do texto — "
+                f"O email do {_label} é capturado automaticamente do texto — "
                 "não precisa pedir nem validar formato; se o recrutador "
                 "mencionou um email, já está registrado."
             )
@@ -820,7 +819,10 @@ SET_JOB_FIELDS = WizardTool(
             "location": {"type": "string", "description": "Localização (cidade/estado)."},
             "model": {"type": "string", "description": "Modelo: remoto, híbrido ou presencial."},
             "employment_type": {"type": "string", "description": "Contrato: CLT, PJ, estágio, temporário, freelancer."},
-            "manager_email": {"type": "string", "description": "Email do gestor responsável (capturado automaticamente do texto; opcional)."},
+            "manager_name": {"type": "string", "description": "Nome do gestor/hiring manager da vaga."},
+            "manager_email": {"type": "string", "description": "Email do gestor responsável."},
+            "recruiter": {"type": "string", "description": "Nome do recrutador responsável pelo processo."},
+            "recruiter_email": {"type": "string", "description": "Email do recrutador responsável."},
         },
         "additionalProperties": False,
     },
