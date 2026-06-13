@@ -3,23 +3,35 @@
 import { useCallback } from "react"
 import {
   useVacancyAlertPreferences,
+  useAlertPreview,
   type AlertFrequency,
   type VacancyAlertPreference,
 } from "@/hooks/alerts/useVacancyAlertPreferences"
 
 const ALERT_TYPES = [
   { key: "new_candidate", label: "Novo candidato" },
-  { key: "screening_complete", label: "Triagem concluída" },
-  { key: "stage_change", label: "Mudança de etapa" },
+  { key: "screening_complete", label: "Triagem concluida" },
+  { key: "stage_change", label: "Mudanca de etapa" },
 ] as const
 
 const FREQUENCY_OPTIONS: { value: AlertFrequency; label: string }[] = [
-  { value: "daily", label: "Diário" },
+  { value: "daily", label: "Diario" },
   { value: "twice_daily", label: "2x ao dia" },
   { value: "weekly", label: "Semanal" },
   { value: "monthly", label: "Mensal" },
   { value: "off", label: "Desativado" },
 ]
+
+/** Badge com contagem live de candidatos por tipo de alerta. Componente separado para rules-of-hooks safety. */
+function AlertBadge({ vacancyId, alertType }: { vacancyId: string; alertType: string }) {
+  const { data } = useAlertPreview(vacancyId, alertType)
+  if (!data?.preview_count) return null
+  return (
+    <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-medium px-1.5 py-0.5 min-w-[1.25rem]">
+      {data.preview_count}
+    </span>
+  )
+}
 
 interface VacancyAlertSettingsProps {
   vacancyId: string
@@ -40,14 +52,13 @@ export function VacancyAlertSettings({ vacancyId, userId }: VacancyAlertSettings
 
   const handleChange = useCallback(
     (alertType: string, frequency: AlertFrequency) => {
-      const current = data?.preferences ?? []
       const updated: VacancyAlertPreference[] = ALERT_TYPES.map((at) => ({
         alert_type: at.key,
         frequency: at.key === alertType ? frequency : getFrequency(at.key),
       }))
       savePreferences(updated)
     },
-    [data, getFrequency, savePreferences],
+    [getFrequency, savePreferences],
   )
 
   if (!vacancyId) return null
@@ -58,10 +69,13 @@ export function VacancyAlertSettings({ vacancyId, userId }: VacancyAlertSettings
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-medium">Frequência de alertas desta vaga</h4>
+      <h4 className="text-sm font-medium">Frequencia de alertas desta vaga</h4>
       {ALERT_TYPES.map((at) => (
         <div key={at.key} className="flex items-center justify-between gap-4">
-          <span className="text-sm">{at.label}</span>
+          <span className="text-sm">
+            {at.label}
+            <AlertBadge vacancyId={vacancyId} alertType={at.key} />
+          </span>
           <select
             role="combobox"
             className="rounded border px-2 py-1 text-sm"

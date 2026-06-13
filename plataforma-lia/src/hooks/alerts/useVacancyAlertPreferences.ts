@@ -46,3 +46,27 @@ export function useVacancyAlertPreferences(vacancyId: string, userId: string) {
     isSaving: mutation.isPending,
   }
 }
+
+// --- Alert Preview ---
+
+export interface AlertPreview {
+  alert_type: string
+  preview_count: number
+  description: string
+}
+
+export function useAlertPreview(vacancyId: string, alertType: string) {
+  return useQuery({
+    queryKey: ["alert-preview", vacancyId, alertType],
+    queryFn: async () => {
+      const params = new URLSearchParams({ alert_type: alertType })
+      if (vacancyId) params.set("vacancy_id", vacancyId)
+      const res = await fetch(`/api/backend-proxy/alerts/vacancy/preview?${params}`)
+      if (!res.ok) return { alert_type: alertType, preview_count: 0, description: "" }
+      return res.json() as Promise<AlertPreview>
+    },
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+    enabled: !!alertType,
+  })
+}
