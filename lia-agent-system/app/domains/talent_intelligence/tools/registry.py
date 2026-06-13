@@ -269,3 +269,28 @@ def register_talent_intelligence_tools() -> None:
     ))
 
     logger.info("Registered 15 talent intelligence tools")
+
+
+
+def get_talent_intelligence_tools() -> list[ToolDefinition]:
+    """Return all ToolDefinitions for the Talent Intelligence domain (Agent Studio)."""
+    from lia_agents_core.tool_adapter import ToolDefinition as CoreToolDef, ToolOutput
+
+    tools = [
+        CoreToolDef(name="infer_related_skills", description="Inferir skills relacionadas a partir de uma lista usando o grafo de ontologia.", output_schema=ToolOutput, function=infer_related_skills),
+        CoreToolDef(name="get_skill_adjacencies", description="Obter skills adjacentes no grafo de ontologia com pesos de proximidade.", output_schema=ToolOutput, function=get_skill_adjacencies),
+        CoreToolDef(name="analyze_skill_gaps", description="Analisar gaps de skills entre candidato e requisitos da vaga.", output_schema=ToolOutput, function=analyze_skill_gaps),
+        CoreToolDef(name="map_candidate_skills_to_ontology", description="Mapear skills brutas de candidato para nos canonicos da ontologia.", output_schema=ToolOutput, function=map_candidate_skills_to_ontology),
+        CoreToolDef(name="match_internal_candidates", description="Encontrar candidatos internos para mobilidade usando matching baseado na ontologia.", output_schema=ToolOutput, function=match_internal_candidates),
+        CoreToolDef(name="forecast_hiring_needs", description="Prever necessidades de contratacao baseado em turnover, pipeline e crescimento.", output_schema=ToolOutput, function=forecast_hiring_needs),
+        CoreToolDef(name="analyze_interview_recording", description="Analise completa de entrevista: WSI + bias + comparativo + parecer + feedback.", output_schema=ToolOutput, function=analyze_interview_recording),
+        CoreToolDef(name="detect_interview_bias", description="Detectar vies em entrevista: padroes linguisticos + analise LLM.", output_schema=ToolOutput, function=detect_interview_bias),
+        CoreToolDef(name="generate_interview_opinion", description="Gerar parecer estrategico de contratacao com evidencias e recomendacao.", output_schema=ToolOutput, function=generate_interview_opinion),
+        CoreToolDef(name="generate_candidate_feedback", description="Gerar feedback estruturado e construtivo para devolver ao candidato.", output_schema=ToolOutput, function=generate_candidate_feedback),
+        CoreToolDef(name="compare_interview_performance", description="Comparar performance de candidato vs. outros da mesma vaga.", output_schema=ToolOutput, function=compare_interview_performance),
+        CoreToolDef(name="create_nurture_sequence", description="Criar sequencia automatizada de nurture para candidatos passivos.", output_schema=ToolOutput, function=create_nurture_sequence),
+        CoreToolDef(name="get_engagement_metrics", description="Obter metricas de engajamento de sequencias de nurture.", output_schema=ToolOutput, function=get_engagement_metrics),
+        CoreToolDef(name="suggest_reengagement", description="Sugerir candidatos inativos para reengajamento.", output_schema=ToolOutput, function=suggest_reengagement),
+        CoreToolDef(name="get_market_intelligence", description="Obter inteligencia de mercado: benchmarks salariais, tendencias e skills em alta.", output_schema=ToolOutput, function=get_market_intelligence),
+    ]
+    return tools
