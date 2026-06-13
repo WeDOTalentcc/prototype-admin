@@ -779,8 +779,6 @@
       "mentionJobCandidate": "Mencionar vaga ou candidato",
       "suggestionsTitle": "Sugestões de consulta",
       "suggestionsLabel": "Abrir sugestões de consulta",
-      "contextConfig": "Configurações de contexto",
-      "contextConfigLabel": "Configurações de conversa",
       "auto": "Auto"
     },
     "suggestionsPanel": {
@@ -793,22 +791,6 @@
       "hint": "Clique para inserir no prompt",
       "dynamicLoading": "Gerando sugestões...",
       "dynamicTitle": "Sugestões para você"
-    },
-    "contextPanel": {
-      "title": "Contexto da Conversa",
-      "helpText": "Defina o foco da conversa. No modo Vaga ou Candidato, a IA usa os dados específicos para responder com mais precisão.",
-      "clearContext": "Limpar",
-      "recentJobs": "Vagas Recentes",
-      "recentCandidates": "Candidatos Recentes",
-      "emptyHint": "Navegue por vagas ou candidatos para que apareçam aqui como atalhos.",
-      "entityJob": "Vaga",
-      "entityCandidate": "Candidato",
-      "modeGeneral": "Conversa Geral",
-      "modeGeneralDesc": "Pergunte sobre qualquer tema",
-      "modeJob": "Foco em Vaga",
-      "modeJobDesc": "A IA responde usando dados da vaga selecionada",
-      "modeCandidate": "Foco em Candidato",
-      "modeCandidateDesc": "A IA responde usando dados do candidato selecionado"
     },
     "queryCategories": {
       "metricas": "Métricas",

@@ -779,8 +779,6 @@
       "mentionJobCandidate": "Mention job or candidate",
       "suggestionsTitle": "Query suggestions",
       "suggestionsLabel": "Open query suggestions",
-      "contextConfig": "Context settings",
-      "contextConfigLabel": "Conversation settings",
       "auto": "Auto"
     },
     "suggestionsPanel": {
@@ -793,22 +791,6 @@
       "hint": "Click to insert into prompt",
       "dynamicLoading": "Generating suggestions...",
       "dynamicTitle": "Suggestions for you"
-    },
-    "contextPanel": {
-      "title": "Conversation Context",
-      "helpText": "Set the conversation focus. In Job or Candidate mode, IA uses specific data to respond more accurately.",
-      "clearContext": "Clear",
-      "recentJobs": "Recent Jobs",
-      "recentCandidates": "Recent Candidates",
-      "emptyHint": "Browse jobs or candidates so they appear here as shortcuts.",
-      "entityJob": "Job",
-      "entityCandidate": "Candidate",
-      "modeGeneral": "General Conversation",
-      "modeGeneralDesc": "Ask about any topic",
-      "modeJob": "Job Focus",
-      "modeJobDesc": "IA responds using data from the selected job",
-      "modeCandidate": "Candidate Focus",
-      "modeCandidateDesc": "IA responds using data from the selected candidate"
     },
     "queryCategories": {
       "metricas": "Metrics",

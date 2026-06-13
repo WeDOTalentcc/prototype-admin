@@ -1,12 +1,11 @@
 "use client"
 
 import React, { useRef, useCallback, useEffect, useState } from "react"
-import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, AtSign, Lightbulb } from "lucide-react"
+import { Send, Plus, Loader2, Paperclip, FileText, XCircle, AtSign, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTranslations } from 'next-intl'
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { ChatSuggestionsPanel } from "./ChatSuggestionsPanel"
-import { ContextConfigPanel } from "./ContextConfigPanel"
 import { useMentionAutocomplete } from "./useMentionAutocomplete"
 import { useSlashCommands } from "./useSlashCommands"
 import { MentionDropdown } from "./MentionDropdown"
@@ -51,7 +50,6 @@ export function UnifiedChatInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [showPlusMenu, setShowPlusMenu] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [showContextConfig, setShowContextConfig] = useState(false)
   const [cursorPosition, setCursorPosition] = useState(0)
   const [isDragOver, setIsDragOver] = useState(false)
   const isBusy = isStreaming || isCreating
@@ -140,17 +138,16 @@ export function UnifiedChatInput({
     if (mention.isOpen || slash.isOpen) {
       setShowPlusMenu(false)
       setShowSuggestions(false)
-      setShowContextConfig(false)
     }
   }, [mention.isOpen, slash.isOpen])
 
   // Mutex: when manual popover opens, close the autocomplete dropdowns.
   useEffect(() => {
-    if (showPlusMenu || showSuggestions || showContextConfig) {
+    if (showPlusMenu || showSuggestions) {
       closeMention()
       closeSlash()
     }
-  }, [showPlusMenu, showSuggestions, showContextConfig, closeMention, closeSlash])
+  }, [showPlusMenu, showSuggestions, closeMention, closeSlash])
 
   // Auto-resize textarea
   const adjustHeight = useCallback(() => {
@@ -364,30 +361,6 @@ export function UnifiedChatInput({
               <Lightbulb className="w-4 h-4" />
             </button>
 
-            {/* Context config */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowContextConfig(!showContextConfig)}
-                disabled={isBusy}
-                className={cn(
-                  "p-1.5 rounded-md transition-colors motion-reduce:transition-none disabled:opacity-40",
-                  showContextConfig
-                    ? "text-wedo-cyan bg-wedo-cyan/10"
-                    : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
-                )}
-                title={t('contextConfig')}
-                aria-label={t('contextConfigLabel')}
-              >
-                <SlidersHorizontal className="w-4 h-4" />
-              </button>
-
-              <ContextConfigPanel
-                isOpen={showContextConfig}
-                onClose={() => setShowContextConfig(false)}
-                mode={mode}
-              />
-            </div>
           </div>
 
           <div className="flex items-center gap-1">
