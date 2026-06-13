@@ -668,9 +668,17 @@ export function UnifiedMessageList({
                   />
                 )}
 
-                {message.response_blocks && message.response_blocks.length > 0 && (
-                  <ResponseBlockRenderer blocks={message.response_blocks} mode={mode} />
-                )}
+                {message.response_blocks && message.response_blocks.length > 0 && (() => {
+                  // Filtrar somente blocos RRP (kind-based); blocos type-based
+                  // (list_jobs_result, search_candidates_result, calibration_result)
+                  // são renderizados abaixo pelo map() dedicado.
+                  const rrpBlocks = message.response_blocks!.filter(
+                    (b) => "kind" in (b as Record<string, unknown>)
+                  )
+                  return rrpBlocks.length > 0 ? (
+                    <ResponseBlockRenderer blocks={rrpBlocks} mode={mode} />
+                  ) : null
+                })()}
 
                 {/* P2.4-FE: search_candidates_result blocks — formato type-based
                     emitido pelo backend (distinto do RRP kind-based acima). */}

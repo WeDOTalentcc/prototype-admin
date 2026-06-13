@@ -101,14 +101,39 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+def _format_location(loc) -> str | None:
+    """Formata location para string legivel — trata objeto JSON e string."""
+    if not loc:
+        return None
+    if isinstance(loc, str):
+        # Tenta parsear JSON serializado como string
+        try:
+            import json as _json
+            parsed = _json.loads(loc)
+            if isinstance(parsed, dict):
+                loc = parsed
+            else:
+                return loc.strip() or None
+        except Exception:
+            return loc.strip() or None
+    if isinstance(loc, dict):
+        parts = [loc.get("city"), loc.get("state"), loc.get("country")]
+        parts = [p for p in parts if p]
+        return ", ".join(parts) if parts else None
+    return str(loc) or None
+
+
 def _normalize_job_for_card(j: dict) -> dict:
     """Normaliza job dict para o shape JobSummary esperado pelo FE (JobListCard)."""
     return {
         "id": str(j.get("id") or j.get("job_id") or ""),
         "title": j.get("title") or j.get("job_title") or "",
         "department": j.get("department") or j.get("department_name") or None,
+        "location": _format_location(j.get("location")),
         "status": j.get("status") or j.get("job_status") or None,
         "candidateCount": j.get("candidate_count") or j.get("candidates_count") or None,
+        "daysOpen": j.get("days_open") or None,
+        "priority": j.get("priority") or None,
     }
 
 
@@ -206,7 +231,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
                         "cells": {
                             "title": j.get("title"),
                             "department": j.get("department"),
-                            "location": j.get("location"),
+                            "location": _format_location(j.get("location")),
                             "candidate_count": j.get("candidate_count"),
                             "days_open": j.get("days_open"),
                             "priority": j.get("priority"),
