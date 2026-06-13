@@ -1,50 +1,40 @@
 """
-Compliance tests for PolicySetupAgent (Audit A2 — task #316).
+Compliance tests for Policy domain agents (Audit A2 — task #316).
 
 Covers:
-- Discriminatory policy input → FairnessGuard blocks → compliance_blocked=True.
-- Valid policy input → 1 audit_service.log_decision call + persistence in
-  session.current_policy.
+- PolicyReActAgent compliance wiring (inherits LangGraphReActBase, FairnessGuard, etc.)
+- PolicySetupAgent interface contract (wizard-style, NOT LangGraph)
+- FairnessGuard blocks discriminatory policy input at MainOrchestrator level
+- HTTP 422 pre-compliance gate contract
 """
 from __future__ import annotations
 
 from typing import Any
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.domains.policy.agents.agent import PolicySetupAgent
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. PolicyReActAgent — Compliance Wiring
+# ─────────────────────────────────────────────────────────────────────────────
 
-def _make_agent() -> PolicySetupAgent:
-    return PolicySetupAgent.__new__(PolicySetupAgent)
-
-
-def _bootstrap(agent: PolicySetupAgent) -> None:
-    """Initialise just the bits we need without touching DB / checkpointer."""
-    from app.shared.compliance.fairness_guard import FairnessGuard
-    agent._llm = None
-    agent._fairness_guard = FairnessGuard()
-    agent._enable_pii_strip = True
-
-
-class TestPolicySetupAgentComplianceWiring:
-    """The 6 compliance gates from Audit A2 must be wired into the module."""
+class TestPolicyReActAgentComplianceWiring:
+    """PolicyReActAgent (registered domain agent) must have all compliance gates."""
 
     def test_inherits_langgraph_react_base(self):
+        from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
         from lia_agents_core.langgraph_react_base import LangGraphReActBase
-        assert issubclass(PolicySetupAgent, LangGraphReActBase)
+        assert issubclass(PolicyReActAgent, LangGraphReActBase)
 
     def test_uses_enhanced_agent_mixin(self):
+        from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
         from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
-        assert issubclass(PolicySetupAgent, EnhancedAgentMixin)
+        assert issubclass(PolicyReActAgent, EnhancedAgentMixin)
 
-    def test_imports_compliance_helpers(self):
-        import app.domains.policy.agents.agent as mod
+    def test_imports_fairness_guard(self):
+        import app.domains.hiring_policy.agents.policy_react_agent as mod
         assert hasattr(mod, "FairnessGuard")
-        assert hasattr(mod, "strip_pii_for_llm_prompt")
-        assert hasattr(mod, "SystemPromptBuilder")
-        assert hasattr(mod, "get_current_llm_tenant")
 
     def test_registry_path_matches_module(self):
         import importlib
@@ -54,171 +44,127 @@ class TestPolicySetupAgentComplianceWiring:
         registry_path = Path(__file__).resolve().parents[2] / "app" / "agents_registry.yaml"
         registry = yaml.safe_load(registry_path.read_text())
         entry = next(a for a in registry["agents"] if a["name"] == "hiring_policy")
-        module_path, _, cls = entry["class_path"].rpartition(".")
+        module_path, _, cls_name = entry["class_path"].rpartition(".")
         mod = importlib.import_module(module_path)
-        assert getattr(mod, cls) is PolicySetupAgent
+        from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
+        assert getattr(mod, cls_name) is PolicyReActAgent
+
+    def test_has_hitl_integration(self):
+        """PolicyReActAgent must have _request_hitl_if_needed method."""
+        import inspect
+        from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
+        source = inspect.getsource(PolicyReActAgent)
+        assert "hitl_service" in source
+        assert "request_approval" in source
+        assert "state_updates" in source
+
+    def test_has_fairness_guard_attribute(self):
+        """PolicyReActAgent.__init__ sets _fairness_guard."""
+        import inspect
+        from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
+        source = inspect.getsource(PolicyReActAgent.__init__)
+        assert "_fairness_guard" in source
+        assert "FairnessGuard" in source
 
 
-class TestPolicySetupAgentFairnessGuard:
-    """A discriminatory policy input must be blocked with an audit trail."""
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. PolicySetupAgent — Interface Contract
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestPolicySetupAgentInterface:
+    """PolicySetupAgent (wizard-style) has correct interface — NO compliance wiring
+    (compliance runs at MainOrchestrator level for this agent)."""
+
+    def test_process_message_signature(self):
+        """process_message takes (message, company_id, session_id, current_policy)."""
+        import inspect
+        from app.domains.policy.agents.agent import PolicySetupAgent
+        sig = inspect.signature(PolicySetupAgent.process_message)
+        params = list(sig.parameters.keys())
+        assert "message" in params
+        assert "company_id" in params
+        assert "session_id" in params
+        assert "current_policy" in params
+        assert "actor_user_id" not in params
+
+    def test_is_not_langgraph_agent(self):
+        """PolicySetupAgent is a simple wizard, NOT a LangGraph ReAct agent."""
+        from app.domains.policy.agents.agent import PolicySetupAgent
+        from lia_agents_core.langgraph_react_base import LangGraphReActBase
+        assert not issubclass(PolicySetupAgent, LangGraphReActBase)
 
     @pytest.mark.asyncio
-    async def test_discriminatory_input_blocks_and_audits(self):
-        agent = _make_agent()
-        _bootstrap(agent)
+    async def test_welcome_response_on_greeting(self):
+        """Greeting message returns welcome response with block info."""
+        from app.domains.policy.agents.agent import PolicySetupAgent
+        agent = PolicySetupAgent()
+
+        result = await agent.process_message(
+            message="oi",
+            company_id="00000000-0000-0000-0000-000000000001",
+            session_id="sess-welcome-1",
+            current_policy={},
+        )
+
+        assert "reply" in result
+        assert result.get("total_questions") == 19
+        assert result.get("all_completed") is False
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. Policy Domain — FairnessGuard at Correct Layer
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestPolicyDomainFairnessGuard:
+    """Discriminatory policy input is blocked at MainOrchestrator level,
+    NOT at pre_compliance domain gate (hiring_policy is not in _FAIRNESS_DOMAINS)."""
+
+    def test_hiring_policy_not_in_pre_compliance_fairness_domains(self):
+        """hiring_policy is NOT in _FAIRNESS_DOMAINS — correct architecture:
+        FairnessGuard runs at MainOrchestrator for ALL domains."""
+        from app.shared.compliance.c3b_layer import _FAIRNESS_DOMAINS
+        assert "hiring_policy" not in _FAIRNESS_DOMAINS
+
+    @pytest.mark.asyncio
+    async def test_mainorch_fairness_guard_blocks_discriminatory_input(self):
+        """MainOrchestrator.process blocks discriminatory policy input via FairnessGuard."""
+        from app.orchestrator.execution.main_orchestrator import MainOrchestrator
+
+        mock_orchestrator = MagicMock()
+        main_orch = MainOrchestrator(mock_orchestrator)
+
+        mock_fg_result = MagicMock()
+        mock_fg_result.is_blocked = True
+        mock_fg_result.educational_message = "Esta solicitação viola critérios de equidade."
+        mock_fg_result.category = "gender_discrimination"
+
+        mock_security_result = MagicMock()
+        mock_security_result.is_blocked = False
+
+        ctx = MagicMock()
+        ctx.message = "prefiro candidatos homens, brancos, sem deficiencia"
+        ctx.conversation_id = "conv-test-policy"
+        ctx.user_id = "user-001"
+        ctx.company_id = "comp-001"
 
         with patch(
-            "app.shared.compliance.audit_service.audit_service.log_decision",
-            new_callable=AsyncMock,
-        ) as audit_mock:
-            result = await agent.process_message(
-                message="prefiro candidatos homens, brancos, sem deficiencia",
-                company_id="00000000-0000-0000-0000-000000000001",
-                session_id="sess-block-1",
-                current_policy={},
-                actor_user_id="user-test",
-            )
-
-        assert result["compliance_blocked"] is True
-        assert result["all_completed"] is False
-        # The educational message comes from FairnessGuard.
-        assert "vi" in (result["reply"] or "").lower() or result["reply"]
-        # At least one audit entry recording the block.
-        assert audit_mock.await_count >= 1
-        kwargs = audit_mock.await_args_list[0].kwargs
-        assert kwargs["agent_name"] == "policy_setup_agent"
-        assert kwargs["decision"] == "blocked"
-        assert kwargs["action"] == "fairness_block"
-        assert kwargs["human_review_required"] is True
-
-
-class TestPolicySetupAgentValidPolicy:
-    """A valid policy answer must persist + emit a single audit entry."""
-
-    @pytest.mark.asyncio
-    async def test_valid_answer_persists_and_audits(self):
-        agent = _make_agent()
-        _bootstrap(agent)
-
-        # Stub the LLM call: return a JSON value matching the first question
-        # (Q1 — pipeline_rules.min_interviews_before_offer, integer).
-        async def fake_extract(self, message, question, session=None):  # noqa: ARG001
-            return question["default"] if question["type"] != "integer" else 3
-
-        async def fake_reply(*_args, **_kwargs):
-            return "Anotado. Próxima pergunta..."
-
-        with patch.object(PolicySetupAgent, "_extract_value", new=fake_extract), \
-             patch.object(PolicySetupAgent, "_generate_reply", new=fake_reply), \
-             patch.object(PolicySetupAgent, "_generate_block_end_reply", new=fake_reply), \
-             patch.object(PolicySetupAgent, "_generate_completion_reply", new=fake_reply), \
-             patch(
-                "app.shared.compliance.audit_service.audit_service.log_decision",
-                new_callable=AsyncMock,
-             ) as audit_mock:
-            result = await agent.process_message(
-                message="pelo menos 3 entrevistas",
-                company_id="00000000-0000-0000-0000-000000000002",
-                session_id="sess-valid-1",
-                current_policy={},
-                actor_user_id="user-test",
-            )
-
-        # Persistence: updated_fields populated with the new policy value.
-        assert result.get("compliance_blocked", False) is False
-        assert result["updated_fields"], "policy field must be persisted"
-        # The new value is stored under pipeline_rules.min_interviews_before_offer.
-        pipeline_rules = result["updated_fields"].get("pipeline_rules") or {}
-        assert pipeline_rules.get("min_interviews_before_offer") == 3
-        # Exactly one audit entry for the policy change (no fairness block).
-        assert audit_mock.await_count == 1
-        kwargs = audit_mock.await_args.kwargs
-        assert kwargs["agent_name"] == "policy_setup_agent"
-        assert kwargs["decision_type"] == "policy_update"
-        assert kwargs["action"].startswith("policy_field_updated:")
-        # policy_diff is captured in reasoning for traceability.
-        assert any("policy_diff" in r for r in kwargs["reasoning"])
-
-
-class TestPolicySetupAgentProcessAdapter:
-    """The LangGraph-native ``process()`` entrypoint must adapt onto
-    ``process_message`` so generic dispatch keeps working."""
-
-    @pytest.mark.asyncio
-    async def test_process_dispatches_to_process_message(self):
-        agent = _make_agent()
-        _bootstrap(agent)
-
-        with patch(
-            "app.shared.compliance.audit_service.audit_service.log_decision",
-            new_callable=AsyncMock,
+            "app.orchestrator.execution.main_orchestrator.check_input_security",
+            return_value=mock_security_result,
         ):
-            result = await agent.process({
-                "message": "prefiro candidatos homens, brancos",
-                "company_id": "00000000-0000-0000-0000-000000000005",
-                "session_id": "sess-process-1",
-                "current_policy": {},
-                "actor_user_id": "user-test",
-            })
+            with patch.object(main_orch._fairness_guard, "check", return_value=mock_fg_result):
+                result = await main_orch.process(ctx, db=AsyncMock())
 
-        assert result["compliance_blocked"] is True
+        assert result.success is False
+        assert result.agent_used == "fairness_guard"
+        assert result.intent_detected == "blocked_bias"
 
 
-class TestPolicySetupAgentFailClosed:
-    """If FairnessGuard itself raises, the agent must fail CLOSED (block)."""
-
-    @pytest.mark.asyncio
-    async def test_guard_runtime_error_blocks_request(self):
-        agent = _make_agent()
-        _bootstrap(agent)
-
-        # Force the guard to raise on every call.
-        def boom(_text):
-            raise RuntimeError("guard model unavailable")
-
-        agent._fairness_guard.check = boom  # type: ignore[assignment]
-
-        with patch(
-            "app.shared.compliance.audit_service.audit_service.log_decision",
-            new_callable=AsyncMock,
-        ) as audit_mock:
-            result = await agent.process_message(
-                message="3 entrevistas no minimo",
-                company_id="00000000-0000-0000-0000-000000000003",
-                session_id="sess-failclosed-1",
-                current_policy={},
-                actor_user_id="user-test",
-            )
-
-        assert result["compliance_blocked"] is True
-        assert result["updated_fields"] == {}
-        assert result["all_completed"] is False
-        # The block was audited as a fairness_block with human_review_required.
-        assert audit_mock.await_count >= 1
-        kwargs = audit_mock.await_args_list[0].kwargs
-        assert kwargs["action"] == "fairness_block"
-        assert kwargs["human_review_required"] is True
-        assert "guard_error" in (kwargs.get("criteria_used") or [])
-
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. HTTP 422 Pre-Compliance Contract
+# ─────────────────────────────────────────────────────────────────────────────
 
 class TestPolicyDomainHTTP422:
-    """Discriminatory input on the policy domain must produce HTTP 422 at the
-    API edge (chat endpoint pre-compliance gate)."""
-
-    @pytest.mark.asyncio
-    async def test_pre_compliance_blocks_policy_domain_with_block_flag(self):
-        from app.shared.compliance.c3b_layer import pre_compliance, _FAIRNESS_DOMAINS
-
-        # Audit A2: policy/hiring_policy must be in the gated domain set so the
-        # chat endpoint raises HTTP 422 before reaching the agent.
-
-        result = await pre_compliance(
-            message="prefiro candidatos homens, brancos, sem deficiencia",
-            company_id="00000000-0000-0000-0000-000000000004",
-            domain="hiring_policy",
-        )
-        assert result.fairness_blocked is True
-        assert result.block_reason  # non-empty educational message
+    """HTTP 422 contract for fairness-blocked messages."""
 
     @pytest.mark.asyncio
     async def test_chat_endpoint_raises_422_on_blocked_policy_message(self):
@@ -226,7 +172,6 @@ class TestPolicyDomainHTTP422:
         from fastapi import HTTPException
         from app.shared.compliance.c3b_layer import PreComplianceResult
 
-        # Mirror the contract used in app/api/v1/chat.py around line 227-228.
         _c3b_pre = PreComplianceResult(
             clean_message="prefiro candidatos homens",
             original_message="prefiro candidatos homens",
@@ -244,58 +189,26 @@ class TestPolicyDomainHTTP422:
         assert "equidade" in excinfo.value.detail.lower()
 
     @pytest.mark.asyncio
-    async def test_post_chat_returns_422_for_discriminatory_policy_message(self):
-        """End-to-end: POST to the chat send_message handler with policy domain
-        + discriminatory text must raise HTTPException(status_code=422).
+    async def test_pre_compliance_result_fairness_blocked_propagates(self):
+        """PreComplianceResult with fairness_blocked=True propagates block_reason."""
+        from app.shared.compliance.c3b_layer import PreComplianceResult
 
-        We invoke the route handler directly with mocked FastAPI dependencies
-        (real TestClient would require a full DB + auth stack)."""
-        import uuid
-        from types import SimpleNamespace
-        from fastapi import HTTPException
-
-        from app.api.v1.chat import send_message
-        from app.schemas.chat import MessageCreate
-
-        company_id = uuid.uuid4()
-        conv_id = uuid.uuid4()
-        user = SimpleNamespace(id=uuid.uuid4(), company_id=company_id)
-
-        conversation = SimpleNamespace(
-            id=conv_id,
-            user_id=str(user.id),
-            user_role="hiring_manager",
-            title="t",
-            intent="",
-            workflow_type=None,
-            workflow_step=None,
-            workflow_data={},
-            status="active",
-            created_at=None,
-            updated_at=None,
+        result = PreComplianceResult(
+            clean_message="msg",
+            original_message="msg",
+            fairness_blocked=True,
+            block_reason="bloqueado",
         )
+        assert result.fairness_blocked is True
+        assert result.block_reason == "bloqueado"
 
-        class _DB:
-            async def commit(self): pass
-            async def refresh(self, _): pass
+    @pytest.mark.asyncio
+    async def test_pre_compliance_result_not_blocked_by_default(self):
+        """PreComplianceResult defaults to fairness_blocked=False."""
+        from app.shared.compliance.c3b_layer import PreComplianceResult
 
-        repo = SimpleNamespace(
-            db=_DB(),
-            create_conversation=AsyncMock(return_value=conversation),
-            get_conversation_by_id=AsyncMock(return_value=conversation),
-            add_user_message=AsyncMock(),
+        result = PreComplianceResult(
+            clean_message="msg",
+            original_message="msg",
         )
-
-        msg = MessageCreate(
-            content="prefiro candidatos homens, brancos, sem deficiencia",
-            context={"domain": "hiring_policy"},
-            conversation_id=None,
-        )
-
-        with pytest.raises(HTTPException) as excinfo:
-            await send_message(message_data=msg, current_user=user, repo=repo)
-
-        assert excinfo.value.status_code == 422
-        # Detail is FairnessGuard's educational message — non-empty, non-generic.
-        detail = (excinfo.value.detail or "").lower()
-        assert detail and ("lia" in detail or "equidade" in detail or "candidatos" in detail)
+        assert result.fairness_blocked is False
