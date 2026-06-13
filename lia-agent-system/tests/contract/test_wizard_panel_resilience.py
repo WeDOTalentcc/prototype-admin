@@ -116,3 +116,52 @@ class TestNavigationIntentWizardGuard:
                 return
 
         raise AssertionError("detectNavIntent(text).then(...) not found in UnifiedChat.tsx")
+
+
+# ─── Markdown suppression guide (system prompt) ─────────────────────
+
+ORCHESTRATOR_PATH = (
+    "/home/runner/workspace/lia-agent-system/app/domains/job_creation/"
+    "orchestrator/wizard_orchestrator.py"
+)
+
+
+class TestMarkdownSuppressionGuide:
+    """Sensor: system prompt must instruct LLM to NOT duplicate tool data as markdown."""
+
+    def test_prompt_contains_cards_inline_section(self):
+        """The 'cards inline' formatting section must exist in _SYSTEM_PROMPT_BASE."""
+        with open(ORCHESTRATOR_PATH) as f:
+            source = f.read()
+        assert "cards inline" in source, (
+            "_SYSTEM_PROMPT_BASE must contain 'cards inline' formatting section. "
+            "Fix: add the markdown suppression guide to the system prompt."
+        )
+
+    def test_prompt_forbids_markdown_tables(self):
+        """Prompt must explicitly forbid repeating tool data as markdown tables."""
+        with open(ORCHESTRATOR_PATH) as f:
+            source = f.read()
+        assert "tabela markdown" in source.lower() or "NUNCA repita" in source, (
+            "_SYSTEM_PROMPT_BASE must forbid markdown table duplication. "
+            "Fix: add 'NUNCA repita os dados da tool como tabela markdown' rule."
+        )
+
+    def test_prompt_has_per_stage_suppression(self):
+        """Prompt must have specific suppression rules for competencies, JD, and salary."""
+        with open(ORCHESTRATOR_PATH) as f:
+            source = f.read()
+        for stage_keyword in ["competências", "JD", "salário"]:
+            assert stage_keyword.lower() in source.lower(), (
+                f"_SYSTEM_PROMPT_BASE must mention '{stage_keyword}' in "
+                f"the markdown suppression section. Fix: add per-stage rule."
+            )
+
+    def test_prompt_has_exception_for_explicit_request(self):
+        """Prompt must allow listing data when the recruiter explicitly asks."""
+        with open(ORCHESTRATOR_PATH) as f:
+            source = f.read()
+        assert "PEDIR explicitamente" in source or "pedir explicitamente" in source.lower(), (
+            "_SYSTEM_PROMPT_BASE must include exception clause for explicit requests. "
+            "Fix: add 'se o recrutador PEDIR explicitamente' escape hatch."
+        )
