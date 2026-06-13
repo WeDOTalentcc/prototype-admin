@@ -225,6 +225,65 @@ def _check_salary_compatibility(
     return min(expectations) <= ceiling
 
 
+async def _apply_fairness_gate(
+    score: float,
+    company_id: str,
+    domain: str = "screening",
+) -> tuple:
+    """Verifica FairnessPolicyService.allows_automated() antes de aprovar automaticamente.
+
+    Returns:
+        (status, reason) where status in {"Aprovado", "Revisao", "Reprovado"}
+        reason = None se aprovado; str com motivo se foi para revisao por fairness gate
+    """
+    if score >= _SCORE_THRESHOLDS["auto_approve"]:
+        default_status = "Aprovado"
+    elif score >= _SCORE_THRESHOLDS["review"]:
+        default_status = "Revisão"
+    else:
+        default_status = "Reprovado"
+
+    if default_status != "Aprovado":
+        return default_status, None
+
+    try:
+        from app.shared.compliance.fairness_policy_service import _get_fairness_service
+        from app.core.database import AsyncSessionLocal as _ASL
+
+        confidence = score / 100.0
+
+        async with _ASL() as _db:
+            svc = _get_fairness_service()
+            effective_policy = await svc.load_effective_policy(
+                tenant_id=company_id,
+                domain=domain,
+                db=_db,
+            )
+            allowed, reason = await svc.allows_automated(
+                decision_type="screening_score",
+                confidence=confidence,
+                effective_policy=effective_policy,
+                tenant_id=company_id,
+                domain=domain,
+                db=_db,
+            )
+
+        if not allowed:
+            logger.info(
+                "[CVScreeningBatch] FairnessGate override: score=%.1f blocked -- %s",
+                score, reason,
+            )
+            return "Revisão", reason
+
+        return "Aprovado", None
+
+    except Exception as exc:
+        logger.warning(
+            "[CVScreeningBatch] FairnessGate unavailable (fail-open): %s", exc
+        )
+        return default_status, None
+
+
 async def run_batch(
     candidate_ids: list[str],
     job_id: str,
@@ -333,7 +392,9 @@ async def run_batch(
         item["rank"] = i
         score = item["rubric_score"]
         if score >= _SCORE_THRESHOLDS["auto_approve"]:
-            item["status"] = "Aprovado"
+            item["status"], _gate_reason = await _apply_fairness_gate(score, company_id)
+            if _gate_reason:
+                item["fairness_gate_reason"] = _gate_reason
         elif score >= _SCORE_THRESHOLDS["review"]:
             item["status"] = "Revisão"
         else:

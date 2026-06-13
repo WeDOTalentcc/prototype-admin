@@ -577,7 +577,39 @@ class HITLService:
         domain: str,
         action_type: str,
     ) -> bool:
-        """Verifica preferência de auto_confirm via UserAgentPreferenceService."""
+        """Verifica preferência de auto_confirm via UserAgentPreferenceService.
+
+        Pré-flight: verifica FairnessPolicyService.allows_automated() primeiro.
+        Se a decisão estiver em human_in_the_loop rules -> False sem consultar preferências.
+        """
+        # Pre-flight: fairness policy gate (fail-open)
+        try:
+            from app.shared.compliance.fairness_policy_service import _get_fairness_service
+            from app.core.database import AsyncSessionLocal as _ASL
+
+            async with _ASL() as _db:
+                _svc = _get_fairness_service()
+                _policy = await _svc.load_effective_policy(
+                    tenant_id=company_id, domain=domain, db=_db
+                )
+                _allowed, _reason = await _svc.allows_automated(
+                    decision_type=action_type,
+                    confidence=1.0,  # confiança não se aplica aqui — só a HITL rule
+                    effective_policy=_policy,
+                    tenant_id=company_id,
+                    domain=domain,
+                    db=_db,
+                )
+            if not _allowed:
+                logger.info(
+                    "[HITL] FairnessPolicy bloqueou auto_confirm: action=%s reason=%s",
+                    action_type, _reason,
+                )
+                return False
+        except Exception as _exc:
+            logger.debug("[HITL] FairnessPolicy pre-flight skip (fail-open): %s", _exc)
+
+        # Verificação original: preferência do usuário
         try:
             from app.core.database import AsyncSessionLocal
             from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
