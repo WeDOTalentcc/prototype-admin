@@ -94,6 +94,7 @@ interface ScreeningRules {
   experience_policy?: string
   minimum_compatibility_score?: number
   default_screening_questions?: string[]
+  screening_deadline_default_hours?: number
 }
 
 // ─── Internal constants ──────────────────────────────────────────────────────
@@ -133,6 +134,7 @@ export const POLICY_FIELD_TO_BLOCK: Record<string, string> = {
   data_retention_candidate_policy: "screening_rules",
   talent_pool_opt_in_policy: "screening_rules",
   diversity_inclusion_guidelines: "screening_rules",
+  screening_deadline_default_hours: "screening_rules",
   manager_approval_sla_hours: "pipeline_rules",
   vacancy_approval_required: "pipeline_rules",
   briefing_frequency: "communication_rules",   // B1
@@ -246,6 +248,7 @@ export function buildBlocks(
     { key: "preferred_channel", label: "Qual o canal preferido para comunicar com candidatos?", value: cr?.preferred_channel ?? null, type: "text", editable: true, block: "policy" },
     { key: "salary_expectation_filter", label: "Filtrar candidatos fora da faixa salarial automaticamente?", value: scr?.salary_expectation_filter ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "salary_tolerance_percent", label: "Tolerância (em %) entre pretensão salarial e teto da vaga?", value: scr?.salary_tolerance_percent ?? null, type: "number", editable: true, block: "policy" },
+        { key: "screening_deadline_default_hours", label: "Prazo padrao de triagem (horas, a partir da publicacao)", value: scr?.screening_deadline_default_hours ?? 48, type: "number", editable: true, block: "policy" },
     { key: "experience_policy", label: "Mínimo de experiência: por vaga ou política da empresa?", value: scr?.experience_policy ?? null, type: "text", editable: true, block: "policy" },
     { key: "minimum_compatibility_score", label: "Pontuação mínima de compatibilidade para avançar (%)? (0 = sem corte)", value: scr?.minimum_compatibility_score ?? null, type: "number", editable: true, block: "policy" },
     { key: "auto_screening", label: "Triagem inicial dos candidatos deve ser automática?", value: ar?.auto_screening ?? null, type: "boolean", editable: true, block: "policy" },
