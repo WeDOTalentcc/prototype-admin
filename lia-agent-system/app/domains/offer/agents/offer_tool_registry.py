@@ -143,7 +143,7 @@ async def _wrap_get_negotiation_context(
     from libs.models.lia_models.company_hiring_policy import OFFER_RULES_DEFAULTS
 
     offer = await OfferRepository(db).get_by_id(UUID(offer_id), company_id)
-    policy = await HiringPolicyRepository(db).get_by_company_id(company_id)
+    policy = await HiringPolicyRepository(db).get_by_company(company_id)
     rules = (policy.offer_rules if policy else None) or OFFER_RULES_DEFAULTS
 
     return {
@@ -290,8 +290,8 @@ async def _wrap_get_benefit_details(
         return {"error": "db session nao disponivel"}
 
     # ADR-001: acessa via repository, sem SQL inline
-    from app.domains.job_creation.repositories.benefit_repository import BenefitRepository
-    benefits = await BenefitRepository(db).list_active(company_id)
+    from app.domains.company.repositories.benefit_repository import BenefitRepository
+    from uuid import UUID as _UUID; benefits = await BenefitRepository(db).list_active_for_company(_UUID(company_id))
 
     result = []
     for b in benefits:
