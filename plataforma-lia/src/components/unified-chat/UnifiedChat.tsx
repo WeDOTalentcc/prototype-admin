@@ -1361,6 +1361,7 @@ export function UnifiedChat({
               onChipClick={(value) => sendChatMessage(value)}
               onRegenerate={handleRegenerate}
               onOpenPanel={() => setWizardPanelMode("expanded")}
+                  activePanelStage={dynamicPanel?.stage ?? null}
             />
           </ToolActivateContext.Provider>
         ) : (
