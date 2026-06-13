@@ -955,3 +955,44 @@ DÉBITO TÉCNICO DE HARNESS registrado:
     (proteção estrutural contra leak de dados internos)
 ─────────────────────────────────────────────────
 ```
+
+---
+
+## BACKLOG — Área do Profissional Contratado (deferred, retomar ao final)
+
+**Contexto:** ao contratar um candidato, o sistema precisa de uma área dedicada
+para gerenciar o pós-aceite. Ainda não definimos onde ela vive na UI nem o trigger
+exato de status. Registrar aqui para não interromper o fluxo atual.
+
+### O que a área precisa cobrir
+
+1. **Dados da proposta** — salário acordado, benefícios confirmados, data de início
+   definida, modalidade (CLT/PJ/etc). Leitura do `OfferProposal` aceito.
+
+2. **Documentos** — upload/visualização de contrato assinado, proposta PDF, exames
+   admissionais, outros arquivos do onboarding. Integrar com Files/Documents domain.
+
+3. **Atualização de salário e benefícios** — gravar no perfil do candidato/funcionário
+   os valores definitivos acordados (podem diferir da proposta inicial após negociação).
+
+4. **Status do profissional** — transição de `candidato contratado` para
+   `colaborador ativo` ou equivalente. Decidir quando disparar:
+   - Opção A: no fechamento da vaga (`/close`)  ← mais simples, já temos o hook
+   - Opção B: no aceite da proposta (`offer.status = accepted`) ← mais preciso
+   - Opção C: manual pelo recrutador após onboarding completo
+
+5. **Checklist de onboarding** — itens pendentes antes do primeiro dia
+   (documentos, acesso sistemas, uniforme, etc). Simples lista configurável.
+
+### Decisões pendentes (para Paulo)
+
+- [ ] Onde fica na UI? (aba no perfil do candidato? painel kanban "Contratado"? seção em Vagas?)
+- [ ] Trigger de status: opção A, B ou C acima?
+- [ ] Integrar com HR/folha de pagamento externo (webhook outbound) ou só interno?
+- [ ] Timeline: Q3 2026 (junto com N3) ou posterior?
+
+### Nota de implementação
+
+Quando implementar, reusar `OfferNegotiationEvent` para logar a transição de status
+(event_type="accepted", actor="candidate" já está no enum). O `OfferRepository` já
+tem estrutura para associar proposta ao candidato e à vaga.
