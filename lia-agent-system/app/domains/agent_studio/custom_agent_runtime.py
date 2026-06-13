@@ -253,6 +253,7 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
             "analytics": "app.domains.analytics.agents.analytics_tool_registry.get_analytics_tools",
             "job_management": "app.domains.job_management.agents.wizard_tool_registry.get_wizard_tools",
             "automation": "app.domains.automation.agents.automation_tool_registry.get_automation_tools",
+            "interview_intelligence": "app.domains.interview_intelligence.tools.registry.get_interview_intelligence_tools",
         }
         loader_path = domain_tool_loaders.get(domain)
         if loader_path:
