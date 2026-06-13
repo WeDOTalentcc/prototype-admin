@@ -534,6 +534,31 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
             logger.error("[3.2] qualification_matrix persist falhou (fail-soft): %s", _32_exc)
             actions["qualification_matrix_persist"] = "failed"
 
+    # 4.1: gerar embedding do candidato pos-triagem (fail-soft)
+    if session.candidate_id and session.company_id:
+        try:
+            from app.domains.ai.services.candidate_embedding_service import candidate_embedding_service as _ces41
+            from sqlalchemy import text as _t41
+            _cand_row = await db.execute(
+                _t41("SELECT name, current_title, current_company, summary, technical_skills FROM candidates WHERE id::text = :cid AND company_id = :comp LIMIT 1"),
+                {"cid": str(session.candidate_id), "comp": str(session.company_id)},
+            )
+            _cand = _cand_row.fetchone()
+            if _cand:
+                _cand_dict = {
+                    "id": str(session.candidate_id),
+                    "name": _cand[0],
+                    "summary": _cand[3] or f"{_cand[1] or ''} @ {_cand[2] or ''}".strip(" @"),
+                    "skills": _cand[4] if _cand[4] else [],
+                }
+                _ok_41 = await _ces41.embed_candidate(_cand_dict, session.company_id, db)
+                actions["candidate_embedding"] = "ok" if _ok_41 else "skipped"
+            else:
+                actions["candidate_embedding"] = "candidate_not_found"
+        except Exception as _41_exc:
+            logger.error("[4.1] candidate embedding falhou (fail-soft): %s", _41_exc)
+            actions["candidate_embedding"] = "failed"
+
     if not wsi_session_id:
         logger.warning(
             "[Triagem] Skipping screening-completed event dispatch — "
