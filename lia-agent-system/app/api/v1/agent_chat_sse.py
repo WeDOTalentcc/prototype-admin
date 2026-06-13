@@ -398,6 +398,10 @@ company_id: str = Depends(require_company_id)):
         # Fix 1: emit thinking IMMEDIATELY — before any DB queries so the user
         # sees "Pensando..." without a blank-screen delay.
         yield format_sse_event(serialize_thinking(), next_id())
+        # Emit first reasoning phase immediately so FE AgentActivityTimeline
+        # shows dynamic multistep instead of static "Pensando" fallback.
+        # _process_langgraph emits again later; FE deduplicates via seenPhasesRef.
+        yield format_sse_event(serialize_reasoning_step("understanding"), next_id())
 
         # Fix 1 (continued) — B2 (2026-06): per-turn identity masking
         # (CPF/RG/CNPJ). Now runs in parallel with budget + router + tenant
