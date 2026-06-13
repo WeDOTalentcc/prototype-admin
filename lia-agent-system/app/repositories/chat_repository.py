@@ -247,7 +247,8 @@ class ChatRepository:
                     "status": row.status,
                 }
         except Exception as e:
-            logger.warning(f"Failed to resolve candidate by name '{candidate_name}': {e}")
+            # pii-logs ok: [REDACTED] substitui o nome; __name__ é tipo da exceção (não PII)
+            logger.warning(f"Failed to resolve candidate by name [REDACTED]: {type(e).__name__}")
         return None
 
     async def lookup_candidate_id_by_name(self, candidate_name: str) -> str | None:

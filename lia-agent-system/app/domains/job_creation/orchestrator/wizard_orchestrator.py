@@ -459,8 +459,8 @@ class WizardOrchestrator:
             rendered = render_creation_modes_block(allowed_actions=_allowed)
             if rendered and rendered.strip():
                 modes_block = f"\n\n## Capacidades de criação\n{rendered}"
-        except Exception as exc:  # noqa: BLE001 — never break the wizard turn
-            logger.debug("[WizardOrchestrator] creation modes block skipped: %s", exc)
+        except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: bloco de modos é enriquecimento cosmético — falha não quebra o turn
+            logger.debug("[WizardOrchestrator] creation modes block skipped: %s", type(exc).__name__)
         return (
             f"{_SYSTEM_PROMPT_BASE}"
             f"{modes_block}\n\n"

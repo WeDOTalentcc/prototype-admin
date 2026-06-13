@@ -1313,9 +1313,9 @@ class WizardSessionService:
                 data=data,
                 completeness=calculate_completeness(stage),
             )
-        except Exception as exc:  # noqa: BLE001 — payload é best-effort
+        except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: payload é best-effort (UI continua com payload vazio), reply já foi gerado
             logger.warning(
-                "[WizardOrchestrator] payload build failed: %s", exc,
+                "[WizardOrchestrator] payload build failed: %s", type(exc).__name__,
                 exc_info=True,
             )
             # FIX defect #1: NEVER set payload = {} — empty dict is falsy,
@@ -1342,10 +1342,10 @@ class WizardSessionService:
                     "[WizardOrchestrator] marked checkpoint completed after "
                     "handoff thread=%s", thread_id,
                 )
-            except Exception as _mark_exc:
+            except Exception as _mark_exc:  # REGRA-4-EXEMPT: marcar checkpoint é best-effort, falha não cancela o turn
                 logger.warning(
                     "[WizardOrchestrator] failed to mark checkpoint completed "
-                    "(fail-open): %s", _mark_exc,
+                    "(fail-open): %s", type(_mark_exc).__name__,
                 )
 
         logger.info(

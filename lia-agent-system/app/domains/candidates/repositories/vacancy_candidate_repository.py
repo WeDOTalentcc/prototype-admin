@@ -825,6 +825,78 @@ class VacancyCandidateRepository:
         return result.rowcount
 
 
+    async def update_screening_score(
+        self,
+        candidate_id: str,
+        vacancy_id: str,
+        company_id: str,
+        cv_score: float,
+        cv_fit_score: float,
+        sub_status: str,
+        ai_analysis_patch: dict | None = None,
+    ) -> int:
+        """Atualiza pontuação de triagem de CV em vacancy_candidates.
+
+        Multi-tenancy: company_id required, fail-closed via _require_company_id.
+        Retorna rowcount: 1 = atualizado, 0 = não encontrado.
+        """
+        from sqlalchemy import text as sa_text
+        from datetime import datetime, timezone
+        import json
+        cid = self._require_company_id(company_id)
+
+        result = await self.db.execute(
+            sa_text("""
+                SELECT id, ai_analysis
+                FROM vacancy_candidates
+                WHERE candidate_id::text = :cid
+                  AND vacancy_id::text = :vid
+                  AND company_id = :company_id
+                LIMIT 1
+            """),
+            {"cid": candidate_id, "vid": vacancy_id, "company_id": cid},
+        )
+        row = result.mappings().first()
+        if not row:
+            return 0
+
+        current_analysis = dict(row["ai_analysis"] or {})
+        if ai_analysis_patch:
+            current_analysis.update(ai_analysis_patch)
+        current_analysis["cv_screening"] = {
+            "rubric_score": cv_score,
+            "cv_fit_score": cv_fit_score,
+            "sub_status": sub_status,
+            "evaluated_at": datetime.now(timezone.utc).isoformat(),
+            "note": "WSI completo requer triagem conversacional",
+        }
+
+        update_result = await self.db.execute(
+            sa_text("""
+                UPDATE vacancy_candidates
+                SET cv_score = :cv_score,
+                    cv_fit_score = :cv_fit_score,
+                    sub_status = :sub_status,
+                    screening_completed_at = NOW(),
+                    ai_analysis = :ai_analysis,
+                    updated_at = NOW()
+                WHERE candidate_id::text = :cid
+                  AND vacancy_id::text = :vid
+                  AND company_id = :company_id
+            """),
+            {
+                "cv_score": cv_score,
+                "cv_fit_score": cv_fit_score,
+                "sub_status": sub_status,
+                "ai_analysis": json.dumps(current_analysis),
+                "cid": candidate_id,
+                "vid": vacancy_id,
+                "company_id": cid,
+            },
+        )
+        return update_result.rowcount
+
+
 def _is_uuid(value: str) -> bool:
     """True se value e um UUID valido (fail-safe para candidate_ids
     legacy/bigint que nao batem com vacancy_candidates.candidate_id UUID)."""

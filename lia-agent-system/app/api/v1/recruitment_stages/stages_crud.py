@@ -440,6 +440,7 @@ company_id: str = Depends(require_company_id)):
 
         return result
     except Exception as e:
+        # pii-logs ok: stage_name é identificador de etapa do pipeline (não PII de pessoa)
         logger.error(f"Error inferring behavior for stage \"{request.stage_name}\": {e}", exc_info=True)
         raise HTTPException(
             status_code=500,

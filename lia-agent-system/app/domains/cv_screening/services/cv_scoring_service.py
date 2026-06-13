@@ -20,6 +20,7 @@ from typing import Any
 from uuid import UUID
 
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
+from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -572,42 +573,26 @@ class CVScoringService:
         score: float,
         cv_fit_score: float,
         sub_status: str,
-        db: AsyncSession
+        db: AsyncSession,
+        company_id: str = "",
     ) -> None:
-        """Update candidate with screening score."""
-        try:
-            result = await db.execute(
-                select(VacancyCandidate).where(
-                    VacancyCandidate.candidate_id == UUID(candidate_id),
-                    VacancyCandidate.vacancy_id == UUID(vacancy_id)
-                )
-            )
-            vc = result.scalar_one_or_none()
-            
-            if vc:
-                if hasattr(vc, 'cv_score'):
-                    vc.cv_score = score
-                if hasattr(vc, 'cv_fit_score'):
-                    vc.cv_fit_score = cv_fit_score
-                if hasattr(vc, 'sub_status'):
-                    vc.sub_status = sub_status
-                if hasattr(vc, 'screening_completed_at'):
-                    vc.screening_completed_at = datetime.utcnow()
-                
-                if hasattr(vc, 'ai_analysis'):
-                    current_analysis = vc.ai_analysis or {}
-                    current_analysis["cv_screening"] = {
-                        "rubric_score": score,
-                        "cv_fit_score": cv_fit_score,
-                        "sub_status": sub_status,
-                        "evaluated_at": datetime.utcnow().isoformat(),
-                        "note": "WSI completo requer triagem conversacional"
-                    }
-                    vc.ai_analysis = current_analysis
-                
-                logger.info(f"📊 [CV_SCORING] Updated VacancyCandidate score: candidate={candidate_id}, rubric={score}%, cv_fit={cv_fit_score}")
-        except Exception as e:
-            logger.error(f"Error updating candidate score: {e}")
+        """Update candidate with screening score via VacancyCandidateRepository (ADR-001)."""
+        if not company_id:
+            logger.warning("[CV_SCORING] company_id ausente em _update_candidate_score — skip update (multi-tenancy)")
+            return
+        repo = VacancyCandidateRepository(db)
+        rowcount = await repo.update_screening_score(
+            candidate_id=candidate_id,
+            vacancy_id=vacancy_id,
+            company_id=company_id,
+            cv_score=score,
+            cv_fit_score=cv_fit_score,
+            sub_status=sub_status,
+        )
+        if rowcount:
+            logger.info(f"[CV_SCORING] score atualizado: candidate={candidate_id} rubric={score}% cv_fit={cv_fit_score}")
+        else:
+            logger.warning(f"[CV_SCORING] VacancyCandidate não encontrado para update: candidate={candidate_id} vacancy={vacancy_id}")
 
 
 cv_scoring_service = CVScoringService()

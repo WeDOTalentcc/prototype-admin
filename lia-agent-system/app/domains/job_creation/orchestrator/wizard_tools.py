@@ -792,8 +792,8 @@ def _handle_get_wizard_status(
             _build_wizard_state_summary,
         )
         summary = _build_wizard_state_summary(state)
-    except Exception as exc:  # noqa: BLE001 — fail-soft, status é informativo
-        logger.warning("[WizardTools] status summary failed: %s", exc)
+    except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: status summary é informativo, falha retorna mensagem neutra ao LLM
+        logger.warning("[WizardTools] status summary failed: %s", type(exc).__name__)
         summary = "(não foi possível montar o status agora)"
     return ToolResult(llm_message=summary)
 

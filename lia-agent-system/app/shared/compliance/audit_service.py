@@ -276,8 +276,9 @@ class AuditService:
             _cid = _get_cid()
             if _cid:
                 _correlation_id = _cid
-        except Exception:
-            pass
+        except Exception as _cid_err:  # noqa: BLE001
+            # ContextVar ausente fora de ciclo HTTP (ex: Celery task, worker) — não bloquear audit
+            logger.debug("[audit_service] correlation_id indisponível: %s", type(_cid_err).__name__)
 
         async with AsyncSessionLocal() as session:
             await _bind_tenant(session, company_id)

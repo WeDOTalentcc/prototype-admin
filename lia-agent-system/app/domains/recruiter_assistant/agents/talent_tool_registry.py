@@ -248,11 +248,11 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Candidato {candidate_id} nao encontrado.",
             }
         profile = data
-    except Exception as e:
+    except Exception as e:  # REGRA-4-EXEMPT: falha explícita com needs_manual_review=True + success=False (Opção B REGRA 4)
         # REGRA 4: NUNCA mascarar falha de path crítico como success silencioso.
         # Falhar explícito com flag + needs_manual_review (Opção B).
         logger.error(
-            f"[talent_tools] view_candidate_profile DB error: {e}",
+            "[talent_tools] view_candidate_profile DB error: %s", type(e).__name__,
             exc_info=True,
         )
         profile_error = str(e)
@@ -289,8 +289,8 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
                 "recommendation": _m["recommendation"],
                 "summary": _m["summary"], "opinion_id": _m["opinion_id"],
             })
-    except Exception as _e:
-        logger.warning(f"[talent_tools] candidate_card skipped: {_e}")
+    except Exception as _e:  # REGRA-4-EXEMPT: card de candidato é enriquecimento opcional — falha não bloqueia perfil principal
+        logger.warning("[talent_tools] candidate_card skipped: %s", type(_e).__name__)
     if _rrp_blocks:
         profile = {**profile, "response_blocks": _rrp_blocks, "render_hint": _RRP_NARRATE_HINT}
     if profile_error is not None:
@@ -1195,5 +1195,6 @@ def get_talent_tools(stage: str = "") -> list[ToolDefinition]:
 
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
+    # pii-logs ok: t.name são nomes de tools (identificadores de sistema, não PII de pessoa)
     logger.debug(f"[talent_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools

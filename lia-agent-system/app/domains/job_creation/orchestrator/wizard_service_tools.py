@@ -260,7 +260,7 @@ def _handle_enrich_job_description(
                 company_context=_company_context,
             )
             enriched_obj, quality_score, warnings = _fut.result(timeout=_JD_TIMEOUT_S)
-    except _cf.TimeoutError:
+    except _cf.TimeoutError:  # REGRA-4-EXEMPT: fallback explícito — jd_enrichment_used_fallback=True no retorno
         logger.warning("[WizardServiceTools] JD enrich timeout — fallback")
         try:
             enriched_obj = service._fallback_enrichment(
@@ -277,8 +277,8 @@ def _handle_enrich_job_description(
                 llm_message=f"A geração da descrição expirou e o fallback falhou ({exc}).",
                 error=True,
             )
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("[WizardServiceTools] JD enrich failed (%s) — fallback", exc)
+    except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: fallback explícito — jd_enrichment_used_fallback=True + fallback_reason no retorno
+        logger.warning("[WizardServiceTools] JD enrich failed (%s) — fallback", type(exc).__name__)
         try:
             enriched_obj = service._fallback_enrichment(
                 jd_raw, title, seniority,
@@ -297,7 +297,7 @@ def _handle_enrich_job_description(
 
     try:
         enriched_dict = enriched_obj.model_dump()
-    except Exception:  # noqa: BLE001 — defensive
+    except Exception:  # noqa: BLE001  # REGRA-4-EXEMPT: fallback de serialização defensivo — enriched_obj sempre é válido aqui
         enriched_dict = dict(enriched_obj) if isinstance(enriched_obj, dict) else {}
 
     msg = (
@@ -642,7 +642,7 @@ def _wsi_distribution_status(state: dict) -> dict:
         expected = _get_question_distribution(mode, seniority) or {}
         min_tech = int(expected.get("technical", 0))
         min_behavioral = int(expected.get("behavioral", 0))
-    except Exception:  # noqa: BLE001 — fail-open (gate nunca trava por erro de tabela)
+    except Exception:  # noqa: BLE001  # REGRA-4-EXEMPT: fail-open intencional — gate nunca trava por erro de lookup de tabela de distribuição
         min_tech = min_behavioral = 0
 
     gap = None

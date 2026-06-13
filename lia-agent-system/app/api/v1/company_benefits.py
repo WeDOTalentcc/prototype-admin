@@ -462,6 +462,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
             )
             return _to_response(existing)
         new_benefit = await repo.create(effective_company_id, payload)
+        # pii-logs ok: new_benefit.name é nome de benefício (config metadata, não PII de pessoa)
         logger.info(f"Created company benefit: {new_benefit.name} for company: {effective_company_id}")
 
         await _append_history(
@@ -705,6 +706,7 @@ company_id: str = Depends(require_company_id)):
             ]
 
         benefit = await repo.update(benefit, update_payload)
+        # pii-logs ok: benefit.name é nome de benefício (config metadata, não PII de pessoa)
         logger.info(f"Updated company benefit: {benefit.name}")
 
         await _append_history(

@@ -344,7 +344,8 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                         )
 
             except Exception as guard_err:
-                logger.error(f"[PromptInjectionGuard] Guard error on {path}: {type(guard_err).__name__}: {guard_err!r}", exc_info=True)  # TEMP-DIAG remover
+                # pii-logs ok: path é URL da requisição (não PII de pessoa); guard_err é tipo de erro
+                logger.error(f"[PromptInjectionGuard] Guard error on {path}: {type(guard_err).__name__}: {guard_err!r}", exc_info=True)
                 # Fail-closed: unknown guard errors block agent-bound requests
                 return JSONResponse(
                     {"detail": "Solicitação não pôde ser processada."},

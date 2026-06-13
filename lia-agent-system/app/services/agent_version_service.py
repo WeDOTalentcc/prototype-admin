@@ -11,9 +11,9 @@ import logging
 from typing import Optional
 from uuid import uuid4
 
-from sqlalchemy import and_, desc, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.agent_studio.repositories.agent_version_snapshot_repository import AgentVersionSnapshotRepository
 from lia_models.agent_version_snapshot import AgentVersionSnapshot
 from lia_models.custom_agent import CustomAgent
 
@@ -74,24 +74,9 @@ class AgentVersionService:
         limit: int = 20,
         offset: int = 0,
     ) -> tuple[list[AgentVersionSnapshot], int]:
-        """List version snapshots for an agent, newest first."""
-        base_filter = and_(
-            AgentVersionSnapshot.agent_id == agent_id,
-            AgentVersionSnapshot.company_id == company_id,
-        )
-
-        total = await db.scalar(
-            select(func.count(AgentVersionSnapshot.id)).where(base_filter)
-        )
-
-        result = await db.execute(
-            select(AgentVersionSnapshot)
-            .where(base_filter)
-            .order_by(desc(AgentVersionSnapshot.version))
-            .limit(limit)
-            .offset(offset)
-        )
-        return list(result.scalars().all()), total or 0
+        """List version snapshots for an agent, newest first (ADR-001: via repository)."""
+        repo = AgentVersionSnapshotRepository(db)
+        return await repo.list_for_agent(agent_id, company_id, limit, offset)
 
     async def get_version(
         self,
@@ -100,17 +85,9 @@ class AgentVersionService:
         version: int,
         company_id: str,
     ) -> Optional[AgentVersionSnapshot]:
-        """Get specific version snapshot."""
-        result = await db.execute(
-            select(AgentVersionSnapshot).where(
-                and_(
-                    AgentVersionSnapshot.agent_id == agent_id,
-                    AgentVersionSnapshot.version == version,
-                    AgentVersionSnapshot.company_id == company_id,
-                )
-            )
-        )
-        return result.scalar_one_or_none()
+        """Get specific version snapshot (ADR-001: via repository)."""
+        repo = AgentVersionSnapshotRepository(db)
+        return await repo.get_by_version(agent_id, version, company_id)
 
     async def revert(
         self,
