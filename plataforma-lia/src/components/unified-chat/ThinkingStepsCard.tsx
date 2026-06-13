@@ -1,8 +1,7 @@
 "use client"
 
 import React from "react"
-import { Brain } from "lucide-react"
-import { useTranslations, useLocale } from "next-intl"
+import { useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
 import { phaseLabel, phaseIcon } from "./activity-labels"
 
@@ -28,26 +27,13 @@ export function ActivityDots({ className }: { className?: string }) {
 }
 
 export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
-  const t = useTranslations("chat.agentActivity")
   const locale = useLocale()
 
   if (!steps || steps.length === 0) {
-    return (
-      <div
-        className="flex items-center gap-2 animate-in fade-in duration-200"
-        role="status"
-        aria-live="polite"
-      >
-        <Brain
-          className="w-3.5 h-3.5 text-lia-text-secondary animate-pulse motion-reduce:animate-none shrink-0"
-          aria-hidden="true"
-        />
-        <span className="text-xs text-lia-text-secondary">
-          {t("thinking")}
-        </span>
-        <ActivityDots className="shrink-0" />
-      </div>
-    )
+    // Silent wait: the AgentActivityTimeline chip appears when the first
+    // reasoning_step/tool_started event arrives. Showing "Pensando" here
+    // breaks the dynamic progressive flow.
+    return null
   }
 
   const lastIndex = steps.length - 1

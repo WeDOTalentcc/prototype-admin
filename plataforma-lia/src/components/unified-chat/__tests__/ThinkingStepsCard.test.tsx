@@ -41,8 +41,11 @@ describe("ThinkingStepsCard", () => {
     expect(screen.getByText("🔧 sync_job…")).toBeInTheDocument()
   })
 
-  it("renderiza o estado vazio 'pensando' sem passos", () => {
+  it("estado vazio retorna null — sem fallback Pensando estático", () => {
     const { container } = renderWithIntl(<ThinkingStepsCard steps={[]} />)
-    expect(container.querySelector('[role="status"]')).toBeInTheDocument()
+    // Comportamento intencional: sem passos = nada renderiza.
+    // O AgentActivityTimeline mostra o primeiro chip quando o 1o
+    // reasoning_step/tool_started chega (~100ms após o thinking event).
+    expect(container).toBeEmptyDOMElement()
   })
 })
