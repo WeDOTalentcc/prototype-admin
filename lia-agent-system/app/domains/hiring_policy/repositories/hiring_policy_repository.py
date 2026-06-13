@@ -95,6 +95,18 @@ class HiringPolicyRepository:
         await self.db.flush()
         return policy
 
+
+    async def update_offer_rules(
+        self, company_id: str, rules: dict
+    ) -> "CompanyHiringPolicy":
+        """ADR-001: single-point update for offer_rules JSONB block."""
+        policy = await self.get_by_company(company_id)
+        if policy is None:
+            raise ValueError(f"CompanyHiringPolicy nao encontrada para company_id={company_id}")
+        policy.offer_rules = rules
+        await self.db.flush()
+        return policy
+
     # ── Conversation persistence (raw SQL to keep parity) ───────────
 
     async def fetch_conversation_history(
