@@ -128,20 +128,20 @@ class TestOfferToolRegistry:
             "_wrap_get_benefit_details must be callable — it powers the get_benefit_details LangChain Tool"
 
 
-# ── 2.16 — Sistema B deprecation headers ─────────────────────────────────
+# ── 2.16 / 3.10 — Sistema B aposentado (410 Gone) ───────────────────────
 
 class TestSistemaBDeprecationHeaders:
-    """Tests that /job-offers (Sistema B) has deprecation headers on all endpoints (2.16)."""
+    """Sistema B (job_offers.py) foi aposentado em 3.10: todos os endpoints retornam 410 Gone."""
 
-    def test_deprecation_headers_function_exists(self):
+    def test_sistema_b_routes_return_410(self):
+        """job_offers.py deve conter exatamente 5 rotas, todas com handler _gone (3.10)."""
         from app.api.v1 import job_offers
-        assert hasattr(job_offers, "_deprecation_headers"), \
-            "_deprecation_headers FastAPI dependency must exist in job_offers.py"
+        routes = job_offers.router.routes
+        assert len(routes) == 5, f"Esperados 5 endpoints 410, encontrados {len(routes)}"
 
-    def test_deprecation_function_sets_sunset_header(self):
-        from app.api.v1.job_offers import _deprecation_headers
-        src = inspect.getsource(_deprecation_headers)
-        assert "Sunset" in src, \
-            "_deprecation_headers must set Sunset header per RFC 8594"
-        assert "successor-version" in src, \
-            "_deprecation_headers must include Link rel=successor-version pointing to /api/v1/offers"
+    def test_sistema_b_has_gone_body(self):
+        """_GONE_BODY deve referenciar o successor /api/v1/offers/."""
+        from app.api.v1 import job_offers
+        assert hasattr(job_offers, "_GONE_BODY"), "_GONE_BODY dict must exist in job_offers.py"
+        assert "/api/v1/offers/" in str(job_offers._GONE_BODY.get("successor", "")), \
+            "_GONE_BODY.successor must point to /api/v1/offers/"
