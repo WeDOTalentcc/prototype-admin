@@ -27,140 +27,6 @@ from app.domains.job_creation.helpers.async_audit import emit_audit_fire_and_for
 logger = logging.getLogger(__name__)
 
 
-def _build_manager_briefing_html(
-    state: dict,
-    job_id: "str | None",
-    share_link: "str | None",
-) -> str:
-    """Monta HTML do plano executivo para o gestor da vaga (W1-J).
-
-    Incluido: JD resumido, competencias, BigFive, salario, cronograma,
-    config de triagem, link de compartilhamento.
-    Cada secao e fail-soft — nunca lanca excecao.
-    """
-    title = state.get("parsed_title") or "Nova Vaga"
-    department = state.get("parsed_department") or ""
-    seniority = state.get("parsed_seniority") or ""
-
-    sections: list = []
-
-    # JD summary
-    try:
-        jd = state.get("generated_jd") or {}
-        if isinstance(jd, dict):
-            about = jd.get("about_role") or jd.get("descricao") or ""
-            if about:
-                sections.append(f"<h3>Sobre a vaga</h3><p>{about[:800]}</p>")
-    except Exception:
-        pass
-
-    # Competencias
-    try:
-        comp = state.get("competencies") or []
-        if comp:
-            items = "".join(
-                f"<li>{c.get('name') if isinstance(c, dict) else str(c)}</li>"
-                for c in comp[:8]
-                if isinstance(c, (dict, str)) and (c.get('name') if isinstance(c, dict) else c)
-            )
-            sections.append(f"<h3>Competencias-chave</h3><ul>{items}</ul>")
-    except Exception:
-        pass
-
-    # BigFive
-    try:
-        bf = state.get("bigfive_profile") or {}
-        if isinstance(bf, dict) and bf:
-            traits = [
-                ("Abertura", "openness"), ("Conscienciosidade", "conscientiousness"),
-                ("Extroversao", "extraversion"), ("Agradabilidade", "agreeableness"),
-                ("Neuroticismo", "neuroticism"),
-            ]
-            rows = "".join(
-                f"<tr><td>{lbl}</td><td>{bf.get(key,'N/A')}</td></tr>"
-                for lbl, key in traits if bf.get(key)
-            )
-            if rows:
-                sections.append(
-                    f"<h3>Perfil BigFive</h3>"
-                    f"<table border='0' cellpadding='4'><thead>"
-                    f"<tr><th>Dimensao</th><th>Score</th></tr></thead><tbody>{rows}</tbody></table>"
-                )
-    except Exception:
-        pass
-
-    # Salario
-    try:
-        sal_min = state.get("salary_min") or state.get("parsed_salary_min")
-        sal_max = state.get("salary_max") or state.get("parsed_salary_max")
-        if sal_min or sal_max:
-            _r = (
-                f"R$ {sal_min:,.0f} - R$ {sal_max:,.0f}" if sal_min and sal_max
-                else (f"A partir de R$ {sal_min:,.0f}" if sal_min else f"Ate R$ {sal_max:,.0f}")
-            )
-            sections.append(f"<h3>Faixa salarial</h3><p>{_r}</p>")
-    except Exception:
-        pass
-
-    # Cronograma
-    try:
-        chron = state.get("derived_chronogram") or []
-        if chron:
-            rows = "".join(
-                f"<tr><td>{s.get('name','')}</td><td>{s.get('sla_days','')} dias</td>"
-                f"<td>+{s.get('offset_end','')} dias</td></tr>"
-                for s in chron if isinstance(s, dict)
-            )
-            if rows:
-                sections.append(
-                    f"<h3>Cronograma</h3>"
-                    f"<table border='0' cellpadding='4'><thead>"
-                    f"<tr><th>Etapa</th><th>SLA</th><th>Prazo acumulado</th></tr></thead>"
-                    f"<tbody>{rows}</tbody></table>"
-                )
-    except Exception:
-        pass
-
-    # Triagem
-    try:
-        mode = state.get("screening_mode") or "wsi"
-        auto = "Sim" if state.get("auto_screen_enabled", True) else "Nao"
-        sections.append(
-            f"<h3>Triagem</h3><p>Modalidade: <strong>{mode.upper()}</strong> | "
-            f"Ativacao automatica: <strong>{auto}</strong></p>"
-        )
-    except Exception:
-        pass
-
-    # Share link
-    if share_link:
-        sections.append(f"<h3>Link da vaga</h3><p><a href='{share_link}'>{share_link}</a></p>")
-
-    if not sections:
-        sections.append("<p>Vaga criada com sucesso. Acesse a plataforma para detalhes.</p>")
-
-    body = "\n".join(sections)
-    dept_info = f" | {department}" if department else ""
-    sen_info = f" | {seniority.capitalize()}" if seniority else ""
-
-    return (
-        "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='utf-8'><style>"
-        "body{font-family:Arial,sans-serif;color:#333;max-width:700px;margin:0 auto}"
-        "h2{color:#0066cc;border-bottom:2px solid #0066cc;padding-bottom:8px}"
-        "h3{color:#444;margin-top:24px;margin-bottom:8px}"
-        "table{border-collapse:collapse;width:100%}"
-        "th{background:#f0f4f8;text-align:left;padding:6px}"
-        "td{padding:6px;border-bottom:1px solid #eee}"
-        ".footer{margin-top:32px;font-size:12px;color:#888}"
-        "</style></head><body>"
-        f"<h2>Plano Executivo &mdash; {title}{dept_info}{sen_info}</h2>"
-        "<p><em>Gerado automaticamente pela LIA apos criacao da vaga.</em></p>"
-        f"{body}"
-        f"<div class='footer'><p>WeDOTalent &mdash; LIA Recruitment Intelligence<br>"
-        f"ID da vaga: {job_id or 'N/A'}</p></div>"
-        "</body></html>"
-    )
-
 
 def publish_node(state: JobCreationState) -> JobCreationState:
     """Publish job via Rails API + save screening config + get share link.
@@ -570,11 +436,10 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             _briefing_note = ""
             if job_id and _mgr_email:
                 try:
-                    _w1j_html = _build_manager_briefing_html(
-                        state=state,
-                        job_id=job_id,
-                        share_link=share_link,
+                    from app.domains.job_creation.helpers.manager_briefing import (
+                        build_manager_briefing_html,
                     )
+                    _w1j_html = build_manager_briefing_html(state=state)
                     _w1j_title = state.get("parsed_title", "Nova Vaga")
                     from app.domains.communication.services.communication_dispatcher import (
                         CommunicationDispatcher as _W1J_CD,
