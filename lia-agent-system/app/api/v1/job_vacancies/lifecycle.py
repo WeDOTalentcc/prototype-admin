@@ -154,7 +154,9 @@ company_id: str = Depends(require_company_id)):
             new_status="Ativa",
             previous_status=old_status,
             changed_by=changed_by,
-            job_title=job.title
+            job_title=job.title,
+            # Guard: signal to automation handler that sourcing is handled inline
+            sourcing_already_triggered=request.trigger_sourcing,
         )
     except Exception as e:
         logger.warning(f"Event dispatch failed for job publish: {e}")

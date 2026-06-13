@@ -936,28 +936,40 @@ async def handle_job_published(
         logger.error(f"[HANDLER] Error creating job published activity: {e}")
         result["cascade_errors"].append(f"activity_creation: {e}")
 
-    try:
-        from app.domains.sourcing.services.sourcing_pipeline import SourcingPipelineService
-        sourcing_service = SourcingPipelineService()
-
-        user_credits = kwargs.get("user_credits", 100)
-        expand_to_global = kwargs.get("expand_to_global", False)
-
-        sourcing_result = await sourcing_service.run_post_publish_sourcing(
-            db=db,
-            job_id=job_id,
-            user_credits=user_credits,
-            expand_to_global=expand_to_global
-        )
-        result["sourcing_activated"] = True
-        result["sourcing_result"] = sourcing_result if isinstance(sourcing_result, dict) else {"status": "triggered"}
+    # Guard: skip sourcing if the publish endpoint already triggered it inline.
+    # The publish endpoints (lifecycle.py) call run_post_publish_sourcing directly
+    # and pass sourcing_already_triggered=True in the event payload.
+    sourcing_already_triggered = kwargs.get("sourcing_already_triggered", False)
+    if sourcing_already_triggered:
         logger.info(
-            f"[CASCADE] Sourcing pipeline activated for job {job_id} "
-            f"after publication"
+            "[HANDLER] Sourcing already triggered by publish endpoint for job %s — skipping",
+            job_id,
         )
-    except Exception as e:
-        logger.error(f"[CASCADE] Error activating sourcing for job {job_id}: {e}")
-        result["cascade_errors"].append(f"sourcing_activation: {e}")
+        result["sourcing_activated"] = False
+        result["sourcing_skipped_reason"] = "already_triggered_by_publish_endpoint"
+    else:
+        try:
+            from app.domains.sourcing.services.sourcing_pipeline import SourcingPipelineService
+            sourcing_service = SourcingPipelineService()
+
+            user_credits = kwargs.get("user_credits", 100)
+            expand_to_global = kwargs.get("expand_to_global", False)
+
+            sourcing_result = await sourcing_service.run_post_publish_sourcing(
+                db=db,
+                job_id=job_id,
+                user_credits=user_credits,
+                expand_to_global=expand_to_global
+            )
+            result["sourcing_activated"] = True
+            result["sourcing_result"] = sourcing_result if isinstance(sourcing_result, dict) else {"status": "triggered"}
+            logger.info(
+                f"[CASCADE] Sourcing pipeline activated for job {job_id} "
+                f"after publication"
+            )
+        except Exception as e:
+            logger.error(f"[CASCADE] Error activating sourcing for job {job_id}: {e}")
+            result["cascade_errors"].append(f"sourcing_activation: {e}")
 
     result["task_id"] = await _create_automation_task(
         db=db,
