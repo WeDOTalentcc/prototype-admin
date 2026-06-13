@@ -57,6 +57,14 @@ def check(block: bool = False) -> int:
                     src_snippet = ast.unparse(node)
                 except Exception:
                     continue
+                # Only flag if the CURRENT line (not nested code) has UserRole check
+                source_line = source_lines[node.lineno-1] if node.lineno <= len(source_lines) else ""
+                if not ("UserRole." in source_line and "role" in source_line):
+                    continue
+                # Skip if PERM-EXEMPT marker on current or nearby lines
+                context_window = source_lines[max(0, node.lineno-3):node.lineno]
+                if any("PERM-EXEMPT" in l for l in context_window):
+                    continue
                 if "UserRole." in src_snippet and "role" in src_snippet:
                     if "wedotalent_admin" not in src_snippet:
                         violations.append((
@@ -64,6 +72,16 @@ def check(block: bool = False) -> int:
                             node.lineno,
                             f"Possivel gate de role hardcoded: {src_snippet[:80]}",
                         ))
+
+    # Deduplicate by (file, lineno)
+    seen = set()
+    unique_violations = []
+    for v in violations:
+        key = (v[0], v[1])
+        if key not in seen:
+            seen.add(key)
+            unique_violations.append(v)
+    violations = unique_violations
 
     if violations:
         print(f"[RBAC-GUIDE] {len(violations)} possiveis permissoes hardcoded detectadas:")

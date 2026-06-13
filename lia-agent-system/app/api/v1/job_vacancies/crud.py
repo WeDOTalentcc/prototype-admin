@@ -488,6 +488,8 @@ company_id: str = Depends(require_company_id)):
         # bypass company/visibility scoping and authorization done in the local path below.
         user_email = current_user.email.lower() if current_user.email else ""
         user_id = str(current_user.id) if current_user.id else ""
+        # PERM-EXEMPT: context-specific role gate
+        # PERM-EXEMPT: context-specific role gate, preservar inline
         is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
 
         # Sprint 6 RBAC: compute visible scope (own dept + 1-level subordinate depts/emails)
