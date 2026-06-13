@@ -8,7 +8,8 @@ import { useTranslations } from "next-intl"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
   Store, Download, Search, Loader2,
-  Package, CreditCard, Trash2, TrendingUp, CheckCircle2, Sparkles
+  Package, CreditCard, Trash2, TrendingUp, CheckCircle2, Sparkles,
+  AlertTriangle, ExternalLink
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
@@ -155,6 +156,7 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
   const [loadingAgents, setLoadingAgents] = React.useState(true)
   const [activating, setActivating] = React.useState<string | null>(null)
   const [activatedIds, setActivatedIds] = React.useState<Set<string>>(new Set())
+  const [offerReadiness, setOfferReadiness] = React.useState(null)
 
   // Section 2 — Templates via canonical hook
   const { templates, isLoading: loadingTemplates } = useLegacyAgentTemplates()
@@ -208,6 +210,9 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
         toast.success(t("installSuccess"))
         setActivatedIds(prev => { const s = new Set(prev); s.add(agent.id); return s })
         onInstallSuccess?.()
+        if (agent.domain === "offer" || (agent.name || "").toLowerCase().includes("offer")) {
+          fetch("/api/backend-proxy/offer-agent-readiness").then(r=>r.json()).then(d=>{if(d&&!d.ready)setOfferReadiness(d)}).catch(()=>{})
+        }
       } else {
         const err = await res.json().catch(() => ({ detail: t("errorGeneric") }))
         toast.error(err.detail || t("errorInstalling"))
@@ -292,6 +297,35 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
             <p className="text-xs text-lia-text-disabled">{t("noAgentsAvailable")}</p>
           </div>
         ) : (
+          {offerReadiness && !offerReadiness.ready && (
+            <div className="mb-4 rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 p-4">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                    Agente ativado! Complete as configuracoes para melhor experiencia
+                  </p>
+                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 mb-3">
+                    {offerReadiness.score}/{offerReadiness.total} configuracoes prontas. O agente opera em modo basico ate voce completar:
+                  </p>
+                  <ul className="space-y-1.5">
+                    {(offerReadiness.items||[]).filter((i)=>!i.ok).map((item)=>(
+                      <li key={item.key} className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                          {item.label}
+                        </span>
+                        <a href={item.settings_path} className="inline-flex items-center gap-1 text-xs font-medium text-amber-800 dark:text-amber-300 underline underline-offset-2 hover:text-amber-900 flex-shrink-0">
+                          Configurar <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <button onClick={()=>setOfferReadiness(null)} className="text-amber-500 hover:text-amber-700 text-xs flex-shrink-0" aria-label="Fechar aviso">x</button>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredAgents.map(agent => {
               const isActive = activatedIds.has(agent.id)
