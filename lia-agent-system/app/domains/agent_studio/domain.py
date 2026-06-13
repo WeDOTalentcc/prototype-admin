@@ -621,6 +621,28 @@ class AgentStudioDomain(ComplianceDomainPrompt):
                 if agent.status not in ("active", "draft"):
                     return DomainResponse.error_response(error="Agente não está ativo.")
 
+                # ── P0-2 Onda 0 (2026-06-12): review gate ────────────────────────────────
+                # Agentes instalados do marketplace ficam em pending_review ate aprovacao
+                # explicita de admin WeDOTalent. O gate verifica se o listing associado
+                # (se existir) esta em pending_review — e bloqueia a execucao ate aprovacao.
+                # Agentes criados diretamente pelo tenant (sem listing) nao tem este gate.
+                _listing = getattr(agent, "marketplace_listing", None)
+                if _listing is not None:
+                    _listing_status = getattr(_listing, "status", None) or "pending_review"
+                    if _listing_status == "pending_review":
+                        logger.warning(
+                            "[AgentStudio][P0-2] Execute bloqueado: agent=%s listing_status=%s — aguarda aprovacao admin",
+                            agent_id, _listing_status,
+                        )
+                        return DomainResponse.error_response(
+                            error=(
+                                f"Agente '{agent.name}' aguarda aprovacao de admin WeDOTalent "
+                                "antes de poder executar. Status: pending_review."
+                            ),
+                            domain_id=self.domain_id,
+                            action_id="execute_custom_agent",
+                        )
+
                 runtime = get_or_create_runtime(
                     agent_id=str(agent.id), agent_name=agent.name,
                     system_prompt=agent.system_prompt,

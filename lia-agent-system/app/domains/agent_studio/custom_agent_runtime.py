@@ -81,6 +81,14 @@ HITL_REQUIRED_TOOLS: frozenset[str] = frozenset({
 })
 
 
+# ── P0-2 Onda 0 (2026-06-12): review gate constants ──────────────────────────
+# Marketplace-installed agents stay in pending_review until a wedotalent_admin
+# explicitly approves them. These constants are the source of truth for the
+# review gate in _handle_execute_custom_agent (domain.py) and for contract tests.
+REVIEW_STATUS_PENDING: str = "pending_review"
+REVIEW_STATUS_ACTIVE: str = "active"
+
+
 # ── Q4.1 Sandbox dry-run (2026-05-29) ─────────────────────────────────────────
 # ContextVars (canonical pattern espelhando _CURRENT_COMPANY_ID em
 # auth_enforcement): o runtime e cacheado por agent_id (get_or_create_runtime),

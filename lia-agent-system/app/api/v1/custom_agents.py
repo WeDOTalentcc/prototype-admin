@@ -522,6 +522,28 @@ company_id: str = Depends(require_company_id)):
     if agent.status not in ("active", "draft"):
         raise HTTPException(status_code=400, detail="Agent is not active")
 
+    # ── P0-2 Onda 0 (2026-06-12): review gate ────────────────────────────────
+    # Agentes do marketplace ficam em pending_review ate aprovacao de admin WeDOTalent.
+    # Espelha o gate em _handle_execute_custom_agent (domain.py).
+    _exec_listing = getattr(agent, "marketplace_listing", None)
+    if _exec_listing is not None:
+        _exec_listing_status = getattr(_exec_listing, "status", None) or "pending_review"
+        if _exec_listing_status == "pending_review":
+            logger.warning(
+                "[CustomAgent][P0-2] Execute bloqueado: agent=%s listing_status=%s",
+                agent_id, _exec_listing_status,
+            )
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "agent_pending_review",
+                    "message": (
+                        f"Agent '{agent.name}' is pending review by WeDOTalent admin. "
+                        "Execution is blocked until approved."
+                    ),
+                },
+            )
+
     # ── Gap G (2026-06-08): token budget gate ────────────────────────────
     # O endpoint /execute era um caminho de invocação paralelo que nunca
     # passava pelo fence diário de tokens do chat SSE (agent_chat_sse.py:424).
