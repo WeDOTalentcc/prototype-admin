@@ -530,7 +530,7 @@ export default function AgentStudioPage({
     },
     {
       slug: "offer",
-      ctaKey: "studio.services.ctaOpenJobs",
+      ctaKey: "studio.services.ctaActivate",
       status: (studioSummaryServices.offer?.status as ServiceStatus) ?? "inactive",
       metric: studioSummaryServices.offer?.metric,
       panel: firstJobId ? (
@@ -577,9 +577,12 @@ export default function AgentStudioPage({
     } else if (slug === "alignment") {
       // Alinhamento exige um agente de captação vinculado a uma vaga → abre a criação.
       setShowCreateModal(true)
-    } else if (slug === "offer" || slug === "nps") {
-      // Oferta/NPS exigem uma vaga publicada → leva à vaga (ou à lista).
-      router.push(firstJobId ? `/${locale}/jobs/${firstJobId}` : `/${locale}/jobs`)
+    } else if (slug === "offer") {
+    // offer_concierge — navegar para Marketplace para instalar o agente
+    setActiveTab("marketplace")
+  } else if (slug === "nps") {
+    router.push(firstJobId ? `/${locale}/jobs/${firstJobId}` : `/${locale}/jobs`)
+  }/jobs/${firstJobId}` : `/${locale}/jobs`)
     }
   }
 
