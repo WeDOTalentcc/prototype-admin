@@ -2468,6 +2468,137 @@ SET_AFFIRMATIVE_FIELDS = WizardTool(
     handler=_handle_set_affirmative_fields,
 )
 
+# ---------------------------------------------------------------------------
+# T11 — Infer Department from Title (DB-backed fuzzy match)
+# ---------------------------------------------------------------------------
+
+
+def _handle_infer_department(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Infere o departamento a partir do titulo da vaga, usando fuzzy match
+    contra os departamentos REAIS da empresa (DepartmentRepository).
+
+    SERVICE_TOOL: precisa de DB access (via run_coro_in_threadpool) para
+    buscar departamentos do tenant. Mantido fora de wizard_tools.py (PURE).
+    """
+    _reject_tenant_keys(tool_input)
+
+    title = state.get("parsed_title") or state.get("title") or ""
+    if not title:
+        return ToolResult(
+            llm_message=(
+                "Nenhum titulo definido ainda. Defina primeiro com "
+                "set_job_fields antes de inferir o departamento."
+            ),
+            error=True,
+        )
+
+    # Skip se departamento ja foi setado pelo recrutador
+    existing_dept = state.get("parsed_department") or ""
+    if existing_dept:
+        return ToolResult(
+            llm_message=(
+                f"Departamento ja definido: '{existing_dept}'. "
+                "Se quiser alterar, use set_job_fields com department=novo_valor."
+            ),
+        )
+
+    company_id = ctx.company_id
+    if not company_id:
+        return ToolResult(
+            llm_message="Empresa nao identificada. Nao consigo buscar departamentos.",
+            error=True,
+        )
+
+    # Fetch departamentos ativos da empresa via repo canonical
+    try:
+        from app.domains.job_creation.helpers.async_audit import (
+            run_coro_in_threadpool,
+        )
+        from app.core.database import AsyncSessionLocal
+        from app.domains.company.repositories.department_repository import (
+            DepartmentRepository,
+        )
+        from uuid import UUID as _UUID
+
+        async def _fetch_departments():
+            async with AsyncSessionLocal() as _db:
+                repo = DepartmentRepository(_db)
+                try:
+                    cid = _UUID(str(company_id))
+                except ValueError:
+                    return []
+                return await repo.list_active_for_company(cid)
+
+        depts_orm = run_coro_in_threadpool(
+            lambda: _fetch_departments(), timeout=5,
+        )
+    except Exception as exc:
+        logger.warning(
+            "[WizardServiceTools] infer_department fetch failed: %s", exc,
+        )
+        return ToolResult(
+            llm_message=(
+                "Erro ao buscar departamentos da empresa. "
+                "Pergunte o departamento diretamente ao recrutador."
+            ),
+            error=True,
+        )
+
+    dept_names = [d.name for d in depts_orm if d.name]
+    if not dept_names:
+        return ToolResult(
+            llm_message=(
+                "A empresa nao tem departamentos cadastrados. "
+                "Pergunte o departamento diretamente ao recrutador."
+            ),
+        )
+
+    # Fuzzy match usando a mesma logica de intake.py (single source of truth)
+    from app.domains.job_creation.nodes.intake import _match_department
+
+    matched = _match_department(title, dept_names, threshold=0.7)
+
+    if matched:
+        return ToolResult(
+            llm_message=(
+                f"Inferi departamento '{matched}' pelo titulo '{title}'. "
+                "Confirme com o recrutador ou ajuste com set_job_fields."
+            ),
+            state_updates={"parsed_department": matched},
+        )
+
+    # Sem match — listar departamentos disponiveis para o LLM perguntar
+    display = ", ".join(dept_names[:15])
+    suffix = f" (e mais {len(dept_names) - 15})" if len(dept_names) > 15 else ""
+    return ToolResult(
+        llm_message=(
+            f"Nao consegui inferir o departamento pelo titulo '{title}'. "
+            f"Departamentos da empresa: {display}{suffix}. "
+            "Pergunte ao recrutador em qual departamento a vaga se encaixa."
+        ),
+    )
+
+
+INFER_DEPARTMENT = WizardTool(
+    name="infer_department_from_title",
+    description=(
+        "Infere o departamento da vaga a partir do titulo, usando fuzzy match "
+        "contra os departamentos REAIS cadastrados na empresa. Chame apos "
+        "definir o titulo com set_job_fields, quando o departamento ainda nao "
+        "foi informado. Se a confianca for alta, sugira ao recrutador; senao, "
+        "liste os departamentos disponiveis e pergunte."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {},
+        "additionalProperties": False,
+    },
+    handler=_handle_infer_department,
+)
+
+
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
@@ -2488,5 +2619,6 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SET_OPERATIONAL_FIELDS,
     ADD_BANK_QUESTION,
     SET_AFFIRMATIVE_FIELDS,
+    INFER_DEPARTMENT,
     CLOSE_PANEL,
 )
