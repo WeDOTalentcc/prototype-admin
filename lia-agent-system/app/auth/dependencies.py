@@ -30,8 +30,9 @@ async def get_current_user(
     """
     Dependency to get the current authenticated user.
 
-    Aceita tokens FastAPI (payload com `sub`=UUID, `type`=access)
-    e tokens Rails (payload com `user_id`=int). Rails é tentado como fallback.
+    Aceita APENAS tokens FastAPI (payload com `sub`=UUID, `type`=access).
+    Rails JWT não é mais aceito neste path (2026-06-13).
+    Clientes com Rails JWT devem usar POST /api/v1/auth/exchange.
 
     Args:
         credentials: The HTTP bearer token credentials.
@@ -65,15 +66,12 @@ async def get_current_user(
             if user is not None:
                 return user
     except JWTError:
-        pass  # cai no Rails fallback
+        pass  # FastAPI JWT inválido — rejeita (sem Rails fallback)
     except Exception:
         pass
 
-    # 2. Fallback: Rails JWT
-    user = await _resolve_rails_jwt_user(token, db)
-    if user is not None:
-        return user
-
+    # Rails JWT fallback removido (2026-06-13): FastAPI JWT é fonte de verdade.
+    # Clientes com Rails JWT devem trocar via POST /api/v1/auth/exchange.
     raise credentials_exception
 
 
@@ -383,10 +381,8 @@ async def get_current_user_or_demo(
         except (JWTError, Exception):
             pass
 
-        # Fallback: Rails JWT
-        rails_user = await _resolve_rails_jwt_user(credentials.credentials, db)
-        if rails_user and rails_user.is_active:
-            return rails_user
+        # Rails JWT fallback removido (2026-06-13): FastAPI JWT é fonte de verdade.
+        # Clientes com Rails JWT devem trocar via POST /api/v1/auth/exchange.
 
     # Multi-tenancy: only allow demo user in development
     if not _is_dev_environment():
@@ -470,10 +466,8 @@ async def get_current_user_strict(
     except JWTError:
         pass
 
-    # 2. Fallback: Rails JWT
-    if user is None:
-        user = await _resolve_rails_jwt_user(credentials.credentials, db)
-
+    # Rails JWT fallback removido (2026-06-13): FastAPI JWT é fonte de verdade.
+    # Clientes com Rails JWT devem trocar via POST /api/v1/auth/exchange.
     if user is None:
         raise credentials_exception
 

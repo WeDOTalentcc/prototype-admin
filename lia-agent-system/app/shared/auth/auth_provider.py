@@ -4,10 +4,12 @@ AuthProvider — abstração leve sobre o sistema de auth híbrido.
 Harness: Guide computacional — sub-apps dependem de AuthContext,
          nunca de app/auth/ diretamente.
 
-Dois caminhos internos (transparentes para os callers):
+Único caminho interno:
   LOCAL: FastAPI JWT (decode_token → User por UUID)
-  RAILS: Rails JWT fallback (validate_rails_token → auto-provisiona User)
   WORKOS: WorkOS SSO → vira JWT LOCAL via auth_router (mesmo caminho)
+
+  RAILS: DEPRECATED (2026-06-13) — Rails JWT não é mais aceito diretamente.
+         Use POST /api/v1/auth/exchange para converter Rails JWT em FastAPI JWT.
 
 Sprint F: api-onboarding importa get_auth_context_dependency(), não app/auth/dependencies.
 """
@@ -32,9 +34,14 @@ optional_security = HTTPBearer(auto_error=False)
 
 
 class AuthSource(str, enum.Enum):
-    """Origem da autenticação resolvida."""
+    """Origem da autenticação resolvida.
+
+    LOCAL: FastAPI JWT (fonte de verdade desde 2026-06-13)
+    RAILS: DEPRECATED — não mais aceito. Use POST /auth/exchange para converter.
+    WORKOS: SSO via WorkOS → vira LOCAL após auth_router
+    """
     LOCAL = "local"    # FastAPI JWT gerado localmente
-    RAILS = "rails"    # JWT do backend Rails (legacy/bridge)
+    RAILS = "rails"    # DEPRECATED — mantido para retrocompat de logs históricos
     WORKOS = "workos"  # WorkOS SSO → vira LOCAL via auth_router
 
 
@@ -118,8 +125,9 @@ class AuthProvider:
         db: "AsyncSession",
     ) -> "tuple":
         """
-        Tenta os dois caminhos em ordem: LOCAL → RAILS.
-        Retorna (user, source) ou (None, None) se ambos falharem.
+        Tenta apenas FastAPI JWT (LOCAL).
+        Rails JWT fallback removido 2026-06-13 — FastAPI JWT é fonte de verdade.
+        Retorna (user, AuthSource.LOCAL) ou (None, None) se falhar.
         """
         # Path 1: tenta FastAPI JWT
         try:
@@ -145,11 +153,9 @@ class AuthProvider:
             except Exception:
                 pass
 
-            # Path 2: Rails JWT fallback
-            from app.auth.dependencies import _resolve_rails_jwt_user
-            user = await _resolve_rails_jwt_user(token, db)
-            if user is not None:
-                return user, AuthSource.RAILS
+            # Path 2 (Rails JWT fallback) removido 2026-06-13.
+            # FastAPI JWT é fonte de verdade.
+            # Clientes com Rails JWT devem trocar via POST /api/v1/auth/exchange.
 
         except Exception as exc:
             logger.warning("[AuthProvider] _get_user_from_token error: %s", exc)
