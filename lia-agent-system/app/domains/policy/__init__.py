@@ -6,3 +6,4 @@ job_creation/, orchestrator/, fairness_guard e outros.
 Este diretório NÃO é um domain registrado no DomainRegistry (sem domain.py).
 O domain registrado é hiring_policy/ (domain_id="hiring_policy").
 """
+__domain_type__ = "service"
