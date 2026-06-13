@@ -216,6 +216,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             "policy_decisions": _pub_pd_decisions,
             "error": _pub_policy.rationale,
             "pending_human_confirmation": False,
+        "manager_briefing_note": _briefing_note,
             "requires_approval": False,
             "ws_stage_payload": build_ws_stage_payload(
                 stage="publish",
@@ -566,6 +567,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
 
             # W1-J (2026-06-12): email de plano executivo ao gestor.
             # Fail-soft: erros nao abortam o publish.
+            _briefing_note = ""
             if job_id and _mgr_email:
                 try:
                     _w1j_html = _build_manager_briefing_html(
@@ -590,6 +592,15 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                     )
                 except Exception as _w1j_exc:
                     logger.warning("[publish] W1-J manager briefing fail-soft: %s", _w1j_exc)
+                    _briefing_note = "Briefing do gestor NAO enviado (erro no envio). Se desejar, chame send_manager_briefing."
+                else:
+                    _briefing_note = f"Briefing executivo enviado ao gestor ({_mgr_email})."
+            else:
+                _briefing_note = (
+                    "Briefing do gestor NAO enviado — email do gestor nao foi "
+                    "informado durante a criacao. Se desejar, informe o email e "
+                    "chame send_manager_briefing."
+                )
 
             # Step 4: Get share link
             link_resp = cb_wrap(api.get_share_link, job_id)
@@ -633,6 +644,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 "share_link": share_link,
                 "auto_screen": state.get("auto_screen_enabled", True),
                 "error": error,
+                "briefing_note": _briefing_note,
             },
         ),
     }
