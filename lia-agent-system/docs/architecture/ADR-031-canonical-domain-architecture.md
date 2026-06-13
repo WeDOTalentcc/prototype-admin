@@ -252,3 +252,63 @@ Test classes:
 | _REGISTERED_DOMAINS enforced by CI-blocking conformance test | Prevents drift; new domain requires explicit registration decision |
 | G11 (schema separation) explicitly deferred | Application-layer multi-tenancy is sufficient; migration cost > benefit now |
 | G9 (WorkOS abstraction) partially done | auth_provider.py exists; full migration is sprint work |
+
+---
+
+## 10. API Organization — Strangler Fig Sub-Apps
+
+### 10.1 Pattern
+
+The monolith (`app/`) is being decomposed via the **Strangler Fig** pattern into independent FastAPI sub-applications under `apps/`. Each sub-app imports routers from `app/api/v1/` (monolith), adds its own middleware stack, and will eventually be standalone.
+
+**Current sub-apps (2026-06-13): 7**
+
+| Sub-app | Port | Domain responsibility |
+|---|---|---|
+| `api-vagas` | 8001 | Job vacancies, JD generation, WSI, wizard |
+| `api-funil` | 8002 | Pipeline, kanban, stage transitions |
+| `api-agentes` | 8003 | Agent Studio, chat SSE, LLM config, digital twins, HITL |
+| `api-comunicacao` | 8004 | Email, WhatsApp, voice, notifications |
+| `api-admin` | 8005 | Platform admin, billing, compliance, LGPD |
+| `api-triagem` | 8003 | Screening, WSI, Big Five, CV parser |
+| `api-onboarding` | 8003 | WorkOS auth, company setup, benefits |
+
+### 10.2 Each sub-app structure
+
+```
+apps/<sub-app>/
+├── CLAUDE.md         # sub-app specific guidelines
+├── Dockerfile
+├── main.py           # FastAPI app + router includes + middleware
+└── pyproject.toml    # independent dependencies
+```
+
+`main.py` follows a strict template:
+1. Sentry + logging init
+2. Lifespan (DB init, background tasks)
+3. FastAPI app with `debug=False` + global exception handler (ADR-PYDANTIC-R5)
+4. CORS + RateLimit + RequestId + StructuredLogging middleware
+5. Router includes from `app/api/v1/` with `/api/v1` prefix
+
+### 10.3 MONOLITH-IMPORT markers
+
+Sub-apps currently import from monolith `app/` for infrastructure not yet extracted to shared libs. These are marked `# MONOLITH-IMPORT: <reason>` for tracking. Sensor `check_sub_apps_structure.py` (G6) monitors these.
+
+**Current count:** 67 MONOLITH-IMPORT markers across all sub-apps.
+
+Target: reduce to 0 as libs (`lia-config`, `lia-llm`, `lia-pii`, `lia-utils`) absorb the shared infrastructure. `lia-llm` and `lia-pii` already extracted (commits `eaae3f18b`, `1da4edd81`).
+
+### 10.4 Route organization within app/api/v1/
+
+Routes live in `app/api/v1/<resource>.py` or `app/api/v1/<domain>/` for complex domains. No route logic in domain services — routers call domain services, services call repositories.
+
+**Rule:** A route file belongs to one sub-app. Cross-sub-app routes are a smell — resolve by extracting shared service or moving to the correct sub-app.
+
+### 10.5 Monolith (app/) vs sub-apps (apps/)
+
+During the Strangler Fig transition:
+- **Development target:** sub-apps (`apps/`)
+- **Production today:** monolith still runs as single FastAPI app on port 8001
+- **Migration gate:** a sub-app is "standalone-ready" when its `MONOLITH-IMPORT` count = 0 and all dependencies resolve from `pyproject.toml` without `app/`
+
+This ADR will be updated when the first sub-app reaches standalone-ready status.
