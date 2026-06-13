@@ -109,7 +109,7 @@ export function useCompanySettingsCards() {
     queryKey: SETTINGS_QUERY_KEYS.companyProfile(),
     queryFn: fetchCompanyProfile,
     staleTime: 30_000,
-    retry: 0,
+    retry: 1,
   })
 
   const rawProfile = profileQuery.data ?? null
@@ -136,14 +136,14 @@ export function useCompanySettingsCards() {
     queryKey: SETTINGS_QUERY_KEYS.hiringPolicy(),
     queryFn: fetchHiringPolicy,
     staleTime: 30_000,
-    retry: 0,
+    retry: 1,
   })
 
   const progressQuery = useQuery({
     queryKey: SETTINGS_QUERY_KEYS.settingsProgress(),
     queryFn: fetchSettingsProgress,
     staleTime: 15_000,
-    retry: 0,
+    retry: 1,
   })
 
   // ── Derived state ──
@@ -194,7 +194,7 @@ export function useCompanySettingsCards() {
 
   // ── Loading watchdog ──
   const [watchdogError, setWatchdogError] = useState<string | null>(null)
-  useLoadingWatchdog(loading, () => setWatchdogError("Tempo limite de carregamento excedido"), 8_000)
+  useLoadingWatchdog(loading, () => setWatchdogError("Tempo limite de carregamento excedido"), 20_000)
 
   // ── UI state ──
   const [expandedBlocks, setExpandedBlocks] = useState<Set<string>>(new Set(["basic"]))
