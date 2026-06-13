@@ -41,6 +41,10 @@ class PlatformEvent(BaseModel):
     payload: dict[str, Any]
     source_api: str  # "api-vagas" | "api-funil" | "api-onboarding"
     version: str = "1.0"
+    # Rastreabilidade cross-domain — propagado do request HTTP que originou o evento.
+    # Injetado automaticamente por publish_platform_event() via ContextVar
+    # se nao fornecido explicitamente.
+    correlation_id: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -134,6 +138,15 @@ async def publish_platform_event(event: PlatformEvent) -> bool:
     dispatch. Para entrega garantida usar Celery (Redis broker, já configurado).
     """
     try:
+        # Injetar correlation_id do ContextVar se nao fornecido no evento
+        if not event.correlation_id:
+            try:
+                from app.middleware.request_id import get_correlation_id
+                cid = get_correlation_id()
+                if cid:
+                    event = event.model_copy(update={'correlation_id': cid})
+            except Exception:
+                pass  # fail-open: correlation_id e adicional, nao critico
         from app.shared.messaging.redis_pubsub_transport import (
             PLATFORM_EVENTS_CHANNEL,
             publish_event,

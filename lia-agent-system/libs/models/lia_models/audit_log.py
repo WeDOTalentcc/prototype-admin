@@ -84,6 +84,11 @@ class AuditLog(Base):
     input_text = Column(Text, nullable=True)
     output_text = Column(Text, nullable=True)
     fairness_flags = Column(JSON, nullable=True, default=list)
+
+    # Sprint A (2026-06-13): rastreabilidade cross-domain
+    # Liga a decisao ao request HTTP que a originou.
+    # Substitui o workaround session_id=trace_id (Task #366).
+    correlation_id = Column(String(80), nullable=True, index=True)
     
     def __repr__(self):
         return f"<AuditLog {self.id} - {self.agent_name}: {self.decision_type} -> {self.decision}>"

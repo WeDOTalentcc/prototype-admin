@@ -269,6 +269,16 @@ class AuditService:
         now = datetime.utcnow()
         retention_until = now + timedelta(days=retention_days)
 
+        # Sprint A: ler correlation_id do ContextVar se disponivel
+        _correlation_id = None
+        try:
+            from app.middleware.request_id import get_correlation_id as _get_cid
+            _cid = _get_cid()
+            if _cid:
+                _correlation_id = _cid
+        except Exception:
+            pass
+
         async with AsyncSessionLocal() as session:
             await _bind_tenant(session, company_id)
             audit_log = AuditLog(
@@ -305,6 +315,7 @@ class AuditService:
                 # continua disponível como fallback no caso (improvável)
                 # de o caller pular este caminho.
                 created_at=now,
+                correlation_id=_correlation_id,
             )
 
             session.add(audit_log)
@@ -389,6 +400,11 @@ class AuditService:
             # session_id until a dedicated column is promoted (mirrors
             # _log_decision_impl so both audit paths populate the same field).
             session_id=actor_user_id,
+            # Sprint A: correlation_id do ContextVar
+            correlation_id=(
+                (lambda: __import__('app.middleware.request_id', fromlist=['get_correlation_id']).get_correlation_id() or None)()
+                if True else None
+            ),
         )
         session.add(audit_log)
         await session.flush()

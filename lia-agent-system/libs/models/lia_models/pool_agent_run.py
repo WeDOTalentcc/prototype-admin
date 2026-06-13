@@ -62,6 +62,9 @@ class PoolAgentRun(Base):
     reasoning_payload = Column(JSONB, nullable=True)
     error_message = Column(Text, nullable=True)
 
+    # Sprint A (2026-06-13): rastreabilidade cross-domain
+    correlation_id = Column(String(80), nullable=True, index=True)
+
     created_at = Column(
         DateTime(timezone=True), default=datetime.utcnow, nullable=False
     )

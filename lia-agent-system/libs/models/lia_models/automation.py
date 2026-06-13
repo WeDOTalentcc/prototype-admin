@@ -124,6 +124,9 @@ class AutomationExecutionLog(Base):
     error_message = Column(Text, nullable=True)
     
     execution_time_ms = Column(Integer, nullable=True)
+
+    # Sprint A (2026-06-13): rastreabilidade cross-domain
+    correlation_id = Column(String(80), nullable=True, index=True)
     
     executed_at = Column(DateTime, default=datetime.utcnow, index=True)
     

@@ -59,6 +59,9 @@ class AgentExecutionLog(Base):
     tool_calls = Column(ARRAY(String), default=[])
     compliance_status = Column(String(32), default="pass")
 
+    # Sprint A (2026-06-13): rastreabilidade cross-domain
+    correlation_id = Column(String(80), nullable=True, index=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def to_dict(self):
