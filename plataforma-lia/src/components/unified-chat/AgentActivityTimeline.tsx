@@ -97,7 +97,7 @@ function ItemIcon({ item, active }: { item: ActivityItem; active: boolean }) {
       className={cn(
         "w-4 h-4 transition-colors duration-300",
         active
-          ? "text-wedo-cyan"
+          ? "text-lia-text-secondary"
           : "text-lia-text-secondary",
       )}
       aria-hidden="true"
@@ -119,7 +119,7 @@ function HorizontalChip({
       className={cn(
         "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-300",
         active
-          ? "bg-wedo-cyan/10 shadow-[0_0_0_2px_rgba(0,190,184,0.15)] animate-pulse motion-reduce:animate-none"
+          ? "bg-lia-bg-secondary animate-pulse motion-reduce:animate-none"
           : "bg-lia-bg-secondary/60",
         entering && "animate-in fade-in zoom-in-75 slide-in-from-left-2 duration-300",
       )}
@@ -142,7 +142,7 @@ function ExpandedLine({
     <li
       className={cn(
         "flex items-center gap-2 text-xs animate-in fade-in slide-in-from-left-1 duration-200",
-        active ? "text-lia-text-primary font-medium" : "text-lia-text-secondary",
+        active ? "text-lia-text-secondary" : "text-lia-text-secondary/50",
       )}
     >
       <ItemIcon item={item} active={active} />
@@ -389,7 +389,7 @@ export function AgentActivityTimeline({
               ))}
             </div>
             {activeItem && !isDone && (
-              <span className="text-xs text-wedo-cyan font-medium flex items-center gap-1 truncate">
+              <span className="text-xs text-lia-text-secondary flex items-center gap-1 truncate">
                 {activeItem.kind === "tool"
                   ? toolLabel(activeItem.name, locale)
                   : phaseLabel(activeItem.name, locale)}

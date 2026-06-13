@@ -20,9 +20,9 @@ export function ActivityDots({ className }: { className?: string }) {
       className={`inline-flex gap-0.5 items-center ${className ?? ""}`}
       aria-hidden="true"
     >
-      <span className="w-1 h-1 rounded-full bg-wedo-cyan animate-bounce [animation-delay:-0.3s] motion-reduce:animate-none" />
-      <span className="w-1 h-1 rounded-full bg-wedo-cyan animate-bounce [animation-delay:-0.15s] motion-reduce:animate-none" />
-      <span className="w-1 h-1 rounded-full bg-wedo-cyan animate-bounce motion-reduce:animate-none" />
+      <span className="w-1 h-1 rounded-full bg-lia-text-secondary/60 animate-bounce [animation-delay:-0.3s] motion-reduce:animate-none" />
+      <span className="w-1 h-1 rounded-full bg-lia-text-secondary/60 animate-bounce [animation-delay:-0.15s] motion-reduce:animate-none" />
+      <span className="w-1 h-1 rounded-full bg-lia-text-secondary/60 animate-bounce motion-reduce:animate-none" />
     </span>
   )
 }
@@ -38,13 +38,14 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
         role="status"
         aria-live="polite"
       >
-        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-wedo-cyan/10 shadow-[0_0_0_2px_rgba(0,190,184,0.15)] animate-pulse motion-reduce:animate-none">
-          <Brain className="w-4 h-4 text-wedo-cyan" aria-hidden="true" />
-        </div>
-        <span className="text-xs text-wedo-cyan flex items-center gap-1">
+        <Brain
+          className="w-3.5 h-3.5 text-lia-text-secondary animate-pulse motion-reduce:animate-none shrink-0"
+          aria-hidden="true"
+        />
+        <span className="text-xs text-lia-text-secondary">
           {t("thinking")}
-          <ActivityDots className="shrink-0" />
         </span>
+        <ActivityDots className="shrink-0" />
       </div>
     )
   }
@@ -53,39 +54,38 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
 
   return (
     <div
-      className="animate-in fade-in duration-200"
+      className="animate-in fade-in duration-200 space-y-1.5"
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-center gap-1 flex-wrap">
-        {steps.map((step, i) => {
-          const spotlight = i === lastIndex
-          const StepIcon = phaseIcon(step)
-          return (
-            <div
-              key={i}
+      {steps.map((step, i) => {
+        const spotlight = i === lastIndex
+        const StepIcon = phaseIcon(step)
+        return (
+          <div key={i} className="flex items-center gap-2">
+            <StepIcon
               className={cn(
-                "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-300",
+                "w-3.5 h-3.5 shrink-0",
                 spotlight
-                  ? "bg-wedo-cyan/10 shadow-[0_0_0_2px_rgba(0,190,184,0.15)] animate-pulse motion-reduce:animate-none"
-                  : "bg-lia-bg-secondary/60",
+                  ? "text-lia-text-secondary animate-pulse motion-reduce:animate-none"
+                  : "text-lia-text-secondary/50",
+              )}
+              aria-hidden="true"
+            />
+            <span
+              className={cn(
+                "text-xs",
+                spotlight
+                  ? "text-lia-text-secondary"
+                  : "text-lia-text-secondary/50",
               )}
             >
-              <StepIcon
-                className={cn(
-                  "w-4 h-4 transition-colors duration-300",
-                  spotlight ? "text-wedo-cyan" : "text-lia-text-secondary",
-                )}
-                aria-hidden="true"
-              />
-            </div>
-          )
-        })}
-      </div>
-      <span className="text-xs text-wedo-cyan flex items-center gap-1 mt-1">
-        {phaseLabel(steps[lastIndex], locale)}
-        <ActivityDots className="shrink-0" />
-      </span>
+              {phaseLabel(step, locale)}
+            </span>
+            {spotlight && <ActivityDots className="shrink-0" />}
+          </div>
+        )
+      })}
     </div>
   )
 }
