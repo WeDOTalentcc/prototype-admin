@@ -169,6 +169,24 @@ global:
       - wsi_screening
       - create_nurture_sequence
       - suggest_reengagement
+      - get_offer_status
+      - get_negotiation_context
+      - get_benefit_details
+      - suggest_next_start_date
+      - escalate_to_recruiter
+      - log_negotiation_event
+      - draft_response_to_candidate
+    offer_concierge:
+      query:
+      - get_offer_status
+      - get_negotiation_context
+      - get_benefit_details
+      - get_learning_context
+      action:
+      - suggest_next_start_date
+      - escalate_to_recruiter
+      - log_negotiation_event
+      - draft_response_to_candidate
   llm_provider: claude
   llm_fallback_order:
   - claude
@@ -216,6 +234,10 @@ restricted_tools:
   - update_job                # modify existing job
   # Report scheduling
   - schedule_report           # schedule automated report delivery
+  # Offer management (alta consequência — proposta de contratação)
+  - escalate_to_recruiter     # escalar proposta para recrutador (HITL)
+  - draft_response_to_candidate  # N3: rascunho de contra-proposta
+  - log_negotiation_event     # registrar evento de negociação
   # Pool operations
   - move_pool_to_job          # move talent pool candidates to job
   # Agent management (DomainActions — gated no Studio runtime, não tool de LLM)

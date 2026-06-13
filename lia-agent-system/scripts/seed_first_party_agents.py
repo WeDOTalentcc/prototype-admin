@@ -23,6 +23,7 @@ from lia_models.custom_agent import AgentType, CustomAgent, CustomAgentStatus
 TALENT_INTEL_AGENT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 INTERVIEW_ANALYSIS_AGENT_ID = uuid.UUID("00000000-0000-0000-0000-000000000002")
 VOICE_SCREENING_CHANNEL_ID = uuid.UUID("00000000-0000-0000-0000-000000000003")
+OFFER_CONCIERGE_AGENT_ID    = uuid.UUID("00000000-0000-0000-0000-000000000004")
 
 # ── Fase B: Canonical tool lists ────────────────────────────────────────────
 # TalentIntelAgent exposes all 15 tools from app/domains/talent_intelligence/
@@ -60,6 +61,18 @@ _INTERVIEW_ANALYSIS_TOOLS: list[str] = [
     "generate_candidate_feedback",    # feedback_generator_service
     "generate_interview_opinion",     # strategic_opinion_service
 ]
+
+_OFFER_CONCIERGE_TOOLS: list[str] = [
+    "get_offer_status",
+    "get_negotiation_context",
+    "suggest_next_start_date",
+    "escalate_to_recruiter",
+    "log_negotiation_event",
+    "get_benefit_details",
+    "draft_response_to_candidate",
+    "get_learning_context",
+]
+
 
 FIRST_PARTY_AGENTS = [
     {
@@ -144,6 +157,26 @@ FIRST_PARTY_AGENTS = [
         "system_prompt": "",
         "max_steps": 1,  # minimum to avoid recursion crash if ever instantiated
         "temperature": 0.0,
+    },
+    {
+        "id": OFFER_CONCIERGE_AGENT_ID,
+        "company_id": None,
+        "created_by": "wedo_system",
+        "name": "OfferConciergeAgent",
+        "role": "Concierge de Propostas",
+        "description": "Agente global WeDo para gestao de propostas de oferta, rascunhos, envio e negociacao.",
+        "system_prompt": "Voce e o OfferConciergeAgent. Ajude recrutadores a preparar e negociar cartas-oferta.",
+        "allowed_tools": _OFFER_CONCIERGE_TOOLS,
+        "domain": "offer",
+        "icon": "💼",
+        "status": CustomAgentStatus.ACTIVE.value,
+        "agent_type": AgentType.first_party.value,
+        "domains": ["offer_drafting", "offer_negotiation", "offer_concierge"],
+        "config": {},
+        "max_steps": 10,
+        "temperature": 0.2,
+        "category": "offer_management",
+        "is_marketplace_published": True,
     },
 ]
 

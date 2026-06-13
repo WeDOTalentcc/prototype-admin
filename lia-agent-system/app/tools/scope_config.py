@@ -32,6 +32,7 @@ class PromptScope(StrEnum):
     IN_JOB = "in_job"
     GLOBAL = "global"
     UNIVERSAL = "universal"
+    OFFER_CONCIERGE = "offer_concierge"
 
 
 # ---------------------------------------------------------------------------
@@ -55,6 +56,8 @@ IN_JOB_ACTION_TOOLS: set[str] = _load_global_set("in_job", "action")
 GLOBAL_TOOLS: set[str] = _load_global_set("global", "action")
 UNIVERSAL_QUERY_TOOLS: set[str] = _load_global_set("universal", "query")
 UNIVERSAL_ACTION_TOOLS: set[str] = _load_global_set("universal", "action")
+OFFER_CONCIERGE_QUERY_TOOLS: set[str] = _load_global_set("offer_concierge", "query")
+OFFER_CONCIERGE_ACTION_TOOLS: set[str] = _load_global_set("offer_concierge", "action")
 
 
 SCOPE_TOOL_MAPPING: dict[PromptScope, dict[str, set[str]]] = {
@@ -82,6 +85,11 @@ SCOPE_TOOL_MAPPING: dict[PromptScope, dict[str, set[str]]] = {
         "query": UNIVERSAL_QUERY_TOOLS,
         "action": UNIVERSAL_ACTION_TOOLS,
         "all": UNIVERSAL_QUERY_TOOLS | UNIVERSAL_ACTION_TOOLS,
+    },
+    PromptScope.OFFER_CONCIERGE: {
+        "query": OFFER_CONCIERGE_QUERY_TOOLS,
+        "action": OFFER_CONCIERGE_ACTION_TOOLS,
+        "all": OFFER_CONCIERGE_QUERY_TOOLS | OFFER_CONCIERGE_ACTION_TOOLS,
     },
 }
 
@@ -320,6 +328,8 @@ _PAGE_SCOPE: dict[str, "PromptScope"] = {
     "candidatos": PromptScope.TALENT_FUNNEL,
     "talent": PromptScope.TALENT_FUNNEL,
     "candidato_detalhe": PromptScope.TALENT_FUNNEL,
+    "offer": PromptScope.OFFER_CONCIERGE,
+    "proposta": PromptScope.OFFER_CONCIERGE,
 }
 _DOMAIN_SCOPE: dict[str, "PromptScope"] = {
     "jobs_management": PromptScope.JOB_TABLE,
@@ -330,6 +340,10 @@ _DOMAIN_SCOPE: dict[str, "PromptScope"] = {
     "talent_pool": PromptScope.TALENT_FUNNEL,
     "kanban": PromptScope.IN_JOB,
     "pipeline_transition": PromptScope.IN_JOB,
+    "offer": PromptScope.OFFER_CONCIERGE,
+    "offer_concierge": PromptScope.OFFER_CONCIERGE,
+    "offer_drafting": PromptScope.OFFER_CONCIERGE,
+    "offer_negotiation": PromptScope.OFFER_CONCIERGE,
 }
 
 
