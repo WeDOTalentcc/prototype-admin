@@ -24,6 +24,25 @@ from app.repositories.job_offer_repository import JobOfferRepository
 
 logger = logging.getLogger(__name__)
 
+
+from fastapi import Response as _Response
+
+
+async def _deprecation_headers(response: _Response) -> None:
+    """HTTP deprecation headers per RFC 8594.
+
+    job_offers.py is Sistema B — superseded by /api/v1/offers/* (canonical).
+    All consumers should migrate to the new offer service endpoints.
+    """
+    response.headers["Deprecation"] = "true"
+    response.headers["Sunset"] = "2026-09-30"
+    response.headers["Link"] = (
+        '</api/v1/offers>; rel="successor-version", '
+        '<https://docs.wedotalent.cc/offer-migration>; rel="deprecation"'
+    )
+
+
+
 router = APIRouter(prefix="/job-offers", tags=["Job Offers"])
 
 
@@ -71,7 +90,7 @@ def _to_response(offer) -> dict:
 
 # ── Endpoints ──────────────────────────────────────────────────────────────
 
-@router.get("")
+@router.get("", dependencies=[Depends(_deprecation_headers)])
 async def list_offers(
     job_vacancy_id: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
@@ -93,7 +112,7 @@ async def list_offers(
     return {"offers": [_to_response(o) for o in offers]}
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, dependencies=[Depends(_deprecation_headers)])
 async def create_offer(
     payload: CreateOfferRequest,
     current_user: User = Depends(get_current_user),
@@ -121,7 +140,7 @@ async def create_offer(
     return _to_response(offer)
 
 
-@router.patch("/{offer_id}/send")
+@router.patch("/{offer_id}/send", dependencies=[Depends(_deprecation_headers)])
 async def send_offer(
     offer_id: str,
     current_user: User = Depends(get_current_user),
@@ -146,7 +165,7 @@ async def send_offer(
     return _to_response(updated)
 
 
-@router.patch("/{offer_id}/respond")
+@router.patch("/{offer_id}/respond", dependencies=[Depends(_deprecation_headers)])
 async def respond_to_offer(
     offer_id: str,
     payload: RespondOfferRequest,
@@ -172,7 +191,7 @@ async def respond_to_offer(
     return _to_response(updated)
 
 
-@router.patch("/{offer_id}/withdraw")
+@router.patch("/{offer_id}/withdraw", dependencies=[Depends(_deprecation_headers)])
 async def withdraw_offer(
     offer_id: str,
     current_user: User = Depends(get_current_user),
