@@ -794,6 +794,37 @@ class VacancyCandidateRepository:
         return result.rowcount
 
 
+    async def update_qualification_matrix(
+        self,
+        vacancy_id: str,
+        candidate_id: str,
+        company_id: str,
+        qualification_matrix: dict,
+    ) -> int:
+        """3.2: JSONB merge — persiste qualification_matrix em ai_analysis."""
+        import json as _json
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                UPDATE vacancy_candidates
+                SET ai_analysis = COALESCE(ai_analysis, '{}'::jsonb)
+                                  || jsonb_build_object('qualification_matrix', :qm::jsonb),
+                    updated_at = NOW()
+                WHERE vacancy_id::text = :vid
+                  AND candidate_id::text = :cid
+                  AND company_id = :company_id
+            """),
+            {
+                "qm": _json.dumps(qualification_matrix),
+                "vid": str(vacancy_id),
+                "cid": str(candidate_id),
+                "company_id": cid,
+            },
+        )
+        return result.rowcount
+
+
 def _is_uuid(value: str) -> bool:
     """True se value e um UUID valido (fail-safe para candidate_ids
     legacy/bigint que nao batem com vacancy_candidates.candidate_id UUID)."""

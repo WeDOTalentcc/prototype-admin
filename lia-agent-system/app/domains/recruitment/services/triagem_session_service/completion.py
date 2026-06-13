@@ -502,6 +502,38 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
         logger.warning(f"[Triagem] Failed to persist WSI results: {e}")
         actions["wsi_persistence"] = "failed"
 
+    # 3.2: derivar + persistir QualificationMatrix on-the-fly
+    if session.candidate_id and session.job_id and session.company_id:
+        try:
+            from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+                JobVacancyCRUDRepository as _JVRepo32,
+            )
+            from app.domains.candidates.repositories.vacancy_candidate_repository import (
+                VacancyCandidateRepository as _VCRepo32,
+            )
+            from app.domains.analytics.services.criteria_derivation import derive_from_job as _derive32
+            _job_repo_32 = _JVRepo32(db)
+            _job_obj = await _job_repo_32.get_vacancy_by_id_and_company(
+                vacancy_id=session.job_id, company_id=session.company_id,
+            )
+            if _job_obj:
+                _job_dict = _job_obj.__dict__ if hasattr(_job_obj, "__dict__") else dict(_job_obj)
+                _cand_dict = {"id": session.candidate_id, "name": getattr(session, "candidate_name", None)}
+                _matrix = _derive32(job=_job_dict, candidate=_cand_dict)
+                _vc_repo_32 = _VCRepo32(db)
+                _rows_32 = await _vc_repo_32.update_qualification_matrix(
+                    vacancy_id=session.job_id,
+                    candidate_id=session.candidate_id,
+                    company_id=session.company_id,
+                    qualification_matrix=_matrix.model_dump(),
+                )
+                actions["qualification_matrix_persist"] = f"ok:mh={_matrix.must_have_met}/{_matrix.must_have_total}"
+            else:
+                actions["qualification_matrix_persist"] = "skipped:job_not_found"
+        except Exception as _32_exc:
+            logger.error("[3.2] qualification_matrix persist falhou (fail-soft): %s", _32_exc)
+            actions["qualification_matrix_persist"] = "failed"
+
     if not wsi_session_id:
         logger.warning(
             "[Triagem] Skipping screening-completed event dispatch — "

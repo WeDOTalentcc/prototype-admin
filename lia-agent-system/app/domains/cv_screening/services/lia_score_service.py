@@ -20,6 +20,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
+from app.schemas.qualification_matrix import QualificationMatrix as _QualMatrix
+
 
 from app.config.industry_weights import ScoringWeights, get_weights_for_industry
 
@@ -267,6 +269,18 @@ class LIAScoreResult:
             "strengths": self.strengths,
             "concerns": self.concerns,
         }
+
+
+
+
+def must_have_prerequisites_score(matrix) -> float:
+    """3.1: 0-100 baseado em must_have_met/must_have_total.
+    0 must_haves -> 100 (sem penalidade). 0/N met -> 0."""
+    total = getattr(matrix, 'must_have_total', 0) or 0
+    if total == 0:
+        return 100.0
+    met = getattr(matrix, 'must_have_met', 0) or 0
+    return round(100.0 * met / total, 2)
 
 
 class LIAScoreService:
@@ -1188,6 +1202,8 @@ class LIAScoreService:
         job_requirements: dict[str, Any] | None = None,
         calibration_data: dict[str, Any] | None = None,
         last_activity_date: datetime | None = None,
+        prerequisites_score: float | None = None,
+        qualification_matrix=None,
     ) -> RankingScoreResult:
         """
         Calculate unified LIA ranking score for a candidate.
@@ -1229,7 +1245,12 @@ class LIAScoreService:
         data_availability = self._determine_data_availability(has_rubricas, has_wsi, has_prereq)
         weights = WEIGHT_DISTRIBUTION[data_availability]
         
-        prerequisites_score = self._calculate_prerequisites_score(candidate, job_requirements)
+        # 3.1: override via matrix ou param direto
+        if prerequisites_score is None and qualification_matrix is not None:
+            prerequisites_score = must_have_prerequisites_score(qualification_matrix)
+        elif prerequisites_score is None:
+            prerequisites_score = self._calculate_prerequisites_score(candidate, job_requirements)
+
         
         if last_activity_date is None:
             last_activity_str = candidate.get("last_activity") or candidate.get("updated_at") or candidate.get("last_seen")
