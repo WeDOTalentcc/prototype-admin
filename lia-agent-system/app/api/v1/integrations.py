@@ -548,23 +548,35 @@ async def get_integrations_health(
         "check_type": "config_and_ping" if pearch_health.get("configured") else "config_only",
     }
 
-    # --- LinkedIn / Indeed (uses real health_check from JobBoardService) ---
+    # --- LinkedIn / Indeed ---
+    # LinkedIn: per-tenant IntegrationConnection (NOT env vars).
+    try:
+        from app.api.v1.linkedin_integration import _get_decrypted_credentials
+        _li_creds = await _get_decrypted_credentials(company_id, db)
+        _li_connected = _li_creds is not None
+    except Exception as _li_exc:
+        logger.warning("[integrations:health] LinkedIn check failed: %s", _li_exc)
+        _li_connected = False
+    integrations["linkedin"] = {
+        "status": "connected" if _li_connected else "not_configured",
+        "configured": _li_connected,
+        "check_type": "per_tenant_connection",
+        "message": None if _li_connected else (
+            "LinkedIn nao configurado. "
+            "Conecte em Configuracoes > Integracoes > Job Boards > LinkedIn."
+        ),
+    }
     try:
         from app.domains.job_management.services.job_board_service import JobBoardService
         _jbs = JobBoardService()
         job_board_health = _jbs.health_check()
     except Exception as _jbe:
         job_board_health = {
-            "status": "disconnected",
+            "status": "not_configured",
             "platforms": {
-                "linkedin": {"status": "disconnected", "configured": False, "message": str(_jbe)[:200]},
                 "indeed": {"status": "not_configured", "configured": False, "feed_available": True, "message": str(_jbe)[:200]},
             },
         }
-    integrations["linkedin"] = {
-        **job_board_health["platforms"]["linkedin"],
-        "check_type": "config_only",
-    }
     integrations["indeed"] = {
         **job_board_health["platforms"]["indeed"],
         "check_type": "config_only",

@@ -512,6 +512,58 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 sourcing_mode = _sourcing_raw
             cb_wrap(api.publish_job, job_id, platforms, sourcing_mode)
 
+            # W3-C-LI (2026-06-12): publicar no LinkedIn se integração conectada.
+            # Fail-soft: erros nao abortam o publish.
+            _li_company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+            if job_id and _li_company_id and "linkedin" not in platforms:
+                try:
+                    from app.domains.job_creation.helpers.async_audit import (
+                        run_coro_in_threadpool,
+                    )
+
+                    async def _publish_linkedin():
+                        from app.core.database import AsyncSessionLocal
+                        from app.api.v1.linkedin_integration import _get_decrypted_credentials
+                        from app.domains.job_management.services.job_board_service import JobBoardService
+                        from sqlalchemy import select
+                        from libs.models.lia_models.job_vacancy import JobVacancy
+
+                        async with AsyncSessionLocal() as db:
+                            creds = await _get_decrypted_credentials(_li_company_id, db)
+                            if not creds:
+                                return {"skipped": True, "reason": "not_configured"}
+                            result = await db.execute(
+                                select(JobVacancy).where(JobVacancy.id == job_id)
+                            )
+                            job_row = result.scalar_one_or_none()
+                            if not job_row:
+                                return {"skipped": True, "reason": "job_not_found"}
+                            svc = JobBoardService()
+                            return await svc.publish_to_linkedin(
+                                job=job_row,
+                                db=db,
+                                company_id=_li_company_id,
+                                credentials=creds,
+                            )
+
+                    _li_result = run_coro_in_threadpool(_publish_linkedin)
+                    if _li_result and not _li_result.get("skipped"):
+                        if _li_result.get("success"):
+                            logger.info(
+                                "[publish] LinkedIn publicacao ok job_id=%s post_id=%s",
+                                job_id,
+                                _li_result.get("linkedin_post_id"),
+                            )
+                        else:
+                            logger.warning(
+                                "[publish] LinkedIn publicacao falhou job_id=%s: %s",
+                                job_id,
+                                _li_result.get("error"),
+                            )
+                except Exception as _li_exc:
+                    logger.warning("[publish] LinkedIn fail-soft: %s", _li_exc)
+
+
             # W1-J (2026-06-12): email de plano executivo ao gestor.
             # Fail-soft: erros nao abortam o publish.
             if job_id and _mgr_email:
