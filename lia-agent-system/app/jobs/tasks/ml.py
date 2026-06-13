@@ -410,7 +410,7 @@ def rebuild_all_domains_task():
     """
     span = _celery_span("celery.task_start", "rag.rebuild_all_domains")
 
-    _DOMAINS = ["general", "jobs", "talent", "policy", "company"]
+    _DOMAINS = ["general", "jobs", "talent", "hiring_policy", "company"]
     dispatched = 0
     for domain in _DOMAINS:
         try:

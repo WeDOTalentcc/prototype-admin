@@ -47,7 +47,7 @@ DOMAINS: dict[str, str] = {
         "Configuracao da empresa: beneficios, cultura, niveis salariais, persona da IA, "
         "import de dados. Use quando o recrutador quiser configurar a empresa."
     ),
-    "policy": (
+    "hiring_policy": (
         "Politicas de recrutamento e contratacao da empresa (aprovacoes, regras). "
         "Use para consultar/ajustar politicas."
     ),

@@ -43,6 +43,7 @@ DOMAIN_ALIASES: dict[str, str] = {
     "jobs": "jobs",
     "policy_blocks": "policy",
     "policy": "policy",
+    "hiring_policy": "policy",
     "company_docs": "company",
     "company": "company",
     "general": "general",

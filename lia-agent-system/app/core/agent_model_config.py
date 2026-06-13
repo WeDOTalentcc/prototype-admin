@@ -20,7 +20,7 @@ _DEFAULT_AGENT_MODELS: dict[str, str] = {
     "pipeline": "claude-sonnet-4-6",
     "job_wizard": "claude-sonnet-4-6",
     "kanban": "claude-haiku-4-5",        # tarefas simples
-    "policy": "claude-haiku-4-5",         # tarefas simples
+    "hiring_policy": "claude-haiku-4-5",  # tarefas simples
     "analytics": "claude-sonnet-4-6",
     "communication": "claude-haiku-4-5",  # geração de mensagens
     "ats_integration": "claude-haiku-4-5",
