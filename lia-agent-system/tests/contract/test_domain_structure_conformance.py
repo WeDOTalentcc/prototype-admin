@@ -21,6 +21,7 @@ _SUPPORT_FILES = {
     "workflow.py",
     "__init__.py",
     "__pycache__",
+    "_template",
 }
 
 # Domains registered via @register_domain (have domain.py)
