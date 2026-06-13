@@ -34,17 +34,20 @@ _REGISTERED_DOMAINS = {
     "company_settings",
     "cv_screening",
     "hiring_policy",
+    "interview_intelligence",
     "interview_scheduling",
     "job_management",
     "offer",
     "pipeline",
     "recruiter_assistant",
+    "recruitment_campaign",
     "sourcing",
+    "talent_intelligence",
     "talent_pool",
     "agent_studio",
     "job_creation",
     "digital_twin",
-    "recruitment_campaign",
+    "workforce",
 }
 
 # Domains that legitimately skip capabilities.yaml
@@ -55,7 +58,6 @@ _SKIP_CAPABILITIES_YAML = {
 # Non-registered domains that legitimately have agents/
 _NON_REGISTERED_WITH_AGENTS = {
     "policy",      # PolicySetupAgent — intentional, documented
-    "workforce",   # workforce_tool_registry — agent tools, documented
 }
 
 

@@ -1,1 +1,1 @@
-__domain_type__ = "agent_studio_development"
+__domain_type__ = "agentic"
