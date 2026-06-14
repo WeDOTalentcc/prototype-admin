@@ -217,7 +217,12 @@ export default function OfferPortalPage() {
     return <DoneState acao={doneAcao} mensagem={doneMensagem} nextSteps={doneNextSteps} />
   if (!offer) return <LoadingState />
 
-  const canRespond = isResponseAllowed(offer.status) && state !== "responding"
+  // isResponding: typed assertion that breaks TS control-flow narrowing.
+  // TypeScript narrows state to '"loaded" | "expired"' after the
+  // if (!offer) guard above, but "responding" is still reachable at runtime
+  // (set synchronously in handleAccept/handleDecline before the async awaits).
+  const isResponding = (state as string) === "responding"
+  const canRespond = isResponseAllowed(offer.status) && !isResponding
   const alreadyResponded = offer.status === "accepted" || offer.status === "declined"
 
   return (
@@ -332,14 +337,14 @@ export default function OfferPortalPage() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleAccept}
-                  disabled={state === "responding"}
+                  disabled={isResponding}
                   className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
                 >
-                  {state === "responding" ? "Enviando..." : "Aceitar Proposta"}
+                  {isResponding ? "Enviando..." : "Aceitar Proposta"}
                 </button>
                 <button
                   onClick={() => setShowDeclineForm(true)}
-                  disabled={state === "responding"}
+                  disabled={isResponding}
                   className="flex-1 bg-white hover:bg-gray-50 disabled:bg-gray-50 border border-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-colors"
                 >
                   Recusar
@@ -361,14 +366,14 @@ export default function OfferPortalPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={handleDecline}
-                    disabled={state === "responding"}
+                    disabled={isResponding}
                     className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
                   >
-                    {state === "responding" ? "Enviando..." : "Confirmar Recusa"}
+                    {isResponding ? "Enviando..." : "Confirmar Recusa"}
                   </button>
                   <button
                     onClick={() => setShowDeclineForm(false)}
-                    disabled={state === "responding"}
+                    disabled={isResponding}
                     className="border border-gray-200 text-gray-600 font-medium py-3 px-6 rounded-xl hover:bg-gray-50 transition-colors"
                   >
                     Voltar
