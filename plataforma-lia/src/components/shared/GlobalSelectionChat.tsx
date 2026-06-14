@@ -69,6 +69,7 @@ export function GlobalSelectionChat() {
   if (!isChatOpen && (!selection.isActive || !selection.rect)) return null
 
   const rect = (isChatOpen ? frozenRef.current?.rect : null) ?? selection.rect
+  if (!rect) return null
   // Toolbar: appears just above the selection
   const toolbarStyle: React.CSSProperties = {
     position: "fixed",
