@@ -609,6 +609,18 @@ jobs:
       - name: "G5-METADATA-HANDLER: YAML metadata -> handler sync (BLOCKING, baseline=0 2026-06-08)"
         run: python3 scripts/check_metadata_handler_sync.py --blocking
 
+      # ADR-031 §6.1 — Domain type annotations: every domain under app/domains/
+      # must define __domain_type__ with a valid DomainType enum value.
+      # Baseline 0 (36 domains verified). Any new domain without __domain_type__ fails CI.
+      - name: "ADR-031: domain type annotations (BLOCKING)"
+        run: python3 scripts/check_domain_type_annotations.py
+
+      # ADR-031 §4 R1+R3 — Agent base class conformance: every agent file must
+      # inherit from the canonical base class and respect the mixin contract.
+      # Baseline 0 (35 agent files verified). Runs in blocking mode.
+      - name: "ADR-031/032: agent base class R1+R3 (BLOCKING)"
+        run: python3 scripts/check_agent_base_class.py
+
   # ──────────────────────────────────────────────────────────────────────
   # E2E persistence smoke (Configurações > Minha Empresa / Learning Loops /
   # Schedule). Gap original Paulo 2026-05-21 — round-trip browser-level
