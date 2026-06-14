@@ -1127,6 +1127,7 @@ class FairnessGuard:
         candidate_id: str | None = None,
         # Parâmetro ignorado (compatibilidade com chamadas antigas que passavam input_text)
         input_text: str | None = None,
+        session_id: str | None = None,
     ) -> None:
         """
         Persist a FairnessGuard check result to the audit log (EU AI Act compliance).
@@ -1144,6 +1145,7 @@ class FairnessGuard:
             job_id: Related job vacancy ID.
             candidate_id: Related candidate ID.
             input_text: Ignorado (retrocompatibilidade).
+            session_id: ID da sessão SSE — persiste em session_id e em correlation_id de policy_violations.
         """
         if not result.is_blocked and not result.soft_warnings:
             return
@@ -1171,6 +1173,7 @@ class FairnessGuard:
                 is_blocked=result.is_blocked,
                 context=context_str,
                 soft_warnings=result.soft_warnings or [],
+                session_id=session_id,
             )
             session.add(record)
             await session.flush()
@@ -1201,7 +1204,7 @@ class FairnessGuard:
                         },
                         was_blocked=True,
                         fairness_audit_log_id=record.id,
-                        correlation_id=None,
+                        correlation_id=session_id,
                     )
                     session.add(violation)
                     logger.debug(
