@@ -11,7 +11,7 @@ function getAuthHeaders(req: NextRequest): Record<string, string> {
 
 export async function POST(req: NextRequest, { params: pRaw }: { params: Promise<{ id: string }> }) {
   const { id } = await pRaw;
-  const res = await fetch(`${FASTAPI_URL}/api/v1/recruitment_campaigns/${id}/advance_stage`, {
+  const res = await fetch(`${FASTAPI_URL}/api/v1/recruitment_campaigns/${id}/advance-stage`, {
     method: "POST", headers: getAuthHeaders(req),
   })
   return new NextResponse(await res.text(), { status: res.status, headers: { "Content-Type": "application/json" } })
