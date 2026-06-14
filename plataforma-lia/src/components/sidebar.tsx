@@ -38,6 +38,7 @@ import {
   EyeOff,
   Check,
   Loader2,
+  FolderKanban,
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/shared/use-recent-items"
 import { hasModuleAccess } from "@/utils/license-manager"
@@ -91,6 +92,7 @@ const itemLabelKeys: Record<string, string> = {
   "Vagas": "items.jobs",
   "Funil de Talentos": "items.talentPipeline",
   "Estúdio de Agentes": "items.agentStudio",
+  "Projetos": "items.projects",
 }
 
 const filterLabelKeys: Record<string, string> = {
@@ -118,7 +120,7 @@ interface MenuSection {
 
 const BASE_MENU_SECTIONS: MenuSection[] = [
   {
-    label: "Operacional",
+    label: "",
     items: [
       { icon: MessageCircle, label: "Conversar", isCore: true },
       { icon: Target, label: "Decidir", isCore: true },
@@ -138,11 +140,15 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
           },
         ],
       },
-    ],
-  },
-  {
-    label: "Configuração",
-    items: [
+      {
+        icon: FolderKanban,
+        label: "Projetos",
+        isCore: true,
+        navigateOnClick: true,
+        maxVisibleSubItems: 4,
+        seeAllLabel: "Ver todos os projetos",
+        seeAllTarget: "Projetos",
+      },
       {
         icon: Bot,
         label: "Estúdio de Agentes",
@@ -165,6 +171,7 @@ interface DynamicSubItem {
 
 function useSidebarDynamicItems() {
   const [agents, setAgents] = useState<DynamicSubItem[]>([])
+  const [projects, setProjects] = useState<DynamicSubItem[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -185,11 +192,28 @@ function useSidebarDynamicItems() {
       } catch { /* silent */ }
     }
 
+    async function loadProjects() {
+      try {
+        const res = await fetch("/api/backend-proxy/recruitment-campaigns?status=active&limit=8")
+        if (!res.ok) return
+        const data = await res.json()
+        const mapped = (data?.data || [])
+          .filter((p: { status: string }) => p.status === "active" || p.status === "paused")
+          .map((p: { id: string; name: string; status: string }) => ({
+            id: p.id,
+            name: p.name,
+            status: p.status,
+          }))
+        if (!cancelled) setProjects(mapped)
+      } catch { /* silent */ }
+    }
+
     loadAgents()
+    loadProjects()
     return () => { cancelled = true }
   }, [])
 
-  return { agents }
+  return { agents, projects }
 }
 
 
@@ -507,7 +531,7 @@ RecentItemRow.displayName = 'RecentItemRow'
 
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch }: SidebarProps) {
   const t = useTranslations('sidebar')
-  const { agents } = useSidebarDynamicItems()
+  const { agents, projects } = useSidebarDynamicItems()
   const { user: authUser, refreshUser } = useAuth()
   const { userId: authenticatedUserId, isReady: isAuthReady } = useAuthenticatedUserId()
 
@@ -608,6 +632,17 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
   const menuSections = useMemo(() => {
     const injectDynamic = (item: MenuItemType): MenuItemType => {
+      if (item.label === "Projetos" && projects.length > 0) {
+        return {
+          ...item,
+          subItems: projects.map(p => ({
+            icon: FolderKanban,
+            label: p.name,
+            isCore: true,
+            navKey: `project:${p.id}`,
+          })),
+        }
+      }
       if (item.label === "Estúdio de Agentes" && agents.length > 0) {
         return {
           ...item,
@@ -631,11 +666,15 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       ...section,
       items: section.items.map(item => injectDynamic(item)),
     }))
-  }, [agents])
+  }, [agents, projects])
 
   const handleDynamicNavigate = useCallback((page: string) => {
     if (page.startsWith("agent:")) {
       onNavigate("Estúdio de Agentes")
+      return
+    }
+    if (page.startsWith("project:")) {
+      onNavigate("Projetos")
       return
     }
     onNavigate(page)
@@ -722,13 +761,13 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       <div className={`py-4 flex-1 overflow-y-auto ${shouldShowContent ? 'px-4' : 'px-2'}`}>
         <nav className="space-y-4">
           {menuSections.map((section, sectionIdx) => (
-            <div key={section.label}>
-              {shouldShowContent && (
+            <div key={section.label || String(sectionIdx)}>
+              {shouldShowContent && section.label && (
                 <h3 className="text-[10px] font-semibold text-lia-text-tertiary mb-1.5 tracking-[0.18em] uppercase px-2 opacity-70">
                   {sectionLabelKeys[section.label] ? t(sectionLabelKeys[section.label]) : section.label}
                 </h3>
               )}
-              {!shouldShowContent && sectionIdx > 0 && (
+              {!shouldShowContent && sectionIdx > 0 && section.label && (
                 <div className="border-t border-lia-border-subtle my-1.5" />
               )}
               <div className="space-y-1">

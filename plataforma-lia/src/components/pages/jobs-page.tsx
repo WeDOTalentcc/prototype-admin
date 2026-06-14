@@ -20,7 +20,7 @@ const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModa
 // Phase 4H — Bulk import from ATS
 const BulkImportModal = dynamic(() => import("@/components/jobs/BulkImportModal").then(m => ({ default: m.BulkImportModal })), { ssr: false })
 const JobDraftsSection = dynamic(() => import("@/components/pages/jobs/JobDraftsSection").then(m => ({ default: m.JobDraftsSection })), { ssr: false, loading: () => null })
-const CampanhasSection = dynamic(() => import("@/components/pages/jobs/CampanhasSection").then(m => ({ default: m.CampanhasSection })), { ssr: false, loading: () => null })
+const ProjetosSection = dynamic(() => import("@/components/pages/jobs/ProjetosSection").then(m => ({ default: m.ProjetosSection })), { ssr: false, loading: () => null })
 
 interface JobsPageProps {
   onNavigate?: (page: string) => void
@@ -142,7 +142,7 @@ export function JobsPage(props: JobsPageProps) {
               'concluidas': CheckCircle,
               'canceladas': XCircle,
               'rascunhos': PenLine,
-              'campanhas': Megaphone,}
+              'projetos': Megaphone,}
             return {
               id: filter.id,
               label: filter.label,
@@ -198,8 +198,8 @@ export function JobsPage(props: JobsPageProps) {
         )}
         {activeFilter === 'rascunhos' ? (
           <JobDraftsSection />
-        ) : activeFilter === 'campanhas' ? (
-          <CampanhasSection />
+        ) : activeFilter === 'projetos' ? (
+          <ProjetosSection />
         ) : (
           <JobsListContent
             {...(state as unknown as React.ComponentProps<typeof JobsListContent>)}

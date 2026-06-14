@@ -103,7 +103,7 @@ function buildNavigationFilters(backendJobs: Job[], draftsCount = 0, campanhasCo
     { id: 'concluidas', label: 'Concluídas', description: 'Vagas com contratação finalizada', count: backendJobs.filter(j => j.status === 'Concluída').length },
     { id: 'canceladas', label: 'Canceladas', description: 'Vagas canceladas ou arquivadas', count: backendJobs.filter(j => j.status === 'Cancelada').length },
     { id: 'rascunhos', label: 'Rascunhos', description: 'Vagas em rascunho aguardando revisao', count: draftsCount },
-    { id: 'campanhas', label: 'Campanhas', description: 'Campanhas de recrutamento ativas', count: campanhasCount },
+    { id: 'projetos', label: 'Projetos', description: 'Projetos de recrutamento ativos', count: campanhasCount },
   ]
 }
 
