@@ -335,20 +335,49 @@ O backend (`search_assistant.py:400`) tem templates hardcoded para os padrões m
 
 **Fora dos templates** (sem expansão pré-definida), o autocomplete cai no matching por prefixo nas taxonomias: `JOB_TITLES_TAXONOMY`, `SKILLS_TAXONOMY`, `LOCATIONS_TAXONOMY`, `INDUSTRIES_TAXONOMY`. Padrões não cobertos → o **ghost text (enhance-prompt, LLM) cobre qualquer domínio** ao parar de digitar — é a rede de segurança para tudo que templates e taxonomias não alcançam.
 
-##### Os 2 chips estáticos abaixo da barra ("Sugestões: …")
+##### Os chips de sugestão abaixo da barra ("Sugestões: …")
 
 ```
-Sugestões:  [Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python]  [Product Manager Pleno remoto, experiência em B2B SaaS, metodologias ágeis]
+Sugestões:  [React Sênior SP, 5+ anos]  [Analista Financeiro Pleno]   ← histórico do usuário
+            [Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python]  ← fallback hardcoded
 ```
 
 - **Onde:** abaixo da barra de busca, **apenas quando o campo está vazio** (`!value`)
-- **Arquivo:** `SSIModeNatural.tsx:19-22` (constante `SEARCH_SUGGESTIONS`) e `:649-666` (render)
-- **Mecanismo:** hardcoded. Clicar **preenche o `textarea`** com aquele texto; não executa busca automaticamente.
-- **São estáticos?** Sim — os 2 exemplos hardcoded em `SEARCH_SUGGESTIONS` (`SSIModeNatural.tsx:19-22`) nunca mudam.
-- **Funcionam?** Sim — como atalhos de preenchimento. Ao clicar, o recrutador pode editar antes de buscar.
-- **O que não fazem:** não usam histórico do recrutador, não são personalizados por empresa, não aprendem.
-- **Endpoint premium não conectado aqui:** `GET /api/v1/search/autocomplete/premium` (`autocomplete.py`) consulta `search_history` (buscas recentes do usuário e populares da empresa) e geraria chips dinâmicos — mas **hoje não está conectado a esses chips estáticos**. O endpoint existe e retorna dados; o FE ainda não os consome nesta superfície.
-- **Tarefa pendente:** substituir os 2 chips hardcoded por chips dinâmicos vindos de `/autocomplete/premium` (buscas recentes/populares da empresa), com fallback para os exemplos estáticos quando não houver histórico suficiente. Rastreada como "Tornar chips de sugestão de busca dinâmicos".
+- **Mecanismo:** **dinâmico com fallback estático** — `useSearchSuggestions()` faz um fetch no mount do componente e popula `dynamicSuggestions`. O render usa:
+  ```ts
+  displaySuggestions = dynamicSuggestions.length > 0
+      ? dynamicSuggestions       // histórico ou arquétipos da empresa
+      : SEARCH_SUGGESTIONS       // fallback: 2 exemplos hardcoded
+  ```
+- **Clicar** num chip preenche o `textarea` via `onChange(suggestion)` — não executa a busca automaticamente.
+
+**Fluxo técnico completo:**
+
+```
+valor do campo === "" → SSIModeNatural monta
+    → useSearchSuggestions() dispara fetch no useEffect
+    → GET /api/backend-proxy/search/autocomplete/recent
+        → proxy Next.js extrai userId do cookie workos_session
+        → GET /api/v1/search/autocomplete/recent?x_user_id=...
+            → backend: top-3 buscas mais recentes do usuário (search_history)
+            → se vazio → arquétipos mais usados da empresa (search_archetypes)
+            → se ainda vazio → { suggestions: [] }
+    → hook seta dynamicSuggestions: string[]
+→ chips renderizados de displaySuggestions
+```
+
+**Cenários em runtime:**
+
+| Situação | O que aparece nos chips |
+|---|---|
+| Usuário já fez buscas | Suas 3 mais recentes (ex: `"React Sênior SP"`) |
+| Usuário novo, empresa tem arquétipos | Arquétipos mais usados da empresa |
+| Usuário novo, sem arquétipos | 2 exemplos hardcoded (`SEARCH_SUGGESTIONS`) |
+| Erro de rede / 401 | 2 exemplos hardcoded (silencioso) |
+
+- **Fetch:** acontece **uma vez no mount** — sem re-fetch a cada keystroke.
+- **Arquivos:** `useSearchSuggestions()` (hook) · `SSIModeNatural.tsx:76` (consume o hook) · `SSIModeNatural.tsx:649-666` (render dos chips) · `SEARCH_SUGGESTIONS` (`:19-22`, fallback hardcoded)
+- **Backend:** `GET /api/v1/search/autocomplete/recent` → `search_history` → `search_archetypes`
 
 #### 4.1.3 🤖 enhance-prompt (ghost text) — como funciona detalhadamente
 
@@ -1128,6 +1157,7 @@ search_feedbacks (FastAPI)
 | RN-22 | Loop adaptativo: pesos ±30%, mínimo 5 amostras | Ranking/ML | `MLFeedbackService`, cache Redis TTL 1h | `ml_feedback_service.py` |
 | RN-23 | Toggle feedback por `user_id+candidate_id+job_id` | Feedback | Re-hidratação por `user_id+fingerprint` (chaves diferentes) | `search_feedback.py:48-101` |
 | RN-24 | Só ghost text usa LLM; autocomplete/tags/completude são determinísticos | Busca Natural | Matar suposição de "tudo é IA preditiva" | `search_assistant.py:345,494` |
+| RN-35 | Chips de sugestão são dinâmicos (histórico → arquétipos → fallback hardcoded) | Busca Natural | Usuário com histórico vê suas buscas recentes; sem histórico vê exemplos fixos | `useSearchSuggestions()`, `/autocomplete/recent` |
 | RN-25 | `candidate_searches` é RLS-EXEMPT | Histórico | Metadado per-user de UX, não dado protegido | `candidates_search.py:53` |
 | RN-26 | Histórico e Buscas Salvas são client-side | Histórico/Salvas | localStorage; não sincroniza entre dispositivos | `talent-funnel-store.ts` |
 | RN-27 | Listas: soft-delete; dedup de membros on_conflict_do_nothing | Listas | `is_active=False`; duplicados ignorados | `candidate_list_repository.py:125,198` |
