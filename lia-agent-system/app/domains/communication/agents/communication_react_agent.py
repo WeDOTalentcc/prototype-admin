@@ -228,7 +228,7 @@ class CommunicationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhance
                         context="communication",
                         company_id=str(input.company_id or ""),
                     )
-                except Exception:
+                except Exception:  # ADR-031-R3-EXEMPT: log_check de fairness e opcional; bloqueio ja ocorre antes; falha nao cancela a resposta educativa
                     pass
                 return AgentOutput(
                     message=_fg_result.educational_message,

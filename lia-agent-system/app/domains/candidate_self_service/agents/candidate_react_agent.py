@@ -235,7 +235,7 @@ class CandidateSelfServiceAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhan
                     span.set_attribute("tools_called", str(tools_called))
                     span.set_attribute("elapsed_ms", elapsed_ms)
                     span.set_attribute("confidence", output.confidence or 0)
-            except Exception:
+            except Exception:  # ADR-031-R3-EXEMPT: observabilidade opcional (tracer span); falha nunca deve quebrar fluxo do agente
                 pass  # Observability must never break the agent flow
 
         # FairnessGuard: post-process agent response for bias in rejection language
@@ -260,7 +260,7 @@ class CandidateSelfServiceAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhan
         # LGPD Art. 20: log explanation request if candidate triggered it (fire-and-forget)
         try:
             await self._log_lgpd_request_if_triggered(output, getattr(output, "context", {}) if isinstance(getattr(output, "context", None), dict) else {})
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: log LGPD Art.20 fire-and-forget; falha nao bloqueia resposta ao candidato
             pass
 
         return output
