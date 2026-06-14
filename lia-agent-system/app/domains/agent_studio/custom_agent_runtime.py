@@ -204,8 +204,21 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                 all_available[td.name] = td
 
         filtered = []
-        # If allowed_tools is empty, allow ALL available tools (minus restricted/excluded)
-        tool_names_to_use = self._allowed_tools if self._allowed_tools else list(all_available.keys())
+        # P1-10 fail-closed: allowlist vazia = sem tools (agente responde so com texto).
+        # Sem flag allow_all_tools explicita, allowed_tools=[] nunca concede acesso
+        # a todas as tools da plataforma -- evita escalada de privilegio por omissao.
+        if self._allowed_tools:
+            tool_names_to_use = self._allowed_tools
+        else:
+            logger.warning(
+                "[CustomAgentRuntime] agent_runtime_empty_allowlist: "
+                "agent_id=%s company_id=%s -- nenhuma tool sera carregada (fail-closed). "
+                "Defina allowed_tools explicitamente ou adicione campo allow_all_tools=True "
+                "ao schema do agente para acesso irrestrito intencional.",
+                getattr(self, "_agent_id", "unknown"),
+                self._company_id,
+            )
+            tool_names_to_use = []
         for tool_name in tool_names_to_use:
             if tool_name in all_available:
                 td = all_available[tool_name]
