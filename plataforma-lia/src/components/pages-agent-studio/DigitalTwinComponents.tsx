@@ -652,10 +652,12 @@ export function TwinsList({ onEvaluate, onCreateTwin, refreshKey = 0 }: TwinsLis
           <h2 className={textStyles.h3}>{tTwins("headerTitle")}</h2>
           <p className={textStyles.description}>{tTwins("subheader")}</p>
         </div>
-        <Button className={buttonStyles.primary} onClick={onCreateTwin}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          {tTwins("createCta")}
-        </Button>
+        {!isLoading && twins.length > 0 && (
+          <Button className={buttonStyles.primary} onClick={onCreateTwin}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            {tTwins("createCta")}
+          </Button>
+        )}
       </div>
 
       {isLoading ? (

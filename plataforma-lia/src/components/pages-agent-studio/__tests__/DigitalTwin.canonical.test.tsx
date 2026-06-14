@@ -75,7 +75,15 @@ describe("DigitalTwin — canonical (no competitor/marketing copy)", () => {
     expect(screen.queryByText(/DIFERENCIAL/i)).toBeNull()
   })
 
-  it("TwinsList renders sub-header (short, neutral) + create CTA at top", async () => {
+  // Canonical 2026-06-14 (Paulo): empty state owns the primary CTA; the header
+  // CTA only appears once the list is populated. Nunca os dois ao mesmo tempo.
+  const headerCreateCta = () =>
+    screen.getAllByRole("button").find((b) => {
+      const txt = b.textContent || ""
+      return /Criar Gêmeo Digital/i.test(txt) && !/primeiro/i.test(txt)
+    })
+
+  it("TwinsList empty state owns the create CTA (no duplicate header CTA)", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ twins: [] }),
@@ -90,11 +98,44 @@ describe("DigitalTwin — canonical (no competitor/marketing copy)", () => {
     )
     expect(subHeader).toBeTruthy()
 
-    // CTA button exists
-    const cta = screen.getAllByRole("button").find((b) =>
-      /Criar Gêmeo Digital/i.test(b.textContent || "")
+    // Empty state owns the primary action ("Criar primeiro Gêmeo Digital")
+    const emptyCta = screen.getAllByRole("button").find((b) =>
+      /Criar primeiro Gêmeo Digital/i.test(b.textContent || "")
     )
-    expect(cta).toBeTruthy()
+    expect(emptyCta).toBeTruthy()
+
+    // Header CTA ("Criar Gêmeo Digital", sem "primeiro") NÃO aparece quando vazio
+    expect(headerCreateCta()).toBeUndefined()
+  })
+
+  it("TwinsList populated renders header create CTA (empty state hidden)", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        twins: [
+          {
+            id: "twin-1",
+            twin_name: "Maria Silva",
+            specialties: ["Backend"],
+            description: null,
+            decision_count: 12,
+            accuracy_pct: 87,
+            is_active: true,
+            created_at: "2026-01-01T00:00:00Z",
+          },
+        ],
+      }),
+    } as Response)
+
+    const { TwinsList } = await import("../DigitalTwinComponents")
+    renderWithIntl(<TwinsList onCreateTwin={() => {}} />)
+
+    // Twin card rendered -> empty state gone
+    await screen.findByText(/Maria Silva/i)
+    expect(screen.queryByText(/Nenhum Gêmeo Digital criado ainda/i)).toBeNull()
+
+    // Header CTA now present (the way to add more)
+    expect(headerCreateCta()).toBeTruthy()
   })
 })
 
