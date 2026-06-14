@@ -194,6 +194,9 @@ interface NotificationSystemProps {
   userId?: string
   pollingInterval?: number
   panelPosition?: "sidebar" | "topbar"
+  /** When set, the bell delegates open/close to the parent (attached panel mode) */
+  externalIsOpen?: boolean
+  onExternalToggle?: () => void
 }
 
 const CATEGORY_ORDER: NotificationCategory[] = [
@@ -211,6 +214,8 @@ export function NotificationSystem({
   userId = "default_user",
   pollingInterval = 60000,
   panelPosition = "sidebar",
+  externalIsOpen,
+  onExternalToggle,
 }: NotificationSystemProps) {
   const {
     notifications,
@@ -289,13 +294,17 @@ export function NotificationSystem({
   }, [panelPosition])
 
   const toggleOpen = useCallback(() => {
+    if (onExternalToggle) {
+      onExternalToggle()
+      return
+    }
     updatePosition()
     setIsOpen(prev => {
       const newState = !prev
       if (newState) refreshIfStale()
       return newState
     })
-  }, [refreshIfStale, updatePosition])
+  }, [onExternalToggle, refreshIfStale, updatePosition])
 
   useEffect(() => {
     setMounted(true)
@@ -342,7 +351,10 @@ export function NotificationSystem({
       .map(g => ({ label: g, items: groups[g] }))
   }, [notifications])
 
-  const panelContent = isOpen ? (
+  // When external toggle is used (attached panel mode), the bell is a pure
+  // trigger - the panel is rendered by the parent as NotificationPanelInline.
+  const effectiveIsOpen = onExternalToggle ? false : isOpen
+  const panelContent = effectiveIsOpen ? (
     <div
       ref={panelRef}
       className="fixed z-modal animate-in fade-in slide-in-from-bottom-2 duration-200"
@@ -506,7 +518,7 @@ export function NotificationSystem({
           hasNewNotification && "animate-notification-shake"
         )}
         aria-label={unreadCount > 0 ? `Notificações, ${unreadCount} não lidas` : "Notificações"}
-        aria-expanded={isOpen}
+        aria-expanded={externalIsOpen ?? isOpen}
         aria-haspopup="true"
         data-testid="notification-bell"
       >
@@ -523,6 +535,135 @@ export function NotificationSystem({
       </button>
 
       {mounted && panelContent && createPortal(panelContent, document.body)}
+    </div>
+  )
+}
+
+// -- Inline Panel (attached mode) --------------------------------------------
+export function NotificationPanelInline({
+  userId = "default_user",
+  pollingInterval = 60000,
+  onClose,
+  onNotificationClick,
+}: {
+  userId?: string
+  pollingInterval?: number
+  onClose?: () => void
+  onNotificationClick?: (notification: Notification) => void
+}) {
+  const {
+    notifications,
+    isLoading,
+    error,
+    unreadCount,
+    hasNotifications,
+    activeCategory,
+    setActiveCategory,
+    fetchNotifications,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+  } = useNotifications({ userId, pollingInterval })
+
+  const groupedNotifications = useMemo(() => {
+    const filtered = activeCategory
+      ? notifications.filter(n => n.category === activeCategory)
+      : notifications
+    const groups: Record<string, Notification[]> = {}
+    for (const n of filtered) {
+      const g = getTemporalGroup(n.timestamp)
+      if (!groups[g]) groups[g] = []
+      groups[g].push(n)
+    }
+    return TEMPORAL_ORDER.filter(g => groups[g]?.length).map(g => ({ label: g, items: groups[g] }))
+  }, [notifications, activeCategory])
+
+  return (
+    <div className="flex flex-col h-full border-r border-lia-border-subtle bg-lia-bg-primary">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-lia-border-subtle flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Bell className="w-4 h-4 text-lia-text-primary" />
+            <h3 className="text-sm font-semibold text-lia-text-primary">Notificações</h3>
+            {unreadCount > 0 && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-status-error/15 text-status-error">
+                {unreadCount} nova{unreadCount > 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1" role="status" aria-live="polite">
+            {isLoading && <Loader2 className="w-3 h-3 animate-spin text-lia-text-secondary" />}
+            {unreadCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-[10px] h-6 px-2 text-wedo-cyan-text hover:text-wedo-cyan/80">
+                <Check className="w-3 h-3 mr-1" /> Marcar lidas
+              </Button>
+            )}
+            {onClose && (
+              <Button variant="ghost" size="sm" onClick={onClose} className="h-6 w-6 p-0 text-lia-text-secondary hover:text-lia-text-primary" aria-label="Fechar notificações">
+                <X className="w-3.5 h-3.5" />
+              </Button>
+            )}
+          </div>
+        </div>
+        {/* Category tabs */}
+        <div className="flex gap-1 mt-2.5 overflow-x-auto pb-0.5" role="tablist">
+          <button role="tab" aria-selected={activeCategory === null} onClick={() => setActiveCategory(null)}
+            className={cn("px-2.5 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5",
+              activeCategory === null ? "bg-wedo-cyan/15 text-wedo-cyan-text font-medium" : "text-lia-text-secondary hover:bg-lia-bg-tertiary")}>
+            <Bell className="w-3 h-3" /> Todas
+          </button>
+          {CATEGORY_ORDER.map(cat => {
+            const CatIcon = CATEGORY_ICONS[cat]
+            return (
+              <button key={cat} role="tab" aria-selected={activeCategory === cat} onClick={() => setActiveCategory(cat)}
+                className={cn("px-2.5 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5",
+                  activeCategory === cat ? "bg-wedo-cyan/15 text-wedo-cyan-text font-medium" : "text-lia-text-secondary hover:bg-lia-bg-tertiary")}>
+                <CatIcon className="w-3 h-3" /> {CATEGORY_LABELS[cat]}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+      {/* Notifications list */}
+      <div className="flex-1 overflow-y-auto bg-lia-bg-secondary dark:bg-lia-bg-primary/50" aria-live="polite">
+        {error ? (
+          <div className="py-12 px-4 text-center">
+            <AlertCircle className="w-8 h-8 mx-auto mb-3 text-status-error" />
+            <p className="text-sm text-status-error font-medium">{error}</p>
+            <Button variant="ghost" size="sm" onClick={fetchNotifications} className="mt-3 text-xs">Tentar novamente</Button>
+          </div>
+        ) : hasNotifications && groupedNotifications.length > 0 ? (
+          <div className="p-2">
+            {groupedNotifications.map((group) => (
+              <div key={group.label} className="mb-2 last:mb-0">
+                <div className="flex items-center gap-2 px-2 py-1.5">
+                  <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-wider uppercase">{group.label}</span>
+                  <div className="flex-1 h-px bg-lia-border-subtle" />
+                  <span className="text-[10px] text-lia-text-muted">{group.items.length}</span>
+                </div>
+                <div className="space-y-1">
+                  {group.items.map((notification) => (
+                    <NotificationItem key={notification.id} notification={notification} onMarkAsRead={markAsRead} onRemove={removeNotification} onClick={onNotificationClick} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-14 px-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-lia-bg-tertiary flex items-center justify-center mx-auto mb-4">
+              <BellOff className="w-6 h-6 text-lia-text-muted" aria-hidden="true" />
+            </div>
+            <p className="text-sm font-medium text-lia-text-primary">
+              {isLoading ? "Carregando..." : activeCategory ? `Nenhuma em ${CATEGORY_LABELS[activeCategory]}` : "Tudo em dia!"}
+            </p>
+            {!isLoading && !activeCategory && (
+              <p className="text-xs text-lia-text-secondary mt-1.5">Quando houver atualizações, elas aparecerão aqui.</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

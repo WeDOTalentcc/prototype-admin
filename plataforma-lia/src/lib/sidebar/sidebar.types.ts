@@ -85,6 +85,10 @@ export interface SidebarProps {
   onRecentItemsClear?: () => void
   /** Callback to open global search modal */
   onShowSearch?: () => void
+  /** Whether the notification panel is open (attached mode) */
+  notificationOpen?: boolean
+  /** Toggle notification panel (attached mode) */
+  onNotificationToggle?: () => void
 }
 
 // ─── Sidebar State ──────────────────────────────────────────────────────────

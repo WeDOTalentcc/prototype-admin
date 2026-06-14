@@ -10,6 +10,7 @@ import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useKeyboardShortcuts } from "@/hooks/shared/use-keyboard-shortcuts"
 
 import { Sidebar } from "@/components/sidebar"
+import { NotificationPanelInline } from "@/components/notification-system"
 import { CandidatesPage } from "@/components/pages/candidates-page"
 import { ChatPage } from "@/components/pages/chat-page"
 import { JobsPage } from "@/components/pages/jobs-page"
@@ -113,6 +114,7 @@ interface DashboardAppProps {
 export function DashboardApp({ initialPage = "Conversar", children }: DashboardAppProps) {
   const [currentPage, setCurrentPage] = useState<CurrentPage>(normalizePageLabel(initialPage))
   const [showGlobalSearch, setShowGlobalSearch] = useState(false)
+  const [notificationPanelOpen, setNotificationPanelOpen] = useState(false)
   const [pendingChatOpen, setPendingChatOpen] = useState<{ mode: 'general' | 'job-creation' } | null>(null)
   const [pendingChatConversationId, setPendingChatConversationId] = useState<string | null>(null)
   const [pendingJobOpen, setPendingJobOpen] = useState<{ jobId: string; jobTitle: string } | null>(null)
@@ -516,7 +518,17 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
         onRecentItemRemove={removeRecentItem}
         onRecentItemsClear={clearRecentItems}
         onShowSearch={() => setShowGlobalSearch(true)}
+        notificationOpen={notificationPanelOpen}
+        onNotificationToggle={() => setNotificationPanelOpen(o => !o)}
       />
+      {notificationPanelOpen && user?.id && (
+        <div className="w-[340px] flex-shrink-0 h-full">
+          <NotificationPanelInline
+            userId={user.id}
+            onClose={() => setNotificationPanelOpen(false)}
+          />
+        </div>
+      )}
 
       <main id="main-content" className="flex-1 flex flex-col overflow-hidden relative" aria-label={currentPage}>
         <div className="flex-1 min-h-0 overflow-hidden flex">

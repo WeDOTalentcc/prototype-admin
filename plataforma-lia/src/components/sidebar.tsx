@@ -529,7 +529,7 @@ const RecentItemRow = React.memo(({
 
 RecentItemRow.displayName = 'RecentItemRow'
 
-export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch }: SidebarProps) {
+export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch, notificationOpen, onNotificationToggle }: SidebarProps) {
   const t = useTranslations('sidebar')
   const { agents, projects } = useSidebarDynamicItems()
   const { user: authUser, refreshUser } = useAuth()
@@ -757,6 +757,42 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
         </Button>
       </div>
 
+      {/* Search + Bell — topo do sidebar (expanded) */}
+      {shouldShowContent && (
+        <div className="flex items-center gap-1.5 px-4 pb-3">
+          <button
+            type="button"
+            onClick={() => onShowSearch?.()}
+            className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-lia-bg-secondary dark:bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors text-xs"
+          >
+            <Search className="w-3 h-3 flex-shrink-0" />
+            <span className="flex-1 text-left">Pesquisar...</span>
+            <kbd className="text-[10px] text-lia-text-muted font-mono bg-lia-bg-primary dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded border border-lia-border-subtle">⌘K</kbd>
+          </button>
+          {onNotificationToggle && isAuthReady && authenticatedUserId ? (
+            <NotificationSystem
+              userId={authenticatedUserId}
+              onNotificationClick={handleNotificationClick}
+              panelPosition="sidebar"
+              externalIsOpen={notificationOpen}
+              onExternalToggle={onNotificationToggle}
+            />
+          ) : null}
+        </div>
+      )}
+      {/* Bell only — collapsed sidebar */}
+      {!shouldShowContent && onNotificationToggle && isAuthReady && authenticatedUserId && (
+        <div className="flex justify-center pb-2">
+          <NotificationSystem
+            userId={authenticatedUserId}
+            onNotificationClick={handleNotificationClick}
+            panelPosition="sidebar"
+            externalIsOpen={notificationOpen}
+            onExternalToggle={onNotificationToggle}
+          />
+        </div>
+      )}
+
       {/* Menu and Workspace - Scrollable */}
       <div className={`py-4 flex-1 overflow-y-auto ${shouldShowContent ? 'px-4' : 'px-2'}`}>
         <nav className="space-y-4">
@@ -916,27 +952,6 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               </Avatar>
             </span>
           )}
-
-          {/* 2. Sino — ação reativa imediata */}
-          {/* BUG-08: só renderiza após auth hidratar */}
-          {isAuthReady && authenticatedUserId && (
-            <NotificationSystem
-              userId={authenticatedUserId}
-              onNotificationClick={handleNotificationClick}
-              panelPosition="sidebar"
-            />
-          )}
-
-          {/* 3. Busca */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onShowSearch?.()}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title={t("labels.globalSearch")}
-          >
-            <Search className="w-3 h-3" />
-          </Button>
 
           {/* 4. Overflow › — Config, Idioma, Ajuda, HITL e futuros ícones */}
           {/* isMounted guard prevents Radix useId() mismatch between SSR and client hydration */}
