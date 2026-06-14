@@ -7,7 +7,11 @@ import {
   FolderKanban, Briefcase, Megaphone, Search, Bot, User,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle,
+} from "@/components/ui/dialog"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -625,7 +629,7 @@ function canAdvance(step: number, data: WizardData): boolean {
   return true
 }
 
-export default function NovoProjetoWizard() {
+export function NovoProjetoWizard({ open, onClose }: { open: boolean; onClose: () => void }) {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [data, setData] = useState<WizardData>(INITIAL)
@@ -666,6 +670,7 @@ export default function NovoProjetoWizard() {
         throw new Error(body?.detail ?? "Erro ao criar projeto")
       }
       const created = await res.json()
+      onClose()
       router.push(`/pt/projetos/${created.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro inesperado")
@@ -675,30 +680,34 @@ export default function NovoProjetoWizard() {
   }
 
   return (
-    <div className="min-h-screen bg-lia-bg-primary flex items-start justify-center p-6 pt-12">
-      <div className="w-full max-w-xl bg-lia-bg-paper rounded-xl border border-lia-border-subtle shadow-md overflow-hidden">
-        {/* Title bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle">
-          <h2 className="text-body font-semibold text-lia-text-primary">Novo projeto</h2>
-          <button
-            type="button"
-            aria-label="Fechar"
-            className="p-1 rounded hover:bg-lia-bg-secondary text-lia-text-tertiary"
-            onClick={() => router.back()}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent
+        className="max-w-2xl bg-lia-bg-primary border border-lia-border-medium shadow-lia-lg rounded-xl p-6"
+        data-testid="novo-projeto-wizard"
+      >
+        <DialogHeader>
+          <DialogTitle className="text-base font-semibold text-lia-text-primary">
+            Novo projeto de recrutamento
+          </DialogTitle>
+          <DialogDescription className="text-xs text-lia-text-muted">
+            Etapa {step} de 4 — {STEPS[step - 1]}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Progress bar */}
+        <div className="flex items-center gap-1 pb-1">
+          {[1, 2, 3, 4].map((s) => (
+            <div
+              key={s}
+              className={cn(
+                "h-1 flex-1 rounded-full transition-colors duration-200",
+                s <= step ? "bg-graphite" : "bg-lia-bg-tertiary",
+              )}
+            />
+          ))}
         </div>
 
-        {/* Step indicator */}
-        <div className="px-8 py-5 border-b border-lia-border-subtle">
-          <StepIndicator current={step} />
-        </div>
-
-        {/* Step content */}
-        <div className="px-6 py-5 min-h-[340px]">
+        <div className="py-2 max-h-[60vh] overflow-y-auto">
           {step === 1 && <Step1Basico data={data} onChange={patch} />}
           {step === 2 && <Step2Vaga data={data} onChange={patch} />}
           {step === 3 && <Step3Template data={data} onChange={patch} />}
@@ -708,49 +717,39 @@ export default function NovoProjetoWizard() {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-lia-border-subtle bg-lia-bg-secondary flex items-center justify-between">
-          {step > 1 ? (
-            <button
-              type="button"
-              onClick={handleBack}
-              disabled={submitting}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-md border border-lia-border text-small font-medium text-lia-text-secondary hover:bg-lia-bg-paper transition-colors disabled:opacity-50"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Voltar
-            </button>
-          ) : (
-            <div />
-          )}
-
-          {step < 4 ? (
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={!canAdvance(step, data)}
-              className="flex items-center gap-1.5 px-5 py-2 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text text-small font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Próximo
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitting || !canAdvance(4, data)}
-              className="flex items-center gap-1.5 px-5 py-2 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text text-small font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {submitting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Check className="w-3.5 h-3.5" />
-              )}
-              Criar campanha
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+        <DialogFooter className="flex items-center justify-between gap-2">
+          <div>
+            {step > 1 && (
+              <Button variant="ghost" onClick={handleBack} disabled={submitting}>
+                Voltar
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={onClose} disabled={submitting}>
+              Cancelar
+            </Button>
+            {step < 4 ? (
+              <Button
+                onClick={handleNext}
+                disabled={!canAdvance(step, data)}
+                className="bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+              >
+                Próximo
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={submitting || !canAdvance(4, data)}
+                className="bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+              >
+                {submitting && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
+                Criar projeto
+              </Button>
+            )}
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

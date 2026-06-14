@@ -1,6 +1,8 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { NovoProjetoWizard } from "@/app/[locale]/(dashboard)/projetos/new/NovoProjetoWizard"
 import { Megaphone, Users, CheckCircle2, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { badgeStyles } from "@/lib/design-tokens"
@@ -165,20 +167,14 @@ function CampaignCard({ campaign }: { campaign: CampaignItem }) {
 
 export function ProjetosSection() {
   const { campaigns, isLoading, isError } = useCampaignsList()
+  const [showWizard, setShowWizard] = useState(false)
 
   return (
+    <>
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-heading-sm text-lia-text-primary font-semibold">Projetos de Recrutamento</h2>
-        <button
-          type="button"
-          className="text-small text-lia-btn-primary-bg hover:underline"
-          onClick={() => {
-            window.location.href = "/pt/projetos/new"
-          }}
-        >
-          + Novo projeto
-        </button>
+        <Button onClick={() => setShowWizard(true)}>+ Novo projeto</Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -199,5 +195,8 @@ export function ProjetosSection() {
         )}
       </div>
     </div>
+
+    <NovoProjetoWizard open={showWizard} onClose={() => setShowWizard(false)} />
+    </>
   )
 }
