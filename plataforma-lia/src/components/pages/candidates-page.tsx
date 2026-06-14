@@ -226,6 +226,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             onSearchSourceChange={setSearchSource}
             onRequireEmailsChange={(value) => setPearchSearchOptions(prev => ({ ...prev, requireEmails: value }))}
             onRequirePhoneNumbersChange={(value) => setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: value }))}
+            fairnessError={fairnessError}
+            onFairnessErrorDismiss={() => setFairnessError(null)}
           />
         )}
 

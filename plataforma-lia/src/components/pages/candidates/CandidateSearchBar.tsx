@@ -8,7 +8,7 @@
  * Portabilidade Vue: props → defineProps; callbacks → emit.
  */
 import React, { lazy, Suspense } from "react"
-import { FileUp, Loader2 } from "lucide-react"
+import { FileUp, Loader2, ShieldAlert, X } from "lucide-react"
 import { LiaPromptHeader } from "@/components/ui/lia-prompt-header"
 import { useDynamicGreeting } from "@/hooks/ui/use-dynamic-greeting"
 import { useTranslations } from "next-intl"
@@ -53,6 +53,8 @@ interface CandidateSearchBarProps {
   onSearchSourceChange: (source: SearchSource) => void
   onRequireEmailsChange: (value: boolean) => void
   onRequirePhoneNumbersChange: (value: boolean) => void
+  fairnessError?: string | null
+  onFairnessErrorDismiss?: () => void
 }
 
 export function CandidateSearchBar({
@@ -74,6 +76,8 @@ export function CandidateSearchBar({
   onSearchSourceChange,
   onRequireEmailsChange,
   onRequirePhoneNumbersChange,
+  fairnessError,
+  onFairnessErrorDismiss,
 }: CandidateSearchBarProps) {
   const t = useTranslations('candidates')
   const funnelGreeting = useDynamicGreeting('funnel', t('searchBar.defaultTitle'))
@@ -133,6 +137,25 @@ export function CandidateSearchBar({
               onRequirePhoneNumbersChange={onRequirePhoneNumbersChange}
             />
           </Suspense>
+
+          {fairnessError && (
+            <div
+              role="alert"
+              className="mt-3 flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/40 px-4 py-3 text-sm"
+            >
+              <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+              <p className="flex-1 text-amber-800 dark:text-amber-200">{fairnessError}</p>
+              {onFairnessErrorDismiss && (
+                <button
+                  onClick={onFairnessErrorDismiss}
+                  aria-label="Fechar aviso"
+                  className="shrink-0 text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

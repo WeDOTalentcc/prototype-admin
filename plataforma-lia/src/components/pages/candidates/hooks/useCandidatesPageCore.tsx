@@ -169,6 +169,7 @@ export function useCandidatesPageCore({
   } = useCandidatesViewState()
 
   const [candidatesError, setCandidatesError] = useState<string | null>(null)
+  const [fairnessError, setFairnessError] = useState<string | null>(null)
 
   const {
     candidateListsForModal, setCandidateListsForModal,
@@ -331,6 +332,7 @@ export function useCandidatesPageCore({
     activeSearchFilters, setActiveSearchFilters,
     setSelectedTemplate, setSearchSource, searchExecutionId,
     user: user as Record<string, unknown> | null,
+    setFairnessError,
   })
 
   const { archetypesHook, revealContactHook, executeSearch: _rawExecuteSearch, cvHandlers, searchHandlers } = searchComposition
@@ -553,6 +555,7 @@ export function useCandidatesPageCore({
     talentFunnel, toggleTableFilter, unifiedModalCandidate, unifiedModalSelectedCandidates, unifiedModalOpen, unifiedModalType,
     unsavedPearchCandidates, user, visibleCandidates, visibleTableColumns, wsiCandidateForScreening, wsiInviteCandidate,
     tabs,
+    fairnessError, setFairnessError,
     archetypeCreationStep, archetypeToDelete, buildFiltersFromTags, crossTabFilter, currentPage, currentSearchSource,
     cvUploadLoading, displayedResultsCount, editQueryValue, isCreatingArchetype, isDroppingCV, isExpandingToGlobal,
     isLoadingMore, isPreviewMaximized, itemsPerPage, lastSearchEntities, lastSearchQuery, lastSuccessfulQuery,

@@ -88,6 +88,7 @@ interface ExecuteSearchDeps {
   setChatMessages: (fn: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void
   setIsLoading: (v: boolean) => void
   setIsSearchActive: (v: boolean) => void
+  setFairnessError: (msg: string | null) => void
 }
 
 export function mapCandidateToInternal(c: Record<string, unknown>): Candidate {
@@ -171,7 +172,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
     setShowSearchResults, setDisplayedResultsCount, setCurrentSearchSource, setHasSearched,
     setLastSearchEntities, setLastSearchMetadata, setLastSearchUsedPearch, setSearchExecutionId,
     setShowExpandGlobalOption, setLastSuccessfulQuery,
-    setChatMessages, setIsLoading, setIsSearchActive,
+    setChatMessages, setIsLoading, setIsSearchActive, setFairnessError,
   } = deps
 
   const executeSearch = async (
@@ -183,6 +184,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
     searchSpecOverride?: Record<string, unknown>
   ) => {
     setIsLoading(true)
+    setFairnessError(null)
     setCanLoadMore(false) // reset on new search — prevents stale canLoadMore=true from prev search
     setIsSearchActive(true)
     setSearchResults(prev => ({ ...prev, isLoading: true, query }))
@@ -430,6 +432,22 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         } catch {}
       }
     } catch (err) {
+      // FairnessGuard: HTTP 400 com detail.error === 'fairness_blocked'
+      const _errBody = (err as { status?: number; body?: unknown }).body as Record<string, unknown> | undefined
+      const _errDetail = _errBody?.detail as Record<string, unknown> | undefined
+      if ((err as { status?: number }).status === 400 && _errDetail?.error === 'fairness_blocked') {
+        const educationalMsg = (_errDetail?.educational_message as string) || 'Esta busca contém critérios que podem configurar discriminação. Por favor, revise sua query.'
+        setFairnessError(educationalMsg)
+        setChatMessages(prev => [...prev, {
+          id: `fairness-blocked-${Date.now()}`,
+          type: 'lia' as const,
+          content: `⚖️ **Busca bloqueada — fairness**\n\n${educationalMsg}`,
+          timestamp: new Date(),
+        }])
+        setIsLoading(false)
+        setIsSearchActive(false)
+        return
+      }
       // BUG #274: cobre tanto AbortSignal.timeout (DOMException TimeoutError)
       // quanto erros de rede intermitentes (TypeError: Failed to fetch) e 5xx
       // que esgotaram o retry do fetchWithRetry.

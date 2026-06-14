@@ -131,6 +131,7 @@ export interface UseCandidatesSearchCompositionParams {
   setSearchSource: (v: SearchSource) => void
   searchExecutionId: number
   user: Record<string, unknown> | null
+  setFairnessError: (msg: string | null) => void
 }
 
 export function useCandidatesSearchComposition(params: UseCandidatesSearchCompositionParams) {
@@ -188,6 +189,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     setIsLoading: params.setIsLoading,
     setIsSearchActive: params.setIsSearchActive,
     setCanLoadMore: params.setCanLoadMore,
+    setFairnessError: params.setFairnessError,
   })
 
   const cvHandlers = useCandidatesCVHandlers({
