@@ -279,9 +279,9 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
         {/* Ghost Text Tab hint */}
         {ghostTextSuffix && !showAutocomplete && (
           <div
-            className="absolute -bottom-5 right-3 flex items-center gap-1 text-micro text-lia-text-tertiary"
+            className="absolute bottom-2 right-3 flex items-center gap-1 text-micro text-lia-text-secondary data-[state=open]:animate-in data-[state=open]:fade-in-0 animate-in fade-in-0 duration-150"
           >
-            <kbd className="px-1 py-0.5 rounded-full bg-lia-bg-tertiary text-micro font-mono">Tab</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-lia-bg-tertiary border border-lia-border-subtle text-micro font-mono text-lia-text-primary">Tab</kbd>
             <span>para aceitar</span>
           </div>
         )}

@@ -364,7 +364,11 @@ CATEGORIAS VÁLIDAS: experience, industry, work_model, location, seniority, skil
 
 Responda APENAS com o JSON, sem texto adicional."""
 
-        response = await llm_service.generate(prompt, provider="gemini")
+        from app.shared.tenant_llm_context import get_tenant_llm_config as _get_tc
+        _tc = await _get_tc(company_id)
+        _provider = _tc.get("primary_provider", "gemini") if _tc else "gemini"
+        llm_service._current_tenant = company_id
+        response = await llm_service.generate(prompt, provider=_provider)
         
         import json
         try:

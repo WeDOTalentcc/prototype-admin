@@ -488,6 +488,82 @@ AUTOCOMPLETE_TEMPLATES = [
         {"text": "Java Backend Sênior", "category": "cargo", "icon": "code"},
         {"text": "JavaScript/TypeScript", "category": "skill", "icon": "file-code"},
     ]},
+    {"pattern": "analista", "suggestions": [
+        {"text": "Analista Financeiro Pleno", "category": "cargo", "icon": "bar-chart"},
+        {"text": "Analista de RH Sênior", "category": "cargo", "icon": "users"},
+        {"text": "Analista de Marketing Digital", "category": "cargo", "icon": "trending-up"},
+        {"text": "Analista de BI (Power BI)", "category": "cargo", "icon": "pie-chart"},
+        {"text": "Analista Contábil", "category": "cargo", "icon": "file-text"},
+    ]},
+    {"pattern": "financeiro", "suggestions": [
+        {"text": "Controller Financeiro", "category": "cargo", "icon": "dollar-sign"},
+        {"text": "Gerente Financeiro", "category": "cargo", "icon": "briefcase"},
+        {"text": "Analista Financeiro Sênior", "category": "cargo", "icon": "bar-chart"},
+        {"text": "Tesoureiro", "category": "cargo", "icon": "credit-card"},
+    ]},
+    {"pattern": "contab", "suggestions": [
+        {"text": "Contador CRC", "category": "cargo", "icon": "file-text"},
+        {"text": "Controller", "category": "cargo", "icon": "dollar-sign"},
+        {"text": "Fiscal Tributário", "category": "cargo", "icon": "clipboard"},
+        {"text": "IFRS / CPC", "category": "habilidade", "icon": "book"},
+    ]},
+    {"pattern": "rh", "suggestions": [
+        {"text": "HRBP (HR Business Partner)", "category": "cargo", "icon": "users"},
+        {"text": "Especialista em Recrutamento", "category": "cargo", "icon": "user-check"},
+        {"text": "Analista de Remuneração", "category": "cargo", "icon": "dollar-sign"},
+        {"text": "DHO - Desenvolvimento Humano", "category": "cargo", "icon": "heart"},
+    ]},
+    {"pattern": "marketing", "suggestions": [
+        {"text": "Growth Marketing Sênior", "category": "cargo", "icon": "trending-up"},
+        {"text": "Marketing de Performance (ROI)", "category": "cargo", "icon": "target"},
+        {"text": "SEO / SEM Especialista", "category": "cargo", "icon": "search"},
+        {"text": "Marketing Digital B2B", "category": "cargo", "icon": "briefcase"},
+    ]},
+    {"pattern": "vendas", "suggestions": [
+        {"text": "Account Executive (AE)", "category": "cargo", "icon": "target"},
+        {"text": "SDR / BDR (Prospecção)", "category": "cargo", "icon": "phone"},
+        {"text": "Gerente de Vendas B2B", "category": "cargo", "icon": "briefcase"},
+        {"text": "Key Account Manager", "category": "cargo", "icon": "star"},
+    ]},
+    {"pattern": "commercial", "suggestions": [
+        {"text": "Diretor Comercial", "category": "cargo", "icon": "briefcase"},
+        {"text": "Gerente Comercial Sênior", "category": "cargo", "icon": "target"},
+        {"text": "Account Manager Enterprise", "category": "cargo", "icon": "users"},
+    ]},
+    {"pattern": "logistica", "suggestions": [
+        {"text": "Analista de Supply Chain", "category": "cargo", "icon": "truck"},
+        {"text": "Coordenador de Logística", "category": "cargo", "icon": "map-pin"},
+        {"text": "Especialista em Compras", "category": "cargo", "icon": "shopping-cart"},
+        {"text": "Analista de Estoque / WMS", "category": "cargo", "icon": "package"},
+    ]},
+    {"pattern": "supply", "suggestions": [
+        {"text": "Analista de Supply Chain Sênior", "category": "cargo", "icon": "truck"},
+        {"text": "Supply Chain + S&OP", "category": "stack", "icon": "bar-chart"},
+        {"text": "Compras Estratégicas", "category": "cargo", "icon": "shopping-cart"},
+    ]},
+    {"pattern": "juridico", "suggestions": [
+        {"text": "Advogado Trabalhista", "category": "cargo", "icon": "book"},
+        {"text": "Advogado Tributário", "category": "cargo", "icon": "file-text"},
+        {"text": "Compliance Officer", "category": "cargo", "icon": "shield"},
+        {"text": "DPO (Proteção de Dados / LGPD)", "category": "cargo", "icon": "lock"},
+    ]},
+    {"pattern": "gerente", "suggestions": [
+        {"text": "Gerente de Projetos (PMP)", "category": "cargo", "icon": "clipboard"},
+        {"text": "Gerente de Produto / Product Manager", "category": "cargo", "icon": "target"},
+        {"text": "Gerente Comercial", "category": "cargo", "icon": "briefcase"},
+        {"text": "Gerente de RH / Pessoas", "category": "cargo", "icon": "users"},
+    ]},
+    {"pattern": "diretor", "suggestions": [
+        {"text": "Diretor Financeiro (CFO)", "category": "cargo", "icon": "dollar-sign"},
+        {"text": "Diretor Comercial", "category": "cargo", "icon": "target"},
+        {"text": "Diretor de RH / Pessoas (CHRO)", "category": "cargo", "icon": "users"},
+        {"text": "Diretor de Tecnologia (CTO)", "category": "cargo", "icon": "cpu"},
+    ]},
+    {"pattern": "saude", "suggestions": [
+        {"text": "Médico Especialista", "category": "cargo", "icon": "heart"},
+        {"text": "Enfermeiro(a) UTI", "category": "cargo", "icon": "activity"},
+        {"text": "Analista de Saúde Corporativa", "category": "cargo", "icon": "clipboard"},
+    ]},
 ]
 
 
