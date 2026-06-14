@@ -4088,18 +4088,10 @@
       "viewLinkedinProfile": "Ver perfil LinkedIn",
       "professionalProfile": "Perfil profissional",
       "interactionHistory": "Histórico de Interações",
-      "emailSent2Days": "📧 Email enviado há 2 dias",
-      "callScheduledTomorrow": "📞 Ligação agendada para amanhã às 14h",
       "scheduleInterview": "Agendar Entrevista",
       "evaluation": "Avaliação",
       "dragToResize": "Arraste para redimensionar",
-      "skillLeadership": "Liderança",
-      "skillCommunication": "Comunicação",
-      "skillTeamwork": "Trabalho em equipe",
-      "skillProblemSolving": "Resolução de problemas",
-      "current": "Atual",
-      "expDesc1": "Desenvolvimento de aplicações web com React, Node.js e PostgreSQL",
-      "expDesc2": "Desenvolvimento fullstack e arquitetura de sistemas"
+      "current": "Atual"
     },
     "modals": {
       "defaultJobTitle": "Vaga atual",
@@ -8134,6 +8126,23 @@
       "profileConsentComm": "Consent. comunicação",
       "profileConsentAudio": "Consent. áudio triagem",
       "profileViewHistory": "→ Ver histórico"
-    }
+    },
+    "neverAnalyzed": "Nunca analisado",
+    "justNow": "Agora mesmo",
+    "minutesAgo": "Há {count} min",
+    "hoursAgo": "Há {count}h",
+    "yesterday": "Ontem",
+    "daysAgo": "Há {count} dias",
+    "errorSendMessage": "Erro ao enviar mensagem",
+    "errorSendMessageDesc": "Não foi possível conectar com a LIA. Tente novamente.",
+    "errorUnknown": "Erro desconhecido",
+    "parecerGenerated": "Parecer gerado",
+    "parecerGeneratedDesc": "A LIA gerou um novo parecer para o candidato.",
+    "errorGenerateParecer": "Falha ao gerar parecer",
+    "errorGenerateParecerTitle": "Erro ao gerar parecer",
+    "errorGenerateParecerDesc": "Não foi possível gerar o parecer. Tente novamente.",
+    "errorAnalysisFailed": "Falha na análise",
+    "errorAnalysisEmpty": "Resultado da análise vazio",
+    "errorSaveParecer": "Falha ao salvar parecer"
   }
 }

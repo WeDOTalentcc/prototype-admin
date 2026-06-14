@@ -4088,18 +4088,10 @@
       "viewLinkedinProfile": "View LinkedIn profile",
       "professionalProfile": "Professional profile",
       "interactionHistory": "Interaction History",
-      "emailSent2Days": "📧 Email sent 2 days ago",
-      "callScheduledTomorrow": "📞 Call scheduled for tomorrow at 2pm",
       "scheduleInterview": "Schedule Interview",
       "evaluation": "Evaluation",
       "dragToResize": "Drag to resize",
-      "skillLeadership": "Leadership",
-      "skillCommunication": "Communication",
-      "skillTeamwork": "Teamwork",
-      "skillProblemSolving": "Problem solving",
-      "current": "Present",
-      "expDesc1": "Web application development with React, Node.js and PostgreSQL",
-      "expDesc2": "Fullstack development and systems architecture"
+      "current": "Present"
     },
     "modals": {
       "defaultJobTitle": "Current job",
@@ -8134,6 +8126,23 @@
       "profileConsentComm": "Communication consent",
       "profileConsentAudio": "Screening audio consent",
       "profileViewHistory": "→ View history"
-    }
+    },
+    "neverAnalyzed": "Never analyzed",
+    "justNow": "Just now",
+    "minutesAgo": "{count} min ago",
+    "hoursAgo": "{count}h ago",
+    "yesterday": "Yesterday",
+    "daysAgo": "{count} days ago",
+    "errorSendMessage": "Error sending message",
+    "errorSendMessageDesc": "Could not connect to LIA. Please try again.",
+    "errorUnknown": "Unknown error",
+    "parecerGenerated": "Opinion generated",
+    "parecerGeneratedDesc": "LIA generated a new opinion for the candidate.",
+    "errorGenerateParecer": "Failed to generate opinion",
+    "errorGenerateParecerTitle": "Error generating opinion",
+    "errorGenerateParecerDesc": "Could not generate the opinion. Please try again.",
+    "errorAnalysisFailed": "Analysis failed",
+    "errorAnalysisEmpty": "Analysis result was empty",
+    "errorSaveParecer": "Failed to save opinion"
   }
 }

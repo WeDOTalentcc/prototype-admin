@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useCallback, useRef } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import { DataRequirement, validateCandidateDataForOpinion } from "@/components/modals/insufficient-data-modal"
 import type { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
 import { toast } from "sonner"
@@ -14,7 +16,10 @@ interface LiaChatMessage {
 
 export function useCandidatePreviewCore(candidate: Record<string, unknown> | null, jobId?: string) {
   const { companyId } = useCurrentCompany()
-  const [activeTab, setActiveTab] = useState<'profile' | 'activities' | 'files' | 'opinions'>('profile')
+  const t = useTranslations('candidatePreview')
+  const queryClient = useQueryClient()
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'activities' | 'files' | 'opinions' | 'consent'>('profile')
   const [showLiaModal, setShowLiaModal] = useState(false)
   const [liaConversation, setLiaConversation] = useState("")
 
@@ -32,13 +37,7 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const [isLiaChatLoading, setIsLiaChatLoading] = useState(false)
   const [liaConversationId, setLiaConversationId] = useState<string | null>(null)
 
-  const [opinionsData, setOpinionsData] = useState<Record<string, unknown> | null>(null)
-  const [isLoadingOpinions, setIsLoadingOpinions] = useState(false)
   const [expandedOpinionId, setExpandedOpinionId] = useState<string | null>(null)
-  const [opinionsHistory, setOpinionsHistory] = useState<Record<string, unknown>[]>([])
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
-  const [isErrorHistory, setIsErrorHistory] = useState(false)
-
 
   const [showUpdateOpinionAlert, setShowUpdateOpinionAlert] = useState(false)
   const [showInsufficientDataModal, setShowInsufficientDataModal] = useState(false)
@@ -64,71 +63,47 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null)
 
   const lastFetchedHistoryCandidateRef = useRef<string | null>(null)
-const candidateId = candidate?.id as string | undefined
+  const candidateId = candidate?.id as string | undefined
+
+  // Fix 1: React Query v5 — opinions summary
+  const {
+    data: opinionsData,
+    isLoading: isLoadingOpinions,
+    refetch: refetchOpinionsSummary,
+  } = useQuery({
+    queryKey: ['candidate-opinions-summary', candidateId],
+    queryFn: () =>
+      fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary`)
+        .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json() }),
+    enabled: !!candidateId,
+    staleTime: 60_000,
+  })
+
+  // Fix 1: React Query v5 — opinions history (only load when tab is active)
+  const {
+    data: opinionsHistoryData,
+    isLoading: isLoadingHistory,
+    isError: isErrorHistory,
+    refetch: refetchOpinionsHistory,
+  } = useQuery({
+    queryKey: ['candidate-opinions-history', candidateId],
+    queryFn: () =>
+      fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history`)
+        .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json() }),
+    enabled: !!candidateId && activeTab === 'opinions',
+    staleTime: 60_000,
+  })
+
+  const opinionsHistory = opinionsHistoryData ?? ([] as Record<string, unknown>[])
 
   const fetchOpinionsSummary = useCallback(async () => {
-    if (!candidateId || !companyId) return
-    setIsLoadingOpinions(true)
-    try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`)
-      if (response.ok) {
-        const data = await response.json()
-        setOpinionsData(data)
-      }
-    } catch {
-    } finally {
-      setIsLoadingOpinions(false)
-    }
-  }, [candidateId, companyId])
-
-  const fetchOpinionsHistory = useCallback(async () => {
-    if (!candidateId || !companyId) return
-
-    if (lastFetchedHistoryCandidateRef.current === candidateId && opinionsHistory.length > 0) {
-      return
-    }
-
-    lastFetchedHistoryCandidateRef.current = candidateId
-    setIsLoadingHistory(true)
-    setIsErrorHistory(false)
-    try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=${encodeURIComponent(companyId)}`)
-      if (response.ok) {
-        const data = await response.json()
-        setOpinionsHistory(data)
-      } else {
-        setIsErrorHistory(true)
-      }
-    } catch {
-      setIsErrorHistory(true)
-    } finally {
-      setIsLoadingHistory(false)
-    }
-  }, [candidateId, companyId, opinionsHistory.length])
+    await refetchOpinionsSummary()
+  }, [refetchOpinionsSummary])
 
   const retryOpinionsHistory = useCallback(() => {
     lastFetchedHistoryCandidateRef.current = null
-    setIsErrorHistory(false)
-    fetchOpinionsHistory()
-  }, [fetchOpinionsHistory])
-
-  useEffect(() => {
-    if (candidateId) {
-      fetchOpinionsSummary()
-    }
-  }, [candidateId, fetchOpinionsSummary])
-
-  useEffect(() => {
-    if (activeTab === 'opinions' && candidateId) {
-      fetchOpinionsHistory()
-    }
-  }, [activeTab, candidateId, fetchOpinionsHistory])
-
-  useEffect(() => {
-    if (candidateId && lastFetchedHistoryCandidateRef.current !== candidateId) {
-      setOpinionsHistory([])
-    }
-  }, [candidateId])
+    refetchOpinionsHistory()
+  }, [refetchOpinionsHistory])
 
   const sendLiaMessage = async (message: string) => {
     if (!message.trim()) return
@@ -157,7 +132,7 @@ const candidateId = candidate?.id as string | undefined
       })
 
       if (!response.ok) {
-        throw new Error(`Erro: ${response.status}`)
+        throw new Error(`${response.status}`)
       }
 
       const data = await response.json()
@@ -173,10 +148,10 @@ const candidateId = candidate?.id as string | undefined
           setLiaConversationId(data.conversation_id)
         }
       } else {
-        throw new Error(data.error || 'Erro desconhecido')
+        throw new Error(data.error || t('errorUnknown'))
       }
     } catch (error) {
-      toast.error("Erro ao enviar mensagem", { description: error instanceof Error ? error.message : "Não foi possível conectar com a LIA. Tente novamente." })
+      toast.error(t('errorSendMessage'), { description: error instanceof Error ? error.message : t('errorSendMessageDesc') })
     } finally {
       setIsLiaChatLoading(false)
     }
@@ -190,18 +165,21 @@ const candidateId = candidate?.id as string | undefined
     try {
       // Vaga em contexto -> parecer job-directed (gera + persiste a matriz de qualificacao).
       if (jobId) {
+        // Fix 2: company_id removed — resolved server-side from JWT
         const parecerRes = await fetch(
-          `/api/backend-proxy/opinions/candidate/${candidateId}/parecer?company_id=${encodeURIComponent(companyId)}`,
+          `/api/backend-proxy/opinions/candidate/${candidateId}/parecer`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ job_vacancy_id: jobId }),
           }
         )
-        if (!parecerRes.ok) throw new Error('Falha ao gerar parecer')
+        if (!parecerRes.ok) throw new Error(t('errorGenerateParecer'))
         setLastAnalysisDate(new Date())
         await fetchOpinionsSummary()
-        toast.success("Parecer gerado", { description: "A LIA gerou um novo parecer para o candidato." })
+        // Invalidate history cache so it refreshes on next tab visit
+        queryClient.invalidateQueries({ queryKey: ['candidate-opinions-history', candidateId] })
+        toast.success(t('parecerGenerated'), { description: t('parecerGeneratedDesc') })
         return
       }
 
@@ -221,7 +199,8 @@ const candidateId = candidate?.id as string | undefined
         seniority_level: c.seniorityLevel || c.seniority_level || ''
       }
 
-      const analysisResponse = await fetch(`/api/backend-proxy/analysis/candidates?company_id=${encodeURIComponent(companyId)}`, {
+      // Fix 2: company_id removed — resolved server-side from JWT
+      const analysisResponse = await fetch(`/api/backend-proxy/analysis/candidates`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -231,14 +210,14 @@ const candidateId = candidate?.id as string | undefined
       })
 
       if (!analysisResponse.ok) {
-        throw new Error('Falha na análise')
+        throw new Error(t('errorAnalysisFailed'))
       }
 
       const analysisData = await analysisResponse.json()
       const result = analysisData.results?.[0]
 
       if (!result) {
-        throw new Error('Resultado da análise vazio')
+        throw new Error(t('errorAnalysisEmpty'))
       }
 
       let recommendation = 'pending_review'
@@ -270,7 +249,8 @@ const candidateId = candidate?.id as string | undefined
         next_steps: result.potential_roles ? `Cargos potenciais: ${result.potential_roles.join(', ')}` : 'Validar perfil em entrevista'
       }
 
-      const opinionResponse = await fetch(`/api/backend-proxy/opinions?company_id=${encodeURIComponent(companyId)}&user_id=system`, {
+      // Fix 2: company_id and user_id removed from query string — resolved server-side from JWT
+      const opinionResponse = await fetch(`/api/backend-proxy/opinions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(opinionPayload)
@@ -278,16 +258,17 @@ const candidateId = candidate?.id as string | undefined
 
       if (!opinionResponse.ok) {
         await opinionResponse.json().catch(() => ({}))
-        throw new Error('Falha ao salvar parecer')
+        throw new Error(t('errorSaveParecer'))
       }
 
       setLastAnalysisDate(new Date())
 
       await fetchOpinionsSummary()
+      queryClient.invalidateQueries({ queryKey: ['candidate-opinions-history', candidateId] })
 
-      toast.success("Parecer gerado", { description: "A LIA gerou um novo parecer para o candidato." })
+      toast.success(t('parecerGenerated'), { description: t('parecerGeneratedDesc') })
     } catch {
-      toast.error("Erro ao gerar parecer", { description: "Não foi possível gerar o parecer. Tente novamente." })
+      toast.error(t('errorGenerateParecerTitle'), { description: t('errorGenerateParecerDesc') })
     } finally {
       setIsAnalyzingWithLia(false)
     }
@@ -311,7 +292,8 @@ const candidateId = candidate?.id as string | undefined
     }
 
     try {
-      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`)
+      // Fix 2: company_id removed — resolved server-side from JWT
+      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary`)
       if (summaryResponse.ok) {
         const data = await summaryResponse.json()
         if (data.current_general_opinion?.created_at) {
@@ -335,7 +317,8 @@ const candidateId = candidate?.id as string | undefined
     if (!companyId) return
 
     try {
-      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`)
+      // Fix 2: company_id removed — resolved server-side from JWT
+      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary`)
       if (summaryResponse.ok) {
         const data = await summaryResponse.json()
         if (data.current_general_opinion?.created_at) {
@@ -354,8 +337,9 @@ const candidateId = candidate?.id as string | undefined
     await generateNewOpinion()
   }
 
+  // Fix 3: i18n — formatAnalysisDate uses t() for all PT-BR strings
   const formatAnalysisDate = (date: Date | null) => {
-    if (!date) return 'Nunca analisado'
+    if (!date) return t('neverAnalyzed')
 
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
@@ -363,11 +347,11 @@ const candidateId = candidate?.id as string | undefined
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
-    if (diffMins < 1) return 'Agora mesmo'
-    if (diffMins < 60) return `Há ${diffMins} min`
-    if (diffHours < 24) return `Há ${diffHours}h`
-    if (diffDays === 1) return 'Ontem'
-    if (diffDays < 7) return `Há ${diffDays} dias`
+    if (diffMins < 1) return t('justNow')
+    if (diffMins < 60) return t('minutesAgo', { count: diffMins })
+    if (diffHours < 24) return t('hoursAgo', { count: diffHours })
+    if (diffDays === 1) return t('yesterday')
+    if (diffDays < 7) return t('daysAgo', { count: diffDays })
 
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
   }
