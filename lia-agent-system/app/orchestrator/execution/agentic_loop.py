@@ -419,6 +419,21 @@ class AgenticLoop:
 
             # --- If LLM responded with text (no tool call), done ---
             if not llm_response.is_tool_call:
+                # Sensor: detecta confabulacao (texto afirmando acao sem tool call).
+                # Nao bloqueia — apenas loga para observabilidade e melhoria do prompt.
+                _raw_text = (llm_response.text_response or "").lower()
+                _ACTION_CLAIM = (
+                    "te levando", "levando para", "aplicando filtro",
+                    "filtro aplicado", "navegando para", "abrindo a p",
+                    "levei voc", "filtrei", "com filtro de",
+                )
+                if any(p in _raw_text for p in _ACTION_CLAIM):
+                    logger.warning(
+                        "[LIA-CONFAB] Action-claim text sem tool call: company=%s "
+                        "iter=%d msg=%.120r",
+                        company_id, iteration,
+                        llm_response.text_response or "",
+                    )
                 # Card de fase: preparando a resposta (localizado).
                 await _emit_phase("composing")
                 # W3-014 (2026-05-23): c3b post_compliance · FactChecker + audit log
