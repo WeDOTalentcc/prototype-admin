@@ -28,6 +28,40 @@ from app.domains.job_creation.helpers.llm_exceptions import (
 
 logger = logging.getLogger(__name__)
 
+def _load_company_context_sync(company_id: str) -> str:
+    """Load company context synchronously for JD enrichment prompt.
+
+    Runs build_company_agent_context in a new event loop (called from a
+    ThreadPoolExecutor thread - safe to create a new loop here).
+    Returns empty string on any failure (fail-open: enrichment proceeds
+    without company context rather than blocking the wizard).
+    """
+    if not company_id:
+        return ""
+    try:
+        import asyncio
+        from app.core.database import AsyncSessionLocal
+        from app.shared.services.lia_agent_context_builder import build_company_agent_context
+
+        async def _inner():
+            async with AsyncSessionLocal() as db:
+                return await build_company_agent_context(
+                    company_id=company_id,
+                    db=db,
+                )
+
+        loop = asyncio.new_event_loop()
+        try:
+            return loop.run_until_complete(_inner()) or ""
+        finally:
+            loop.close()
+    except Exception as _exc:
+        logger.warning(
+            "[jd_enrichment] company_context load failed (fail-open): %s", _exc
+        )
+        return ""
+
+
 
 def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     """F1: Call JdEnrichmentService to enrich JD + calculate quality score.
@@ -382,6 +416,11 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         jd_enrichment_fallback_reason: Optional[str] = None
         try:
             with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
+                # P1-G: load company context before enrichment (fail-open).
+                _company_id = state.get("company_id", "")
+                _company_ctx = _ex.submit(
+                    _load_company_context_sync, _company_id
+                ).result(timeout=5.0)
                 _fut = _ex.submit(
                     service.enrich,
                     jd_raw=jd_raw_safe,
@@ -392,6 +431,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                     confirmed_technical=state.get("confirmed_technical_competencies") or None,
                     confirmed_behavioral=state.get("confirmed_behavioral_competencies") or None,
                     screening_mode=state.get("screening_mode"),
+                    company_context=_company_ctx,
                 )
                 enriched_obj, jd_quality_score, jd_quality_warnings = _fut.result(
                     timeout=_JD_LLM_TIMEOUT_S
