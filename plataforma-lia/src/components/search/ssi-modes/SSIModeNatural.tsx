@@ -348,6 +348,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                 item.icon === "code" ? Code :
                 item.icon === "briefcase" ? Briefcase :
                 item.icon === "map-pin" ? MapPin :
+                item.icon === "map" ? MapPin :
                 item.icon === "building" ? Building2 :
                 item.icon === "award" ? Award :
                 item.icon === "home" ? Building2 :
