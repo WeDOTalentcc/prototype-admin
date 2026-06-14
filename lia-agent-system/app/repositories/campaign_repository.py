@@ -98,3 +98,57 @@ class CampaignRepository:
         await self.db.flush()
         await self.db.refresh(campaign)
         return campaign
+
+    async def complete_stage(
+        self,
+        campaign_id: UUID,
+        company_id: str,
+    ) -> "RecruitmentCampaign | None":
+        self._require_company_id(company_id)
+        campaign = await self.get_by_id(campaign_id, company_id)
+        if campaign is None:
+            return None
+        history = list(campaign.stage_history or [])
+        stage_name = None
+        if campaign.stages and 0 <= campaign.current_stage_index < len(campaign.stages):
+            stage_name = campaign.stages[campaign.current_stage_index].get("name")
+        history.append({
+            "action": "stage_completed",
+            "stage_index": campaign.current_stage_index,
+            "stage_name": stage_name,
+            "completed_at": datetime.utcnow().isoformat(),
+        })
+        campaign.stage_history = history
+        if campaign.stages and campaign.current_stage_index < len(campaign.stages) - 1:
+            campaign.current_stage_index += 1
+        else:
+            campaign.status = "completed"
+        campaign.updated_at = datetime.utcnow()
+        await self.db.flush()
+        await self.db.refresh(campaign)
+        return campaign
+
+    async def add_checkpoint(
+        self,
+        campaign_id: UUID,
+        company_id: str,
+        note: str,
+        created_by: str = "",
+    ) -> "RecruitmentCampaign | None":
+        self._require_company_id(company_id)
+        campaign = await self.get_by_id(campaign_id, company_id)
+        if campaign is None:
+            return None
+        history = list(campaign.stage_history or [])
+        history.append({
+            "action": "checkpoint",
+            "stage_index": campaign.current_stage_index,
+            "note": note,
+            "created_by": created_by,
+            "created_at": datetime.utcnow().isoformat(),
+        })
+        campaign.stage_history = history
+        campaign.updated_at = datetime.utcnow()
+        await self.db.flush()
+        await self.db.refresh(campaign)
+        return campaign

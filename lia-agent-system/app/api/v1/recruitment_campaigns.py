@@ -46,6 +46,10 @@ class CampaignUpdate(WeDoBaseModel):
     automation_level: str | None = None
 
 
+class CheckpointCreate(WeDoBaseModel):
+    note: str = Field(min_length=1, max_length=1000)
+
+
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 def _serialize(campaign) -> dict:
@@ -227,24 +231,43 @@ async def advance_stage(
     return _serialize(campaign)
 
 
-@router.post("/{campaign_id}/complete-stage", status_code=501)
+@router.post("/{campaign_id}/complete-stage")
 async def complete_stage(
     campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    payload: dict | None = None,
     current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
     company_id: str = Depends(require_company_id),
 ):
-    return {"status": "not_implemented", "message": "Use advance-stage to progress the campaign."}
+    repo = CampaignRepository(db)
+    try:
+        cid = UUID(campaign_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = await repo.complete_stage(cid, company_id)
+    if campaign is None:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    await db.commit()
+    return _serialize(campaign)
 
 
-@router.post("/{campaign_id}/add-checkpoint", status_code=501)
+@router.post("/{campaign_id}/add-checkpoint")
 async def add_checkpoint(
     campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    payload: dict | None = None,
+    payload: CheckpointCreate,
     current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
     company_id: str = Depends(require_company_id),
 ):
-    return {"status": "not_implemented", "message": "Checkpoint support coming in Phase 3."}
+    repo = CampaignRepository(db)
+    try:
+        cid = UUID(campaign_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = await repo.add_checkpoint(cid, company_id, note=payload.note, created_by=str(current_user.id))
+    if campaign is None:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    await db.commit()
+    return _serialize(campaign)
 
 
 reorder_collection_before_item(router)

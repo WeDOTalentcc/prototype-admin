@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { badgeStyles } from "@/lib/design-tokens"
+import { useQuery } from "@tanstack/react-query"
 import { useProjectDetail } from "@/hooks/jobs/useProjectDetail"
 import type { CampaignItem, CampaignStatus } from "@/hooks/jobs/useCampaignsList"
 
@@ -180,6 +181,13 @@ function ProjetoDetailSkeleton() {
 export default function ProjetoDetailClient({ id }: { id: string }) {
   const { project, isLoading, isError, advance, isAdvancing } = useProjectDetail(id)
 
+  const { data: jobData } = useQuery<{ title?: string } | null>({
+    queryKey: ["job-vacancy", project?.job_id],
+    queryFn: () => fetch(`/api/backend-proxy/job-vacancies/${project!.job_id}`).then(r => r.json()),
+    enabled: Boolean(project?.job_id),
+    staleTime: 60_000,
+  })
+
   if (isLoading) return <ProjetoDetailSkeleton />
 
   if (isError || !project) {
@@ -231,7 +239,7 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
               {project.automation_level && (
                 <span>{AUTOMATION_LABEL[project.automation_level] ?? project.automation_level} · </span>
               )}
-              {project.job_id && <span>Vaga #{project.job_id.slice(-4)} · </span>}
+              {project.job_id && <span>{jobData?.title ?? `Vaga #${project.job_id.slice(-4)}`} · </span>}
               {project.created_at && (
                 <span>Criada {new Date(project.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}</span>
               )}
@@ -291,8 +299,10 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
             const isCurrent = stage.status === "in_progress"
 
             return (
-              <StudioCardShell key={stage.name} tone="elevated">
-                <div className={cn("p-4 space-y-2", isCurrent && "ring-1 ring-lia-btn-primary-bg/30 rounded-lg")}>
+              <div key={stage.name} className={cn(
+                "rounded-lg border border-lia-border-subtle bg-lia-bg-paper shadow-sm p-4 space-y-2",
+                isCurrent && "ring-1 ring-lia-btn-primary-bg/30"
+              )}>
                   <div className="flex items-center gap-2">
                     <span className={cn("text-small font-semibold",
                       isCurrent ? "text-lia-btn-primary-bg" : "text-lia-text-primary"
@@ -314,8 +324,7 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
                   {(stage.status === "completed" || stage.status === "in_progress") && count === 0 && (
                     <p className="text-micro text-lia-text-tertiary">Nenhum candidato nesta etapa</p>
                   )}
-                </div>
-              </StudioCardShell>
+              </div>
             )
           })}
         </div>
