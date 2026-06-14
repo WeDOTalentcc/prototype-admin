@@ -141,6 +141,25 @@ class TestRegisteredDomains:
         )
 
 
+
+    @pytest.mark.parametrize("domain", sorted(_REGISTERED_DOMAINS))
+    def test_capabilities_yaml_schema_shape(self, domain):
+        """ADR-031: capabilities.yaml must use {keyword: action}, not {action: [keywords]}."""
+        if domain in _SKIP_CAPABILITIES_YAML:
+            pytest.skip(f"{domain} is in _SKIP_CAPABILITIES_YAML")
+        yaml_path = DOMAINS_ROOT / domain / "config" / "capabilities.yaml"
+        if not yaml_path.exists():
+            pytest.skip("no capabilities.yaml")
+        import yaml as _yaml
+        data = _yaml.safe_load(yaml_path.read_text())
+        intent_keywords = data.get("intent_keywords", {})
+        bad_entries = {k: v for k, v in intent_keywords.items() if isinstance(v, list)}
+        assert not bad_entries, (
+            "ADR-031 schema invertido em " + str(yaml_path.relative_to(yaml_path.parent.parent.parent.parent)) + ": "
+            "acoes " + str(list(bad_entries.keys())) + " tem valores list em vez de str (action name). "
+            "Fix: inverter para {keyword PT-BR: action_name} como os outros dominios."
+        )
+
 # ---------------------------------------------------------------------------
 # 3. Non-registered domains must NOT have domain.py
 # ---------------------------------------------------------------------------
