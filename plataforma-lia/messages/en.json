@@ -3632,7 +3632,16 @@
       "hide": "Hide",
       "candidatesHidden": "Candidates hidden",
       "candidatesHiddenDesc": "{count} candidate(s) hidden from search",
-      "saveToBase": "Save to Base ({count})"
+      "saveToBase": "Save to Base ({count})",
+      "addTags": "Add tags",
+      "removeTags": "Remove tags",
+      "addTagsDialog": "Add tags to selected candidates",
+      "removeTagsDialog": "Remove tags from selected candidates",
+      "tagInputPlaceholder": "e.g. senior, python, remote (comma-separated)",
+      "tagsAdded": "Tags added",
+      "tagsAddedDesc": "{count} candidate(s) updated",
+      "tagsRemoved": "Tags removed",
+      "tagsRemovedDesc": "{count} candidate(s) updated"
     },
     "controls": {
       "sortScoreDesc": "Highest Score",

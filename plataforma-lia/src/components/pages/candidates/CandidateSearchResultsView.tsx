@@ -1,13 +1,13 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { useTranslations } from "next-intl"
 import { SearchResultsHeader } from "./SearchResultsHeader"
 import { CrossTabFilterBanner } from "./CrossTabFilterBanner"
 import { ViewingListBanner } from "./ViewingListBanner"
 import { ColumnConfigSidebar } from "./ColumnConfigSidebar"
 import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
-import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database, Eye } from "lucide-react"
+import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database, Eye, Tag } from "lucide-react"
 import { CandidatesFilterPanel } from "./CandidatesFilterPanel"
 import { SearchControlsBar } from "./SearchControlsBar"
 import { ActiveFiltersBadge } from "./ActiveFiltersBadge"
@@ -18,6 +18,9 @@ import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
 import type { TableColumn } from "./CandidateSearchResultsView.types"
 import { toast } from "sonner"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export interface CandidateSearchResultsViewProps {
   // Search query state
@@ -271,6 +274,9 @@ export function CandidateSearchResultsView({
   onRetry,
 }: CandidateSearchResultsViewProps) {
   const t = useTranslations('candidates')
+  const [showTagDialog, setShowTagDialog] = useState<'add' | 'remove' | null>(null)
+  const [tagInput, setTagInput] = useState('')
+  const [isTagLoading, setIsTagLoading] = useState(false)
 
   // Critérios para QualificationMatrixCard: prefere filtros de tabela ativos;
   // senão usa os critérios parseados da última busca natural.
@@ -418,6 +424,18 @@ export function CandidateSearchResultsView({
             loading: isSavingToBase,
             hidden: !(selectedPearchCount > 0),
           },
+          {
+            id: 'add_tags',
+            label: t('results.addTags'),
+            icon: <Tag className="w-3.5 h-3.5 text-lia-text-secondary" />,
+            onClick: () => { setTagInput(''); setShowTagDialog('add') },
+          },
+          {
+            id: 'remove_tags',
+            label: t('results.removeTags'),
+            icon: <Tag className="w-3.5 h-3.5 text-status-error" />,
+            onClick: () => { setTagInput(''); setShowTagDialog('remove') },
+          },
         ]}
       />
 
@@ -546,6 +564,63 @@ export function CandidateSearchResultsView({
           searchCriteria={previewSearchCriteria}
         />
       </div>
+
+      {/* Tag dialog */}
+      <Dialog open={showTagDialog !== null} onOpenChange={(open) => { if (!open) setShowTagDialog(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {showTagDialog === 'add' ? t('results.addTagsDialog') : t('results.removeTagsDialog')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <Input
+              placeholder={t('results.tagInputPlaceholder')}
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault() }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTagDialog(null)}>Cancelar</Button>
+            <Button
+              disabled={isTagLoading || !tagInput.trim()}
+              onClick={async () => {
+                const tags = tagInput.split(',').map(s => s.trim()).filter(Boolean)
+                if (!tags.length) return
+                const ids = Array.from(selectedCandidatesForBatch)
+                const endpoint = showTagDialog === 'add' ? '/api/backend-proxy/candidates/bulk/add-tags' : '/api/backend-proxy/candidates/bulk/remove-tags'
+                setIsTagLoading(true)
+                try {
+                  const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ candidate_ids: ids, tags }),
+                  })
+                  if (res.ok) {
+                    const data = await res.json()
+                    const count = data.successful ?? ids.length
+                    if (showTagDialog === 'add') {
+                      toast.success(t('results.tagsAdded'), { description: t('results.tagsAddedDesc', { count }) })
+                    } else {
+                      toast.success(t('results.tagsRemoved'), { description: t('results.tagsRemovedDesc', { count }) })
+                    }
+                    setShowTagDialog(null)
+                  } else {
+                    toast.error('Erro ao processar tags')
+                  }
+                } catch {
+                  toast.error('Erro ao processar tags')
+                } finally {
+                  setIsTagLoading(false)
+                }
+              }}
+            >
+              {isTagLoading ? 'Processando...' : (showTagDialog === 'add' ? t('results.addTags') : t('results.removeTags'))}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

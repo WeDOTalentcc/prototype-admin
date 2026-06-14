@@ -3632,7 +3632,16 @@
       "hide": "Ocultar",
       "candidatesHidden": "Candidatos ocultos",
       "candidatesHiddenDesc": "{count} candidato(s) oculto(s) da pesquisa",
-      "saveToBase": "Salvar na Base ({count})"
+      "saveToBase": "Salvar na Base ({count})",
+      "addTags": "Adicionar tags",
+      "removeTags": "Remover tags",
+      "addTagsDialog": "Adicionar tags aos candidatos selecionados",
+      "removeTagsDialog": "Remover tags dos candidatos selecionados",
+      "tagInputPlaceholder": "Ex: senior, python, remoto (separar por virgula)",
+      "tagsAdded": "Tags adicionadas",
+      "tagsAddedDesc": "{count} candidato(s) atualizado(s)",
+      "tagsRemoved": "Tags removidas",
+      "tagsRemovedDesc": "{count} candidato(s) atualizado(s)"
     },
     "controls": {
       "sortScoreDesc": "Maior Score",
