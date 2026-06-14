@@ -371,6 +371,7 @@ class EnhancedAgentMixin:
         *,
         company_id: Optional[str] = None,
         recruiter_id: Optional[str] = None,
+        session_id: Optional[str] = None,
     ) -> Optional[str]:
         """Camada 1+2 FairnessGuard automático — executar antes de qualquer ReAct loop.
 
@@ -416,6 +417,7 @@ class EnhancedAgentMixin:
                             context=self._enhanced_domain,
                             company_id=company_id or None,
                             recruiter_id=recruiter_id or None,
+                            session_id=session_id or None,
                         )
                     )
                 except Exception as _lc_exc:
