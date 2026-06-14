@@ -351,3 +351,96 @@ class TestNoArtifacts:
             f"{[str(a.relative_to(DOMAINS_ROOT)) for a in artifacts]}. "
             f"Remove with: rm {' '.join(str(a) for a in artifacts)}"
         )
+
+# ---------------------------------------------------------------------------
+# 7. ADR-031 §6.1 — __domain_type__ annotation
+# ---------------------------------------------------------------------------
+class TestDomainTypeAnnotation:
+    """ADR-031 §6.1 — __domain_type__ annotation em todos os dominios."""
+
+    def test_all_domains_have_domain_type(self):
+        """Todos os dominios devem ter __domain_type__ no __init__.py."""
+        import ast as _ast
+        violations = []
+        for d in sorted(DOMAINS_ROOT.iterdir()):
+            if not d.is_dir() or d.name.startswith("_"):
+                continue
+            init_file = d / "__init__.py"
+            if not init_file.exists():
+                violations.append("{}: __init__.py ausente".format(d.name))
+                continue
+            try:
+                tree = _ast.parse(init_file.read_text())
+            except SyntaxError as e:
+                violations.append("{}: syntax error — {}".format(d.name, e))
+                continue
+            found = False
+            for node in _ast.walk(tree):
+                if isinstance(node, _ast.Assign):
+                    for target in node.targets:
+                        if isinstance(target, _ast.Name) and target.id == "__domain_type__":
+                            found = True
+            if not found:
+                violations.append("{}: __domain_type__ ausente em __init__.py".format(d.name))
+        assert not violations, (
+            "ADR-031 §6.1 — {} dominio(s) sem __domain_type__:\n".format(len(violations))
+            + "\n".join(violations)
+        )
+
+    def test_domain_type_values_are_valid(self):
+        """__domain_type__ deve ser 'agentic' ou 'service'."""
+        import ast as _ast
+        valid_types = {"agentic", "service"}
+        violations = []
+        for d in sorted(DOMAINS_ROOT.iterdir()):
+            if not d.is_dir() or d.name.startswith("_"):
+                continue
+            init_file = d / "__init__.py"
+            if not init_file.exists():
+                continue
+            try:
+                tree = _ast.parse(init_file.read_text())
+            except SyntaxError:
+                continue
+            for node in _ast.walk(tree):
+                if isinstance(node, _ast.Assign):
+                    for target in node.targets:
+                        if isinstance(target, _ast.Name) and target.id == "__domain_type__":
+                            if isinstance(node.value, _ast.Constant):
+                                if node.value.value not in valid_types:
+                                    violations.append(
+                                        "{}: __domain_type__ = {!r} invalido".format(
+                                            d.name, node.value.value
+                                        )
+                                    )
+        assert not violations, "\n".join(violations)
+
+    def test_agentic_domains_have_domain_py_or_agents_dir(self):
+        """Dominios marcados como 'agentic' devem ter domain.py ou agents/."""
+        import ast as _ast
+        violations = []
+        for d in sorted(DOMAINS_ROOT.iterdir()):
+            if not d.is_dir() or d.name.startswith("_"):
+                continue
+            init_file = d / "__init__.py"
+            if not init_file.exists():
+                continue
+            dtype = None
+            try:
+                tree = _ast.parse(init_file.read_text())
+                for node in _ast.walk(tree):
+                    if isinstance(node, _ast.Assign):
+                        for target in node.targets:
+                            if isinstance(target, _ast.Name) and target.id == "__domain_type__":
+                                if isinstance(node.value, _ast.Constant):
+                                    dtype = node.value.value
+            except SyntaxError:
+                continue
+            if dtype == "agentic":
+                has_domain_py = (d / "domain.py").exists()
+                has_agents = (d / "agents").is_dir()
+                if not has_domain_py and not has_agents:
+                    violations.append(
+                        "{}: marcado como 'agentic' mas sem domain.py nem agents/".format(d.name)
+                    )
+        assert not violations, "\n".join(violations)

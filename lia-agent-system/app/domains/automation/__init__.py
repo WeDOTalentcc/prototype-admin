@@ -1,3 +1,4 @@
+__domain_type__ = "agentic"  # ADR-031 §6.1
 # Automation & Tasks domain
 from app.domains.automation.tools.automation_tools import (
     bulk_send_notifications,

@@ -1,3 +1,4 @@
+__domain_type__ = "agentic"  # ADR-031 §6.1
 """Interview & Scheduling Domain - Manages interview scheduling and WSI interviews."""
 from app.domains.interview_scheduling.domain import InterviewSchedulingDomain
 from app.domains.interview_scheduling.tools.scheduling_tools import (

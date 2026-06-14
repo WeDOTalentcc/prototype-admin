@@ -1,3 +1,4 @@
+__domain_type__ = "agentic"  # ADR-031 §6.1
 """
 Job Creation Domain — Conversational wizard for creating jobs with WSI methodology.
 
