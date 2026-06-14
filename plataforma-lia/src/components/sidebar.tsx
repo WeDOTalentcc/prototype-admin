@@ -148,6 +148,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         maxVisibleSubItems: 4,
         seeAllLabel: "Ver todos os projetos",
         seeAllTarget: "Projetos",
+        isBeta: true,
       },
       {
         icon: Bot,

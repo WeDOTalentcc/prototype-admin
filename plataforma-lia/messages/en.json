@@ -251,7 +251,8 @@
       "newTalentSearch": "New search",
       "pipelineView": "Pipeline View",
       "agentStudio": "Agent Studio",
-      "modules": "Modules"
+      "modules": "Modules",
+      "projects": "Projects"
     },
     "filters": {
       "all": "All",
