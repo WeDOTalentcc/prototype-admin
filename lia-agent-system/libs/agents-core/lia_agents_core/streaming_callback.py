@@ -249,6 +249,22 @@ class StreamingCallback(BaseCallbackHandler):
         except Exception as exc:
             logger.debug("[StreamingCallback] reasoning_step send falhou: %s", exc)
 
+
+    async def emit_reasoning_step_async(self, label: str, detail: str = "") -> None:
+        """Async variant: directly awaits _send so the frame lands in sse_queue
+        BEFORE the caller puts _done.  Use this for the composing step (after
+        _run_graph) where create_task ordering would otherwise lose the frame.
+        """
+        try:
+            from app.shared.chat_event_serializer import serialize_reasoning_step
+            text = self._summarize(label)
+            if text:
+                await self._send(
+                    serialize_reasoning_step(label=text, detail=detail or "")
+                )
+        except Exception as exc:
+            logger.debug("[StreamingCallback] reasoning_step_async falhou: %s", exc)
+
     @staticmethod
     def _tool_name(serialized: Any, kwargs: Dict[str, Any]) -> str:
         try:

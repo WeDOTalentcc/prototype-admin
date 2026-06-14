@@ -337,9 +337,10 @@ class LangGraphReActBase(LangGraphBase):
 
         _duration = _time.monotonic() - _t0
 
-        if streaming_cb and hasattr(streaming_cb, "emit_reasoning_step"):
+        if streaming_cb and hasattr(streaming_cb, "emit_reasoning_step_async"):
             try:
-                streaming_cb.emit_reasoning_step("composing")
+                # await to guarantee composing lands in sse_queue BEFORE _done
+                await streaming_cb.emit_reasoning_step_async("composing")
             except Exception:
                 pass
 
