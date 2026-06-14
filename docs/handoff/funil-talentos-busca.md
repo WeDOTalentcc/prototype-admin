@@ -976,7 +976,7 @@ for profile in result.pearch_candidates:     # 2. Pearch em seguida (ordem Pearc
 ### 12.1 Pearch AI (fonte global primária)
 
 - **Serviço:** `PearchService` (`app/domains/sourcing/services/pearch_service.py`). **Endpoint:** `POST https://api.pearch.ai/v2/search`. **Auth:** Bearer `PEARCH_API_KEY` (`:153`).
-- **O que é enviado:** a **mesma `query` em linguagem natural** do recrutador (texto exato, não embedding). A Pearch tem seu próprio mecanismo de busca semântica — não usamos embeddings do WeDOTalent aqui.
+- **O que é enviado:** a **mesma `query` em linguagem natural** do recrutador (texto exato, não embedding). Isso é o **contrato da API Pearch** — o endpoint aceita somente `query: str`; não há opção de enviar vetores. A Pearch tem seu próprio modelo de embedding e busca semântica internamente. WeDOTalent não controla esse pipeline. (Os embeddings gerados pelo WeDOTalent servem exclusivamente a busca local via pgvector — veja §11.1.)
 - **Request (`PearchSearchRequest`):** `query`, `type` ("fast"), `insights`, `high_freshness`, `profile_scoring`, `strict_filters`, `require_emails`, `show_emails`, `limit` (1–1000), `custom_filters`, `docid_blacklist`.
 - **Response:** `uuid`, `thread_id`, `status`, `total_estimate`, `search_results[]` → cada resultado tem `score` (inteiro **0–4**) + `insights` (quando `insights=True`) + `profile` (mapeado para `CandidateProfile`).
 - **Escala de score Pearch:** **0–4 inteiro** (não é percentual). WeDOTalent converte com `get_score_percentage()`:
