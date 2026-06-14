@@ -162,6 +162,7 @@ ci-architecture:	## ADR-031/032: todos os sensores de arquitetura em modo warn-o
 ci-architecture-blocking:	## ADR-031/032: sensores com exit 1 em qualquer violation (blocking rules)
 	@echo "=== ADR-031/032 Architecture Sensors (BLOCKING) ==="
 	python3 scripts/check_domain_type_annotations.py
+	python3 scripts/check_agent_base_class.py
 	@python3 scripts/check_pydantic_conventions.py --rule=R3 2>/dev/null || true
 	@python3 scripts/check_no_sql_inline_in_services.py 2>/dev/null || true
 	@python3 scripts/check_no_select_in_services.py 2>/dev/null || true
