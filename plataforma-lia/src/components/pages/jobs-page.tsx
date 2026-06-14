@@ -3,7 +3,7 @@
 import React, { useMemo } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
-import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle, WifiOff, PenLine } from "lucide-react"
+import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle, WifiOff, PenLine, Megaphone } from "lucide-react"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 import type { PageTab } from "@/components/ui/page-tab-navigation"
 import { JobKanbanPage } from "./job-kanban-page"
@@ -20,6 +20,7 @@ const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModa
 // Phase 4H — Bulk import from ATS
 const BulkImportModal = dynamic(() => import("@/components/jobs/BulkImportModal").then(m => ({ default: m.BulkImportModal })), { ssr: false })
 const JobDraftsSection = dynamic(() => import("@/components/pages/jobs/JobDraftsSection").then(m => ({ default: m.JobDraftsSection })), { ssr: false, loading: () => null })
+const CampanhasSection = dynamic(() => import("@/components/pages/jobs/CampanhasSection").then(m => ({ default: m.CampanhasSection })), { ssr: false, loading: () => null })
 
 interface JobsPageProps {
   onNavigate?: (page: string) => void
@@ -140,7 +141,8 @@ export function JobsPage(props: JobsPageProps) {
               'paralisadas': Pause,
               'concluidas': CheckCircle,
               'canceladas': XCircle,
-              'rascunhos': PenLine,}
+              'rascunhos': PenLine,
+              'campanhas': Megaphone,}
             return {
               id: filter.id,
               label: filter.label,
@@ -196,6 +198,8 @@ export function JobsPage(props: JobsPageProps) {
         )}
         {activeFilter === 'rascunhos' ? (
           <JobDraftsSection />
+        ) : activeFilter === 'campanhas' ? (
+          <CampanhasSection />
         ) : (
           <JobsListContent
             {...(state as unknown as React.ComponentProps<typeof JobsListContent>)}

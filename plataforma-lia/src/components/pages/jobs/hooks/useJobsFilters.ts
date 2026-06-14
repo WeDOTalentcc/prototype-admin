@@ -1,6 +1,7 @@
 "use client"
 
 import { useJobDraftsList } from "@/hooks/jobs/useJobDraftsList"
+import { useCampaignsList } from "@/hooks/jobs/useCampaignsList"
 
 
 import { CURRENCY_SYMBOL } from "@/lib/pricing"
@@ -91,7 +92,7 @@ const STATUS_FILTERS = [
   { id: 'Cancelada', label: 'Canceladas', color: 'bg-status-error/15 text-status-error dark:bg-status-error/20 dark:text-status-error' },
 ]
 
-function buildNavigationFilters(backendJobs: Job[], draftsCount = 0) {
+function buildNavigationFilters(backendJobs: Job[], draftsCount = 0, campanhasCount = 0) {
   return [
     { id: 'todas', label: 'Todas', description: 'Todas as vagas do sistema', count: backendJobs.length },
     { id: 'ativas', label: 'Ativas', description: 'Vagas abertas e em andamento', count: backendJobs.filter(j => j.status === 'Ativa').length },
@@ -102,6 +103,7 @@ function buildNavigationFilters(backendJobs: Job[], draftsCount = 0) {
     { id: 'concluidas', label: 'Concluídas', description: 'Vagas com contratação finalizada', count: backendJobs.filter(j => j.status === 'Concluída').length },
     { id: 'canceladas', label: 'Canceladas', description: 'Vagas canceladas ou arquivadas', count: backendJobs.filter(j => j.status === 'Cancelada').length },
     { id: 'rascunhos', label: 'Rascunhos', description: 'Vagas em rascunho aguardando revisao', count: draftsCount },
+    { id: 'campanhas', label: 'Campanhas', description: 'Campanhas de recrutamento ativas', count: campanhasCount },
   ]
 }
 
@@ -385,7 +387,8 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
   // Derived: navigation & stage filters (memoized)
   // -------------------------------------------------------------------------
   const { total: draftsCount } = useJobDraftsList()
-  const navigationFilters = useMemo(() => buildNavigationFilters(backendJobs, draftsCount), [backendJobs, draftsCount])
+  const { total: campanhasCount } = useCampaignsList()
+  const navigationFilters = useMemo(() => buildNavigationFilters(backendJobs, draftsCount, campanhasCount), [backendJobs, draftsCount, campanhasCount])
   const stageFilters = useMemo(() => buildStageFilters(backendJobs), [backendJobs])
 
   // -------------------------------------------------------------------------
