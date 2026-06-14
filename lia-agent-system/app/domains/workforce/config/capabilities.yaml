@@ -1,15 +1,7 @@
-# capabilities.yaml — workforce domain intent keywords
-
 domain: workforce
-
-intent_keywords:
-  planejamento de workforce: get_workforce_plan_summary
-  workforce planning: get_workforce_plan_summary
-  plano de headcount: get_workforce_plan_summary
-  headcount: get_workforce_plan_summary
-  força de trabalho: get_workforce_plan_summary
-  capacidade da equipe: get_workforce_plan_summary
-  workforce summary: get_workforce_plan_summary
-  resumo de workforce: get_workforce_plan_summary
-  capacidade de contratação: get_workforce_plan_summary
-  planejamento de pessoal: get_workforce_plan_summary
+# ADR-031-STUB: domínio em implementação. Intent keywords desativadas até execute() estar implementado.
+# Ver: app/domains/workforce/domain.py::execute() — lança NotImplementedError para qualquer action.
+# Implementação prevista: Sprint N (workforce planning features).
+# Princípio CLAUDE.md: nunca ghost setting — keywords ativas com execute() NotImplementedError
+# é ghost setting que mente pro usuário (KeywordIntentMatcher retorna match → execução explode).
+intent_keywords: {}

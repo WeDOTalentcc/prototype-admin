@@ -1,44 +1,7 @@
-# capabilities.yaml — talent_intelligence domain intent keywords
-
 domain: talent_intelligence
-
-intent_keywords:
-  skills relacionadas: infer_related_skills
-  inferir skills: infer_related_skills
-  infer skills: infer_related_skills
-  skills similares: infer_related_skills
-  habilidades relacionadas: infer_related_skills
-  adjacências de skills: get_skill_adjacencies
-  skill adjacencies: get_skill_adjacencies
-  proximidade de skills: get_skill_adjacencies
-  skills próximas: get_skill_adjacencies
-  grafo de skills: get_skill_adjacencies
-  gap de skills: analyze_skill_gaps
-  lacuna de habilidades: analyze_skill_gaps
-  skill gap: analyze_skill_gaps
-  analyze skill gaps: analyze_skill_gaps
-  habilidades faltantes: analyze_skill_gaps
-  mapear skills: map_candidate_skills_to_ontology
-  map skills: map_candidate_skills_to_ontology
-  ontologia de skills: map_candidate_skills_to_ontology
-  normalizar skills: map_candidate_skills_to_ontology
-  padronizar habilidades: map_candidate_skills_to_ontology
-  mobilidade interna: match_internal_candidates
-  candidatos internos: match_internal_candidates
-  internal mobility: match_internal_candidates
-  realocar candidato: match_internal_candidates
-  transferência interna: match_internal_candidates
-  previsão de contratação: forecast_hiring_needs
-  forecast hiring: forecast_hiring_needs
-  necessidades de contratação: forecast_hiring_needs
-  headcount previsto: forecast_hiring_needs
-  planejar contratações: forecast_hiring_needs
-  inteligência de mercado: get_market_intelligence
-  market intelligence: get_market_intelligence
-  benchmarking de mercado: get_market_intelligence
-  tendências de contratação: get_market_intelligence
-  captação de talentos: create_nurture_sequence
-  nurture sequence: create_nurture_sequence
-  engajamento de candidatos: get_engagement_metrics
-  engajamento: suggest_reengagement
-  reengajamento: suggest_reengagement
+# ADR-031-STUB: domínio em implementação. Intent keywords desativadas até execute() estar implementado.
+# Ver: app/domains/talent_intelligence/domain.py::execute() — lança NotImplementedError para qualquer action.
+# Implementação prevista: Sprint N (talent intelligence / skill ontology features).
+# Princípio CLAUDE.md: nunca ghost setting — keywords ativas com execute() NotImplementedError
+# é ghost setting que mente pro usuário (KeywordIntentMatcher retorna match → execução explode).
+intent_keywords: {}

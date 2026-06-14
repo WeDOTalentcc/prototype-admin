@@ -1,31 +1,7 @@
-# capabilities.yaml — interview_intelligence domain intent keywords
-
 domain: interview_intelligence
-
-intent_keywords:
-  analisar entrevista: analyze_interview_recording
-  análise de entrevista: analyze_interview_recording
-  analyze interview: analyze_interview_recording
-  transcrição de entrevista: analyze_interview_recording
-  avaliar entrevista: analyze_interview_recording
-  review interview: analyze_interview_recording
-  detectar viés: detect_interview_bias
-  viés na entrevista: detect_interview_bias
-  detect bias: detect_interview_bias
-  bias na entrevista: detect_interview_bias
-  entrevista tendenciosa: detect_interview_bias
-  comparar candidatos: compare_interview_performance
-  comparar entrevistas: compare_interview_performance
-  compare candidates: compare_interview_performance
-  performance na entrevista: compare_interview_performance
-  comparativo de entrevistas: compare_interview_performance
-  parecer de entrevista: generate_interview_opinion
-  opinião sobre candidato: generate_interview_opinion
-  gerar parecer: generate_interview_opinion
-  generate opinion: generate_interview_opinion
-  avaliação final: generate_interview_opinion
-  feedback ao candidato: generate_candidate_feedback
-  gerar feedback: generate_candidate_feedback
-  generate feedback: generate_candidate_feedback
-  devolutiva ao candidato: generate_candidate_feedback
-  retorno ao candidato: generate_candidate_feedback
+# ADR-031-STUB: domínio em implementação. Intent keywords desativadas até execute() estar implementado.
+# Ver: app/domains/interview_intelligence/domain.py::execute() — lança NotImplementedError para qualquer action.
+# Implementação prevista: Sprint N (interview analysis / bias detection features).
+# Princípio CLAUDE.md: nunca ghost setting — keywords ativas com execute() NotImplementedError
+# é ghost setting que mente pro usuário (KeywordIntentMatcher retorna match → execução explode).
+intent_keywords: {}

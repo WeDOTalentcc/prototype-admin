@@ -160,6 +160,38 @@ class TestRegisteredDomains:
             "Fix: inverter para {keyword PT-BR: action_name} como os outros dominios."
         )
 
+    @pytest.mark.parametrize("domain", sorted(_REGISTERED_DOMAINS))
+    def test_no_active_keywords_on_stub_execute(self, domain):
+        """ADR-031: domínios com execute() NotImplementedError não devem ter intent_keywords ativas.
+
+        Um domínio com keywords ativas mas execute() que lança NotImplementedError é um ghost
+        setting: KeywordIntentMatcher retorna match válido → execução explode em runtime.
+        Fix A (honesto): intent_keywords: {} + comentário ADR-031-STUB no YAML.
+        Fix B (real): implementar execute() com handler para as actions declaradas.
+        """
+        if domain in _SKIP_CAPABILITIES_YAML:
+            pytest.skip(f"{domain} is in _SKIP_CAPABILITIES_YAML")
+        yaml_path = DOMAINS_ROOT / domain / "config" / "capabilities.yaml"
+        domain_py = DOMAINS_ROOT / domain / "domain.py"
+        if not yaml_path.exists() or not domain_py.exists():
+            pytest.skip("sem capabilities.yaml ou domain.py")
+        data = yaml.safe_load(yaml_path.read_text()) or {}
+        intent_keywords = data.get("intent_keywords") or {}
+        if not intent_keywords:
+            return  # YAML stub correto ou domínio sem keywords — OK
+        source = domain_py.read_text()
+        has_not_implemented = (
+            "NotImplementedError" in source
+            and "def execute" in source
+        )
+        assert not has_not_implemented, (
+            f"ADR-031 — domínio '{domain}' tem {len(intent_keywords)} keyword(s) ativa(s)"
+            " em capabilities.yaml mas execute() lança NotImplementedError."
+            " Princípio: nunca ghost setting."
+            " Fix A: intent_keywords: {} + comentário ADR-031-STUB."
+            " Fix B: implementar execute() com handler real para as actions declaradas"
+        )
+
 # ---------------------------------------------------------------------------
 # 3. Non-registered domains must NOT have domain.py
 # ---------------------------------------------------------------------------
