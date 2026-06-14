@@ -241,7 +241,10 @@ class ConsentCheckerService:
         """
         Registra ou atualiza consentimento de um candidato por finalidade.
 
-        Usa UPSERT por (company_id, candidate_id, consent_type).
+        Usa UPSERT por (company_id, candidate_id, consent_type) para o estado
+        corrente (lgpd_consents). Toda revogação adicionalmente grava um evento
+        imutável de auditoria (INSERT em consent_events) para conformidade com
+        LGPD Art. 18 (direito de revogação) e Art. 37 (accountability).
         """
         existing = await self.repo.get_for_candidate_purpose(
             candidate_id=candidate_id,
@@ -261,6 +264,16 @@ class ConsentCheckerService:
             else:
                 existing.revoked_at = datetime.utcnow()
                 existing.revoked_by = "candidate"
+                # LGPD Art. 18 — toda revogação gera registro imutável de auditoria
+                # (INSERT em consent_events), além da atualização do estado corrente.
+                # Isso garante rastreabilidade exigida pelo Art. 37 (accountability)
+                # e pelo princípio da transparência (Art. 6, inciso VI).
+                await self._record_audit_log(
+                    candidate_id=candidate_id,
+                    company_id=company_id,
+                    purpose=consent_type,
+                    event="consent_revoked",
+                )
             if consent_text:
                 existing.consent_text = consent_text
             if ip_address:
@@ -280,6 +293,15 @@ class ConsentCheckerService:
                 revoked_at=datetime.utcnow() if not consent_given else None,
             )
             await self.repo.add(consent)
+            if not consent_given:
+                # LGPD Art. 18 — mesmo em primeira revogação (sem registro prévio),
+                # grava o evento imutável de auditoria.
+                await self._record_audit_log(
+                    candidate_id=candidate_id,
+                    company_id=company_id,
+                    purpose=consent_type,
+                    event="consent_revoked",
+                )
             return consent
 
     async def get_candidate_consents(
