@@ -298,6 +298,8 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                     # Wave 2 audit 2026-05-21: ANTES log-only, output bias passava direto pro LLM.
                     # AGORA bloqueia o output e retorna sanitized placeholder. LLM recebe sinal
                     # de bias e raciocina sobre alternativa. Audit trail via logger.warning.
+                    # P0-4 fix (2026-06-14): camada 3B — adicionar log_check() para audit
+                    # trail + falhar com logger.error (não warning) em crash do guard.
                     try:
                         from app.shared.compliance.fairness_guard import FairnessGuard
                         _fg_out = FairnessGuard()
@@ -309,6 +311,22 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                                     "[Studio] FairnessGuard BLOCKED tool output: tool=%s category=%s",
                                     _fn.__name__, _fg_check.category,
                                 )
+                                # Audit trail camada 3B (P0-4): espelha Fix B do mixin
+                                try:
+                                    import asyncio as _asyncio_fg3b
+                                    _asyncio_fg3b.get_event_loop().create_task(
+                                        _fg_out.log_check(
+                                            result=_fg_check,
+                                            context="agent_studio_tool_output",
+                                            company_id=request_company_id or None,
+                                            agent_id=_fn.__name__,
+                                        )
+                                    )
+                                except Exception as _lc3b_exc:
+                                    logger.debug(
+                                        "[Studio] 3B log_check enqueue failed (fail-open): %s",
+                                        _lc3b_exc,
+                                    )
                                 # Sanitize: replace tool_result com mensagem explicativa pro LLM.
                                 # LLM vê o bloqueio e ajusta raciocínio em vez de propagar bias.
                                 return (
@@ -316,8 +334,14 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                                     f"categoria={_fg_check.category or 'bias_detectado'}. "
                                     f"Reformule a consulta sem critérios discriminatórios.]"
                                 )
-                    except Exception as _fg_exc:
-                        logger.warning("[Studio] FairnessGuard check failed: %s", _fg_exc)
+                    except Exception as _fg3b_exc:
+                        # P0-4: logger.error (não warning) quando guard crasha na camada 3B
+                        logger.error(
+                            "[Studio] fairness_guard_failed_layer_3b tool=%s",
+                            _fn.__name__,
+                            exc_info=True,
+                            extra={"layer": "3B_output", "tool": _fn.__name__},
+                        )
 
                     return _tool_result
 
@@ -818,18 +842,61 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
             pass
 
         # === Existing FairnessGuard ===
+        # P0-4 fix (2026-06-14): fail-closed + audit trail (espelha Fix A de agent_chat_sse.py).
+        # Antes: except Exception: pass — silenciava crash do guard, execução continuava,
+        # log_check() nunca era chamado. Agora: crash → logger.error + bloqueio (fail-closed).
         try:
             from app.shared.compliance.fairness_guard import FairnessGuard
             _fg = FairnessGuard()
             _fg_result = _fg.check(message)
             if _fg_result.is_blocked:
+                # Audit trail: log_check() registra no FairnessAuditLog + FairnessPolicyViolation
+                # (espelha Fix A: agent_chat_sse.py LIA-P03 / Fix B: mixin_fairness_pre_check)
+                try:
+                    import asyncio as _asyncio_fg3a
+                    _asyncio_fg3a.get_event_loop().create_task(
+                        _fg.log_check(
+                            result=_fg_result,
+                            context="agent_studio_input",
+                            company_id=effective_company_id or None,
+                            session_id=session_id or None,
+                            agent_id=self._agent_id,
+                        )
+                    )
+                except Exception as _lc_exc:
+                    logger.debug(
+                        "[Studio:%s] log_check enqueue failed (fail-open): %s",
+                        self._agent_name, _lc_exc,
+                    )
                 return AgentOutput(
                     message=_fg_result.educational_message or "Solicitação bloqueada por critérios de equidade.",
                     confidence=1.0,
-                    metadata={"blocked": True, "reason": "fairness_guard"},
+                    metadata={"blocked": True, "reason": "fairness_guard", "category": _fg_result.category},
                 )
-        except Exception:
-            pass
+        except Exception as _fg3a_exc:
+            # Fail-closed: compliance check failed = execução bloqueada.
+            # Espelha o princípio do agent_chat_sse.py Fix A: se o guard crasha,
+            # NÃO continuar — logar o erro e bloquear a request.
+            logger.error(
+                "[Studio:%s] fairness_guard_failed_layer_3a — bloqueando execução (fail-closed)",
+                self._agent_name,
+                exc_info=True,
+                extra={
+                    "company_id": effective_company_id,
+                    "agent_id": self._agent_id,
+                    "layer": "3A_input",
+                },
+            )
+            return AgentOutput(
+                message="Verificação de conformidade falhou. Tente novamente.",
+                confidence=0.0,
+                metadata={
+                    "blocked": True,
+                    "reason": "compliance_check_failed",
+                    "layer": "3A_input",
+                    "error": str(_fg3a_exc),
+                },
+            )
 
         try:
             agent_input = AgentInput(
