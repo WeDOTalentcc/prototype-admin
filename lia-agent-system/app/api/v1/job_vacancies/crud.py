@@ -1053,7 +1053,7 @@ company_id: str = Depends(require_company_id)):
         if not result.get("success"):
             raise HTTPException(status_code=404, detail=result.get("error", "Failed to duplicate job"))
 
-        logger.info(f"Created {result[total_jobs_created]} duplicate jobs from {job_id}")
+        logger.info(f"Created {result.get('total_jobs_created')} duplicate jobs from {job_id}")
         return result
 
     except HTTPException:
