@@ -28,6 +28,10 @@ from app.domains.agent_studio.repositories.agent_marketplace_repository import (
     AgentMarketplaceListingRepository,
 )
 
+from app.shared.compliance.fairness_guard import FairnessGuard
+
+_fairness_guard = FairnessGuard()
+
 logger = logging.getLogger(__name__)
 
 
@@ -274,6 +278,17 @@ class AgentMarketplaceService:
         )
         if existing is not None:
             raise ValueError("Agent already installed for this company")
+
+
+        # P0-3: FairnessGuard scan - bloqueia system_prompt discriminatorio (CLT Art. 373-A)
+        if source_agent.system_prompt:
+            _fg_result = _fairness_guard.check(source_agent.system_prompt)
+            if _fg_result.is_blocked:
+                raise ValueError(
+                    "Agente bloqueado por violacao de fairness no system_prompt "
+                    f"(categoria: {_fg_result.category}). "
+                    f"{_fg_result.educational_message}"
+                )
 
         installed_agent = CustomAgent(
             company_id=installer_company_id,
