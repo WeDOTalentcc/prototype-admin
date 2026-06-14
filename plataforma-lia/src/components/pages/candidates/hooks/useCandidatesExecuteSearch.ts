@@ -435,8 +435,15 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       // FairnessGuard: HTTP 400 com detail.error === 'fairness_blocked'
       const _errBody = (err as { status?: number; body?: unknown }).body as Record<string, unknown> | undefined
       const _errDetail = _errBody?.detail as Record<string, unknown> | undefined
-      if ((err as { status?: number }).status === 400 && _errDetail?.error === 'fairness_blocked') {
-        const educationalMsg = (_errDetail?.educational_message as string) || 'Esta busca contém critérios que podem configurar discriminação. Por favor, revise sua query.'
+      // Suporta corpo flat ({error: 'fairness_blocked'}) e aninhado ({detail: {error: 'fairness_blocked'}})
+      const _isFairnessBlocked =
+        (err as { status?: number }).status === 400 &&
+        (_errBody?.error === 'fairness_blocked' || _errDetail?.error === 'fairness_blocked' || !!_errBody?.fairness_blocked)
+      if (_isFairnessBlocked) {
+        const educationalMsg =
+          (_errBody?.educational_message as string) ||
+          (_errDetail?.educational_message as string) ||
+          'Esta busca contém critérios que podem configurar discriminação. Por favor, revise sua query.'
         setFairnessError(educationalMsg)
         setChatMessages(prev => [...prev, {
           id: `fairness-blocked-${Date.now()}`,
