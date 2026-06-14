@@ -349,6 +349,18 @@ company_id: str = Depends(require_company_id)):
         _fg = FairnessGuard()
         _fr = _fg.check(content)
         if _fr and _fr.is_blocked:
+            import asyncio as _asyncio
+            try:
+                _asyncio.get_event_loop().create_task(
+                    _fg.log_check(
+                        result=_fr,
+                        context="chat_sse",
+                        company_id=company_id or None,
+                        recruiter_id=user_id or None,
+                    )
+                )
+            except Exception as _lc_exc:
+                logger.debug("[LIA-P03] log_check enqueue failed (fail-open): %s", _lc_exc)
             raise HTTPException(
                 status_code=400,
                 detail=_fr.educational_message or "Sua solicitacao contem termos que podem gerar vies."
