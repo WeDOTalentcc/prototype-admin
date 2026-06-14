@@ -131,7 +131,7 @@ Para detalhe completo ver Notion HANDOFF Fairness+LGPD (Jun 2026).
 ### Estado interno do FairnessGuard
 
 - _PATTERNS_VERSION = 5 -- deve ser incrementada ao adicionar regras; requer redeploy para recarregar
-- FAIRNESS_LAYER3_ENABLED=False por default -- camada semantica LLM nao roda em producao standard
+- FAIRNESS_LAYER3_ENABLED=True -- camada semantica LLM ATIVA (verificado Jun 2026: .env:94 + runtime confirmado). fairness_global.md Abr 2026 afirmava False -- estava desatualizado.
   Em producao padrao apenas Camada 1 (regex) + Camada 2 (lexico) estao ativas.
 - check_with_sector(sector) -- regras por setor: tech/finance/health/RPO (habilitados); retail/logistics (desabilitados)
 
