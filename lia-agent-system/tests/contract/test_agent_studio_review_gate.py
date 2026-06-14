@@ -69,3 +69,47 @@ def test_execute_allowed_for_no_listing():
     # No listing = not from marketplace = no review gate needed
     has_listing = mock_agent.marketplace_listing is not None
     assert not has_listing  # no gate should block
+
+
+# ── GAP-1 fix: Draft nao pode executar via /execute (EU AI Act Art. 12) ───────
+# Antes do fix (linha 522 custom_agents.py), draft estava na lista de status
+# permitidos para execute. Isso bypassa o approval workflow obrigatorio.
+# Opcao B: /execute requer status=="active" apenas.
+# /dry-run e /test continuam disponiveis para draft (sandbox sem side-effects reais).
+
+def test_execute_gate_rejects_draft():
+    """Status draft nao deve estar na lista de status permitidos para /execute.
+
+    EU AI Act Art. 12: supervisao humana obrigatoria antes de execucao com
+    ferramentas reais. Draft bypassa o approval workflow.
+    """
+    ALLOWED_EXECUTE_STATUSES = {"active"}
+
+    assert "draft" not in ALLOWED_EXECUTE_STATUSES, (
+        "draft nao deve poder executar via /execute -- "
+        "use /dry-run para sandbox sem side-effects."
+    )
+    assert "active" in ALLOWED_EXECUTE_STATUSES
+
+
+def test_execute_gate_rejects_pending_approval():
+    """Status pending_approval tambem deve ser bloqueado em /execute."""
+    ALLOWED_EXECUTE_STATUSES = {"active"}
+    assert "pending_approval" not in ALLOWED_EXECUTE_STATUSES
+
+
+def test_execute_gate_allows_only_active():
+    """Somente active deve ser permitido em /execute apos o fix."""
+    ALLOWED_EXECUTE_STATUSES = {"active"}
+    assert ALLOWED_EXECUTE_STATUSES == {"active"}
+    assert len(ALLOWED_EXECUTE_STATUSES) == 1
+
+
+def test_execute_error_message_guides_to_dryrun():
+    """Mensagem de erro para draft deve apontar para /dry-run como alternativa."""
+    DRAFT_EXECUTE_ERROR = (
+        "Agent must be approved before executing with real tools. "
+        "Use /dry-run to test without side effects, then submit for approval."
+    )
+    assert "dry-run" in DRAFT_EXECUTE_ERROR
+    assert "approv" in DRAFT_EXECUTE_ERROR

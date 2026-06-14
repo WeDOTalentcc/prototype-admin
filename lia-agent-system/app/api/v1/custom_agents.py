@@ -519,7 +519,21 @@ company_id: str = Depends(require_company_id)):
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
 
-    if agent.status not in ("active", "draft"):
+    # ── GAP-1 fix: EU AI Act Art. 12 — draft nao executa sem aprovacao humana ─
+    # Opcao B (Paulo 2026-06-14): /execute requer status=="active" apenas.
+    # Draft usa /dry-run (write tools interceptadas) ou /test (sandbox auditado).
+    if agent.status == "draft":
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "agent_requires_approval",
+                "message": (
+                    "Agent must be approved before executing with real tools. "
+                    "Use /dry-run to test without side effects, then submit for approval."
+                ),
+            },
+        )
+    if agent.status != "active":
         raise HTTPException(status_code=400, detail="Agent is not active")
 
     # ── P0-2 Onda 0 (2026-06-12): review gate ────────────────────────────────
