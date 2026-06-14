@@ -379,7 +379,99 @@ valor do campo === "" → SSIModeNatural monta
 - **Arquivos:** `useSearchSuggestions()` (hook) · `SSIModeNatural.tsx:76` (consume o hook) · `SSIModeNatural.tsx:649-666` (render dos chips) · `SEARCH_SUGGESTIONS` (`:19-22`, fallback hardcoded)
 - **Backend:** `GET /api/v1/search/autocomplete/recent` → `search_history` → `search_archetypes`
 
-#### 4.1.3 🤖 enhance-prompt (ghost text) — como funciona detalhadamente
+#### 4.1.3 🔍 Do texto à lista rankeada — o que acontece depois do submit (Natural)
+
+> **Esta seção responde:** "O recrutador clicou em Buscar — o que acontece com o texto até os candidatos aparecerem ordenados?"
+>
+> O pipeline detalhado está em **§11**. Esta seção resume o que é **específico da busca Natural** e conecta os pontos.
+
+##### O que vai no payload
+
+```jsonc
+POST /api/v1/search/candidates
+{
+  "query": "Analista Financeiro Sênior, CPA-20, São Paulo Capital, experiência em Fintech",
+  //         ^ se o recrutador aceitou o enhanced_query (Tab), ESSE texto substitui o original
+  //           se não aceitou, vai o texto que ele digitou
+  "search_spec": {
+    "job_title": "Analista Financeiro",  // ← vem das tags de entidade (§4.1.1 elemento 2)
+    "location": "São Paulo",
+    "skills": ["CPA-20"],
+    "industry": "Fintech",
+    "years_experience": null
+  },
+  "search_local": true,
+  "search_pearch": false,  // default false — só vira true se recrutador escolheu Híbrida/Global
+  ...
+}
+```
+
+**Ponto-chave:** o `search_spec` (entidades extraídas pelas tags) **não duplica** a query — ele alimenta filtros estruturados (`EXISTS`/`IN`/`ILIKE`) no banco, enquanto a `query` alimenta semântica+BM25. São dois sinais complementares no mesmo pipeline.
+
+##### Os 5 estágios que rodam no Natural (§11 detalha cada um)
+
+```
+query text + search_spec
+    │
+    ▼
+[Estágio 1] Transformação em 3 sinais
+    ├─ Semântica: embedding da query → cosine similarity pgvector (threshold 0.75)
+    ├─ Textual: plainto_tsquery → ts_rank sobre name+summary+skills (BM25-like)
+    └─ Filtros: search_spec → EXISTS/IN/ILIKE/overlap no PostgreSQL
+    │
+    ▼
+[Estágio 2] Fetch das fontes
+    ├─ Local: RAG híbrido (pgvector + Elasticsearch)
+    └─ Pearch (só se search_pearch=true): paginação com docid_blacklist
+    │
+    ▼
+[Estágio 3] Fusão WRF — alpha DINÂMICO por tipo de query
+    ├─ Query com keywords técnicas ("React", "Python", "SAP") → alpha 0.3 (BM25 domina)
+    ├─ Query comportamental ("liderança", "colaboração") → alpha 0.7 (semântica domina)
+    └─ Default → alpha 0.5
+    Score: hybrid = alpha × semantic + (1-alpha) × bm25
+    WRF funde rankings ES × pgvector com pesos por qualification_level
+    │
+    ▼
+[Estágio 4] Classificação LLM de compatibilidade
+    Gemini Flash verifica se o perfil é compatível com a área/cargo da query
+    Fallback: heurístico por INCOMPATIBLE_AREAS (ex.: bloqueia saúde × tecnologia)
+    │
+    ▼
+[Estágio 5] Corte de relevância (EsScoreDropAnalyzer)
+    Candidatos abaixo do limiar (alta→40% · média→55% · baixa→70% de tolerância) são cortados
+    Queda abrupta entre vizinhos (>média+2σ) = corte automático
+    │
+    ▼
+[NÃO roda no Natural] Estágio 6 — BARS/rubric (Match Score 0-99)
+    ⚠️ SÓ roda quando há job_id ou JD colada (§4.3)
+    No Natural típico: candidatos são rankeados pelo hybrid score do WRF
+```
+
+##### O que é específico do Natural vs os outros tipos
+
+| Detalhe | Natural | Similar | JD/Boolean |
+|---|---|---|---|
+| **Query** | texto livre → embedding + BM25 | embedding do perfil de referência | requisitos extraídos da JD |
+| **search_spec** | ✅ tags de entidade alimentam filtros | ❌ não usa | ✅ requisitos como filtros |
+| **alpha WRF** | dinâmico por tipo de query | N/A (só cosine) | fixo |
+| **BARS/rubric** | ❌ sem `job_id` típico | ❌ | ✅ sempre |
+| **ghost text aceito** | substitui a `query` | N/A | N/A |
+| **FairnessGuard** | ✅ | ✅ | ✅ |
+| **Coluna de resultado** | hybrid score | similaridade % | Match Score 0-99 |
+
+##### Leitura do resultado: o que cada número significa no Natural
+
+- **Score na tabela** = hybrid score WRF (combinação semântica + BM25 + calibração de feedback)
+- **Sem "Match Score"** — esse campo só aparece quando há BARS (fluxo JD/busca com `job_id`)
+- **Badge de fonte** — Local (pgvector/ES) vs Pearch — vem do campo `search_source` no DTO
+- **Like/Dislike** (§5.8) afeta o score em ±2.5 pts, capeado em ±5, via `_get_calibration_adjustment`
+
+> Para o pipeline completo com todos os parâmetros numéricos (alpha, k, pesos WRF, thresholds de corte), ver **§11**.
+
+---
+
+#### 4.1.4 🤖 enhance-prompt (ghost text) — como funciona detalhadamente
 
 > Este é o **único elemento de IA real** na assistência de busca. Os demais (autocomplete, tags, score de completude) são determinísticos. Entender este mecanismo é essencial para replicá-lo ou depurá-lo.
 
