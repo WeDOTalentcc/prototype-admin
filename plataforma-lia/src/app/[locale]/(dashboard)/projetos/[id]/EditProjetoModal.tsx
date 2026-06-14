@@ -60,7 +60,8 @@ export function EditProjetoModal({ project, open, onClose, onSaved }: Props) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body?.detail ?? "Erro ao salvar projeto")
       }
-      const updated: CampaignItem = await res.json()
+      const json = await res.json()
+      const updated: CampaignItem = ("ok" in json ? json.data : json) as CampaignItem
       onSaved(updated)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro inesperado")

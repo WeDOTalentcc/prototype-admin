@@ -5,10 +5,17 @@ import { type CampaignItem } from "./useCampaignsList"
 
 const CAMPAIGN_DETAIL_KEY = (id: string) => ["recruitment-campaign", id] as const
 
+function unwrap<T>(json: unknown): T {
+  if (json && typeof json === "object" && "ok" in (json as Record<string, unknown>)) {
+    return (json as Record<string, unknown>).data as T
+  }
+  return json as T
+}
+
 async function fetchProjectDetail(id: string): Promise<CampaignItem> {
   const res = await fetch(`/api/backend-proxy/recruitment-campaigns/${id}`)
   if (!res.ok) throw new Error("Failed to fetch project")
-  return res.json()
+  return unwrap(await res.json())
 }
 
 async function advanceStageRequest(id: string): Promise<CampaignItem> {
@@ -16,7 +23,7 @@ async function advanceStageRequest(id: string): Promise<CampaignItem> {
     method: "POST",
   })
   if (!res.ok) throw new Error("Failed to advance stage")
-  return res.json()
+  return unwrap(await res.json())
 }
 
 async function updateCampaignRequest(
@@ -29,7 +36,7 @@ async function updateCampaignRequest(
     body: JSON.stringify(updates),
   })
   if (!res.ok) throw new Error("Failed to update campaign")
-  return res.json()
+  return unwrap(await res.json())
 }
 
 async function addCheckpointRequest(id: string, note: string): Promise<CampaignItem> {
@@ -39,7 +46,7 @@ async function addCheckpointRequest(id: string, note: string): Promise<CampaignI
     body: JSON.stringify({ note }),
   })
   if (!res.ok) throw new Error("Failed to add checkpoint")
-  return res.json()
+  return unwrap(await res.json())
 }
 
 export function useProjectDetail(id: string) {

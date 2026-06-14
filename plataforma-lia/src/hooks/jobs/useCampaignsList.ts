@@ -53,7 +53,9 @@ const CAMPAIGNS_QUERY_KEY = ["recruitment-campaigns"] as const
 async function fetchCampaigns(): Promise<CampaignsApiResponse> {
   const res = await fetch("/api/backend-proxy/recruitment-campaigns")
   if (!res.ok) throw new Error("Failed to fetch campaigns")
-  return res.json()
+  const json = await res.json()
+  // ResponseEnvelopeMiddleware wraps BE responses in { ok: true, data: payload }
+  return ("ok" in json ? json.data : json) as CampaignsApiResponse
 }
 
 export function useCampaignsList(): UseCampaignsListResult {
