@@ -47,10 +47,42 @@ def append_from_result(result: Any) -> None:
 
 
 def drain_sink() -> list[dict]:
-    """Retorna os blocks acumulados e zera (consumo único no fim do turno)."""
+    """Retorna blocks acumulados, dedup por (kind+source_tool) ou (type), e zera.
+
+    Dedup estratégia: para cada chave de deduplicação, mantém APENAS o último
+    bloco (a chamada mais recente da tool ganha). Isso evita que a mesma tool
+    chamada 2× no mesmo turno produza blocos duplicados visíveis ao usuário.
+    Blocos sem chave de dedup passam intactos.
+    """
     cur = _sink.get() or []
     _sink.set([])
-    return list(cur)
+    if not cur:
+        return []
+    # Dedup: percorre em ordem, último vence (overwrite por chave).
+    seen: dict = {}
+    ordered_keys: list = []
+    for block in cur:
+        try:
+            if not isinstance(block, dict):
+                seen[id(block)] = block
+                ordered_keys.append(id(block))
+                continue
+            kind = block.get("kind")
+            btype = block.get("type")
+            source = block.get("source_tool") or block.get("source", "")
+            if kind:
+                key = f"kind:{kind}:{source}"
+            elif btype:
+                key = f"type:{btype}"
+            else:
+                key = id(block)
+            if key not in seen:
+                ordered_keys.append(key)
+            seen[key] = block
+        except Exception:
+            seen[id(block)] = block
+            ordered_keys.append(id(block))
+    return [seen[k] for k in ordered_keys]
 
 
 def _strip_blocks_for_llm(result):

@@ -246,24 +246,11 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
         f"{total} vagas no total -- por status: {_bd}." if _bd
         else f"{total} vagas encontradas (status={status}, departamento={department})."
     )
-    # P2.5-BE: adicionar bloco list_jobs_result para FE renderizar JobListCard
-    # Aditivo: _blocks (ComparisonTableBlock RRP) continuam para o LLM;
-    # list_jobs_result e o tipo que o FE usa (JobListCard via UnifiedMessageList).
-    _ljr_block = (
-        [
-            {
-                "type": "list_jobs_result",
-                "data": {
-                    "jobs": [_normalize_job_for_card(j) for j in jobs[:20]],
-                    "total_count": total,
-                },
-            }
-        ]
-        if jobs
-        else []
-    )
-    # Combinar: list_jobs_result (FE card) + ComparisonTable RRP (FE tabela) se existir
-    _all_blocks = _ljr_block + _blocks if _ljr_block else _blocks
+    # FIX (2026-06-14): list_jobs_result foi removido — duplicava o display
+    # pois o build_table_block (kind-based) já renderiza os dados na tabela RRP.
+    # Ter os dois causava: tabela enriquecida + card simples para o mesmo dado,
+    # e se list_jobs era chamado 2× no mesmo turno = 2 tabelas + 2 cards.
+    _all_blocks = _blocks  # apenas RRP kind-based
 
     if _all_blocks:
         _data = {
