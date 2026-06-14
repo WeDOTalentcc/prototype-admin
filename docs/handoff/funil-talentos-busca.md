@@ -262,7 +262,7 @@ O dropdown exibe até **6 itens**, cada um com três elementos:
 
 ##### AUTOCOMPLETE_TEMPLATES — padrões de digitação cobertos
 
-O backend (`search_assistant.py:400`) tem templates hardcoded para os padrões mais comuns de busca. **30 patterns** a partir do commit `a9c833926` (commit anterior: 17, apenas tech; expansão adicionou 13 domínios não-tech). Esta tabela lista todos (útil para saber o que o autocomplete **não** cobre e onde o recrutador fica sem sugestão):
+O backend (`search_assistant.py:400`) tem templates hardcoded para os padrões mais comuns de busca. **50 patterns** a partir do commit `5567afe51` (histórico: 17 originais apenas tech → +13 domínios não-tech em `a9c833926` → +20 tech-gaps + normalização de acentuação em `5567afe51`). Esta tabela lista todos:
 
 **Domínio tecnologia / ERP (17 originais):**
 
@@ -304,7 +304,36 @@ O backend (`search_assistant.py:400`) tem templates hardcoded para os padrões m
 | `diretor` | Diretor Financeiro (CFO), Diretor Comercial, Diretor de RH (CHRO), Diretor de Tecnologia (CTO) | cargo |
 | `saude` | Médico Especialista, Enfermeiro(a) UTI, Analista de Saúde Corporativa | cargo |
 
-**Fora dos templates** (sem expansão pré-definida), o autocomplete cai no matching por prefixo nas taxonomias: `JOB_TITLES_TAXONOMY`, `SKILLS_TAXONOMY`, `LOCATIONS_TAXONOMY`, `INDUSTRIES_TAXONOMY`. Padrões não cobertos → o ghost text (enhance-prompt, LLM) cobre qualquer domínio ao parar de digitar.
+**Tech gaps + normalização de acentuação (20 adicionados em `5567afe51`):**
+
+| Pattern (trigger) | Sugestões geradas | Categorias | Observação |
+|---|---|---|---|
+| `node` | Node.js com Express, NestJS, TypeScript, GraphQL | stack | — |
+| `angular` | Angular + TypeScript, + RxJS, Angular 17 Standalone | stack | — |
+| `vue` | Vue.js 3 + Composition API, + Nuxt.js, + TypeScript | stack | — |
+| `azure` | Azure Cloud (AZ-900), Azure DevOps, .NET com Azure, AKS | habilidade / stack | — |
+| `devops` | DevOps Engineer (CI/CD), SRE, DevSecOps, Platform Engineer | cargo | — |
+| `mobile` | iOS (Swift), Android (Kotlin), Flutter, React Native | cargo | — |
+| `flutter` | Flutter Sênior, Flutter + Dart, Flutter + Firebase | cargo / stack | — |
+| `qa` | QA Engineer (Automação), Analista Testes (Cypress/Selenium), SDET | cargo | — |
+| `qualidade` | QA Engineer, Analista de Qualidade de Software, QA Sênior | cargo | alias de `qa` |
+| `seguranca` | Analista de Segurança, Pentest/Red Team, SOC/Blue Team, DPO | cargo | — |
+| `.net` | .NET Developer (C#), .NET com Azure, .NET Sênior (Microserviços), C# Backend | cargo / stack | — |
+| `scrum` | Scrum Master (CSM), Agile Coach, RTE (SAFe) | cargo | — |
+| `junior` | Desenvolvedor Júnior (0-2a), Analista Júnior, Estágio→Júnior | experiencia | **normaliza acento** — taxonomia tem "Júnior" |
+| `pleno` | Desenvolvedor Pleno (2-5a), Analista Pleno, Pleno → Sênior | experiencia | — |
+| `nivel` | Júnior / Pleno / Sênior / Tech Lead (seletor de nível) | experiencia | atalho de nível |
+| `gestao` | Gestor de Projetos (PMP), Gestão de Pessoas/HRBP, Head de Produto, Gestão de Operações | cargo | **normaliza acento** — `gestão` sem acento não achava nada |
+| `operacoes` | Analista de Operações Sênior, Gerente de Operações, COO/Head de Ops | cargo | **normaliza acento** |
+| `pmo` | Analista de PMO Sênior, Gestor de PMO, PMO + Agile/Scrum | cargo | — |
+| `fiscal` | Analista Fiscal (ICMS/ISS/PIS/COFINS), Especialista Tributário, Auditor Fiscal | cargo | — |
+| `atendimento` | Customer Success Manager, CX Analyst, Analista de Atendimento, Supervisor | cargo | — |
+| `engenheiro` | Engenheiro de Produção, Civil, Mecânico, Eletricista | cargo | — |
+| `assistente` | Assistente Administrativo, Comercial, de RH, Financeiro | cargo | — |
+
+> ⚠️ **Gap de acentuação resolvido:** padrões como `junior` (sem acento), `gestao` (sem ã), `operacoes` (sem ç) não casavam na taxonomia (que tem "Júnior", "Gestor", "Operações"). Os templates resolvem via `pattern in query_lower` que é case+accent-insensitive.
+
+**Fora dos templates** (sem expansão pré-definida), o autocomplete cai no matching por prefixo nas taxonomias: `JOB_TITLES_TAXONOMY`, `SKILLS_TAXONOMY`, `LOCATIONS_TAXONOMY`, `INDUSTRIES_TAXONOMY`. Padrões não cobertos → o **ghost text (enhance-prompt, LLM) cobre qualquer domínio** ao parar de digitar — é a rede de segurança para tudo que templates e taxonomias não alcançam.
 
 ##### Os 2 chips estáticos abaixo da barra ("Sugestões: …")
 
@@ -320,6 +349,102 @@ Sugestões:  [Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Pyth
 - **O que não fazem:** não usam histórico do recrutador, não são personalizados por empresa, não aprendem.
 - **Endpoint premium não conectado aqui:** `GET /api/v1/search/autocomplete/premium` (`autocomplete.py`) consulta `search_history` (buscas recentes do usuário e populares da empresa) e geraria chips dinâmicos — mas **hoje não está conectado a esses chips estáticos**. O endpoint existe e retorna dados; o FE ainda não os consome nesta superfície.
 - **Tarefa pendente:** substituir os 2 chips hardcoded por chips dinâmicos vindos de `/autocomplete/premium` (buscas recentes/populares da empresa), com fallback para os exemplos estáticos quando não houver histórico suficiente. Rastreada como "Tornar chips de sugestão de busca dinâmicos".
+
+#### 4.1.3 🤖 enhance-prompt (ghost text) — como funciona detalhadamente
+
+> Este é o **único elemento de IA real** na assistência de busca. Os demais (autocomplete, tags, score de completude) são determinísticos. Entender este mecanismo é essencial para replicá-lo ou depurá-lo.
+
+##### O que o recrutador vê
+
+Enquanto digita (após ~800ms de pausa), um **texto cinza aparece inline** como continuação natural do que foi digitado — o "ghost text":
+
+```
+[textarea]  Analista Financeiro Sênior, CPA-20, São Paulo Capital, experiência em Fintech▌
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            texto do recrutador ──────────────────────────────────────────┘  ghost text ──┘
+```
+
+- **Tab** aceita o ghost text inteiro
+- **Esc** ou continuar digitando descarta
+- Se o ghost text **não começa com o que o recrutador digitou** (LLM sugeriu algo bem diferente), aparece como **Card "Sugestão"** abaixo da textarea em vez de inline
+
+##### Fluxo técnico ponta-a-ponta
+
+```
+recrutador para de digitar (debounce)
+    → POST /api/backend-proxy/search/enhance-prompt
+        → FastAPI: enhance_search_prompt() (misc_search.py:291)
+            → get_tenant_llm_config(company_id)  ← resolve provider por-tenant (BYOK)
+            → build_system_prompt_with_persona(agent_type="sourcing")  ← persona da empresa
+            → llm_service.generate(prompt, provider=_provider)
+                ← enhanced_query (≤200 chars)
+                ← explanation ("Adicionado: senioridade, localização precisa, setor")
+                ← suggestions[] [{label, value, category}]
+                ← confidence (0.0–1.0)
+    → FE gating: só exibe se confidence > 0.6
+    → Se enhanced_query.startsWith(userText): → ghost text inline
+    → Senão: → Card "Sugestão" (fallback)
+```
+
+##### O prompt que vai ao LLM
+
+O LLM recebe:
+1. **Persona de sourcing** montada por `build_system_prompt_with_persona` — inclui nome/tom da IA do tenant (BYOK persona), contexto da empresa (se configurado), instruções de compliance
+2. **Os 6 critérios de busca completa:** CARGO · SENIORIDADE · LOCALIZAÇÃO · HABILIDADES · SETOR/INDÚSTRIA · EXPERIÊNCIA (anos)
+3. **A query original do recrutador**
+4. **Contexto adicional** (vaga, filtros ativos — se fornecidos pelo FE)
+5. **Regras de otimização:** desambiguar localização, sugerir nível de proficiência, máx. 200 chars, PT-BR, não inventar
+
+##### O que o LLM retorna (JSON)
+
+```jsonc
+{
+  "enhanced_query": "Analista Financeiro Sênior, CPA-20, São Paulo Capital, experiência em Fintech ou Banco Digital",
+  "explanation": "Adicionado: senioridade (Sênior), certificação CPA-20, localização precisa (Capital), setor (Fintech)",
+  "suggestions": [
+    { "label": "Certificação", "value": "CPA-20 ou CPA-10", "category": "skills" },
+    { "label": "Setor preferido", "value": "Fintech ou Banco Digital", "category": "industry" },
+    { "label": "Modelo de trabalho", "value": "Híbrido SP ou Remoto", "category": "work_model" }
+  ],
+  "confidence": 0.87
+}
+```
+
+Categorias válidas para `suggestions`: `experience`, `industry`, `work_model`, `location`, `seniority`, `skills`, `salary`, `education`, `languages`.
+
+##### Por que o ghost text cobre o que templates não cobrem
+
+| Recrutador digita | Template existe? | Taxonomia casa? | Ghost text (LLM)? |
+|---|---|---|---|
+| `"python"` | ✅ expande para Django/FastAPI/DS | ✅ completa "Python" | ✅ (se pausar) |
+| `"marketing"` | ✅ expande para Growth/SEO/B2B | ✅ completa "Marketing Manager" | ✅ |
+| `"gestor de inovacao"` | ❌ sem template | ❌ sem prefixo exato | ✅ LLM entende e completa |
+| `"contador tributarista sp"` | ❌ sem template | ❌ multi-palavra | ✅ LLM completa com CRC, IFRS, senioridade |
+| `"eng prod industria auto"`| ❌ sem template | ❌ abreviação | ✅ LLM infere Engenheiro de Produção Automotiva |
+| `"cx fintech senior"`| ❌ sem template | ❌ sigla CX | ✅ LLM expande Customer Experience Sênior em Fintech |
+
+**O ghost text é a rede de segurança universal** — funciona para qualquer domínio, idioma misto (pt/en), abreviações, e contextos de nicho. Templates e taxonomias otimizam a experiência mid-typing; o LLM garante que o recrutador nunca fique sem assistência.
+
+##### Falha e fallback
+
+- Exceção no LLM → `confidence: 0.0` → ghost text não aparece (sem erro visível para o recrutador)
+- Response `confidence <= 0.6` → ghost text suprimido (qualidade baixa demais)
+- JSON malformado → fallback para `enhanced_query = query original, confidence: 0.5`
+- Nenhum dos fallbacks é silent-failure — todos são logados com `logger.error` (`misc_search.py:396`)
+
+##### Arquivos-chave
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `lia-agent-system/app/api/v1/candidate_search/misc_search.py:291` | Endpoint `POST /enhance-prompt` — prompt, LLM call, parse JSON |
+| `lia-agent-system/app/shared/tenant_llm_context.py` | `get_tenant_llm_config` — resolve provider por-tenant (BYOK) |
+| `lia-agent-system/app/shared/prompts/persona_aware_prompt.py` | `build_system_prompt_with_persona` — persona de sourcing per-tenant |
+| `plataforma-lia/src/hooks/search/useSmartSearchCore.ts` | Debounce, chamada ao endpoint, gating `confidence > 0.6` |
+| `plataforma-lia/src/components/search/ssi-modes/SSIModeNatural.tsx:79-95` | Render do ghost text inline (overlay sobre textarea) |
+| `plataforma-lia/src/components/search/ssi-modes/SSIModeNatural.tsx:288-313` | Card "Sugestão" (fallback quando não começa com user text) |
+| `plataforma-lia/src/components/search/ssi-modes/SSIModeNatural.tsx:280-290` | Hint "Tab para aceitar" (inside textarea, `bottom-2`, fade-in) |
+
+---
 
 ### 4.2 Fluxo Similar
 
