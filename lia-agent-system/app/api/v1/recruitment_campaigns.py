@@ -1,173 +1,73 @@
 """
 Recruitment Campaigns API endpoints.
 
-Module not yet implemented — returns explicit 501 responses so consumers
-know the feature is pending rather than silently receiving empty data.
+Phase 2 implementation: replaces 501 stubs with real DB-backed CRUD.
+All endpoints are multi-tenancy fail-closed via require_company_id.
 """
 import logging
-from fastapi import APIRouter, Depends, Query
+from typing import Annotated
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Any
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
+from app.repositories.campaign_repository import CampaignRepository
 from app.shared.security.require_company_id import require_company_id
-from typing import Annotated
+from app.shared.types import WeDoBaseModel
 from fastapi import Path
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from lia_models.recruitment_campaign import DEFAULT_CAMPAIGN_STAGES
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/recruitment_campaigns", tags=["Recruitment Campaigns"])
 
-_NOT_IMPLEMENTED = {
-    "status": "not_implemented",
-    "message": "Recruitment campaigns module is not yet available. This feature is under development and will be connected to the Rails ATS integration.",
-    "documentation": "https://docs.wedotalent.cc/roadmap#recruitment-campaigns",
-}
+
+# ── Schemas ────────────────────────────────────────────────────────────────
+
+class CampaignCreate(WeDoBaseModel):
+    name: str = Field(min_length=1, max_length=256)
+    description: str | None = None
+    job_id: str | None = None
+    talent_pool_id: str | None = None
+    automation_level: str = "semi"
+    stages: list[dict] | None = None
 
 
-@router.get("")
-async def list_campaigns(
-    status: str | None = Query(None),
-    current_user: User = Depends(get_current_user_or_demo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    return {
-        **_NOT_IMPLEMENTED,
-        "data": [],
-        "total": 0,
-        "status_filter": status,
-    }
+class CampaignUpdate(WeDoBaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: str | None = Field(default=None, min_length=1, max_length=256)
+    description: str | None = None
+    status: str | None = None
+    automation_level: str | None = None
 
 
-@router.post("", status_code=501)
-async def create_campaign(
-    payload: dict[str, Any],
-    current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    from app.services.quota_enforcement import enforce_quota
-    await enforce_quota("campaigns", current_user.company_id, db)
-    return _NOT_IMPLEMENTED
+# ── Helpers ────────────────────────────────────────────────────────────────
 
-
-@router.get("/{campaign_id}", status_code=501)
-async def get_campaign(
-    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    current_user: User = Depends(get_current_user_or_demo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    return _NOT_IMPLEMENTED
-
-
-@router.patch("/{campaign_id}", status_code=501)
-async def update_campaign(
-    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    payload: dict[str, Any],
-    current_user: User = Depends(get_current_user_or_demo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    return _NOT_IMPLEMENTED
-
-
-@router.post("/{campaign_id}/advance-stage", status_code=501)
-async def advance_stage(
-    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    payload: dict[str, Any] | None = None,
-    current_user: User = Depends(get_current_user_or_demo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    return _NOT_IMPLEMENTED
-
-
-@router.post("/{campaign_id}/complete-stage", status_code=501)
-async def complete_stage(
-    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    payload: dict[str, Any] | None = None,
-    current_user: User = Depends(get_current_user_or_demo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    return _NOT_IMPLEMENTED
-
-
-@router.post("/{campaign_id}/add-checkpoint", status_code=501)
-async def add_checkpoint(
-    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    payload: dict[str, Any] | None = None,
-    current_user: User = Depends(get_current_user_or_demo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    return _NOT_IMPLEMENTED
-
-
-
-# ---------------------------------------------------------------------------
-# Projection helpers for the Workflow Rail / JobCampaignBadge contract
-# ---------------------------------------------------------------------------
-
-_STAGE_LABEL_MAP: dict = {
-    "sourcing": "Sourcing",
-    "screening": "Triagem",
-    "outreach": "Contato",
-    "interview": "Entrevista",
-}
-
-# Ordered mapping of stage names to the candidate-count field on the campaign.
-_STAGE_COUNT_FIELD: dict = {
-    "sourcing": "total_candidates",
-    "screening": "candidates_screened",
-    "outreach": "candidates_contacted",
-    "interview": "candidates_interviewed",
-    "offered": "candidates_offered",
-}
-
-
-def _project_stages(campaign) -> list:
-    """Project a campaign's stages list into labelled, status-annotated dicts.
-
-    Each element of the returned list has the shape::
-
-        {
-            "status": "completed" | "in_progress" | "pending",
-            "label": str,
-            "candidatesCount": int,
-        }
-
-    Status rules:
-
-    * All stages *before* ``current_stage_index`` → ``"completed"``.
-    * The stage *at* ``current_stage_index`` → ``"in_progress"`` (unless
-      campaign ``status`` is ``"completed"``, in which case it is also
-      ``"completed"``).
-    * All stages *after* → ``"pending"``.
-    * When campaign ``status == "completed"`` every stage is ``"completed"``.
-
-    Args:
-        campaign: Object (or SimpleNamespace) with ``stages`` list,
-            ``current_stage_index`` int, and ``status`` str.
-
-    Returns:
-        List of stage projection dicts.
-    """
-    stages = getattr(campaign, "stages", []) or []
-    current_idx = getattr(campaign, "current_stage_index", 0)
-    campaign_status = getattr(campaign, "status", "active")
+def _serialize(campaign) -> dict:
+    """Serialize to the JSONAPI envelope consumed by the frontend."""
+    stages_raw = campaign.stages or []
+    current_idx = campaign.current_stage_index or 0
+    campaign_status = campaign.status or "active"
     all_completed = campaign_status == "completed"
 
-    projected = []
-    for i, stage in enumerate(stages):
-        name = stage.get("name", "") if isinstance(stage, dict) else getattr(stage, "name", "")
-        label = _STAGE_LABEL_MAP.get(name) or name.replace("_", " ").title()
+    _LABEL_MAP = {
+        "sourcing": "Sourcing",
+        "screening": "Triagem",
+        "outreach": "Contato",
+        "interview": "Entrevista",
+        "evaluation": "Avaliação",
+        "offer": "Oferta",
+    }
 
-        count_field = _STAGE_COUNT_FIELD.get(name)
-        count = (
-            getattr(campaign, count_field, 0) or 0
-            if count_field
-            else stage.get("candidates_count", 0) if isinstance(stage, dict) else 0
-        )
-
+    projected_stages = []
+    for i, stage in enumerate(stages_raw):
+        name = stage.get("name", "") if isinstance(stage, dict) else ""
+        label = _LABEL_MAP.get(name, name.replace("_", " ").title())
         if all_completed:
             status = "completed"
         elif i < current_idx:
@@ -176,85 +76,175 @@ def _project_stages(campaign) -> list:
             status = "in_progress"
         else:
             status = "pending"
+        projected_stages.append({"name": name, "label": label, "status": status})
 
-        projected.append({
-            "status": status,
-            "label": label,
-            "candidatesCount": int(count),
-        })
+    progress_pct = 0.0
+    if stages_raw:
+        if all_completed:
+            progress_pct = 100.0
+        else:
+            progress_pct = round((current_idx / len(stages_raw)) * 100, 1)
 
-    return projected
-
-
-def _jsonapi_campaign(campaign) -> dict:
-    """Serialize a campaign to the JSONAPI envelope consumed by the frontend.
-
-    Shape::
-
-        {
-            "id": str,
-            "type": "recruitment_campaign",
-            "attributes": {
-                "name": str,
-                "status": str,
-                "current_stage": str | None,
-                "stages": [...],             # see _project_stages
-                "pending_action": {...} | None,
-                "job_id": str | None,
-                "talent_pool_id": str | None,
-                "created_at": str (ISO-8601),
-            },
-        }
-
-    The ``pending_action`` key surfaces the in-progress stage's
-    ``checkpoint`` field so the Workflow Rail can render an action banner.
-    """
-    stages_raw = getattr(campaign, "stages", []) or []
-    current_idx = getattr(campaign, "current_stage_index", 0)
-
-    # Determine current_stage name.
-    current_stage_name = None
-    current_stage_raw = None
-    if stages_raw and 0 <= current_idx < len(stages_raw):
-        current_stage_raw = stages_raw[current_idx]
-        current_stage_name = (
-            current_stage_raw.get("name")
-            if isinstance(current_stage_raw, dict)
-            else getattr(current_stage_raw, "name", None)
-        )
-
-    # Build pending_action from the in-progress stage's checkpoint.
-    pending_action = None
-    if current_stage_raw is not None:
-        checkpoint = (
-            current_stage_raw.get("checkpoint")
-            if isinstance(current_stage_raw, dict)
-            else getattr(current_stage_raw, "checkpoint", None)
-        )
-        if checkpoint:
-            count_field = _STAGE_COUNT_FIELD.get(current_stage_name or "")
-            candidates_count = getattr(campaign, count_field, 0) or 0 if count_field else 0
-            pending_action = {
-                "message": checkpoint,
-                "candidatesCount": int(candidates_count),
-            }
-
-    created_at = getattr(campaign, "created_at", None)
-    created_at_str = created_at.isoformat() if hasattr(created_at, "isoformat") else str(created_at or "")
+    created_at = campaign.created_at
+    updated_at = campaign.updated_at
 
     return {
-        "id": str(getattr(campaign, "id", "")),
-        "type": "recruitment_campaign",
-        "attributes": {
-            "name": getattr(campaign, "name", ""),
-            "status": getattr(campaign, "status", ""),
-            "current_stage": current_stage_name,
-            "stages": _project_stages(campaign),
-            "pending_action": pending_action,
-            "job_id": getattr(campaign, "job_id", None),
-            "talent_pool_id": getattr(campaign, "talent_pool_id", None),
-            "created_at": created_at_str,
-        },
+        "id": str(campaign.id),
+        "name": campaign.name,
+        "description": campaign.description,
+        "status": campaign.status,
+        "job_id": campaign.job_id,
+        "talent_pool_id": campaign.talent_pool_id,
+        "automation_level": campaign.automation_level,
+        "current_stage_index": current_idx,
+        "current_stage": stages_raw[current_idx].get("name") if stages_raw and 0 <= current_idx < len(stages_raw) else None,
+        "stages": projected_stages,
+        "progress_pct": progress_pct,
+        "total_candidates": campaign.total_candidates or 0,
+        "candidates_screened": campaign.candidates_screened or 0,
+        "candidates_contacted": campaign.candidates_contacted or 0,
+        "candidates_interviewed": campaign.candidates_interviewed or 0,
+        "candidates_offered": campaign.candidates_offered or 0,
+        "candidates_hired": campaign.candidates_hired or 0,
+        "created_by": campaign.created_by,
+        "created_at": created_at.isoformat() if created_at else None,
+        "updated_at": updated_at.isoformat() if updated_at else None,
     }
+
+
+# ── Endpoints ──────────────────────────────────────────────────────────────
+
+@router.get("")
+async def list_campaigns(
+    status: str | None = Query(None),
+    job_id: str | None = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    repo = CampaignRepository(db)
+    campaigns, total = await repo.list_by_company(
+        company_id=company_id,
+        status=status,
+        job_id=job_id,
+        limit=limit,
+        offset=offset,
+    )
+    return {
+        "data": [_serialize(c) for c in campaigns],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+@router.post("", status_code=201)
+async def create_campaign(
+    payload: CampaignCreate,
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    from app.services.quota_enforcement import enforce_quota
+    await enforce_quota("campaigns", company_id, db)
+
+    stages = payload.stages if payload.stages is not None else list(DEFAULT_CAMPAIGN_STAGES)
+    repo = CampaignRepository(db)
+    campaign = await repo.create({
+        "company_id": company_id,
+        "created_by": current_user.email or current_user.id or "system",
+        "name": payload.name,
+        "description": payload.description,
+        "job_id": payload.job_id,
+        "talent_pool_id": payload.talent_pool_id,
+        "automation_level": payload.automation_level,
+        "stages": stages,
+        "current_stage_index": 0,
+        "status": "active",
+    })
+    await db.commit()
+    return _serialize(campaign)
+
+
+@router.get("/{campaign_id}")
+async def get_campaign(
+    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    repo = CampaignRepository(db)
+    try:
+        cid = UUID(campaign_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = await repo.get_by_id(cid, company_id)
+    if campaign is None:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    return _serialize(campaign)
+
+
+@router.patch("/{campaign_id}")
+async def update_campaign(
+    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: CampaignUpdate,
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    repo = CampaignRepository(db)
+    try:
+        cid = UUID(campaign_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    updates = {k: v for k, v in payload.model_dump(exclude_none=True).items()}
+    campaign = await repo.update(cid, company_id, updates)
+    if campaign is None:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    await db.commit()
+    return _serialize(campaign)
+
+
+@router.post("/{campaign_id}/advance-stage")
+async def advance_stage(
+    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: dict | None = None,
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    repo = CampaignRepository(db)
+    try:
+        cid = UUID(campaign_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = await repo.advance_stage(cid, company_id)
+    if campaign is None:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    await db.commit()
+    return _serialize(campaign)
+
+
+@router.post("/{campaign_id}/complete-stage", status_code=501)
+async def complete_stage(
+    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: dict | None = None,
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
+    return {"status": "not_implemented", "message": "Use advance-stage to progress the campaign."}
+
+
+@router.post("/{campaign_id}/add-checkpoint", status_code=501)
+async def add_checkpoint(
+    campaign_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: dict | None = None,
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
+    return {"status": "not_implemented", "message": "Checkpoint support coming in Phase 3."}
+
 
 reorder_collection_before_item(router)
