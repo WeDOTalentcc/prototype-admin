@@ -64,7 +64,7 @@ export function WSIScoreCard({
   const getScoreDisplay = (score: number) => {
     if (score >= 90) return { text:"text-status-success", icon: TrendingUp }
     if (score >= 80) return { text:"text-status-success", icon: TrendingUp }
-    if (score >= 70) return { text:"text-wedo-cyan-text", icon: TrendingUp }
+    if (score >= 70) return { text:"text-lia-text-secondary", icon: TrendingUp }
     if (score >= 60) return { text:"text-status-warning", icon: Minus }
     if (score >= 45) return { text:"text-wedo-orange-text", icon: TrendingDown }
     return { text:"text-status-error", icon: TrendingDown }

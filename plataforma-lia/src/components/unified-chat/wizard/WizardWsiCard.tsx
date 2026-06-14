@@ -187,7 +187,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className="w-full px-3 py-2 text-xs text-wedo-cyan-text hover:bg-lia-interactive-hover transition-colors text-left"
+            className="w-full px-3 py-2 text-xs text-lia-text-muted hover:bg-lia-interactive-hover transition-colors text-left"
           >
             Ver todas as {questions.length} perguntas
           </button>
@@ -198,7 +198,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
             <button
               type="button"
               onClick={onOpenPanel}
-              className="text-[11px] text-wedo-cyan-text hover:underline"
+              className="text-[11px] text-lia-text-muted hover:underline"
             >
               Abrir no painel
             </button>

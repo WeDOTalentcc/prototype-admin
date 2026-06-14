@@ -234,7 +234,7 @@ export function ABTestingTab() {
                 variant="ghost"
                 size="sm"
                 onClick={addVariant}
-                className="text-xs text-wedo-cyan-text hover:text-wedo-cyan-dark h-auto px-2 py-1"
+                className="text-xs text-lia-text-muted hover:text-wedo-cyan-dark h-auto px-2 py-1"
               >
                 {t("addVariantBtn")}
               </Button>

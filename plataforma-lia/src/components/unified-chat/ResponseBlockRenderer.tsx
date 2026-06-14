@@ -25,7 +25,7 @@ type TFn = ReturnType<typeof useTranslations>;
 
 function scoreTone(score: number): string {
   // Fairness/LGPD: baixo = neutro/mudo (NÃO vermelho).
-  if (score >= 85) return "text-wedo-cyan-text";
+  if (score >= 85) return "text-lia-text-secondary";
   if (score >= 70) return "text-lia-text-primary";
   return "text-lia-text-tertiary";
 }
@@ -54,7 +54,7 @@ function formatCell(v: unknown): string {
 function ProseView({ block }: { block: ProseBlock }) {
   return (
     <div
-      className="text-sm text-lia-text-primary leading-relaxed [&_table]:w-full [&_th]:text-left [&_td]:py-1 [&_th]:py-1 [&_a]:text-wedo-cyan-text"
+      className="text-sm text-lia-text-primary leading-relaxed [&_table]:w-full [&_th]:text-left [&_td]:py-1 [&_th]:py-1 [&_a]:text-lia-text-muted"
       dangerouslySetInnerHTML={{ __html: renderMarkdown(block.markdown) }}
     />
   );
@@ -522,7 +522,7 @@ function ExpandHint() {
           }),
         )
       }
-      className="mt-1 flex items-center gap-1 text-xs text-wedo-cyan-text hover:underline"
+      className="mt-1 flex items-center gap-1 text-xs text-lia-text-muted hover:underline"
     >
       {t("expandFullscreen")} →
     </button>
@@ -586,7 +586,7 @@ export function ResponseBlockRenderer({
         <button
           type="button"
           onClick={() => setShowAll(true)}
-          className="text-xs text-wedo-cyan-text hover:underline"
+          className="text-xs text-lia-text-muted hover:underline"
         >
           {t("showMore", { count: hidden })}
         </button>

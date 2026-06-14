@@ -30,7 +30,7 @@ const RESPONDENT_LABEL: Record<string, string> = {
 
 const STATUS_COLOR: Record<string, string> = {
   pending: "text-wedo-orange-text",
-  responded: "text-wedo-green-text",
+  responded: "text-lia-text-secondary",
   expired: "text-lia-text-tertiary",
 }
 

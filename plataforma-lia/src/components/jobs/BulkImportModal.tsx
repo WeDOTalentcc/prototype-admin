@@ -596,7 +596,7 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                     {Object.entries(mappedHeaders).map(([csv, jsonField]) => (
                       <div key={csv} className="text-lia-text-secondary">
                         <code className="bg-lia-bg-primary px-1 rounded">{csv}</code> →{" "}
-                        <code className="text-wedo-cyan-text">{jsonField}</code>
+                        <code className="text-lia-text-secondary">{jsonField}</code>
                       </div>
                     ))}
                   </div>

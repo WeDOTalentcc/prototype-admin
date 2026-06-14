@@ -174,7 +174,7 @@ export function JobAgentsTab({ jobId, jobTitle }: JobAgentsTabProps) {
                             {t("status.paused")}
                           </Chip>
                         ) : (
-                          <Chip variant="neutral" muted className="text-wedo-cyan-text">
+                          <Chip variant="neutral" muted className="text-lia-text-secondary">
                             {t("status.active")}
                           </Chip>
                         )}

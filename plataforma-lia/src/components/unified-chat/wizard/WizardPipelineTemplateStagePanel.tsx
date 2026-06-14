@@ -21,7 +21,7 @@ import type { WizardPipelineTemplateSuggestion } from "@/components/unified-chat
  *   - "Aplicar este template" é action secundária por template.
  *
  * Design tokens canonical (Design System v4.2.x):
- *   - Header com accent cyan (`text-wedo-cyan-text`) — LIA "agindo".
+ *   - Header com accent cyan (`text-lia-text-secondary`) — LIA "agindo".
  *   - Botão PRIMARY canonical (`bg-lia-text-primary`) reservado para
  *     "Usar Padrão da Empresa" (CTA principal do stage).
  *   - Botões "Aplicar este template" usam o mesmo estilo Ink mas em
@@ -107,7 +107,7 @@ export function WizardPipelineTemplateStagePanel({
           <Sparkles className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-wedo-cyan-text">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-lia-text-secondary">
             {t("title")}
           </p>
           <p className="text-sm font-semibold text-lia-text-primary">

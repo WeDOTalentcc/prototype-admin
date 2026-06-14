@@ -58,7 +58,7 @@ const variantIconColor: Record<CalloutVariant, string> = {
   success: "text-status-success",
   warning: "text-status-warning",
   error: "text-status-error",
-  info: "text-wedo-cyan-text dark:text-wedo-cyan",
+  info: "text-lia-text-secondary dark:text-wedo-cyan",
   neutral: "text-lia-text-secondary",
 }
 

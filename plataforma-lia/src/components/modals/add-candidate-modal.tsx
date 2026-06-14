@@ -423,7 +423,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 </div>
                 {liaAnalysis?.suggestedSkills && (
                   <div className="mt-3 p-3 bg-lia-bg-tertiary rounded-xl">
-                    <p className="text-xs text-wedo-cyan-text mb-2 flex items-center gap-1">
+                    <p className="text-xs text-lia-text-muted mb-2 flex items-center gap-1">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
                       Sugestões da LIA baseadas no perfil:
                     </p>
@@ -591,7 +591,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                         <LIAIcon size="sm" />
                         <h4 className="font-semibold text-wedo-cyan-text">Recomendação da LIA</h4>
                       </div>
-                      <p className="text-sm text-wedo-cyan-text">{liaAnalysis.recommendation}</p>
+                      <p className="text-sm text-lia-text-muted">{liaAnalysis.recommendation}</p>
                     </CardContent>
                   </Card>
 

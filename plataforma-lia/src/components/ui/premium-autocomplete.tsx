@@ -38,7 +38,7 @@ const CATEGORY_CONFIG = {
   team: {
     label: "Usados pelo time",
     icon: Users,
-    color: "text-wedo-purple-text",
+    color: "text-lia-text-secondary",
     bgColor: "bg-wedo-purple/10",
   },
   recommended: {

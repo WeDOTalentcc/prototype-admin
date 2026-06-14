@@ -63,7 +63,7 @@ export function RubricEvaluationCard({
 
   const getScoreBadge = (scoreValue: number) => {
     if (scoreValue >= 80) return { label: 'Forte', className: ' border-status-success/30' }
-    if (scoreValue >= 60) return { label: 'Bom', className: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-text border-lia-border-default dark:border-lia-border-default' }
+    if (scoreValue >= 60) return { label: 'Bom', className: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default' }
     if (scoreValue >= 40) return { label: 'Moderado', className: ' border-status-warning/30' }
     return { label: 'Fraco', className: ' border-status-error/30' }
   }
@@ -99,7 +99,7 @@ export function RubricEvaluationCard({
       case 'exceeds':
         return 'text-status-success'
       case 'meets':
-        return 'text-wedo-cyan-text'
+        return 'text-lia-text-secondary'
       case 'partial':
         return 'text-status-warning'
       case 'missing':

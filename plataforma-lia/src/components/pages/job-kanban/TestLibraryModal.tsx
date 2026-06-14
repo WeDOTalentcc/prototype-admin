@@ -51,7 +51,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </div>
               <div>
                 <h2 className="text-xl font-semibold">{t('testLibrary.title')}</h2>
-                <p className="text-wedo-purple-text text-sm">{t('testLibrary.subtitle')}</p>
+                <p className="text-lia-text-muted text-sm">{t('testLibrary.subtitle')}</p>
               </div>
             </div>
             <button

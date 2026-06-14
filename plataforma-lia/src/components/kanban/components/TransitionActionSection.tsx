@@ -69,7 +69,7 @@ export function BatchRejectionSection({
             <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-wedo-cyan" />
           )}
           {!isBulkPredicting && Object.keys(predictedSubStatuses).length > 0 && (
-            <span className="inline-flex items-center gap-0.5 text-micro font-normal text-wedo-cyan-text">
+            <span className="inline-flex items-center gap-0.5 text-micro font-normal text-lia-text-muted">
               <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
               IA
             </span>

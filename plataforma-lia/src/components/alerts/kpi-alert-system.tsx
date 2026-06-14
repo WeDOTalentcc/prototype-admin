@@ -92,7 +92,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
               <div className="text-sm text-lia-text-secondary">Avisos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-semibold text-wedo-purple-text">{alertStats.byCategory.performance}</div>
+              <div className="text-2xl font-semibold text-lia-text-primary">{alertStats.byCategory.performance}</div>
               <div className="text-sm text-lia-text-secondary">Performance</div>
             </div>
             <div className="text-center">

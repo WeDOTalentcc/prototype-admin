@@ -128,8 +128,8 @@ export function ScreeningPresentationSection({
             </div>
             <div className="text-center p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
               <Award className="w-5 h-5 text-wedo-purple mx-auto mb-1" />
-              <div className="text-sm font-medium text-wedo-purple-text dark:text-wedo-purple">Nível</div>
-              <div className="text-xs text-wedo-purple-text dark:text-wedo-purple">{jobLevel}</div>
+              <div className="text-sm font-medium text-lia-text-secondary dark:text-wedo-purple">Nível</div>
+              <div className="text-xs text-lia-text-muted dark:text-wedo-purple">{jobLevel}</div>
             </div>
             <div className="text-center p-3 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-md">
               <DollarSign className="w-5 h-5 text-wedo-orange mx-auto mb-1" />

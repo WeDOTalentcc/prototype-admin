@@ -43,7 +43,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         status: 'in-progress',
         label: 'Em Contato',
         icon: <Clock className="w-3.5 h-3.5" />,
- color: 'bg-lia-bg-tertiary text-wedo-cyan-text border-lia-border-default dark:border-lia-border-default'
+ color: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
       }
     }
 

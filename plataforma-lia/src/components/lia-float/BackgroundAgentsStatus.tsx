@@ -31,7 +31,7 @@ const TASK_ICONS: Record<string, React.ElementType> = {
 
 const STATUS_COLORS = {
   queued: "text-lia-text-tertiary",
-  running: "text-wedo-cyan-text",
+  running: "text-lia-text-secondary",
   completed: "text-status-success",
   failed: "text-status-error",
 }
@@ -116,7 +116,7 @@ export function BackgroundAgentsStatus({ tasks, onViewResult, className }: Backg
                 {task.status === "completed" && (
                   <button
                     onClick={() => onViewResult?.(task)}
-                    className="flex items-center gap-1 text-[10px] text-wedo-cyan-text hover:underline flex-shrink-0"
+                    className="flex items-center gap-1 text-[10px] text-lia-text-muted hover:underline flex-shrink-0"
                   >
                     <CheckCircle2 className="w-3 h-3" />
                     Ver

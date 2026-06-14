@@ -410,7 +410,7 @@ export default function AgentStudioPage({
         <>
           {liveJobs.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-micro font-semibold uppercase tracking-widest text-wedo-green-text">
+              <p className="text-micro font-semibold uppercase tracking-widest text-lia-text-secondary">
                 {liveJobs.length} vaga{liveJobs.length !== 1 ? "s" : ""} ativa{liveJobs.length !== 1 ? "s" : ""}
               </p>
               {liveJobs.map(j => (

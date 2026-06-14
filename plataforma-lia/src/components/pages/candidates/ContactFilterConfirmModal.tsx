@@ -58,7 +58,7 @@ export function ContactFilterConfirmModal({
               <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-2">
                 <div className="flex justify-between items-center">
                   <span className="font-medium">{t('apifyEnrichment')}</span>
-                  <span className="font-semibold text-lg text-wedo-green-text">
+                  <span className="font-semibold text-lg text-lia-text-secondary">
                     {t('costPerCandidate')}
                   </span>
                 </div>

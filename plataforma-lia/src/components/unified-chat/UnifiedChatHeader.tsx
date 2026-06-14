@@ -371,7 +371,7 @@ export function UnifiedChatHeader({
                     <opt.icon className="w-4 h-4" />
                     <span>{opt.label}</span>
                     {mode === opt.mode && (
-                      <span className="ml-auto text-wedo-cyan-text text-xs">{'\u2713'}</span>
+                      <span className="ml-auto text-lia-text-muted text-xs">{'\u2713'}</span>
                     )}
                   </button>
                 ))}

@@ -110,7 +110,7 @@ export function WizardIntakeCard({ data, onOpenPanel }: WizardIntakeCardProps) {
               <button
                 type="button"
                 onClick={onOpenPanel}
-                className="flex items-center gap-1.5 text-[11px] text-wedo-cyan-text hover:underline mt-1"
+                className="flex items-center gap-1.5 text-[11px] text-lia-text-muted hover:underline mt-1"
               >
                 <ExternalLink className="w-3 h-3" aria-hidden="true" />
                 Abrir no painel

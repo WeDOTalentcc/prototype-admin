@@ -34,12 +34,12 @@ export function AgentRunningBanner() {
       aria-live="polite"
     >
       <Brain className="w-4 h-4 text-wedo-cyan" aria-hidden="true" />
-      <span className="text-wedo-cyan-text dark:text-wedo-cyan font-medium">
+      <span className="text-lia-text-secondary dark:text-wedo-cyan font-medium">
         {t("banner.running", { count: running })}
       </span>
       <Link
         href="/agent-studio?tab=control-room"
-        className="ml-auto text-wedo-cyan-text dark:text-wedo-cyan hover:underline"
+        className="ml-auto text-lia-text-secondary dark:text-wedo-cyan hover:underline"
       >
         {t("banner.viewControlRoom")} →
       </Link>

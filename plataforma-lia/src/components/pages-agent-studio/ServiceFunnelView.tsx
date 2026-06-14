@@ -92,7 +92,7 @@ const STATUS_LABEL_KEY: Record<ServiceStatus, string> = {
 }
 
 const STATUS_TEXT_COLOR: Record<ServiceStatus, string> = {
-  active:     "text-wedo-green-text",
+  active:     "text-lia-text-secondary",
   configured: "text-lia-text-secondary",
   attention:  "text-wedo-orange-text",
   inactive:   "text-lia-text-tertiary",

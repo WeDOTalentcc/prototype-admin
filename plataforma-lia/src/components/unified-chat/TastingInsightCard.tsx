@@ -47,7 +47,7 @@ export function TastingInsightCard({ insights }: TastingInsightCardProps) {
               <p className="text-[12px] leading-relaxed text-lia-text-primary">
                 {insight.summary.replace(/\*\*/g, "")}
               </p>
-              <p className="mt-1.5 flex items-center gap-1 text-[11px] text-wedo-purple-text dark:text-wedo-purple font-medium">
+              <p className="mt-1.5 flex items-center gap-1 text-[11px] text-lia-text-secondary dark:text-wedo-purple font-medium">
                 <ArrowRight className="w-3 h-3" />
                 {insight.cta.replace(/\*\*/g, "")}
               </p>

@@ -323,7 +323,7 @@ export function WelcomeSteps() {
               }}
             >
               <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <p className="text-sm font-medium text-wedo-cyan-text uppercase tracking-widest mb-3">Como funciona</p>
+                <p className="text-sm font-medium text-lia-text-secondary uppercase tracking-widest mb-3">Como funciona</p>
                 <h2 className="text-3xl font-light text-lia-text-primary">
                   Simples assim.
                 </h2>
@@ -413,7 +413,7 @@ export function WelcomeSteps() {
               {(phase === "welcome-message" || phase === "complete") && (
                 <div className="flex flex-col items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-400">
                   <h1 className="text-3xl text-lia-text-primary">
-                    Olá, <span className="text-wedo-cyan-text font-semibold">{userName}</span>
+                    Olá, <span className="text-lia-text-secondary font-semibold">{userName}</span>
                   </h1>
                   <p className="text-lia-text-primary text-lg max-w-xl leading-relaxed text-center">
                     Bem-vindo(a) à nova era do recrutamento inteligente e automatizado.

@@ -434,7 +434,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
                     <div className="text-xs text-lia-text-tertiary mt-1">
                       {template.stages.length} etapa{template.stages.length !== 1 ? "s" : ""}
                       {template.department_hint && template.department_hint.length > 0 && (
-                        <span className="ml-2 text-wedo-cyan-text">· {template.department_hint[0]}</span>
+                        <span className="ml-2 text-lia-text-secondary">· {template.department_hint[0]}</span>
                       )}
                     </div>
                   </button>

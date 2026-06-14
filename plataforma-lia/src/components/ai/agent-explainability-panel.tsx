@@ -54,7 +54,7 @@ const PHASE_CONFIG: Record<
 > = {
   reasoning: {
     label:"Raciocínio",
-    color:"text-wedo-cyan-text",
+    color:"text-lia-text-secondary",
     bgColor:"bg-wedo-cyan/10/15",
     icon: Brain,
   },
@@ -72,7 +72,7 @@ const PHASE_CONFIG: Record<
   },
   decision: {
     label:"Decisão",
-    color:"text-wedo-purple-text",
+    color:"text-lia-text-secondary",
     bgColor:"bg-wedo-purple/10/15",
     icon: Target,
   },
@@ -161,7 +161,7 @@ export function AgentExplainabilityPanel({
           {summary && !loading && (
             <Chip
               variant="neutral"
-              className="ml-2 border-wedo-cyan/30 text-wedo-cyan-text text-micro px-1.5 py-0"
+              className="ml-2 border-wedo-cyan/30 text-lia-text-muted text-micro px-1.5 py-0"
             >
               {summary.total_steps} passos
             </Chip>
@@ -310,7 +310,7 @@ export function AgentExplainabilityPanel({
                 <span className="text-micro text-lia-text-secondary font-[Inter]">
                   Confiança
                 </span>
-                <span className="text-sm font-semibold text-wedo-cyan-text">
+                <span className="text-sm font-semibold text-lia-text-secondary">
                   {Math.round(summary.confidence * 100)}%
                 </span>
               </div>

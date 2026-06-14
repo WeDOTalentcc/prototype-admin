@@ -78,8 +78,8 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-wedo-purple-text font-medium">Faixa Salarial</p>
-                <p className="text-2xl font-semibold text-wedo-purple-text">
+                <p className="text-sm text-lia-text-secondary font-medium">Faixa Salarial</p>
+                <p className="text-2xl font-semibold text-lia-text-primary">
                   {loading ?"..." : salary ? `P${salary.market_percentile}` :"--"}
                 </p>
                 <p className="text-xs text-lia-text-primary">
@@ -88,7 +88,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               </div>
               <AlertTriangle className="w-8 h-8 text-wedo-purple" />
             </div>
-            <div className="mt-2 text-xs text-wedo-purple-text">
+            <div className="mt-2 text-xs text-lia-text-muted">
               {salary ? salary.competitive_analysis :"Carregando..."}
             </div>
           </CardContent>

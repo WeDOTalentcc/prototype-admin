@@ -123,8 +123,8 @@ export function RecruitersTab({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-wedo-purple-text font-medium">NPS Médio</p>
-                <p className="text-2xl font-semibold text-wedo-purple-text">{teamMetrics.avgNPS}%</p>
+                <p className="text-sm text-lia-text-secondary font-medium">NPS Médio</p>
+                <p className="text-2xl font-semibold text-lia-text-primary">{teamMetrics.avgNPS}%</p>
               </div>
               <Trophy className="w-8 h-8 text-wedo-purple" />
             </div>

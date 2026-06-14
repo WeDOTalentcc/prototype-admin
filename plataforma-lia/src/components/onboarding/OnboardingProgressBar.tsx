@@ -127,7 +127,7 @@ export function OnboardingProgressBar({
           <span className="text-sm font-medium text-lia-text-primary">
             Configuração da empresa
           </span>
-          <span className="text-sm font-semibold text-wedo-cyan-text tabular-nums">
+          <span className="text-sm font-semibold text-lia-text-secondary tabular-nums">
             {progress}%
           </span>
         </div>

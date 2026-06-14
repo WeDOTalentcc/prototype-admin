@@ -350,7 +350,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </div>
                   <div className="text-center p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30">
                     <Clock className="w-4 h-4 text-wedo-purple mx-auto mb-0.5" />
-                    <p className="text-lg font-semibold text-wedo-purple-text">{reportData.funnelMetrics.averageTimeToHire}</p>
+                    <p className="text-lg font-semibold text-lia-text-secondary">{reportData.funnelMetrics.averageTimeToHire}</p>
                     <p className="text-micro text-lia-text-secondary">Dias p/ Contratar</p>
                   </div>
                   <div className="text-center p-2 bg-wedo-orange/10 rounded-xl border border-wedo-orange/30">
@@ -543,12 +543,12 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   {reportData.predictions.timeToFill && (
                     <div className="p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-micro font-medium text-wedo-purple-text">Previsão Time-to-Fill</span>
+                        <span className="text-micro font-medium text-lia-text-secondary">Previsão Time-to-Fill</span>
                         <Chip variant="neutral" muted className="bg-wedo-purple/20 text-wedo-purple-text text-micro px-1 py-0">
                           {Math.round(reportData.predictions.timeToFill.confidence * 100)}% confiança
                         </Chip>
                       </div>
-                      <p className="text-sm font-bold text-wedo-purple-text">
+                      <p className="text-sm font-bold text-lia-text-secondary">
                         {reportData.predictions.timeToFill.predictedDays} dias
                         <span className="text-micro font-normal ml-1">
                           ({reportData.predictions.timeToFill.rangeMin}-{reportData.predictions.timeToFill.rangeMax})
@@ -621,7 +621,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </div>
                   <div className="p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30 text-center">
                     <p className="text-micro text-lia-text-secondary">Benchmark TTF</p>
-                    <p className="text-micro font-medium text-wedo-purple-text">{reportData.qualityMetrics.timeToFillBenchmark}</p>
+                    <p className="text-micro font-medium text-lia-text-secondary">{reportData.qualityMetrics.timeToFillBenchmark}</p>
                   </div>
                   <div className="p-2 bg-status-success/10 rounded-xl border border-status-success/30 text-center">
                     <p className="text-micro text-lia-text-secondary">Salário vs Mercado</p>

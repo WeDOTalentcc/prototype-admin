@@ -469,7 +469,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       <td className="p-2 text-center">
                         {v.is_overdue
                           ? <span className="text-status-error font-medium">Atrasada</span>
-                          : <span className="text-wedo-green-text-bright">No prazo</span>
+                          : <span className="text-lia-text-secondary-bright">No prazo</span>
                         }
                       </td>
                     </tr>
@@ -531,13 +531,13 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       <tr key={d.domain} className={`hover:bg-lia-bg-secondary/50 ${d.needs_calibration ? 'bg-status-warning/5' : ''}`}>
                         <td className="p-2 font-medium text-lia-text-primary">{d.domain}</td>
                         <td className="p-2 text-right text-lia-text-secondary">{d.total_events}</td>
-                        <td className="p-2 text-right text-wedo-green-text-bright">{d.agree_count}</td>
+                        <td className="p-2 text-right text-lia-text-secondary-bright">{d.agree_count}</td>
                         <td className="p-2 text-right text-status-error">{d.disagree_count}</td>
                         <td className="p-2 text-right text-lia-text-secondary">{(d.agreement_rate * 100).toFixed(0)}%</td>
                         <td className="p-2 text-center">
                           {d.needs_calibration
                             ? <span className="text-status-warning font-medium">Calibrar</span>
-                            : <span className="text-wedo-green-text-bright">OK</span>
+                            : <span className="text-lia-text-secondary-bright">OK</span>
                           }
                         </td>
                       </tr>

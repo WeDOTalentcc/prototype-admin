@@ -368,7 +368,7 @@ export function LiaSuperPrompt() {
                               Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                             </p>
                             {hasContextualData && (
-                              <p className="text-xs text-wedo-cyan-text font-medium">
+                              <p className="text-xs text-lia-text-secondary font-medium">
                                 Sugestões personalizadas baseadas na sua atividade recente
                               </p>
                             )}

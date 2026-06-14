@@ -35,7 +35,7 @@ const SEVERITY_CLASS: Record<
   info: {
     wrap:
       "border-l-4 border-wedo-cyan bg-wedo-cyan/10 text-lia-text-primary",
-    icon: "text-wedo-cyan-text dark:text-wedo-cyan",
+    icon: "text-lia-text-secondary dark:text-wedo-cyan",
   },
   warning: {
     wrap:

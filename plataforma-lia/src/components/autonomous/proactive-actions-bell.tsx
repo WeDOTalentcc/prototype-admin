@@ -324,7 +324,7 @@ export function ProactiveActionsBell({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-2 text-micro text-wedo-cyan-text hover:text-wedo-cyan-dark"
+                  className="mt-2 text-micro text-lia-text-muted hover:text-wedo-cyan-dark"
                   onClick={() => setDeferredIds(new Set())}
                 >
                   Mostrar adiadas ({deferredIds.size})

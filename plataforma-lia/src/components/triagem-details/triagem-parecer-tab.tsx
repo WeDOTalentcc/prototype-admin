@@ -192,7 +192,7 @@ export function TriagemParecerTab({
                     Perfil de Personalidade
                   </h3>
                   <p className="text-micro text-lia-text-secondary mt-0.5">
-                    Dimensões <span className="text-wedo-purple-text font-medium">críticas</span> determinam fit de performance e cultura.
+                    Dimensões <span className="text-lia-text-secondary font-medium">críticas</span> determinam fit de performance e cultura.
                   </p>
                 </div>
                 <div className="flex items-center gap-4 text-micro text-lia-text-secondary">
@@ -430,7 +430,7 @@ export function TriagemParecerTab({
           )}
           {feedback?.personalized_tip && (
             <div className="p-2 rounded-lg mt-2 bg-wedo-cyan/[0.08] border border-wedo-cyan/20">
-              <p className="text-micro font-medium mb-0.5 text-wedo-cyan-text">Dica Personalizada</p>
+              <p className="text-micro font-medium mb-0.5 text-lia-text-secondary">Dica Personalizada</p>
               <p className="text-xs text-lia-text-secondary">{feedback.personalized_tip}</p>
             </div>
           )}

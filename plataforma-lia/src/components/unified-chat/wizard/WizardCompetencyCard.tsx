@@ -121,7 +121,7 @@ export function WizardCompetencyCard({ data, onOpenPanel }: WizardCompetencyCard
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className="w-full px-3 py-2 text-xs text-wedo-cyan-text hover:bg-lia-interactive-hover transition-colors text-left"
+            className="w-full px-3 py-2 text-xs text-lia-text-muted hover:bg-lia-interactive-hover transition-colors text-left"
           >
             Ver todas as {tree.length} competências
           </button>
@@ -132,7 +132,7 @@ export function WizardCompetencyCard({ data, onOpenPanel }: WizardCompetencyCard
             <button
               type="button"
               onClick={onOpenPanel}
-              className="flex items-center gap-1.5 text-[11px] text-wedo-cyan-text hover:underline"
+              className="flex items-center gap-1.5 text-[11px] text-lia-text-muted hover:underline"
             >
               <ExternalLink className="w-3 h-3" aria-hidden="true" />
               Abrir no painel

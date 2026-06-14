@@ -69,7 +69,7 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-semibold text-wedo-purple-text">
+                  <div className="text-lg font-semibold text-lia-text-secondary">
                     {recruiter.avgTimeToFill}d
                   </div>
                   <div className="text-xs text-lia-text-primary">

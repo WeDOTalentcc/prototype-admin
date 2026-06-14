@@ -134,7 +134,7 @@ export function JobSummaryCard({
             <div
               className="text-center px-3 py-1 rounded-xl bg-lia-bg-tertiary"
             >
-              <div className="text-lg font-semibold text-wedo-purple-text">{data.candidates_count}</div>
+              <div className="text-lg font-semibold text-lia-text-secondary">{data.candidates_count}</div>
               <div className="text-xs text-lia-text-tertiary">candidatos</div>
             </div>
           )}

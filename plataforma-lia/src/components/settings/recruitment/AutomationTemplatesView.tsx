@@ -275,7 +275,7 @@ export function AutomationTemplatesView({ onUseTemplate }: Props) {
                 <button
                   type="button"
                   onClick={() => onUseTemplate(tpl.state)}
-                  className="text-xs text-wedo-cyan-text hover:underline inline-flex items-center gap-1 mt-1"
+                  className="text-xs text-lia-text-muted hover:underline inline-flex items-center gap-1 mt-1"
                   data-testid={`template-use-${tpl.id}`}
                 >
                   Usar este{" "}

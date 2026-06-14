@@ -304,7 +304,7 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
         <button
           type="button"
           onClick={handleConsumptionLink}
-          className="inline-flex items-center gap-1 text-xs font-medium text-wedo-cyan-text hover:text-wedo-cyan-dark transition-colors"
+          className="inline-flex items-center gap-1 text-xs font-medium text-lia-text-secondary hover:text-wedo-cyan-dark transition-colors"
         >
           {t("viewConsumption")}
           <ArrowRight className="h-3 w-3" />

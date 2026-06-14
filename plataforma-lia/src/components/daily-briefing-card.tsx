@@ -208,7 +208,7 @@ export function DailyBriefingCard({
       case 'opportunity':
         return 'bg-status-success/10 border-status-success/30 text-status-success'
       case 'suggestion':
-        return 'bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-text'
+        return 'bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary'
       case 'success':
         return 'bg-status-success/10 border-status-success/30 text-status-success'
       default:
@@ -364,7 +364,7 @@ export function DailyBriefingCard({
                 <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Urgentes</span>
               </div>
-              <p className="text-lg font-semibold text-wedo-cyan-text">
+              <p className="text-lg font-semibold text-lia-text-secondary">
                 {briefing.summary.urgent_count}
               </p>
             </div>
@@ -379,7 +379,7 @@ export function DailyBriefingCard({
                 <Target className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Tarefas Hoje</span>
               </div>
-              <p className="text-lg font-semibold text-wedo-cyan-text">
+              <p className="text-lg font-semibold text-lia-text-secondary">
                 {briefing.summary.tasks_today}
               </p>
             </div>
@@ -394,7 +394,7 @@ export function DailyBriefingCard({
                 <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Entrevistas</span>
               </div>
-              <p className="text-lg font-semibold text-wedo-cyan-text">
+              <p className="text-lg font-semibold text-lia-text-secondary">
                 {briefing.summary.interviews_today}
               </p>
             </div>
@@ -409,7 +409,7 @@ export function DailyBriefingCard({
                 <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Alertas</span>
               </div>
-              <p className="text-lg font-semibold text-wedo-cyan-text">
+              <p className="text-lg font-semibold text-lia-text-secondary">
                 {briefing.summary.alerts_active}
               </p>
             </div>
@@ -417,7 +417,7 @@ export function DailyBriefingCard({
 
           {briefing.urgent_actions.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-text">
+              <h4 className="text-xs font-medium flex items-center gap-2 text-lia-text-secondary">
                 <Zap className="w-4 h-4 text-lia-text-secondary" />
                 Ações Urgentes
               </h4>
@@ -429,7 +429,7 @@ export function DailyBriefingCard({
                     className="flex items-center justify-between p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate text-wedo-cyan-text">
+                      <p className="text-xs font-medium truncate text-lia-text-secondary">
                         {action.title}
                       </p>
                       <p className="text-xs truncate text-lia-text-secondary">
@@ -453,7 +453,7 @@ export function DailyBriefingCard({
 
           {briefing.schedule.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-text">
+              <h4 className="text-xs font-medium flex items-center gap-2 text-lia-text-secondary">
                 <Calendar className="w-4 h-4 text-lia-text-secondary" />
                 Agenda do Dia
               </h4>
@@ -469,7 +469,7 @@ export function DailyBriefingCard({
                       <Clock className="w-4 h-4 text-lia-text-secondary" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-wedo-cyan-text">
+                      <p className="text-xs font-medium text-lia-text-secondary">
                         {item.time}
                       </p>
                       <p className="text-xs truncate text-lia-text-secondary">
@@ -489,7 +489,7 @@ export function DailyBriefingCard({
 
           {briefing.insights.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-text">
+              <h4 className="text-xs font-medium flex items-center gap-2 text-lia-text-secondary">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Insights IA
               </h4>
@@ -526,7 +526,7 @@ export function DailyBriefingCard({
 
           {briefing.recruiter_benchmark?.benchmark_available && (
             <div className="p-3 rounded-xl border bg-lia-bg-secondary">
-              <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-wedo-cyan-text">
+              <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-lia-text-secondary">
                 <TrendingUp className="w-4 h-4 text-wedo-cyan" />
                 Benchmark do Recrutador
               </h4>
@@ -564,7 +564,7 @@ export function DailyBriefingCard({
 
           {briefing.pipeline_prediction?.available && (briefing.pipeline_prediction.at_risk_count ?? 0) > 0 && (
             <div className="p-3 rounded-xl border bg-lia-bg-secondary">
-              <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-wedo-cyan-text">
+              <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-lia-text-secondary">
                 <Target className="w-4 h-4 text-wedo-cyan" />
                 Predição de Pipeline
               </h4>

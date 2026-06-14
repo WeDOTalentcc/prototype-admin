@@ -154,7 +154,7 @@ const STATUS_CONFIG: Record<CompetitivenessStatus, {
     icon: TrendingUp,
     label: 'Acima do Mercado',
     description: 'A remuneração está acima da média de mercado',
-    className: 'text-wedo-cyan-text',
+    className: 'text-lia-text-secondary',
     bgClassName: 'bg-wedo-cyan/10 border-wedo-cyan/30 dark:border-wedo-cyan/30'
   }
 }
@@ -378,14 +378,14 @@ export function CompensationAnalysisPanel({
             </div>
             <div className="p-2 rounded-xl bg-wedo-purple/10 border border-wedo-purple/30 dark:border-wedo-purple/30">
               <p className="text-micro text-lia-text-tertiary mb-1">Mercado</p>
-              <p className="text-xs font-semibold text-wedo-purple-text dark:text-wedo-purple">
+              <p className="text-xs font-semibold text-lia-text-secondary dark:text-wedo-purple">
                 {formatCurrency(analysis.salary.market.min)} - {formatCurrency(analysis.salary.market.max)}
               </p>
             </div>
             {analysis.salary.policy && (
               <div className="p-2 rounded-xl bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-lia-text-tertiary mb-1">Política</p>
-                <p className="text-xs font-semibold text-wedo-cyan-text">
+                <p className="text-xs font-semibold text-lia-text-secondary">
                   {formatCurrency(analysis.salary.policy.min)} - {formatCurrency(analysis.salary.policy.max)}
                 </p>
               </div>
@@ -435,7 +435,7 @@ export function CompensationAnalysisPanel({
             {analysis.bonus.policyPercentage !== undefined && (
               <div className="p-2 rounded-xl bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-lia-text-tertiary mb-1">Política da Empresa</p>
-                <p className="text-sm font-semibold text-wedo-cyan-text">
+                <p className="text-sm font-semibold text-lia-text-secondary">
                   {analysis.bonus.policyPercentage}%
                 </p>
               </div>
@@ -540,7 +540,7 @@ export function CompensationAnalysisPanel({
             {analysis.totalCompensation.marketAnnual && (
               <div className="p-2 rounded-xl bg-wedo-purple/10 border border-wedo-purple/30 dark:border-wedo-purple/30">
                 <p className="text-micro text-lia-text-tertiary mb-1">Mercado</p>
-                <p className="text-xs font-semibold text-wedo-purple-text dark:text-wedo-purple">
+                <p className="text-xs font-semibold text-lia-text-secondary dark:text-wedo-purple">
                   {formatCurrency(analysis.totalCompensation.marketAnnual)}
                 </p>
               </div>
@@ -548,7 +548,7 @@ export function CompensationAnalysisPanel({
             {analysis.totalCompensation.policyAnnual && (
               <div className="p-2 rounded-xl bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-lia-text-tertiary mb-1">Política</p>
-                <p className="text-xs font-semibold text-wedo-cyan-text">
+                <p className="text-xs font-semibold text-lia-text-secondary">
                   {formatCurrency(analysis.totalCompensation.policyAnnual)}
                 </p>
               </div>

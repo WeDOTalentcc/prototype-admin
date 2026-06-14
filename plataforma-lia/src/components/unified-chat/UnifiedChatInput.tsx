@@ -220,7 +220,7 @@ export function UnifiedChatInput({
       {/* Drag overlay */}
       {isDragOver && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md border-2 border-dashed border-wedo-cyan bg-wedo-cyan/5">
-          <p className="text-sm font-medium text-wedo-cyan-text">{t('dropFileHere')}</p>
+          <p className="text-sm font-medium text-lia-text-secondary">{t('dropFileHere')}</p>
         </div>
       )}
       {/* Attached file indicator */}

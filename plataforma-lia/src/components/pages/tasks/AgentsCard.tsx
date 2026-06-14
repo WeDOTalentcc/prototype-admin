@@ -196,7 +196,7 @@ export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
           </div>
           <Link
             href="/agent-studio?tab=control-room"
-            className="text-xs text-wedo-cyan-text dark:text-wedo-cyan hover:underline transition-colors motion-reduce:transition-none"
+            className="text-xs text-lia-text-muted dark:text-wedo-cyan hover:underline transition-colors motion-reduce:transition-none"
           >
             {t("card.viewAll")}
           </Link>
@@ -253,7 +253,7 @@ export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
               </p>
               <Link
                 href="/agent-studio"
-                className="mt-1 text-xs font-medium text-wedo-cyan-text dark:text-wedo-cyan hover:underline"
+                className="mt-1 text-xs font-medium text-lia-text-secondary dark:text-wedo-cyan hover:underline"
               >
                 {t("card.empty.cta")} →
               </Link>

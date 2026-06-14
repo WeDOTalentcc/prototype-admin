@@ -159,7 +159,7 @@ export function ProgressTrackerCard({
             <div
               className="text-center p-2 rounded-xl border bg-lia-bg-primary border-lia-border-subtle"
             >
-              <div className="text-lg font-semibold text-wedo-green-text">{data.conversion_rate}%</div>
+              <div className="text-lg font-semibold text-lia-text-secondary">{data.conversion_rate}%</div>
               <div className="text-xs text-lia-text-tertiary">Conversão</div>
             </div>
           )}

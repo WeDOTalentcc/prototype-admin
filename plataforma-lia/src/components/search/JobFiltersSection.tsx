@@ -203,7 +203,7 @@ export const JobFiltersSection = ({
                                 <div className="text-xs text-lia-text-secondary mt-0.5">{preset.description}</div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-wedo-purple-text">+{preset.titles.length} cargos</span>
+                                <span className="text-xs text-lia-text-muted">+{preset.titles.length} cargos</span>
                                 <ChevronRight className="w-4 h-4 text-lia-text-tertiary" />
                               </div>
                             </div>
@@ -214,7 +214,7 @@ export const JobFiltersSection = ({
                                 </span>
                               ))}
                               {preset.titles.length > 3 && (
-                                <span className="text-micro text-wedo-purple-text">...</span>
+                                <span className="text-micro text-lia-text-muted">...</span>
                               )}
                             </div>
                           </button>

@@ -84,7 +84,7 @@ export function BatchCompleteStep({ results, onApprovalComplete, onClose }: Batc
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-semibold text-wedo-purple-text mb-2">{results.moved}</div>
+              <div className="text-3xl font-semibold text-lia-text-primary mb-2">{results.moved}</div>
               <div className="text-sm text-lia-text-secondary">Movidos</div>
             </CardContent>
           </Card>

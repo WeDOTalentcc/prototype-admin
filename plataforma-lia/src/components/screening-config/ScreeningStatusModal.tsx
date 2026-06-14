@@ -274,9 +274,9 @@ export function ScreeningStatusModal({
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-wedo-cyan-dark mt-0.5" />
                   <div>
-                    <p className="text-xs font-medium text-wedo-cyan-text">Triagem Concluída</p>
+                    <p className="text-xs font-medium text-lia-text-secondary">Triagem Concluída</p>
                     {screeningConfig?.status?.completed_at && (
-                      <p className="text-micro text-wedo-cyan-text mt-1">
+                      <p className="text-micro text-lia-text-muted mt-1">
                         Concluída em {new Date(screeningConfig.status.completed_at).toLocaleDateString('pt-BR')}
                       </p>
                     )}

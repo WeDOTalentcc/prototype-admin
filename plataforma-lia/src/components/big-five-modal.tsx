@@ -24,7 +24,7 @@ const traitDescriptions = {"Abertura": {
     icon:"🎨",
     color:"bg-wedo-purple",
     bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20",
-    textColor:"text-wedo-purple-text dark:text-wedo-purple",
+    textColor:"text-lia-text-secondary dark:text-wedo-purple",
     high: {
       label:"Alto",
       description:"Pessoas criativas, curiosas e abertas a novas experiências. Tendem a ser imaginativas, aventureiras e dispostas a explorar novas ideias.",
@@ -44,7 +44,7 @@ const traitDescriptions = {"Abertura": {
     icon:"✅",
     color:"bg-lia-btn-primary-bg",
     bgColor:"bg-wedo-cyan/10",
-    textColor:"text-wedo-cyan-text dark:text-wedo-cyan-dark",
+    textColor:"text-lia-text-secondary dark:text-wedo-cyan-dark",
     high: {
       label:"Alto",
       description:"Pessoas organizadas, disciplinadas e orientadas a objetivos. Altamente confiáveis e responsáveis.",
@@ -266,7 +266,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                     Score B5
                   </span>
                 </div>
-                <div className="text-lg font-semibold text-wedo-purple-text">
+                <div className="text-lg font-semibold text-lia-text-secondary">
                   {averageScore}
                 </div>
               </div>
@@ -290,10 +290,10 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
               <div className="flex items-center gap-3">
                 <span className="text-xl">{archetype.icon}</span>
                 <div>
-                  <div className="text-base-ui font-medium text-wedo-purple-text">
+                  <div className="text-base-ui font-medium text-lia-text-secondary">
                     {archetype.name}
                   </div>
-                  <div className="text-xs text-wedo-purple-text">
+                  <div className="text-xs text-lia-text-muted">
                     {archetype.description}
                   </div>
                 </div>

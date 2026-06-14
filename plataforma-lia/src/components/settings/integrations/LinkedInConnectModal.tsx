@@ -273,7 +273,7 @@ export function LinkedInConnectModal({
                   href="https://www.linkedin.com/company/admin/overview/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-0.5 text-wedo-cyan-text hover:underline"
+                  className="inline-flex items-center gap-0.5 text-lia-text-secondary hover:underline"
                 >
                   Encontrar na LinkedIn Admin <ExternalLink className="h-3 w-3" />
                 </a>

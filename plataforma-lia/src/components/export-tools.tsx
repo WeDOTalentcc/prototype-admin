@@ -99,7 +99,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       format: 'csv' as const,
       label: 'CSV',
       description: 'Dados brutos para análise',
-      color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-text border-lia-border-default dark:border-lia-border-default',
+      color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
       recommended: false
     },
     {
@@ -300,10 +300,10 @@ export function ExportTools({ data, className }: ExportToolsProps) {
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                 <div>
- <h4 className="text-sm font-medium text-wedo-cyan-text mb-1">
+ <h4 className="text-sm font-medium text-lia-text-secondary mb-1">
                     Dicas de Exportação
                   </h4>
- <ul className="text-xs text-wedo-cyan-text space-y-1">
+ <ul className="text-xs text-lia-text-muted space-y-1">
                     <li>• Use <strong>Excel</strong> para análises detalhadas com gráficos</li>
                     <li>• Use <strong>PDF</strong> para apresentações executivas</li>
                     <li>• Use <strong>CSV</strong> para importar em outras ferramentas</li>

@@ -535,7 +535,7 @@ function TabParecer({ data }: { data: WSIResultDetails }) {
           )}
           {feedback.personalized_tip && (
             <div className="bg-wedo-cyan/10 border border-wedo-cyan/30 rounded-lg p-3">
-              <p className="text-[10px] text-wedo-cyan-text font-medium mb-0.5">{t('report.personalizedTip')}</p>
+              <p className="text-[10px] text-lia-text-secondary font-medium mb-0.5">{t('report.personalizedTip')}</p>
               <p className="text-xs text-lia-text-secondary">{feedback.personalized_tip}</p>
             </div>
           )}

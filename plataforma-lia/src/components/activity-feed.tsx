@@ -237,7 +237,7 @@ export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilt
       case 'exceeds':
         return 'text-status-success'
       case 'meets':
-        return 'text-wedo-cyan-text'
+        return 'text-lia-text-secondary'
       case 'partial':
         return 'text-status-warning'
       case 'missing':

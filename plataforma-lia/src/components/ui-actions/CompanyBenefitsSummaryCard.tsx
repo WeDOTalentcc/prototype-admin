@@ -26,7 +26,7 @@ const CATEGORY_MAP: Record<string, { name: string; icon: LucideIcon; color: stri
   health: { name:"Saúde", icon: Stethoscope, color:"text-status-error" },
   food: { name:"Alimentação", icon: Utensils, color:"text-wedo-orange-text" },
   transport: { name:"Transporte", icon: Car, color:"text-lia-text-secondary" },
-  education: { name:"Educação", icon: GraduationCap, color:"text-wedo-purple-text" },
+  education: { name:"Educação", icon: GraduationCap, color:"text-lia-text-secondary" },
   financial: { name:"Financeiro", icon: Wallet, color:"text-status-success" },
   quality_life: { name:"Qualidade", icon: Home, color:"text-lia-text-secondary" },
   family: { name:"Família", icon: Baby, color:"text-wedo-magenta-text" },
@@ -80,7 +80,7 @@ export function CompanyBenefitsSummaryCard({
           <Gift className="w-4 h-4 text-wedo-purple" />
           <span>Benefícios da Empresa</span>
           {highlighted_count && highlighted_count > 0 && (
-            <Chip density="relaxed" variant="neutral" className="ml-auto text-wedo-purple-text">
+            <Chip density="relaxed" variant="neutral" className="ml-auto text-lia-text-secondary">
               <Star className="w-3 h-3 mr-1 fill-current" />
               {highlighted_count} em destaque
             </Chip>

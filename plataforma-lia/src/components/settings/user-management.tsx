@@ -108,7 +108,7 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
               href="https://workos.com/docs/directory-sync"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-wedo-cyan-text dark:text-wedo-cyan-dark hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan-dark flex items-center gap-1 text-xs flex-shrink-0"
+              className="text-lia-text-muted dark:text-wedo-cyan-dark hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan-dark flex items-center gap-1 text-xs flex-shrink-0"
             >
               <ExternalLink className="w-3 h-3" />
               {t("scimLearnMore")}
@@ -163,7 +163,7 @@ export function UserManagement({ departments: hubDepartments = [], onDepartmentC
         </Card>
         <Card className="rounded-md">
           <CardContent className="p-3 text-center">
-            <div className={cn(textStyles.metricLarge, "text-wedo-purple-text dark:text-wedo-purple")}>{stats.managers}</div>
+            <div className={cn(textStyles.metricLarge, "text-lia-text-secondary dark:text-wedo-purple")}>{stats.managers}</div>
             <div className={textStyles.description}>{t("managers")}</div>
           </CardContent>
         </Card>

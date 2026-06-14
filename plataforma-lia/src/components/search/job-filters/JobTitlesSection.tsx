@@ -292,7 +292,7 @@ export const JobTitlesSection = ({
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-purple" />
               <span className="text-xs font-medium text-wedo-purple-text">Sugestões da LIA</span>
-              <span className="text-micro text-wedo-purple-text">
+              <span className="text-micro text-lia-text-muted">
                 (clique para selecionar múltiplos)
               </span>
             </div>

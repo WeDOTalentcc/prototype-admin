@@ -66,7 +66,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
                 <span className="font-medium">+{creditEstimate.freshness_cost}</span>
               </div>
             )}
-            <div className="flex justify-between text-xs text-wedo-cyan-text">
+            <div className="flex justify-between text-xs text-lia-text-muted">
               <span className="flex items-center gap-1">
                 <Mail className="w-3 h-3" />
                 Enriquecimento Apify

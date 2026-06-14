@@ -388,7 +388,7 @@ function ProfilePreferencesCard({ candidate, onShowConsentHistory }: { candidate
               {onShowConsentHistory && (
                 <button
                   onClick={onShowConsentHistory}
-                  className="block text-micro text-wedo-cyan-text hover:underline mt-0.5"
+                  className="block text-micro text-lia-text-muted hover:underline mt-0.5"
                 >
                   → Ver histórico
                 </button>
@@ -405,7 +405,7 @@ function ProfilePreferencesCard({ candidate, onShowConsentHistory }: { candidate
             {onShowConsentHistory && (
               <button
                 onClick={onShowConsentHistory}
-                className="block text-micro text-wedo-cyan-text hover:underline mt-0.5"
+                className="block text-micro text-lia-text-muted hover:underline mt-0.5"
               >
                 → Ver histórico
               </button>

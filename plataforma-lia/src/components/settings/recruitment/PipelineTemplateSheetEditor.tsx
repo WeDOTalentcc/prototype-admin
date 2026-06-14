@@ -391,7 +391,7 @@ export function PipelineTemplateSheetEditor({
                 <span className="flex items-center gap-2">
                   Configuração de Volume (Saturação)
                   {saturation?.enabled && (
-                    <span className="text-xs text-wedo-cyan-text font-normal">incluída no template</span>
+                    <span className="text-xs text-lia-text-muted font-normal">incluída no template</span>
                   )}
                 </span>
                 {showSaturation

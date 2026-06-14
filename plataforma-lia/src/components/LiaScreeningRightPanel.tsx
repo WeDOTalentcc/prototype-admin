@@ -134,7 +134,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
                   }
                 ].map((section) => (
                   <div key={section.category} className="border border-wedo-purple/30 rounded-xl p-3">
-                    <h4 className="font-medium text-wedo-purple-text text-sm mb-2">{section.category}</h4>
+                    <h4 className="font-medium text-lia-text-secondary text-sm mb-2">{section.category}</h4>
                     <div className="space-y-1">
                       {section.questions.map((question, qIndex) => (
                         <div key={qIndex} className="text-xs text-lia-text-secondary">• {question}</div>
@@ -260,7 +260,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
                       {(index + 1 as React.ReactNode)}
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-wedo-cyan-text">{item.step}</div>
+                      <div className="text-sm font-medium text-lia-text-secondary">{item.step}</div>
                       <div className="text-xs text-lia-text-secondary">{item.time}</div>
                       <div className="text-xs text-lia-text-secondary">{item.desc}</div>
                     </div>

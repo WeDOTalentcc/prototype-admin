@@ -38,7 +38,7 @@ const INSIGHT_STYLES: Record<LiaInsight["type"], {
   analysis: {
     bg: "bg-wedo-purple/10",
     border: "border-wedo-purple/30",
-    iconColor: "text-wedo-purple-text",
+    iconColor: "text-lia-text-secondary",
     badgeText: "Análise",
     badgeBg: "bg-wedo-purple/15 text-wedo-purple-text",
     icon: Search,
@@ -46,7 +46,7 @@ const INSIGHT_STYLES: Record<LiaInsight["type"], {
   comparative: {
     bg: "bg-wedo-cyan/10",
     border: "border-wedo-cyan/30",
-    iconColor: "text-wedo-cyan-text",
+    iconColor: "text-lia-text-secondary",
     badgeText: "Comparativo",
     badgeBg: "bg-wedo-cyan/15 text-wedo-cyan-text",
     icon: ArrowRightLeft,

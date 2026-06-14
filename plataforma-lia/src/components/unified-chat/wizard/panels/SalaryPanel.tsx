@@ -168,7 +168,7 @@ export function SalaryPanel({ data, onUpdate }: Props) {
       {/* Benchmark */}
       {d.benchmark && (
         <div className="p-2.5 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/20">
-          <p className="text-[10px] font-medium text-wedo-cyan-text">Benchmark de mercado</p>
+          <p className="text-[10px] font-medium text-lia-text-secondary">Benchmark de mercado</p>
           <div className="mt-1 space-y-0.5">
             {Object.entries(d.benchmark).map(([key, val]) => (
               <div key={key} className="flex items-center justify-between text-xs">
@@ -231,12 +231,12 @@ export function SalaryPanel({ data, onUpdate }: Props) {
                 <span className="text-xs text-lia-text-primary font-medium">{vc.name}</span>
                 <div className="flex items-center gap-1.5 ml-2">
                   {(vc.target_pct || vc.min_pct) && (
-                    <span className="text-micro text-wedo-cyan-text">
+                    <span className="text-micro text-lia-text-muted">
                       {vc.target_pct ? `${vc.target_pct}%` : `${vc.min_pct}–${vc.max_pct}%`}
                     </span>
                   )}
                   {vc.min_amount && (
-                    <span className="text-micro text-wedo-cyan-text">
+                    <span className="text-micro text-lia-text-muted">
                       {`R$ ${vc.min_amount.toLocaleString("pt-BR")}`}
                       {vc.max_amount ? `–${vc.max_amount.toLocaleString("pt-BR")}` : ""}
                     </span>

@@ -348,7 +348,7 @@ export function JobInfoGeralSection({
         <h3 className={groupHeaderClass}>
           Idiomas<ScreeningBadge />
           {Boolean((companyDefaults as Record<string, unknown>)?.defaultLanguages) && ((companyDefaults as Record<string, unknown>)?.defaultLanguages as string[]).length > 0 && (
-            <span className="ml-1.5 text-micro text-wedo-cyan-text font-normal normal-case tracking-normal">
+            <span className="ml-1.5 text-micro text-lia-text-muted font-normal normal-case tracking-normal">
               (padrão empresa: {((companyDefaults as Record<string, unknown>)?.defaultLanguages as string[]).join(", ")})
             </span>
           )}

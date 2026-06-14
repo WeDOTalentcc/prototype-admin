@@ -193,7 +193,7 @@ export function EditArchetypeTagsSection({
                     }
                   }}
                   className={cn(
-                    "px-1.5 py-0.5 rounded-full text-micro transition-[width,height] cursor-pointer text-wedo-cyan-text",
+                    "px-1.5 py-0.5 rounded-full text-micro transition-[width,height] cursor-pointer text-lia-text-muted",
                     isSelected ? "ring-2 ring-lia-btn-primary-bg/20 bg-wedo-cyan/25" : "bg-wedo-cyan/15"
                   )}
                 >

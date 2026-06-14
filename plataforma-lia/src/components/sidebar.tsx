@@ -461,7 +461,7 @@ JobFilterItem.displayName = 'JobFilterItem'
 
 const RECENT_TYPE_CONFIG = {
   vaga: { icon: Briefcase, color: 'text-lia-text-secondary' },
-  chat: { icon: Brain, color: 'text-wedo-cyan-text' },
+  chat: { icon: Brain, color: 'text-lia-text-secondary' },
   candidato: { icon: User, color: 'text-lia-text-secondary' },
   banco: { icon: Database, color: 'text-lia-text-secondary' },
 } as const

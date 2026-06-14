@@ -173,7 +173,7 @@ export function WeeklyDigestChatMessage({
           <div className="flex items-start gap-2.5 px-3.5 py-2.5 bg-wedo-cyan/5">
             <Lightbulb className="w-3.5 h-3.5 text-wedo-cyan mt-0.5 shrink-0" />
             <div>
-              <p className="text-xs font-semibold text-wedo-cyan-text mb-0.5">Padrões e Otimização</p>
+              <p className="text-xs font-semibold text-lia-text-secondary mb-0.5">Padrões e Otimização</p>
               <p className="text-[11px] text-lia-text-secondary leading-relaxed">{digest.optimization.message}</p>
             </div>
           </div>

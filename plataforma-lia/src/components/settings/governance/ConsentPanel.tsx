@@ -374,7 +374,7 @@ function TrainingDataConsentTab() {
             href="/docs/adr/ADR-RLHF-001"
             target="_blank"
             rel="noreferrer noopener"
-            className="text-wedo-purple-text underline hover:opacity-80"
+            className="text-lia-text-secondary underline hover:opacity-80"
           >
             ADR-RLHF-001
           </a>
@@ -383,7 +383,7 @@ function TrainingDataConsentTab() {
             href="/docs/adr/ADR-LGPD-002"
             target="_blank"
             rel="noreferrer noopener"
-            className="text-wedo-purple-text underline hover:opacity-80"
+            className="text-lia-text-secondary underline hover:opacity-80"
           >
             ADR-LGPD-002
           </a>

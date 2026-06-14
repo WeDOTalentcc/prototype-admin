@@ -186,7 +186,7 @@ export function ReviewPanel({ data, onUpdate }: Props) {
             ))}
             <div className="pt-0.5 border-t border-lia-border-subtle mt-1 flex justify-between text-[10px] font-medium">
               <span className="text-lia-text-secondary">Total estimado</span>
-              <span className="text-wedo-cyan-text">{chronogram[chronogram.length - 1].offset_end} dias</span>
+              <span className="text-lia-text-secondary">{chronogram[chronogram.length - 1].offset_end} dias</span>
             </div>
           </div>
         </div>

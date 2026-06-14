@@ -173,7 +173,7 @@ const NotificationItem = React.memo(({
             {notification.actionUrl && notification.actionLabel && (
               <a
                 href={notification.actionUrl}
-                className="text-[10px] font-medium text-wedo-cyan-text hover:underline flex items-center gap-0.5"
+                className="text-[10px] font-medium text-lia-text-secondary hover:underline flex items-center gap-0.5"
                 onClick={(e) => e.stopPropagation()}
               >
                 {notification.actionLabel}

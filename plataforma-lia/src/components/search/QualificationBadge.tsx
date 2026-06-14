@@ -29,7 +29,7 @@ const levelConfig = {
   alta: {
     label: "Alta",
     icon: Crown,
-    className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-purple-text border border-wedo-purple/20",
+    className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-lia-text-secondary border border-wedo-purple/20",
     bgStyle: { background: "var(--wedo-purple-bg-10)" },
     darkClassName: "dark:text-wedo-purple dark:border-wedo-purple/30 dark:bg-wedo-purple/20",
     tooltipText: "Vaga de alta qualificação (executiva/especialista). Busca com maior precisão.",

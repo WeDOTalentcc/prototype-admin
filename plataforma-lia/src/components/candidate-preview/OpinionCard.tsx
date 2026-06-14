@@ -320,11 +320,11 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
           {!!opinion.recruiter_override && (
             <div className="bg-wedo-purple/10 rounded-xl p-2 border border-wedo-purple/30">
               <div className="flex items-center gap-2 mb-1">
-                <h5 className={`${textStyles.label} text-wedo-purple-text`}>Override do Recrutador</h5>
+                <h5 className={`${textStyles.label} text-lia-text-secondary`}>Override do Recrutador</h5>
                 {getRecommendationBadge(opinion.recruiter_override as string)}
               </div>
               {!!opinion.recruiter_override_reason && (
-                <p className={`${textStyles.caption} text-wedo-purple-text`}>{String(opinion.recruiter_override_reason)}</p>
+                <p className={`${textStyles.caption} text-lia-text-secondary`}>{String(opinion.recruiter_override_reason)}</p>
               )}
             </div>
           )}

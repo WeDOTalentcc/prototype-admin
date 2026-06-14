@@ -83,7 +83,7 @@ export function BigFivePanel({ data }: Props) {
             <div className="flex items-center justify-between text-xs">
               <span className="text-lia-text-primary font-medium">
                 {t.rank != null && (
-                  <span className="text-wedo-cyan-text mr-1">#{t.rank}</span>
+                  <span className="text-lia-text-secondary mr-1">#{t.rank}</span>
                 )}
                 {t.label}
               </span>

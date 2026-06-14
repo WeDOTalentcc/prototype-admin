@@ -113,7 +113,7 @@ export function DepartmentScopeBanner({
               <Button
                 variant="link"
                 size="sm"
-                className="h-auto p-0 mt-2 text-xs text-wedo-cyan-text hover:text-wedo-cyan dark:text-wedo-cyan-dark dark:hover:text-wedo-cyan"
+                className="h-auto p-0 mt-2 text-xs text-lia-text-muted hover:text-wedo-cyan dark:text-wedo-cyan-dark dark:hover:text-wedo-cyan"
                 onClick={onSwitchToDepartmentsTab}
                 data-testid="department-scope-banner-cta"
               >
