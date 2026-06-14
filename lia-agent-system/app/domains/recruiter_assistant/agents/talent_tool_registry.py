@@ -127,6 +127,49 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
         _guidance = build_empty_result_guidance("candidato", _applied)
         data_block["empty_guidance"] = _guidance
         message = _guidance["guidance"]
+    _blocks, _hint = [], ""
+    if results:
+        try:
+            from app.shared.rrp_ranking_builder import build_table_block, RRP_TABLE_HINT
+            _hint = RRP_TABLE_HINT
+            _title = f'Candidatos encontrados — "{query}"' if query else "Candidatos encontrados"
+            _blocks = build_table_block(
+                title=_title,
+                entity_type="candidate",
+                source_tool="search_candidates",
+                total_count=total,
+                columns=[
+                    ("name", "Nome", "text"),
+                    ("current_title", "Cargo Atual", "text"),
+                    ("location", "Cidade", "text"),
+                    ("lia_score", "Score LIA", "score"),
+                    ("match_percentage", "Match", "number"),
+                    ("status", "Status", "badge"),
+                ],
+                rows=[
+                    {
+                        "entity_id": str(c.get("id")),
+                        "cells": {
+                            "name": c.get("name"),
+                            "current_title": c.get("current_title"),
+                            "location": c.get("location"),
+                            "lia_score": c.get("lia_score"),
+                            "match_percentage": c.get("match_percentage"),
+                            "status": c.get("status"),
+                        },
+                    }
+                    for c in results
+                ],
+            )
+        except Exception as _e:
+            logger.warning(f"[talent_tools] search_candidates RRP table skipped: {_e}")
+    if _blocks:
+        data_block["rendered_as_card"] = True
+        data_block["narrative"] = (
+            f'{total} candidatos encontrados para "{query}"; {len(results)} no card.'
+        )
+        data_block["response_blocks"] = _blocks
+        data_block["render_hint"] = _hint
     return {
         "success": True,
         "data": data_block,
