@@ -57,7 +57,7 @@ class RecruiterPreferencesRepository:
                 SELECT preference_key, preference_value, frequency, context, last_used
                 FROM recruiter_preferences
                 WHERE recruiter_id = :rid
-                  AND (context->>action_behavior = :behavior OR context->>action_behavior IS NULL)
+                  AND (context->>'action_behavior' = :behavior OR context->>'action_behavior' IS NULL)
                 ORDER BY frequency DESC, last_used DESC
                 LIMIT :limit
             """),
