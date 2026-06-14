@@ -246,7 +246,7 @@ class RecruiterCopilotReActAgent(
                         _add = get_scope_system_prompt_addition(_scope)
                         if _add:
                             _txt = _txt + "\n\n" + _add
-            except Exception:
+            except Exception:  # ADR-031-R3-EXEMPT: adicao opcional de prompt de escopo dinamico; falha nao bloqueia composicao do prompt
                 pass
             return _txt
         except Exception as exc:

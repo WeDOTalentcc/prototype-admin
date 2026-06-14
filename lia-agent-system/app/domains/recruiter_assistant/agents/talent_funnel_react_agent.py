@@ -170,7 +170,7 @@ class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanced
                             reason=criteria.get("description", "Critérios atendidos"),
                             auto_navigate=False,
                         )
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: deteccao opcional de navegacao por confirmacao do usuario; falha nao bloqueia resposta
             pass
 
         _confidence = 0.75

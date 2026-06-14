@@ -231,7 +231,7 @@ class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                             reason=reason,
                             auto_navigate=False,
                         )
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: deteccao opcional de navegacao por confirmacao do usuario; falha nao bloqueia resposta
             pass
 
         return AgentOutput(
