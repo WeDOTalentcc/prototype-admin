@@ -38,6 +38,10 @@ class ArchetypeFromDescriptionRequest(WeDoBaseModel):
 
 
 router = APIRouter()
+# FairnessGuard — bloqueio de queries discriminatórias (LGPD/CLT canonical)
+from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard
+_fairness_guard = _FairnessGuard()
+
 
 class ArchetypeDTO(BaseModel):
     """DTO for archetype data in API responses."""
@@ -1230,6 +1234,19 @@ company_id: str = Depends(require_company_id)):
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     try:
+        # LGPD/CLT fairness guard: bloqueia descrições discriminatórias antes de chamar LLM
+        _fg_result = _fairness_guard.check(request.description)
+        if _fg_result.is_blocked:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "fairness_blocked",
+                    "fairness_blocked": True,
+                    "educational_message": _fg_result.educational_message,
+                    "category": _fg_result.category,
+                    "blocked_terms": _fg_result.blocked_terms or [],
+                },
+            )
         container = get_provider_for_tenant()
         
         prompt = f"""Você é um especialista em recrutamento. Analise a descrição do perfil ideal e crie um arquétipo de busca.

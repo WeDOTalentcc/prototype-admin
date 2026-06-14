@@ -80,6 +80,10 @@ from ._persist import (
 )
 
 router = APIRouter()
+# FairnessGuard — bloqueio de queries discriminatórias (LGPD/CLT canonical)
+from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard
+_fairness_guard = _FairnessGuard()
+
 
 async def _evaluate_candidates_with_rubrics(
     candidates: list["CandidateSearchResultDTO"],
@@ -130,6 +134,20 @@ company_id: str = Depends(require_company_id)):
     4. Se job_id fornecido, avalia candidatos com rubricas
     """
     try:
+        # LGPD/CLT fairness guard: bloqueia queries discriminatórias antes de qualquer busca
+        if request.query:
+            _fg_result = _fairness_guard.check(request.query)
+            if _fg_result.is_blocked:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "error": "fairness_blocked",
+                        "fairness_blocked": True,
+                        "educational_message": _fg_result.educational_message,
+                        "category": _fg_result.category,
+                        "blocked_terms": _fg_result.blocked_terms or [],
+                    },
+                )
         # Fase 2: fingerprint dos criterios (ancora feedback/aprendizado a esta busca)
         _search_fp = _generate_search_fingerprint(request.query, request.search_spec)
         # Fase 4: supressao de credito -- docids ja conhecidos -> docid_blacklist
