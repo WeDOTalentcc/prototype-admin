@@ -610,3 +610,11 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+
+      - id: json-operator-syntax
+        name: "JSON operator syntax (PostgreSQL) — keys sem aspas causam erro silencioso (BLOCKING, baseline 0)"
+        language: system
+        entry: python3 scripts/check_json_operator_syntax.py
+        pass_filenames: false
+        always_run: false
+        files: ^lia-agent-system/app/(repositories|domains/.*/repositories)/.*\.py$
