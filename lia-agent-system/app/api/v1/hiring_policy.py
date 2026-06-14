@@ -290,6 +290,37 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     if not conversation_history:
         conversation_history = await repo.fetch_conversation_history(company_id, session_id)
 
+    # FairnessGuard: bloquear inputs discriminatórios antes de chamar o agente
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg_hp = FairnessGuard()
+        _fr_hp = _fg_hp.check(payload.message or "")
+        if _fr_hp and _fr_hp.is_blocked:
+            import asyncio as _asyncio
+            try:
+                _asyncio.get_event_loop().create_task(
+                    _fg_hp.log_check(
+                        result=_fr_hp,
+                        context="hiring_policy_chat",
+                        company_id=company_id or None,
+                    )
+                )
+            except Exception:
+                pass
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "fairness_blocked",
+                    "fairness_blocked": True,
+                    "educational_message": _fr_hp.educational_message,
+                    "category": _fr_hp.category,
+                },
+            )
+    except HTTPException:
+        raise
+    except Exception as _fg_exc:
+        logger.debug("[hiring_policy] fairness check skipped (fail-open): %s", _fg_exc)
+
     try:
         react_agent = PolicyReActAgent()
         result = await react_agent.process_legacy_format(
