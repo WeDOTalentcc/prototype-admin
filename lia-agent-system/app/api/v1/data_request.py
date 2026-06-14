@@ -36,6 +36,8 @@ from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
+_VALID_CHANNELS = frozenset({"email", "whatsapp", "voice", "web"})
+
 router = APIRouter(prefix="/data-requests", tags=["Data Requests"])
 
 
@@ -66,7 +68,7 @@ class CreateDataRequestRequest(WeDoBaseModel):
     is_blocking: bool = False
     expiration_days: int = Field(default=7, ge=1, le=90)
     send_notification: bool = True
-    notification_channels: list[str] = Field(default=["email"])
+    notification_channels: list[str] | None = None  # None = usar canal preferido da empresa (CompanyHiringPolicy)
 
 
 class DataRequestResponse(BaseModel):
@@ -397,8 +399,27 @@ company_id: str = Depends(require_company_id)):
         )
         
         if request.send_notification:
+            channels = request.notification_channels
+            if channels is None:
+                # Enforcement Item4: carregar canal preferido da empresa.
+                # CompanyHiringPolicy.communication_rules.preferred_data_channel
+                # é o que o DataChannelSettings.tsx escreve em Configurações → Comunicação.
+                try:
+                    from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+                        HiringPolicyRepository,
+                    )
+                    _hp = await HiringPolicyRepository(db).get_by_company(company_id)
+                    _pref = (
+                        (_hp.communication_rules or {}).get("preferred_data_channel")
+                        if _hp and _hp.communication_rules
+                        else None
+                    )
+                    channels = [_pref] if (_pref and _pref in _VALID_CHANNELS) else ["email"]
+                except Exception as _e:
+                    logger.warning("Falha ao carregar canal preferido (%s), fallback=email", _e)
+                    channels = ["email"]
             await data_request_service.send_notification(
-                db, data_request.id, request.notification_channels
+                db, data_request.id, channels
             )
             await db.refresh(data_request)
         
