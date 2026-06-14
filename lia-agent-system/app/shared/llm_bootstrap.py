@@ -305,6 +305,32 @@ def _get_tenant_id() -> str:
         return ""
 
 
+def _get_tenant_key_sync(provider: str) -> str | None:
+    """Read BYOK tenant API key from in-memory cache (sync).
+
+    The cache (_tenant_configs) is populated asynchronously on first
+    get_tenant_llm_config() call. On cache miss (e.g. first request)
+    we return None so the caller falls back to the env var — no blocking,
+    no regression.
+
+    provider: "anthropic" | "openai" | "gemini"
+    """
+    company_id = _get_tenant_id()
+    if not company_id:
+        return None
+    try:
+        from app.shared.tenant_llm_context import _tenant_configs
+        config = _tenant_configs.get(company_id)
+        if not config:
+            return None
+        key = config.get("providers", {}).get(provider, {}).get("api_key")
+        if key and isinstance(key, str) and key.strip() and "..." not in key:
+            return key.strip()
+    except Exception:
+        pass
+    return None
+
+
 def _get_caller() -> str:
     """Get the caller's file:line for audit trail."""
     for frame_info in traceback.extract_stack():
@@ -440,7 +466,8 @@ def _patch_anthropic() -> bool:
         """
         if "api_key" not in kwargs:
             kwargs["api_key"] = (
-                os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
+                _get_tenant_key_sync("anthropic")
+                or os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
                 or os.environ.get("ANTHROPIC_API_KEY")
             )
         base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
@@ -646,7 +673,8 @@ def _patch_openai() -> bool:
         if "api_key" not in kwargs and not args:
             # F3-2 fix (2026-05-10): fallback for Replit AI Integration prefix
             kwargs["api_key"] = (
-                os.environ.get("OPENAI_API_KEY")
+                _get_tenant_key_sync("openai")
+                or os.environ.get("OPENAI_API_KEY")
                 or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY")
             )
             base_url = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
@@ -660,7 +688,8 @@ def _patch_openai() -> bool:
         if "api_key" not in kwargs and not args:
             # F3-2 fix (2026-05-10): fallback for Replit AI Integration prefix
             kwargs["api_key"] = (
-                os.environ.get("OPENAI_API_KEY")
+                _get_tenant_key_sync("openai")
+                or os.environ.get("OPENAI_API_KEY")
                 or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY")
             )
             base_url = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
@@ -910,7 +939,10 @@ def _patch_genai() -> bool:
     @functools.wraps(_orig_init)
     def _patched_init(self, *args, **kwargs):
         if "api_key" not in kwargs and not args:
-            kwargs["api_key"] = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
+            kwargs["api_key"] = (
+                _get_tenant_key_sync("gemini")
+                or os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
+            )
             base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
             if base_url and "http_options" not in kwargs:
                 kwargs["http_options"] = {"api_version": "", "base_url": base_url}
