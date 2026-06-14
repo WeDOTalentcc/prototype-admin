@@ -258,6 +258,31 @@ company_id: str = Depends(require_company_id)):
         except Exception as _fg_exc:
             logger.warning("[CustomAgent.update] FairnessGuard check failed: %s", _fg_exc)
 
+    # ── GAP-2 fix: ghost channel flags bloqueados ate router ser registrado ──
+    # voice_enabled, voip_enabled, whatsapp_enabled, triagem_invite_enabled
+    # existem no modelo mas os sub-routers NAO estao em routes.py -> 404.
+    # Bloquear settar True ate os canais estarem wired de verdade.
+    _GHOST_CHANNEL_FLAGS = frozenset({
+        "voice_enabled", "voip_enabled", "whatsapp_enabled", "triagem_invite_enabled",
+    })
+    _update_peek = body.model_dump(exclude_unset=True)
+    _ghost_activated = [
+        f for f in _GHOST_CHANNEL_FLAGS
+        if _update_peek.get(f) is True
+    ]
+    if _ghost_activated:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "channel_not_available",
+                "message": (
+                    f"Channels {_ghost_activated} are not yet available. "
+                    "These features are in beta and their endpoints are not registered."
+                ),
+                "fields": _ghost_activated,
+            },
+        )
+
     try:
         update_data = body.model_dump(exclude_unset=True)
         agent = await agent_marketplace_service.update_agent(

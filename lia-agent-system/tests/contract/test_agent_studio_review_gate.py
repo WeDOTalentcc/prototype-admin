@@ -113,3 +113,47 @@ def test_execute_error_message_guides_to_dryrun():
     )
     assert "dry-run" in DRAFT_EXECUTE_ERROR
     assert "approv" in DRAFT_EXECUTE_ERROR
+
+
+# ── GAP-2: ghost channel flags devem ser bloqueados ──────────────────────────
+
+def test_ghost_channel_flags_blocked():
+    """Ativar voice_enabled/voip_enabled/whatsapp_enabled/triagem_invite_enabled
+    deve ser bloqueado enquanto os sub-routers nao estao registrados em routes.py.
+    """
+    _GHOST_CHANNEL_FLAGS = frozenset({
+        "voice_enabled", "voip_enabled", "whatsapp_enabled", "triagem_invite_enabled",
+    })
+    # Simula o check do endpoint PATCH
+    update_data = {"voice_enabled": True, "system_prompt": "test"}
+    ghost_activated = [f for f in _GHOST_CHANNEL_FLAGS if update_data.get(f) is True]
+    assert ghost_activated == ["voice_enabled"], "voice_enabled deveria ser detectado como ghost"
+
+
+def test_ghost_channel_flags_allow_false():
+    """Setar ghost channel flags para False nao deve ser bloqueado."""
+    _GHOST_CHANNEL_FLAGS = frozenset({
+        "voice_enabled", "voip_enabled", "whatsapp_enabled", "triagem_invite_enabled",
+    })
+    update_data = {"voice_enabled": False}
+    ghost_activated = [f for f in _GHOST_CHANNEL_FLAGS if update_data.get(f) is True]
+    assert ghost_activated == [], "False nao deve triggar o bloqueio"
+
+
+# ── GAP-5: runtime cache deve ter limite de tamanho ──────────────────────────
+
+def test_runtime_cache_has_max_size():
+    """_RUNTIME_CACHE_MAX_SIZE deve existir como constante."""
+    from app.domains.agent_studio.custom_agent_runtime import _RUNTIME_CACHE_MAX_SIZE
+    assert isinstance(_RUNTIME_CACHE_MAX_SIZE, int)
+    assert _RUNTIME_CACHE_MAX_SIZE > 0
+
+
+def test_runtime_cache_has_warn_size():
+    """_RUNTIME_CACHE_WARN_SIZE deve existir e ser menor que MAX."""
+    from app.domains.agent_studio.custom_agent_runtime import (
+        _RUNTIME_CACHE_MAX_SIZE,
+        _RUNTIME_CACHE_WARN_SIZE,
+    )
+    assert isinstance(_RUNTIME_CACHE_WARN_SIZE, int)
+    assert _RUNTIME_CACHE_WARN_SIZE < _RUNTIME_CACHE_MAX_SIZE

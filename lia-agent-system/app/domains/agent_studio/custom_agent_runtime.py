@@ -1259,6 +1259,8 @@ class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
 
 
 _runtime_cache: dict[str, CustomAgentRuntime] = {}
+_RUNTIME_CACHE_MAX_SIZE = 500
+_RUNTIME_CACHE_WARN_SIZE = 200
 
 
 def get_or_create_runtime(
@@ -1281,6 +1283,19 @@ def get_or_create_runtime(
     pricing_tier: str = "pro",
 ) -> CustomAgentRuntime:
     cache_key = f"{agent_id}:{company_id}"
+    # ── GAP-5 fix: evict oldest entry when cache exceeds max size ──
+    # ADR-004: cache sem maxsize permite memory leak silencioso.
+    # LRU simples: evicta a primeira chave (oldest insertion) quando cheio.
+    _cache_size = len(_runtime_cache)
+    if _cache_size >= _RUNTIME_CACHE_WARN_SIZE and _cache_size % 50 == 0:
+        logger.warning(
+            "[CustomAgentRuntime][cache] size=%d (warn=%d, max=%d)",
+            _cache_size, _RUNTIME_CACHE_WARN_SIZE, _RUNTIME_CACHE_MAX_SIZE,
+        )
+    if _cache_size >= _RUNTIME_CACHE_MAX_SIZE and cache_key not in _runtime_cache:
+        _evict_key = next(iter(_runtime_cache))
+        del _runtime_cache[_evict_key]
+        logger.info("[CustomAgentRuntime][cache] evicted oldest entry: %s", _evict_key)
     if cache_key not in _runtime_cache or force_new:
         _runtime_cache[cache_key] = CustomAgentRuntime(
             agent_id=agent_id,
