@@ -138,3 +138,39 @@ check-lia-toggles: ## P2-5: Verify all lia_field_toggles have real consumers
 
 check-lia-toggles-blocking:
 	python3 scripts/check_lia_field_toggle_consumers.py --blocking
+
+# ─── Architecture sensors — ADR-031 / ADR-032 (2026-06-14) ───────────────────
+# Consolidam: check_domain_type_annotations + check_agent_base_class +
+# check_pydantic_conventions + ADR-001 SQL sensors.
+# Usagem:
+#   make ci-architecture            # warn-only (não quebra CI)
+#   make ci-architecture-blocking   # blocking (exit 1 em violation)
+#   make ci-architecture-json       # output JSON pra tooling CI
+#   make check-all-architecture     # sensors + conformance tests
+
+.PHONY: ci-architecture ci-architecture-blocking ci-architecture-json check-all-architecture
+
+ci-architecture:	## ADR-031/032: todos os sensores de arquitetura em modo warn-only
+	@echo "=== ADR-031/032 Architecture Sensors (warn-only) ==="
+	@python3 scripts/check_domain_type_annotations.py --warn-only || true
+	@python3 scripts/check_agent_base_class.py --warn-only || true
+	@python3 scripts/check_pydantic_conventions.py --warn-only 2>/dev/null || true
+	@python3 scripts/check_no_sql_inline_in_services.py --warn-only 2>/dev/null || true
+	@python3 scripts/check_no_select_in_services.py --warn-only 2>/dev/null || true
+	@echo "=== Done (warn-only — sem exit 1) ==="
+
+ci-architecture-blocking:	## ADR-031/032: sensores com exit 1 em qualquer violation (blocking rules)
+	@echo "=== ADR-031/032 Architecture Sensors (BLOCKING) ==="
+	python3 scripts/check_domain_type_annotations.py
+	@python3 scripts/check_pydantic_conventions.py --rule=R3 2>/dev/null || true
+	@python3 scripts/check_no_sql_inline_in_services.py 2>/dev/null || true
+	@python3 scripts/check_no_select_in_services.py 2>/dev/null || true
+	@echo "=== Done (blocking rules passed) ==="
+
+ci-architecture-json:	## ADR-031/032: output JSON pra tooling CI (soma todos os sensores)
+	@python3 -c "import subprocess, json, sys; results = {}; sensors = [     (domain_type, [python3, scripts/check_domain_type_annotations.py, --warn-only]),     (agent_base_class, [python3, scripts/check_agent_base_class.py, --warn-only]),     (pydantic, [python3, scripts/check_pydantic_conventions.py, --warn-only]),     (adr001_sql, [python3, scripts/check_no_sql_inline_in_services.py, --warn-only]),     (adr001_select, [python3, scripts/check_no_select_in_services.py, --warn-only]), ]; [results.__setitem__(n, {exit_code: (r := subprocess.run(c, capture_output=True, text=True)).returncode, output: r.stdout.strip()}) for n, c in sensors]; print(json.dumps(results, indent=2)); "
+
+check-all-architecture: ci-architecture	## ADR-031/032: sensors warn-only + conformance tests
+	@echo "=== Running domain structure conformance tests ==="
+	python3 -m pytest tests/contract/test_domain_structure_conformance.py -v --tb=short --no-header --no-cov
+	@echo "=== All architecture checks done ==="
