@@ -13,7 +13,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "282_add_session_id_to_fairness_audit_log"
-down_revision = "281_add_data_fields_to_recruitment_stages"
+down_revision = "282_add_data_fields_to_recruitment_stages"
 branch_labels = None
 depends_on = None
 
