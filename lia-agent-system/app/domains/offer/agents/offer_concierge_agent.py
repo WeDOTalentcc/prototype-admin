@@ -24,6 +24,7 @@ from lia_agents_core.agent_interface import AgentInput, AgentOutput
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ _OFFER_YAML_PATH = "app/prompts/domains/offer.yaml"
     "offer_concierge",
     aliases=["offer", "proposta", "carta_oferta", "negociacao_oferta"],
 )
-class OfferConciergeAgent(LangGraphReActBase, EnhancedAgentMixin):
+class OfferConciergeAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     """Agente de proposta de oferta — N2 informacional + N3 negociador (gated)."""
 
     domain_name = "offer"
