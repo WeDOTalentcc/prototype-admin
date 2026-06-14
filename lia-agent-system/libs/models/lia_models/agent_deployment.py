@@ -8,8 +8,9 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import relationship
 
 from lia_config.database import Base
 
@@ -35,7 +36,7 @@ class AgentDeployment(Base):
     __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    agent_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    agent_id = Column(UUID(as_uuid=True), ForeignKey("custom_agents.id", ondelete="CASCADE"), nullable=False, index=True)
     company_id = Column(String(64), nullable=False, index=True)
 
     # WHERE the agent operates
@@ -60,6 +61,9 @@ class AgentDeployment(Base):
     created_by = Column(String(128), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    # GAP-4 fix: ORM relationship para cascade delete automatico (migration 285)
+    agent = relationship("CustomAgent", back_populates="deployments", foreign_keys=[agent_id])
 
     def to_dict(self):
         return {

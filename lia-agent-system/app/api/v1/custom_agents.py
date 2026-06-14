@@ -269,6 +269,38 @@ company_id: str = Depends(require_company_id)):
         if not agent:
             raise HTTPException(status_code=404, detail="Agent not found")
         await db.commit()
+        # ── GAP-3 fix: invalidar cache do runtime quando campos que afetam o grafo sao alterados
+        # ADR-004: cache chaveado por agent_id:company_id nao invalida automaticamente.
+        # Sem force_new, admin atualiza system_prompt/allowed_tools mas agente continua
+        # usando o grafo compilado antigo ate o proximo restart do processo.
+        _CACHE_INVALIDATING_FIELDS = frozenset({
+            "system_prompt", "allowed_tools", "temperature",
+            "max_steps", "model_override", "context_level", "enable_memory",
+        })
+        if _CACHE_INVALIDATING_FIELDS & set(update_data.keys()):
+            try:
+                from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
+                get_or_create_runtime(
+                    agent_id=str(agent.id),
+                    agent_name=agent.name,
+                    system_prompt=agent.system_prompt or "",
+                    allowed_tools=agent.allowed_tools or [],
+                    domain=getattr(agent, "domain", "custom"),
+                    max_steps=agent.max_steps or 8,
+                    temperature=agent.temperature or 0.7,
+                    model_override=agent.model_override,
+                    company_id=current_user.company_id,
+                    enable_memory=getattr(agent, "enable_memory", True),
+                    excluded_tools=getattr(agent, "excluded_tools", None),
+                    context_level=getattr(agent, "context_level", "full"),
+                    force_new=True,
+                )
+                logger.info(
+                    "[CustomAgent][cache-invalidate] agent=%s invalidated fields=%s",
+                    agent_id, sorted(_CACHE_INVALIDATING_FIELDS & set(update_data.keys())),
+                )
+            except Exception as _cache_exc:
+                logger.warning("[CustomAgent][cache-invalidate] failed (non-blocking): %s", _cache_exc)
         # P0-3 audit 2026-05-21: canonical lifecycle audit
         from app.domains.agent_studio._audit_helper import studio_audit
         await studio_audit(

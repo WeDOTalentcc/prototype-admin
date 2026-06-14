@@ -7,8 +7,9 @@ Flow: draft -> pending_approval -> approved/rejected -> active
 import enum
 import uuid
 
-from sqlalchemy import Column, DateTime, String, Text, func
+from sqlalchemy import Column, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 from lia_config.database import Base
 
@@ -24,7 +25,7 @@ class AgentApprovalRequest(Base):
     __table_args__ = {"extend_existing": True}  # canonical 2026-05-24 — defense-in-depth contra hot-reload re-import
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    agent_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    agent_id = Column(UUID(as_uuid=True), ForeignKey("custom_agents.id", ondelete="CASCADE"), nullable=False, index=True)
     company_id = Column(String(64), nullable=False, index=True)
     requested_by = Column(String(128), nullable=False)
     reviewed_by = Column(String(128), nullable=True)
@@ -32,6 +33,9 @@ class AgentApprovalRequest(Base):
     review_notes = Column(Text, nullable=True)
     requested_at = Column(DateTime(timezone=True), server_default=func.now())
     reviewed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # GAP-4 fix: ORM relationship para cascade delete automatico (migration 285)
+    agent = relationship("CustomAgent", back_populates="approval_requests", foreign_keys=[agent_id])
 
     def to_dict(self):
         return {

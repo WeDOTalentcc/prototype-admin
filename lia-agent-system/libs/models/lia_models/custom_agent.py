@@ -153,6 +153,17 @@ class CustomAgent(Base):
         back_populates="custom_agent",
         cascade="all, delete-orphan",
     )
+    # GAP-4 fix: ORM relationships para cascade delete (migration 285)
+    deployments = relationship(
+        "AgentDeployment",
+        back_populates="agent",
+        cascade="all, delete-orphan",
+    )
+    approval_requests = relationship(
+        "AgentApprovalRequest",
+        back_populates="agent",
+        cascade="all, delete-orphan",
+    )
 
     __table_args__ = (
         Index("idx_custom_agents_company", "company_id"),
