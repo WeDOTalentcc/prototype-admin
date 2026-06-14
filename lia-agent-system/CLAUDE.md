@@ -1278,3 +1278,27 @@ Recrutador cria vaga pelo chat a partir de uma fonte (arquétipo `JobTemplate` O
 
 ### Reuso (não duplicar)
 `JobCloneService` (`FIELDS_TO_CLONE`, `clone_from_template`), `search_for_summary_by_criteria` (busca por gestor), `JobTemplateService.get_templates`.
+
+
+## JSON Operator Syntax (PostgreSQL) — REGRA CANÔNICA (registrado 2026-06-14)
+
+Operadores JSON `->` e `->>` EXIGEM aspas simples na chave string:
+- `->` retorna JSON: `behavioral_analysis->'ocean_traits'`
+- `->>` retorna text: `additional_data->>'workforce_plan'`
+- ❌ `behavioral_analysis->ocean_traits` → `UndefinedColumnError` (trata como coluna)
+- ❌ `context->>action_behavior` → `UndefinedColumnError`
+
+### Regras canônicas
+
+1. **Toda chave de objeto JSON DEVE ter aspas simples** no operador `->` / `->>`.
+2. **Índices numéricos são OK sem aspas:** `json_col->0` é válido (acesso por índice).
+3. **Sensor computacional:** `scripts/check_json_operator_syntax.py` detecta o padrão bugado em `app/repositories/` e `app/domains/*/repositories/`. Honra marcador `# JSON-OP-EXEMPT: <razão>`.
+4. **Histórico de bugs:** `context->>action_behavior` em `recruiter_preferences_repository.py` (corrigido 2026-06-14), padrão análogo em `behavioral_analysis->ocean_traits` (corrigido anteriormente).
+
+### Sensor ativo
+
+```bash
+python3 scripts/check_json_operator_syntax.py  # deve mostrar 0 violations
+```
+
+Bloqueador em CI. Output é otimizado para consumo de LLM (mensagem com fix sugerido).
