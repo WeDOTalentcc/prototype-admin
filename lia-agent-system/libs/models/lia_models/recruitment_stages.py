@@ -74,6 +74,7 @@ class RecruitmentStage(Base):
     default_channel = Column(String(30), nullable=False, default="email")
     
     stage_metadata = Column(JSON, default=lambda: {})
+    data_fields = Column(JSON, default=lambda: [])
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -105,6 +106,7 @@ class RecruitmentStage(Base):
             "stage_category": self.stage_category,
             "action_behavior": self.action_behavior,
             "default_channel": self.default_channel,
+            "data_fields": self.data_fields or [],
         }
     
     def __repr__(self):

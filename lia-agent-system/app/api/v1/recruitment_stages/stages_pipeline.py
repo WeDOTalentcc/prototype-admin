@@ -37,6 +37,7 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
@@ -627,3 +628,47 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error marking pipeline as customized: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── data_fields ───────────────────────────────────────────────────────────────
+
+
+class StageDataFieldItem(WeDoBaseModel):
+    """Campo de coleta de dados para um estágio do pipeline."""
+    id: str
+    displayName: str
+    category: str  # basic | document | financial | admissional
+    required: bool = False
+    auto_collect: bool = False
+
+
+class UpdateStageDataFieldsRequest(WeDoBaseModel):
+    data_fields: list[StageDataFieldItem]
+
+
+@router.patch("/stages/{stage_id}/data-fields", response_model=None)
+async def update_stage_data_fields(
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: UpdateStageDataFieldsRequest,
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    company_id: str = Depends(require_company_id),
+):
+    """Atualiza campos de coleta (data_fields) de um estágio do pipeline da empresa.
+
+    Multi-tenancy: verifica que o estágio pertence à company do JWT (assert_resource_ownership).
+    Retorna o stage atualizado completo (to_dict).
+    """
+    stage = await stage_repo.get_by_id_str(stage_id)
+    if stage is None:
+        raise HTTPException(status_code=404, detail="Stage não encontrado")
+    assert_resource_ownership(stage.company_id, company_id)
+
+    updated = await stage_repo.update_fields_uuid(
+        stage.id,
+        {"data_fields": [df.model_dump() for df in payload.data_fields]},
+    )
+    if not updated:
+        raise HTTPException(status_code=500, detail="Falha ao atualizar data_fields")
+
+    refreshed = await stage_repo.get_by_id(stage.id)
+    return {"success": True, "stage": refreshed.to_dict() if refreshed else None}
