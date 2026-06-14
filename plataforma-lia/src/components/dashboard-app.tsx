@@ -25,6 +25,7 @@ import CalibrationCardModal from "@/components/pages-agent-studio/CalibrationCar
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { useAuth } from "@/contexts/auth-context"
+import { useAuthenticatedUserId } from "@/hooks/shared/use-authenticated-user-id"
 import { useRecentItems, type RecentItem } from "@/hooks/shared/use-recent-items"
 import { getPersisted } from "@/lib/lia-persistence"
 import { useLiaFloat } from "@/contexts/lia-float-context"
@@ -123,6 +124,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   const [calibratingAgentId, setCalibratingAgentId] = useState<string | null>(null)
   const [agentStudioRefreshKey, setAgentStudioRefreshKey] = useState(0)
   const { isAuthenticated, user, logout } = useAuth()
+  const { userId: notifUserId, isReady: notifAuthReady } = useAuthenticatedUserId()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -521,10 +523,10 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
         notificationOpen={notificationPanelOpen}
         onNotificationToggle={() => setNotificationPanelOpen(o => !o)}
       />
-      {notificationPanelOpen && user?.id && (
+      {notificationPanelOpen && notifAuthReady && notifUserId && (
         <div className="w-[340px] flex-shrink-0 h-full">
           <NotificationPanelInline
-            userId={user.id}
+            userId={notifUserId}
             onClose={() => setNotificationPanelOpen(false)}
           />
         </div>
