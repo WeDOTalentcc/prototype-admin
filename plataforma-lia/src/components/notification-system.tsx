@@ -20,6 +20,7 @@ import {
   Monitor,
   BellOff,
   Check,
+  ChevronsLeft,
   ExternalLink,
   Trash2,
 } from "lucide-react"
@@ -407,45 +408,9 @@ export function NotificationSystem({
               </div>
             </div>
 
-            <div className="flex gap-1 mt-2.5 overflow-x-auto pb-0.5" role="tablist" aria-label="Filtrar notificações por categoria">
-              <button
-                role="tab"
-                aria-selected={activeCategory === null}
-                onClick={() => setActiveCategory(null)}
-                className={cn(
-                  "px-2.5 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5",
-                  activeCategory === null
-                    ? "bg-wedo-cyan/15 text-wedo-cyan-text font-medium"
-                    : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
-                )}
-              >
-                <Bell className="w-3 h-3" />
-                Todas
-              </button>
-              {CATEGORY_ORDER.map(cat => {
-                const CatIcon = CATEGORY_ICONS[cat]
-                return (
-                  <button
-                    key={cat}
-                    role="tab"
-                    aria-selected={activeCategory === cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={cn(
-                      "px-2.5 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5",
-                      activeCategory === cat
-                        ? "bg-wedo-cyan/15 text-wedo-cyan-text font-medium"
-                        : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
-                    )}
-                  >
-                    <CatIcon className="w-3 h-3" />
-                    {CATEGORY_LABELS[cat]}
-                  </button>
-                )
-              })}
-            </div>
           </div>
 
-          <div className="max-h-[380px] overflow-y-auto bg-lia-bg-secondary dark:bg-lia-bg-primary/50" aria-live="polite">
+          <div className="max-h-[380px] overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary" aria-live="polite">
             {error ? (
               <div className="py-12 px-4 text-center">
                 <AlertCircle className="w-8 h-8 mx-auto mb-3 text-status-error" />
@@ -491,11 +456,11 @@ export function NotificationSystem({
                 <div className="w-14 h-14 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4">
                   <BellOff className="w-6 h-6 text-lia-text-muted" aria-hidden="true" />
                 </div>
-                <p className="text-sm font-medium text-lia-text-primary">
+                <p className="text-xs font-medium text-lia-text-primary">
                   {isLoading ? "Carregando..." : activeCategory ? `Nenhuma em ${CATEGORY_LABELS[activeCategory]}` : "Tudo em dia!"}
                 </p>
                 {!isLoading && !activeCategory && (
-                  <p className="text-xs text-lia-text-secondary mt-1.5">
+                  <p className="text-[11px] text-lia-text-tertiary mt-1">
                     Quando houver atualizações, elas aparecerão aqui.
                   </p>
                 )}
@@ -594,39 +559,19 @@ export function NotificationPanelInline({
           </div>
           <div className="flex items-center gap-1" role="status" aria-live="polite">
             {isLoading && <Loader2 className="w-3 h-3 animate-spin text-lia-text-secondary" />}
-            {unreadCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-[10px] h-6 px-2 text-wedo-cyan-text hover:text-wedo-cyan/80">
-                <Check className="w-3 h-3 mr-1" /> Marcar lidas
-              </Button>
-            )}
+            <Button variant="ghost" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0} className="text-[10px] h-6 px-2 text-lia-text-secondary disabled:opacity-40 hover:enabled:text-wedo-cyan-text transition-colors">
+              <Check className="w-3 h-3 mr-1" /> Marcar todas lidas
+            </Button>
             {onClose && (
-              <Button variant="ghost" size="sm" onClick={onClose} className="h-6 w-6 p-0 text-lia-text-secondary hover:text-lia-text-primary" aria-label="Fechar notificações">
-                <X className="w-3.5 h-3.5" />
+              <Button variant="ghost" size="sm" onClick={onClose} className="h-6 w-6 p-0 text-lia-text-secondary hover:text-lia-text-primary" aria-label="Retrair painel">
+                <ChevronsLeft className="w-4 h-4" />
               </Button>
             )}
           </div>
         </div>
-        {/* Category tabs */}
-        <div className="flex gap-1 mt-2.5 overflow-x-auto pb-0.5" role="tablist">
-          <button role="tab" aria-selected={activeCategory === null} onClick={() => setActiveCategory(null)}
-            className={cn("px-2.5 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5",
-              activeCategory === null ? "bg-wedo-cyan/15 text-wedo-cyan-text font-medium" : "text-lia-text-secondary hover:bg-lia-bg-tertiary")}>
-            <Bell className="w-3 h-3" /> Todas
-          </button>
-          {CATEGORY_ORDER.map(cat => {
-            const CatIcon = CATEGORY_ICONS[cat]
-            return (
-              <button key={cat} role="tab" aria-selected={activeCategory === cat} onClick={() => setActiveCategory(cat)}
-                className={cn("px-2.5 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5",
-                  activeCategory === cat ? "bg-wedo-cyan/15 text-wedo-cyan-text font-medium" : "text-lia-text-secondary hover:bg-lia-bg-tertiary")}>
-                <CatIcon className="w-3 h-3" /> {CATEGORY_LABELS[cat]}
-              </button>
-            )
-          })}
-        </div>
       </div>
       {/* Notifications list */}
-      <div className="flex-1 overflow-y-auto bg-lia-bg-secondary dark:bg-lia-bg-primary/50" aria-live="polite">
+      <div className="flex-1 overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary" aria-live="polite">
         {error ? (
           <div className="py-12 px-4 text-center">
             <AlertCircle className="w-8 h-8 mx-auto mb-3 text-status-error" />
@@ -655,11 +600,11 @@ export function NotificationPanelInline({
             <div className="w-14 h-14 rounded-full bg-lia-bg-tertiary flex items-center justify-center mx-auto mb-4">
               <BellOff className="w-6 h-6 text-lia-text-muted" aria-hidden="true" />
             </div>
-            <p className="text-sm font-medium text-lia-text-primary">
+            <p className="text-xs font-medium text-lia-text-primary">
               {isLoading ? "Carregando..." : activeCategory ? `Nenhuma em ${CATEGORY_LABELS[activeCategory]}` : "Tudo em dia!"}
             </p>
             {!isLoading && !activeCategory && (
-              <p className="text-xs text-lia-text-secondary mt-1.5">Quando houver atualizações, elas aparecerão aqui.</p>
+              <p className="text-[11px] text-lia-text-tertiary mt-1">Quando houver atualizações, elas aparecerão aqui.</p>
             )}
           </div>
         )}
