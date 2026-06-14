@@ -15,6 +15,7 @@ import {
   Users, Wand2, X, Zap
 } from "lucide-react"
 import type { useSmartSearchCore } from "../hooks/useSmartSearchCore"
+import { useSearchSuggestions } from "../hooks/useSearchSuggestions"
 
 const SEARCH_SUGGESTIONS = [
   'Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python',
@@ -71,6 +72,9 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
     searchSource, onSearchSourceChange, handleSourceChange, showGlobalSearchOptions,
     requireEmails, onRequireEmailsChange, requirePhoneNumbers, onRequirePhoneNumbersChange,
   } = props
+
+  const { suggestions: dynamicSuggestions } = useSearchSuggestions()
+  const displaySuggestions = dynamicSuggestions.length > 0 ? dynamicSuggestions : SEARCH_SUGGESTIONS
 
   return (
     <div className="space-y-3">
@@ -654,7 +658,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
             Sugestões:
           </span>
           <div className="flex items-center gap-2 flex-nowrap overflow-x-auto">
-            {SEARCH_SUGGESTIONS.map((suggestion) => (
+            {displaySuggestions.map((suggestion) => (
               <button
                 key={suggestion}
                 onClick={() => onChange(suggestion)}
