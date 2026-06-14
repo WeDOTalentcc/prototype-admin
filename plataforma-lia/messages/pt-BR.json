@@ -3115,7 +3115,11 @@
         "job_management": "Vagas",
         "automation": "Automação",
         "jobManagement": "Vagas",
-        "general": "Geral"
+        "general": "Geral",
+        "interview_intelligence": "Inteligência de Entrevistas",
+        "talent_intelligence": "Inteligência de Talentos",
+        "workforce": "Força de Trabalho",
+        "voice": "Voz"
       },
       "triggers": {
         "manual": "Manual",

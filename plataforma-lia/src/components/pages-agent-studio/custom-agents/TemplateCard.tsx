@@ -101,7 +101,7 @@ export function TemplateCard({
               {template.name}
             </h4>
             <span className={cn(badgeStyles.default, "mt-1")}>
-              {t("categories." + template.category) || template.category}
+              {t("categories." + safeCategoryKey(template.category ?? undefined))}
             </span>
           </div>
         </div>
