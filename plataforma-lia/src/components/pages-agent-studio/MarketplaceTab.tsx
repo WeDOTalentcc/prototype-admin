@@ -156,7 +156,7 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
   const [loadingAgents, setLoadingAgents] = React.useState(true)
   const [activating, setActivating] = React.useState<string | null>(null)
   const [activatedIds, setActivatedIds] = React.useState<Set<string>>(new Set())
-  const [offerReadiness, setOfferReadiness] = React.useState(null)
+  const [offerReadiness, setOfferReadiness] = React.useState<{ ready: boolean; score: number; total: number; items: { key: string; label: string; ok: boolean; settings_path: string }[] } | null>(null)
 
   // Section 2 — Templates via canonical hook
   const { templates, isLoading: loadingTemplates } = useLegacyAgentTemplates()
@@ -297,7 +297,8 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
             <p className="text-xs text-lia-text-disabled">{t("noAgentsAvailable")}</p>
           </div>
         ) : (
-          {offerReadiness && !offerReadiness.ready && (
+          <>
+            {offerReadiness && !offerReadiness.ready && (
             <div className="mb-4 rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 p-4">
               <div className="flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
@@ -387,6 +388,7 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
               )
             })}
           </div>
+          </>
         )}
       </section>
 
