@@ -7,7 +7,7 @@ import {
   CreateDigitalTwinModal,
 } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import CustomAgentsTab, { CreateCustomAgentModal } from "@/components/pages-agent-studio/CustomAgentsTab"
-import { AgentCard as CustomAgentCard, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
+import { AgentCard as CustomAgentCard, AgentDetailsPanel, DeployDialog, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
 import { TemplatePreviewModal } from "@/components/pages-agent-studio/custom-agents/template-preview-modal"
 import { useCustomAgents, useStudioAlerts } from "@/hooks/agents"
@@ -606,21 +606,6 @@ export default function AgentStudioPage({
               <RefreshCw className="w-4 h-4" />
             </Button>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setActiveTab("personalizados")
-                setTimeout(() => {
-                  document.getElementById("agent-studio-conversational-creator")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }, 80)
-              }}
-              className="gap-2"
-            >
-              <Wand2 className="w-4 h-4" />
-              {t("studio.createWithAI") ?? "Criar com IA"}
-            </Button>
-            <Button
               size="sm"
               onClick={() => setShowCreateModal(true)}
               className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
@@ -710,10 +695,6 @@ export default function AgentStudioPage({
             <p className="text-sm text-lia-text-secondary mb-6">
               {t("customAgents.customAgentsSubtitle")}
             </p>
-
-            <div id="agent-studio-conversational-creator" className="scroll-mt-4">
-              <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
-            </div>
 
             <div className="mt-4">
               <p className="text-sm font-medium text-lia-text-secondary">
