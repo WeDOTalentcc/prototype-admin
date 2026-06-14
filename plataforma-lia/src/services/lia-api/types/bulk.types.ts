@@ -1,17 +1,15 @@
+export interface BulkOperationError {
+  id: string
+  error_message: string    // was: error (aligned to BE bulk_actions.py:98)
+}
+
 export interface BulkOperationResult {
-  success: boolean
-  processed: number
+  total: number
+  successful: number       // was: success: boolean (aligned to BE bulk_actions.py:104)
   failed: number
-  errors: Array<{
-    id: string
-    error: string
-  }>
-  results?: Array<{
-    id: string
-    status: string
-    success: boolean
-    error?: string
-  }>
+  errors: BulkOperationError[]
+  processed_ids: string[]  // was: processed: number (aligned to BE bulk_actions.py:108)
+  message?: string
 }
 
 export interface BulkUpdateStatusRequest {
@@ -21,7 +19,8 @@ export interface BulkUpdateStatusRequest {
 
 export interface BulkAssignJobRequest {
   candidate_ids: string[]
-  job_id: string
+  job_vacancy_id: string   // was: job_id (aligned to BE BulkAssignJobRequest)
+  notes?: string
 }
 
 export interface BulkSendEmailRequest {
@@ -32,7 +31,9 @@ export interface BulkSendEmailRequest {
 
 export interface BulkStartScreeningRequest {
   candidate_ids: string[]
+  job_vacancy_id: string   // ADDED - required by BE for saturation guard
   screening_type?: string
+  override_saturation?: boolean
 }
 
 export interface BulkExportRequest {

@@ -104,7 +104,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
           new_status: data.targetStage
         })
 
-        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error: string }) => [e.id, e.error]) || [])
+        const failedMap = new Map(apiResult.errors?.map((e) => [e.id, e.error_message]) || [])
         const successfulIds = data.candidateIds.filter(id => !failedMap.has(id))
 
         if (successfulIds.length > 0) {
@@ -149,7 +149,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
           new_status: 'rejected'
         })
 
-        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error: string }) => [e.id, e.error]) || [])
+        const failedMap = new Map(apiResult.errors?.map((e) => [e.id, e.error_message]) || [])
         const successfulIds = data.candidateIds.filter(id => !failedMap.has(id))
 
         if (successfulIds.length > 0) {
@@ -195,7 +195,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
           template_id: templateId
         })
 
-        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error: string }) => [e.id, e.error]) || [])
+        const failedMap = new Map(apiResult.errors?.map((e) => [e.id, e.error_message]) || [])
 
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {
