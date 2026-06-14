@@ -167,7 +167,8 @@ class CandidateRepository:
                     term = f"%{token}%"
                     token_conditions.append(
                         or_(
-                            func.lower(func.unaccent(Candidate.name)).like(term),
+                            # name_normalized: non-reversible token (migration 284); NULL name post-encryption.
+                            Candidate.name_normalized.ilike(f"%{token[:20]}%"),
                             func.lower(func.unaccent(Candidate.current_title)).like(term),
                             func.lower(func.unaccent(Candidate.current_company)).like(term),
                             func.lower(func.unaccent(Candidate.location_city)).like(term),
@@ -352,7 +353,9 @@ class CandidateRepository:
             term = f"%{normalized.lower()}%"
             query = query.where(
                 or_(
-                    func.lower(func.unaccent(Candidate.name)).like(term),
+                    # name_normalized: non-reversible search token (migration 284).
+                    # Candidate.name is NULL post-encryption; use name_normalized instead.
+                    Candidate.name_normalized.ilike(f"%{normalized.lower()[:20]}%"),
                     func.lower(func.unaccent(Candidate.current_title)).like(term),
                     func.lower(func.unaccent(Candidate.resume_text)).like(term),
                     func.lower(func.unaccent(func.array_to_string(Candidate.technical_skills, ","))).like(term),
@@ -627,7 +630,8 @@ class CandidateRepository:
                 WHERE is_active = true
                   AND company_id = :company_id
                   AND (:query = ''
-                       OR name ILIKE :qlike
+                       -- name_normalized: post-encryption name search token (migration 284)
+                       OR name_normalized ILIKE :qlike_normalized
                        OR current_title ILIKE :qlike
                        OR :query = ANY(technical_skills))
                   AND (:location = '' OR location_city ILIKE :lloc OR location_state ILIKE :lloc)
@@ -639,6 +643,7 @@ class CandidateRepository:
                 "company_id": cid,
                 "query": query,
                 "qlike": f"%{query}%",
+                "qlike_normalized": f"%{_normalize_for_search(query)[:20]}%",
                 "location": location,
                 "lloc": f"%{location}%",
                 "min_exp": min_experience,
@@ -664,7 +669,7 @@ class CandidateRepository:
                 SELECT COUNT(*) AS total FROM candidates
                 WHERE is_active = true
                   AND company_id = :company_id
-                  AND (:query = '' OR name ILIKE :qlike OR current_title ILIKE :qlike
+                  AND (:query = '' OR name_normalized ILIKE :qlike_normalized OR current_title ILIKE :qlike
                        OR :query = ANY(technical_skills))
                   AND (:location = '' OR location_city ILIKE :lloc OR location_state ILIKE :lloc)
                   AND (years_of_experience IS NULL OR years_of_experience >= :min_exp)
@@ -673,6 +678,7 @@ class CandidateRepository:
                 "company_id": cid,
                 "query": query,
                 "qlike": f"%{query}%",
+                "qlike_normalized": f"%{_normalize_for_search(query)[:20]}%",
                 "location": location,
                 "lloc": f"%{location}%",
                 "min_exp": min_experience,

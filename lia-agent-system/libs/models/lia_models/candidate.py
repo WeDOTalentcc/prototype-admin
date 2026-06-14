@@ -7,6 +7,8 @@ from sqlalchemy import Column, String, Integer, DateTime, Date, Text, JSON, Bool
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, validates
 import uuid
+import hashlib
+import unicodedata
 
 from lia_config.database import Base
 from app.shared.encryption.encrypted_field_mixin import EncryptedFieldMixin
@@ -142,6 +144,10 @@ class Candidate(EncryptedFieldMixin, Base):
     _name_raw = Column("name", String(255), nullable=True, index=True)
     # PII-encrypted name (added by migration 111)
     _name_encrypted = Column("name_encrypted", LargeBinary, nullable=True)
+    # Non-reversible search token for post-encryption name search (migration 284).
+    # Not PII — safe to store plaintext. Set by overridden name setter below.
+    # Format: lowercased+unaccented first 20 chars + "_" + 8-char sha256 hex suffix.
+    name_normalized = Column("name_normalized", String(64), nullable=True, index=True)
     # Raw DB columns for PII fields — always NULL for new writes (post-migration 060).
     # Pre-migration rows retain plaintext here until pii.backfill_encrypt_existing completes.
     # Access via hybrid_property "email" (registered by EncryptedFieldMixin) which decrypts
@@ -349,8 +355,42 @@ class Candidate(EncryptedFieldMixin, Base):
     # applications = relationship("Application", back_populates="candidate")
     # interviews = relationship("Interview", back_populates="candidate")
     
+    @staticmethod
+    def _compute_name_normalized(plaintext_name: str | None) -> str | None:
+        """Derive a non-reversible lowercase search token from a plaintext name.
+
+        Not PII: cannot recover original name from this token.
+        Used for ILIKE search post-encryption when _name_raw is NULL.
+        Format: <first 20 chars lowercased unaccented> + "_" + <8-char sha256 hex>.
+        """
+        if not plaintext_name:
+            return None
+        normalized = unicodedata.normalize("NFKD", plaintext_name).encode("ASCII", "ignore").decode("ASCII")
+        cleaned = normalized.strip().lower()
+        if not cleaned:
+            return None
+        suffix = hashlib.sha256(cleaned.encode("utf-8")).hexdigest()[:8]
+        return f"{cleaned[:20]}_{suffix}"
+
     def __repr__(self):
         return f"<Candidate {self.id} - {self.name} ({self.email})>"
+
+
+
+# Post-class setter override: wrap the name hybrid property to also populate name_normalized.
+# Must be done after the class body is fully defined so EncryptedFieldMixin's __init_subclass__
+# has already registered the name hybrid_property on Candidate.
+_original_name_hybrid = Candidate.__dict__["name"]
+
+@_original_name_hybrid.setter
+def _name_setter_with_normalized(self, value: str | None) -> None:
+    """Extended name setter: encrypts (via EncryptedFieldMixin) + sets name_normalized."""
+    # Call the original mixin setter logic (handles encryption + nulls _name_raw)
+    _original_name_hybrid.fset(self, value)
+    # Set the non-reversible search token
+    self.name_normalized = Candidate._compute_name_normalized(value)
+
+Candidate.name = _name_setter_with_normalized
 
 
 class CandidateSearch(Base):
