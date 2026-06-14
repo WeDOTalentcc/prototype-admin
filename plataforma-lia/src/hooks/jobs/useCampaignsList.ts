@@ -61,6 +61,7 @@ export function useCampaignsList(): UseCampaignsListResult {
     queryKey: CAMPAIGNS_QUERY_KEY,
     queryFn: fetchCampaigns,
     staleTime: 30_000,
+    refetchOnWindowFocus: false,
   })
 
   return {

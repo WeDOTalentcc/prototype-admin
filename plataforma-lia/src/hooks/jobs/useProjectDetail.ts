@@ -19,6 +19,29 @@ async function advanceStageRequest(id: string): Promise<CampaignItem> {
   return res.json()
 }
 
+async function updateCampaignRequest(
+  id: string,
+  updates: Record<string, unknown>,
+): Promise<CampaignItem> {
+  const res = await fetch(`/api/backend-proxy/recruitment-campaigns/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  })
+  if (!res.ok) throw new Error("Failed to update campaign")
+  return res.json()
+}
+
+async function addCheckpointRequest(id: string, note: string): Promise<CampaignItem> {
+  const res = await fetch(`/api/backend-proxy/recruitment-campaigns/${id}/add-checkpoint`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ note }),
+  })
+  if (!res.ok) throw new Error("Failed to add checkpoint")
+  return res.json()
+}
+
 export function useProjectDetail(id: string) {
   const queryClient = useQueryClient()
 
@@ -26,16 +49,46 @@ export function useProjectDetail(id: string) {
     queryKey: CAMPAIGN_DETAIL_KEY(id),
     queryFn: () => fetchProjectDetail(id),
     staleTime: 30_000,
+    refetchOnWindowFocus: false,
     enabled: Boolean(id),
   })
+
+  const invalidateList = () => {
+    queryClient.invalidateQueries({ queryKey: ["recruitment-campaigns"] })
+  }
 
   const { mutate: advance, isPending: isAdvancing } = useMutation({
     mutationFn: () => advanceStageRequest(id),
     onSuccess: (updated) => {
       queryClient.setQueryData(CAMPAIGN_DETAIL_KEY(id), updated)
-      queryClient.invalidateQueries({ queryKey: ["recruitment-campaigns"] })
+      invalidateList()
     },
   })
 
-  return { project, isLoading, isError, advance, isAdvancing }
+  const { mutate: update, isPending: isUpdating } = useMutation({
+    mutationFn: (updates: Record<string, unknown>) => updateCampaignRequest(id, updates),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(CAMPAIGN_DETAIL_KEY(id), updated)
+      invalidateList()
+    },
+  })
+
+  const { mutate: addCheckpoint, isPending: isAddingCheckpoint } = useMutation({
+    mutationFn: (note: string) => addCheckpointRequest(id, note),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(CAMPAIGN_DETAIL_KEY(id), updated)
+    },
+  })
+
+  return {
+    project,
+    isLoading,
+    isError,
+    advance,
+    isAdvancing,
+    update,
+    isUpdating,
+    addCheckpoint,
+    isAddingCheckpoint,
+  }
 }

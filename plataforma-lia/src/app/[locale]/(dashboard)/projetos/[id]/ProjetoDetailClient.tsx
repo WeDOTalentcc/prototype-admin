@@ -8,9 +8,11 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { badgeStyles } from "@/lib/design-tokens"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useProjectDetail } from "@/hooks/jobs/useProjectDetail"
 import type { CampaignItem, CampaignStatus } from "@/hooks/jobs/useCampaignsList"
+import { Button } from "@/components/ui/button"
+import { EditProjetoModal } from "./EditProjetoModal"
 
 // ── Status helpers ─────────────────────────────────────────────────────────
 
@@ -179,7 +181,8 @@ function ProjetoDetailSkeleton() {
 // ── Main ───────────────────────────────────────────────────────────────────
 
 export default function ProjetoDetailClient({ id }: { id: string }) {
-  const { project, isLoading, isError, advance, isAdvancing } = useProjectDetail(id)
+  const queryClient = useQueryClient()
+  const { project, isLoading, isError, advance, isAdvancing, update, isUpdating, addCheckpoint, isAddingCheckpoint } = useProjectDetail(id)
 
   const { data: jobData } = useQuery<{ title?: string } | null>({
     queryKey: ["job-vacancy", project?.job_id],
@@ -187,6 +190,8 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
     enabled: Boolean(project?.job_id),
     staleTime: 60_000,
   })
+  const [showEdit, setShowEdit] = useState(false)
+  const [checkpointNote, setCheckpointNote] = useState("")
 
   if (isLoading) return <ProjetoDetailSkeleton />
 
@@ -249,14 +254,20 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
           <div className="flex items-center gap-2 shrink-0">
             {project.status === "active" && (
               <button type="button"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border text-small font-medium text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors">
-                <Pause className="w-3.5 h-3.5" />Pausar
+                disabled={isUpdating}
+                onClick={() => update({ status: "paused" })}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border text-small font-medium text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors disabled:opacity-50">
+                {isUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Pause className="w-3.5 h-3.5" />}
+                Pausar
               </button>
             )}
             {project.status === "paused" && (
               <button type="button"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border text-small font-medium text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors">
-                <Play className="w-3.5 h-3.5" />Retomar
+                disabled={isUpdating}
+                onClick={() => update({ status: "active" })}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border text-small font-medium text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors disabled:opacity-50">
+                {isUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                Retomar
               </button>
             )}
             {canAdvance && (
@@ -352,6 +363,30 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
             <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Atividade recente</p>
             <ActivityFeed project={project} />
           </div>
+
+          <div>
+            <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Adicionar nota</p>
+            <textarea
+              value={checkpointNote}
+              onChange={(e) => setCheckpointNote(e.target.value)}
+              placeholder="Anotação sobre o progresso..."
+              rows={3}
+              className="w-full px-2.5 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-paper text-micro text-lia-text-primary placeholder:text-lia-text-tertiary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/30 resize-none"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-1.5 w-full text-micro"
+              disabled={!checkpointNote.trim() || isAddingCheckpoint}
+              onClick={() => {
+                const note = checkpointNote.trim()
+                if (!note) return
+                addCheckpoint(note, { onSuccess: () => setCheckpointNote("") })
+              }}
+            >
+              {isAddingCheckpoint ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Salvar nota"}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -362,11 +397,24 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
         <span><span className="font-bold text-lia-text-primary">{project.candidates_interviewed}</span> <span className="text-lia-text-secondary">em entrevista</span></span>
         <span><span className="font-bold text-lia-text-primary">{project.candidates_hired}</span> <span className="text-lia-text-secondary">contratados</span></span>
         <button type="button" className="ml-auto text-micro text-lia-btn-primary-bg hover:underline flex items-center gap-1"
-          onClick={() => window.location.href = `/pt/projetos/${project.id}/editar`}>
+          onClick={() => setShowEdit(true)}>
           Editar projeto
           <ChevronRight className="w-3 h-3" />
         </button>
       </div>
+
+      {showEdit && project && (
+        <EditProjetoModal
+          project={project}
+          open={showEdit}
+          onClose={() => setShowEdit(false)}
+          onSaved={(updated) => {
+            queryClient.setQueryData(["recruitment-campaign", id], updated)
+            queryClient.invalidateQueries({ queryKey: ["recruitment-campaigns"] })
+            setShowEdit(false)
+          }}
+        />
+      )}
     </div>
   )
 }
