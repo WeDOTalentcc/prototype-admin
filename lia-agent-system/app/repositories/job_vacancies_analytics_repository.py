@@ -394,7 +394,7 @@ class JobVacanciesAnalyticsRepository:
                     lo.score_breakdown AS score_breakdown,
                     tr_tech.score AS technical_test_score,
                     tr_eng.score AS english_test_score,
-                    tr_b5.answers AS big_five_data
+                    lo_b5.ocean_traits AS big_five_data
                 FROM base b
                 LEFT JOIN LATERAL (
                     SELECT lo2.wsi_score, lo2.score, lo2.score_breakdown
@@ -423,15 +423,14 @@ class JobVacanciesAnalyticsRepository:
                     LIMIT 1
                 ) tr_eng ON true
                 LEFT JOIN LATERAL (
-                    SELECT tr4.answers
-                    FROM test_results tr4
-                    JOIN technical_tests tt4 ON tt4.id = tr4.test_id
-                    WHERE tr4.candidate_id = b.candidate_id
-                      AND tt4.category = 'personality'
-                      AND tt4.subcategory = 'big_five'
-                    ORDER BY tr4.created_at DESC
+                    SELECT lo3.behavioral_analysis->'ocean_traits' AS ocean_traits
+                    FROM lia_opinions lo3
+                    WHERE lo3.candidate_id = b.candidate_id
+                      AND (lo3.job_vacancy_id = b.vacancy_id OR lo3.job_vacancy_id IS NULL)
+                      AND lo3.is_current = true
+                    ORDER BY (lo3.job_vacancy_id = b.vacancy_id) DESC, lo3.created_at DESC
                     LIMIT 1
-                ) tr_b5 ON true
+                ) lo_b5 ON true
                 WHERE b.rn <= :limit
                 ORDER BY b.stage, b.created_at DESC
             """),
