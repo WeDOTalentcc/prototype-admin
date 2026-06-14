@@ -669,7 +669,8 @@ export function NovoProjetoWizard({ open, onClose }: { open: boolean; onClose: (
         const body = await res.json().catch(() => ({}))
         throw new Error(body?.detail ?? "Erro ao criar projeto")
       }
-      const created = await res.json()
+      const json = await res.json()
+      const created = ("ok" in json ? json.data : json)
       onClose()
       router.push(`/pt/projetos/${created.id}`)
     } catch (err) {
