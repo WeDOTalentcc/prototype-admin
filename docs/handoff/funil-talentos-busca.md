@@ -657,7 +657,9 @@ Categorias válidas para `suggestions`: `experience`, `industry`, `work_model`, 
 
 **b) Fairness / anti-discriminação (FairnessGuard)**
 - Antes de executar, o `FairnessGuard` **intercepta a query e bloqueia termos discriminatórios** (gênero, raça, idade, religião, etc.) — `fairness_guard.py:153-328`.
-- O bloqueio **não retorna erro**: devolve uma **mensagem educativa** explicando a razão legal/ética (`fairness_guard.py:166-171`). É uma regra de compliance (EU AI Act / anti-viés), não um simples validador.
+- O bloqueio retorna **HTTP 400** com `{"error": "fairness_blocked", "educational_message": "...", "category": "..."}` — `search.py:139-149` (busca) e `archetypes.py:1238-1247` (arquétipos).
+- **UI feedback (wired — `e8bd38ad9`):** banner âmbar inline abaixo do campo de busca com ícone `ShieldAlert` + mensagem educativa; botão de fechar; mensagem também enviada como bolha LIA no painel lateral. O banner some automaticamente na próxima busca.
+- É uma regra de compliance (CLT Art. 373-A, Lei 7.716/89, CF Art. 5º, LGPD Art. 20 / EU AI Act), não um simples validador.
 
 **c) Revelação de contato & LGPD**
 - Contatos vêm **mascarados por default** (`show_emails=False`); só são revelados se `show_emails`/`show_phone_numbers=true` (`search.py:142-143`). Revelar via Apify custa $0.01/tentativa.
@@ -1323,7 +1325,7 @@ search_feedbacks (FastAPI)
 | RN-02 | `company_id` do JWT, nunca do payload | Tudo | `Depends(require_company_id)` em todo endpoint | `require_company_id.py:116` |
 | RN-03 | `search_pearch` default `false` | Busca | Sem custo acidental; ligar explicitamente para Híbrida/Global | `candidate-search.ts:234` |
 | RN-04 | Saldo insuficiente não bloqueia | Busca | Retorna resultados + aviso, não debita | `search.py:413` |
-| RN-05 | FairnessGuard antes de tudo | Busca | Termos discriminatórios → msg educativa, não erro HTTP | `fairness_guard.py:153-328` |
+| RN-05 | FairnessGuard antes de tudo | Busca + Arquétipos | Termos discriminatórios → HTTP 400 + msg educativa; UI: banner âmbar + bolha LIA | `search.py:139-149` |
 | RN-06 | Descartados persistidos | Busca (require_*) | Não some silenciosamente; contagem + endpoint dedicado | `search.py:356-368` |
 | RN-07 | Snapshot/fingerprint custa zero | Histórico/Busca | Reabrir do histórico não debita | `search.py:465-474` |
 | RN-08 | Crédito debitado com lock de linha | Busca Pearch | `with_for_update` evita corrida no saldo | `credit_service.py:152` |
