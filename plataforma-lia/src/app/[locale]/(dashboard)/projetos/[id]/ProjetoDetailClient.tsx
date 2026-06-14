@@ -315,7 +315,7 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
                     <p className="text-micro text-lia-text-tertiary">Nenhum candidato nesta etapa</p>
                   )}
                 </div>
-              </div>
+              </StudioCardShell>
             )
           })}
         </div>
