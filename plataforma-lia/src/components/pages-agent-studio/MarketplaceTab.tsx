@@ -298,7 +298,7 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
           </div>
         ) : (
           <>
-            {offerReadiness && !offerReadiness.ready && (
+            {offerReadiness && !offerReadiness.ready ? (
             <div className="mb-4 rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 p-4">
               <div className="flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
@@ -326,7 +326,7 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
                 <button onClick={()=>setOfferReadiness(null)} className="text-amber-500 hover:text-amber-700 text-xs flex-shrink-0" aria-label="Fechar aviso">x</button>
               </div>
             </div>
-          )}
+          ) : null}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredAgents.map(agent => {
               const isActive = activatedIds.has(agent.id)
