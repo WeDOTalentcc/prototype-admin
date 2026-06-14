@@ -160,7 +160,7 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                             reason=criteria.get("description", "Critérios atendidos"),
                             auto_navigate=False,
                         )
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: deteccao opcional de navegacao por confirmacao do usuario; falha nao bloqueia resposta
             pass
 
         return AgentOutput(
@@ -177,7 +177,7 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
             weights = await self.load_calibration_weights(str(input.company_id or ""), input.context.get("job_id"))
             if weights and weights != self._DEFAULT_WEIGHTS:
                 input.context["calibration_weights"] = weights
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: carregamento opcional de calibration weights; falha nao bloqueia agente
             pass
         try:
             from app.shared.services.global_insights_service import get_global_insights
@@ -186,14 +186,14 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
             if snippet:
                 existing = input.context.get("extra_instructions", "")
                 input.context["extra_instructions"] = f"{existing}\n\n{snippet}" if existing else snippet
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: enriquecimento opcional de insights globais; falha nao bloqueia agente
             pass
         try:
             from app.domains.analytics.services.recruiter_personalization_service import get_recruiter_prompt_context
             ctx = await get_recruiter_prompt_context(str(input.user_id or ""), str(input.company_id or ""))
             if ctx:
                 input.context["recruiter_context"] = ctx
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: carregamento opcional de contexto de recrutador; falha nao bloqueia agente
             pass
         return await super()._process_langgraph(input)
 
