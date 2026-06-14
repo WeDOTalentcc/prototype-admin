@@ -395,6 +395,7 @@ export const STAGE_LABELS: Record<WizardStage, string> = {
   // Sprint Pipeline Templates 2026-05-26 — Opção B.
   pipeline_template: "Pipeline · Template",
   done: "Concluido",
+  scheduling: "Agendamento",
 }
 
 /**
@@ -419,6 +420,7 @@ export const STAGE_PILL_LABELS: Record<WizardStage, string> = {
   // Sprint Pipeline Templates 2026-05-26 — Opção B (Paulo aprovou)
   pipeline_template: "Pipeline · Template",
   done: "Vaga criada",
+  scheduling: "Criando vaga · Agendamento",
 }
 
 export const STAGE_ORDER: WizardStage[] = [
