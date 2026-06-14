@@ -126,3 +126,13 @@ jobs:
             tests/test_send_email_fairness.py \
             tests/test_feedback_guard.py \
             --no-cov --tb=short -q
+
+      - name: JSON operator syntax sensor (BLOCKING)
+        # Sensor check_json_operator_syntax.py (2026-06-14).
+        # Detecta operadores JSON PostgreSQL sem aspas na chave:
+        #   BUGADO:  ->column_name   (trata como referência de coluna)
+        #   CORRETO: ->column_name (string key)
+        # Baseline 0 — qualquer regressão bloqueia CI.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_json_operator_syntax.py
