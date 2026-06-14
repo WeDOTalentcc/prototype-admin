@@ -15,11 +15,11 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-status-error/15 dark:bg-status-error/20 text-status-error hover:bg-status-error/25",
         outline: "border-lia-border-default text-lia-text-primary hover:bg-lia-interactive-hover",
-        success: "border-transparent bg-wedo-green/15 text-wedo-green dark:bg-wedo-green/20 dark:text-wedo-green",
-        warning: "border-transparent bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange",
-        info: "border-transparent bg-wedo-cyan/15 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan",
+        success: "border-transparent bg-wedo-green/15 text-lia-text-secondary dark:bg-wedo-green/20 dark:text-lia-text-secondary",
+        warning: "border-transparent bg-wedo-orange/15 text-lia-text-secondary dark:bg-wedo-orange/20 dark:text-lia-text-secondary",
+        info: "border-transparent bg-wedo-cyan/15 text-lia-text-secondary dark:bg-wedo-cyan/20 dark:text-lia-text-secondary",
         danger: "border-transparent bg-status-error/15 text-status-error dark:bg-status-error/20 dark:text-status-error",
-        lilac: "border-transparent bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple",
+        lilac: "border-transparent bg-wedo-purple/15 text-lia-text-secondary dark:bg-wedo-purple/20 dark:text-lia-text-secondary",
       },
     },
     defaultVariants: {

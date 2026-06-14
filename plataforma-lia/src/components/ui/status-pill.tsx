@@ -30,7 +30,7 @@ const statusPillVariants = cva(
           "bg-status-error/10 text-status-error border-status-error/20 dark:bg-status-error/20",
         warning:
           "bg-status-warning/10 text-status-warning border-status-warning/20 dark:bg-status-warning/20",
-        info: "bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/20 dark:text-wedo-cyan",
+        info: "bg-wedo-cyan/10 text-lia-text-secondary border-wedo-cyan/20",
         neutral:
           "bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-elevated dark:text-lia-text-secondary",
       },

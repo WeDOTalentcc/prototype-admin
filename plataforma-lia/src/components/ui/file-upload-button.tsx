@@ -190,7 +190,7 @@ export function FileUploadButton({
               key={uf.id}
               className={cn(
  "flex items-center gap-1 px-2 py-1 rounded-md text-xs",
-                uf.status === "uploading" && "bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark",
+                uf.status === "uploading" && "bg-wedo-cyan/10 text-lia-text-secondary",
                 uf.status === "success" && "bg-status-success/10 text-status-success",
                 uf.status === "error" && "bg-status-error/10 text-status-error",
                 uf.status === "pending" && "bg-lia-bg-secondary text-lia-text-secondary"
