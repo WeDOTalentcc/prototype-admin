@@ -1296,7 +1296,9 @@ def get_or_create_runtime(
         _evict_key = next(iter(_runtime_cache))
         del _runtime_cache[_evict_key]
         logger.info("[CustomAgentRuntime][cache] evicted oldest entry: %s", _evict_key)
-    if cache_key not in _runtime_cache or force_new:
+    _is_hit = cache_key in _runtime_cache and not force_new
+    if not _is_hit:
+        logger.debug("[CustomAgentRuntime][cache] MISS key=%s force_new=%s", cache_key, force_new)
         _runtime_cache[cache_key] = CustomAgentRuntime(
             agent_id=agent_id,
             agent_name=agent_name,
@@ -1315,4 +1317,6 @@ def get_or_create_runtime(
             persona=persona,
             pricing_tier=pricing_tier,
         )
+    if _is_hit:
+        logger.debug("[CustomAgentRuntime][cache] HIT key=%s", cache_key)
     return _runtime_cache[cache_key]
