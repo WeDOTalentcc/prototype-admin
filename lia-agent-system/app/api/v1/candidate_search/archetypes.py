@@ -883,7 +883,7 @@ company_id: str = Depends(require_company_id)):
                         "current_title": profile.current_title,
                         "is_opentowork": profile.is_opentowork,
                     }
-                    lia_result = lia_score_service.calculate_score(candidate_data, criteria)
+                    lia_result = lia_score_service.calculate_score(candidate_data, criteria, industry=archetype.industry)
                     candidate_dto.lia_score = lia_result.score
                     candidate_dto.lia_reasoning = lia_result.reasoning
                     candidate_dto.lia_breakdown = lia_result.breakdown.to_dict()
@@ -929,7 +929,7 @@ company_id: str = Depends(require_company_id)):
                         "current_title": profile.current_title,
                         "is_opentowork": profile.is_opentowork,
                     }
-                    lia_result = lia_score_service.calculate_score(candidate_data, criteria)
+                    lia_result = lia_score_service.calculate_score(candidate_data, criteria, industry=archetype.industry)
                     candidate_dto.lia_score = lia_result.score
                     candidate_dto.lia_reasoning = lia_result.reasoning
                     candidate_dto.lia_breakdown = lia_result.breakdown.to_dict()

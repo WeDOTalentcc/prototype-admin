@@ -95,7 +95,7 @@ export const CANDIDATES_DEFAULT_COLUMNS = [
   { id: 'company_followers_count', label: 'Seguidores da Empresa', visible: false, order: 74, category: 'busca_global', isGlobalSearch: true },
   { id: 'company_keywords', label: 'Palavras-chave da Empresa', visible: false, order: 75, category: 'busca_global', isGlobalSearch: true },
   // Insights LIA / IA
-  { id: 'lia_score', label: 'Score LIA', visible: false, order: 64, category: 'ia' },
+  { id: 'lia_score', label: 'Score LIA', visible: true, order: 64, category: 'ia' },
   { id: 'lia_insights', label: 'Insights LIA', visible: false, order: 65, category: 'ia' },
   { id: 'skills_match_percentage', label: '% Match de habilidades', visible: false, order: 66, category: 'ia' },
   // Status e Workflow
