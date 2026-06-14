@@ -32,6 +32,11 @@ export async function POST(request: NextRequest) {
       const headers = new Headers()
       headers.set('Content-Type', contentType)
       headers.set('Content-Disposition', response.headers.get('Content-Disposition') || 'attachment; filename=candidates.csv')
+      // Forward fallback header so the FE can show a toast when XLSX falls back to CSV
+      const formatFallback = response.headers.get('X-Format-Fallback')
+      if (formatFallback) {
+        headers.set('X-Format-Fallback', formatFallback)
+      }
       return new NextResponse(blob, { headers })
     }
 

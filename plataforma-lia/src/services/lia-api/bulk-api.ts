@@ -61,7 +61,18 @@ export async function bulkStartScreening(request: BulkStartScreeningRequest): Pr
   return response.json()
 }
 
-export async function bulkExport(request: BulkExportRequest): Promise<Blob | BulkOperationResult> {
+export interface BulkExportBlobResult {
+  blob: Blob
+  /** True when BE fell back from XLSX to CSV (openpyxl unavailable). Caller should show toast. */
+  formatFallback: boolean
+}
+
+/** Exports candidates as CSV or XLSX.
+ * Returns BulkExportBlobResult when the BE streams a file,
+ * or BulkOperationResult when the BE returns JSON (error summary).
+ * Check result.formatFallback to detect silent XLSX→CSV fallback (X-Format-Fallback header).
+ */
+export async function bulkExport(request: BulkExportRequest): Promise<BulkExportBlobResult | BulkOperationResult> {
   const response = await fetch('/api/backend-proxy/candidates/bulk/export', {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -73,7 +84,9 @@ export async function bulkExport(request: BulkExportRequest): Promise<Blob | Bul
   }
   const contentType = response.headers.get('content-type')
   if (contentType?.includes('text/csv') || contentType?.includes('application/vnd.openxmlformats')) {
-    return response.blob()
+    const formatFallback = response.headers.get('X-Format-Fallback') === 'xlsx-unavailable'
+    const blob = await response.blob()
+    return { blob, formatFallback }
   }
   return response.json()
 }
