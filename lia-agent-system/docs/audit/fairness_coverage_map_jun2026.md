@@ -87,3 +87,36 @@ Se user_text nao for vazio:
 ---
 
 Documento gerado Jun 2026. Para historico anterior ver fairness_global.md (Abr 2026).
+
+## 8. Surfaces de Governanca no Menu Configuracoes (Jun 2026)
+
+Auditoria dos 12 componentes de compliance/fairness/LGPD em
+plataforma-lia/src/components/settings/.
+
+### Status por componente
+
+| Componente | Arquivo | Status |
+|---|---|---|
+| FairnessComplianceHub | FairnessComplianceHub.tsx | WIRED (dispatcher) |
+| ComplianceOverviewPanel | ComplianceOverviewPanel.tsx | GHOST - valores mock P3 |
+| StudioComplianceView | StudioComplianceView.tsx | WIRED |
+| ConsentPanel (3 tabs) | governance/ConsentPanel.tsx | WIRED |
+| DSRInboxPanel | governance/DSRInboxPanel.tsx | WIRED |
+| AuditLogsSummaryPanel | compliance/AuditLogsSummaryPanel.tsx | WIRED |
+| AuditLogsDrillDownClientPanel | compliance/AuditLogsDrillDownClientPanel.tsx | WIRED admin-only |
+| PiiFieldVisibilityMatrix | PiiFieldVisibilityMatrix.tsx | WIRED |
+| PiiVisibilityRoleDefaults | PiiVisibilityRoleDefaults.tsx | WIRED |
+| RecruitmentScreeningTab | RecruitmentScreeningTab.tsx | WIRED |
+| AutomationTemplatesView | recruitment/AutomationTemplatesView.tsx | GHOST hardcoded |
+| PolicyEngine (3 modais) | governance/policy-engine/ | GHOST status desconhecido |
+
+9/12 WIRED. 3/12 GHOST.
+
+### Gaps
+
+- ComplianceOverviewPanel: 5 KPI cards com valores -- (mock). Endpoints TODO P3.
+- AutomationTemplatesView: 8 templates hardcoded. API TODO Sprint B.3.
+- PolicyEngine: 3 modais existem sem integracao visivel.
+- Dashboard DEI dedicado: nao existe.
+
+Para detalhe completo ver Notion HANDOFF Fairness+LGPD (Jun 2026).
