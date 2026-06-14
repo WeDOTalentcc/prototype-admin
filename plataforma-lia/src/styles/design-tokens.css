@@ -19,15 +19,15 @@
   --lia-bg-elevated: #FFFFFF;          /* Cards elevados (com shadow) */
   
   /* Borders & Dividers - Tom único (ElevenLabs-style) */
-  --lia-border-subtle: #D4D4D4;        /* Borders sutis - padrão para tudo */
-  --lia-border-default: #BEBEBE;       /* Unificado com subtle */
-  --lia-border-medium: #BEBEBE;        /* Unificado com subtle */
+  --lia-border-subtle: #C8C8C8;        /* Borders sutis - padrão para tudo */
+  --lia-border-default: #B0B0B0;       /* Bordas com destaque */
+  --lia-border-medium: #A0A0A0;        /* Bordas fortes, separadores de seção */
   --lia-border-strong: #999999;        /* Border forte - inputs centrais */
   
   /* Textos - Hierarquia tipográfica clara (ElevenLabs-style) */
   --lia-text-primary: #111111;         /* Preto puro - títulos, texto principal */
   --lia-text-secondary: #2D2D2D;       /* Cinza médio - texto corpo, descrições */
-  --lia-text-tertiary: #5C5C5C;        /* Cinza claro - placeholders, hints */
+  --lia-text-tertiary: #404040;        /* Cinza escuro - descriptions, metadata */
   --lia-text-disabled: #999999;        /* Cinza muito claro - desabilitado */
   --lia-text-inverse: #FFFFFF;         /* Branco - texto em fundo escuro */
   --lia-text-inverted: var(--lia-text-inverse); /* Alias para compatibilidade retroativa */
@@ -145,16 +145,16 @@
     
     --lia-btn-secondary-bg: transparent;
     --lia-btn-secondary-hover: #F3F4F6;
-    --lia-btn-secondary-text: #6B7280;
+    --lia-btn-secondary-text: #374151;
     --lia-btn-secondary-border: #E5E7EB;
     
     --lia-btn-ghost-bg: transparent;
     --lia-btn-ghost-hover: #F3F4F6;
-    --lia-btn-ghost-text: #6B7280;
+    --lia-btn-ghost-text: #374151;
     
     /* Badges/Tags */
     --lia-badge-neutral-bg: #F3F4F6;
-    --lia-badge-neutral-text: #6B7280;
+    --lia-badge-neutral-text: #4B5563;
     --lia-badge-neutral-border: #E5E7EB;
     
     /* Input/Forms */
