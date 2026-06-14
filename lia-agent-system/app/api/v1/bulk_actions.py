@@ -35,6 +35,7 @@ from app.shared.security.require_company_id import require_company_id
 from sqlalchemy import select as _sa_select
 from app.models.candidate import VacancyCandidate as _VacancyCandidate
 from app.shared.types import WeDoBaseModel
+from app.domains.recruitment.services.triagem_session_service.service import TriagemSessionService
 
 logger = logging.getLogger(__name__)
 
@@ -622,20 +623,20 @@ company_id: str = Depends(require_company_id)):
                     ))
                     continue
 
-                additional_data = candidate.additional_data or {}
-                screening_sessions = additional_data.get("screening_sessions", [])
-
-                screening_session = {
-                    "session_id": str(uuid.uuid4()),
-                    "job_vacancy_id": request.job_vacancy_id,
-                    "job_title": job_vacancy.title,
-                    "screening_type": request.screening_type,
-                    "status": "pending",
-                    "created_at": datetime.utcnow().isoformat()
-                }
-                screening_sessions.append(screening_session)
-                additional_data["screening_sessions"] = screening_sessions
-                candidate.additional_data = additional_data
+                triagem_svc = TriagemSessionService()
+                voice_mode = request.screening_type == "voice"
+                session = await triagem_svc.create_session(
+                    db=repo.db,
+                    candidate_id=str(candidate_id),
+                    job_id=request.job_vacancy_id,
+                    company_id=company_id,
+                    candidate_name=candidate.name,
+                    candidate_email=candidate.email,
+                    job_title=job_vacancy.title,
+                    invite_channel="voice" if voice_mode else "email",
+                    created_by=str(current_user.id),
+                    voice_mode=voice_mode,
+                )
 
                 if candidate.status == "new":
                     candidate.status = "screening"
@@ -644,7 +645,7 @@ company_id: str = Depends(require_company_id)):
                 candidate.last_activity_at = datetime.utcnow()
                 processed_ids.append(candidate_id)
 
-                logger.info(f"Created screening session {screening_session['session_id']} for candidate {candidate_id}")
+                logger.info(f"Created triagem session {session.id} for candidate {candidate_id} via TriagemSessionService")
 
             except ValueError:
                 errors.append(BulkOperationError(
