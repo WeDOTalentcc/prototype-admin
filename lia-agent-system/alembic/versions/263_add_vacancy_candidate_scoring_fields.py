@@ -9,7 +9,7 @@ import sqlalchemy as sa
 
 # revision identifiers
 revision = "263_add_vacancy_candidate_scoring_fields"
-down_revision = "262_add_digest_schedule_preferences"
+down_revision = "262"
 branch_labels = None
 depends_on = None
 

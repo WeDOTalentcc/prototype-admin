@@ -32,6 +32,11 @@ depends_on = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    from sqlalchemy import inspect as sa_inspect
+    inspector = sa_inspect(bind)
+    if "digest_schedule_preferences" in inspector.get_table_names():
+        return  # table already exists (applied outside alembic)
     op.create_table(
         "digest_schedule_preferences",
         sa.Column("id", sa.String(), nullable=False),

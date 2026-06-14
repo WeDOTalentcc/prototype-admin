@@ -52,7 +52,7 @@ def upgrade() -> None:
         "ix_outbox_pending",
         "domain_events_outbox",
         ["status", "created_at"],
-        postgresql_where=sa.text("status = pending"),
+        postgresql_where=sa.text("status = 'pending'"),
     )
 
 
