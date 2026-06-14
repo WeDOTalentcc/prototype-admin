@@ -304,11 +304,11 @@ class AutomationScheduler:
                     hour=8,
                     minute=0,
                     timezone="America/Sao_Paulo",
-                    misfire_grace_time=3600,
                 ),
                 id="teams_daily_digest",
                 name="A2 — Teams daily digest per recruiter",
                 replace_existing=True,
+                misfire_grace_time=3600,
             )
 
             self._is_running = True
