@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { useLocale } from "next-intl"
 import { navigationCatalog } from "@/lib/navigation/navigation-commands"
 import { useCommandCatalog } from "@/hooks/lia/use-command-catalog"
@@ -54,9 +55,11 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
   const [activeIdx, setActiveIdx] = useState(0)
   const router = useRouter()
   const locale = useLocale()
+  const pathname = usePathname()
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const { data: actionCatalog } = useCommandCatalog()
+  const [contextualHints, setContextualHints] = useState<Item[]>([])
 
   // ── Nav + action items (static, always shown when no query) ──────────
   const navItems: Item[] = navigationCatalog(locale).map((n) => ({
@@ -78,6 +81,36 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
       onClose()
     },
   }))
+
+  // ── LIA Contextual Hints (load on open, by page context) ─────────────
+  useEffect(() => {
+    if (!isOpen) return
+    const pageContext = pathname?.split("/").filter(Boolean).slice(1).join("/") ?? ""
+    const abort = new AbortController()
+
+    fetch(
+      `/api/backend-proxy/search/contextual-hints?page_context=${encodeURIComponent(pageContext)}&limit=5`,
+      { signal: abort.signal }
+    )
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (!data?.hints) return
+        setContextualHints(
+          data.hints.map((h: { label: string; target: string; context?: string }) => ({
+            id: `hint-${h.label}`,
+            label: h.label,
+            sublabel: h.context,
+            icon: Brain,
+            iconColor: "text-wedo-cyan",
+            onSelect: () => { router.push(h.target); onClose() },
+          }))
+        )
+      })
+      .catch(() => {}) // timeout ou erro: silencioso
+
+    const timer = setTimeout(() => abort.abort(), 2000)
+    return () => { clearTimeout(timer); abort.abort() }
+  }, [isOpen, pathname, router, onClose])
 
   // ── Real search ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -178,6 +211,9 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
         },
       ].filter(Boolean) as Section[]
     : [
+        contextualHints.length > 0
+          ? { id: "lia-hints", label: "SUGESTÕES DA LIA", items: contextualHints }
+          : null,
         { id: "nav", label: "NAVEGAÇÃO", items: navItems },
         actionItems.length > 0 ? { id: "actions", label: "AÇÕES RÁPIDAS", items: actionItems } : null,
       ].filter(Boolean) as Section[]
