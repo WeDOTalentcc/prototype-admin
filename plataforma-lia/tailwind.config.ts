@@ -127,6 +127,7 @@ export default {
         'lia-text-primary':         'var(--lia-text-primary)',
         'lia-text-secondary':       'var(--lia-text-secondary)',
         'lia-text-tertiary':        'var(--lia-text-tertiary)',
+        'lia-text-muted':           'var(--lia-text-muted)',
         'lia-text-disabled':        'var(--lia-text-disabled)',
         'lia-text-inverse':         'var(--lia-text-inverse)',
         // ──────────────────────────────────────────────

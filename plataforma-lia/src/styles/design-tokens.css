@@ -28,6 +28,7 @@
   --lia-text-primary: #111111;         /* Preto puro - títulos, texto principal */
   --lia-text-secondary: #2D2D2D;       /* Cinza médio - texto corpo, descrições */
   --lia-text-tertiary: #404040;        /* Cinza escuro - descriptions, metadata */
+  --lia-text-muted:    #737373;        /* Cinza médio - ícones, microtexto, captions */
   --lia-text-disabled: #999999;        /* Cinza muito claro - desabilitado */
   --lia-text-inverse: #FFFFFF;         /* Branco - texto em fundo escuro */
   --lia-text-inverted: var(--lia-text-inverse); /* Alias para compatibilidade retroativa */
@@ -231,6 +232,7 @@
     --lia-text-primary: #F9FAFB;         /* Branco suave */
     --lia-text-secondary: #D1D5DB;       /* Cinza claro */
     --lia-text-tertiary: #5C5C5C;        /* Cinza médio */
+    --lia-text-muted:    #A0A0A0;        /* Cinza claro - ícones, microtexto dark */
     --lia-text-disabled: #6B7280;
     --lia-text-inverse: #111827;
     
@@ -622,7 +624,7 @@
   --lia-text-black: #030712;        /* Migrar para --wedo-text-title */
   --lia-text-dark: #1F2937;         /* Migrar para --wedo-text-body */
   --lia-text-body: #4B5563;         /* Migrar para --wedo-text-secondary */
-  --lia-text-muted: #6B7280;        /* Migrar para --wedo-text-muted */
+  --lia-text-muted: #737373;        /* Migrar para --wedo-text-muted */
   
   /* Cores de categoria (para badges e ícones) */
   /* --lia-cat-* ELIMINADOS 2026-03-29
