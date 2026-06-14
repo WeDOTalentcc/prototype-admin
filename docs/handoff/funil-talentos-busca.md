@@ -709,7 +709,75 @@ flowchart TD
 
 ### 5.3 Controles (SearchControlsBar)
 
-Sort (Match Score · Mais recentes…) · filtros de tabela · config de colunas · paginação (`CandidatesTableArea`).
+Arquivo: `plataforma-lia/src/components/pages/candidates/SearchControlsBar.tsx`. A barra fica acima da tabela e contém 4 grupos de controle.
+
+#### 5.3.1 Sort (Ordenação de linhas)
+
+Estado em `searchSortBy` (Zustand). Ordenação é **client-side** sobre o array já recebido — não dispara nova chamada ao backend.
+
+| Valor (`searchSortBy`) | Label UI | Descrição |
+|---|---|---|
+| `relevance` | Match Score *(default)* | Score calculado pelo backend (WRF + BARS + calibração) |
+| `score_desc` | Score ↓ | Score numérico decrescente |
+| `score_asc` | Score ↑ | Score numérico crescente |
+| `name_asc` | Nome A→Z | Alfabético crescente |
+| `name_desc` | Nome Z→A | Alfabético decrescente |
+| `experience_desc` | + Experiência | Anos de experiência decrescente |
+
+#### 5.3.2 Filtros de tabela (`TableFilters`)
+
+Arquivo: `src/hooks/candidates/use-candidate-filters.ts`. O painel (`showTableFiltersPanel`) filtra **client-side** o array de resultados. Não é o mesmo que os filtros de busca (que vão no payload ao backend via `SearchSpec`). Badge no botão mostra `getActiveTableFiltersCount()`.
+
+**Grupos de filtros disponíveis** (todos opcionais):
+
+| Grupo | Campos | Tipo de controle |
+|---|---|---|
+| Status / Tags | `statuses[]`, `tags[]` | multi-select |
+| Senioridade | `seniorityLevels[]` | multi-select |
+| Modelo de trabalho | `workModels[]`, `contractTypes[]` | multi-select |
+| Localização | `locations[]`, `remoteOnly` | multi-select + booleano |
+| Cargo / Skills | `jobTitles[]`, `skills[]`, `softSkills[]`, `certifications[]` | multi-select |
+| Empresas / Indústrias | `companies[]`, `industries[]`, `companySizes[]` | multi-select |
+| Formação | `universities[]`, `degrees[]`, `fieldsOfStudy[]` | multi-select |
+| Idiomas | `languages[]` | multi-select |
+| Experiência | `minExperience`, `maxExperience` | range numérico |
+| Score | `minScore`, `maxScore` | range numérico |
+| Salário | `minSalary`, `maxSalary` | range numérico |
+| Contato | `hasEmail`, `hasPhone`, `hasLinkedin`, `hasGithub`, `hasPortfolio` | booleano |
+| Flags Pearch | `isOpenToWork`, `isDecisionMaker`, `isTopUniversities`, `isStartup` | booleano |
+| Mobilidade | `willingToRelocate`, `mobility` | tri-state |
+| Disponibilidade | `availabilityWindow` (`immediate` / `15_days` / `30_days` / `60_days`) | enum |
+| Datas | `updatedAtFrom/To`, `lastContactedFrom/To`, `registrationDateFrom/To` | date range |
+| Pipeline | `shortlistedDateFrom/To`, `shortlistedVacancyOrigin`, `placementDateFrom/To`, `placementVacancyDestination`, `placementClientCompany`, `specificVacancyId` | misto |
+| Fontes | `sources[]` | multi-select |
+
+#### 5.3.3 Configuração de colunas (`ColumnConfigSidebar`)
+
+Arquivo: `src/components/pages/candidates/ColumnConfigSidebar.tsx`. Painel lateral aberto pelo botão "Colunas".
+
+- **Toggle visibilidade:** clique em qualquer coluna (exceto `acoes` e `feedback`, que são fixas e não aparecem no painel).
+- **Colunas `isGlobalSearch: true`** (exclusivas de resultados Pearch) ficam em grupo separado.
+- **"Restaurar padrão":** restaura as primeiras 7 visíveis + `acoes` (ver §5.9 para a lista completa).
+- **"Mostrar tudo":** torna todas as colunas visíveis.
+- **Busca de coluna:** campo de texto filtra a lista por nome dentro do painel.
+- **Badge:** botão "Colunas" exibe contagem de visíveis (excluindo `acoes`).
+- **Persistência:** `useUIPreferencesStore.setCandidateTableColumns` — por usuário, sobrevive a refresh.
+
+**18 categorias** (ordem no painel): `basico` · `contato` · `pessoal` · `profissional` · `competencias` · `localizacao` · `endereco` · `preferencias` · `salario` · `documentos` · `origem` · `busca_global` · `ia` · `status` · `comunicacao` · `cadastro` · `adicional` · `datas`.
+
+#### 5.3.4 Resize de colunas
+
+`startResize(column, event)` — `mousedown` no handle da borda direita, segue `mousemove`, **largura mínima 80px**. Larguras padrão em `DEFAULT_COLUMN_WIDTHS` (§5.9). Persistido via `useUIPreferencesStore`.
+
+#### 5.3.5 Reordenação de colunas (drag-and-drop)
+
+`handleColumnDragStart/Over/Leave/Drop/End` — arrasta qualquer coluna para nova posição. **Restrição:** `checkbox` e `acoes` não podem ser arrastadas. Ordem persistida via `useUIPreferencesStore.setCandidateTableColumnOrder`.
+
+#### 5.3.6 Seleção de candidatos (Select-All / checkbox)
+
+- **Checkbox por linha:** seleciona/deseleciona individualmente; estado em `selectedCandidatesForBatch` (`Set<string>`).
+- **"Selecionar todos"** (`selectAllCandidates`): seleciona **todos os candidatos da página atual** (não todos os resultados paginados).
+- Ao selecionar, a `BulkActionsBar` aparece (§5.2). Operações de bulk atuam apenas sobre o `Set` selecionado.
 
 ### 5.4 Por linha
 
@@ -781,10 +849,200 @@ O `POST` resolve o estado existente por **`user_id` + `candidate_id` (+`job_id`)
 
 | Mecanismo | O que faz | Persistência | Escopo | Impacto no ranking |
 |---|---|---|---|---|
-| **⭐ Favoritos** (§9) | Bookmark de candidatos de interesse | Backend (`favorites`/Rails) | Por usuário, tenant-gated | **Nenhum** (só organiza) |
+| **⭐ Favoritos** (§9) | Bookmark de candidatos de interesse | Backend (`candidate_favorites` — FastAPI; espelho Rails inativo) | Por usuário, tenant-gated | **Nenhum** (só organiza) |
 | **👍/✖ Like/Dislike** (§5.8) | Sinal de qualidade do resultado | Backend (`search_feedbacks`, RLS) | Por usuário, ancorado ao **fingerprint** | **Sim:** ±2.5 (cap ±5) + loop adaptativo (pesos ±30%) |
 | **Ocultar (`onHide`)** (§5.7) | Some da visão atual | Por usuário/tenant | Sessão/visão | Remove da lista (não recalibra) |
 | **Descartados** (§5.5) | Filtrados por falta de contato (`require_*`) | `candidate_searches.discarded_candidates` (JSONB) | Por busca | Excluídos do resultado (regra de honestidade, não preferência) |
+
+---
+
+## 5.9 Colunas da tabela — lista completa e mapeamento
+
+Fonte: `useCandidatesColumnConfig.ts` (`CANDIDATES_DEFAULT_COLUMNS` + `DEFAULT_COLUMN_WIDTHS`). Lista autoritativa para replicação — qualquer campo novo deve ser adicionado aqui.
+
+### 5.9.1 Colunas visíveis por default
+
+| id | Label | Categoria | Largura | Sortable | Observação |
+|---|---|---|---|---|---|
+| `feedback` | *(👍/✖)* | basico | 70px | Não | Fixo — não aparece no painel de config |
+| `source` | Fonte | basico | 60px | Não | Badge Local / Pearch |
+| `match_score` | Match | ia | 50px | Não | |
+| `name` | Candidato | basico | 220px | Não | Nome + avatar |
+| `current_title` | Cargo atual | profissional | 250px | Não | `headline \|\| current_title` no mapper |
+| `current_company` | Empresa atual | profissional | 150px | Não | |
+| `current_salary` | Salário atual | salario | 130px | Não | Sempre `undefined` no mapper (campo reservado) |
+| `desired_salary_max` | Expectativa salarial | salario | 130px | Não | |
+| `mobile_phone` | Celular | contato | 130px | Não | Mapeado de `phone` |
+| `email` | E-mail | contato | 200px | Não | |
+| `linkedin_url` | LinkedIn | contato | 60px | Não | Ícone com link |
+| `lia_score` | Score LIA | ia | 100px | Não | |
+| `acoes` | Ações | basico | 120px | Não | Fixo — não aparece no painel de config |
+
+> `location_city` (Cidade) tem `visible: false` no código — **não** aparece por default apesar de estar na categoria `localizacao`.
+
+### 5.9.2 Colunas ocultas por default (configuráveis via ColumnConfigSidebar)
+
+**Identificação / Contato**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `id` | ID | contato | 100px |
+| `location_city` | Cidade | localizacao | 120px |
+| `secondary_email` | E-mail secundário | contato | 200px |
+| `phone` | Telefone | contato | 130px |
+| `secondary_phone` | Telefone secundário | contato | 130px |
+| `github_url` | GitHub | contato | 150px |
+| `portfolio_url` | Portfólio | contato | 150px |
+
+**Pessoal**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `date_of_birth` | Data de nascimento | pessoal | 120px |
+| `gender` | Gênero | pessoal | 100px |
+| `nationality` | Nacionalidade | pessoal | 130px |
+| `marital_status` | Estado civil | pessoal | 120px |
+| `cpf` | CPF | pessoal | 130px |
+
+**Profissional**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `seniority_level` | Senioridade | profissional | 130px |
+| `years_of_experience` | Anos de experiência | profissional | 100px |
+| `self_introduction` | Apresentação | profissional | 200px |
+
+**Competências**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `technical_skills` | Skills técnicas | competencias | 200px |
+| `soft_skills` | Soft skills | competencias | 180px |
+| `languages` | Idiomas | competencias | 150px |
+| `certifications` | Certificações | competencias | 180px |
+| `interests` | Interesses | competencias | 150px |
+| `education` | Formação | competencias | 200px |
+
+**Localização / Endereço**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `location_state` | Estado | localizacao | 100px |
+| `location_country` | País | localizacao | 100px |
+| `address_street` | Rua | endereco | 180px |
+| `address_number` | Número | endereco | 80px |
+| `address_district` | Bairro | endereco | 120px |
+| `address_zip` | CEP | endereco | 100px |
+| `address_complement` | Complemento | endereco | 150px |
+
+**Preferências**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `is_remote` | Remoto | preferencias | 100px |
+| `willing_to_relocate` | Aceita relocação | preferencias | 100px |
+| `mobility` | Mobilidade | preferencias | 100px |
+| `work_model_preference` | Modelo de trabalho | preferencias | 130px |
+| `contract_type_preference` | Tipo de contrato | preferencias | 130px |
+
+**Salário**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `salary_currency` | Moeda | salario | 80px |
+| `desired_salary_min` | Salário desejado mín. | salario | 130px |
+| `salary_expectation_clt` | Expectativa CLT | salario | 130px |
+| `salary_expectation_pj` | Expectativa PJ | salario | 130px |
+| `salary_expectation_freelance` | Expectativa Freelance | salario | 130px |
+
+**Documentos**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `resume_url` | Currículo (link) | documentos | 150px |
+| `resume_text` | Currículo (texto) | documentos | 200px |
+| `cover_letter` | Carta de apresentação | documentos | 200px |
+
+**Origem / ATS**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `enrichment_source` | Fonte de enriquecimento | origem | — |
+| `ats_source_name` | ATS de origem | origem | 120px |
+| `ats_candidate_id` | ID no ATS | origem | 120px |
+| `pearch_profile_id` | ID Pearch | origem | 120px |
+
+**Busca Global (`isGlobalSearch: true`) — exclusivas de resultados Pearch/Apify**
+
+Exibidas em grupo separado no `ColumnConfigSidebar`.
+
+| id | Label | Largura |
+|---|---|---|
+| `is_open_to_work` | Aberto a oportunidades | 100px |
+| `is_decision_maker` | Decision Maker | 120px |
+| `is_top_universities` | Top Universidade | 130px |
+| `is_hiring` | Contratando | 100px |
+| `headline` | Headline | 250px |
+| `expertise` | Expertise | 200px |
+| `linkedin_followers_count` | Seguidores LinkedIn | 120px |
+| `linkedin_connections_count` | Conexões LinkedIn | 120px |
+| `outreach_message` | Mensagem de outreach | 300px |
+| `best_personal_email` | Melhor e-mail pessoal | 180px |
+| `phone_types` | Tipos de telefone | 150px |
+| `estimated_age` | Idade estimada | 100px |
+| `match_reasoning` | Raciocínio de match | 300px |
+| `overall_summary` | Resumo geral | 300px |
+| `query_insights` | Insights da query | 350px |
+| `pearch_insights` | Insights Pearch | 200px |
+| `middle_name` | Nome do meio | 120px |
+| `best_business_email` | Melhor e-mail corporativo | 200px |
+| `personal_emails` | E-mails pessoais | 180px |
+| `business_emails` | E-mails corporativos | 180px |
+| `company_followers_count` | Seguidores da empresa | 130px |
+| `company_keywords` | Keywords da empresa | 200px |
+
+**IA**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `lia_insights` | Insights LIA | ia | 200px |
+| `skills_match_percentage` | Match de skills (%) | ia | 100px |
+
+**Status / Comunicação / Cadastro / Adicional / Datas**
+
+| id | Label | Categoria | Largura |
+|---|---|---|---|
+| `status` | Status | status | 120px |
+| `is_active` | Ativo | status | 80px |
+| `is_blacklisted` | Bloqueado | status | 100px |
+| `blacklist_reason` | Motivo bloqueio | status | 150px |
+| `preferred_contact_method` | Canal preferido | comunicacao | 130px |
+| `best_time_to_contact` | Melhor horário | comunicacao | 130px |
+| `communication_consent` | Consentimento | comunicacao | 100px |
+| `completed_register` | Cadastro completo | cadastro | 100px |
+| `accept_terms` | Termos aceitos | cadastro | 100px |
+| `tags` | Tags | adicional | 150px |
+| `notes` | Notas | adicional | 200px |
+| `additional_data` | Dados adicionais | adicional | 150px |
+| `created_at` | Criado em | datas | 130px |
+| `updated_at` | Atualizado em | datas | 130px |
+| `last_contacted_at` | Último contato | datas | 130px |
+| `last_activity_at` | Última atividade | datas | 130px |
+
+### 5.9.3 Mapeamento DTO → modelo interno
+
+`mapCandidateToInternal` em `useCandidatesExecuteSearch.ts` normaliza `CandidateSearchResultDTO` para o modelo interno. Campos críticos:
+
+| Campo interno | Fonte no DTO | Observação |
+|---|---|---|
+| `current_title` | `c.headline \|\| c.current_title` | `headline` tem precedência |
+| `location_city` | `c.location.split(',')[0].trim()` | Deriva do campo livre `location` |
+| `location_state` | `c.location.split(',')[1].trim()` | Idem |
+| `mobile_phone` | `c.phone` | Mesmo campo — não há campo separado `mobile_phone` no DTO |
+| `score` | `Math.round(c.score) \|\| 0` | Sem fallback fabricado |
+| `source` | `c.source \|\| 'pearch'` | Default `pearch` quando ausente |
+| `has_email` | `c.has_email ?? true` | `true` quando incerto (não bloqueia exibição) |
+| `current_salary` | `undefined` | Campo reservado — nenhum valor vem do backend hoje |
 
 ---
 
@@ -1271,18 +1529,20 @@ Sub-tabelas:
 
 ### 16.3 Relações-Chave
 
+> **Nota sobre origem das tabelas:** tabelas marcadas com *(origem Rails)* foram criadas via migrations do `ats_api` (Rails). Com `RAILS_ENABLED=False` no ambiente atual (Replit), o processo Rails **não está ativo** — essas tabelas são lidas/escritas exclusivamente pelo FastAPI. O label indica só a origem histórica das migrations, não o serviço ativo. Ver também RN-29 e RN-34.
+
 ```
-accounts (Rails)
+accounts  [tabela PostgreSQL — origem Rails/ats_api; lida pelo FastAPI]
   ├── pearch_credits (campo na tabela)
   ├── pearch_search_logs → pearch_credit_transactions
   ├── sourcings → sourced_profile_sourcings
-  ├── sourced_profiles → candidates (quando importado via ConvertToCandidateJob)
+  ├── sourced_profiles → candidates (quando importado — ver RN-29)
   └── candidates (per-tenant schema Apartment)
       ├── favorite_user_ids[] (array, sem FK separada, indexado ES)
       ├── pin_user_ids[] (idem)
       └── evaluation_candidates (WSI)
 
-embeddings (Rails, public schema)
+embeddings  [tabela PostgreSQL public schema — origem Rails/ats_api; usada pelo FastAPI/pgvector]
   └── (reference_type, reference_id) → candidates | jobs
       HNSW cosine index
 
@@ -1355,12 +1615,12 @@ search_feedbacks (FastAPI)
 | RN-26 | Histórico e Buscas Salvas são client-side | Histórico/Salvas | localStorage; não sincroniza entre dispositivos | `talent-funnel-store.ts` |
 | RN-27 | Listas: soft-delete; dedup de membros on_conflict_do_nothing | Listas | `is_active=False`; duplicados ignorados | `candidate_list_repository.py:125,198` |
 | RN-28 | Assign-to-jobs cria VacancyCandidate stage=sourcing | Listas→Vaga | Entra no pipeline da vaga em etapa de sourcing | `candidate_list_repository.py:274-275` |
-| RN-29 | Adicionar SourcedProfile a lista → ConvertToCandidateJob | Listas | Perfil externo vira Candidate real no tenant | Rails job |
+| RN-29 | Adicionar SourcedProfile a lista → ConvertToCandidateJob | Listas | Perfil externo vira Candidate real no tenant. ⚠️ `ConvertToCandidateJob` era Rails background job — com `RAILS_ENABLED=False`, esse fluxo está **inativo** em dev. Ao replicar, implementar equivalente FastAPI. | Rails job *(⚠️ inativo — RAILS_ENABLED=False)* |
 | RN-30 | Favoritos per-user, UniqueConstraint, pin primeiro | Favoritos | Marcador privado; não visível para outros recrutadores | `candidate_favorites_repository.py:72,84` |
 | RN-31 | Chat LIA search_candidates: só DB local, sem Pearch/pgvector | Chat LIA | Gap crítico vs UI | `talent_tool_registry.py` |
 | RN-32 | BigFive declarado mas não contribui para score | Ranking/ML | Slot de peso morto; não implementar como funcional | `lia_score_service.py` |
 | RN-33 | candidate_embeddings sem índice HNSW | AI/ML | Linear scan; gap de performance em escala | Migração 265 |
-| RN-34 | Dupla persistência Rails+FastAPI para Listas/Favoritos | Listas/Favoritos | Risco de divergência; definir fonte da verdade ao replicar | — |
+| RN-34 | Dupla persistência Rails+FastAPI para Listas/Favoritos | Listas/Favoritos | ⚠️ Com Rails eliminado (`RAILS_ENABLED=False`), a escrita Rails-side está inativa. **Fonte da verdade: FastAPI** (`candidate_lists`, `candidate_favorites`). Tabelas Rails espelho podem estar desatualizadas. Ao replicar: implementar só o lado FastAPI. | `RAILS_ENABLED=False` |
 
 ---
 
