@@ -111,6 +111,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     showCandidatePage, showCandidatePreview,
     candidatesError, refreshCandidatesList,
     tabs,
+    fairnessError, setFairnessError,
   } = useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened })
 
   const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null)
