@@ -60,7 +60,7 @@ export function UnifiedChatEmptyState({
           )}
         >
           <Building
-            className={cn("text-wedo-cyan-text", isCompact ? "w-6 h-6" : "w-8 h-8")}
+            className={cn("text-wedo-cyan", isCompact ? "w-6 h-6" : "w-8 h-8")}
             strokeWidth={1.5}
           />
         </div>
@@ -120,7 +120,7 @@ export function UnifiedChatEmptyState({
         )}
       >
         <Brain
-          className={cn("text-wedo-cyan-text", isCompact ? "w-6 h-6" : "w-8 h-8")}
+          className={cn("text-wedo-cyan", isCompact ? "w-6 h-6" : "w-8 h-8")}
           strokeWidth={1.5}
         />
       </div>
