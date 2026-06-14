@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Learning Loops Config endpoints — Sprint B Phase 1 + Phase 2.
 
 Endpoints REST pra ligar/desligar os 4 learning loops por empresa.
@@ -12,7 +13,6 @@ por ora query direta segue padrao do automation_rules existente).
 ADR-006: nenhum log com PII.
 """
 from app.middleware.request_id import get_correlation_id
-from __future__ import annotations
 
 from typing import Any
 
