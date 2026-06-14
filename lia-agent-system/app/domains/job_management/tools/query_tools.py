@@ -214,8 +214,20 @@ async def get_job_details(
     Returns:
         Detailed job information with metrics
     """
+    from app.tools.context_helpers import require_company_id_from_context
+    from app.shared.entity_resolver import get_active_vacancy
     company_id = require_company_id_from_context(kwargs, "get_job_details")
-    
+
+    # P0-A fix (2026-06-14): fallback to active vacancy when LLM omits job_id.
+    # Without this, UUID("") raises ValueError -> "instabilidade tecnica".
+    job_id = job_id or get_active_vacancy()
+    if not job_id:
+        return {
+            "success": False,
+            "needs_clarification": True,
+            "message": "Preciso saber qual vaga voce quer ver. Pode me dizer o nome ou titulo da vaga?",
+        }
+
     logger.info(f"📋 Getting job details: {job_id} (company: {company_id})")
     
     try:
