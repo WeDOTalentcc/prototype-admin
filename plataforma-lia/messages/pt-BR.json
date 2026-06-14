@@ -5944,7 +5944,7 @@
         "cooldownAria": "Intervalo entre alertas para {type}",
         "toggleAria": "Ativar ou desativar alerta de {type}",
         "channelEmail": "E-mail",
-        "channelInApp": "No app",
+        "channelInApp": "Sino (painel)",
         "channelTeams": "Teams",
         "channelWhatsapp": "WhatsApp",
         "groupRecruiter": "Alertas para o recrutador",

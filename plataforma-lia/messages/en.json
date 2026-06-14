@@ -5944,7 +5944,7 @@
         "cooldownAria": "Cooldown between alerts for {type}",
         "toggleAria": "Enable or disable {type} alert",
         "channelEmail": "Email",
-        "channelInApp": "In-app",
+        "channelInApp": "Bell (panel)",
         "channelTeams": "Teams",
         "channelWhatsapp": "WhatsApp",
         "groupRecruiter": "Recruiter alerts",

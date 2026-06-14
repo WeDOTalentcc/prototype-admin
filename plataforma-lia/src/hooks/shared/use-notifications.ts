@@ -65,6 +65,40 @@ const mapCategory = (category?: string): NotificationCategory => {
   return "system"
 }
 
+
+interface BackendAlert {
+  id: string
+  title: string
+  message: string
+  severity?: string
+  category?: string
+  condition?: string
+  is_read?: boolean
+  is_resolved?: boolean
+  created_at?: string
+  action_url?: string
+  action_label?: string
+  related_job_id?: string
+  related_candidate_id?: string
+}
+
+const mapBackendAlert = (a: BackendAlert): Notification => ({
+  id: `alert-${a.id}`,
+  title: a.title,
+  message: a.message || "",
+  type: a.severity === "urgent" || a.severity === "error" ? "error"
+    : a.severity === "warning" ? "warning"
+    : a.severity === "success" ? "success"
+    : "info",
+  category: (a.category as NotificationCategory) ?? "system",
+  timestamp: a.created_at ? new Date(a.created_at) : new Date(),
+  read: a.is_read ?? false,
+  actionUrl: a.action_url,
+  actionLabel: a.action_label,
+  related_job_id: a.related_job_id,
+  related_candidate_id: a.related_candidate_id,
+})
+
 const mapBackendNotification = (n: BackendNotification): Notification => ({
   id: n.id,
   title: n.title,
@@ -106,35 +140,65 @@ export function useNotifications({
       setIsLoading(true)
       setError(null)
 
-      // [Task #801/#803] usar fetchWithRetry em vez de fetch() cru — herda
-      // retry, timeout e HttpError(transientNetworkError) consistentes.
       const { fetchWithRetry } = await import("@/services/lia-api/base")
-      const response = await fetchWithRetry(
-        `/api/backend-proxy/notifications?user_id=${userId}&limit=50`,
-      )
 
-      if (response.status === 429) {
+      // Dual-fetch: notifications (historical delivery records) + active alerts.
+      // Alerts with channel_bell=true flow through proactive_alert_service into
+      // /notifications, but undelivered active alerts live only in /alerts.
+      // Merging both ensures the panel mirrors Teams + AlertPreferences settings.
+      const [notifResponse, alertsResponse] = await Promise.allSettled([
+        fetchWithRetry(`/api/backend-proxy/notifications?user_id=${userId}&limit=50`),
+        fetchWithRetry(`/api/backend-proxy/alerts?user_id=${userId}&limit=30`),
+      ])
+
+      if (
+        notifResponse.status === "fulfilled" &&
+        notifResponse.value.status === 429
+      ) {
         backoffRef.current = Math.min((backoffRef.current || 1000) * 2, 120000)
         setError("Limite de requisições atingido. Tentando novamente...")
         return
       }
 
-      if (!response.ok) {
-        setError(`Erro ao carregar notificações (${response.status})`)
-        return
-      }
-
       backoffRef.current = 0
 
-      const data = await response.json()
+      const merged: Notification[] = []
+      const seenIds = new Set<string>()
 
-      if (data.success && data.data?.notifications) {
-        const mappedNotifications = data.data.notifications.map(mapBackendNotification)
-        setNotifications(mappedNotifications)
-        lastFetchRef.current = Date.now()
-      } else {
-        setNotifications([])
+      // 1. Notification records (bell-channel delivery)
+      if (notifResponse.status === "fulfilled" && notifResponse.value.ok) {
+        const data = await notifResponse.value.json()
+        if (data.success && data.data?.notifications) {
+          for (const n of data.data.notifications.map(mapBackendNotification)) {
+            seenIds.add(n.id)
+            merged.push(n)
+          }
+        }
+      } else if (notifResponse.status === "fulfilled" && !notifResponse.value.ok) {
+        setError(`Erro ao carregar notificações (${notifResponse.value.status})`)
       }
+
+      // 2. Active alerts (same source as Teams digest + AlertPreferences).
+      // Skip alerts already present as notifications (dedup by condition id prefix).
+      if (alertsResponse.status === "fulfilled" && alertsResponse.value.ok) {
+        const alertData = await alertsResponse.value.json()
+        const alertList: BackendAlert[] = Array.isArray(alertData)
+          ? alertData
+          : alertData.alerts ?? alertData.data ?? []
+        for (const a of alertList) {
+          if (a.is_resolved) continue
+          const mappedId = `alert-${a.id}`
+          if (!seenIds.has(mappedId)) {
+            seenIds.add(mappedId)
+            merged.push(mapBackendAlert(a))
+          }
+        }
+      }
+
+      // Sort merged list by timestamp desc
+      merged.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      setNotifications(merged)
+      lastFetchRef.current = Date.now()
 
       fetchWithRetry(`/api/backend-proxy/notifications/unread-count?user_id=${userId}`)
         .then(r => r.json())
@@ -142,7 +206,7 @@ export function useNotifications({
           if (typeof d.unread_count === "number") setServerUnreadCount(d.unread_count)
           else if (d.data && typeof d.data.unread_count === "number") setServerUnreadCount(d.data.unread_count)
         })
-        .catch((err) => { console.error('[useNotifications] unread-count fetch failed', err) })
+        .catch(() => { /* unread-count is supplementary, swallow */ })
     } catch (err) {
       setError("Falha ao conectar com o servidor de notificações")
       setNotifications([])
