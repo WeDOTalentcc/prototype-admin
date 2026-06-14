@@ -266,6 +266,7 @@ from app.api.v1.pipeline_orchestrator import router as pipeline_orchestrator_rou
 from app.api.v1.pipeline_policy import router as pipeline_policy_router
 from app.api.v1.proactive_actions import router as proactive_actions_router
 from app.api.v1.rag_search import router as rag_search_router
+from app.api.v1.search_contextual_hints import router as search_contextual_hints_router
 from app.api.v1.recruiter_behavior import router as recruiter_behavior_router
 from app.api.v1.salary_benchmark import router as salary_benchmark_router
 from app.api.v1.short_lists import router as short_lists_router
@@ -438,6 +439,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(search_assistant.router, prefix="/api/v1", tags=["search-assistant"])
     app.include_router(search_archetypes.router, prefix="/api/v1", tags=["search-archetypes"])
     app.include_router(search_feedback.router, prefix="/api/v1", tags=["search-feedback"])
+    app.include_router(search_contextual_hints_router, prefix="/api/v1", tags=["search-contextual"])
     app.include_router(semantic_search.router, prefix="/api/v1", tags=["semantic-search"])
     app.include_router(rag_search_router, prefix="/api/v1", tags=["rag-search"])
     app.include_router(shared_searches.router, prefix="/api/v1/shared-searches", tags=["shared-searches"])
