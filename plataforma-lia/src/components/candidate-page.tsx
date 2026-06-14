@@ -10,12 +10,13 @@ import { CandidatePreviewProfileTab } from "@/components/candidate-preview/Candi
 import { CandidateActivitiesTab } from "@/components/candidate-preview/CandidateActivitiesTab"
 import { CandidateFilesTab } from "@/components/candidate-preview/CandidateFilesTab"
 import { CandidateOpinionsTab } from "@/components/candidate-preview/CandidateOpinionsTab"
+import { CandidateConsentTab } from "@/components/candidate-preview/CandidateConsentTab"
 import { CandidatePreviewModals } from "@/components/candidate-preview/CandidatePreviewModals"
 import { useCandidatePreviewCore } from "@/components/candidate-preview/useCandidatePreviewCore"
 import { CandidateEditProvider } from "@/components/candidate-profile/CandidateEditContext"
 import { useCandidateFieldUpdate } from "@/hooks/candidates/use-candidate-field-update"
 import { isFeatureEnabled, FF_CANDIDATE_EDIT } from "@/lib/feature-flags"
-import { UserCheck, Activity, FileText, Brain } from "lucide-react"
+import { UserCheck, Activity, FileText, Brain, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react"
 
 export type CandidatePageMode = "modal" | "page"
 
@@ -39,6 +40,9 @@ interface CandidatePageProps {
   onSchedule?: (candidate: Record<string, unknown>) => void
   onScheduleInterview?: (candidate: Record<string, unknown>) => void
   onOpenTriagemDetails?: (candidate: Record<string, unknown>) => void
+  onNavigateCandidate?: (direction: "prev" | "next") => void
+  hasPrev?: boolean
+  hasNext?: boolean
 }
 
 type CandidateLite = {
@@ -63,6 +67,7 @@ const TABS = [
   { id: "activities" as const, label: "Atividades", icon: Activity },
   { id: "files" as const, label: "Arquivos", icon: FileText },
   { id: "opinions" as const, label: "Pareceres", icon: Brain },
+  { id: "consent" as const, label: "Consentimento", icon: ShieldCheck },
 ]
 
 export function CandidatePage({
@@ -83,6 +88,9 @@ export function CandidatePage({
   onSchedule,
   onScheduleInterview,
   onOpenTriagemDetails,
+  onNavigateCandidate,
+  hasPrev = false,
+  hasNext = false,
 }: CandidatePageProps) {
   const core = useCandidatePreviewCore(candidate)
   const candidateId = (candidate?.id ?? candidate?.candidateId ?? candidate?.candidate_id) as string | undefined
@@ -133,6 +141,31 @@ export function CandidatePage({
           onSendFeedback={onSendFeedback}
           candidate={candidate}
         />
+
+        {onNavigateCandidate && (
+          <div className="flex items-center gap-1 px-4 py-1.5 border-b border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
+            <button
+              type="button"
+              onClick={() => onNavigateCandidate("prev")}
+              disabled={!hasPrev}
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Candidato anterior"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigateCandidate("next")}
+              disabled={!hasNext}
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Próximo candidato"
+            >
+              Próximo
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
         <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary dark:border-lia-border-subtle px-6">
           <div className="flex">
@@ -225,6 +258,16 @@ export function CandidatePage({
                 copiedItemId={core.copiedItemId}
                 handleCopyOpinion={core.handleCopyOpinion as never}
               />
+            )}
+
+            {core.activeTab === "consent" && candidateId && (
+              <CandidateConsentTab candidateId={candidateId} />
+            )}
+
+            {core.activeTab === "consent" && !candidateId && (
+              <div className="py-8 text-center text-sm text-lia-text-secondary">
+                ID do candidato não disponível para carregar histórico de consentimento.
+              </div>
             )}
               </div>
               {mode === "page" && (
