@@ -57,7 +57,7 @@ Seus dados serão armazenados por até 12 meses e, após esse prazo, serão excl
 
 Você pode, a qualquer momento, solicitar revisão humana da avaliação, acesso, correção ou exclusão dos seus dados pelo e-mail privacidadededados@wedotalent.cc.
 
-Para mais informações, acesse nossa Política de Privacidade em wedotalent.cc/privacidade.\`
+Para mais informações, acesse nossa Política de Privacidade em wedotalent.cc/privacidade.`
 
 
 // ── Mic permission helper ───────────────────────────────────────────────────
