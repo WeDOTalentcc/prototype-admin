@@ -3,7 +3,7 @@
 import React, { useMemo } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
-import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle, WifiOff } from "lucide-react"
+import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle, WifiOff, PenLine } from "lucide-react"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 import type { PageTab } from "@/components/ui/page-tab-navigation"
 import { JobKanbanPage } from "./job-kanban-page"
@@ -19,6 +19,7 @@ import { sortJobsByColumn } from "./jobs/utils/jobsPageUtils"
 const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModalsSection").then(m => ({ default: m.JobsModalsSection })), { ssr: false, loading: () => null })
 // Phase 4H — Bulk import from ATS
 const BulkImportModal = dynamic(() => import("@/components/jobs/BulkImportModal").then(m => ({ default: m.BulkImportModal })), { ssr: false })
+const JobDraftsSection = dynamic(() => import("@/components/pages/jobs/JobDraftsSection").then(m => ({ default: m.JobDraftsSection })), { ssr: false, loading: () => null })
 
 interface JobsPageProps {
   onNavigate?: (page: string) => void
@@ -139,7 +140,7 @@ export function JobsPage(props: JobsPageProps) {
               'paralisadas': Pause,
               'concluidas': CheckCircle,
               'canceladas': XCircle,
-            }
+              'rascunhos': PenLine,}
             return {
               id: filter.id,
               label: filter.label,
@@ -193,14 +194,18 @@ export function JobsPage(props: JobsPageProps) {
             <span className="text-xs">{t("externalSourceUnavailable")}</span>
           </div>
         )}
-        <JobsListContent
-          {...(state as unknown as React.ComponentProps<typeof JobsListContent>)}
-          setShowBulkImportModal={setShowBulkImportModal}
-          toggleJobFilter={state.toggleJobFilter as (category: string, key: string, value: unknown) => void}
-          activePreviewTab={state.activePreviewTab as "screening" | "pipeline"}
-          statusOrder={statusOrder}
-          groupedJobs={groupedJobs}
-        />
+        {activeFilter === 'rascunhos' ? (
+          <JobDraftsSection />
+        ) : (
+          <JobsListContent
+            {...(state as unknown as React.ComponentProps<typeof JobsListContent>)}
+            setShowBulkImportModal={setShowBulkImportModal}
+            toggleJobFilter={state.toggleJobFilter as (category: string, key: string, value: unknown) => void}
+            activePreviewTab={state.activePreviewTab as "screening" | "pipeline"}
+            statusOrder={statusOrder}
+            groupedJobs={groupedJobs}
+          />
+        )}
 
         <JobsModalsSection
           allJobs={allJobs}
