@@ -315,7 +315,7 @@ class PipelineMonitor:
                       AND vc.updated_at < :cutoff
                       AND jv.status IN ('Ativa', 'active', 'open', 'closed', 'Fechada')
                       AND NOT EXISTS (
-                          SELECT 1 FROM communication_log cl
+                          SELECT 1 FROM communication_logs cl
                           WHERE cl.candidate_id = vc.candidate_id
                             AND cl.company_id = :company_id
                             AND cl.template_type = 'rejection'
