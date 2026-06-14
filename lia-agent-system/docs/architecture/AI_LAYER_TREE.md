@@ -8,10 +8,12 @@
 > in the tree at the time of writing. Noise (`__pycache__`, `*.pyc`, test
 > internals, migration internals) is collapsed or omitted.
 >
-> **Última revisão completa: 2026-06-13.** Atualizado para o estado ADR-031:
-> 7 sub-apps Strangler Fig (`apps/`), 11 libs, categoria Tool-Library Agentic
+> **Última revisão completa: 2026-06-14.** Atualizado para ADR-031 + Strangler Fig Fases 1-2 MONOLITH-IMPORT:
+> 7 sub-apps Strangler Fig (`apps/`), 11 libs (`config` expandido: 10 módulos), categoria Tool-Library Agentic
 > (3 domínios promovidos), 19 `@register_domain` total, 38 platform tools
-> (23 read + 8 write + 7 HITL-gated). Ver `docs/architecture/ADR-031-canonical-domain-architecture.md`.
+> (23 read + 8 write + 7 HITL-gated). Fases 1-2 MONOLITH-IMPORT: 56 marcadores eliminados;
+> estado atual: ~1 ativo + 6 shims backward-compat + 7 ACCEPTED-MONOLITH (`init_db` deferido).
+> Ver `docs/architecture/ADR-031-canonical-domain-architecture.md`.
 
 The AI layer is a FastAPI service that turns recruiter/candidate natural-language
 input into routed, tenant-scoped, compliance-wrapped agent executions. A request
@@ -214,7 +216,7 @@ Termos usados neste documento com significado específico ao projeto.
 | **ADR** | Architecture Decision Record. Documento que registra uma decisão arquitetural com contexto, alternativas e consequências. Em `docs/specs/ai/ADR-*.md` e `docs/architecture/ADR-*.md`. |
 | **Tool-Library Agentic** | Domain class (ADR-031): tem `domain.py` + `@register_domain` + `ComplianceDomainPrompt` + `tools/` mas `execute()` raises `NotImplementedError`. Serve como biblioteca de tools para o Agent Studio — não é um ReActAgent conversacional. |
 | **Strangler Fig** | Padrão arquitetural para decompor progressivamente `app/` em sub-apps independentes em `apps/`. Cada sub-app assume uma fatia de funcionalidade; marcadores `MONOLITH-IMPORT` rastreiam o acoplamento restante. |
-| **MONOLITH-IMPORT** | Marcador de comentário inline (~64 arquivos em 2026-06-13) indicando que uma dependência é importada diretamente do monolito `app/` e deve ser extraída para um pacote `libs/` compartilhado. |
+| **MONOLITH-IMPORT** | Marcador de comentário inline rastreando importações diretas do monolito `app/` para `libs/`. Após Fases 1-2 (2026-06-13): ~64 → ~1 ativo + 6 shims backward-compat em `app/` + 7 `ACCEPTED-MONOLITH` (`init_db` deferido — orquestra 30+ migration helpers). Shims são re-exportadores vazios que mantêm compatibilidade com callers legados; o código real está em `libs/config/lia_config/`. |
 
 ---
 
@@ -257,9 +259,19 @@ apps/
 └── api-vagas/        # Job management
 ```
 
-Marcadores `MONOLITH-IMPORT` (~64 arquivos em 2026-06-13) rastreiam infraestrutura
-ainda importada diretamente de `app/` que deve ser extraída para `libs/`. A
-arquitetura canônica de domínio está em
+**Strangler Fig Fases 1-2 concluídas (2026-06-13):** 56 marcadores `MONOLITH-IMPORT`
+eliminados. `settings`→`lia_config`, `pii_masking`→`lia_pii`, e 6 módulos infra
+(`langsmith`, `logging_config`, `logging_middleware`, `rate_limiter`, `request_id`,
+`sentry`) extraídos de `app/` para `libs/config/lia_config/`. Os arquivos originais
+em `app/` viraram **shims** de backward-compat (re-exportadores de 2-4 linhas).
+
+Estado atual de marcadores `MONOLITH-IMPORT`:
+- **~1 ativo** restante em `apps/` (api-triagem: importa pacote `wsi` do monolito)
+- **6 shims** em `app/` (`app/config/langsmith.py`, `app/core/logging_{config,middleware}.py`,
+  `app/core/sentry.py`, `app/middleware/{rate_limiter,request_id}.py`) — backward-compat only
+- **7 ACCEPTED-MONOLITH** (um por sub-app: `init_db` — extração deferida, orquestra 30+ helpers)
+
+Arquitetura canônica de domínio:
 `docs/architecture/ADR-031-canonical-domain-architecture.md`.
 
 ---
@@ -655,7 +667,7 @@ app/shared/
 ├── domain_action_registry.py   # DomainActionRegistry — single-owner action mapping + aliases
 ├── tool_catalog.py             # ToolCatalog — system-wide tool inventory
 ├── tool_handler.py             # ToolHandler — executes tool calls w/ tenant context
-├── pii_masking.py              # install_global_pii_masking + strip_pii_for_llm_prompt
+├── pii_masking.py              # SHIM → re-exporta de `lia_pii.masking` (Fase 1 MONOLITH-IMPORT)
 ├── prompt_injection.py         # prompt-injection detection helpers
 ├── tenant_guard.py
 ├── tenant_session.py
@@ -849,7 +861,7 @@ libs/agents-core/lia_agents_core/
 > | Pacote | Módulos principais |
 > |---|---|
 > | `audit` | audit_callback, audit_models, audit_storage, audit_writer |
-> | `config` | config (settings), database (SQLAlchemy engine), celery_app |
+> | `config` | **10 módulos:** config (settings), database (SQLAlchemy engine), celery_app, langsmith, logging_config, logging_middleware, rate_limiter, request_id, sentry — últimos 6 extraídos de `app/` em Fase 2 MONOLITH-IMPORT (2026-06-13) |
 > | `events` | platform event bus primitives |
 > | `lia-llm` | model tiers, safe_response, provider shims |
 > | `lia-pii` | field_catalog, field_visibility, masking (PII canônico) |
@@ -1678,7 +1690,7 @@ blockers; they are the cleanup backlog behind the §14 diagnosis.
 | 20 | ✅ | **Consolidação: sensor G-FED-HITL (commit `f4b0bbff5`)**: toda tool de escrita do federado (`_FEDERATION_SPEC`) exige gate HITL — prepara o "copiloto onipotente" com segurança. AST, blocking, baseline 0. | §12.3 | `scripts/check_federated_hitl_coverage.py`, `.github/workflows/ci.yml` |
 
 | 21 | ✅ | **ADR-031 criado (2026-06-13):** `docs/architecture/ADR-031-canonical-domain-architecture.md` documenta a arquitetura canônica de domínios (13 agentic + 3 micro-action + 3 tool-library = 19 registered, 8 service, 29 repository-stub) e a estratégia Strangler Fig para decomposição do monolito em `apps/`. | §4, §7 | `docs/architecture/ADR-031-canonical-domain-architecture.md` |
-| 22 | 🔵 | **Strangler Fig progress tracking:** 7 sub-apps em `apps/` + ~64 `MONOLITH-IMPORT` markers. Extrair para `libs/` à medida que cada domínio migra. | §1.1 | `apps/*/`, `libs/` |
+| 22 | 🟡 | **Strangler Fig progress tracking:** Fases 1-2 CONCLUÍDAS (2026-06-13) — 56 marcadores eliminados. 7 sub-apps em `apps/`, cada um importa `lia_config.*` + `lia_pii` direto (sem monolito). Restante: (a) ~1 MONOLITH-IMPORT ativo em api-triagem (wsi package), (b) 7 ACCEPTED-MONOLITH (`init_db` deferido), (c) 6 shims backward-compat em `app/` (remover quando callers legados migrarem). Próxima Fase 3: extrair `init_db` para `libs/config/lia_config/database.py` standalone. | §1.1 | `apps/*/`, `libs/config/` |
 
 ---
 
