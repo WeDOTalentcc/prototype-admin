@@ -709,8 +709,15 @@ export function PipelineOverviewPage() {
             { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }
           )
           if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          toast.success("Vaga duplicada", { description: `Cópia de "${vacancy.title}" criada` })
-          fetchLifecycleOverview()
+          const data = await res.json()
+          const newId = data?.jobs_created?.[0]?.id
+          if (newId) {
+            toast.success("Vaga duplicada — editando cópia", { description: `Cópia de "${vacancy.title}" criada` })
+            router.push(`/pt/jobs/${newId}?tab=edit`)
+          } else {
+            toast.success("Vaga duplicada", { description: `Cópia de "${vacancy.title}" criada` })
+            fetchLifecycleOverview()
+          }
         } catch (err) {
           toast.error("Falha ao duplicar vaga", { description: err instanceof Error ? err.message : "Erro desconhecido" })
         }
