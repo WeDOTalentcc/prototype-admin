@@ -18,6 +18,7 @@
 3. [Anatomia da UI](#3-anatomia-da-ui)
 4. [Os 5 fluxos de busca](#4-os-5-fluxos-de-busca)
    - [4.1 Natural](#41-fluxo-natural) · [4.2 Similar](#42-fluxo-similar) · [4.3 JD](#43-fluxo-jd-job-description) · [4.4 Boolean](#44-fluxo-boolean) · [4.5 Archetypes](#45-fluxo-archetypes)
+   - [4.5.1 📊 Tabela-resumo: os 5 modos comparados](#451--tabela-resumo-os-5-modos-de-busca-comparados)
    - [4.6 📋 Regras de negócio da busca (valem para os 5 fluxos)](#46--regras-de-negócio-da-busca-valem-para-os-5-fluxos)
 5. [A tabela de resultados (destino comum)](#5-a-tabela-de-resultados-destino-comum)
 
@@ -571,11 +572,13 @@ Categorias válidas para `suggestions`: `experience`, `industry`, `work_model`, 
 
 **O que é:** "encontre candidatos parecidos com este" — similaridade vetorial pura a partir de um perfil/CV de referência.
 
-**Gatilho:** aba **Similar** (ou ação "Buscar similares" em um candidato). **Entrada:** um candidato de referência (id) ou um CV.
+**Gatilho:** aba **Similar** (ou ação "Buscar similares" em um candidato). **Entrada:** dois modos de referência —
+- **Candidato** (`candidate_id` ou CV colado) — perfil real de alguém que se quer clonar
+- **Vaga existente** (`job_id`) — usa o perfil-alvo da vaga como âncora de similaridade *(diferente do JD mode: Similar busca proximidade vetorial; JD extrai requisitos e avalia critérios)*
 
 **Submit/Backend:** `POST /api/backend-proxy/search/candidates/similar` → `similar_search.py`. Usa o embedding do perfil de referência e faz nearest-neighbor por cosine no pgvector.
 
-**Específico:** ranking por distância vetorial (`1 - (embedding <=> :embedding::vector)`); a tabela mostra **similaridade** em vez de match-score de vaga.
+**Específico:** ranking por distância vetorial (`1 - (embedding <=> :embedding::vector)`); a tabela mostra **similaridade %** em vez de score estruturado. Não roda BARS.
 
 ### 4.3 Fluxo JD (Job Description)
 
@@ -597,9 +600,50 @@ Categorias válidas para `suggestions`: `experience`, `industry`, `work_model`, 
 
 ### 4.5 Fluxo Archetypes
 
-**O que é:** busca a partir de um **arquétipo** salvo (template de perfil reutilizável).
+**O que é:** busca a partir de um **arquétipo** salvo — template de perfil ideal da empresa (ex.: "Tech Lead Sênior", "Analista Financeiro Pleno"). É o modo de **talent banking com avaliação estruturada**: permite encontrar candidatos sem ter uma vaga formal aberta.
 
-**Gatilho:** aba **Archetypes** → seleciona um arquétipo. **Submit/Backend:** `POST /api/backend-proxy/search/archetypes/{id}/search` — o arquétipo carrega query+spec pré-definidos e executa como busca normal.
+**Gatilho:** aba **Arquétipos** → seleciona um arquétipo (ou `+ Criar Novo`). **Submit/Backend:** `POST /api/backend-proxy/search/archetypes/{id}/search` (`archetypes.py:781`).
+
+**Estrutura de um arquétipo** (`SearchArchetype` model):
+
+| Campo | Papel no scoring |
+|---|---|
+| `query` | Texto de busca (Natural-like) — usado para embedding + BM25 |
+| `filters.skills[]` | Skills requeridas → `_calculate_skills_match` |
+| `filters.seniority` | Nível esperado → `_calculate_seniority_match` |
+| `filters.experience_years_min` | Experiência mínima → `_calculate_experience_match` |
+| `industry` | Pesos por indústria em `get_weights_for_industry()` |
+| `tags[]` | Chips de contexto (não entram no scoring direto) |
+
+**Scoring:** `calculate_lia_score=True` por default. Usa `lia_score_service.calculate_score(candidate_data, criteria, industry=archetype.industry)` — score estruturado 0-100 com breakdown por dimensão (skills / senioridade / experiência / localização / título). A coluna **Score LIA** aparece na tabela por default.
+
+**Diferença de JD:** JD extrai requisitos via LLM da descrição e usa `RubricEvaluationService` (BARS LLM-based). Arquétipo usa `lia_score_service` (heurístico weighted — mais rápido, sem custo LLM por candidato). Ambos produzem score 0-100 mas com metodologias diferentes.
+
+**Ciclo de vida:** `from-search` (cria arquétipo a partir de busca Natural anterior) · `from-job` (cria a partir de vaga existente) · `from-description` (LLM extrai perfil de descrição livre).
+
+> **Commit `9cca6579a` (2026-06-14):** adicionou `industry=archetype.industry` ao scoring (pesos por indústria) e tornou a coluna Score LIA visível por default.
+
+---
+
+### 4.5.1 📊 Tabela-resumo: os 5 modos de busca comparados
+
+> Referência rápida para entender como cada modo difere em âncora, método de ranking e score produzido.
+
+| Modo | Âncora da busca | Método de ranking | Score exibido | BARS/Rubric | Caso de uso |
+|---|---|---|---|---|---|
+| **Natural** | Intenção em texto livre | WRF fusion: embedding + BM25, alpha dinâmico por tipo de query | Relevância (hybrid 0-100) | ❌ | Talent banking genérico, exploração sem vaga |
+| **Similar** | Perfil candidato ou vaga | Cosine similarity no pgvector (nearest-neighbor) | Similaridade % | ❌ | "Quero mais como esta pessoa / este perfil-alvo" |
+| **Boolean** | Expressão lógica AND/OR/NOT | Full-text BM25 + hybrid score | Relevância (hybrid) | ❌ | Controle fino, filtragem técnica precisa |
+| **Arquétipo** | Perfil ideal empresa (template) | WRF (busca) + `lia_score_service` heurístico (scoring estruturado) | Score LIA 0-100 | ❌ (heurístico) | Talent banking com avaliação estruturada, sem vaga formal |
+| **JD / Descrição da Vaga** | Vaga formal ou JD colada | WRF (busca) + `RubricEvaluationService` LLM-based (BARS) | Match Score 0-99 | ✅ (LLM) | Recrutamento ativo, vaga definida, avaliação rigorosa |
+
+**Notas:**
+- **Natural vs Arquétipo:** Natural é exploração pura (relevância de texto). Arquétipo é exploração + avaliação estruturada contra um perfil-alvo definido.
+- **Arquétipo vs JD:** Ambos avaliam contra critérios definidos. Arquétipo usa heurístico (rápido, sem LLM por candidato). JD usa LLM/BARS (mais preciso, custa mais tokens).
+- **Similar (vaga) vs JD:** Similar com vaga encontra perfis próximos ao perfil-alvo da vaga (proximidade vetorial). JD avalia candidatos contra os *requisitos* extraídos da vaga (avaliação critério a critério). Resultados diferentes.
+- **Alpha dinâmico (Natural/Boolean):** queries com keywords técnicas ("React", "Python") → alpha 0.3 (BM25 domina); queries comportamentais ("liderança", "colaboração") → alpha 0.7 (semântica domina). Detalhes em §11.
+
+---
 
 ### 4.6 📋 Regras de negócio da busca (valem para os 5 fluxos)
 
