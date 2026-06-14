@@ -49,6 +49,9 @@ class FairnessAuditLog(Base):
     # FAR-5: Soft warnings gerados pelo Layer 2 (léxico implícito) — nullable para compatibilidade
     soft_warnings = Column(JSONB, nullable=True)
 
+    # Fix D: correlaciona com sessao SSE para trail de observabilidade
+    session_id = Column(String(100), nullable=True, index=True)
+
     created_at = Column(
         DateTime(timezone=True),
         server_default=text("now()"),
