@@ -156,7 +156,11 @@ export function TriagemParecerTab({
               agreeableness:     "Disposição para colaborar, ceder e trabalhar bem em equipe",
               neuroticism:       "Mantém calma sob pressão e lida bem com críticas e frustrações",
             }
-            const entries = Object.entries(report.behavioral_analysis)
+            const behav = report.behavioral_analysis as Record<string, unknown>
+            const oceanData = (behav?.ocean_traits && typeof behav.ocean_traits === "object")
+              ? behav.ocean_traits as Record<string, unknown>
+              : behav
+            const entries = Object.entries(oceanData)
             const isBigFive = entries.some(([k]) => Object.keys(BIG_FIVE_MAP).includes(k))
             if (!isBigFive) {
               return (
