@@ -186,7 +186,7 @@ export function WhatsAppChannelSelector({
             <Button
               onClick={handleConfirmExisting}
               className="w-full"
-              variant="default"
+              variant="primary"
             >
               Confirmar e enviar
             </Button>
@@ -231,7 +231,7 @@ export function WhatsAppChannelSelector({
               </p>
             )}
           </div>
-          <Button onClick={handleSubmitPhone} className="w-full" variant="default">
+          <Button onClick={handleSubmitPhone} className="w-full" variant="primary">
             Enviar para este número
           </Button>
         </div>
@@ -282,7 +282,7 @@ export function WhatsAppChannelSelector({
             {errorMessage ?? "Ocorreu um erro. Tente novamente."}
           </p>
           <div className="flex flex-col gap-2">
-            <Button onClick={handleRetry} variant="default" className="w-full">
+            <Button onClick={handleRetry} variant="primary" className="w-full">
               Tentar novamente
             </Button>
             <Button
