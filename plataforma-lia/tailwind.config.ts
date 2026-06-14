@@ -191,6 +191,13 @@ export default {
         'wedo-orange': '#D19960',
         'wedo-purple': '#9860D1',
         'wedo-magenta': '#D160AB',
+        // TEXT-SAFE DARKER VARIANTS — WCAG AA ≥ 4.5:1 on white (v4.2.4)
+        'wedo-cyan-text':    '#0D6E82',
+        'wedo-orange-text':  '#7A4E14',
+        'wedo-green-text':   '#1E6B42',
+        'wedo-purple-text':  '#5E35A8',
+        'wedo-magenta-text': '#882B72',
+
         'wedo-amber':       'var(--wedo-amber)',       // bg-wedo-amber, suporta /opacity
         'wedo-amber-light': 'var(--wedo-amber-light)',  // bg-wedo-amber-light → status amber/warning
         'wedo-coral': '#E87575', /* coral suave — atualizado 2026-03-29, era #E16162 */

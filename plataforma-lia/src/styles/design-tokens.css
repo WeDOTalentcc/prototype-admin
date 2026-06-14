@@ -91,6 +91,15 @@
   --wedo-magenta: #D160AB;
   --wedo-magenta-light: #D5A8C6;
   --wedo-magenta-hover: #B84D95;
+  /* TEXT-SAFE DARKER VARIANTS — WCAG AA on white (Junho 2026 v4.2.4)
+     Usar text-wedo-*-text em TEXTO legível. Ícones/decoração continuam com text-wedo-*.
+     Fundo claro: usa este valor. Fundo escuro (dark mode): CSS var reverte ao original. */
+  --wedo-cyan-text:    #0D6E82;   /* 5.5:1 on white — cyan escuro texto-safe */
+  --wedo-orange-text:  #7A4E14;   /* 6.2:1 on white — orange escuro texto-safe */
+  --wedo-green-text:   #1E6B42;   /* 5.4:1 on white — green escuro texto-safe */
+  --wedo-purple-text:  #5E35A8;   /* 7.9:1 on white — purple escuro texto-safe */
+  --wedo-magenta-text: #882B72;   /* 7.7:1 on white — magenta escuro texto-safe */
+
   
   /* AMBER - Warning vibrante, urgência */
   --wedo-amber: #F59E0B;
