@@ -30,6 +30,7 @@ export const PAGE_PATHS = {
   "Bancos de Talentos": "/bancos-de-talentos",
   "Central Comunicação": "/central-comunicacao",
   "Ajuda": "/ajuda",
+  "Projetos": "/projetos",
 } as const
 
 export type PageLabel = keyof typeof PAGE_PATHS

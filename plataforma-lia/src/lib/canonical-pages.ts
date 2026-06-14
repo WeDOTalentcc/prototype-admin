@@ -36,6 +36,7 @@ export const CANONICAL_PAGES = {
   INTEGRACOES_ATS: "integracoes_ats",
   TEMPLATES: "templates",
   MODULOS: "modulos",
+  PROJETOS: "projetos",
   GENERAL: "general",
 } as const
 
@@ -95,6 +96,7 @@ export function routeToCanonicalPage(pathname: string): CanonicalPageValue {
   if (path.includes("/tasks") || path.includes("/decidir")) return CANONICAL_PAGES.TASKS
   if (path.includes("/chat")) return CANONICAL_PAGES.CHAT
   if (path.includes("/trust")) return CANONICAL_PAGES.TRUST
+  if (path.includes("/projetos")) return CANONICAL_PAGES.PROJETOS
 
   // Root path of locale (e.g. /pt/) → home dashboard.
   if (path === "/" || path === "") return CANONICAL_PAGES.HOME
@@ -126,6 +128,7 @@ export function canonicalPageToUrl(page: CanonicalPageValue, locale: string = "p
     case CANONICAL_PAGES.TASKS:               return `${base}/tasks`
     case CANONICAL_PAGES.CHAT:                return `${base}/chat`
     case CANONICAL_PAGES.TRUST:               return `${base}/trust`
+    case CANONICAL_PAGES.PROJETOS:            return `${base}/projetos`
     // Fase A (2026-06-06): dashboard É a home (DashboardApp); pipeline_kanban
     // → visão global do pipeline (/recrutar = PipelineOverviewPage).
     // Fase A.2: abas SEM rota (in-shell) → deep-link ?view=<label> que o
@@ -174,6 +177,7 @@ export function canonicalPageLabel(page: CanonicalPageValue): string {
     case CANONICAL_PAGES.TASKS:               return "Tarefas"
     case CANONICAL_PAGES.CHAT:                return "Chat"
     case CANONICAL_PAGES.TRUST:               return "Trust Center"
+    case CANONICAL_PAGES.PROJETOS:            return "Projetos"
     case CANONICAL_PAGES.AGENTS_MARKETPLACE:  return "Marketplace de Agentes"
     case CANONICAL_PAGES.AI_CREDITS:          return "Créditos de IA"
     case CANONICAL_PAGES.INTEGRACOES_ATS:     return "Integrações ATS"
