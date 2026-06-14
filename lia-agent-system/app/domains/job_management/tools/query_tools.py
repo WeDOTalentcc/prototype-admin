@@ -1,13 +1,11 @@
 """
 Job Management Query Tools - Tools for job search, details, velocity, quality, and benchmarks.
-
 Provides function calling capabilities for:
 - Searching and filtering job vacancies
 - Getting job details with candidates and funnel data
 - Job velocity metrics and progress tracking
 - Job quality metrics for candidate scoring
 - Job benchmarking against historical similar jobs
-
 All tools support tenant scoping via ToolExecutionContext for multi-tenancy security.
 """
 import logging
@@ -15,25 +13,51 @@ from types import SimpleNamespace
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
-
-
 from app.tools.registry import ToolDefinition, tool_registry
 from app.tools.context_helpers import normalize_wrapper_kwargs
-
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
-
 logger = logging.getLogger(__name__)
+
+# Canonical slug → PT-BR label map (mirrors DEFAULT_RECRUITMENT_STAGES).
+# Normalizes mixed PT/EN slugs that exist in historical DB data.
+_STAGE_DISPLAY = {
+    "sourcing": "Funil",
+    "screening": "Triagem",
+    "long_list": "Long List",
+    "short_list": "Short List",
+    "interview_hr": "Entrevista RH",
+    "technical_test": "Teste Tecnico",
+    "interview_technical": "Entrevista Tecnica",
+    "interview_manager": "Entrevista Gestor",
+    "interview_final": "Entrevista Final",
+    "references": "Referencias",
+    "offer": "Proposta",
+    "offer_declined": "Proposta Recusada",
+    "hired": "Contratado",
+    "rejected": "Reprovado",
+    # PT aliases that may exist in historical DB
+    "triagem": "Triagem",
+    "entrevista": "Entrevista RH",
+    "proposta": "Proposta",
+    "reprovado": "Reprovado",
+    "contratado": "Contratado",
+}
+
+
+def _normalize_stage(raw):
+    """Normalize raw slug or display name to canonical PT-BR label."""
+    if not raw:
+        return "Indefinido"
+    s = raw.strip()
+    return _STAGE_DISPLAY.get(s, _STAGE_DISPLAY.get(s.lower(), s))
 
 
 def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
     """Extract and remove _context from kwargs if present."""
     return kwargs.pop("_context", None)
-
-
 def _format_search_jobs_result(jobs_list: list, applied_filters: dict) -> dict:
     """P0.2 (autocorrecao 0-resultados): formata resultado de search_jobs.
-
     Em 0-resultados, anexa sinal ESTRUTURADO de relaxamento via
     build_empty_result_guidance (helper puro) -> a LIA relaxa 1 filtro e oferece
     opcoes com contagem, nunca beco sem saida (extensao da REGRA 4 anti-fallback
@@ -61,8 +85,6 @@ def _format_search_jobs_result(jobs_list: list, applied_filters: dict) -> dict:
             },
         },
     }
-
-
 async def search_jobs(
     status: str | None = None,
     department: str | None = None,
@@ -101,12 +123,10 @@ async def search_jobs(
     # Per CLAUDE.md REGRA 4 multi-tenancy fail-closed.
     from app.tools.context_helpers import require_company_id_from_context
     company_id = require_company_id_from_context(kwargs, "search_jobs")
-
     logger.info(f"🔍 Searching jobs with filters (company: {company_id})")
     
     try:
         from sqlalchemy import and_, select
-
         from app.core.database import AsyncSessionLocal
         from app.models.job_vacancy import JobVacancy
         
@@ -195,8 +215,6 @@ async def search_jobs(
             "message": f"❌ Erro ao buscar vagas: {str(e)}",
             "error": str(e)
         }
-
-
 async def get_job_details(
     job_id: str,
     include_candidates: bool = True,
@@ -217,7 +235,6 @@ async def get_job_details(
     from app.tools.context_helpers import require_company_id_from_context
     from app.shared.entity_resolver import get_active_vacancy
     company_id = require_company_id_from_context(kwargs, "get_job_details")
-
     # P0-A fix (2026-06-14): fallback to active vacancy when LLM omits job_id.
     # Without this, UUID("") raises ValueError -> "instabilidade tecnica".
     job_id = job_id or get_active_vacancy()
@@ -227,12 +244,10 @@ async def get_job_details(
             "needs_clarification": True,
             "message": "Preciso saber qual vaga voce quer ver. Pode me dizer o nome ou titulo da vaga?",
         }
-
     logger.info(f"📋 Getting job details: {job_id} (company: {company_id})")
     
     try:
         from sqlalchemy import and_, select
-
         from app.core.database import AsyncSessionLocal
         from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
@@ -292,25 +307,35 @@ async def get_job_details(
                 
                 if include_funnel:
                     funnel = {}
+                    seen_ids_funnel = set()
                     for vc, c in vacancy_candidates:
-                        stage = getattr(vc, 'stage', 'Indefinido') or 'Indefinido'
+                        cid = str(getattr(c, 'id', '') or '')
+                        if cid in seen_ids_funnel:
+                            continue
+                        seen_ids_funnel.add(cid)
+                        stage = _normalize_stage(getattr(vc, 'stage', None))
                         funnel[stage] = funnel.get(stage, 0) + 1
-                    
+
                     job_data["funnel"] = funnel
-                    job_data["total_candidates"] = len(vacancy_candidates)
+                    job_data["total_candidates"] = len(seen_ids_funnel)
                 
                 if include_candidates:
-                    job_data["candidates"] = [
-                        {
-                            "id": str(c.id),
+                    seen_ids_cands = set()
+                    cands = []
+                    for vc, c in vacancy_candidates:
+                        cid = str(getattr(c, 'id', '') or '')
+                        if cid in seen_ids_cands:
+                            continue
+                        seen_ids_cands.add(cid)
+                        cands.append({
+                            "id": cid,
                             "name": getattr(c, 'name', 'N/A'),
-                            "stage": getattr(vc, 'stage', None),
+                            "stage": _normalize_stage(getattr(vc, 'stage', None)),
                             "status": getattr(vc, 'status', None),
                             "lia_score": getattr(c, 'lia_score', None),
                             "wsi_score": getattr(c, 'wsi_score', None),
-                        }
-                        for vc, c in vacancy_candidates
-                    ]
+                        })
+                    job_data["candidates"] = cands
             
             return {
                 "success": True,
@@ -325,8 +350,6 @@ async def get_job_details(
             "message": f"❌ Erro ao buscar detalhes da vaga: {str(e)}",
             "error": str(e)
         }
-
-
 async def get_job_velocity(
     job_id: str,
     **kwargs
@@ -347,7 +370,6 @@ async def get_job_velocity(
     
     try:
         from sqlalchemy import and_, select
-
         from app.core.database import AsyncSessionLocal
         from app.models.candidate import VacancyCandidate
         from app.models.job_vacancy import JobVacancy
@@ -465,8 +487,6 @@ async def get_job_velocity(
             "message": f"❌ Erro ao calcular velocidade da vaga: {str(e)}",
             "error": str(e)
         }
-
-
 async def get_job_quality_metrics(
     job_id: str,
     **kwargs
@@ -487,7 +507,6 @@ async def get_job_quality_metrics(
     
     try:
         from sqlalchemy import and_, select
-
         from app.core.database import AsyncSessionLocal
         from app.models.candidate import Candidate, VacancyCandidate
         from app.models.job_vacancy import JobVacancy
@@ -620,8 +639,6 @@ async def get_job_quality_metrics(
             "message": f"❌ Erro ao buscar métricas de qualidade: {str(e)}",
             "error": str(e)
         }
-
-
 async def get_job_benchmark(
     job_id: str,
     **kwargs
@@ -641,7 +658,6 @@ async def get_job_benchmark(
     
     try:
         from sqlalchemy import and_, select
-
         from app.core.database import AsyncSessionLocal
         from app.models.candidate import VacancyCandidate
         from app.models.job_vacancy import JobVacancy
@@ -791,68 +807,41 @@ async def get_job_benchmark(
             "message": f"❌ Erro ao calcular benchmark: {str(e)}",
             "error": str(e)
         }
-
-
-
-
 async def _wrap_search_jobs(**kwargs):
     """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
-
     Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
     (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
     injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
     return await search_jobs(**normalize_wrapper_kwargs(kwargs))
-
-
-
-
 async def _wrap_get_job_details(**kwargs):
     """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
-
     Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
     (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
     injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
     return await get_job_details(**normalize_wrapper_kwargs(kwargs))
-
-
-
-
 async def _wrap_get_job_velocity(**kwargs):
     """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
-
     Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
     (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
     injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
     return await get_job_velocity(**normalize_wrapper_kwargs(kwargs))
-
-
-
-
 async def _wrap_get_job_quality_metrics(**kwargs):
     """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
-
     Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
     (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
     injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
     return await get_job_quality_metrics(**normalize_wrapper_kwargs(kwargs))
-
-
-
-
 async def _wrap_get_job_benchmark(**kwargs):
     """Canonical wrapper (2026-05-24-v3 normalize_wrapper_kwargs).
-
     Delegates via ``normalize_wrapper_kwargs`` to handle both dispatch paths:
     (A) Global ToolExecutor injects ``_context``; (B) tool_handler decorator
     injects ``company_id``/``user_id``. See app/tools/context_helpers.py.
     """
     return await get_job_benchmark(**normalize_wrapper_kwargs(kwargs))
-
-
 def register_job_management_query_tools() -> None:
     """Register job-management-domain query tools in the tool registry."""
     
