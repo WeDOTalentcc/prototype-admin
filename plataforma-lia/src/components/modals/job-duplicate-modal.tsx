@@ -199,14 +199,14 @@ export function JobDuplicateModal({
                   <div className="flex items-center space-x-2 p-2 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                     <RadioGroupItem value="all" id="all" className="border-lia-border-medium text-lia-text-primary" />
                     <Label htmlFor="all" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-                      <Users className="w-2.5 h-2.5 text-lia-text-disabled" />
+                      <Users className="w-2.5 h-2.5 text-lia-text-muted" />
                       Todos ({job.candidates_count || 0})
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2 p-2 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                     <RadioGroupItem value="approved" id="approved" className="border-lia-border-medium text-lia-text-primary" />
                     <Label htmlFor="approved" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-                      <Check className="w-2.5 h-2.5 text-lia-text-disabled" />
+                      <Check className="w-2.5 h-2.5 text-lia-text-muted" />
                       Apenas aprovados ({job.approved_count || 0})
                     </Label>
                   </div>
@@ -260,7 +260,7 @@ export function JobDuplicateModal({
                 <div className="space-y-2">
                   <div className="space-y-1">
                     <Label className="text-xs text-lia-text-primary flex items-center gap-1">
-                      <Calendar className="w-2.5 h-2.5 text-lia-text-disabled" />
+                      <Calendar className="w-2.5 h-2.5 text-lia-text-muted" />
                       Deadline Short List
                     </Label>
                     <Input
@@ -272,7 +272,7 @@ export function JobDuplicateModal({
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-lia-text-primary flex items-center gap-1">
-                      <Calendar className="w-2.5 h-2.5 text-lia-text-disabled" />
+                      <Calendar className="w-2.5 h-2.5 text-lia-text-muted" />
                       Fim da Triagem
                     </Label>
                     <Input
@@ -284,7 +284,7 @@ export function JobDuplicateModal({
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-lia-text-primary flex items-center gap-1">
-                      <Calendar className="w-2.5 h-2.5 text-lia-text-disabled" />
+                      <Calendar className="w-2.5 h-2.5 text-lia-text-muted" />
                       Conclusão da Vaga
                     </Label>
                     <Input

@@ -189,7 +189,7 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
                           {ind.earned}/{ind.weight}
                         </span>
                         <ChevronDown className={cn(
-                          "w-3 h-3 text-lia-text-disabled flex-shrink-0 transition-transform",
+                          "w-3 h-3 text-lia-text-muted flex-shrink-0 transition-transform",
                           isOpen && "rotate-180"
                         )} />
                       </button>

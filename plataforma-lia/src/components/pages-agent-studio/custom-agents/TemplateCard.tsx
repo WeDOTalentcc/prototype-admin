@@ -118,7 +118,7 @@ export function TemplateCard({
       {/* O que faz — capacidades de alto nível em PT */}
       {capabilities.length > 0 && (
         <div className="mt-4 bg-lia-bg-primary rounded-md p-3">
-          <p className="text-[10px] uppercase tracking-wide font-semibold text-lia-text-disabled">
+          <p className="text-[10px] uppercase tracking-wide font-semibold text-lia-text-tertiary">
             {tRich("capabilitiesEyebrow")}
           </p>
           <ul className="mt-1.5 space-y-1">
@@ -139,7 +139,7 @@ export function TemplateCard({
       )}
 
       {/* Metadado discreto traduzido: profundidade + etapas */}
-      <p className="mt-3 text-[11px] text-lia-text-disabled">
+      <p className="mt-3 text-[11px] text-lia-text-muted">
         {tRich("depthEyebrow")}: {tRich(DEPTH_VALUE_KEY[template.context_level])}
         {" · "}
         {tRich("stepsValue", { count: template.max_steps })}

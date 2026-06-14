@@ -75,7 +75,7 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
         )}
 
         <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle text-center">
-          <span className="text-micro text-lia-text-disabled">
+          <span className="text-micro text-lia-text-muted">
             Powered by <span className="text-wedo-cyan-text font-medium">LIA</span> · WeDOTalent
           </span>
         </div>

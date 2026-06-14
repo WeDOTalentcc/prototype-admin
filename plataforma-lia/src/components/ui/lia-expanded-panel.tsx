@@ -343,7 +343,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
             )}
           </div>
           <Button
-            className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active' : 'bg-lia-bg-tertiary text-lia-text-disabled'}`}
+            className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active' : 'bg-lia-bg-tertiary text-lia-text-tertiary'}`}
             
             onClick={onSubmit}
             disabled={!value.trim() || isLoading}

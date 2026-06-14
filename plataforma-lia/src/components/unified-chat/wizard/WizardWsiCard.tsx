@@ -98,7 +98,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
         )}
         <ChevronDown
           className={cn(
-            "w-4 h-4 text-lia-text-disabled flex-shrink-0 transition-transform",
+            "w-4 h-4 text-lia-text-muted flex-shrink-0 transition-transform",
             expanded && "rotate-180",
           )}
           aria-hidden="true"
@@ -115,7 +115,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
               onClick={() => setExpandedQ(expandedQ === i ? null : i)}
               className="w-full flex items-start gap-2 px-3 py-2 hover:bg-lia-interactive-hover transition-colors text-left"
             >
-              <span className="text-[11px] text-lia-text-disabled flex-shrink-0 mt-0.5 tabular-nums w-4">
+              <span className="text-[11px] text-lia-text-muted flex-shrink-0 mt-0.5 tabular-nums w-4">
                 {i + 1}.
               </span>
               <p
@@ -157,7 +157,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
                   onClick={() => setExpandedQ(expandedQ === i ? null : i)}
                   className="w-full flex items-start gap-2 px-3 py-2 hover:bg-lia-interactive-hover transition-colors text-left border-t border-lia-border-subtle"
                 >
-                  <span className="text-[11px] text-lia-text-disabled flex-shrink-0 mt-0.5 tabular-nums w-4">
+                  <span className="text-[11px] text-lia-text-muted flex-shrink-0 mt-0.5 tabular-nums w-4">
                     {i + 1}.
                   </span>
                   <p

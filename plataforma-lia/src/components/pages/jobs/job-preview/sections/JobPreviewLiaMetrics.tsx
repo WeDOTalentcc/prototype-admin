@@ -200,7 +200,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
           <p className="text-xs text-lia-text-tertiary">
             Sem dados disponíveis
           </p>
-          <p className="text-micro text-lia-text-disabled mt-1">
+          <p className="text-micro text-lia-text-muted mt-1">
             As médias serão exibidas após as triagens serem concluídas
           </p>
         </div>

@@ -70,28 +70,28 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
 
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 pt-3 pb-4 space-y-2">
-          <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider">Contato</p>
+          <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider">Contato</p>
           {profile.email && (
             <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-              <Mail className="w-3.5 h-3.5 text-lia-text-disabled" />
+              <Mail className="w-3.5 h-3.5 text-lia-text-muted" />
               <span className="truncate">{profile.email}</span>
             </div>
           )}
           {profile.phone && (
             <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-              <Phone className="w-3.5 h-3.5 text-lia-text-disabled" />
+              <Phone className="w-3.5 h-3.5 text-lia-text-muted" />
               <span>{profile.phone}</span>
             </div>
           )}
           {profile.location && (
             <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-              <MapPin className="w-3.5 h-3.5 text-lia-text-disabled" />
+              <MapPin className="w-3.5 h-3.5 text-lia-text-muted" />
               <span>{profile.location}</span>
             </div>
           )}
           {sanitizeUrl(profile.linkedin_url) && (
             <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-              <Globe className="w-3.5 h-3.5 text-lia-text-disabled" />
+              <Globe className="w-3.5 h-3.5 text-lia-text-muted" />
               <a href={sanitizeUrl(profile.linkedin_url)!} target="_blank" rel="noopener noreferrer" className="text-wedo-cyan-text hover:underline truncate">
                 LinkedIn
               </a>
@@ -102,12 +102,12 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
         {profile.experience_years != null && (
           <div className="px-4 pt-3 pb-4">
             <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-              <Briefcase className="w-3.5 h-3.5 text-lia-text-disabled" />
+              <Briefcase className="w-3.5 h-3.5 text-lia-text-muted" />
               <span>{profile.experience_years} anos de experiência</span>
             </div>
             {profile.education && (
               <div className="flex items-center gap-2 text-xs text-lia-text-secondary mt-1">
-                <GraduationCap className="w-3.5 h-3.5 text-lia-text-disabled" />
+                <GraduationCap className="w-3.5 h-3.5 text-lia-text-muted" />
                 <span>{profile.education}</span>
               </div>
             )}
@@ -116,7 +116,7 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
 
         {profile.skills && profile.skills.length > 0 && (
           <div className="px-4 pt-3 pb-4">
-            <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider mb-2">Skills</p>
+            <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Skills</p>
             <div className="flex flex-wrap gap-1.5">
               {profile.skills.map((skill, i) => (
                 <span key={i} className="px-2 py-0.5 rounded-full text-micro bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
@@ -129,13 +129,13 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
 
         {profile.work_history && profile.work_history.length > 0 && (
           <div className="px-4 pt-3 pb-4">
-            <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider mb-2">Histórico</p>
+            <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Histórico</p>
             <div className="space-y-2">
               {profile.work_history.map((job, i) => (
                 <div key={i} className="pl-3 border-l-2 border-lia-border-subtle">
                   <p className="text-xs font-medium text-lia-text-primary">{job.title}</p>
                   <p className="text-micro text-lia-text-secondary">{job.company}</p>
-                  <p className="text-micro text-lia-text-disabled">{job.period}</p>
+                  <p className="text-micro text-lia-text-muted">{job.period}</p>
                 </div>
               ))}
             </div>
@@ -146,7 +146,7 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
           <div className="px-4 py-3">
             <div className="flex items-center gap-1.5 mb-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-              <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider">Insights LIA</p>
+              <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider">Insights LIA</p>
             </div>
             <div className="space-y-1.5">
               {profile.lia_insights.map((insight, i) => (

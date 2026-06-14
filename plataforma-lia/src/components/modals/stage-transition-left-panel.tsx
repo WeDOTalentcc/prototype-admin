@@ -90,7 +90,7 @@ export function StageTransitionLeftPanel({
             <Chip variant="neutral" muted className={badgeStyles.default}>
               {getStageDisplayName(currentStage)}
             </Chip>
-            <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
+            <ChevronRight className="h-4 w-4 text-lia-text-muted" />
             <Chip variant={headerColor === 'red' ? 'danger' : 'neutral'}>
               {getStageDisplayName(newStage)}
             </Chip>

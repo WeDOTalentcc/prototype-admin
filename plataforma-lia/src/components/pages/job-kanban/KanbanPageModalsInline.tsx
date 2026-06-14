@@ -78,7 +78,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                     {getStageDisplayName(pendingMove.fromColumn)}
                   </span>
                 </div>
-                <ArrowRight className="w-5 h-5 text-lia-text-disabled" />
+                <ArrowRight className="w-5 h-5 text-lia-text-muted" />
                 <div className="px-3 py-2 bg-lia-btn-primary-bg rounded-md">
                   <span className="text-sm font-medium text-lia-btn-primary-text">
                     {getStageDisplayName(pendingMove.toColumn)}

@@ -141,7 +141,7 @@ export function WizardPipelineTemplateCard({
                 <span className="mt-0.5 block text-[12px] text-lia-text-secondary">
                   {option.description}
                 </span>
-                <span className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] text-lia-text-disabled">
+                <span className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] text-lia-text-muted">
                   {option.stages.map((stage, idx) => (
                     <React.Fragment key={stage}>
                       <span>{stage}</span>

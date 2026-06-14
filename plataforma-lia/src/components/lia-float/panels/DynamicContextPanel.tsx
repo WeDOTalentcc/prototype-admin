@@ -55,7 +55,7 @@ export function DynamicContextPanel({ panel, className }: DynamicContextPanelPro
       aria-label={`Painel contextual: ${panel.title || PANEL_TITLES[panel.panelType] || panel.panelType}`}
     >
       <div className="flex items-center justify-between px-3 py-2 flex-shrink-0 bg-lia-bg-secondary">
-        <span className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider">
+        <span className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider">
           {panel.title || PANEL_TITLES[panel.panelType] || "Contexto"}
         </span>
         <button

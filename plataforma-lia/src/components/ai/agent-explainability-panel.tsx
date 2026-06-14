@@ -155,7 +155,7 @@ export function AgentExplainabilityPanel({
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-xl bg-lia-btn-primary-bg px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-btn-primary-bg/80">
         <div className="flex items-center gap-2">
           <Brain className="h-4 w-4 text-wedo-cyan" />
-          <span className="text-sm font-medium text-lia-text-disabled font-[Inter]">
+          <span className="text-sm font-medium text-lia-text-tertiary font-[Inter]">
             Raciocínio da IA
           </span>
           {summary && !loading && (
@@ -266,7 +266,7 @@ export function AgentExplainabilityPanel({
                         </div>
                       </div>
 
-                      <p className="text-xs text-lia-text-disabled leading-relaxed">
+                      <p className="text-xs text-lia-text-muted leading-relaxed">
                         {step.reasoning_summary || step.decision || step.tool_result_summary ||""}
                       </p>
                     </div>
@@ -283,7 +283,7 @@ export function AgentExplainabilityPanel({
                 <span className="text-micro text-lia-text-secondary font-[Inter]">
                   Passos
                 </span>
-                <span className="text-sm font-semibold text-lia-text-disabled">
+                <span className="text-sm font-semibold text-lia-text-tertiary">
                   {summary.total_steps}
                 </span>
               </div>
@@ -292,7 +292,7 @@ export function AgentExplainabilityPanel({
                 <span className="text-micro text-lia-text-secondary font-[Inter]">
                   Ferramentas
                 </span>
-                <span className="text-sm font-semibold text-lia-text-disabled">
+                <span className="text-sm font-semibold text-lia-text-tertiary">
                   {summary.tools_used?.length || 0}
                 </span>
               </div>
@@ -301,7 +301,7 @@ export function AgentExplainabilityPanel({
                 <span className="text-micro text-lia-text-secondary font-[Inter]">
                   Tempo Total
                 </span>
-                <span className="text-sm font-semibold text-lia-text-disabled">
+                <span className="text-sm font-semibold text-lia-text-tertiary">
                   {formatDuration(summary.duration_ms)}
                 </span>
               </div>

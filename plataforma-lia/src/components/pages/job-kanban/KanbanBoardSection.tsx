@@ -194,12 +194,12 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
                   <div className="flex-shrink-0 p-2.5 pb-1.5">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2 h-2 rounded-full animate-pulse motion-reduce:animate-none" style={{backgroundColor: stage.color}}></div>
-                      <h3 className="font-medium text-xs text-lia-text-disabled">{stage.displayName}</h3>
-                      <span className="text-micro text-lia-text-disabled bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full animate-pulse motion-reduce:animate-none">...</span>
+                      <h3 className="font-medium text-xs text-lia-text-tertiary">{stage.displayName}</h3>
+                      <span className="text-micro text-lia-text-muted bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full animate-pulse motion-reduce:animate-none">...</span>
                     </div>
                   </div>
                   <div className="flex-1 flex items-center justify-center">
-                    <div className="animate-pulse motion-reduce:animate-none text-lia-text-disabled text-xs" suppressHydrationWarning>{t('loadingEllipsis')}</div>
+                    <div className="animate-pulse motion-reduce:animate-none text-lia-text-muted text-xs" suppressHydrationWarning>{t('loadingEllipsis')}</div>
                   </div>
                 </div>
               ))}
@@ -239,9 +239,9 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
                   onClick={() => setShowAddColumnPopover(true)}
                 >
                   <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary group-hover:bg-lia-interactive-active flex items-center justify-center transition-colors motion-reduce:transition-none">
-                    <Plus className="w-5 h-5 text-lia-text-disabled group-hover:text-lia-text-secondary" />
+                    <Plus className="w-5 h-5 text-lia-text-muted group-hover:text-lia-text-secondary" />
                   </div>
-                  <span className="text-xs text-lia-text-disabled group-hover:text-lia-text-secondary font-medium transition-colors motion-reduce:transition-none">
+                  <span className="text-xs text-lia-text-tertiary group-hover:text-lia-text-secondary font-medium transition-colors motion-reduce:transition-none">
                     {t('addColumn')}
                   </span>
                 </div>

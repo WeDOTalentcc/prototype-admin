@@ -69,7 +69,7 @@ export function CandidateOpinionsTab({
       {!isLoadingHistory && !isErrorHistory && opinionsHistory.length === 0 && (
         <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-xl p-6 text-center">
           <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary flex items-center justify-center mx-auto mb-3">
-            <FileText className="w-6 h-6 text-lia-text-disabled" />
+            <FileText className="w-6 h-6 text-lia-text-muted" />
           </div>
           <p className={`${textStyles.subtitle} mb-1`}>Nenhum parecer disponível</p>
           <p className={textStyles.description}>

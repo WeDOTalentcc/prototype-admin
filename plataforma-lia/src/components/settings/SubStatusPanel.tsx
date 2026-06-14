@@ -100,7 +100,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
                   ) : ss.is_default ? (
                     <Star className="h-3 w-3 text-status-warning fill-current" />
                   ) : (
-                    <Star className="h-3 w-3 text-lia-text-disabled hover:text-status-warning" />
+                    <Star className="h-3 w-3 text-lia-text-muted hover:text-status-warning" />
                   )}
                 </button>
               )}

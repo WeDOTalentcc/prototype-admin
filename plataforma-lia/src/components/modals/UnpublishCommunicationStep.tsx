@@ -170,7 +170,7 @@ export function CommunicationStep({ hook }: StepProps) {
             </div>
           ) : jobCandidates.length === 0 ? (
             <div className="flex items-center justify-center h-full py-8">
-              <Users className="w-4 h-4 text-lia-text-disabled mr-2" />
+              <Users className="w-4 h-4 text-lia-text-muted mr-2" />
               <span className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Nenhum candidato encontrado</span>
             </div>
           ) : (
@@ -330,7 +330,7 @@ export function UnpublishCommunicationStep({
             </div>
           ) : jobCandidates.length === 0 ? (
             <div className="flex items-center justify-center h-full py-8">
-              <Users className="w-4 h-4 text-lia-text-disabled mr-2" />
+              <Users className="w-4 h-4 text-lia-text-muted mr-2" />
               <span className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Nenhum candidato encontrado</span>
             </div>
           ) : (

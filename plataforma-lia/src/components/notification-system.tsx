@@ -166,7 +166,7 @@ const NotificationItem = React.memo(({
             {notification.message}
           </p>
           <div className="flex items-center justify-between mt-1.5">
-            <span className="text-[10px] text-lia-text-disabled flex items-center gap-1">
+            <span className="text-[10px] text-lia-text-muted flex items-center gap-1">
               <Clock className="w-2.5 h-2.5" />
               {formatTimeAgo(notification.timestamp)}
             </span>
@@ -452,11 +452,11 @@ export function NotificationSystem({
                 {groupedNotifications.map((group) => (
                   <div key={group.label} className="mb-2 last:mb-0">
                     <div className="flex items-center gap-2 px-2 py-1.5">
-                      <span className="text-[10px] font-semibold text-lia-text-disabled tracking-wider uppercase">
+                      <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-wider uppercase">
                         {group.label}
                       </span>
                       <div className="flex-1 h-px bg-lia-border-subtle" />
-                      <span className="text-[10px] text-lia-text-disabled">
+                      <span className="text-[10px] text-lia-text-muted">
                         {group.items.length}
                       </span>
                     </div>
@@ -477,7 +477,7 @@ export function NotificationSystem({
             ) : (
               <div className="py-14 px-6 text-center">
                 <div className="w-14 h-14 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4">
-                  <BellOff className="w-6 h-6 text-lia-text-disabled" aria-hidden="true" />
+                  <BellOff className="w-6 h-6 text-lia-text-muted" aria-hidden="true" />
                 </div>
                 <p className="text-sm font-medium text-lia-text-primary">
                   {isLoading ? "Carregando..." : activeCategory ? `Nenhuma em ${CATEGORY_LABELS[activeCategory]}` : "Tudo em dia!"}

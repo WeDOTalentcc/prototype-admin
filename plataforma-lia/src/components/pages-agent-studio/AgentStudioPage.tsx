@@ -838,15 +838,15 @@ function AgentCard({
     <div className="grid grid-cols-3 gap-2">
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
         <span className="text-xs font-bold text-lia-text-primary">{agent.profiles_viewed}</span>
-        <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
+        <span className="text-micro text-lia-text-tertiary uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
       </div>
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
         <span className="text-xs font-bold text-status-success">{agent.profiles_approved}</span>
-        <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.approved")}</span>
+        <span className="text-micro text-lia-text-tertiary uppercase tracking-wider">{t("studio.stats.approved")}</span>
       </div>
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
         <span className="text-xs font-bold text-lia-text-primary">{approvalRate}%</span>
-        <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.rate")}</span>
+        <span className="text-micro text-lia-text-tertiary uppercase tracking-wider">{t("studio.stats.rate")}</span>
       </div>
     </div>
   )
@@ -857,7 +857,7 @@ function AgentCard({
         <span key={i} className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-micro font-medium text-lia-text-secondary">{skill}</span>
       ))}
       {strategy.required_skills.length > 4 && (
-        <span className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-micro text-lia-text-disabled">+{strategy.required_skills.length - 4}</span>
+        <span className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-micro text-lia-text-muted">+{strategy.required_skills.length - 4}</span>
       )}
     </div>
   ) : undefined
@@ -871,12 +871,12 @@ function AgentCard({
     )}>
       {agent.talent_pool_id ? (
         <>
-          <Database className="w-3 h-3 text-lia-text-disabled" />
+          <Database className="w-3 h-3 text-lia-text-muted" />
           <span className="text-micro text-lia-text-secondary">{t("studio.card.linkedToPool")}</span>
         </>
       ) : agent.job_id ? (
         <>
-          <Briefcase className="w-3 h-3 text-lia-text-disabled" />
+          <Briefcase className="w-3 h-3 text-lia-text-muted" />
           <span className="text-micro text-lia-text-secondary">{t("studio.card.linkedToJob")}</span>
         </>
       ) : (

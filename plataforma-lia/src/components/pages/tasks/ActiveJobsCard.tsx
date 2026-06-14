@@ -146,7 +146,7 @@ export function ActiveJobsCard({
       <CardContent className="pt-0">
         {filteredAndSortedJobs.length === 0 ? (
           <div className="text-center py-8">
-            <Search className="w-16 h-16 mx-auto text-lia-text-disabled mb-4" />
+            <Search className="w-16 h-16 mx-auto text-lia-text-muted mb-4" />
             <p className="text-base font-medium text-lia-text-primary mb-1">Nenhuma vaga encontrada</p>
             <p className="text-sm text-lia-text-secondary">
               Tente ajustar os filtros ou buscar por outros termos

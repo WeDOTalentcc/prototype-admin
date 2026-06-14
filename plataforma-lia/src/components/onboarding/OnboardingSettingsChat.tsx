@@ -89,7 +89,7 @@ export function OnboardingSettingsChat({ userId }: Props) {
             <p className="text-sm text-lia-text-secondary">
               Olá! Vou ajudar você a configurar sua empresa via chat.
             </p>
-            <p className="text-xs text-lia-text-disabled mt-1">
+            <p className="text-xs text-lia-text-muted mt-1">
               Responda as perguntas e as informações serão salvas automaticamente.
             </p>
           </div>

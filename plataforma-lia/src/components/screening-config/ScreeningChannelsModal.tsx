@@ -103,7 +103,7 @@ export function ScreeningChannelsModal({
           <div className={`flex items-center justify-between p-3 rounded-xl border ${masterEnabled ? 'bg-lia-bg-secondary border-lia-border-subtle' : 'bg-lia-bg-tertiary border-lia-border-default'}`}>
             <div className="flex items-center gap-3">
               <div className={`w-8 h-8 rounded-md flex items-center justify-center ${masterEnabled ? 'bg-lia-btn-primary-bg/15' : 'bg-lia-bg-tertiary'}`}>
-                <Power className={`w-4 h-4 ${masterEnabled ? 'text-lia-btn-primary-bg' : 'text-lia-text-disabled'}`} />
+                <Power className={`w-4 h-4 ${masterEnabled ? 'text-lia-btn-primary-bg' : 'text-lia-text-muted'}`} />
               </div>
               <div>
                 <Label className="text-xs font-semibold text-lia-text-primary">Triagem Habilitada</Label>

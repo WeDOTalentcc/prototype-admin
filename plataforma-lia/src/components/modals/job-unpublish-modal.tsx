@@ -120,7 +120,7 @@ export function JobUnpublishModal(props: JobUnpublishModalProps) {
               </span>
             </div>
             {index < steps.length - 1 && (
-              <ChevronRight className="w-3.5 h-3.5 text-lia-text-disabled mx-1" />
+              <ChevronRight className="w-3.5 h-3.5 text-lia-text-muted mx-1" />
             )}
           </React.Fragment>
         ))}

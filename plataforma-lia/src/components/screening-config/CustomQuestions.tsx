@@ -88,9 +88,9 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
           )}
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-lia-text-disabled" />
+          <ChevronUp className="w-4 h-4 text-lia-text-muted" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-lia-text-disabled" />
+          <ChevronDown className="w-4 h-4 text-lia-text-muted" />
         )}
       </button>
 
@@ -166,7 +166,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                       {question.question}
                     </span>
                     {question.expectedAnswer && (
-                      <span className="text-micro text-lia-text-disabled">Resposta esperada: {question.expectedAnswer}</span>
+                      <span className="text-micro text-lia-text-muted">Resposta esperada: {question.expectedAnswer}</span>
                     )}
                   </div>
                   {question.character === 'eliminatoria' ? (

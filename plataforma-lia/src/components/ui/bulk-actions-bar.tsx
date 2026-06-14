@@ -35,7 +35,7 @@ interface BulkActionsBarProps {
 
 const INLINE_BUTTON ="h-8 px-3 text-xs gap-2 bg-lia-bg-primary hover:bg-lia-interactive-hover border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated"
 const INLINE_DESTRUCTIVE ="h-8 px-3 text-xs gap-2 border-status-error/30 text-status-error hover:bg-status-error/10 dark:text-status-error dark:bg-lia-bg-elevated dark:hover:bg-status-error/20"
-const FIXED_BUTTON ="h-8 px-3 text-xs gap-2 border-lia-border-strong text-lia-text-disabled hover:bg-lia-btn-primary-hover hover:text-white"
+const FIXED_BUTTON ="h-8 px-3 text-xs gap-2 border-lia-border-strong text-lia-text-muted hover:bg-lia-btn-primary-hover hover:text-white"
 const FIXED_DESTRUCTIVE ="h-8 px-3 text-xs gap-2 bg-status-error text-white hover:bg-status-error/90"
 
 export const BulkActionsBar = React.memo(function BulkActionsBar({
@@ -107,7 +107,7 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
               </div>
             )}
             <span className={cn("text-sm",
-              isFixed ?"text-lia-text-disabled" :"font-semibold text-lia-text-primary"
+              isFixed ?"text-lia-text-tertiary" :"font-semibold text-lia-text-primary"
             )} aria-live="polite" aria-atomic="true">
               {displayLabel}
             </span>
@@ -156,7 +156,7 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
             onClick={onDeselectAll}
             className={cn("h-8 px-2 text-xs",
               isFixed
-                ?"text-lia-text-tertiary hover:text-lia-text-disabled hover:bg-lia-btn-primary-hover"
+                ?"text-lia-text-tertiary hover:text-lia-text-muted hover:bg-lia-btn-primary-hover"
                 :"text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
             )}
             title="Limpar seleção"

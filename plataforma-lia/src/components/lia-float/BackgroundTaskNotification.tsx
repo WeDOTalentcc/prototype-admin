@@ -73,7 +73,7 @@ export function BackgroundTaskNotification({
           {onDismiss && (
             <button
               onClick={() => onDismiss(task.id)}
-              className="text-xs text-lia-text-disabled hover:text-lia-text-tertiary transition-colors"
+              className="text-xs text-lia-text-muted hover:text-lia-text-tertiary transition-colors"
             >
               Dispensar
             </button>

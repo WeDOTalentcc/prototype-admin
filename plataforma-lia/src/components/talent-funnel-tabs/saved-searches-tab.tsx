@@ -413,7 +413,7 @@ export function SavedSearchesTab({
 
       {filteredSearches.length === 0 && savedSearches.length > 0 && (
         <div className="flex flex-col items-center justify-center py-10 text-center">
-          <AlertCircle className="w-8 h-8 text-lia-text-disabled mb-2" />
+          <AlertCircle className="w-8 h-8 text-lia-text-muted mb-2" />
           <p className="text-xs text-lia-text-tertiary">
             Nenhuma busca encontrada para"{searchFilter}"
           </p>

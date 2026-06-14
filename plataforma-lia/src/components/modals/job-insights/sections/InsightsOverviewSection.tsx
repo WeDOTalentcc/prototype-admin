@@ -198,7 +198,7 @@ export function InsightsOverviewSection({
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-lia-text-secondary">{rate.from}</span>
-                    <ArrowRight className="w-3 h-3 text-lia-text-disabled" />
+                    <ArrowRight className="w-3 h-3 text-lia-text-muted" />
                     <span className="text-xs text-lia-text-secondary">{rate.to}</span>
                   </div>
                   <span className={colors.icon}>
@@ -225,7 +225,7 @@ export function InsightsOverviewSection({
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <TrendingUp className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Tendência Temporal
-          <span className="text-xs text-lia-text-disabled font-normal ml-1">(estimativa)</span>
+          <span className="text-xs text-lia-text-muted font-normal ml-1">(estimativa)</span>
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-lia-bg-primary rounded-xl p-3 border border-lia-border-subtle">
@@ -281,7 +281,7 @@ export function InsightsOverviewSection({
                 </div>
               </div>
               <div className="w-12 text-xs text-lia-text-secondary">{stage.rate}%</div>
-              {index < funnelData.length - 1 && <ArrowRight className="w-3 h-3 text-lia-text-disabled" />}
+              {index < funnelData.length - 1 && <ArrowRight className="w-3 h-3 text-lia-text-muted" />}
             </div>
           ))}
         </div>
@@ -334,7 +334,7 @@ export function InsightsOverviewSection({
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide flex items-center gap-1.5">
             <Target className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Métricas WSI
-            <span className="text-xs text-lia-text-disabled font-normal ml-1">(estimativa baseada em performance)</span>
+            <span className="text-xs text-lia-text-muted font-normal ml-1">(estimativa baseada em performance)</span>
           </h3>
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-lia-text-tertiary">Nota Média:</span>

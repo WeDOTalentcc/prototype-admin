@@ -235,7 +235,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
                 {jdGenerationError}
               </p>
             ) : (
-              <p className="text-xs text-lia-text-disabled text-center">
+              <p className="text-xs text-lia-text-muted text-center">
                 Descrição gerada pela LIA aparecerá aqui
               </p>
             )}

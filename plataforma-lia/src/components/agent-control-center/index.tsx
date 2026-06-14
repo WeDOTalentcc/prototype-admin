@@ -16,7 +16,7 @@ function MetricCard({ variant, icon, title, value, trend, accentColor }: {
     <div className="p-3 rounded-lg bg-lia-bg-secondary dark:bg-lia-bg-tertiary border border-lia-border-default">
       <div className="flex items-center gap-2 mb-1">
         <span style={{ color: accentColor }}>{icon}</span>
-        <span className="text-xs text-lia-text-disabled">{title}</span>
+        <span className="text-xs text-lia-text-muted">{title}</span>
       </div>
       <div className="flex items-baseline gap-2">
         <span className="text-lg font-semibold text-lia-text-primary">{value}</span>
@@ -270,7 +270,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
           </div>
           <div className="flex items-center gap-3">
             {lastUpdated && (
-              <span className="text-xs text-lia-text-disabled">
+              <span className="text-xs text-lia-text-muted">
                 Atualizado {formatTimeAgo(lastUpdated.toISOString())}
               </span>
             )}
@@ -381,12 +381,12 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-lia-bg-secondary dark:bg-lia-bg-tertiary">
-                      <th className="text-left p-2 font-medium text-lia-text-disabled">Agente</th>
-                      <th className="text-right p-2 font-medium text-lia-text-disabled">Execuções</th>
-                      <th className="text-right p-2 font-medium text-lia-text-disabled">Confiança</th>
-                      <th className="text-right p-2 font-medium text-lia-text-disabled">Erros</th>
-                      <th className="text-right p-2 font-medium text-lia-text-disabled">Fairness</th>
-                      <th className="text-center p-2 font-medium text-lia-text-disabled">Trend</th>
+                      <th className="text-left p-2 font-medium text-lia-text-tertiary">Agente</th>
+                      <th className="text-right p-2 font-medium text-lia-text-tertiary">Execuções</th>
+                      <th className="text-right p-2 font-medium text-lia-text-tertiary">Confiança</th>
+                      <th className="text-right p-2 font-medium text-lia-text-tertiary">Erros</th>
+                      <th className="text-right p-2 font-medium text-lia-text-tertiary">Fairness</th>
+                      <th className="text-center p-2 font-medium text-lia-text-tertiary">Trend</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-lia-border-subtle">
@@ -449,11 +449,11 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-lia-bg-secondary dark:bg-lia-bg-tertiary">
-                    <th className="text-left p-2 font-medium text-lia-text-disabled">Vaga</th>
-                    <th className="text-right p-2 font-medium text-lia-text-disabled">Dias Abertos</th>
-                    <th className="text-right p-2 font-medium text-lia-text-disabled">Previsão</th>
-                    <th className="text-right p-2 font-medium text-lia-text-disabled">Confiança</th>
-                    <th className="text-center p-2 font-medium text-lia-text-disabled">Status</th>
+                    <th className="text-left p-2 font-medium text-lia-text-tertiary">Vaga</th>
+                    <th className="text-right p-2 font-medium text-lia-text-tertiary">Dias Abertos</th>
+                    <th className="text-right p-2 font-medium text-lia-text-tertiary">Previsão</th>
+                    <th className="text-right p-2 font-medium text-lia-text-tertiary">Confiança</th>
+                    <th className="text-center p-2 font-medium text-lia-text-tertiary">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-lia-border-subtle">
@@ -518,12 +518,12 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-lia-bg-secondary dark:bg-lia-bg-tertiary">
-                      <th className="text-left p-2 font-medium text-lia-text-disabled">Domínio</th>
-                      <th className="text-right p-2 font-medium text-lia-text-disabled">Eventos</th>
-                      <th className="text-right p-2 font-medium text-lia-text-disabled">Concordam</th>
-                      <th className="text-right p-2 font-medium text-lia-text-disabled">Divergem</th>
-                      <th className="text-right p-2 font-medium text-lia-text-disabled">Taxa</th>
-                      <th className="text-center p-2 font-medium text-lia-text-disabled">Status</th>
+                      <th className="text-left p-2 font-medium text-lia-text-tertiary">Domínio</th>
+                      <th className="text-right p-2 font-medium text-lia-text-tertiary">Eventos</th>
+                      <th className="text-right p-2 font-medium text-lia-text-tertiary">Concordam</th>
+                      <th className="text-right p-2 font-medium text-lia-text-tertiary">Divergem</th>
+                      <th className="text-right p-2 font-medium text-lia-text-tertiary">Taxa</th>
+                      <th className="text-center p-2 font-medium text-lia-text-tertiary">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-lia-border-subtle">
@@ -614,7 +614,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       style={{backgroundColor: getStatusColor(agent.status)}}
                     />
                     <ChevronRight
-                      className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none text-lia-text-disabled"
+                      className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none text-lia-text-muted"
                     />
                   </div>
                 </div>
@@ -628,14 +628,14 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className="p-2 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-lia-text-disabled">
+                      <span className="text-xs text-lia-text-muted">
                         Ações 24h
                       </span>
                       <CompactDelta value={agent.delta} />
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg font-semibold text-lia-text-primary">{agent.actions_today}</span>
-                      <span className="text-xs text-lia-text-disabled">
+                      <span className="text-xs text-lia-text-muted">
                         /{agent.daily_goal}
                       </span>
                     </div>
@@ -647,7 +647,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     </div>
                   </div>
                   <div className="p-2 rounded-xl bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
-                    <span className="text-xs block text-lia-text-disabled">
+                    <span className="text-xs block text-lia-text-muted">
                       Progresso
                     </span>
                     <span 
@@ -663,7 +663,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <p className="text-xs truncate text-lia-text-tertiary">
                     {agent.last_action || 'Sem atividade recente'}
                   </p>
-                  <p className="text-xs text-lia-text-disabled">
+                  <p className="text-xs text-lia-text-muted">
                     {formatTimeAgo(agent.last_action_time)}
                   </p>
                 </div>
@@ -720,7 +720,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
             {/* Filter Pills */}
             <div className="flex flex-wrap items-center gap-2">
-              <Filter className="w-3.5 h-3.5 text-lia-text-disabled" />
+              <Filter className="w-3.5 h-3.5 text-lia-text-muted" />
               
               {/* Agent Filters */}
               <div className="flex flex-wrap gap-1">
@@ -763,7 +763,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
               {(selectedAgentFilter.length > 0 || selectedStatusFilter.length > 0) && (
                 <button
                   onClick={clearFilters}
-                  className="px-2 py-1 rounded-full text-xs flex items-center gap-1 text-lia-text-disabled"
+                  className="px-2 py-1 rounded-full text-xs flex items-center gap-1 text-lia-text-muted"
                 >
                   <X className="w-3 h-3" />
                   Limpar
@@ -794,7 +794,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                         <span className="text-xs font-medium text-lia-text-secondary">
                           {activity.agent_name}
                         </span>
-                        <span className="text-xs text-lia-text-disabled">
+                        <span className="text-xs text-lia-text-muted">
                           {formatTimeAgo(activity.started_at)}
                         </span>
                         {activity.sla_breach && (

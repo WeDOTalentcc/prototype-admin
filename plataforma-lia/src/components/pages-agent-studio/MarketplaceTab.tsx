@@ -289,12 +289,12 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
 
         {loadingAgents ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 animate-spin text-lia-text-disabled" aria-hidden="true" />
+            <Loader2 className="w-5 h-5 animate-spin text-lia-text-muted" aria-hidden="true" />
           </div>
         ) : filteredAgents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
-            <Store className="w-8 h-8 text-lia-text-disabled mb-2" />
-            <p className="text-xs text-lia-text-disabled">{t("noAgentsAvailable")}</p>
+            <Store className="w-8 h-8 text-lia-text-muted mb-2" />
+            <p className="text-xs text-lia-text-muted">{t("noAgentsAvailable")}</p>
           </div>
         ) : (
           <>
@@ -403,12 +403,12 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
 
         {loadingTemplates ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 animate-spin text-lia-text-disabled" aria-hidden="true" />
+            <Loader2 className="w-5 h-5 animate-spin text-lia-text-muted" aria-hidden="true" />
           </div>
         ) : filteredTemplates.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
-            <Package className="w-8 h-8 text-lia-text-disabled mb-2" />
-            <p className="text-xs text-lia-text-disabled">{t("noAgentsAvailable")}</p>
+            <Package className="w-8 h-8 text-lia-text-muted mb-2" />
+            <p className="text-xs text-lia-text-muted">{t("noAgentsAvailable")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -517,7 +517,7 @@ function InstalledAgents() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" aria-hidden="true" />
+        <Loader2 className="w-6 h-6 animate-spin text-lia-text-muted" aria-hidden="true" />
       </div>
     )
   }
@@ -525,9 +525,9 @@ function InstalledAgents() {
   if (installations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
-        <Package className="w-10 h-10 text-lia-text-disabled mb-3" />
+        <Package className="w-10 h-10 text-lia-text-muted mb-3" />
         <p className="text-sm font-medium text-lia-text-secondary">{t('noInstalledAgents')}</p>
-        <p className="text-xs text-lia-text-disabled mt-1">
+        <p className="text-xs text-lia-text-muted mt-1">
           {t('exploreMarketplace')}
         </p>
       </div>
@@ -606,7 +606,7 @@ function BillingView() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" aria-hidden="true" />
+        <Loader2 className="w-6 h-6 animate-spin text-lia-text-muted" aria-hidden="true" />
       </div>
     )
   }

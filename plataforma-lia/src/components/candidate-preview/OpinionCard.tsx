@@ -126,7 +126,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
         </div>
         <div className="flex items-center gap-2">
           {!!opinion.created_at && (
-            <span className="text-micro text-lia-text-disabled">{formatOpinionDate(String(opinion.created_at))}</span>
+            <span className="text-micro text-lia-text-muted">{formatOpinionDate(String(opinion.created_at))}</span>
           )}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -140,16 +140,16 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                 {copiedItemId === `opinion-${opinion.id}` ? (
                   <Check className="w-3.5 h-3.5 text-status-success" />
                 ) : (
-                  <Copy className="w-3.5 h-3.5 text-lia-text-disabled hover:text-lia-text-secondary" />
+                  <Copy className="w-3.5 h-3.5 text-lia-text-muted hover:text-lia-text-secondary" />
                 )}
               </button>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-micro">Copiar parecer</TooltipContent>
           </Tooltip>
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-lia-text-disabled" />
+            <ChevronUp className="w-4 h-4 text-lia-text-muted" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-lia-text-disabled" />
+            <ChevronDown className="w-4 h-4 text-lia-text-muted" />
           )}
         </div>
       </div>

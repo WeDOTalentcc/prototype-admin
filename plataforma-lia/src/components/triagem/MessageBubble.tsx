@@ -217,7 +217,7 @@ const MessageBubble = memo(function MessageBubble({
         {isLia && (
           <div className="flex items-center gap-1.5 px-1">
             <span className="text-xs font-bold text-lia-text-primary font-['Inter',sans-serif]">LIA</span>
-            <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums">
+            <span className="text-xs text-lia-text-muted font-['Inter',sans-serif] tabular-nums">
               {formatTimestamp(message.timestamp, locale)}
             </span>
           </div>
@@ -267,7 +267,7 @@ const MessageBubble = memo(function MessageBubble({
           />
         )}
         {!isLia && (
-          <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums px-1">
+          <span className="text-xs text-lia-text-muted font-['Inter',sans-serif] tabular-nums px-1">
             {formatTimestamp(message.timestamp, locale)}
           </span>
         )}

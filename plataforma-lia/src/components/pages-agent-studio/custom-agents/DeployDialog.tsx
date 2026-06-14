@@ -108,7 +108,7 @@ export function DeployDialog({ agent, open, onClose, onDeployed }: DeployDialogP
                       {t('targets.' + opt.type)}
                     </span>
                   </div>
-                  <p className="text-[10px] text-lia-text-disabled leading-tight">{t(opt.descKey)}</p>
+                  <p className="text-[10px] text-lia-text-muted leading-tight">{t(opt.descKey)}</p>
                 </button>
               ))}
             </div>

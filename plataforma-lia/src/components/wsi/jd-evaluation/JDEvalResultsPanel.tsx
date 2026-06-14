@@ -151,7 +151,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
           <div className="border rounded-xl p-3 border-wedo-cyan/15 bg-wedo-cyan/[.02]">
             <div className="flex flex-col items-center justify-center py-6">
               <Brain className="h-8 w-8 mb-2 text-wedo-cyan opacity-40" />
-              <p className="text-xs text-lia-text-disabled text-center leading-relaxed">
+              <p className="text-xs text-lia-text-muted text-center leading-relaxed">
                 Nenhum JD enriquecido gerado ainda.<br />
                 Clique em Editar Descrição para gerar.
               </p>

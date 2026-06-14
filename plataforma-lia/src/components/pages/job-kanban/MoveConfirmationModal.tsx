@@ -82,7 +82,7 @@ export function MoveConfirmationModal({
               <span className="text-lia-text-secondary">{fromStage.name}</span>
             </div>
             
-            <ArrowRight className="h-4 w-4 text-lia-text-disabled" />
+            <ArrowRight className="h-4 w-4 text-lia-text-muted" />
             
             <div className="flex items-center gap-2">
               <div 

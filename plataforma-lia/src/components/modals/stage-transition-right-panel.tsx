@@ -93,7 +93,7 @@ export function StageTransitionRightPanel({
 
             {isLoadingTemplates ? (
               <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
-                <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
+                <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-muted" />
               </div>
             ) : (
               <div className="relative" role="status" aria-live="polite" aria-label="Carregando...">
@@ -137,7 +137,7 @@ export function StageTransitionRightPanel({
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-12 h-12 bg-lia-bg-tertiary rounded-full flex items-center justify-center mb-3">
-              <ArrowRight className="w-6 h-6 text-lia-text-disabled" />
+              <ArrowRight className="w-6 h-6 text-lia-text-muted" />
             </div>
             <p className={textStyles.subtitle} aria-live="polite" aria-atomic="true">Apenas mover candidato</p>
             <p className={cn(textStyles.caption, "mt-1 max-w-[250px]")} aria-live="polite" aria-atomic="true">

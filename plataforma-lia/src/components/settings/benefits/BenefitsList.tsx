@@ -141,7 +141,7 @@ export function BenefitsList({
               <CardContent className="p-0">
                 {categoryBenefits.length === 0 ? (
                   <div className="p-3 text-center">
-                    <Gift className="w-4 h-4 mx-auto text-lia-text-disabled mb-2" />
+                    <Gift className="w-4 h-4 mx-auto text-lia-text-muted mb-2" />
                     <p className={textStyles.bodySmall}>
                       {t("noBenefitsInCategory")}
                     </p>

@@ -163,7 +163,7 @@ export function SearchArchetypeCreateTab({
                           </span>
                           {job.department && (
                             <>
-                              <span className="text-micro text-lia-text-disabled">
+                              <span className="text-micro text-lia-text-muted">
                                 •
                               </span>
                               <span className="text-micro text-lia-text-tertiary">
@@ -173,7 +173,7 @@ export function SearchArchetypeCreateTab({
                           )}
                           {job.seniority_level && (
                             <>
-                              <span className="text-micro text-lia-text-disabled">
+                              <span className="text-micro text-lia-text-muted">
                                 •
                               </span>
                               <span className="text-micro text-lia-text-tertiary">

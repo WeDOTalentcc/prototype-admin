@@ -311,7 +311,7 @@ export function VacancyBenefitsManager({
 
       {records.length === 0 ? (
         <div className="rounded-md border border-dashed border-lia-border-default p-6 text-center">
-          <Gift className="w-5 h-5 mx-auto text-lia-text-disabled mb-2" />
+          <Gift className="w-5 h-5 mx-auto text-lia-text-muted mb-2" />
           <p className="text-sm text-lia-text-secondary">{tv("emptyCatalog")}</p>
           {editable && (
           <Button size="sm" variant="outline" onClick={openCreate} className="mt-3 gap-1.5 text-xs">

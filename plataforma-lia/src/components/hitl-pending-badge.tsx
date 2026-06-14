@@ -130,7 +130,7 @@ export function HitlPendingBadge({ onNavigateToChat }: HitlPendingBadgeProps) {
                   </span>
                 )}
               </div>
-              <ArrowRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0 mt-1" />
+              <ArrowRight className="w-3 h-3 text-lia-text-muted flex-shrink-0 mt-1" />
             </button>
           ))}
         </div>

@@ -245,7 +245,7 @@ export function CandidatePreviewActionBar({
               className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(c.portfolio || c.portfolio_url) ? 'hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse' : 'opacity-30 cursor-default'}`}
               onClick={(e) => !(c.portfolio || c.portfolio_url) && e.preventDefault()}
             >
-              <ExternalLink className={`w-3.5 h-3.5 ${(c.portfolio || c.portfolio_url) ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`} />
+              <ExternalLink className={`w-3.5 h-3.5 ${(c.portfolio || c.portfolio_url) ? 'text-lia-text-secondary' : 'text-lia-text-muted'}`} />
             </a>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">Portfolio</TooltipContent>

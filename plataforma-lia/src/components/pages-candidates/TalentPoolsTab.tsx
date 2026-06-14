@@ -75,7 +75,7 @@ export default function TalentPoolsTab({ onSelectPool, openPoolId, onClosePool }
       {activePools.length === 0 ? (
         <Card className={cardStyles.flat}>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Database className="w-12 h-12 text-lia-text-disabled mb-3" />
+            <Database className="w-12 h-12 text-lia-text-muted mb-3" />
             <p className={textStyles.body}>Nenhum banco de talentos criado</p>
             <p className={textStyles.caption}>
               Crie um banco para captar candidatos de forma contínua.

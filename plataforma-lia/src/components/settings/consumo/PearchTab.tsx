@@ -90,29 +90,29 @@ export function PearchTab() {
             <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-lia-text-tertiary">Buscas realizadas</p>
-                <Search className="w-3.5 h-3.5 text-lia-text-disabled" />
+                <Search className="w-3.5 h-3.5 text-lia-text-muted" />
               </div>
               <p className="text-2xl font-semibold text-lia-text-primary tabular-nums">
                 {totalSearches.toLocaleString("pt-BR")}
               </p>
-              <p className="text-xs text-lia-text-disabled mt-1">Últimos {days} dias</p>
+              <p className="text-xs text-lia-text-muted mt-1">Últimos {days} dias</p>
             </div>
 
             <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-lia-text-tertiary">Créditos utilizados</p>
-                <BarChart3 className="w-3.5 h-3.5 text-lia-text-disabled" />
+                <BarChart3 className="w-3.5 h-3.5 text-lia-text-muted" />
               </div>
               <p className="text-2xl font-semibold text-lia-text-primary tabular-nums">
                 {creditsUsed.toLocaleString("pt-BR")}
               </p>
-              <p className="text-xs text-lia-text-disabled mt-1">créditos</p>
+              <p className="text-xs text-lia-text-muted mt-1">créditos</p>
             </div>
 
             <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-lia-text-tertiary">Taxa de sucesso</p>
-                <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-disabled" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-muted" />
               </div>
               {successRate !== null ? (
                 <>
@@ -127,7 +127,7 @@ export function PearchTab() {
                   </div>
                 </>
               ) : (
-                <p className="text-2xl font-semibold text-lia-text-disabled">—</p>
+                <p className="text-2xl font-semibold text-lia-text-tertiary">—</p>
               )}
             </div>
 
@@ -135,12 +135,12 @@ export function PearchTab() {
               <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs text-lia-text-tertiary">Custo estimado</p>
-                  <DollarSign className="w-3.5 h-3.5 text-lia-text-disabled" />
+                  <DollarSign className="w-3.5 h-3.5 text-lia-text-muted" />
                 </div>
                 <p className="text-2xl font-semibold text-lia-text-primary tabular-nums">
                   {costBrl.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                 </p>
-                <p className="text-xs text-lia-text-disabled mt-1">no período</p>
+                <p className="text-xs text-lia-text-muted mt-1">no período</p>
               </div>
             )}
           </div>

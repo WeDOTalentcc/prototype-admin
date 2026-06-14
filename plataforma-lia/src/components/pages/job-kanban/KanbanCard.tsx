@@ -128,7 +128,7 @@ export const KanbanCard = React.memo(function KanbanCard({
             <Star className="h-3 w-3 text-status-warning fill-amber-500" />
           )}
           {item.flagNotes && (
-            <MessageSquare className="h-3 w-3 text-lia-text-disabled" />
+            <MessageSquare className="h-3 w-3 text-lia-text-muted" />
           )}
           {item.flagStaleTooltip && (
             <Tooltip>
@@ -203,7 +203,7 @@ export const KanbanCard = React.memo(function KanbanCard({
             className="opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none cursor-grab"
             data-testid="drag-handle"
           >
-            <GripVertical className="h-4 w-4 text-lia-text-disabled" />
+            <GripVertical className="h-4 w-4 text-lia-text-muted" />
           </div>
         )}
 

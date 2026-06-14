@@ -159,7 +159,7 @@ export function SortableStageCard({
               <GripVertical className="h-5 w-5 text-lia-text-tertiary" />
             </button>
           ) : (
-            <div className="mt-1 p-1"><Lock className="h-5 w-5 text-lia-text-disabled" /></div>
+            <div className="mt-1 p-1"><Lock className="h-5 w-5 text-lia-text-muted" /></div>
           )}
 
           <div className="flex-1 space-y-3">

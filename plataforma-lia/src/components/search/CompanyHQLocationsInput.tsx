@@ -148,7 +148,7 @@ export function CompanyHQLocationsInput({
               disabled={disabled}
             >
               <span>{currentTimeOption?.label}</span>
-              <ChevronDown className={cn("w-3.5 h-3.5", disabled ?"text-lia-text-disabled" :"text-lia-text-tertiary")} />
+              <ChevronDown className={cn("w-3.5 h-3.5", disabled ?"text-lia-text-muted" :"text-lia-text-tertiary")} />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="start">
@@ -198,7 +198,7 @@ export function CompanyHQLocationsInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className={cn("absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4", disabled ?"text-lia-text-disabled" :"text-lia-text-tertiary")} />
+          <Search className={cn("absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4", disabled ?"text-lia-text-muted" :"text-lia-text-tertiary")} />
           <Input
             ref={inputRef}
             value={inputValue}

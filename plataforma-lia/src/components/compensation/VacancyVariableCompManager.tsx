@@ -291,7 +291,7 @@ export function VacancyVariableCompManager({ value, onChange, editable = true, s
 
       {records.length === 0 ? (
         <div className="rounded-md border border-dashed border-lia-border-default p-6 text-center">
-          <Coins className="w-5 h-5 mx-auto text-lia-text-disabled mb-2" />
+          <Coins className="w-5 h-5 mx-auto text-lia-text-muted mb-2" />
           <p className="text-sm text-lia-text-secondary">Nenhuma verba variável no catálogo da empresa ainda.</p>
           {editable && <Button size="sm" variant="outline" onClick={() => openCreate()} className="mt-3 gap-1.5 text-xs"><Plus className="w-3.5 h-3.5" />Adicionar verba</Button>}
         </div>

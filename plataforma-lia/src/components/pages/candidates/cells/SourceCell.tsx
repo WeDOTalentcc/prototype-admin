@@ -51,7 +51,7 @@ export function renderSourceCell(candidate: Candidate, t?: TranslateFn): React.R
             {isLocal ? (
               <Home className="w-3.5 h-3.5" />
             ) : (
-              <Globe className="w-3.5 h-3.5 text-lia-text-disabled" />
+              <Globe className="w-3.5 h-3.5 text-lia-text-muted" />
             )}
             {sourceInfo.label}
           </div>

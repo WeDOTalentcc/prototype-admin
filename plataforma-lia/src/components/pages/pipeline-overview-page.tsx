@@ -943,7 +943,7 @@ export function PipelineOverviewPage() {
                     <span className="text-sm font-semibold text-lia-text-primary">
                       {selectedStageData?.display_name}
                     </span>
-                    <span className="text-xs text-lia-text-disabled">
+                    <span className="text-xs text-lia-text-muted">
                       {selectedStageData?.count ?? 0} candidato
                       {(selectedStageData?.count ?? 0) !== 1 ? "s" : ""}
                     </span>
@@ -963,7 +963,7 @@ export function PipelineOverviewPage() {
                     ) : null}
                     <button
                       onClick={() => setSelectedStage(null)}
-                      className="text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors"
+                      className="text-xs text-lia-text-muted hover:text-lia-text-secondary transition-colors"
                     >
                       Fechar
                     </button>
@@ -972,7 +972,7 @@ export function PipelineOverviewPage() {
 
                 <div className="flex-1 overflow-y-auto px-6 py-3">
                   {allCandidates.length === 0 && (selectedStageData?.count ?? 0) === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-disabled">
+                    <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-muted">
                       <Users className="w-8 h-8 opacity-30" />
                       <p className="text-sm">Nenhum candidato nesta etapa</p>
                     </div>
@@ -1009,7 +1009,7 @@ export function PipelineOverviewPage() {
                       )}
 
                       {(selectedStageData?.count ?? 0) > allCandidates.length && allCandidates.length > 0 && (
-                        <p className="mt-3 text-center text-xs text-lia-text-disabled">
+                        <p className="mt-3 text-center text-xs text-lia-text-muted">
                           Exibindo {allCandidates.length} de {selectedStageData?.count} candidatos nesta etapa
                         </p>
                       )}
@@ -1079,7 +1079,7 @@ export function PipelineOverviewPage() {
                             )
                           : ""}
                       </span>
-                      <span className="text-xs text-lia-text-disabled">
+                      <span className="text-xs text-lia-text-muted">
                         {tOverview("vacancyCard.candidatesCount", {
                           count: selectedLifecycleStageData?.count ?? 0,
                         })}
@@ -1087,7 +1087,7 @@ export function PipelineOverviewPage() {
                     </div>
                     <button
                       onClick={() => setSelectedLifecycleStage(null)}
-                      className="text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors"
+                      className="text-xs text-lia-text-muted hover:text-lia-text-secondary transition-colors"
                     >
                       {tOverview("close")}
                     </button>
@@ -1100,7 +1100,7 @@ export function PipelineOverviewPage() {
                           onImport={() => setShowBulkImportModal(true)}
                         />
                       ) : (
-                        <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-disabled">
+                        <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-muted">
                           <Briefcase className="w-8 h-8 opacity-30" />
                           <p className="text-sm">{tOverview("empty.noVacancies")}</p>
                         </div>
@@ -1582,7 +1582,7 @@ function PipelineCandidateCard({
         </div>
 
         {(shortVacancyId || candidate.vacancy_manager || openDateLabel) && (
-          <div className="flex items-center gap-2 text-[10px] text-lia-text-disabled mt-0.5">
+          <div className="flex items-center gap-2 text-[10px] text-lia-text-muted mt-0.5">
             {shortVacancyId && (
               <span className="font-mono font-medium text-lia-text-secondary">{shortVacancyId}</span>
             )}
@@ -1849,7 +1849,7 @@ function PipelineVacancyCard({ vacancy, stageKey, stageColor, onOpenPreview }: P
         </div>
 
         {(shortVacancyId || vacancy.manager || updatedLabel) && (
-          <div className="flex items-center gap-2 text-[10px] text-lia-text-disabled mt-0.5">
+          <div className="flex items-center gap-2 text-[10px] text-lia-text-muted mt-0.5">
             {shortVacancyId && (
               <span className="font-mono font-medium text-lia-text-secondary">
                 {shortVacancyId}

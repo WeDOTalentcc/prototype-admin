@@ -185,14 +185,14 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                     return (
                       <div key={block.id} className={`px-3 py-2 rounded-md ${isAutomatic ? 'bg-lia-bg-secondary/50 border border-lia-border-subtle' : totalBlockCount > 0 ? 'bg-lia-bg-primary border border-lia-border-subtle' : 'bg-lia-bg-primary border border-lia-border-subtle border-dashed/50'}`}>
                         <div className="flex items-center gap-2">
-                          <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-lia-bg-tertiary' : 'text-lia-text-disabled'}`}>{block.id}</span>
+                          <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-lia-bg-tertiary' : 'text-lia-text-tertiary'}`}>{block.id}</span>
                           <span className={`text-xs font-medium ${isAutomatic ? 'text-lia-text-tertiary' : 'text-lia-text-primary'}`}>{block.name}</span>
                           {isAutomatic ? (
                             <span className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary rounded-full font-medium uppercase tracking-wide">Automático</span>
                           ) : totalBlockCount > 0 ? (
                             <span className="text-micro text-lia-text-tertiary">({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
                           ) : (
-                            <span className="text-micro text-lia-text-disabled italic">Nenhuma pergunta</span>
+                            <span className="text-micro text-lia-text-muted italic">Nenhuma pergunta</span>
                           )}
                         </div>
                         {block.id === 2 && (
@@ -215,11 +215,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                             <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg px-2.5 py-2">
                               <p className="text-micro text-lia-text-secondary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</p>
                             </div>
-                            <p className="text-micro text-lia-text-disabled mt-1 italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
+                            <p className="text-micro text-lia-text-muted mt-1 italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
                           </div>
                         )}
                         {isAutomatic && !WSI_AUTOMATIC_MESSAGES[block.id] && (
-                          <p className="text-micro text-lia-text-disabled ml-7 mt-0.5">{block.description}</p>
+                          <p className="text-micro text-lia-text-muted ml-7 mt-0.5">{block.description}</p>
                         )}
                       </div>
                     )

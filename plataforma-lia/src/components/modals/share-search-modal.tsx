@@ -427,7 +427,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                           key={recipient.id} 
                           className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle"
                         >
-                          <Mail className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
+                          <Mail className="w-3 h-3 text-lia-text-muted flex-shrink-0" />
                           <span className="text-xs text-lia-text-secondary truncate flex-1">
                             {recipient.email}
                           </span>
@@ -660,7 +660,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                   </div>
 
                   <div className="border-t border-lia-border-subtle px-5 py-3">
-                    <p className="text-micro text-lia-text-disabled text-center">
+                    <p className="text-micro text-lia-text-muted text-center">
                       Powered by WeDoTalent · Política de Privacidade
                     </p>
                   </div>

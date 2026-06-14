@@ -266,7 +266,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium" aria-live="polite" aria-atomic="true">Ir para Resultados</p>
-                  <p className="text-xs text-lia-text-disabled">Buscar direto na tabela expandida</p>
+                  <p className="text-xs text-lia-text-muted">Buscar direto na tabela expandida</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

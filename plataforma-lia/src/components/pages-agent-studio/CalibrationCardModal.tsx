@@ -247,7 +247,7 @@ export default function CalibrationCardModal({
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-96 gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-lia-text-disabled" />
+            <Loader2 className="w-8 h-8 animate-spin text-lia-text-muted" />
             <p className={textStyles.caption}>{t('loadingProfiles')}</p>
           </div>
         ) : loadError ? (

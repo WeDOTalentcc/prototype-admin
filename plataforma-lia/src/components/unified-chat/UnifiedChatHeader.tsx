@@ -227,7 +227,7 @@ export function UnifiedChatHeader({
         <span className={cn("text-sm font-medium text-lia-text-primary truncate", maxWidthClass)}>
           {title}
         </span>
-        <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover:text-lia-text-secondary flex-shrink-0" />
+        <ChevronDown className="w-3 h-3 text-lia-text-muted group-hover:text-lia-text-secondary flex-shrink-0" />
       </button>
       {optionsAnchor === "title" && renderConversationMenu("left")}
     </div>

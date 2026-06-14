@@ -110,7 +110,7 @@ export function OutreachCard({ data }: Props) {
 
       {/* VoIP extra info */}
       {/*
-        A-09 / WCAG 2.1 AA 1.4.3: previously `text-[10px] text-lia-text-disabled`
+        A-09 / WCAG 2.1 AA 1.4.3: previously `text-[10px] text-lia-text-muted`
         (~9 px after Tailwind base, ~2.85:1 contrast). Promoted to `text-xs`
         (12 px) and `text-lia-text-secondary` (#6B7280, ≥4.5:1 on white).
       */}
@@ -188,7 +188,7 @@ function WhatsAppContent({
   return (
     <div className="space-y-1">
       {/* A-09 / WCAG 2.1 AA 1.4.3: phone & template promoted from
-          `text-[10px] text-lia-text-disabled` to `text-xs text-lia-text-secondary`. */}
+          `text-[10px] text-lia-text-muted` to `text-xs text-lia-text-secondary`. */}
       {phone && (
         <p className="text-xs text-lia-text-secondary">{phone}</p>
       )}
@@ -210,7 +210,7 @@ function ScriptContent({ script, duration }: { script?: string[]; duration?: str
   return (
     <div className="space-y-1">
       {/* A-09 / WCAG 2.1 AA 1.4.3: duration & step counters promoted from
-          `text-[10px] text-lia-text-disabled` to `text-xs text-lia-text-secondary`. */}
+          `text-[10px] text-lia-text-muted` to `text-xs text-lia-text-secondary`. */}
       {duration && (
         <p className="text-xs text-lia-text-secondary">
           Duração estimada: {duration}

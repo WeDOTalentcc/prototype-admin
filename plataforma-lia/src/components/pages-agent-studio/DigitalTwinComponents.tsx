@@ -330,7 +330,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
                     ))}
                   </div>
                 </div>
-                <p className="text-[11px] italic text-lia-text-disabled">
+                <p className="text-[11px] italic text-lia-text-muted">
                   <Info className="w-3 h-3 inline mr-1" />
                   {t("preview.reasoningInferred")}
                 </p>

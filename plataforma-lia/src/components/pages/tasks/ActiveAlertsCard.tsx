@@ -120,7 +120,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
 
           {activeAlerts.length === 0 && (
             <div className="text-center py-8">
-              <Bell className="w-12 h-12 mx-auto text-lia-text-disabled mb-3" />
+              <Bell className="w-12 h-12 mx-auto text-lia-text-muted mb-3" />
               <p className="text-sm font-medium text-lia-text-primary mb-1">Nenhum alerta ativo</p>
               <p className="text-xs text-lia-text-secondary">Sem alertas no momento</p>
             </div>

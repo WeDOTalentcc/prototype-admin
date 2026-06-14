@@ -69,7 +69,7 @@ export function ArchetypeScopeButtons({
               className="!animate-none !duration-0"
             >
               <p className="text-xs font-medium">Seu banco de talentos</p>
-              <p className="text-xs text-lia-text-disabled">Gratuito • Local</p>
+              <p className="text-xs text-lia-text-muted">Gratuito • Local</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -101,7 +101,7 @@ export function ArchetypeScopeButtons({
                 className="!animate-none !duration-0"
               >
                 <p className="text-xs font-medium">Expanda sua busca</p>
-                <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Local + Global • 1 cred + $0.01 Apify/cand</p>
+                <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">Local + Global • 1 cred + $0.01 Apify/cand</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -134,7 +134,7 @@ export function ArchetypeScopeButtons({
                 className="!animate-none !duration-0"
               >
                 <p className="text-xs font-medium">Alcance global</p>
-                <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 cred + $0.01 Apify/cand</p>
+                <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 cred + $0.01 Apify/cand</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -170,7 +170,7 @@ export function ArchetypeScopeButtons({
                     className="!animate-none !duration-0"
                   >
                     <p className="text-xs font-medium">Apenas com Email</p>
-                    <p className="text-xs text-lia-text-disabled">
+                    <p className="text-xs text-lia-text-muted">
                       {requireEmails ? "Ativo ($0.01/cand)" : "Clique para ativar ($0.01/cand)"}
                     </p>
                   </TooltipContent>
@@ -203,7 +203,7 @@ export function ArchetypeScopeButtons({
                     className="!animate-none !duration-0"
                   >
                     <p className="text-xs font-medium">Apenas com Telefone</p>
-                    <p className="text-xs text-lia-text-disabled">
+                    <p className="text-xs text-lia-text-muted">
                       {requirePhoneNumbers ? "Ativo ($0.01/cand)" : "Clique para ativar ($0.01/cand)"}
                     </p>
                   </TooltipContent>
@@ -237,7 +237,7 @@ export function ArchetypeScopeButtons({
               className="!animate-none !duration-0"
             >
               <p className="text-xs font-medium">Buscar Arquétipo</p>
-              <p className="text-xs text-lia-text-disabled">Encontra perfis similares ao arquétipo</p>
+              <p className="text-xs text-lia-text-muted">Encontra perfis similares ao arquétipo</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

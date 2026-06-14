@@ -84,19 +84,19 @@ export function ActivateOptionsStep({
           <div className="flex items-center space-x-2">
             <Checkbox id="resumeScreening" checked={resumeScreening} onCheckedChange={(c) => onResumeScreeningChange(c === true)} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
             <Label htmlFor="resumeScreening" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-              <Filter className="w-3 h-3 text-lia-text-disabled" />Retomar triagens pausadas
+              <Filter className="w-3 h-3 text-lia-text-muted" />Retomar triagens pausadas
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox id="republish" checked={republish} onCheckedChange={(c) => onRepublishChange(c === true)} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
             <Label htmlFor="republish" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-              <Megaphone className="w-3 h-3 text-lia-text-disabled" />Republicar em job boards
+              <Megaphone className="w-3 h-3 text-lia-text-muted" />Republicar em job boards
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox id="updateDeadlines" checked={updateDeadlines} onCheckedChange={(c) => onUpdateDeadlinesChange(c === true)} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
             <Label htmlFor="updateDeadlines" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-lia-text-disabled" />Atualizar deadlines (+15 dias)
+              <Calendar className="w-3 h-3 text-lia-text-muted" />Atualizar deadlines (+15 dias)
             </Label>
           </div>
         </div>
@@ -107,13 +107,13 @@ export function ActivateOptionsStep({
         <div className="flex items-center space-x-2">
           <Checkbox id="notifyRecruitersActivate" checked={notifyRecruiters} onCheckedChange={(c) => onNotifyRecruitersChange(c === true)} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
           <Label htmlFor="notifyRecruitersActivate" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-            <Megaphone className="w-3 h-3 text-lia-text-disabled" />Notificar recrutadores
+            <Megaphone className="w-3 h-3 text-lia-text-muted" />Notificar recrutadores
           </Label>
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox id="notifyApplicantsActivate" checked={notifyApplicants} onCheckedChange={(c) => onNotifyApplicantsChange(c === true)} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
           <Label htmlFor="notifyApplicantsActivate" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-            <Mail className="w-3 h-3 text-lia-text-disabled" />Notificar candidatos sobre retomada
+            <Mail className="w-3 h-3 text-lia-text-muted" />Notificar candidatos sobre retomada
           </Label>
         </div>
       </div>

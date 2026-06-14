@@ -31,7 +31,7 @@ export function JobsTable({
 }: JobsTableProps) {
   const getSortIcon = (column: JobSortConfig['column']) => {
     if (sortConfig.column !== column) {
-      return <ArrowUpDown className="h-4 w-4 text-lia-text-disabled" />
+      return <ArrowUpDown className="h-4 w-4 text-lia-text-muted" />
     }
     return sortConfig.direction ==="asc"
       ? <ArrowUp className="h-4 w-4 text-lia-text-primary" />
@@ -167,11 +167,11 @@ export function JobsTable({
               </td>
               <td className="p-4 text-center">
                 <div className="flex items-center justify-center gap-1">
-                  <Users className="h-4 w-4 text-lia-text-disabled" />
+                  <Users className="h-4 w-4 text-lia-text-muted" />
                   <span className="text-lia-text-primary font-medium">{job.candidatesCount}</span>
                 </div>
                 {job.applicationsCount > 0 && (
-                  <div className="text-xs text-lia-text-disabled mt-0.5">
+                  <div className="text-xs text-lia-text-muted mt-0.5">
                     {job.applicationsCount} novos
                   </div>
                 )}
@@ -181,7 +181,7 @@ export function JobsTable({
               </td>
               <td className="p-4">
                 <div className="flex items-center gap-1 text-lia-text-secondary">
-                  <Clock className="h-4 w-4 text-lia-text-disabled" />
+                  <Clock className="h-4 w-4 text-lia-text-muted" />
                   {job.daysOpen || 0} dias
                 </div>
               </td>
@@ -193,7 +193,7 @@ export function JobsTable({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-lia-text-disabled hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                          className="h-8 w-8 text-lia-text-muted hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                           onClick={() => onAction("view_candidates", job)}
                         >
                           <Eye className="h-4 w-4" />
@@ -207,7 +207,7 @@ export function JobsTable({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-lia-text-disabled hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                          className="h-8 w-8 text-lia-text-muted hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                           onClick={() => onAction("edit", job)}
                         >
                           <Edit className="h-4 w-4" />
@@ -221,7 +221,7 @@ export function JobsTable({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-lia-text-disabled hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                          className="h-8 w-8 text-lia-text-muted hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                           onClick={() => onAction("duplicate", job)}
                         >
                           <Copy className="h-4 w-4" />
@@ -236,7 +236,7 @@ export function JobsTable({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-lia-text-disabled hover:text-wedo-orange"
+                            className="h-8 w-8 text-lia-text-muted hover:text-wedo-orange"
                             onClick={() => onAction("pause", job)}
                           >
                             <Pause className="h-4 w-4" />
@@ -252,7 +252,7 @@ export function JobsTable({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-lia-text-disabled hover:text-status-error"
+                            className="h-8 w-8 text-lia-text-muted hover:text-status-error"
                             onClick={() => onAction("close", job)}
                           >
                             <XCircle className="h-4 w-4" />

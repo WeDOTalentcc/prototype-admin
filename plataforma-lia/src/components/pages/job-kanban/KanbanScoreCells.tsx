@@ -56,7 +56,7 @@ export function renderScoreCell(
           title={hasNotaGeral ? t('clickDetails') : t('notEvaluated')}
         >
           <Gauge className={`w-3.5 h-3.5 ${hasNotaGeral ? 'text-lia-btn-primary-bg' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
-          <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
+          <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-lia-text-primary' : 'text-lia-text-tertiary'}`}>
             {hasNotaGeral ? ranking : '—'}
           </span>
         </div>
@@ -81,8 +81,8 @@ export function renderScoreCell(
           }}
           title={isDegraded ? degradedTooltip : (hasTriagem ? t('clickLIAScreening') : t('notEvaluated'))}
         >
-          <Brain className={`w-3.5 h-3.5 ${hasTriagem ? 'text-wedo-cyan' : 'text-lia-text-disabled'}`} strokeWidth={2} />
-          <span className={`text-xs font-semibold ${hasTriagem ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
+          <Brain className={`w-3.5 h-3.5 ${hasTriagem ? 'text-wedo-cyan' : 'text-lia-text-muted'}`} strokeWidth={2} />
+          <span className={`text-xs font-semibold ${hasTriagem ? 'text-lia-text-primary' : 'text-lia-text-tertiary'}`}>
             {hasTriagem ? formatScorePercent(triagemValue as number, 0) : '—'}
           </span>
           {isDegraded && (
@@ -111,7 +111,7 @@ export function renderScoreCell(
           title={hasFitScore ? t('clickCVAnalysis') : t('notEvaluated')}
         >
           <Target className={`w-3.5 h-3.5 ${hasFitScore ? 'text-lia-btn-primary-bg' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
-          <span className={`text-xs font-semibold ${hasFitScore ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
+          <span className={`text-xs font-semibold ${hasFitScore ? 'text-lia-text-primary' : 'text-lia-text-tertiary'}`}>
             {hasFitScore ? formatScorePercent(fitValue as number, 0) : '—'}
           </span>
         </div>
@@ -184,7 +184,7 @@ export function renderScoreCell(
           title={hasBigFive ? t('clickBigFiveReport') : t('notCompleted')}
         >
           <Fingerprint className={`w-3.5 h-3.5 ${hasBigFive ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} strokeWidth={2} />
-          <span className={`text-xs font-semibold ${hasBigFive ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
+          <span className={`text-xs font-semibold ${hasBigFive ? 'text-lia-text-primary' : 'text-lia-text-tertiary'}`}>
             {hasBigFive && bigFiveAvg !== null ? bigFiveAvg : '—'}
           </span>
         </div>

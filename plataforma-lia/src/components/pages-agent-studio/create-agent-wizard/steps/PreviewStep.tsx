@@ -78,13 +78,13 @@ export function PreviewStep({ goal, approach, config, aiPreview }: PreviewStepPr
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-lia-text-primary">{finalName}</p>
-            <p className="text-[11px] text-lia-text-disabled">{t(`approachLabels.${approach}`)}</p>
+            <p className="text-[11px] text-lia-text-muted">{t(`approachLabels.${approach}`)}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-2 text-xs">
           <div className="flex items-start gap-2">
-            <GoalIcon className="h-3.5 w-3.5 text-lia-text-disabled mt-0.5 shrink-0" aria-hidden="true" />
+            <GoalIcon className="h-3.5 w-3.5 text-lia-text-muted mt-0.5 shrink-0" aria-hidden="true" />
             <div className="min-w-0">
               <span className="text-lia-text-disabled">{t("preview.objectiveLabel")}:</span>{" "}
               <span className="text-lia-text-primary">{objectiveText}</span>
@@ -100,7 +100,7 @@ export function PreviewStep({ goal, approach, config, aiPreview }: PreviewStepPr
 
           {capabilities.length > 0 && (
             <div className="mt-1">
-              <p className="text-[10px] uppercase tracking-wide font-semibold text-lia-text-disabled">
+              <p className="text-[10px] uppercase tracking-wide font-semibold text-lia-text-tertiary">
                 {t("preview.whatItDoesLabel")}
               </p>
               <ul className="mt-1.5 space-y-1">
@@ -122,7 +122,7 @@ export function PreviewStep({ goal, approach, config, aiPreview }: PreviewStepPr
         </div>
       </div>
 
-      <p className="text-center text-[11px] text-lia-text-disabled">
+      <p className="text-center text-[11px] text-lia-text-muted">
         {t("preview.adjustLaterNote")}
       </p>
     </div>

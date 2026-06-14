@@ -264,8 +264,8 @@ export function AgentSandboxInline({ agent, onActivate }: AgentSandboxInlineProp
             className="flex flex-1 flex-col items-center justify-center rounded-md border border-dashed border-lia-border-subtle p-6 text-center"
             data-testid="sandbox-empty"
           >
-            <FlaskConical className="mb-2 h-6 w-6 text-lia-text-disabled" aria-hidden="true" />
-            <p className="text-xs text-lia-text-disabled">{t("emptyHint")}</p>
+            <FlaskConical className="mb-2 h-6 w-6 text-lia-text-muted" aria-hidden="true" />
+            <p className="text-xs text-lia-text-muted">{t("emptyHint")}</p>
           </div>
         ) : null}
 

@@ -84,7 +84,7 @@ export function SchedulingPanel({ data, onUpdateData }: SchedulingPanelProps) {
           <User className="w-3.5 h-3.5 text-lia-text-secondary" />
           <span className="text-xs font-medium text-lia-text-primary">{candidateName}</span>
         </div>
-        {jobTitle && <p className="text-micro text-lia-text-disabled ml-5">{jobTitle}</p>}
+        {jobTitle && <p className="text-micro text-lia-text-muted ml-5">{jobTitle}</p>}
       </div>
 
       {confirmed ? (

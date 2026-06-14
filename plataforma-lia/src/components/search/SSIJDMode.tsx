@@ -120,7 +120,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                         </p>
                       )}
                     </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-lia-text-disabled flex-shrink-0 mt-0.5" />
+                    <ChevronRight className="w-3.5 h-3.5 text-lia-text-muted flex-shrink-0 mt-0.5" />
                   </div>
                 </button>
               ))}
@@ -214,7 +214,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Seu banco de talentos</p>
-                  <p className="text-xs text-lia-text-disabled">Gratuito • Local</p>
+                  <p className="text-xs text-lia-text-muted">Gratuito • Local</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -238,7 +238,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Expanda sua busca</p>
-                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Local + Global • 1 cred + $0.01 Apify/cand</p>
+                    <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">Local + Global • 1 cred + $0.01 Apify/cand</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -263,7 +263,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Alcance global</p>
-                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 cred + $0.01 Apify/cand</p>
+                    <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 cred + $0.01 Apify/cand</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -289,7 +289,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Email</p>
-                      <p className="text-xs text-lia-text-disabled">{requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
+                      <p className="text-xs text-lia-text-muted">{requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -312,7 +312,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Telefone</p>
-                      <p className="text-xs text-lia-text-disabled">{requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
+                      <p className="text-xs text-lia-text-muted">{requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -340,7 +340,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Extrair e Buscar</p>
-                  <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Extrai requisitos e busca candidatos</p>
+                  <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">Extrai requisitos e busca candidatos</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

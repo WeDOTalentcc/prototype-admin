@@ -93,7 +93,7 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
               selecionar (antes, o exemplo so vivia no placeholder do textarea,
               que so aparecia pos-selecao: circular). */}
           <div className="rounded-md bg-lia-bg-tertiary/60 px-3 py-2">
-            <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-lia-text-disabled">
+            <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-lia-text-tertiary">
               {t("aiOptionExampleLabel")}
             </p>
             <p className="text-xs italic leading-relaxed text-lia-text-secondary">
@@ -112,7 +112,7 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
                 data-testid="ai-description-textarea"
                 className="resize-none"
               />
-              <p className="text-[11px] leading-relaxed text-lia-text-disabled">
+              <p className="text-[11px] leading-relaxed text-lia-text-muted">
                 {t("aiDescriptionHelper")}
               </p>
             </div>
@@ -133,7 +133,7 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
             </div>
           </div>
 
-          <p className="-mt-1 text-center text-[11px] text-lia-text-disabled">
+          <p className="-mt-1 text-center text-[11px] text-lia-text-muted">
             {t("templateSectionHint")}
           </p>
 
@@ -253,7 +253,7 @@ export function ApproachStep({ goal, approach, config, onSelect, setConfig }: Ap
               {t("createManualDescription")}
             </div>
           </div>
-          <FileText className="mt-1 h-4 w-4 shrink-0 text-lia-text-disabled" aria-hidden="true" />
+          <FileText className="mt-1 h-4 w-4 shrink-0 text-lia-text-muted" aria-hidden="true" />
         </CardContent>
       </Card>
     </div>

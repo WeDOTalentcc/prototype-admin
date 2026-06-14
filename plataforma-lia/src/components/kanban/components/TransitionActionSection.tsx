@@ -75,7 +75,7 @@ export function BatchRejectionSection({
             </span>
           )}
         </span>
-        <span className="flex items-center gap-1 text-micro text-lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-disabled transition-colors motion-reduce:transition-none">
+        <span className="flex items-center gap-1 text-micro text-lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-muted transition-colors motion-reduce:transition-none">
           {candidates.length} candidatos
           {showAllPerCandidate ? (
             <ChevronUp className="w-3.5 h-3.5" />

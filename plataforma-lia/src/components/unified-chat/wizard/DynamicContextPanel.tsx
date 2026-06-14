@@ -158,7 +158,7 @@ export function DynamicContextPanel({
         {onClose && (
           <button
             onClick={onClose}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-lia-text-disabled hover:text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-lia-text-muted hover:text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
             title="Minimizar painel"
           >
             <Minimize2 className="w-3.5 h-3.5" />

@@ -17,7 +17,7 @@ function ComingSoonSection({
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="rounded-lg bg-lia-bg-tertiary p-2 mt-0.5 flex-shrink-0">
-            <Icon className="h-4 w-4 text-lia-text-disabled" aria-hidden="true" />
+            <Icon className="h-4 w-4 text-lia-text-muted" aria-hidden="true" />
           </div>
           <div>
             <p className="text-sm font-medium text-lia-text-primary">{title}</p>

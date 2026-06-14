@@ -601,7 +601,7 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                     ))}
                   </div>
                   {unmappedHeaders.length > 0 && (
-                    <div className="text-xs text-lia-text-disabled mt-2">
+                    <div className="text-xs text-lia-text-muted mt-2">
                       Ignorados: {unmappedHeaders.join(", ")}
                     </div>
                   )}

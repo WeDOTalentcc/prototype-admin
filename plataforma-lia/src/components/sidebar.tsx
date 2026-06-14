@@ -395,8 +395,8 @@ const MenuItem = React.memo(({
               onClick={() => onNavigate(item.seeAllTarget!)}
               className="w-full flex items-center gap-2 px-2 py-1 rounded-md text-left transition-colors duration-200 hover:bg-lia-interactive-hover min-h-7"
             >
-              <MoreHorizontal className="w-3 h-3 flex-shrink-0 text-lia-text-disabled" />
-              <span className="text-xs text-lia-text-disabled hover:text-lia-text-secondary">
+              <MoreHorizontal className="w-3 h-3 flex-shrink-0 text-lia-text-muted" />
+              <span className="text-xs text-lia-text-muted hover:text-lia-text-secondary">
                 {item.seeAllLabel ? (miscLabelKeys[item.seeAllLabel] ? t(miscLabelKeys[item.seeAllLabel]) : item.seeAllLabel) : t("labels.seeAll")} ({item.subItems!.length})
               </span>
             </button>
@@ -497,7 +497,7 @@ const RecentItemRow = React.memo(({
         className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-150 p-0.5 rounded-md hover:bg-lia-interactive-active"
         title={t("labels.removeFromRecent")}
       >
-        <X className="w-3 h-3 text-lia-text-disabled" />
+        <X className="w-3 h-3 text-lia-text-muted" />
       </button>
     </div>
   )
@@ -724,7 +724,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           {menuSections.map((section, sectionIdx) => (
             <div key={section.label}>
               {shouldShowContent && (
-                <h3 className="text-[10px] font-semibold text-lia-text-disabled mb-1.5 tracking-[0.18em] uppercase px-2 opacity-70">
+                <h3 className="text-[10px] font-semibold text-lia-text-tertiary mb-1.5 tracking-[0.18em] uppercase px-2 opacity-70">
                   {sectionLabelKeys[section.label] ? t(sectionLabelKeys[section.label]) : section.label}
                 </h3>
               )}
@@ -766,7 +766,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             {recentItems.length >= 2 && onRecentItemsClear && (
               <button
                 onClick={onRecentItemsClear}
-                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none duration-200"
+                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-lia-text-muted hover:text-lia-text-secondary transition-colors motion-reduce:transition-none duration-200"
               >
                 <Trash2 className="w-3 h-3" />
                 {t("labels.clearRecentItems")}
@@ -907,7 +907,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
+                className="h-6 w-6 p-0 text-lia-text-muted hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
                 title="Mais opções"
                 onMouseEnter={() => setOverflowOpen(true)}
               >

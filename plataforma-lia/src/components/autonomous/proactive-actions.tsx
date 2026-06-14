@@ -237,7 +237,7 @@ export function ProactiveActions({
                           <span className="text-micro text-lia-text-secondary">
                             {action.action_type ? (ACTION_TYPE_LABELS[action.action_type] || action.action_type) : 'Ação'}
                           </span>
-                          <span className="text-micro text-lia-text-disabled">•</span>
+                          <span className="text-micro text-lia-text-muted">•</span>
                           <span className="text-micro text-lia-text-secondary">
                             {formatTimeAgo(action.created_at)}
                           </span>

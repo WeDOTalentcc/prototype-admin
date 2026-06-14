@@ -109,7 +109,7 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
                 </div>
               ))}
               {isTesting && (
-                <div className="flex items-center gap-2 text-xs text-lia-text-disabled">
+                <div className="flex items-center gap-2 text-xs text-lia-text-muted">
                   <Loader2 className="w-3 h-3 animate-spin" /> {t('processing')}
                 </div>
               )}
@@ -142,7 +142,7 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
             {/* Tools */}
             <div className={cn(cardStyles.flat, "p-3")}>
               <div className="flex items-center gap-1.5 mb-2">
-                <Wrench className="w-3.5 h-3.5 text-lia-text-disabled" />
+                <Wrench className="w-3.5 h-3.5 text-lia-text-muted" />
                 <span className="text-xs font-semibold text-lia-text-primary">{t('toolsCalled')}</span>
               </div>
               {lastResult?.tool_calls.length ? (
@@ -154,14 +154,14 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
                   ))}
                 </div>
               ) : (
-                <p className="text-[10px] text-lia-text-disabled">{t('noToolsCalled')}</p>
+                <p className="text-[10px] text-lia-text-muted">{t('noToolsCalled')}</p>
               )}
             </div>
 
             {/* Metrics */}
             <div className={cn(cardStyles.flat, "p-3")}>
               <div className="flex items-center gap-1.5 mb-2">
-                <BarChart3 className="w-3.5 h-3.5 text-lia-text-disabled" />
+                <BarChart3 className="w-3.5 h-3.5 text-lia-text-muted" />
                 <span className="text-xs font-semibold text-lia-text-primary">{t('metrics')}</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
@@ -183,14 +183,14 @@ export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
                 </div>
               </div>
               {lastResult?.model_used && (
-                <p className="text-[10px] text-lia-text-disabled mt-1">{t('model')}: {lastResult.model_used}</p>
+                <p className="text-[10px] text-lia-text-muted mt-1">{t('model')}: {lastResult.model_used}</p>
               )}
             </div>
 
             {/* Cost */}
             <div className={cn(cardStyles.flat, "p-3")}>
               <div className="flex items-center gap-1.5 mb-2">
-                <DollarSign className="w-3.5 h-3.5 text-lia-text-disabled" />
+                <DollarSign className="w-3.5 h-3.5 text-lia-text-muted" />
                 <span className="text-xs font-semibold text-lia-text-primary">{t('sessionUsage')}</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">

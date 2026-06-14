@@ -97,7 +97,7 @@ export function JobProcessStageCard({
                 <GripVertical className="w-4 h-4" />
               </button>
             ) : isEditing && isSystem ? (
-              <div className="p-1 shrink-0"><Lock className="w-4 h-4 text-lia-text-disabled" /></div>
+              <div className="p-1 shrink-0"><Lock className="w-4 h-4 text-lia-text-muted" /></div>
             ) : null}
             <div className="w-8 h-8 rounded-full bg-lia-btn-primary-bg flex items-center justify-center text-xs font-bold text-white shrink-0">
               {index + 1}
@@ -263,7 +263,7 @@ export function JobProcessStageCard({
                       </div>
                     </div>
                   )}
-                  <p className="text-micro text-lia-text-disabled">
+                  <p className="text-micro text-lia-text-muted">
                     {isSubOverridden
                       ? "Sub-status personalizado para esta vaga."
                       : "Herdado da empresa — editar em Configurações › Jornada de Recrutamento."}

@@ -229,7 +229,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Buscar Similares</p>
-                      <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Encontra candidatos com perfil similar</p>
+                      <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">Encontra candidatos com perfil similar</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -274,7 +274,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Buscar Similares</p>
-                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Encontra candidatos com perfil similar</p>
+                    <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">Encontra candidatos com perfil similar</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -320,7 +320,7 @@ function ScopeButton({ icon: Icon, active, activeColor, onClick, label, sublabel
         </TooltipTrigger>
         <TooltipContent side="bottom" className="!animate-none !duration-0">
           <p className="text-xs font-medium">{label}</p>
-          <p className="text-xs text-lia-text-disabled">{sublabel}</p>
+          <p className="text-xs text-lia-text-muted">{sublabel}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

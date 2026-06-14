@@ -480,7 +480,7 @@ export function TemplatesTab({
             ) : (
               <Card className="border-dashed border-2 border-lia-border-subtle dark:border-lia-border-subtle rounded-xl h-full flex items-center justify-center backdrop-blur-sm">
                 <CardContent className="text-center py-8">
-                  <Mail className="w-10 h-10 text-lia-text-disabled mx-auto mb-3" />
+                  <Mail className="w-10 h-10 text-lia-text-muted mx-auto mb-3" />
                   <p className="text-xs text-lia-text-secondary">{t("selectTemplate")}</p>
                 </CardContent>
               </Card>

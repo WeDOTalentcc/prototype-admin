@@ -51,7 +51,7 @@ export function CandidateReviewPanel({ data, onUpdateData }: CandidateReviewPane
           <Users className="w-4 h-4 text-wedo-cyan" />
           <span className="text-sm font-semibold text-lia-text-primary">Review de Candidatos</span>
         </div>
-        <span className="text-micro text-lia-text-disabled">
+        <span className="text-micro text-lia-text-muted">
           {totalReviewed}/{candidates.length} revisados
         </span>
       </div>
@@ -63,7 +63,7 @@ export function CandidateReviewPanel({ data, onUpdateData }: CandidateReviewPane
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
         {candidates.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center py-8">
-            <Users className="w-8 h-8 text-lia-text-disabled mb-2" />
+            <Users className="w-8 h-8 text-lia-text-muted mb-2" />
             <p className="text-sm text-lia-text-disabled">Nenhum candidato para revisão</p>
           </div>
         ) : (

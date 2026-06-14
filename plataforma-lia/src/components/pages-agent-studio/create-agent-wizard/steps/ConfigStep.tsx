@@ -67,7 +67,7 @@ export function ConfigStep({
           return (
             <div key={key} className="flex items-center justify-between gap-2 px-3 py-2">
               <div className="flex items-center gap-2 text-xs">
-                <Icon className="w-3.5 h-3.5 text-lia-text-disabled" aria-hidden="true" />
+                <Icon className="w-3.5 h-3.5 text-lia-text-muted" aria-hidden="true" />
                 <span className="text-lia-text-secondary">{label}</span>
               </div>
               <Switch
@@ -82,7 +82,7 @@ export function ConfigStep({
           )
         })}
       </div>
-      <p className="text-[11px] text-lia-text-disabled">
+      <p className="text-[11px] text-lia-text-muted">
         {t("channelsHelper") || "Voce pode ajustar os canais depois no card do agente."}
       </p>
     </div>
@@ -113,7 +113,7 @@ export function ConfigStep({
               <Zap className="h-4 w-4" aria-hidden="true" />
               Gerar configuração com {aiAssistantName}
             </Button>
-            <p className="text-[11px] text-lia-text-disabled">
+            <p className="text-[11px] text-lia-text-muted">
               Minimo 10 caracteres. Quanto mais detalhe, melhor o resultado.
             </p>
           </div>
@@ -161,7 +161,7 @@ export function ConfigStep({
                   Metadados internos escondidos: são detalhe de implementação. */}
               {summarizeCapabilities(aiPreview.suggested_tools ?? []).length > 0 && (
                 <div className="space-y-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-lia-text-disabled">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-lia-text-tertiary">
                     {t("capabilitiesLabel")}
                   </span>
                   <ul className="space-y-0.5">

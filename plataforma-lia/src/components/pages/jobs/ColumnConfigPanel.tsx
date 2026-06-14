@@ -114,7 +114,7 @@ export function ColumnConfigPanel({
                       onClick={() => deleteColumnView(view.id)}
                       className="h-5 w-5 p-0"
                     >
-                      <X className="w-3 h-3 text-lia-text-disabled" />
+                      <X className="w-3 h-3 text-lia-text-muted" />
                     </Button>
                   </div>
                 ))}

@@ -66,7 +66,7 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
         )}
         <ChevronDown
           className={cn(
-            "w-4 h-4 text-lia-text-disabled flex-shrink-0 transition-transform",
+            "w-4 h-4 text-lia-text-muted flex-shrink-0 transition-transform",
             expanded && "rotate-180",
           )}
           aria-hidden="true"

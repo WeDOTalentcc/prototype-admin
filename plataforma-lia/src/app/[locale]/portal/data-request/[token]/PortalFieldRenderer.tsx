@@ -87,7 +87,7 @@ export function PortalFieldRenderer({
   if (field.field_type === "file" || field.field_type === "photo") {
     return (
       <div className="space-y-2">
-        <Label className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled">
+        <Label className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-tertiary">
           {icon}
           {field.label}
           {field.required && <span className="text-status-error">*</span>}
@@ -115,7 +115,7 @@ export function PortalFieldRenderer({
             <div className="flex items-center gap-3 p-4 border border-lia-border-subtle rounded-xl">
               <FileText className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-secondary" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled truncate">{upload.file.name}</p>
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-tertiary truncate">{upload.file.name}</p>
                 <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">{(upload.file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
               <button type="button" onClick={() => onFileChange(field.name, null)} className="p-1 text-lia-text-tertiary dark:text-lia-text-secondary hover:text-status-error" aria-label="Remover arquivo">
@@ -126,13 +126,13 @@ export function PortalFieldRenderer({
             <div className="flex items-center gap-3 p-4 border border-status-success/30 bg-status-success/10 rounded-xl">
               <CheckCircle2 className="w-6 h-6 text-status-success" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled truncate">{completedFile.file_name || "Arquivo enviado"}</p>
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-tertiary truncate">{completedFile.file_name || "Arquivo enviado"}</p>
                 <p className="text-xs text-status-success">Arquivo já enviado</p>
               </div>
               <button
                 type="button"
                 onClick={() => { const input = document.getElementById(`file-${field.name}`) as HTMLInputElement; input?.click() }}
-                className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-disabled underline"
+                className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-muted underline"
               >
                 Substituir
               </button>
@@ -177,7 +177,7 @@ export function PortalFieldRenderer({
   if (field.field_type === "select" && field.options) {
     return (
       <div className="space-y-2">
-        <Label className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled">
+        <Label className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-tertiary">
           {icon}
           {field.label}
           {field.required && <span className="text-status-error">*</span>}
@@ -186,7 +186,7 @@ export function PortalFieldRenderer({
         <select
           value={value}
           onChange={(e) => onChange(field.name, e.target.value, field.field_type)}
-          className="flex h-10 w-full rounded-xl border border-lia-border-default bg-lia-bg-primary dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled dark:border-lia-border-medium px-3 py-2 text-sm focus:outline-none focus:border-lia-border-medium focus:ring-2 focus:ring-lia-border-subtle"
+          className="flex h-10 w-full rounded-xl border border-lia-border-default bg-lia-bg-primary dark:bg-lia-btn-primary-hover dark:text-lia-text-muted dark:border-lia-border-medium px-3 py-2 text-sm focus:outline-none focus:border-lia-border-medium focus:ring-2 focus:ring-lia-border-subtle"
         >
           <option value="">Selecione...</option>
           {field.options.map((opt) => (
@@ -205,7 +205,7 @@ export function PortalFieldRenderer({
   if (field.field_type === "textarea") {
     return (
       <div className="space-y-2">
-        <Label className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled">
+        <Label className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-tertiary">
           {icon}
           {field.label}
           {field.required && <span className="text-status-error">*</span>}
@@ -229,7 +229,7 @@ export function PortalFieldRenderer({
 
   return (
     <div className="space-y-2">
-      <Label className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled">
+      <Label className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-tertiary">
         {icon}
         {field.label}
         {field.required && <span className="text-status-error">*</span>}

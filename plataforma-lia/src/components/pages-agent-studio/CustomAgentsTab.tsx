@@ -182,7 +182,7 @@ export default function CustomAgentsTab() {
                         </span>
                       ))}
                       {agent.allowed_tools.length > 3 && (
-                        <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-micro text-lia-text-disabled">
+                        <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-micro text-lia-text-muted">
                           +{agent.allowed_tools.length - 3}
                         </span>
                       )}
@@ -192,15 +192,15 @@ export default function CustomAgentsTab() {
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">{agent.total_executions}</span>
-                      <span className="text-micro text-lia-text-disabled uppercase">{t('executions')}</span>
+                      <span className="text-micro text-lia-text-tertiary uppercase">{t('executions')}</span>
                     </div>
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">v{agent.version}</span>
-                      <span className="text-micro text-lia-text-disabled uppercase">{t('version')}</span>
+                      <span className="text-micro text-lia-text-tertiary uppercase">{t('version')}</span>
                     </div>
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">{agent.domain}</span>
-                      <span className="text-micro text-lia-text-disabled uppercase">{t('domain')}</span>
+                      <span className="text-micro text-lia-text-tertiary uppercase">{t('domain')}</span>
                     </div>
                   </div>
 
@@ -720,7 +720,7 @@ export function CreateCustomAgentModal({
                 if (groupTools.length === 0) return null
                 return (
                   <div key={group}>
-                    <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-disabled mb-1.5">
+                    <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-tertiary mb-1.5">
                       {t(CAPABILITY_GROUP_I18N[group])}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">

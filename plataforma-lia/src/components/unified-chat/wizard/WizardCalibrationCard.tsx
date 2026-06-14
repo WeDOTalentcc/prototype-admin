@@ -86,7 +86,7 @@ export function WizardCalibrationCard({ data }: { data: Record<string, unknown> 
         )}
         <ChevronDown
           className={cn(
-            "w-4 h-4 text-lia-text-disabled flex-shrink-0 transition-transform",
+            "w-4 h-4 text-lia-text-muted flex-shrink-0 transition-transform",
             expanded && "rotate-180",
           )}
           aria-hidden="true"
@@ -190,7 +190,7 @@ function InlineCandidateCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={candidate.avatar_url} alt={candidate.name} className="w-full h-full object-cover" />
           ) : (
-            <User className="w-3.5 h-3.5 text-lia-text-disabled" />
+            <User className="w-3.5 h-3.5 text-lia-text-muted" />
           )}
         </div>
         {/* Info */}

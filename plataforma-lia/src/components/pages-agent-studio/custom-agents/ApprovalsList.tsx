@@ -47,7 +47,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 py-4 text-xs text-lia-text-disabled">
+      <div className="flex items-center gap-2 py-4 text-xs text-lia-text-muted">
         <Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('loadingApprovals')}
       </div>
     )
@@ -56,7 +56,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
   if (approvals.length === 0) {
     return (
       <div className={cn(cardStyles.flat, "p-4 text-center")}>
-        <ShieldCheck className="w-6 h-6 text-lia-text-disabled mx-auto mb-1.5" />
+        <ShieldCheck className="w-6 h-6 text-lia-text-muted mx-auto mb-1.5" />
         <p className="text-xs text-lia-text-secondary">{t('noApprovals')}</p>
       </div>
     )
@@ -80,7 +80,7 @@ export function ApprovalsList({ onReviewed }: ApprovalsListProps) {
                 <p className="text-sm font-semibold text-lia-text-primary">
                   {approval.agent_name || t('agentFallback')}
                 </p>
-                <p className="text-[10px] text-lia-text-disabled">
+                <p className="text-[10px] text-lia-text-muted">
                   {t('requestedBy', { name: approval.requested_by })}
                 </p>
               </div>

@@ -85,7 +85,7 @@ export function AgentActivityCard({ activity }: AgentActivityCardProps) {
         ) : null}
       </div>
       {time ? (
-        <span className="text-[10px] text-lia-text-disabled flex-shrink-0 mt-0.5" aria-label={activity.completed_at || activity.started_at || ""}>
+        <span className="text-[10px] text-lia-text-muted flex-shrink-0 mt-0.5" aria-label={activity.completed_at || activity.started_at || ""}>
           {time}
         </span>
       ) : null}

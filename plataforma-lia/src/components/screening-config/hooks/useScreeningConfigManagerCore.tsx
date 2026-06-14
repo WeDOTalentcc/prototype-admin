@@ -88,16 +88,16 @@ function CompanyDefaultQuestions({
           )}
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-lia-text-disabled" />
+          <ChevronUp className="w-4 h-4 text-lia-text-muted" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-lia-text-disabled" />
+          <ChevronDown className="w-4 h-4 text-lia-text-muted" />
         )}
       </button>
 
       {isExpanded && (
         <div className="px-4 pb-4 space-y-2">
           {questions.length === 0 ? (
-            <p className="text-xs text-lia-text-disabled text-center py-4 italic">
+            <p className="text-xs text-lia-text-muted text-center py-4 italic">
               Nenhuma pergunta padrão configurada. Acesse <strong>Configurações → Perguntas Padrão</strong>.
             </p>
           ) : (

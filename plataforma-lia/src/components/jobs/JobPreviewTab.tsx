@@ -283,7 +283,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             {pipelineStages.map((stage, idx) => (
               <React.Fragment key={stage.id}>
                 {idx > 0 && (
-                  <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
+                  <ChevronRight className="w-3 h-3 text-lia-text-muted flex-shrink-0" />
                 )}
                 <div className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary border border-lia-border-subtle rounded-lg flex-shrink-0">
                   {stage.liaAssisted && (
@@ -304,7 +304,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
               .map((stage, idx) => (
                 <React.Fragment key={`stage-${idx}`}>
                   {idx > 0 && (
-                    <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
+                    <ChevronRight className="w-3 h-3 text-lia-text-muted flex-shrink-0" />
                   )}
                   <div className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary border border-lia-border-subtle rounded-lg flex-shrink-0">
                     {stage.liaAssisted && (

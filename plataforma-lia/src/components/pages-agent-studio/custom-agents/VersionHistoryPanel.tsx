@@ -55,7 +55,7 @@ export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: Ver
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 py-4 text-xs text-lia-text-disabled">
+      <div className="flex items-center gap-2 py-4 text-xs text-lia-text-muted">
         <Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('loadingHistory')}
       </div>
     )
@@ -64,9 +64,9 @@ export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: Ver
   if (versions.length === 0) {
     return (
       <div className={cn(cardStyles.flat, "p-4 text-center")}>
-        <History className="w-6 h-6 text-lia-text-disabled mx-auto mb-1.5" />
+        <History className="w-6 h-6 text-lia-text-muted mx-auto mb-1.5" />
         <p className="text-xs text-lia-text-secondary">{t('noVersions')}</p>
-        <p className="text-[10px] text-lia-text-disabled mt-1">{t('snapshotsAutoCreated')}</p>
+        <p className="text-[10px] text-lia-text-muted mt-1">{t('snapshotsAutoCreated')}</p>
       </div>
     )
   }
@@ -74,7 +74,7 @@ export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: Ver
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-1.5 mb-2">
-        <History className="w-3.5 h-3.5 text-lia-text-disabled" />
+        <History className="w-3.5 h-3.5 text-lia-text-muted" />
         <h4 className={cn(textStyles.subtitle, "text-xs font-semibold")}>
           {t('versionHistory')}
         </h4>
@@ -95,7 +95,7 @@ export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: Ver
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className={cn(badgeStyles.default, "text-[10px]")}>v{v.version}</span>
-                  <span className="text-[10px] text-lia-text-disabled">{date}</span>
+                  <span className="text-[10px] text-lia-text-muted">{date}</span>
                 </div>
                 {v.changed_fields.length > 0 && (
                   <p className="text-[10px] text-lia-text-secondary mt-0.5 truncate">
@@ -104,7 +104,7 @@ export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: Ver
                   </p>
                 )}
                 {v.change_reason && (
-                  <p className="text-[10px] text-lia-text-disabled italic mt-0.5 truncate">{v.change_reason}</p>
+                  <p className="text-[10px] text-lia-text-muted italic mt-0.5 truncate">{v.change_reason}</p>
                 )}
               </div>
               <button

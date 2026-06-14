@@ -166,7 +166,7 @@ export function SharedSearchesSection({
       ) : (
         <div className="flex flex-col items-center justify-center py-10 px-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl border border-dashed border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
-            <Link2 className="w-6 h-6 text-lia-text-disabled" />
+            <Link2 className="w-6 h-6 text-lia-text-muted" />
           </div>
           <p className="text-sm text-lia-text-secondary text-center max-w-sm">
             Nenhum compartilhamento. Compartilhe buscas ou listas com gestores para receber feedback.

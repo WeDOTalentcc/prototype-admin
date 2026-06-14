@@ -402,7 +402,7 @@ export function CreateAgentWizard({
           <DialogTitle className="text-base font-semibold text-lia-text-primary">
             {STEP_TITLES[step - 1]}
           </DialogTitle>
-          <DialogDescription className="text-xs text-lia-text-disabled" data-testid="wizard-step-indicator">
+          <DialogDescription className="text-xs text-lia-text-muted" data-testid="wizard-step-indicator">
             Etapa {step} de 4
           </DialogDescription>
         </DialogHeader>

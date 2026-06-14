@@ -150,13 +150,13 @@ export function ArchetypeCreateView({
                           </span>
                           {job.department && (
                             <>
-                              <span className="text-micro text-lia-text-disabled">•</span>
+                              <span className="text-micro text-lia-text-muted">•</span>
                               <span className="text-micro text-lia-text-tertiary">{job.department}</span>
                             </>
                           )}
                           {job.seniority_level && (
                             <>
-                              <span className="text-micro text-lia-text-disabled">•</span>
+                              <span className="text-micro text-lia-text-muted">•</span>
                               <span className="text-micro text-lia-text-tertiary">{job.seniority_level}</span>
                             </>
                           )}

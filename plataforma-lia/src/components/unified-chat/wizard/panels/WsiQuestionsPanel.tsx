@@ -395,9 +395,9 @@ function QuestionCard({
           </div>
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-lia-text-disabled flex-shrink-0 mt-1" />
+          <ChevronUp className="w-4 h-4 text-lia-text-muted flex-shrink-0 mt-1" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-lia-text-disabled flex-shrink-0 mt-1" />
+          <ChevronDown className="w-4 h-4 text-lia-text-muted flex-shrink-0 mt-1" />
         )}
       </div>
 

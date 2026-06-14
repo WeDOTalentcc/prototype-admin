@@ -461,7 +461,7 @@ export function VoiceChatButton({
         variant="ghost"
         size="icon"
         disabled
-        className={cn("h-8 w-8 text-lia-text-disabled focus-visible:ring-2 focus-visible:ring-lia-border-default", className)}
+        className={cn("h-8 w-8 text-lia-text-muted focus-visible:ring-2 focus-visible:ring-lia-border-default", className)}
         title="Chat por voz não disponível"
         aria-label="Chat por voz não disponível"
       >

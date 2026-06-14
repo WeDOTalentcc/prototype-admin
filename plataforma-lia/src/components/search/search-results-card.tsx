@@ -484,7 +484,7 @@ export function SearchResultsCard({
                     </div>
                   )}
 
-                  <ChevronRight className="h-5 w-5 text-lia-text-disabled" />
+                  <ChevronRight className="h-5 w-5 text-lia-text-muted" />
                 </div>
               </div>
             </TooltipProvider>

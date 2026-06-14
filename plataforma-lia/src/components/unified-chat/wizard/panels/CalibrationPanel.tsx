@@ -233,7 +233,7 @@ function CandidateCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={candidate.avatar_url} alt={candidate.name} className="w-full h-full object-cover" />
           ) : (
-            <User className="w-4 h-4 text-lia-text-disabled" />
+            <User className="w-4 h-4 text-lia-text-muted" />
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -296,7 +296,7 @@ function CandidateCard({
           candidate.decision === "approved" ? (
             <CheckCircle className="w-5 h-5 text-status-success flex-shrink-0" />
           ) : candidate.decision === "skipped" ? (
-            <Minus className="w-5 h-5 text-lia-text-disabled flex-shrink-0" />
+            <Minus className="w-5 h-5 text-lia-text-muted flex-shrink-0" />
           ) : (
             <XCircle className="w-5 h-5 text-status-error flex-shrink-0" />
           )
@@ -415,7 +415,7 @@ function CandidateCard({
                             {exp.start_date} – {exp.end_date ?? "Atual"}
                           </p>
                           {exp.duration_label && (
-                            <p className="text-[11px] text-lia-text-disabled">{exp.duration_label}</p>
+                            <p className="text-[11px] text-lia-text-muted">{exp.duration_label}</p>
                           )}
                         </div>
                       </div>

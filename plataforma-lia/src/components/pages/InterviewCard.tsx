@@ -168,7 +168,7 @@ export function InterviewCard({
           {renderCandidateInfo()}
 
           {variant === 'past' && interview.cancelReason && (
-            <p className="text-xs text-lia-text-disabled italic mt-1.5">
+            <p className="text-xs text-lia-text-muted italic mt-1.5">
               {interview.cancelReason}
             </p>
           )}

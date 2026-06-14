@@ -144,7 +144,7 @@ export function JobEditTab({
                       {isDone ? (
                         <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-status-success" />
                       ) : (
-                        <Circle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-disabled" />
+                        <Circle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-muted" />
                       )}
                     </button>
                   )
@@ -179,7 +179,7 @@ export function JobEditTab({
                       {isDone ? (
                         <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-status-success" />
                       ) : (
-                        <Circle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-disabled" />
+                        <Circle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-muted" />
                       )}
                     </button>
                   )

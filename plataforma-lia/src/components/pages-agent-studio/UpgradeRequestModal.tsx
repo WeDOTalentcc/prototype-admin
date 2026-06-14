@@ -134,7 +134,7 @@ export function UpgradeRequestModal({ isOpen, onClose, context }: UpgradeRequest
                 </option>
               ))}
             </select>
-            <p className="text-[10px] text-lia-text-disabled mt-0.5">
+            <p className="text-[10px] text-lia-text-muted mt-0.5">
               {t("requestedPlanHelp")}
             </p>
           </div>

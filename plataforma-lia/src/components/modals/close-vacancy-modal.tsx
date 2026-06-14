@@ -623,7 +623,7 @@ export function CloseVacancyModal({
                 <span className="font-medium">1</span>
                 <span className="hidden sm:inline">Parabéns</span>
               </div>
-              <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
+              <ChevronRight className="h-4 w-4 text-lia-text-muted" />
               <div
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',

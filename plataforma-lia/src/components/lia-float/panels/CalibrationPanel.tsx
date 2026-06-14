@@ -49,7 +49,7 @@ function EditableField({
       <div className="flex items-start gap-2 p-2 rounded-lg bg-lia-bg-secondary border border-wedo-cyan/30">
         <div className="mt-1.5 text-lia-text-secondary">{icon}</div>
         <div className="flex-1 min-w-0">
-          <p className="text-micro text-lia-text-disabled mb-1">{label}</p>
+          <p className="text-micro text-lia-text-muted mb-1">{label}</p>
           <input
             type="text"
             value={draft}
@@ -78,7 +78,7 @@ function EditableField({
     <div className="flex items-start gap-2 p-2 rounded-lg bg-lia-bg-secondary group">
       <div className="mt-0.5 text-lia-text-secondary">{icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-micro text-lia-text-disabled">{label}</p>
+        <p className="text-micro text-lia-text-muted">{label}</p>
         <p className="text-sm text-lia-text-primary truncate">{value}</p>
       </div>
       <button
@@ -150,7 +150,7 @@ export function CalibrationPanel({ data, onUpdateData }: CalibrationPanelProps) 
             style={{ width: `${poolPercent}%` }}
           />
         </div>
-        <p className="text-micro text-lia-text-disabled mt-1">
+        <p className="text-micro text-lia-text-muted mt-1">
           {poolPercent}% do alvo atingido
         </p>
       </div>
@@ -182,7 +182,7 @@ export function CalibrationPanel({ data, onUpdateData }: CalibrationPanelProps) 
                 <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-lia-bg-secondary">
                   <div className="mt-0.5 text-lia-text-secondary">{constraintIcons[c.label] || <Settings2 className="w-3.5 h-3.5" />}</div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-micro text-lia-text-disabled">{c.label}</p>
+                    <p className="text-micro text-lia-text-muted">{c.label}</p>
                     <p className="text-sm text-lia-text-primary truncate">{c.value}</p>
                   </div>
                 </div>
@@ -208,7 +208,7 @@ export function CalibrationPanel({ data, onUpdateData }: CalibrationPanelProps) 
               <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-lia-bg-secondary">
                 <div className="mt-0.5 text-lia-text-secondary">{constraintIcons[c.label] || <Code className="w-3.5 h-3.5" />}</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-micro text-lia-text-disabled">{c.label}</p>
+                  <p className="text-micro text-lia-text-muted">{c.label}</p>
                   <p className="text-sm text-lia-text-primary">{c.value}</p>
                 </div>
               </div>

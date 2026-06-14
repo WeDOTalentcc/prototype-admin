@@ -152,7 +152,7 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps) {
 
   if (agentChartData.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center text-sm text-lia-text-disabled">
+      <div className="flex h-64 items-center justify-center text-sm text-lia-text-muted">
         {t('empty')}
       </div>
     )

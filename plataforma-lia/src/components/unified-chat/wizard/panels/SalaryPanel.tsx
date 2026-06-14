@@ -84,7 +84,7 @@ export function SalaryPanel({ data, onUpdate }: Props) {
             <button
               data-testid="salary-adjust-btn"
               onClick={() => setIsAdjusting(true)}
-              className="flex items-center gap-1 text-[10px] text-lia-text-disabled hover:text-wedo-cyan transition-colors"
+              className="flex items-center gap-1 text-[10px] text-lia-text-muted hover:text-wedo-cyan transition-colors"
             >
               <Edit2 className="w-3 h-3" />
               Ajustar

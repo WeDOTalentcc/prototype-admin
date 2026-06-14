@@ -112,7 +112,7 @@ export function SchedulingPanel({ data, onApprove }: Props) {
                 )}
               />
             ))}
-            {/* A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-disabled`. */}
+            {/* A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-muted`. */}
             <span className="ml-auto text-xs text-lia-text-secondary">
               {currentIdx + 1}/{totalInterviews}
             </span>
@@ -138,7 +138,7 @@ export function SchedulingPanel({ data, onApprove }: Props) {
 
       {/* Duration + timezone selectors */}
       <div className="flex items-center gap-2 px-4 py-2 border-b border-lia-border-subtle">
-        <Clock className="w-3.5 h-3.5 text-lia-text-disabled flex-shrink-0" aria-hidden="true" />
+        <Clock className="w-3.5 h-3.5 text-lia-text-muted flex-shrink-0" aria-hidden="true" />
         <NativeSelect
           value={duration}
           onChange={setDuration}
@@ -159,7 +159,7 @@ export function SchedulingPanel({ data, onApprove }: Props) {
         <table className="w-full border-collapse text-xs">
           <thead>
             <tr>
-              <th className="w-12 pb-2 text-left text-lia-text-disabled font-normal" />
+              <th className="w-12 pb-2 text-left text-lia-text-muted font-normal" />
               {days.map((date) => {
                 const slot = slots.find((s) => s.date === date)
                 return (
@@ -226,7 +226,7 @@ export function SchedulingPanel({ data, onApprove }: Props) {
           <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
         {!selectedSlot && (
-          // A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-disabled`.
+          // A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-muted`.
           <p className="text-center text-xs text-lia-text-secondary mt-1.5">
             Selecione um horário para continuar
           </p>

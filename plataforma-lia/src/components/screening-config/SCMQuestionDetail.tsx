@@ -110,9 +110,9 @@ export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails
       {isDetailsExpanded && (
         <div className="mt-2 p-2.5 bg-lia-bg-secondary/50 border border-lia-border-subtle rounded-lg space-y-1.5 text-micro">
           <div className="flex gap-4 flex-wrap">
-            <div><span className="text-lia-text-disabled">Framework:</span><span className="ml-1 text-lia-text-secondary font-medium">{item.framework === 'Company' ? 'Empresa' : (item.block_id === 2 ? 'Empresa' : (item.framework || 'CBI'))}</span></div>
-            <div><span className="text-lia-text-disabled">Dreyfus:</span><span className="ml-1 text-lia-text-secondary font-medium">{item.block_id === 2 ? 'Padrão' : (item.dreyfus_label || '—')}</span></div>
-            <div><span className="text-lia-text-disabled">Tipo:</span><span className="ml-1 text-lia-text-secondary font-medium">{item.question_type === 'yes_no' ? 'Sim/Não' : item.question_type === 'open' ? 'Aberta' : item.question_type || 'Aberta'}</span></div>
+            <div><span className="text-lia-text-tertiary">Framework:</span><span className="ml-1 text-lia-text-secondary font-medium">{item.framework === 'Company' ? 'Empresa' : (item.block_id === 2 ? 'Empresa' : (item.framework || 'CBI'))}</span></div>
+            <div><span className="text-lia-text-tertiary">Dreyfus:</span><span className="ml-1 text-lia-text-secondary font-medium">{item.block_id === 2 ? 'Padrão' : (item.dreyfus_label || '—')}</span></div>
+            <div><span className="text-lia-text-tertiary">Tipo:</span><span className="ml-1 text-lia-text-secondary font-medium">{item.question_type === 'yes_no' ? 'Sim/Não' : item.question_type === 'open' ? 'Aberta' : item.question_type || 'Aberta'}</span></div>
           </div>
           {(item.expected_answer || (item.expected_signals && item.expected_signals.length > 0)) && (
             <div><span className="text-lia-text-disabled">Resposta esperada:</span><p className="text-lia-text-secondary mt-0.5">{item.expected_answer || item.expected_signals?.join(', ')}</p></div>

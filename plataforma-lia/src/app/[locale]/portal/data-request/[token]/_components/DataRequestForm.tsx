@@ -75,7 +75,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 text-status-error mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-disabled mb-2">Ops!</h1>
+            <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-tertiary mb-2">Ops!</h1>
             <p className="text-lia-text-secondary dark:text-lia-text-disabled">{errorMessage}</p>
           </CardContent>
         </Card>
@@ -89,7 +89,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 text-status-warning mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-disabled mb-2">Link Expirado</h1>
+            <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-tertiary mb-2">Link Expirado</h1>
             <p className="text-lia-text-secondary dark:text-lia-text-disabled">{errorMessage}</p>
             <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mt-4">
               Entre em contato com o recrutador para solicitar um novo link.
@@ -143,7 +143,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                           : "border-lia-border-subtle hover:border-lia-border-default"
                       }`}
                     >
-                      <Mail className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-disabled" />
+                      <Mail className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-muted" />
                       <div className="text-left">
                         <p className="text-sm font-medium">E-mail</p>
                         <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
@@ -187,7 +187,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={index === 0 ? handleOtpPaste : undefined}
-                        className="w-12 h-14 text-center text-2xl font-semibold border-2 border-lia-border-default dark:border-lia-border-medium rounded-xl focus:border-lia-border-medium focus:outline-none focus:ring-2 focus:ring-lia-border-subtle dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled"
+                        className="w-12 h-14 text-center text-2xl font-semibold border-2 border-lia-border-default dark:border-lia-border-medium rounded-xl focus:border-lia-border-medium focus:outline-none focus:ring-2 focus:ring-lia-border-subtle dark:bg-lia-btn-primary-hover dark:text-lia-text-tertiary"
                       />
                     ))}
                   </div>
@@ -259,7 +259,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
               >
                 <CheckCircle2 className="w-10 h-10" style={{color: primaryColor}} />
               </div>
-              <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-disabled mb-3">
+              <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-tertiary mb-3">
                 Obrigado!
               </h1>
               <p className="text-lia-text-secondary dark:text-lia-text-disabled mb-6">
@@ -271,7 +271,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                   <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary uppercase tracking-wider mb-1" aria-live="polite" aria-atomic="true">
                     Vaga
                   </p>
-                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-tertiary">
                     {portalData.vacancy_info.title}
                   </p>
                   {portalData.vacancy_info.department && (
@@ -331,7 +331,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
               <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary uppercase tracking-wider mb-1">
                 Preenchendo dados para
               </p>
-              <p className="text-base font-medium text-lia-text-primary dark:text-lia-text-disabled">
+              <p className="text-base font-medium text-lia-text-primary dark:text-lia-text-tertiary">
                 {portalData.vacancy_info.title}
               </p>
               {portalData.vacancy_info.department && (
@@ -452,7 +452,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                   href={portalData.branding.privacy_policy_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline hover:text-lia-text-primary dark:hover:text-lia-text-disabled"
+                  className="underline hover:text-lia-text-primary dark:hover:text-lia-text-muted"
                 >
                   Política de Privacidade
                 </a>
@@ -463,7 +463,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                       href={portalData.branding.terms_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline hover:text-lia-text-primary dark:hover:text-lia-text-disabled"
+                      className="underline hover:text-lia-text-primary dark:hover:text-lia-text-muted"
                     >
                       Termos de Uso
                     </a>

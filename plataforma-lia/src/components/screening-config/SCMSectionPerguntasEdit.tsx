@@ -297,13 +297,13 @@ export function SCMSectionPerguntasEdit({
                     {wsiSummaryTypingDone && (<>
                       <div className="space-y-1.5 pl-1">
                         {(wsiGenerationContext.blockBreakdown?.[2] || 0) > 0 && (
-                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[2]} perguntas de elegibilidade</span>, para validar aderência mínima ao cargo</p></div>
+                          <div className="flex items-start gap-2"><span className="text-lia-text-tertiary mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[2]} perguntas de elegibilidade</span>, para validar aderência mínima ao cargo</p></div>
                         )}
                         {(wsiGenerationContext.blockBreakdown?.[3] || 0) > 0 && (
-                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[3]} perguntas técnicas</span>, para investigar o nível de conhecimento e experiência prática</p></div>
+                          <div className="flex items-start gap-2"><span className="text-lia-text-tertiary mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[3]} perguntas técnicas</span>, para investigar o nível de conhecimento e experiência prática</p></div>
                         )}
                         {(wsiGenerationContext.blockBreakdown?.[4] || 0) > 0 && (
-                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[4]} perguntas comportamentais</span>, para explorar as competências exigidas para a vaga</p></div>
+                          <div className="flex items-start gap-2"><span className="text-lia-text-tertiary mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[4]} perguntas comportamentais</span>, para explorar as competências exigidas para a vaga</p></div>
                         )}
                       </div>
                       <div className="space-y-1">

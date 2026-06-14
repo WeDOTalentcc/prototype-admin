@@ -312,7 +312,7 @@ export function InputStep({
             <div className="space-y-1.5">
               <Label htmlFor="manual-name" className="text-xs">Nome Completo *</Label>
               <div className="relative">
-                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
+                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-muted" />
                 <Input
                   id="manual-name"
                   placeholder="João Silva"
@@ -326,7 +326,7 @@ export function InputStep({
             <div className="space-y-1.5">
               <Label htmlFor="manual-email" className="text-xs">E-mail</Label>
               <div className="relative">
-                <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
+                <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-muted" />
                 <Input
                   id="manual-email"
                   type="email"
@@ -341,7 +341,7 @@ export function InputStep({
             <div className="space-y-1.5">
               <Label htmlFor="manual-phone" className="text-xs">Telefone</Label>
               <div className="relative">
-                <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
+                <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-muted" />
                 <Input
                   id="manual-phone"
                   placeholder="(11) 99999-9999"
@@ -355,7 +355,7 @@ export function InputStep({
             <div className="space-y-1.5">
               <Label htmlFor="manual-linkedin" className="text-xs font-sans">LinkedIn (opcional)</Label>
               <div className="relative">
-                <Linkedin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
+                <Linkedin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-muted" />
                 <Input
                   id="manual-linkedin"
                   placeholder="linkedin.com/in/joao-silva"

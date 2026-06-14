@@ -150,7 +150,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
             </div>
             <div className="flex items-center gap-1.5 group/name">
               {!!(isDemo) && (
-                <span className="text-micro font-medium text-lia-text-disabled">[D]</span>
+                <span className="text-micro font-medium text-lia-text-tertiary">[D]</span>
               )}
               <CandidateChatPopover
                 candidateId={candidate.id as string}
@@ -214,7 +214,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                 >
                   {currentStageObj?.displayName || (candidate.stage as string | undefined)}
                 </Chip>
-                <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover/stage:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
+                <ChevronDown className="w-3 h-3 text-lia-text-muted group-hover/stage:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-44 p-1.5" align="start" sideOffset={4}>

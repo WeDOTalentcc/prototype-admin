@@ -75,7 +75,7 @@ function CriterionRow({ c }: { c: MatrixCriterion }) {
           <p className="text-micro text-lia-text-secondary leading-relaxed">{c.explanation}</p>
         ) : null}
         {provenance ? (
-          <p className="text-micro text-lia-text-disabled italic mt-0.5">{provenance}</p>
+          <p className="text-micro text-lia-text-muted italic mt-0.5">{provenance}</p>
         ) : null}
       </div>
     </div>

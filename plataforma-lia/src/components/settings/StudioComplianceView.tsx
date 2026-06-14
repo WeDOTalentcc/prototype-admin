@@ -119,7 +119,7 @@ export function StudioComplianceView() {
               <span className="text-xs text-lia-text-secondary">{t("blocked")}</span>
             </div>
             <p className={cn(textStyles.kpi, "text-status-warning")}>{blockedExecutions}</p>
-            <p className="text-[10px] text-lia-text-disabled mt-0.5">{t("blockedPctOfTotal", { pct: blockRatePct })}</p>
+            <p className="text-[10px] text-lia-text-muted mt-0.5">{t("blockedPctOfTotal", { pct: blockRatePct })}</p>
           </CardContent>
         </Card>
 
@@ -130,7 +130,7 @@ export function StudioComplianceView() {
               <span className="text-xs text-lia-text-secondary">{t("activeAgents")}</span>
             </div>
             <p className={textStyles.kpi}>{activeAgents}</p>
-            <p className="text-[10px] text-lia-text-disabled mt-0.5">
+            <p className="text-[10px] text-lia-text-muted mt-0.5">
               {t("avgConfidence", { pct: (avgConfidence * 100).toFixed(0) })}
             </p>
           </CardContent>
@@ -172,7 +172,7 @@ export function StudioComplianceView() {
               {topBlockedAgents.map((a, i) => (
                 <div key={a.agent_id} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-lia-text-disabled font-sans">{i + 1}.</span>
+                    <span className="text-xs text-lia-text-muted font-sans">{i + 1}.</span>
                     <span className="text-lia-text-primary">{a.agent_name}</span>
                   </div>
                   <Chip density="relaxed" variant="neutral" muted className="bg-status-warning/15 text-status-warning">
@@ -189,9 +189,9 @@ export function StudioComplianceView() {
       {totalExecutions === 0 && (
         <Card className={cardStyles.default}>
           <CardContent className="py-8 text-center">
-            <Bot className="w-10 h-10 text-lia-text-disabled mx-auto mb-3" />
+            <Bot className="w-10 h-10 text-lia-text-muted mx-auto mb-3" />
             <p className={textStyles.subtitle}>{t("noExecutions")}</p>
-            <p className="text-xs text-lia-text-disabled mt-1">
+            <p className="text-xs text-lia-text-muted mt-1">
               {t("noExecutionsHint")}
             </p>
           </CardContent>

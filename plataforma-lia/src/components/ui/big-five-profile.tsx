@@ -242,10 +242,10 @@ export function BigFiveProfile({ scores: rawScores, compact = false, showInsight
 
                 {/* Labels minimalistas */}
                 <div className="flex justify-between">
-                  <span className="text-xs text-lia-text-disabled">
+                  <span className="text-xs text-lia-text-muted">
                     {dimension.labels.low.split(',')[0]}
                   </span>
-                  <span className="text-xs text-lia-text-disabled text-right">
+                  <span className="text-xs text-lia-text-muted text-right">
                     {dimension.labels.high.split(',')[0]}
                   </span>
                 </div>

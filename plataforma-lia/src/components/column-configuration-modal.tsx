@@ -189,7 +189,7 @@ export function ColumnConfigurationModal({
           {/* Search */}
           <div className="p-4 dark:border-lia-border-subtle">
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-lia-text-disabled" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-lia-text-muted" />
               <Input
                 placeholder="Search"
                 value={searchTerm}
@@ -278,7 +278,7 @@ export function ColumnConfigurationModal({
                       : 'bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
                   } hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse`}
                 >
-                  <GripVertical className="w-4 h-4 text-lia-text-disabled" />
+                  <GripVertical className="w-4 h-4 text-lia-text-muted" />
 
                   <button
                     onClick={() => handleToggleColumn(column.id)}
@@ -306,7 +306,7 @@ export function ColumnConfigurationModal({
                   {column.visible ? (
                     <Eye className="w-4 h-4 text-lia-text-primary" />
                   ) : (
-                    <EyeOff className="w-4 h-4 text-lia-text-disabled" />
+                    <EyeOff className="w-4 h-4 text-lia-text-muted" />
                   )}
                 </div>
               ))}

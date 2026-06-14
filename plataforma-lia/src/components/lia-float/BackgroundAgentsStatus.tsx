@@ -102,7 +102,7 @@ export function BackgroundAgentsStatus({ tasks, onViewResult, className }: Backg
                     </div>
                   )}
                   {task.message && (
-                    <p className="text-[10px] text-lia-text-disabled mt-0.5 truncate">{task.message}</p>
+                    <p className="text-[10px] text-lia-text-muted mt-0.5 truncate">{task.message}</p>
                   )}
                 </div>
                 {(task.status === "running" || task.status === "queued") && (

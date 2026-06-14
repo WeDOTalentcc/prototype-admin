@@ -40,7 +40,7 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
 
             <div className="flex items-center gap-3 mb-1 text-micro text-lia-text-tertiary">
               <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-lia-text-disabled" />
+                <Calendar className="w-3 h-3 text-lia-text-muted" />
                 {previewJob.openDate ? new Date(previewJob.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
               </span>
               {previewJob.deadline && (
@@ -56,7 +56,7 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
               )}
             </div>
 
-            <div className="flex items-center gap-3 mb-1.5 text-micro text-lia-text-disabled">
+            <div className="flex items-center gap-3 mb-1.5 text-micro text-lia-text-muted">
               <span>Criado: {previewJob.createdAt 
                 ? new Date(previewJob.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' })
                 : previewJob.openDate 

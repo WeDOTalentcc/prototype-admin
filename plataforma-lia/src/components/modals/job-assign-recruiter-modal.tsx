@@ -189,7 +189,7 @@ export function JobAssignRecruiterModal({
                       htmlFor="notify"
                       className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1"
                     >
-                      <Megaphone className="w-3 h-3 text-lia-text-disabled" />
+                      <Megaphone className="w-3 h-3 text-lia-text-muted" />
                       Notificar recrutador sobre atribuição
                     </Label>
                   </div>
@@ -206,7 +206,7 @@ export function JobAssignRecruiterModal({
                       htmlFor="transfer"
                       className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1"
                     >
-                      <Mail className="w-3 h-3 text-lia-text-disabled" />
+                      <Mail className="w-3 h-3 text-lia-text-muted" />
                       Transferir comunicações pendentes
                     </Label>
                   </div>
@@ -237,7 +237,7 @@ export function JobAssignRecruiterModal({
                 Selecionar Recrutador
               </h4>
               <div className="relative mb-2">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-muted" />
                 <Input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}

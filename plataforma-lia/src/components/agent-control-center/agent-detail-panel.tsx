@@ -145,7 +145,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             <div className="grid grid-cols-3 gap-3 p-4 pb-5">
               <div className="text-center">
                 <div className="text-xl font-semibold text-lia-text-primary">{agent.actions_today}</div>
-                <div className="text-xs text-lia-text-disabled">Ações Hoje</div>
+                <div className="text-xs text-lia-text-muted">Ações Hoje</div>
               </div>
               <div className="text-center">
                 <div
@@ -153,13 +153,13 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 >
                   {agent.progress}%
                 </div>
-                <div className="text-xs text-lia-text-disabled">Progresso</div>
+                <div className="text-xs text-lia-text-muted">Progresso</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
                   <span className="text-xl font-semibold text-lia-text-primary">{agent.daily_goal}</span>
                 </div>
-                <div className="text-xs text-lia-text-disabled">Meta Diária</div>
+                <div className="text-xs text-lia-text-muted">Meta Diária</div>
               </div>
             </div>
 
@@ -178,7 +178,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     <Minus className="w-3 h-3 text-lia-text-secondary" />
                   )}
                   <span
-                    className={`text-xs ${agent.delta > 0 ? 'text-wedo-green-text-bright' : agent.delta < 0 ? 'text-status-error' : 'text-lia-text-disabled'}`}
+                    className={`text-xs ${agent.delta > 0 ? 'text-wedo-green-text-bright' : agent.delta < 0 ? 'text-status-error' : 'text-lia-text-muted'}`}
                   >
                     {agent.delta > 0 ? '+' : ''}{agent.delta}% vs ontem
                   </span>
@@ -238,7 +238,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                             <span className="text-xs font-medium text-lia-text-primary">
                               {activity.title}
                             </span>
-                            <span className="text-xs text-lia-text-disabled">
+                            <span className="text-xs text-lia-text-muted">
                               {formatTimeAgo(activity.started_at)}
                             </span>
                           </div>
@@ -267,7 +267,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         <span className="text-2xl font-semibold" style={{color: getHealthTierColor(healthScore.tier)}}>
                           {healthScore.score}
                         </span>
-                        <span className="text-xs text-lia-text-disabled">
+                        <span className="text-xs text-lia-text-muted">
                           de 100
                         </span>
                       </div>
@@ -349,7 +349,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     <h4 className="text-xs font-medium mb-2 text-lia-text-primary">
                       Configurações do Agente
                     </h4>
-                    <p className="text-xs text-lia-text-disabled">
+                    <p className="text-xs text-lia-text-muted">
                       Em breve: Configure prioridades, limites de ações, e preferências de automação.
                     </p>
                   </div>
@@ -357,7 +357,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     <h4 className="text-xs font-medium mb-2 text-lia-text-primary">
                       Integrações
                     </h4>
-                    <p className="text-xs text-lia-text-disabled">
+                    <p className="text-xs text-lia-text-muted">
                       Em breve: Conecte APIs externas e configure webhooks.
                     </p>
                   </div>

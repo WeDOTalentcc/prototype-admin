@@ -58,7 +58,7 @@ export function JobCreationPanel({ data }: JobCreationPanelProps) {
 
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 py-3 space-y-2">
-          <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider mb-2">Campos</p>
+          <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Campos</p>
           {fields.map((f, i) => (
             <div key={i} className="flex items-start gap-2 py-1.5">
               {f.status === "complete" ? (
@@ -66,7 +66,7 @@ export function JobCreationPanel({ data }: JobCreationPanelProps) {
               ) : f.status === "in_progress" ? (
                 <Loader2 className="w-4 h-4 text-wedo-cyan animate-spin flex-shrink-0 mt-0.5" />
               ) : (
-                <Circle className="w-4 h-4 text-lia-text-disabled flex-shrink-0 mt-0.5" />
+                <Circle className="w-4 h-4 text-lia-text-muted flex-shrink-0 mt-0.5" />
               )}
               <div className="flex-1 min-w-0">
                 <p className={cn(
@@ -85,7 +85,7 @@ export function JobCreationPanel({ data }: JobCreationPanelProps) {
 
         {jdPreview && (
           <div className="px-4 py-3 border-t border-lia-border-subtle">
-            <p className="text-micro font-semibold text-lia-text-disabled uppercase tracking-wider mb-2">Preview do JD</p>
+            <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Preview do JD</p>
             <div className="p-3 rounded-lg bg-lia-bg-secondary border border-lia-border-subtle">
               <p className="text-xs text-lia-text-primary whitespace-pre-wrap leading-relaxed">
                 {jdPreview.length > 500 ? jdPreview.slice(0, 500) + "..." : jdPreview}

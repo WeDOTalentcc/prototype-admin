@@ -277,11 +277,11 @@ export const CompletionMessage = ({
                   onClick={() => onFollowUp?.(action.id)}
                   className="w-full flex items-center gap-3 p-3 text-left hover:bg-lia-interactive-hover rounded-md transition-colors motion-reduce:transition-none group"
                 >
-                  <Icon className="w-4 h-4 text-lia-text-secondary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled" />
+                  <Icon className="w-4 h-4 text-lia-text-secondary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-muted" />
                   <span className="text-sm text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
                     {action.label}
                   </span>
-                  <ArrowRight className="w-3 h-3 text-lia-text-secondary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled ml-auto" />
+                  <ArrowRight className="w-3 h-3 text-lia-text-secondary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-muted ml-auto" />
                 </button>
               )
             })}

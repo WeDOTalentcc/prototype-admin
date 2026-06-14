@@ -86,7 +86,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
     const diff = candidateScore - avgScore
     if (diff > 5) return <TrendingUp className="w-3 h-3 text-status-success"  />
     if (diff < -5) return <TrendingDown className="w-3 h-3 text-status-error"  />
-    return <Minus className="w-3 h-3 text-lia-text-disabled" />
+    return <Minus className="w-3 h-3 text-lia-text-muted" />
   }
 
   const getComparisonLabel = (candidateScore: number, avgScore: number) => {
@@ -280,7 +280,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 {t('notStarted')}
               </p>
               <p 
-                className="text-micro text-center text-lia-text-disabled"
+                className="text-micro text-center text-lia-text-muted"
                 aria-live="polite" aria-atomic="true">
                 {t('notStartedDesc')}
               </p>
@@ -300,7 +300,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 {t('inProgress')}
               </p>
               <p 
-                className="text-micro text-center text-lia-text-disabled"
+                className="text-micro text-center text-lia-text-muted"
                
                aria-live="polite" aria-atomic="true">
                 {t('inProgressDesc')}

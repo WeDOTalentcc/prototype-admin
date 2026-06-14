@@ -40,7 +40,7 @@ export function ChannelToggleRow({
   return (
     <div className="flex items-center justify-between gap-2 pt-2 border-t border-lia-border-subtle">
       <div className="flex items-center gap-2 text-xs">
-        <Icon className="w-3.5 h-3.5 text-lia-text-disabled" aria-hidden="true" />
+        <Icon className="w-3.5 h-3.5 text-lia-text-muted" aria-hidden="true" />
         <span className="text-lia-text-secondary">{label}</span>
       </div>
       <div className="flex items-center gap-2">

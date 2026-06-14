@@ -179,7 +179,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               <span className={`${textStyles.label} text-lia-text-secondary`}>Expertise LinkedIn</span>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="cursor-help text-micro text-lia-text-disabled">ⓘ</span>
+                  <span className="cursor-help text-micro text-lia-text-muted">ⓘ</span>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="text-xs">
                   Áreas de expertise extraídas do perfil LinkedIn
@@ -233,7 +233,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               <span className={`${textStyles.label} text-lia-text-secondary`}>Tags</span>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="cursor-help text-micro text-lia-text-disabled">ⓘ</span>
+                  <span className="cursor-help text-micro text-lia-text-muted">ⓘ</span>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="text-xs">
                   Tags adicionadas pelo recrutador ou sistema

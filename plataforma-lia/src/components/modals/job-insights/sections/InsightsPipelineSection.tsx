@@ -104,7 +104,7 @@ export function InsightsPipelineSection({
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Funil de Triagem IA
           {liaFunnelMetrics.isEstimated && (
-            <span className="text-xs text-lia-text-disabled font-normal ml-1">(estimativa)</span>
+            <span className="text-xs text-lia-text-muted font-normal ml-1">(estimativa)</span>
           )}
         </h3>
         <div className="grid grid-cols-5 gap-3">

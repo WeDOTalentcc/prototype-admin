@@ -158,11 +158,11 @@ export function ScreeningStatusModal({
         <div className="py-4 space-y-4">
           {screeningStatus === 'not_configured' && (
             <div className="text-center py-6">
-              <AlertCircle className="w-10 h-10 text-lia-text-disabled mx-auto mb-3" />
+              <AlertCircle className="w-10 h-10 text-lia-text-muted mx-auto mb-3" />
               <p className="text-base-ui text-lia-text-secondary mb-1">
                 Triagem não configurada
               </p>
-              <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">
+              <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">
                 Configure as perguntas de triagem na aba &quot;Roteiro de Triagem&quot; da vaga para poder iniciar.
               </p>
             </div>

@@ -88,7 +88,7 @@ export function CommunicationStep({
         </Label>
         {templatesLoading ? (
           <div className="flex items-center gap-2 p-3 bg-lia-bg-secondary rounded-xl" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-muted" />
             <span className="text-xs text-lia-text-tertiary">Carregando templates...</span>
           </div>
         ) : (

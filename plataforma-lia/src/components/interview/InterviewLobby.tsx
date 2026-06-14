@@ -472,7 +472,7 @@ export function InterviewLobby({
         {/* ── Footer ─────────────────────────────────────────────────── */}
         {info.show_wedotalent_branding !== false && (
           <footer className="text-center pt-2">
-            <p className="text-[11px] text-lia-text-disabled">
+            <p className="text-[11px] text-lia-text-muted">
               Powered by WeDOTalent
             </p>
           </footer>

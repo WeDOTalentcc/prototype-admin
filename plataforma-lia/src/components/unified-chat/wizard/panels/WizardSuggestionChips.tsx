@@ -138,7 +138,7 @@ export function WizardSuggestionChips({ data, onUpdate }: Props) {
             >
               <span className="font-medium">{label}:</span>
               <span>{valueText}</span>
-              <span className="text-lia-text-disabled text-micro opacity-70">
+              <span className="text-lia-text-muted text-micro opacity-70">
                 ({sourceLabel})
               </span>
             </button>

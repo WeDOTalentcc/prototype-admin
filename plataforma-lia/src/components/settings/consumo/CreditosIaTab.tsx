@@ -335,7 +335,7 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
             <p className="text-xl font-semibold text-lia-text-primary">
               {balance ? formatTokens(balance.current_usage) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled">
+            <p className="mt-0.5 text-xs text-lia-text-muted">
               de {balance ? formatTokens(balance.monthly_limit) : '—'} no mês
             </p>
           </CardContent>
@@ -352,7 +352,7 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
             <p className="text-xl font-semibold text-lia-text-primary">
               {summary ? formatTokens(summary.projected_monthly_tokens) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled">
+            <p className="mt-0.5 text-xs text-lia-text-muted">
               {summary ? formatCost(summary.projected_monthly_cost_cents) : '—'} estimado
             </p>
           </CardContent>
@@ -369,7 +369,7 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
             <p className="text-xl font-semibold text-lia-text-primary">
               {summary ? formatCost(summary.total_cost_cents) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled">no período atual</p>
+            <p className="mt-0.5 text-xs text-lia-text-muted">no período atual</p>
           </CardContent>
         </Card>
 
@@ -384,7 +384,7 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
             <p className="text-xl font-semibold text-lia-text-primary">
               {summary ? formatTokens(summary.daily_usage_today) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled">
+            <p className="mt-0.5 text-xs text-lia-text-muted">
               de {summary ? formatTokens(summary.daily_limit) : '—'} diários
             </p>
           </CardContent>
@@ -411,7 +411,7 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
                 style={{ width: `${Math.min(usagePct, 100)}%` }}
               />
             </div>
-            <div className="mt-1.5 flex justify-between text-xs text-lia-text-disabled">
+            <div className="mt-1.5 flex justify-between text-xs text-lia-text-muted">
               <span>0</span>
               <span>{formatTokens(balance.monthly_limit)}</span>
             </div>
@@ -427,11 +427,11 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
         </CardHeader>
         <CardContent className="pb-4">
           {dayLoading ? (
-            <div className="flex h-48 items-center justify-center text-xs text-lia-text-disabled">
+            <div className="flex h-48 items-center justify-center text-xs text-lia-text-muted">
               Carregando histórico...
             </div>
           ) : chartData.length === 0 ? (
-            <div className="flex h-48 items-center justify-center text-xs text-lia-text-disabled">
+            <div className="flex h-48 items-center justify-center text-xs text-lia-text-muted">
               Sem dados de consumo no período
             </div>
           ) : (

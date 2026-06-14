@@ -145,14 +145,14 @@ function FichaField({
           type="button"
           onClick={begin}
           data-testid={`add-ficha-${editKey}`}
-          className="flex items-center gap-1 text-micro text-lia-text-disabled hover:text-wedo-cyan transition-colors"
+          className="flex items-center gap-1 text-micro text-lia-text-muted hover:text-wedo-cyan transition-colors"
           aria-label={`Adicionar ${label}`}
         >
           <Plus className="w-3 h-3" />
           adicionar
         </button>
       ) : (
-        <span className="flex items-center gap-1 text-micro text-lia-text-disabled">
+        <span className="flex items-center gap-1 text-micro text-lia-text-muted">
           <CircleDashed className="w-3 h-3" />
           pendente
         </span>
@@ -250,7 +250,7 @@ function CompetencyChipGroup({
           ),
         )}
         <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-lia-border-subtle px-1.5">
-          <Plus className="w-3 h-3 text-lia-text-disabled" />
+          <Plus className="w-3 h-3 text-lia-text-muted" />
           <input
             data-testid={`add-${testidPrefix}-input`}
             value={draft}
@@ -338,7 +338,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
   return (
     <div className="p-4 space-y-4">
       {/* Source indicator */}
-      <div className="flex items-center justify-between text-xs text-lia-text-disabled">
+      <div className="flex items-center justify-between text-xs text-lia-text-muted">
         <div className="flex items-center gap-2">
           <FileText className="w-3.5 h-3.5" />
           <span>{source === "file" ? "Enviado via arquivo" : "Descrito no chat"}</span>
@@ -454,7 +454,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
 
       {/* Processing indicator */}
       {rawInput && (
-        <div className="flex items-center gap-2 text-xs text-lia-text-disabled">
+        <div className="flex items-center gap-2 text-xs text-lia-text-muted">
           <div className="w-3 h-3 border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
           <span>Analisando e enriquecendo JD...</span>
         </div>

@@ -132,7 +132,7 @@ export function SwitchTaskModal({
             placeholder="Buscar conversas..."
             className="flex-1 bg-transparent text-sm text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none"
           />
-          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-lia-bg-tertiary border border-lia-border-subtle text-[10px] text-lia-text-disabled font-mono">
+          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-lia-bg-tertiary border border-lia-border-subtle text-[10px] text-lia-text-muted font-mono">
             ESC
           </kbd>
         </div>
@@ -140,7 +140,7 @@ export function SwitchTaskModal({
         <div ref={listRef} className="max-h-[300px] overflow-y-auto py-1">
           {filtered.length === 0 ? (
             <div className="px-4 py-8 text-center">
-              <MessageSquare className="w-8 h-8 mx-auto text-lia-text-disabled mb-2" />
+              <MessageSquare className="w-8 h-8 mx-auto text-lia-text-muted mb-2" />
               <p className="text-sm text-lia-text-tertiary">
                 {query ? "Nenhuma conversa encontrada" : "Nenhuma conversa recente"}
               </p>
@@ -174,13 +174,13 @@ export function SwitchTaskModal({
                       {item.title}
                     </p>
                     {item.lastMessage && (
-                      <p className="text-xs text-lia-text-disabled truncate mt-0.5 italic">
+                      <p className="text-xs text-lia-text-muted truncate mt-0.5 italic">
                         {item.lastMessage}
                       </p>
                     )}
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <Clock className="w-3 h-3 text-lia-text-disabled" />
-                      <span className="text-xs text-lia-text-disabled">
+                      <Clock className="w-3 h-3 text-lia-text-muted" />
+                      <span className="text-xs text-lia-text-muted">
                         {formatTime(item.timestamp)}
                       </span>
                       {activeSessions.has(item.id) && (
@@ -200,7 +200,7 @@ export function SwitchTaskModal({
                       )}
                     </div>
                   </div>
-                  <ArrowRight className="w-3.5 h-3.5 text-lia-text-disabled flex-shrink-0" />
+                  <ArrowRight className="w-3.5 h-3.5 text-lia-text-muted flex-shrink-0" />
                 </button>
               )
             })
@@ -208,7 +208,7 @@ export function SwitchTaskModal({
         </div>
 
         <div className="px-4 py-2 border-t border-lia-border-subtle flex items-center justify-between">
-          <div className="flex items-center gap-3 text-[10px] text-lia-text-disabled">
+          <div className="flex items-center gap-3 text-[10px] text-lia-text-muted">
             <span className="flex items-center gap-1">
               <kbd className="px-1 py-0.5 rounded bg-lia-bg-tertiary border border-lia-border-subtle font-mono">↑↓</kbd>
               navegar
@@ -218,7 +218,7 @@ export function SwitchTaskModal({
               selecionar
             </span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-lia-text-disabled">
+          <div className="flex items-center gap-1 text-[10px] text-lia-text-muted">
             <Command className="w-3 h-3" />
             <span>K</span>
           </div>

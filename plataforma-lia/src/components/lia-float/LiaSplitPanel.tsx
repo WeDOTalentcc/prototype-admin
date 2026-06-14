@@ -167,7 +167,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
               LIA
             </span>
             {splitView.page && (
-              <span className="text-xs text-lia-text-disabled leading-tight">
+              <span className="text-xs text-lia-text-muted leading-tight">
                 {splitView.page}
               </span>
             )}

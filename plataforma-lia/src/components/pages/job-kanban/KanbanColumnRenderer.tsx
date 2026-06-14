@@ -627,7 +627,7 @@ export function KanbanColumnRenderer({
                     <span className="truncate">{candidate.location}</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 text-xs text-lia-text-disabled">
+                  <div className="flex items-center gap-1 text-xs text-lia-text-muted">
                     <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
                     <span className="truncate">{t('notAvailable')}</span>
                   </div>

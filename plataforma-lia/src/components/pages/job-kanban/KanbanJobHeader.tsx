@@ -240,7 +240,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       {t('published')}
                     </Chip>
                   )}
-                  <span className="text-micro text-lia-text-disabled mx-0.5">|</span>
+                  <span className="text-micro text-lia-text-muted mx-0.5">|</span>
                   {!!(currentJob.openDate) && (
                     <span className="text-micro text-lia-text-secondary whitespace-nowrap">
                       <Calendar className="w-3 h-3 inline mr-0.5 -mt-0.5" />
@@ -383,7 +383,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                   </button>
                 </>
               ) : (
-                <span className="inline-flex items-center gap-1 text-micro text-lia-text-disabled">
+                <span className="inline-flex items-center gap-1 text-micro text-lia-text-muted">
                   <Link2 className="w-3 h-3" />
                   {t('inheritedFromCompany')}
                 </span>

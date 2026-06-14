@@ -166,7 +166,7 @@ export function BenefitTemplateModal({
             </div>
           ) : filteredTemplates.length === 0 ? (
             <div className="text-center py-6">
-              <Gift className="w-4 h-4 mx-auto text-lia-text-disabled mb-2" />
+              <Gift className="w-4 h-4 mx-auto text-lia-text-muted mb-2" />
               <p className={`${textStyles.description}`} aria-live="polite" aria-atomic="true">
                 {t("noBenefitFound")}
               </p>

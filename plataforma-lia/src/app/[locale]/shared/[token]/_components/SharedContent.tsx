@@ -237,7 +237,7 @@ export function SharedContent({ hook }: SharedContentProps) {
                       setOtp('')
                       setAuthError(null)
                     }}
-                    className="text-lia-text-tertiary text-sm hover:text-lia-text-disabled w-full text-center"
+                    className="text-lia-text-tertiary text-sm hover:text-lia-text-muted w-full text-center"
                   >
                     Voltar
                   </button>
@@ -387,7 +387,7 @@ export function SharedContent({ hook }: SharedContentProps) {
                                   href={candidate.resume_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-lia-text-tertiary hover:text-lia-text-disabled transition-colors motion-reduce:transition-none"
+                                  className="flex items-center gap-1 text-lia-text-tertiary hover:text-lia-text-muted transition-colors motion-reduce:transition-none"
                                 >
                                   <FileText className="w-3.5 h-3.5" />
                                   Currículo
@@ -439,19 +439,19 @@ export function SharedContent({ hook }: SharedContentProps) {
                           <div className="mt-4 pt-4 border-t border-lia-border-strong">
                             {candidate.summary && (
                               <div className="mb-4">
-                                <h4 className="text-sm font-medium text-lia-text-disabled mb-1">Resumo</h4>
+                                <h4 className="text-sm font-medium text-lia-text-tertiary mb-1">Resumo</h4>
                                 <p className="text-lia-text-tertiary text-sm">{candidate.summary}</p>
                               </div>
                             )}
                             {candidate.education && (
                               <div className="mb-4">
-                                <h4 className="text-sm font-medium text-lia-text-disabled mb-1">Formação</h4>
+                                <h4 className="text-sm font-medium text-lia-text-tertiary mb-1">Formação</h4>
                                 <p className="text-lia-text-tertiary text-sm">{candidate.education}</p>
                               </div>
                             )}
                             {candidate.skills && candidate.skills.length > 5 && (
                               <div>
-                                <h4 className="text-sm font-medium text-lia-text-disabled mb-2">Todas as habilidades</h4>
+                                <h4 className="text-sm font-medium text-lia-text-tertiary mb-2">Todas as habilidades</h4>
                                 <div className="flex flex-wrap gap-1.5">
                                   {candidate.skills.map((skill) => (
                                     <Chip
@@ -503,7 +503,7 @@ export function SharedContent({ hook }: SharedContentProps) {
                             </div>
                             <button
                               onClick={() => updatePendingFeedback(candidate.id, feedback.rating)}
-                              className="text-lia-text-secondary text-sm hover:text-lia-text-disabled"
+                              className="text-lia-text-secondary text-sm hover:text-lia-text-muted"
                             >
                               Editar
                             </button>
@@ -569,7 +569,7 @@ export function SharedContent({ hook }: SharedContentProps) {
                                     onClick={() => clearPendingFeedback(candidate.id)}
                                     variant="ghost"
                                     size="sm"
-                                    className="text-lia-text-tertiary hover:text-lia-text-disabled"
+                                    className="text-lia-text-tertiary hover:text-lia-text-muted"
                                   >
                                     Cancelar
                                   </Button>

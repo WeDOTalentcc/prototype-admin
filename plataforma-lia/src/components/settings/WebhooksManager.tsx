@@ -160,7 +160,7 @@ export function WebhooksManager() {
       </HubHeader>
 
       {isLoading && (
-        <div className="flex items-center gap-2 py-8 justify-center text-xs text-lia-text-disabled">
+        <div className="flex items-center gap-2 py-8 justify-center text-xs text-lia-text-muted">
           <HubLoadingState variant="inline" message={t("loading")} />
         </div>
       )}
@@ -168,9 +168,9 @@ export function WebhooksManager() {
       {!isLoading && webhooks.length === 0 && (
         <Card className={cardStyles.default}>
           <CardContent className="py-8 text-center">
-            <WebhookIcon className="w-10 h-10 text-lia-text-disabled mx-auto mb-2" />
+            <WebhookIcon className="w-10 h-10 text-lia-text-muted mx-auto mb-2" />
             <p className={textStyles.subtitle}>{t("noneConfigured")}</p>
-            <p className="text-xs text-lia-text-disabled mt-1">
+            <p className="text-xs text-lia-text-muted mt-1">
               {t("noneHint")}
             </p>
           </CardContent>
@@ -208,7 +208,7 @@ export function WebhooksManager() {
                       </span>
                     ))}
                   </div>
-                  <div className="flex items-center gap-3 mt-2 text-[10px] text-lia-text-disabled">
+                  <div className="flex items-center gap-3 mt-2 text-[10px] text-lia-text-muted">
                     <span>{t("deliveries", { count: wh.total_deliveries })}</span>
                     {wh.total_failures > 0 && (
                       <span className="text-status-error">{t("failures", { count: wh.total_failures })}</span>
@@ -270,7 +270,7 @@ export function WebhooksManager() {
               <label className="text-xs font-semibold text-lia-text-primary mb-2 block">{t("events")}</label>
               <div className="space-y-1.5" data-field="events">
                 {availableEvents.length === 0 && (
-                  <p className="text-xs text-lia-text-disabled italic">{t("loading")}</p>
+                  <p className="text-xs text-lia-text-muted italic">{t("loading")}</p>
                 )}
                 {availableEvents.map((evt) => (
                   <label key={evt.event_type} className="flex items-center gap-2 text-xs cursor-pointer">
@@ -280,7 +280,7 @@ export function WebhooksManager() {
                       data-toggle={`events.${evt.event_type}`}
                     />
                     <span className="text-lia-text-primary">{eventLabel(evt.event_type)}</span>
-                    <span className="text-lia-text-disabled font-mono text-[10px]">({evt.event_type})</span>
+                    <span className="text-lia-text-muted font-mono text-[10px]">({evt.event_type})</span>
                   </label>
                 ))}
               </div>
