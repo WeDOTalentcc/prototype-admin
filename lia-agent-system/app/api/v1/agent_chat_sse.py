@@ -357,6 +357,7 @@ company_id: str = Depends(require_company_id)):
                         context="chat_sse",
                         company_id=company_id or None,
                         recruiter_id=user_id or None,
+                        session_id=session_id or None,
                     )
                 )
             except Exception as _lc_exc:
