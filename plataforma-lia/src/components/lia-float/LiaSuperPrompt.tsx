@@ -66,6 +66,14 @@ export function LiaSuperPrompt() {
   const [recentChats, setRecentChats] = useState<Array<{ id: string; title: string; timestamp: number }>>([])
   const [contextDismissed, setContextDismissed] = useState(false)
 
+  const conversationId = chatConversationId ?? sharedConversationId
+  const messages = sharedMessages
+  const isCreating = chatIsCreating
+  const isStreaming = chatIsStreaming
+  const isThinking = chatIsThinking
+  const thinkingSteps = chatThinkingSteps
+  const streamingContent = chatStreamingContent
+
   // AgentActivityTimeline lifecycle — mirrors UnifiedMessageList.
   // ON when thinking/streaming starts; OFF after timeline fires onFinished.
   const [liveActive, setLiveActive] = useState(false)
@@ -85,13 +93,6 @@ export function LiaSuperPrompt() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const conversationId = chatConversationId ?? sharedConversationId
-  const messages = sharedMessages
-  const isCreating = chatIsCreating
-  const isStreaming = chatIsStreaming
-  const isThinking = chatIsThinking
-  const thinkingSteps = chatThinkingSteps
-  const streamingContent = chatStreamingContent
   const initConversation = initChatConversation
   const loadHistory = useCallback(async (id: string) => {
     const history = await loadChatHistory(id)
