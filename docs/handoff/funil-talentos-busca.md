@@ -174,7 +174,7 @@ flowchart LR
 |---|---|---|---|
 | **1. Autocomplete** | prefixo/containment sobre taxonomias estáticas | ❌ **Determinístico** | `get_predictive_suggestions` (`search_assistant.py:494`) |
 | **2. Tags de entidade** (`parse-query`) | regex + listas estáticas + `confidence` incremental | ❌ **Determinístico** | `parse_search_query` (`jd_search.py:304`) |
-| **3. Ghost text / Sugestão** (`enhance-prompt`) | LLM (Gemini via `llm_service`), persona de sourcing | ✅ **LLM** | `misc_search.py:291` |
+| **3. Ghost text / Sugestão** (`enhance-prompt`) | LLM (provider por-tenant via BYOK; Gemini como default), persona de sourcing | ✅ **LLM** | `misc_search.py:291` |
 | **4. Completude + alertas** (`analyze`) | 5 critérios booleanos → `score = preenchidos/5×100` | ❌ **Determinístico** | `analyze_search` (`search_assistant.py:345`) |
 
 **1. Autocomplete — determinístico (dicionário + prefixo).** `get_predictive_suggestions` percorre, **nesta ordem**, e retorna **no máx. 8** itens (`search_assistant.py:506-571`):
@@ -187,10 +187,12 @@ flowchart LR
 - **Cargo** (`job_title`), **Localização** (cidades + UF), **Senioridade/Anos** (aliases + `\d+ anos`), **Skills** (lista de ~centenas de termos; `+0.2`, máx. 8), **Setor/Indústria** (regex por vertical; `+0.15`, primeiro match).
 - **Normalização canônica:** `js`→`JavaScript`, `ts`→`TypeScript`, `nodejs`→`Node.js`, `k8s`→`Kubernetes`, `ml`→`Machine Learning`, `inglês fluente`→`Inglês Avançado`. `confidence` é **somatório capado em 1.0** (não é probabilidade de modelo). Se faltar grupo, devolve `suggestions[]` textuais ("Especifique o cargo…").
 
-**3. Ghost text / Sugestão — LLM (o único cérebro de verdade).** `enhance-prompt` (`misc_search.py:291`) chama o **LLM (Gemini via `llm_service`)** com uma **persona de sourcing/recrutamento** e retorna:
+**3. Ghost text / Sugestão — LLM (o único cérebro de verdade).** `enhance-prompt` (`misc_search.py:291`) chama o **LLM** com uma **persona de sourcing/recrutamento** e retorna:
 - `enhanced_query` — a busca reescrita/completada (**~200 chars máx.**), que vira o **ghost text inline** (sufixo cinza; **Tab** aceita) quando casa com o prefixo, ou o **Card "Sugestão"** (fallback) quando não casa.
 - `explanation` (por que melhorou) + `suggestions[]` com `{label, value, category}`.
 - **Gating no front:** só aparece se **confiança > 0.6**. É **aqui** — e só aqui — que mora a "inteligência" de inferir o perfil ideal a partir de texto incompleto.
+- **Provider por-tenant (BYOK):** `get_tenant_llm_config(company_id)` resolve o `primary_provider` do tenant (ex.: Claude se o tenant tem BYOK Anthropic; Gemini se tem BYOK Google). Se o tenant não tem config, usa Gemini com a chave global WeDOTalent. Tenants BYOK não consomem créditos WeDOTalent para esta chamada.
+- **UX — hint Tab visível:** o indicador "Tab para aceitar" foi movido de fora da textarea (`-bottom-5`) para dentro (`bottom-2`), com contraste aumentado (`text-secondary`) e animação `fade-in` ao aparecer — commit `a9c833926`.
 
 **4. Completude + alertas — determinístico (5 critérios × 20 pts).** `analyze` calcula `calculate_completeness` sobre exatamente **5 chaves** — `job_title`, `location`, `years_experience`, `skills`, `industry` — cada preenchida vale **20 pts** → `score = (preenchidos/5)×100` (`search_assistant.py:146-166`). `analyze_search_quality` (`:169-227`) gera alertas por regra fixa:
 - **`broad_search`** (WARNING) se `completeness < 40`.
@@ -205,6 +207,119 @@ flowchart LR
 **→ Tabela de resultados (§5).** Específico do Natural: as tags de entidade alimentam o `search_spec` que aparece como filtros aplicados.
 
 **Edge cases:** query < 5 chars não dispara parse; autocomplete só na última palavra; transcrição falha → mantém o texto digitado.
+
+#### 4.1.2 🗂️ Guia visual do autocomplete — o que o recrutador vê e como interpretar
+
+##### O dropdown de autocomplete (aparece ao digitar)
+
+O dropdown exibe até **6 itens**, cada um com três elementos:
+
+```
+[ícone]  texto sugerido                   categoria
+  <>     Python com Django                 stack
+  ↗      Python com FastAPI                stack
+  ↗      Python para Data Science          stack
+  📍     São Paulo - Capital               localizacao
+  🧠     Grande São Paulo                  localizacao
+```
+
+**Função:** é um **enriquecedor de query**, não uma lista de candidatos. Clicar num item **preenche o campo de busca** com aquele texto — não executa a busca. O recrutador pode ajustar o texto antes de submeter.
+
+**O que cada categoria significa para o recrutador:**
+
+| Categoria (coluna direita) | O que representa | Exemplo |
+|---|---|---|
+| **stack** | Combinação de tecnologias/frameworks para refinar a skill | "Python com Django" |
+| **cargo** | Título ou função exata | "Product Manager", "Data Scientist" |
+| **habilidade** | Skill/tecnologia isolada | "SAP S/4HANA", "React Native" |
+| **localizacao** | Cidade, região ou estado | "São Paulo - Capital", "Grande São Paulo" |
+| **modalidade** | Regime de trabalho | "100% Remoto", "Híbrido (2-3x escritório)" |
+| **experiencia** | Nível de senioridade ou anos | "Sênior (6+ anos)" |
+| **setor** | Vertical de mercado | "Fintech / Serviços Financeiros" |
+| **idioma** | Requisito de idioma | "Inglês Avançado", "Inglês Fluente" |
+| **recent** | Você buscou isso recentemente | histórico do usuário na tabela `search_history` |
+| **popular** | Buscas frequentes na sua empresa | dados de outros recrutadores da mesma empresa |
+
+**O que cada ícone representa (campo `icon` retornado pelo backend):**
+
+| Ícone na tela | `icon` no JSON | Categoria típica | Componente Lucide |
+|---|---|---|---|
+| `<>` | `"code"`, `"file-code"` | stack / habilidade técnica | `Code` |
+| `↗` | `"zap"`, `"bar-chart"` | stack em alta / tendência | `TrendingUp` |
+| `📍` | `"map-pin"` | localizacao (cidade específica) | `MapPin` |
+| `🧠` | `"brain"` | cargo de dados (Data Scientist) ou **fallback** | `Brain` |
+| `🏢` | `"building"`, `"layers"` | cargo / empresa / setor | `Building2` |
+| `💼` | `"briefcase"`, `"clipboard"` | cargo / consultor | `Briefcase` / `FileText` |
+| `🎯` | `"target"` | cargo de produto (PM, PO) | `Target` |
+| `👥` | `"users"` | tech lead / liderança | `Users` |
+| `🏠` | `"home"` | modalidade remoto/híbrido | `Building2` |
+| `💰` | `"dollar-sign"`, `"credit-card"` | fintech / setor financeiro | `DollarSign` |
+| `🌐` | `"globe"`, `"message-circle"` | idioma / localização global | `Globe` |
+| `🎓` | `"book"` | idioma / educação | `GraduationCap` |
+| `📊` | `"database"`, `"binary"` | dados / banco de dados / ERP | `Binary` |
+| `⚙️` | `"settings"`, `"box"`, `"coffee"` | infra / cloud / Java | `Code` |
+| `🏷️` | `"award"` | senioridade | `Award` |
+
+##### AUTOCOMPLETE_TEMPLATES — padrões de digitação cobertos
+
+O backend (`search_assistant.py:400`) tem templates hardcoded para os padrões mais comuns de busca. **30 patterns** a partir do commit `a9c833926` (commit anterior: 17, apenas tech; expansão adicionou 13 domínios não-tech). Esta tabela lista todos (útil para saber o que o autocomplete **não** cobre e onde o recrutador fica sem sugestão):
+
+**Domínio tecnologia / ERP (17 originais):**
+
+| Pattern (trigger) | Sugestões geradas | Categorias |
+|---|---|---|
+| `dev` | Desenvolvedor Backend, Frontend, Full Stack, Mobile | cargo |
+| `python` | Python com Django, com FastAPI, para Data Science | stack |
+| `react` | React com TypeScript, React Native, Next.js | stack |
+| `senior` / `sênior` | Sênior (6+ anos), Tech Lead Sênior | experiencia / cargo |
+| `remoto` | 100% Remoto, Remoto Brasil, Híbrido (2-3x) | modalidade / localizacao |
+| `são paulo` | SP - Capital, Grande São Paulo, SP - Híbrido | localizacao / modalidade |
+| `product` | Product Manager, Product Owner, Product Designer | cargo |
+| `data` | Data Scientist, Data Engineer, Data Analyst | cargo |
+| `fintech` | Fintech / Serviços Financeiros, bancos digitais | setor / experiencia |
+| `inglês` | Inglês Avançado, Fluente, Intermediário | idioma |
+| `sap` | SAP ABAP, MM, SD, FI/CO, Basis, S/4HANA | cargo / habilidade |
+| `abap` | Desenvolvedor ABAP, SAP ABAP, ABAP OO | cargo / habilidade |
+| `totvs` | Desenvolvedor TOTVS, Consultor Protheus, TOTVS RM | cargo / habilidade |
+| `erp` | Consultor ERP, SAP ERP, Oracle ERP, TOTVS Protheus | cargo / habilidade |
+| `consultor` | Consultor SAP, Funcional, Técnico, de Negócios | cargo |
+| `aws` | AWS, AWS + Terraform, AWS + Kubernetes | skill / stack |
+| `java` | Java com Spring Boot, Java Backend Sênior, JavaScript/TypeScript | stack / cargo / skill |
+
+**Domínios não-tech (13 adicionados em `a9c833926`):**
+
+| Pattern (trigger) | Sugestões geradas | Categorias |
+|---|---|---|
+| `analista` | Analista Financeiro Pleno, Analista de RH Sênior, Analista de Marketing Digital, Analista de BI, Analista Contábil | cargo |
+| `financeiro` | Controller Financeiro, Gerente Financeiro, Analista Financeiro Sênior, Tesoureiro | cargo |
+| `contab` | Contador CRC, Controller, Fiscal Tributário, IFRS/CPC | cargo / habilidade |
+| `rh` | HRBP, Especialista em Recrutamento, Analista de Remuneração, DHO | cargo |
+| `marketing` | Growth Marketing Sênior, Marketing de Performance, SEO/SEM Especialista, Marketing Digital B2B | cargo |
+| `vendas` | Account Executive (AE), SDR/BDR, Gerente de Vendas B2B, Key Account Manager | cargo |
+| `commercial` | Diretor Comercial, Gerente Comercial Sênior, Account Manager Enterprise | cargo |
+| `logistica` | Analista de Supply Chain, Coordenador de Logística, Especialista em Compras, Analista de Estoque/WMS | cargo |
+| `supply` | Analista de Supply Chain Sênior, Supply Chain + S&OP, Compras Estratégicas | cargo / stack |
+| `juridico` | Advogado Trabalhista, Advogado Tributário, Compliance Officer, DPO (LGPD) | cargo |
+| `gerente` | Gerente de Projetos (PMP), Gerente de Produto, Gerente Comercial, Gerente de RH | cargo |
+| `diretor` | Diretor Financeiro (CFO), Diretor Comercial, Diretor de RH (CHRO), Diretor de Tecnologia (CTO) | cargo |
+| `saude` | Médico Especialista, Enfermeiro(a) UTI, Analista de Saúde Corporativa | cargo |
+
+**Fora dos templates** (sem expansão pré-definida), o autocomplete cai no matching por prefixo nas taxonomias: `JOB_TITLES_TAXONOMY`, `SKILLS_TAXONOMY`, `LOCATIONS_TAXONOMY`, `INDUSTRIES_TAXONOMY`. Padrões não cobertos → o ghost text (enhance-prompt, LLM) cobre qualquer domínio ao parar de digitar.
+
+##### Os 2 chips estáticos abaixo da barra ("Sugestões: …")
+
+```
+Sugestões:  [Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python]  [Product Manager Pleno remoto, experiência em B2B SaaS, metodologias ágeis]
+```
+
+- **Onde:** abaixo da barra de busca, **apenas quando o campo está vazio** (`!value`)
+- **Arquivo:** `SSIModeNatural.tsx:19-22` (constante `SEARCH_SUGGESTIONS`) e `:649-666` (render)
+- **Mecanismo:** hardcoded. Clicar **preenche o `textarea`** com aquele texto; não executa busca automaticamente.
+- **São estáticos?** Sim — os 2 exemplos hardcoded em `SEARCH_SUGGESTIONS` (`SSIModeNatural.tsx:19-22`) nunca mudam.
+- **Funcionam?** Sim — como atalhos de preenchimento. Ao clicar, o recrutador pode editar antes de buscar.
+- **O que não fazem:** não usam histórico do recrutador, não são personalizados por empresa, não aprendem.
+- **Endpoint premium não conectado aqui:** `GET /api/v1/search/autocomplete/premium` (`autocomplete.py`) consulta `search_history` (buscas recentes do usuário e populares da empresa) e geraria chips dinâmicos — mas **hoje não está conectado a esses chips estáticos**. O endpoint existe e retorna dados; o FE ainda não os consome nesta superfície.
+- **Tarefa pendente:** substituir os 2 chips hardcoded por chips dinâmicos vindos de `/autocomplete/premium` (buscas recentes/populares da empresa), com fallback para os exemplos estáticos quando não houver histórico suficiente. Rastreada como "Tornar chips de sugestão de busca dinâmicos".
 
 ### 4.2 Fluxo Similar
 
@@ -623,77 +738,385 @@ Quando há dados, `LIAScoreService` combina os sinais num **Ranking Score** pond
 | `candidates-store.ts` (Zustand) | array de candidatos + loading |
 | `talent-funnel-store.ts` (Zustand `persist`) | Histórico + Buscas Salvas (**localStorage**) |
 
-## 16. Config & variáveis de ambiente
+_id` | bigint | — |
+| `analysis` | jsonb | — |
+| `ai_metadata` | jsonb | — |
+| `score` | float | — |
+| `search_source` | string | — |
+| `search_score` | float | — |
+| `is_deleted` | boolean | — |
 
-| Var / flag | Para quê |
+Índice: UNIQUE `(sourced_profile_id, sourcing_id)`.
+
+**`lists`** — listas Rails (multi-entidade, polimórfico)
+
+`id`, `name`, `color`, `description`, `is_public`, `is_deleted`, `user_id`, `account_id`, `candidates_count`, `jobs_count`, `applies_count`.
+
+**`list_relationships`** — join polimórfico
+
+`id`, `reference_type`, `reference_id` (Candidate/Job/Apply), `list_id`, `account_id`, `position`, `score`, `general_comments`, `is_deleted`.
+Índice: UNIQUE `(reference_type, reference_id, list_id)`.
+
+**`shared_searches` (Rails)**
+
+`id`, `uid` (UNIQUE), `token` (UNIQUE), `title`, `description`, `query`, `user_id`, `account_id`, `candidate_ids` (jsonb GIN), `shared_with_emails` (jsonb), `expires_at`, `is_deleted`.
+
+**`pearch_search_logs`**
+
+`id`, `account_id`, `user_id`, `query`, `thread_id`, `search_parameters` (jsonb GIN), `results_count`, `credits_used`, `credits_remaining_after`, `duration_seconds`, `status`.
+
+**`pearch_credit_transactions`** — ledger imutável
+
+`id`, `account_id`, `transaction_type` (purchase/refund/bonus/adjustment/consumption), `amount`, `balance_before`, `balance_after`, `reason`, `metadata` (jsonb), `reference_id`, `reference_type`.
+
+**`accounts`** — colunas adicionadas
+
+`pearch_credits integer`, `pearch_total_consumed integer`.
+
+### 16.2 Tabelas FastAPI (UUID, company_id tenancy)
+
+**`candidate_embeddings`**
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| `id` | UUID PK | — |
+| `company_id` | UUID | RLS |
+| `candidate_id` | UUID | — |
+| `name` | varchar | — |
+| `summary` | text | — |
+| `skills` | varchar[] | — |
+| `experience_summary` | text | — |
+| `embedding` | vector(768) | pgvector |
+| `embedding_text` | text | texto usado para gerar |
+| `embedding_provider` | varchar | "gemini" ou "openai" |
+| `embedding_model` | varchar | — |
+| `is_active` | boolean | — |
+
+Índices: btree `(company_id, is_active)`; UNIQUE `(company_id, candidate_id)`.
+RLS via `app_current_company_id()`.
+**Sem índice HNSW** — linear scan. [VERIFICAR] — adicionar para escala.
+
+**`candidate_lists`**
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| `id` | UUID PK | — |
+| `company_id` | UUID | RLS |
+| `name` | varchar | — |
+| `description` | text | nullable |
+| `color` | varchar(20) | — |
+| `created_by` | UUID | user_id |
+| `is_active` | boolean | soft-delete |
+
+Índice: `(company_id, name)`.
+
+**`candidate_list_members`**
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| `id` | UUID PK | — |
+| `list_id` | UUID FK | cascade delete |
+| `candidate_id` | UUID FK | — |
+| `added_by` | UUID | — |
+| `added_at` | timestamp | — |
+| `notes` | text | nullable |
+| `source` | varchar | default "manual" |
+
+Constraint: UNIQUE `(list_id, candidate_id)`.
+
+**`candidate_favorites`**
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| `id` | UUID PK | — |
+| `candidate_id` | UUID | — |
+| `user_id` | UUID | — |
+| `company_id` | UUID | RLS |
+| `note` | text | nullable |
+| `is_pinned` | boolean | default false |
+
+Constraint: UNIQUE `(candidate_id, user_id)`.
+
+**`search_feedbacks`**
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| `id` | UUID PK | — |
+| `company_id` | UUID | RLS (migração 222) |
+| `candidate_id` | UUID | — |
+| `job_id` | UUID | nullable |
+| `user_id` | UUID | — |
+| `search_query` | text | nullable |
+| `search_fingerprint` | varchar(32) | SHA256[:32] (migração 225) |
+| `feedback_type` | enum | `like` / `dislike` |
+| `candidate_score` | float | nullable |
+| `candidate_name` | varchar | nullable |
+| `reason` | text | nullable |
+
+**`candidate_searches`** — log de buscas FastAPI (RLS-EXEMPT)
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| `id` | UUID PK | — |
+| `user_id` | UUID | — |
+| `search_query` | text | — |
+| `search_filters` | jsonb | filtros aplicados |
+| `local_results_count` | integer | — |
+| `global_results_count` | integer | — |
+| `search_duration_ms` | integer | — |
+| `discarded_candidates` | jsonb | candidatos sem contato (migração 083) |
+
+**`talent_pools`**
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| `id` | UUID PK | — |
+| `company_id` | UUID | RLS |
+| `name` | varchar | — |
+| `description` | text | nullable |
+| `status` | varchar | ativo/pausado/arquivado |
+| `archetype_id` | UUID | nullable |
+| `screening_questions` | JSON | — |
+| `screening_config` | JSON | — |
+| `agent_sourcing_enabled` | boolean | — |
+| `agent_config` | JSON | — |
+| `candidates_count` | integer | — |
+| `screened_count` | integer | — |
+| `ready_count` | integer | — |
+
+**`talent_pool_candidates`**
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| `id` | UUID PK | — |
+| `talent_pool_id` | UUID FK | — |
+| `candidate_id` | bigint | Rails candidate id |
+| `candidate_uuid` | UUID | FastAPI candidate id |
+| `stage` | varchar | discovered/contacted/screening/screened/ready |
+| `origin` | varchar | — |
+| `fit_score` | float | nullable |
+| `screening_data` | JSON | nullable |
+| `match_criteria` | JSON | nullable |
+| `moved_to_job_id` | UUID | nullable |
+| `moved_at` | timestamp | nullable |
+
+Constraint: UNIQUE `(talent_pool_id, candidate_id)`.
+
+**`credit_accounts`**
+
+`id`, `company_id` (UNIQUE), `balance` (integer).
+
+**`credit_transactions`**
+
+`id`, `company_id`, `action`, `amount`, `balance_before`, `balance_after`, `reference_id?`, `created_at`.
+
+**`external_api_consumption`** — custos Apify em USD
+
+`id`, `company_id`, `user_id`, `operation`, `credits_consumed`, `success`, `result_status`, `created_at`.
+
+**`shared_searches` (FastAPI)** — mais rico que Rails
+
+`id`, `company_id`, `share_type` (search/list), `source_list_id` (UUID, nullable), `status` (active/expired/revoked), `snapshot_payload` (JSONB), `token` (UNIQUE), `expires_at`, `created_by`.
+
+Sub-tabelas:
+- `shared_search_access` — OTP tokens por email convidado.
+- `shared_search_feedback` — (approved/maybe/rejected) por candidato por revisor.
+
+### 16.3 Relações-Chave
+
+```
+accounts (Rails)
+  ├── pearch_credits (campo na tabela)
+  ├── pearch_search_logs → pearch_credit_transactions
+  ├── sourcings → sourced_profile_sourcings
+  ├── sourced_profiles → candidates (quando importado via ConvertToCandidateJob)
+  └── candidates (per-tenant schema Apartment)
+      ├── favorite_user_ids[] (array, sem FK separada, indexado ES)
+      ├── pin_user_ids[] (idem)
+      └── evaluation_candidates (WSI)
+
+embeddings (Rails, public schema)
+  └── (reference_type, reference_id) → candidates | jobs
+      HNSW cosine index
+
+candidate_lists (FastAPI)
+  └── candidate_list_members
+      └── UNIQUE (list_id, candidate_id)
+
+candidate_favorites (FastAPI)
+  └── UNIQUE (candidate_id, user_id)
+
+talent_pools (FastAPI)
+  └── talent_pool_candidates
+      └── UNIQUE (talent_pool_id, candidate_id)
+
+shared_searches (FastAPI)
+  ├── shared_search_access
+  └── shared_search_feedback
+
+search_feedbacks (FastAPI)
+  └── RLS por company_id
+      toggle key: (user_id, candidate_id, job_id)
+      rehidratação key: (user_id, search_fingerprint)
+```
+
+### 16.4 Migrações Relevantes (por número)
+
+| Número | Descrição |
 |---|---|
-| `PEARCH_API_KEY` | auth Pearch |
-| `APIFY_API_KEY` | auth Apify |
-| `APIFY_SEARCH_FALLBACK_ENABLED` | habilita fallback Apify quando Pearch circuit OPEN |
-| `HTTP_TIMEOUT_PEARCH_SECONDS` | timeout Pearch (~30–60s) |
-| (Gemini via integração) | transcrição de voz + classificação de vaga |
-| (Elasticsearch URL) | índice full-text local |
-| (PostgreSQL + extensão `pgvector`) | embeddings + busca semântica |
-
-## 17. 📋 Quadro-resumo de regras de negócio
-
-> Consolidação de todas as regras espalhadas pelo documento. Use como checklist de paridade ao replicar.
-
-| # | Regra | Onde se aplica | Comportamento / razão | Evidência |
-|---|---|---|---|---|
-| 1 | Crédito debitado **por execução**, com lock de linha | Busca Híbrida/Global | evita corrida no saldo | `credit_service.py:152` |
-| 2 | **Saldo insuficiente não bloqueia** | Busca | retorna resultados + aviso, não debita | `search.py:413` |
-| 3 | Custo Pearch: base 1 + insights 1 + scoring 1 + freshness 2 (por candidato) | Pearch | precificação de add-ons | `pearch_service.py:221-224` |
-| 4 | Apify em **USD/BRL**, não créditos ($0.02/$0.01) | Apify | billing externo separado | `consumption_tracking_service.py:20-27` |
-| 5 | Contatos **mascarados por default**; revelar é opt-in e pago | Busca/contato | minimização de PII | `search.py:142-143` |
-| 6 | Sem contato + `require_*` → **descartado** (honest diagnostics), mas persistido | Busca/contato | não fingir resultado contatável | `search.py:356-368` |
-| 7 | **FairnessGuard** bloqueia termos discriminatórios (msg educativa) | Busca | compliance anti-viés / EU AI Act | `fairness_guard.py:153-328` |
-| 8 | LGPD: base legal **Legítimo Interesse (Art. 7 IX)** + AuditService | Busca/contato | trilha legal | `_persist.py:6` |
-| 9 | Corte de relevância por `qualification_level` (40/55/70%) | Ranking | poda de irrelevantes | `es_analyzer.py:12-16` |
-| 10 | Rubric BARS **"DO NOT INFER"**; override `strict_filters=false` | Ranking (JD) | objetividade | `rubric_evaluation_service.py:335-342` |
-| 11 | Dedup Pearch×local + **suppression 500 docids** | Pearch | não pagar 2x / sem duplicata | `_persist.py:236-267`, `search.py:145` |
-| 12 | Circuit breaker **Pearch→Apify** | Resiliência | continuidade da busca | `search.py:160-168` |
-| 13 | **Snapshot/fingerprint = custo ZERO** | Histórico/Busca | reabrir sem cobrar | `search.py:465-474` |
-| 14 | `require_company_id` + RLS + **Rule Zero** (`.where company_id`) | Tudo | isolamento multi-tenant | `require_company_id.py:116` |
-| 15 | Histórico **per-user**, 100 itens (front), `candidate_searches` **RLS-EXEMPT** | Histórico | metadado de UX, não PII | `candidates_search.py:53` |
-| 16 | Buscas Salvas **client-side**, sem share entre users, sem alertas | Buscas Salvas | limitação atual (→ §19) | `talent-funnel-store.ts:24-40` |
-| 17 | Listas: Pundit por `account_id`; **soft-delete**; dedup membros | Listas | colaboração tenant-wide | `candidate_list_repository.py:125,198` |
-| 18 | Assign-to-jobs cria `VacancyCandidate` (stage `sourcing`) | Listas | entra no funil da vaga | `candidate_list_repository.py:274-275` |
-| 19 | Add de perfil externo → **`ConvertToCandidateJob`** | Listas | perfil externo vira Candidate | `list_relationship_job.rb` |
-| 20 | Compartilhar via **token** (`SharedSearch`) | Listas/Share | acesso por link | `shared_search.rb:27` |
-| 21 | Favoritos **per-user**, `UniqueConstraint(candidate_id,user_id)`, pin primeiro | Favoritos | marcador privado | `candidate_favorites_repository.py:72,84` |
-| 22 | Assistência: **só o ghost text (`enhance-prompt`) usa LLM**; autocomplete/tags/completude são **determinísticos** (dicionário/regex/contagem) | Busca Natural | matar a suposição de "tudo é IA preditiva" | `search_assistant.py:345,494`, `misc_search.py:291` |
-| 23 | **BARS/rubric só com `job_id`/JD** (Match 0–99, cap 99); não roda na busca textual/semântica nem no WSI | Ranking (JD) | escopo correto do rubric | `rubric_evaluation_service.py` |
-| 24 | **Like/Dislike calibra o ranking** (+2.5/−2.5, cap ±5) + loop adaptativo (pesos ±30%); ancorado por **fingerprint** | Resultados/Ranking | feedback do recrutador re-pondera busca | `lia_score_service.py`, `search_feedback.py` |
-| 25 | Feedback de busca: **toggle por `user_id+candidate_id+job_id`**, re-hidratação por `user_id+fingerprint`; RLS por `company_id` | Resultados | sinal por candidato, reapresentado por contexto | `search_feedback.py:48-101`, migrações 222/225 |
-
-## 18. Checklist de replicação em outro ambiente
-
-1. **PostgreSQL + `pgvector`** habilitado; colunas de embedding nas tabelas de candidato.
-2. **Elasticsearch** provisionado e índice populado (full-text + `favorite_user_ids`).
-3. **Migrations:** `candidate_searches` (+ `discarded_candidates` JSONB), `candidate_lists` + `candidate_list_members`, `candidate_favorites`, array `favorite_user_ids` (Rails).
-4. **Secrets:** `PEARCH_API_KEY`, `APIFY_API_KEY`, integração Gemini; definir `APIFY_SEARCH_FALLBACK_ENABLED`.
-5. **Proxy Next.js** `/api/backend-proxy/*` → `/api/v1/*` (com repasse de cookies httpOnly).
-6. **Backend:** routers `candidate_search`, `search_assistant`, `voice`, `candidate_lists`, `candidates_metadata`.
-7. **Frontend:** `candidates-page.tsx` como entry único + hooks/stores da §15.
-8. **Tenancy:** `company_id` do JWT filtra tudo; `candidate_searches` permanece RLS-EXEMPT (per-user); aplicar "Rule Zero" em todo repo.
-9. **Regras de negócio (§17):** decidir conscientemente sobre cada uma — em especial #2 (saldo insuficiente), #6 (descartados) e #7 (FairnessGuard).
-10. **Validar fluxos:** rodar os 5 tipos em Local; depois Híbrida/Global com créditos de teste; smoke de voz (`voice/transcribe` → texto via Gemini).
-
-## 19. Gaps & pontos de atenção
-
-- 🔴 **Histórico e Buscas Salvas são client-side** (`localStorage`): não sincronizam entre dispositivos/usuários, somem ao limpar o navegador, limite 100. **→ Próxima tarefa: migrar para persistência no backend.**
-- 🟡 **Buscas Salvas sem alertas/agendamento** — só re-execução manual (oportunidade de produto).
-- 🟡 **Persistência dupla (Rails + Python)** para Listas/Favoritos — risco de divergência; definir a fonte-da-verdade ao replicar.
-- 🟡 **`search_pearch` default `false`** no lib (`candidate-search.ts:234`) — Híbrida/Global precisam ligar explicitamente, senão a busca vira Local silenciosamente.
-- 🟡 **Saldo insuficiente não bloqueia** (#2): replicar isso significa aceitar custo de fornecedor não debitado — decida a política.
-- 🟡 **Tamanho da base Pearch inconsistente:** UI afirma **800M+** (`SSIModeNatural.tsx:185-186`), log de health cita **190M+** (`candidates_search.py:216`). Alinhar a fonte do número.
-- 🟡 **Autocomplete parece "IA preditiva", mas é determinístico** (dicionário/prefixo, §4.1.1). A UI sugere inteligência contextual; na prática só o ghost text (`enhance-prompt`) usa LLM. Decidir se a expectativa de produto bate com a implementação (ou investir em autocomplete realmente contextual).
-- 🟢 **Dupla implementação de serviços (RESOLVIDO)** — a **fonte-da-verdade é `app/domains/*/services`**; os arquivos correspondentes em `app/shared/services` são **shims puros** que apenas reexportam (`from app.domains.*.services.<x> import *`), sem lógica de negócio. Confirmou-se que nenhum dos ~68 pares contém lógica duplicada. Um guard de CI (`scripts/check_shared_services_shims.py`, coberto por `tests/fitness/test_audit_2026_04_finals.py::TestShimServiceConsolidationGuard` + unit guard `tests/test_shared_services_shims_guard.py`) bloqueia a regressão: falha se algum arquivo em `app/shared/services` com twin no domínio ganhar `def`/`class` (lógica) ou parar de delegar. Ao replicar, porte apenas a árvore `app/domains/*/services`.
-- 🟡 **Feedback de busca: toggle por candidato, re-hidratação por fingerprint** (§5.8.4) — chaves diferentes. Um like dado numa busca aparece re-hidratado **só** em buscas com o **mesmo fingerprint** (mesmos critérios); mudou o filtro, muda o fingerprint e o like não reaparece (embora continue gravado por candidato). Confirmar se é o comportamento desejado de produto.
-- 🟢 **LinkedIn ≠ fonte selecionável:** é Apify por baixo, só como fallback de circuit breaker.
-- 🟢 **`candidate_searches` é RLS-EXEMPT** (metadado per-user) — intencional; confirme que os candidatos apontados continuam guardados por `company_id`.
+| 083 | `candidate_searches.discarded_candidates` JSONB |
+| 222 | RLS em `search_feedbacks` por `company_id` |
+| 225 | `search_feedbacks.search_fingerprint` (ancoragem ao contexto) |
+| 265 | `candidate_embeddings` (sem HNSW — gap identificado) |
+| Rails 2026-01-27 | Remoção de embedding de `candidates`, criação de `embeddings` centralizado com HNSW |
+| Rails 2026-01-28 | Índice HNSW em `embeddings.embedding` (`vector_cosine_ops`) |
 
 ---
 
-*Documento de handoff — escopo: tipos de busca + abas de gestão (Histórico, Buscas Salvas, Listas, Favoritos), agora com regras de negócio detalhadas por funcionalidade (§4.6, §5.7, §6.1, §7.1, §8.1, §9.1), a mecânica determinística-vs-LLM da camada de assistência (§4.1.1), o pipeline de ranking ponta-a-ponta com parâmetros reais (§11), o Like/Dislike (Search Feedback, §5.8) e o quadro-resumo consolidado (§17). Banco de Talentos será adicionado quando finalizado.*
+## 17. Regras de Negócio Consolidadas
+
+> Consolidação de todas as regras do documento. Use como checklist de paridade ao replicar.
+
+| # | Regra | Onde se aplica | Comportamento | Evidência |
+|---|---|---|---|---|
+| RN-01 | Proxy obrigatório front→back | Tudo | Frontend nunca chama backend direto | Todas as proxy routes |
+| RN-02 | `company_id` do JWT, nunca do payload | Tudo | `Depends(require_company_id)` em todo endpoint | `require_company_id.py:116` |
+| RN-03 | `search_pearch` default `false` | Busca | Sem custo acidental; ligar explicitamente para Híbrida/Global | `candidate-search.ts:234` |
+| RN-04 | Saldo insuficiente não bloqueia | Busca | Retorna resultados + aviso, não debita | `search.py:413` |
+| RN-05 | FairnessGuard antes de tudo | Busca | Termos discriminatórios → msg educativa, não erro HTTP | `fairness_guard.py:153-328` |
+| RN-06 | Descartados persistidos | Busca (require_*) | Não some silenciosamente; contagem + endpoint dedicado | `search.py:356-368` |
+| RN-07 | Snapshot/fingerprint custa zero | Histórico/Busca | Reabrir do histórico não debita | `search.py:465-474` |
+| RN-08 | Crédito debitado com lock de linha | Busca Pearch | `with_for_update` evita corrida no saldo | `credit_service.py:152` |
+| RN-09 | Custo Pearch: fast=1 + add-ons por candidato | Pearch | Insights +1, scoring +1, freshness +2 | `pearch_service.py:221-224` |
+| RN-10 | Reveal email = 2 créditos; telefone = 14 créditos | Reveal | Tenta Apify ($0.01) primeiro, fallback Pearch | `contact.py` |
+| RN-11 | Apify cobrado em USD, não créditos | Apify | $0.02 busca, $0.01 enrich/scrape/email | `consumption_tracking_service.py:20-27` |
+| RN-12 | Contatos mascarados por default | Busca/Contato | `show_emails=false` default; revelar é opt-in | `search.py:142-143` |
+| RN-13 | Circuit breaker Pearch → Apify | Resiliência | `failure_threshold=3`, `recovery_timeout=15s` | `search.py:160-168` |
+| RN-14 | Dedup Pearch×local + suppression 500 docids | Pearch | Não pagar 2× pelo mesmo perfil | `_persist.py:236-267` |
+| RN-15 | LGPD: base legal Legítimo Interesse Art. 7 IX | Busca/Contato | AuditService em toda revelação | `_persist.py:6` |
+| RN-16 | Corte de relevância por qualification_level | Ranking | Alta 40%, média 55%, baixa 70% de tolerância | `es_analyzer.py:12-16` |
+| RN-17 | BARS "DO NOT INFER" | Ranking (JD) | Não inventa o que não está no CV | `rubric_evaluation_service.py:335-342` |
+| RN-18 | BARS só com `job_id`/JD | Ranking | Match Score 0-99, cap 99 | `rubric_evaluation_service.py` |
+| RN-19 | Alpha WRF dinâmico por tipo de query | Ranking | Tech→0.3 (BM25), comportamental→0.7 (semântica) | `wrf_dynamic_k_service.py` |
+| RN-20 | k WRF dinâmico por qualidade dos resultados | Ranking | top_avg≥0.75 → k menor (precisão); ≤0.35 → k maior (recall) | `wrf_dynamic_k_service.py:107` |
+| RN-21 | Like/Dislike: +10/-10 clamped [0,100] | Resultados | `apply_feedback_boost()` in-memory | `_shared.py` |
+| RN-22 | Loop adaptativo: pesos ±30%, mínimo 5 amostras | Ranking/ML | `MLFeedbackService`, cache Redis TTL 1h | `ml_feedback_service.py` |
+| RN-23 | Toggle feedback por `user_id+candidate_id+job_id` | Feedback | Re-hidratação por `user_id+fingerprint` (chaves diferentes) | `search_feedback.py:48-101` |
+| RN-24 | Só ghost text usa LLM; autocomplete/tags/completude são determinísticos | Busca Natural | Matar suposição de "tudo é IA preditiva" | `search_assistant.py:345,494` |
+| RN-25 | `candidate_searches` é RLS-EXEMPT | Histórico | Metadado per-user de UX, não dado protegido | `candidates_search.py:53` |
+| RN-26 | Histórico e Buscas Salvas são client-side | Histórico/Salvas | localStorage; não sincroniza entre dispositivos | `talent-funnel-store.ts` |
+| RN-27 | Listas: soft-delete; dedup de membros on_conflict_do_nothing | Listas | `is_active=False`; duplicados ignorados | `candidate_list_repository.py:125,198` |
+| RN-28 | Assign-to-jobs cria VacancyCandidate stage=sourcing | Listas→Vaga | Entra no pipeline da vaga em etapa de sourcing | `candidate_list_repository.py:274-275` |
+| RN-29 | Adicionar SourcedProfile a lista → ConvertToCandidateJob | Listas | Perfil externo vira Candidate real no tenant | Rails job |
+| RN-30 | Favoritos per-user, UniqueConstraint, pin primeiro | Favoritos | Marcador privado; não visível para outros recrutadores | `candidate_favorites_repository.py:72,84` |
+| RN-31 | Chat LIA search_candidates: só DB local, sem Pearch/pgvector | Chat LIA | Gap crítico vs UI | `talent_tool_registry.py` |
+| RN-32 | BigFive declarado mas não contribui para score | Ranking/ML | Slot de peso morto; não implementar como funcional | `lia_score_service.py` |
+| RN-33 | candidate_embeddings sem índice HNSW | AI/ML | Linear scan; gap de performance em escala | Migração 265 |
+| RN-34 | Dupla persistência Rails+FastAPI para Listas/Favoritos | Listas/Favoritos | Risco de divergência; definir fonte da verdade ao replicar | — |
+
+---
+
+## 18. Integrações e Parceiros
+
+### 18.1 Pearch AI
+
+- **URL:** `https://api.pearch.ai/v2/search`
+- **Auth:** Bearer `PEARCH_API_KEY`
+- **Modelo de request:** `PearchSearchRequest` — `query`, `type` ("fast"/"pro"), `insights`, `high_freshness`, `profile_scoring`, `strict_filters`, `require_emails`, `show_emails`, `limit` (1-1000), `custom_filters`, `docid_blacklist`.
+- **Modelo de response:** `uuid`, `thread_id`, `status`, `total_estimate`, `search_results[]` (`CandidateProfile`).
+- **Tamanho declarado da base:** 800M+ (UI: `SSIModeNatural.tsx:185-186`); 190M+ (log backend: `candidates_search.py:216`). [VERIFICAR] — alinhar a fonte do número.
+- **Timeout:** `HTTP_TIMEOUT_PEARCH_SECONDS` (configurável).
+- **Tracking de consumo:** `ConsumptionTrackingService.record_pearch_consumption()`.
+
+### 18.2 Apify (Fallback de Scraping LinkedIn)
+
+> LinkedIn NÃO é uma fonte selecionável na UI. Apify entra somente como fallback quando o circuit breaker da Pearch está OPEN e `APIFY_SEARCH_FALLBACK_ENABLED=true`.
+
+- **Actors utilizados:**
+  - Busca: `curious_coder/linkedin-search`
+  - Scrape: `dev_fusion/Linkedin-Profile-Scraper`
+  - Email: `curious_coder/email-finder`
+- **Auth:** Bearer `APIFY_API_KEY`
+- **Timeouts:** 120s (busca) / 30s (scrape) / 15s (email)
+- **Circuit breaker:** `failure_threshold=3`, `recovery_timeout=60s`
+- **Mapper:** `ApifyProfileMapper` — normaliza resposta Apify para `CandidateSearchResultDTO`
+
+### 18.3 LLM — Gemini (default) + BYOK por tenant
+
+O provider LLM é **resolvido por tenant** via `get_tenant_llm_config(company_id)` (`tenant_llm_context.py`). Default é Gemini; tenants com BYOK (Bring Your Own Key) usam sua própria chave e não consomem créditos WeDOTalent.
+
+**Configuração BYOK:** tabela `tenant_llm_configs` (`primary_provider`, `providers: {gemini: {api_key}, claude: {api_key}}`). Flag denormalizada `ai_credits_balance.byok_active` para cheque rápido.
+
+| Uso | Provider / Modelo default | Endpoint | BYOK suportado? |
+|---|---|---|---|
+| Transcrição de voz | Gemini `gemini-2.5-flash` | `/api/v1/voice/transcribe` | ❌ (fixo) |
+| Ghost text (`enhance-prompt`) | Per-tenant via BYOK; default Gemini | `/api/v1/search/enhance-prompt` | ✅ Gemini + Claude |
+| Classificação de compatibilidade | Gemini Flash via `generate_with_fallback` | Interno no pipeline | ❌ (fixo) |
+| Embeddings (primário) | `text-embedding-004` | `CandidateEmbeddingService` | ❌ (fixo) |
+
+### 18.4 OpenAI (Fallback de Embeddings)
+
+- **Modelo:** `text-embedding-3-small`, truncado para 768 dims via parâmetro `dimensions`.
+- **Ativado quando:** `EMBEDDING_DEFAULT_PROVIDER != "gemini"` ou falha do Gemini.
+
+### 18.5 Twilio + Gemini Live (WSI Voz)
+
+Para triagem WSI por voz (acionada a partir do Funil):
+- Ligação via Twilio.
+- Transcrição em tempo real via Gemini Live.
+- Custo: ~$0.065+/chamada.
+- Rate limiting: Redis `voice_calls:{company_id}:YYYY-MM`, limite `VOICE_CALLS_MONTHLY_DEFAULT_LIMIT = 100`.
+
+### 18.6 ActionCable (Rails WebSocket)
+
+Canal `search_credits_account_{account_id}` — broadcast em tempo real de balanço de créditos Pearch após cada consumo ou adição. Consumido pelo FE para atualizar o contador de créditos na UI sem polling.
+
+### 18.7 Redis
+
+| Uso | Chave | TTL |
+|---|---|---|
+| Token budget LLM | `token_budget:{company_id}:YYYY-MM-DD` | 25h |
+| Cache calibração | por company_id/job_id | 1h |
+| Circuit breaker Pearch | interno `PearchService` | 15s (recovery) |
+| Circuit breaker Apify | interno `ApifyService` | 60s (recovery) |
+| Rate limit voz | `voice_calls:{company_id}:YYYY-MM` | 33 dias |
+| Dedup sessão de busca | `docid_blacklist` in-memory (não Redis) | Duração da sessão |
+
+---
+
+## 19. Glossário
+
+| Termo | Definição |
+|---|---|
+| **Funil de Talentos** | Superfície de sourcing e gestão de candidatos em `/funil-de-talentos`. |
+| **SearchMode** | Tipo de busca: natural / similar / jd / boolean / archetypes. |
+| **SearchSource** | Fonte de dados: local / hybrid / global. |
+| **Fingerprint** | SHA256[:32] da (query + search_spec). Identifica unicamente um contexto de busca para re-hidratação e ancoragem de feedback. |
+| **WRF** | Weighted Reciprocal Fusion — algoritmo de fusão de rankings (Elasticsearch + pgvector). |
+| **BARS** | Behaviorally Anchored Rating Scale — escala de avaliação de CV contra requisitos de vaga. |
+| **Pearch** | Plataforma de sourcing global com 800M+ perfis profissionais. Custo em créditos. |
+| **Apify** | Serviço de scraping (LinkedIn) usado como fallback quando Pearch está indisponível. Custo em USD. |
+| **Reveal** | Ação de desbloquear email (2 créditos Pearch) ou telefone (14 créditos Pearch) de um perfil externo. |
+| **alpha** | Peso do componente semântico no score híbrido WRF (0 = só BM25, 1 = só semântica). |
+| **k dinâmico** | Parâmetro do WRF que controla recall (k alto) vs precisão (k baixo). Ajustado por `top_avg` dos scores. |
+| **qualification_level** | Nível de exigência da busca (alta/média/baixa), derivado dos filtros. Afeta pesos WRF e threshold de corte. |
+| **FairnessGuard** | Serviço que intercepta queries com termos discriminatórios e retorna mensagem educativa. Compliance EU AI Act / LGPD Art. 20. |
+| **EsScoreDropAnalyzer** | Serviço que corta candidatos abaixo do limiar de relevância, com tolerância por qualification_level. |
+| **LIAScoreService** | Serviço de score unificado que combina rubricas, WSI, prereq e recência com pesos por disponibilidade de dados. |
+| **MLFeedbackService** | Serviço de calibração adaptativa que aprende pesos por vaga a partir do histórico de like/dislike. |
+| **Tenant** | Empresa cliente do WeDOTalent. Identificada por `company_id` (FastAPI) / `account_id` (Rails). |
+| **RLS** | Row-Level Security — política no PostgreSQL que filtra linhas por `company_id`. |
+| **RLS-EXEMPT** | Tabela excluída de RLS por decisão intencional (ex.: `candidate_searches` — metadado per-user). |
+| **Shim** | Arquivo em `app/shared/services` que apenas reexporta de `app/domains/*/services`. Sem lógica de negócio. |
+| **HITL** | Human-in-the-Loop — gate de confirmação humana antes de ações sensíveis no chat LIA. |
+| **Descartados** | Candidatos filtrados por falta de contato (`require_*`) e persistidos em `discarded_candidates` JSONB. |
+| **Arquétipo** | Template de perfil de candidato reutilizável para buscas recorrentes. |
+| **SourcedProfile** | Perfil externo retornado pelo Pearch, antes de ser "reivindicado" para a base do tenant. |
+| **ConvertToCandidateJob** | Rails job que converte um SourcedProfile em Candidate real quando adicionado a uma lista. |
+| **apply_table_state** | Tool do chat LIA que manipula a tabela de resultados (sort, filtro, tab) sem escrita no banco. |
+| **Completeness Factor** | Fator de 0.0 a 1.0 que reduz o LIA score quando dados estão ausentes (sem CV, sem WSI, etc.). |
+| **Rocchio** | Algoritmo de refinamento vetorial de busca usando centróide de likes/dislikes. Aplicado em sessões similares. |
+| **Four-Fifths Rule** | Regra de fairness referenciada no MLFeedbackService: impede que ajustes de peso criem disparidade ≥ 80% entre grupos. |
+| **HNSW** | Hierarchical Navigable Small World — estrutura de índice para busca aproximada de vizinhos mais próximos em pgvector. |
+
+---END OF DOCUMENT---
