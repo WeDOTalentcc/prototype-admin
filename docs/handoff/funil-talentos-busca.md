@@ -889,6 +889,18 @@ flowchart TD
 
 ### 11.1 Estágio 1 — Transformação do texto (query → sinais)
 
+> **Embedding = somente busca LOCAL.** A Pearch recebe o texto puro e tem seu próprio pipeline de embedding interno (contrato de API imutável — veja §12.1). Todo o que está abaixo se aplica exclusivamente ao banco local do cliente (PostgreSQL/pgvector).
+
+**Modelo de embedding** — não é um LLM generativo; é um modelo especializado que converte texto em vetores de números (sem gerar texto):
+- **Primário:** Google Gemini **`text-embedding-004`** — 768 dimensões. Provider padrão (`EMBEDDING_DEFAULT_PROVIDER=gemini`).
+- **Fallback:** OpenAI **`text-embedding-3-small`** — truncado para 768 dims. Ativado quando Gemini falha ou `EMBEDDING_DEFAULT_PROVIDER != "gemini"`.
+- Implementação: `EmbeddingProviderFactory.embed_with_fallback()` → ordem `["gemini", "openai"]`. Cache Redis antes de chamar o provider.
+
+**O que é embeddado (sempre local):**
+- Perfis de candidatos — gerado uma vez ao entrar no banco, salvo na coluna `embedding` (pgvector).
+- Query do recrutador — gerado em tempo de busca, comparado contra os perfis.
+- JDs (descrições de vaga) — para os fluxos Similar+vaga e JD mode.
+
 A mesma query alimenta **três representações** combinadas no estágio de fusão:
 - **Semântica (pgvector):** embedding da query; similaridade = `1 - (embedding <=> :embedding::vector)` (cosine). **Threshold semântico padrão `0.75`** (`rag_pipeline_service.py` — `_DEFAULT_SEMANTIC_THRESHOLD`); só entram candidatos com `similaridade >= 0.75`.
 - **Textual (full-text/BM25-like):** `ts_rank` com `plainto_tsquery` sobre `name + summary + skills`.
