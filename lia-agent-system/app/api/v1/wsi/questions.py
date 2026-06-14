@@ -15,6 +15,7 @@ import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -419,3 +420,95 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Failed to check consistency: {e}")
         return {"success": False, "error": str(e)}
+
+
+# ── Regenerate questions ─────────────────────────────────────────────────────
+
+
+class RegenerateQuestionsRequest(BaseModel):
+    """Regeneração de perguntas WSI — company_id vem do JWT, não do payload."""
+    model_config = ConfigDict(extra="ignore")  # FE envia company_id; ignorar (REGRA 2: JWT é canônico)
+
+    job_title: str = "Professional"
+    current_questions: list[dict] = Field(default_factory=list)
+    technical_skills: list[str] = Field(default_factory=list)
+    behavioral_competencies: list[str] = Field(default_factory=list)
+    seniority: str | None = "pleno"
+    max_questions: int | None = None
+    job_vacancy_id: str | None = None
+
+
+class RegenerateQuestionsResponse(BaseModel):
+    success: bool
+    questions: list[WSIQuestionOutput]
+    questions_added: int
+    questions_removed: int
+    quality_warnings: list[str]
+
+
+@router.post("/regenerate-questions", response_model=RegenerateQuestionsResponse)
+async def regenerate_questions(
+    request: RegenerateQuestionsRequest,
+    wsi_svc: WSIService = Depends(get_wsi_service),
+    company_id: str = Depends(require_company_id),
+):
+    """Regenera perguntas WSI reutilizando a pipeline canonical do generate-questions.
+
+    Retorna no formato {success, questions, questions_added, questions_removed, quality_warnings}
+    esperado pelo wizard FE (useWizardFlow / WsiQuestionsPanel).
+
+    Diferença de generate-questions: não persiste sessão nem set — é uma operação
+    de pré-visualização/regeneração que o FE decide se salva depois.
+    """
+    all_skills = request.technical_skills or ["Problem Solving", "Communication"]
+    behavioral = request.behavioral_competencies or []
+    seniority = request.seniority or "pleno"
+    requested_count = request.max_questions or 5
+    mode = "full" if requested_count > 10 else "compact"
+
+    try:
+        wsi_questions = await wsi_svc.generate_from_simple_inputs(
+            skills=all_skills,
+            behavioral=behavioral,
+            seniority=seniority,
+            job_description=None,
+            mode=mode,
+            max_questions=requested_count,
+        )
+    except Exception as exc:
+        logger.error(
+            "regenerate-questions: generate_from_simple_inputs falhou: %s",
+            exc,
+            exc_info=True,
+        )
+        raise HTTPException(status_code=503, detail="Serviço WSI indisponível, tente novamente.")
+
+    session_id = f"regen_{uuid.uuid4().hex[:12]}"
+    questions: list[WSIQuestionOutput] = []
+    for idx, wq in enumerate(wsi_questions):
+        question_id = f"q_{session_id}_{idx + 1}"
+        bloom_level = _FRAMEWORK_BLOOM_MAP.get(wq.framework, 3)
+        category = _FRAMEWORK_CATEGORY_MAP.get(wq.framework, "technical")
+        questions.append(
+            WSIQuestionOutput(
+                id=question_id,
+                text=wq.question_text,
+                bloom_level=bloom_level,
+                bloom_level_name=BLOOM_LEVELS.get(bloom_level, BLOOM_LEVELS[3])["name"],
+                skill_targeted=wq.competency,
+                question_type=wq.question_type,
+                block_id=3 if category == "technical" else 4,
+                category=category,
+                is_eliminatory=False,
+            )
+        )
+
+    prev_count = len(request.current_questions)
+    new_count = len(questions)
+    return RegenerateQuestionsResponse(
+        success=True,
+        questions=questions,
+        questions_added=max(0, new_count - prev_count),
+        questions_removed=max(0, prev_count - new_count),
+        quality_warnings=[],
+    )
