@@ -54,11 +54,11 @@ export function GlobalSelectionChat() {
       (intent === "suggest_rewrite" ? "Reescreva este trecho com linguagem mais clara e inclusiva." : "")
     if (!q) return
     await submit(q, "text_selection", {
-      selected_text: selection.text,
+      selected_text: frozenRef.current?.text ?? selection.text,
       page_url: pathname,
     }, intent)
     setQuestion("")
-  }, [question, intent, isLoading, submit, selection.text, pathname])
+  }, [question, intent, isLoading, submit, pathname])
 
   const handleOpenFullChat = useCallback(() => {
     handleClose()
@@ -129,7 +129,7 @@ export function GlobalSelectionChat() {
                 {intent === "suggest_rewrite" ? "Reescrever:" : "Sobre:"}
               </p>
               <p className="text-[11px] text-zinc-500 line-clamp-2 italic leading-relaxed">
-                "{selection.text.slice(0, 100)}{selection.text.length > 100 ? "…" : ""}"
+                "{(frozenRef.current?.text ?? selection.text).slice(0, 100)}{(frozenRef.current?.text ?? selection.text).length > 100 ? "…" : ""}"
               </p>
             </div>
             <button
