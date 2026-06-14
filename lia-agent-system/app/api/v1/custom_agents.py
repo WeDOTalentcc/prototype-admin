@@ -1064,6 +1064,7 @@ company_id: str = Depends(require_company_id)):
             reviewer_id=str(getattr(_user, "id", "admin")),
             action=body.action,
             review_notes=body.review_notes,
+            reviewer_company_id=company_id,  # P0-4: anti self-review
         )
         if not listing:
             raise HTTPException(status_code=404, detail="Listing not found")

@@ -246,8 +246,21 @@ class AgentMarketplaceService:
         reviewer_id: str,
         action: str,
         review_notes: Optional[str] = None,
+        reviewer_company_id: Optional[str] = None,
     ) -> Optional[AgentMarketplaceListing]:
         listing_repo = AgentMarketplaceListingRepository(db)
+
+        # P0-4: Anti self-review — reviewer nao pode ser do mesmo tenant que publicou
+        if reviewer_company_id:
+            listing = await listing_repo.get_by_id(listing_id=listing_id)
+            if listing and hasattr(listing, 'publisher_company_id'):
+                if str(listing.publisher_company_id) == str(reviewer_company_id):
+                    raise ValueError(
+                        'Auto-review bloqueado: reviewer nao pode ser do mesmo tenant '
+                        'que publicou o agente. '
+                        'Requer admin WeDOTalent ou admin de tenant diferente.'
+                    )
+
         return await listing_repo.update_review(
             listing_id=listing_id,
             reviewer_id=reviewer_id,
