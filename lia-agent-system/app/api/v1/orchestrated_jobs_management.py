@@ -421,6 +421,76 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
             logger.info(f"[JobsManagement] ActionExecutor intent: {jobs_mgmt_intent}")
             extracted_entities = _extract_jobs_mgmt_entities(request)
 
+            # === BULK: per-job actions with multiple selected_jobs ===
+            _PER_JOB_BULK_INTENTS = {"pausar_vaga", "fechar_vaga", "duplicar_vaga", "reabrir_vaga"}
+            _INTENT_ACTION_LABEL = {
+                "pausar_vaga": "pausada",
+                "fechar_vaga": "fechada",
+                "duplicar_vaga": "duplicada",
+                "reabrir_vaga": "reaberta",
+            }
+            selected_jobs = request.selected_jobs or []
+            if jobs_mgmt_intent in _PER_JOB_BULK_INTENTS and len(selected_jobs) > 1:
+                logger.info(
+                    f"[JobsManagement] Bulk {jobs_mgmt_intent} over {len(selected_jobs)} jobs"
+                )
+                succeeded: list[str] = []
+                failed: list[str] = []
+                ctx = {
+                    "conversation_id": conv_id,
+                    "user_id": request.user_id,
+                    "jobs_context": request.jobs_context,
+                }
+                for job in selected_jobs:
+                    job_id = str(job.get("id", job.get("job_id", "")))
+                    job_title = job.get("title", job.get("job_title", job_id))
+                    if not job_id:
+                        failed.append(job_title or "?")
+                        continue
+                    bulk_entities = dict(extracted_entities)
+                    bulk_entities["job_id"] = job_id
+                    bulk_entities["job_title"] = job_title
+                    try:
+                        r = await action_executor.try_execute(
+                            intent=jobs_mgmt_intent,
+                            entities=bulk_entities,
+                            candidates_data=[],
+                            context=ctx,
+                        )
+                        if r.status == "executed":
+                            succeeded.append(job_title)
+                        else:
+                            failed.append(job_title)
+                    except Exception as bulk_err:
+                        logger.warning(
+                            f"[JobsManagement] Bulk {jobs_mgmt_intent} failed for {job_id}: {bulk_err}"
+                        )
+                        failed.append(job_title)
+
+                action_label = _INTENT_ACTION_LABEL.get(jobs_mgmt_intent, "processada")
+                if succeeded and not failed:
+                    msg = f"{len(succeeded)} vaga(s) {action_label}(s) com sucesso: {', '.join(succeeded)}."
+                elif succeeded:
+                    msg = (
+                        f"{len(succeeded)} vaga(s) {action_label}(s) com sucesso: {', '.join(succeeded)}. "
+                        f"Falhou: {', '.join(failed)}."
+                    )
+                else:
+                    msg = f"Não foi possível executar a ação nas vagas: {', '.join(failed)}."
+
+                return OrchestratedJobsManagementResponse(
+                    success=bool(succeeded),
+                    content=msg,
+                    agent_used="ActionExecutor",
+                    intent_detected=jobs_mgmt_intent,
+                    confidence=1.0,
+                    suggested_prompts=["Como estão as vagas?", "Quais vagas precisam de atenção?"],
+                    conversation_id=conv_id,
+                    action_executed=bool(succeeded),
+                    action_result={"succeeded": succeeded, "failed": failed},
+                    action_type=INTENT_TO_UI_ACTION.get(jobs_mgmt_intent, jobs_mgmt_intent),
+                )
+
             action_result = await action_executor.try_execute(
                 intent=jobs_mgmt_intent,
                 entities=extracted_entities,
