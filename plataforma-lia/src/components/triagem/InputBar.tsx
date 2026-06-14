@@ -97,7 +97,7 @@ export function InputBar({
             className={cn(
               "flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg transition-colors",
               autoPlayVoice
-                ? "bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20"
+                ? "bg-wedo-cyan/10 text-wedo-cyan-text hover:bg-wedo-cyan/20"
                 : "border border-lia-border-default text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary"
             )}
           >

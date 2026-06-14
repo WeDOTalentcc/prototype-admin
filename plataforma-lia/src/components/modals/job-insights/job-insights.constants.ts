@@ -46,12 +46,12 @@ export const INSIGHT_TYPE_STYLES = {
   analysis: {
     bg: "bg-wedo-purple/10",
     border: "border-wedo-purple/30",
-    iconColor: "text-wedo-purple",
+    iconColor: "text-wedo-purple-text",
   },
   comparison: {
     bg: "bg-wedo-purple/10",
     border: "border-wedo-purple/30",
-    iconColor: "text-wedo-purple",
+    iconColor: "text-wedo-purple-text",
   },
   attention: {
     bg: "bg-status-error/10",

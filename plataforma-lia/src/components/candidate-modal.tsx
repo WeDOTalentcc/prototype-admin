@@ -190,7 +190,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
       case 'email': return <Mail className="w-4 h-4 text-lia-text-secondary" />
       case 'call': return <Phone className="w-4 h-4 text-status-success" />
       case 'view': return <Eye className="w-4 h-4 text-lia-text-primary" />
-      case 'meeting': return <Video className="w-4 h-4 text-wedo-purple" />
+      case 'meeting': return <Video className="w-4 h-4 text-wedo-purple-text" />
       default: return <MessageCircle className="w-4 h-4 text-lia-text-primary" />
     }
   }
@@ -234,7 +234,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               <div className="flex items-center gap-4 mt-2">
                 <div className="flex items-center gap-1">
                   <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
-                  <span className="text-sm font-medium text-wedo-cyan-dark">IA: {candidateData.liaScore}/10</span>
+                  <span className="text-sm font-medium text-wedo-cyan-text">IA: {candidateData.liaScore}/10</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Target className="w-4 h-4 text-status-success" />

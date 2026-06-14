@@ -104,8 +104,8 @@ export function LiaChatButton({ className }: LiaChatButtonProps) {
         className={cn(
           "w-10 h-10 transition-colors duration-200 drop-shadow-lia-md",
           isOpen
-            ? "text-wedo-cyan scale-95"
-            : "text-wedo-cyan hover:drop-shadow-lia-lg"
+            ? "text-wedo-cyan-text scale-95"
+            : "text-wedo-cyan-text hover:drop-shadow-lia-lg"
         )}
         strokeWidth={2}
       />

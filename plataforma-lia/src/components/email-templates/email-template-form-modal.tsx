@@ -428,7 +428,7 @@ export function EmailTemplateFormModal({
                   {detectedVariables.length > 0 && (
                     <Card className="border-wedo-green/30 bg-wedo-green/10">
                       <CardContent className="pt-4">
-                        <h4 className="font-medium text-wedo-green mb-2">
+                        <h4 className="font-medium text-wedo-green-text mb-2">
                           Variáveis detectadas no template:
                         </h4>
                         <div className="flex flex-wrap gap-2">

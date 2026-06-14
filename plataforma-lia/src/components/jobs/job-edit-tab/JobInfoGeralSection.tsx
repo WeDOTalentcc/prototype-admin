@@ -168,7 +168,7 @@ export function JobInfoGeralSection({
                   }
                   if (st.mode === "readonly") {
                     return (
-                      <div className="w-full px-3 py-2 text-xs rounded-md border border-wedo-cyan/30 bg-wedo-cyan/10 text-wedo-cyan-dark">✓ Concluída</div>
+                      <div className="w-full px-3 py-2 text-xs rounded-md border border-wedo-cyan/30 bg-wedo-cyan/10 text-wedo-cyan-text">✓ Concluída</div>
                     )
                   }
                   return (
@@ -236,7 +236,7 @@ export function JobInfoGeralSection({
                 <label className={labelClass}>
                   Modelo de Trabalho<ScreeningBadge />
                   {Boolean((companyDefaults as Record<string, unknown>)?.workModel) && !jobEditForm.workModel && (
-                    <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">(padrão: {(companyDefaults as Record<string, unknown>)?.workModel as string})</span>
+                    <span className="ml-1.5 text-micro text-wedo-cyan-text font-normal">(padrão: {(companyDefaults as Record<string, unknown>)?.workModel as string})</span>
                   )}
                 </label>
                 <RemoteCombobox
@@ -256,7 +256,7 @@ export function JobInfoGeralSection({
                 <label className={labelClass}>
                   Tipo de Contrato<ScreeningBadge />
                   {Boolean((companyDefaults as Record<string, unknown>)?.employmentTypes) && ((companyDefaults as Record<string, unknown>)?.employmentTypes as string[]).length > 0 && !jobEditForm.type && (
-                    <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">(padrão: {((companyDefaults as Record<string, unknown>)?.employmentTypes as string[])[0]})</span>
+                    <span className="ml-1.5 text-micro text-wedo-cyan-text font-normal">(padrão: {((companyDefaults as Record<string, unknown>)?.employmentTypes as string[])[0]})</span>
                   )}
                 </label>
                 <RemoteCombobox
@@ -348,7 +348,7 @@ export function JobInfoGeralSection({
         <h3 className={groupHeaderClass}>
           Idiomas<ScreeningBadge />
           {Boolean((companyDefaults as Record<string, unknown>)?.defaultLanguages) && ((companyDefaults as Record<string, unknown>)?.defaultLanguages as string[]).length > 0 && (
-            <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal normal-case tracking-normal">
+            <span className="ml-1.5 text-micro text-wedo-cyan-text font-normal normal-case tracking-normal">
               (padrão empresa: {((companyDefaults as Record<string, unknown>)?.defaultLanguages as string[]).join(", ")})
             </span>
           )}
@@ -485,7 +485,7 @@ export function JobInfoGeralSection({
             <div className="space-y-0">
               <div className="flex items-center justify-between py-2.5 dark:border-lia-border-strong">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-wedo-cyan/10 flex items-center justify-center"><Linkedin className="w-4 h-4 text-wedo-cyan-dark" /></div>
+                  <div className="w-8 h-8 rounded-lg bg-wedo-cyan/10 flex items-center justify-center"><Linkedin className="w-4 h-4 text-wedo-cyan-text" /></div>
                   <div>
                     <span className="text-xs font-medium text-lia-text-primary">LinkedIn</span>
                     <p className="text-xs text-lia-text-secondary">Publicar vaga no LinkedIn</p>
@@ -505,7 +505,7 @@ export function JobInfoGeralSection({
               </div>
               <div className="flex items-center justify-between py-2.5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center"><Search className="w-4 h-4 text-wedo-purple" /></div>
+                  <div className="w-8 h-8 rounded-lg bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center"><Search className="w-4 h-4 text-wedo-purple-text" /></div>
                   <div>
                     <span className="text-xs font-medium text-lia-text-primary">Indeed</span>
                     <p className="text-xs text-lia-text-secondary">Publicar vaga no Indeed</p>

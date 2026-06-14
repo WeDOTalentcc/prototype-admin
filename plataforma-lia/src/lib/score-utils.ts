@@ -117,7 +117,7 @@ const VENDOR_GRADE_STYLES: Record<VendorGrade, VendorGradeClassification> = {
   A: { bg: 'bg-status-success/15', text: 'text-status-success', border: 'border-status-success/30' },
   B: { bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary dark:text-lia-text-tertiary', border: 'border-lia-border-default dark:border-lia-border-default' },
   C: { bg: 'bg-status-warning/15', text: 'text-status-warning', border: 'border-status-warning/30' },
-  D: { bg: 'bg-wedo-orange/15', text: 'text-wedo-orange', border: 'border-wedo-orange/30' },
+  D: { bg: 'bg-wedo-orange/15', text: 'text-wedo-orange-text', border: 'border-wedo-orange/30' },
   F: { bg: 'bg-status-error/15', text: 'text-status-error', border: 'border-status-error/30' },
 }
 

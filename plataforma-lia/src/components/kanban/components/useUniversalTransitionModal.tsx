@@ -61,7 +61,7 @@ export interface UniversalTransitionModalProps {
 export const ACTION_BEHAVIOR_CONFIG: Record<string, { label: string; icon: React.ReactNode; description: string }> = {
   intake: {
     label: 'Orientação LIA',
-    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
+    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />,
     description: 'LIA orienta o recrutador sobre o candidato recebido',
   },
   screening: {
@@ -91,12 +91,12 @@ export const ACTION_BEHAVIOR_CONFIG: Record<string, { label: string; icon: React
   },
   passive: {
     label: 'Orientação LIA',
-    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
+    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />,
     description: 'LIA orienta sobre a movimentação do candidato',
   },
   standby: {
     label: 'Banco de Talentos',
-    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
+    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />,
     description: 'LIA registra candidato no banco de talentos',
   },
   conclusion_hired: {

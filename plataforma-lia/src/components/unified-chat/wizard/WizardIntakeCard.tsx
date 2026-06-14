@@ -95,7 +95,7 @@ export function WizardIntakeCard({ data, onOpenPanel }: WizardIntakeCardProps) {
 
             {(data.is_affirmative as boolean) && (
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-wedo-purple/10 text-wedo-purple font-medium">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-wedo-purple/10 text-wedo-purple-text font-medium">
                   Vaga afirmativa
                 </span>
                 {(data.affirmative_criteria_primary as string) && (
@@ -110,7 +110,7 @@ export function WizardIntakeCard({ data, onOpenPanel }: WizardIntakeCardProps) {
               <button
                 type="button"
                 onClick={onOpenPanel}
-                className="flex items-center gap-1.5 text-[11px] text-wedo-cyan hover:underline mt-1"
+                className="flex items-center gap-1.5 text-[11px] text-wedo-cyan-text hover:underline mt-1"
               >
                 <ExternalLink className="w-3 h-3" aria-hidden="true" />
                 Abrir no painel

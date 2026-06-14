@@ -87,7 +87,7 @@ export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails
           </Chip>
         )}
         {item.big_five_trait && (
-          <Chip variant="neutral" muted className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30 dark:bg-wedo-magenta/20 dark:text-wedo-magenta dark:border-wedo-magenta/30">
+          <Chip variant="neutral" muted className="text-micro px-2 py-0.5 h-5 rounded-full border bg-wedo-magenta/10 text-wedo-magenta-text border-wedo-magenta/30 dark:bg-wedo-magenta/20 dark:text-wedo-magenta dark:border-wedo-magenta/30">
             {getBigFiveLabelPTBR(item.big_five_trait)}
           </Chip>
         )}

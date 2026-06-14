@@ -220,7 +220,7 @@ export function UnifiedChatInput({
       {/* Drag overlay */}
       {isDragOver && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md border-2 border-dashed border-wedo-cyan bg-wedo-cyan/5">
-          <p className="text-sm font-medium text-wedo-cyan">{t('dropFileHere')}</p>
+          <p className="text-sm font-medium text-wedo-cyan-text">{t('dropFileHere')}</p>
         </div>
       )}
       {/* Attached file indicator */}
@@ -352,7 +352,7 @@ export function UnifiedChatInput({
               className={cn(
                 "p-1.5 rounded-md transition-colors motion-reduce:transition-none disabled:opacity-40",
                 showSuggestions
-                  ? "text-wedo-cyan bg-wedo-cyan/10"
+                  ? "text-wedo-cyan-text bg-wedo-cyan/10"
                   : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
               )}
               title={t('suggestionsTitle')}
@@ -383,7 +383,7 @@ export function UnifiedChatInput({
               className={cn(
                 "p-1.5 rounded-md transition-colors motion-reduce:transition-none",
                 canSend
-                  ? "text-wedo-cyan hover:bg-wedo-cyan/10"
+                  ? "text-wedo-cyan-text hover:bg-wedo-cyan/10"
                   : "text-lia-text-disabled"
               )}
               aria-label={t('sendLabel')}

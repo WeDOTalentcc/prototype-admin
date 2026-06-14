@@ -217,7 +217,7 @@ export function CVPreview({
   const getConfidenceColor = (score: number) => {
     if (score >= 0.8) return"text-status-success bg-status-success/15"
     if (score >= 0.6) return"text-status-warning bg-status-warning/15"
-    return"text-wedo-orange bg-wedo-orange/15"
+    return"text-wedo-orange-text bg-wedo-orange/15"
   }
 
   const getConfidenceLabel = (score: number) => {

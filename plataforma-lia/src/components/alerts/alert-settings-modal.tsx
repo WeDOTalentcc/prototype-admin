@@ -341,7 +341,7 @@ export function AlertSettingsModal({
                         <div className="flex items-center gap-1">
                           {rule.notifications.email && <Mail className="w-3 h-3 text-lia-text-secondary" />}
                           {rule.notifications.push && <Smartphone className="w-3 h-3 text-status-success" />}
-                          {rule.notifications.inApp && <Monitor className="w-3 h-3 text-wedo-purple" />}
+                          {rule.notifications.inApp && <Monitor className="w-3 h-3 text-wedo-purple-text" />}
                         </div>
                       </div>
                     </CardContent>

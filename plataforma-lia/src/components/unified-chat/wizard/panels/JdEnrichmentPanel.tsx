@@ -90,7 +90,7 @@ interface Props {
 
 function getQualityBadge(score: number) {
   if (score >= 70) return { label:"Bom", icon: CheckCircle, color:"text-status-success bg-status-success/10" }
-  if (score >= 50) return { label:"Adequado", icon: CheckCircle, color:"text-wedo-cyan bg-wedo-cyan/10" }
+  if (score >= 50) return { label:"Adequado", icon: CheckCircle, color:"text-wedo-cyan-text bg-wedo-cyan/10" }
   if (score >= 30) return { label:"Insuficiente", icon: AlertTriangle, color:"text-status-warning bg-status-warning/10" }
   return { label:"Critico", icon: XCircle, color:"text-status-error bg-status-error/10" }
 }

@@ -203,18 +203,18 @@ export const JobFiltersSection = ({
                                 <div className="text-xs text-lia-text-secondary mt-0.5">{preset.description}</div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-wedo-purple">+{preset.titles.length} cargos</span>
+                                <span className="text-xs text-wedo-purple-text">+{preset.titles.length} cargos</span>
                                 <ChevronRight className="w-4 h-4 text-lia-text-tertiary" />
                               </div>
                             </div>
                             <div className="flex flex-wrap gap-1 mt-2">
                               {preset.titles.slice(0, 3).map(title => (
-                                <span key={title} className="text-micro px-1.5 py-0.5 bg-wedo-purple/15 rounded-full text-wedo-purple">
+                                <span key={title} className="text-micro px-1.5 py-0.5 bg-wedo-purple/15 rounded-full text-wedo-purple-text">
                                   {title}
                                 </span>
                               ))}
                               {preset.titles.length > 3 && (
-                                <span className="text-micro text-wedo-purple">...</span>
+                                <span className="text-micro text-wedo-purple-text">...</span>
                               )}
                             </div>
                           </button>

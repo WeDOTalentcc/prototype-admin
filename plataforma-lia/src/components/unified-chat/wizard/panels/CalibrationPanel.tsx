@@ -97,7 +97,7 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
           <div className="flex items-center gap-2">
             {/* Pool counter — updates as user gives feedback */}
             {poolCount !== null && (
-              <span className="flex items-center gap-1 text-[10px] text-wedo-cyan font-medium">
+              <span className="flex items-center gap-1 text-[10px] text-wedo-cyan-text font-medium">
                 <Users className="w-3 h-3" aria-hidden="true" />
                 {poolCount.toLocaleString("pt-BR")} compatíveis
               </span>
@@ -131,7 +131,7 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
             aria-expanded={criteriaOpen}
             aria-controls="calibration-criteria-tables"
             data-testid="calibration-criteria-toggle"
-            className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-wedo-cyan hover:underline transition-colors motion-reduce:transition-none"
+            className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-wedo-cyan-text hover:underline transition-colors motion-reduce:transition-none"
           >
             {criteriaOpen ? "Ocultar critérios" : "Mostrar critérios"}
             {criteriaOpen ? (
@@ -246,7 +246,7 @@ function CandidateCard({
                 href={candidate.linkedin_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] text-wedo-cyan hover:underline flex-shrink-0"
+                className="text-[10px] text-wedo-cyan-text hover:underline flex-shrink-0"
                 aria-label="Abrir LinkedIn"
               >
                 in
@@ -257,7 +257,7 @@ function CandidateCard({
             {candidate.current_title} @ {candidate.current_company}
           </p>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className="flex items-center gap-1 text-[10px] text-wedo-cyan font-medium">
+            <span className="flex items-center gap-1 text-[10px] text-wedo-cyan-text font-medium">
               <Target className="w-3 h-3" />
               Match: {Math.round(candidate.match_score * 100)}%
             </span>
@@ -510,7 +510,7 @@ function CriteriaTable({
                 <td className="py-1.5 text-right">
                   <button
                     type="button"
-                    className="inline-flex items-center gap-0.5 text-[10px] text-wedo-cyan hover:underline"
+                    className="inline-flex items-center gap-0.5 text-[10px] text-wedo-cyan-text hover:underline"
                     aria-label={`Adicionar critério a ${title}`}
                   >
                     <Plus className="w-3 h-3" aria-hidden="true" />

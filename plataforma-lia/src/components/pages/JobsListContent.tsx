@@ -138,7 +138,7 @@ export function JobsListContent(props: JobsListContentProps) {
 
   const bulkActions = [
     { id: 'publish', label: t('publish'), icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary" />, onClick: handleJobPublish },
-    { id: 'insights', label: t('insights'), icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />, onClick: handleJobInsights },
+    { id: 'insights', label: t('insights'), icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />, onClick: handleJobInsights },
     { id: 'duplicate', label: t('duplicate'), icon: <Copy className="w-3.5 h-3.5 text-lia-text-secondary" />, onClick: handleJobDuplicate },
     { id: 'toggle_status', label: getSelectedJobsHaveActiveStatus() ? t('pause') : t('activate'),
       icon: getSelectedJobsHaveActiveStatus() ? <X className="w-3.5 h-3.5 text-lia-text-secondary" /> : <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-secondary" />,

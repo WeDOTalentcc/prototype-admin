@@ -55,18 +55,18 @@ export function WSIScoreCard({
   const getClassification = (pct: number) => {
     if (pct >= 90) return { label:"Excepcional", color:"text-status-success", bg:"bg-status-success/15" }
     if (pct >= 80) return { label:"Excelente", color:"text-status-success", bg:"bg-status-success/15" }
-    if (pct >= 70) return { label:"Alto", color:"text-wedo-cyan-dark", bg:"bg-wedo-cyan/15" }
+    if (pct >= 70) return { label:"Alto", color:"text-wedo-cyan-text", bg:"bg-wedo-cyan/15" }
     if (pct >= 60) return { label:"Médio", color:"text-status-warning", bg:"bg-status-warning/15" }
-    if (pct >= 45) return { label:"Abaixo da média", color:"text-wedo-orange", bg:"bg-wedo-orange/15" }
+    if (pct >= 45) return { label:"Abaixo da média", color:"text-wedo-orange-text", bg:"bg-wedo-orange/15" }
     return { label:"Regular / Baixo", color:"text-status-error", bg:"bg-status-error/15" }
   }
 
   const getScoreDisplay = (score: number) => {
     if (score >= 90) return { text:"text-status-success", icon: TrendingUp }
     if (score >= 80) return { text:"text-status-success", icon: TrendingUp }
-    if (score >= 70) return { text:"text-wedo-cyan-dark", icon: TrendingUp }
+    if (score >= 70) return { text:"text-wedo-cyan-text", icon: TrendingUp }
     if (score >= 60) return { text:"text-status-warning", icon: Minus }
-    if (score >= 45) return { text:"text-wedo-orange", icon: TrendingDown }
+    if (score >= 45) return { text:"text-wedo-orange-text", icon: TrendingDown }
     return { text:"text-status-error", icon: TrendingDown }
   }
 
@@ -106,9 +106,9 @@ export function WSIScoreCard({
     const percent = score * 100
     if (percent >= 90) return <TrendingUp className="h-3 w-3 text-status-success" />
     if (percent >= 80) return <TrendingUp className="h-3 w-3 text-status-success" />
-    if (percent >= 70) return <TrendingUp className="h-3 w-3 text-wedo-cyan-dark" />
+    if (percent >= 70) return <TrendingUp className="h-3 w-3 text-wedo-cyan-text" />
     if (percent >= 60) return <Minus className="h-3 w-3 text-status-warning" />
-    if (percent >= 45) return <TrendingDown className="h-3 w-3 text-wedo-orange" />
+    if (percent >= 45) return <TrendingDown className="h-3 w-3 text-wedo-orange-text" />
     return <TrendingDown className="h-3 w-3 text-status-error" />
   }
 

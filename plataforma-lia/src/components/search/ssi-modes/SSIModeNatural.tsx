@@ -124,7 +124,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                     className={cn(
                       "flex items-center justify-center p-1 rounded-md text-xs transition-colors",
                       searchSource === 'local'
-                        ? "bg-wedo-green/15 text-wedo-green"
+                        ? "bg-wedo-green/15 text-wedo-green-text"
                         : "text-lia-border-default hover:text-lia-text-tertiary"
                     )}
                   >
@@ -148,7 +148,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                       className={cn(
                         "flex items-center justify-center p-1 rounded-md text-xs transition-colors",
                         searchSource === 'hybrid'
-                          ? "bg-wedo-orange/15 text-wedo-orange"
+                          ? "bg-wedo-orange/15 text-wedo-orange-text"
                           : "text-lia-border-default hover:text-lia-text-tertiary"
                       )}
                     >
@@ -203,7 +203,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                           requireEmails
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                             : "hover:bg-lia-bg-tertiary"
-                        , requireEmails ? "text-wedo-green" : "text-lia-text-tertiary"
+                        , requireEmails ? "text-wedo-green-text" : "text-lia-text-tertiary"
                         )}
                       >
                         <Mail className="w-3.5 h-3.5" />
@@ -227,7 +227,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                           requirePhoneNumbers
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                             : "hover:bg-lia-bg-tertiary"
-                        , requirePhoneNumbers ? "text-wedo-green" : "text-lia-text-tertiary"
+                        , requirePhoneNumbers ? "text-wedo-green-text" : "text-lia-text-tertiary"
                         )}
                       >
                         <Phone className="w-3.5 h-3.5" />

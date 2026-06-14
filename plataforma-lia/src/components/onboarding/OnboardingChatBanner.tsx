@@ -108,7 +108,7 @@ export function OnboardingChatBanner({ onOpenChat, className = "" }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <p className="text-xs leading-snug text-lia-text-secondary">
           Mais rápido que preencher 80+ campos sozinho.
-          <span className="ml-2 font-medium text-wedo-cyan">
+          <span className="ml-2 font-medium text-wedo-cyan-text">
             {progress}% completo
           </span>
         </p>

@@ -254,7 +254,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Decidir", onNavig
         size="sm"
         variant="ghost"
         onClick={() => handleApplyFilter(tip)}
-        className="h-6 px-2 text-xs text-wedo-purple hover:text-wedo-purple"
+        className="h-6 px-2 text-xs text-wedo-purple-text hover:text-wedo-purple"
         title="Aplicar como filtro"
       >
         <Filter className="w-3 h-3" />

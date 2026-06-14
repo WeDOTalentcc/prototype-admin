@@ -189,7 +189,7 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
             </div>
 
             {config.reasoning && (
-              <p className="text-[11px] text-wedo-cyan-dark italic pt-1">
+              <p className="text-[11px] text-wedo-cyan-text italic pt-1">
                 LIA: {config.reasoning}
               </p>
             )}

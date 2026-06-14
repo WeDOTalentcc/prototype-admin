@@ -51,12 +51,12 @@ const SOURCE_CONFIG: Record<'market_benchmark' | 'company_history' | 'platform_c
   market_benchmark: {
     icon: BarChart3,
     label: '📊 benchmark de mercado',
-    className: 'text-wedo-cyan-dark'
+    className: 'text-wedo-cyan-text'
   },
   company_history: {
     icon: Building2,
     label: '🏢 histórico da empresa',
-    className: 'text-wedo-purple dark:text-wedo-purple'
+    className: 'text-wedo-purple-text dark:text-wedo-purple'
   },
   platform_config: {
     icon: Settings,

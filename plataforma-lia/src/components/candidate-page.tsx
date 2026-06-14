@@ -101,7 +101,7 @@ export function CandidatePage({
   const liaScore = c.liaAnalysis?.score ?? 0
   const getScoreColor = (score: number) => {
     if (score >= 7.5) return "text-status-success"
-    if (score >= 6) return "text-wedo-orange"
+    if (score >= 6) return "text-wedo-orange-text"
     return "text-status-error"
   }
 

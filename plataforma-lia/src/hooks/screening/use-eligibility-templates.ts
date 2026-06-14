@@ -297,13 +297,13 @@ export const QUESTION_CATEGORIES: Record<
   { label: string; icon: string; color: string }
 > = {
   general: { label: "Gerais", icon: "📋", color: "bg-lia-bg-tertiary text-lia-text-primary" },
-  eligibility: { label: "Elegibilidade e Requisitos Legais", icon: "📋", color: "bg-wedo-cyan/15 text-wedo-cyan-dark" },
+  eligibility: { label: "Elegibilidade e Requisitos Legais", icon: "📋", color: "bg-wedo-cyan/15 text-wedo-cyan-text" },
   availability: { label: "Disponibilidade e Mobilidade", icon: "✈️", color: "bg-status-success/15 text-status-success" },
-  education: { label: "Formação e Certificações", icon: "🎓", color: "bg-wedo-purple/15 text-wedo-purple" },
-  experience: { label: "Experiência Específica", icon: "💼", color: "bg-wedo-orange/15 text-wedo-orange" },
-  languages: { label: "Idiomas", icon: "🌍", color: "bg-wedo-cyan/20 text-wedo-cyan-dark" },
+  education: { label: "Formação e Certificações", icon: "🎓", color: "bg-wedo-purple/15 text-wedo-purple-text" },
+  experience: { label: "Experiência Específica", icon: "💼", color: "bg-wedo-orange/15 text-wedo-orange-text" },
+  languages: { label: "Idiomas", icon: "🌍", color: "bg-wedo-cyan/20 text-wedo-cyan-text" },
   compensation: { label: "Remuneração e Contrato", icon: "💰", color: "bg-status-warning/15 text-status-warning" },
-  work_model: { label: "Modelo de Trabalho", icon: "🏠", color: "bg-wedo-purple/15 text-wedo-purple" },
+  work_model: { label: "Modelo de Trabalho", icon: "🏠", color: "bg-wedo-purple/15 text-wedo-purple-text" },
   compliance: { label: "Compliance e Conflito de Interesses", icon: "⚠️", color: "bg-status-error/15 text-status-error" },
   system_default: { label: "Perguntas Padrão do Sistema", icon: "⚙️", color: "bg-lia-bg-tertiary text-lia-text-primary" },
 }

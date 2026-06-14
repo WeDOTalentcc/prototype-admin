@@ -127,13 +127,13 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                   <div className="text-lia-text-primary">Indicações</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-medium text-wedo-orange">
+                  <div className="font-medium text-wedo-orange-text">
                     {recruiter.sourcing.jobBoards}%
                   </div>
                   <div className="text-lia-text-primary">Job Boards</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-medium text-wedo-purple">
+                  <div className="font-medium text-wedo-purple-text">
                     {recruiter.sourcing.headhunting}%
                   </div>
                   <div className="text-lia-text-primary">Headhunt</div>

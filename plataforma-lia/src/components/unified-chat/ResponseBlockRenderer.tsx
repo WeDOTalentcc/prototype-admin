@@ -25,7 +25,7 @@ type TFn = ReturnType<typeof useTranslations>;
 
 function scoreTone(score: number): string {
   // Fairness/LGPD: baixo = neutro/mudo (NÃO vermelho).
-  if (score >= 85) return "text-wedo-cyan";
+  if (score >= 85) return "text-wedo-cyan-text";
   if (score >= 70) return "text-lia-text-primary";
   return "text-lia-text-tertiary";
 }
@@ -54,7 +54,7 @@ function formatCell(v: unknown): string {
 function ProseView({ block }: { block: ProseBlock }) {
   return (
     <div
-      className="text-sm text-lia-text-primary leading-relaxed [&_table]:w-full [&_th]:text-left [&_td]:py-1 [&_th]:py-1 [&_a]:text-wedo-cyan"
+      className="text-sm text-lia-text-primary leading-relaxed [&_table]:w-full [&_th]:text-left [&_td]:py-1 [&_th]:py-1 [&_a]:text-wedo-cyan-text"
       dangerouslySetInnerHTML={{ __html: renderMarkdown(block.markdown) }}
     />
   );
@@ -108,7 +108,7 @@ function ScoreExplainerView({ block }: { block: ScoreExplainerBlock }) {
                   className={cn(
                     "w-3 shrink-0 text-center font-semibold",
                     f.contribution === "+"
-                      ? "text-wedo-cyan"
+                      ? "text-wedo-cyan-text"
                       : "text-lia-text-tertiary",
                   )}
                 >
@@ -392,7 +392,7 @@ function CandidateCardView({ block }: { block: CandidateCardBlock }) {
   return (
     <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-3">
       <div className="flex items-start gap-2.5">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-wedo-cyan/10 text-xs font-semibold text-wedo-cyan">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-wedo-cyan/10 text-xs font-semibold text-wedo-cyan-text">
           {initials(block.name)}
         </span>
         <div className="min-w-0 flex-1">
@@ -419,7 +419,7 @@ function CandidateCardView({ block }: { block: CandidateCardBlock }) {
         </div>
       </div>
       {block.recommendation ? (
-        <span className="mt-1.5 inline-block rounded-full bg-wedo-cyan/15 px-2 py-0.5 text-xs font-medium text-wedo-cyan">
+        <span className="mt-1.5 inline-block rounded-full bg-wedo-cyan/15 px-2 py-0.5 text-xs font-medium text-wedo-cyan-text">
           {block.recommendation}
         </span>
       ) : null}
@@ -522,7 +522,7 @@ function ExpandHint() {
           }),
         )
       }
-      className="mt-1 flex items-center gap-1 text-xs text-wedo-cyan hover:underline"
+      className="mt-1 flex items-center gap-1 text-xs text-wedo-cyan-text hover:underline"
     >
       {t("expandFullscreen")} →
     </button>
@@ -586,7 +586,7 @@ export function ResponseBlockRenderer({
         <button
           type="button"
           onClick={() => setShowAll(true)}
-          className="text-xs text-wedo-cyan hover:underline"
+          className="text-xs text-wedo-cyan-text hover:underline"
         >
           {t("showMore", { count: hidden })}
         </button>

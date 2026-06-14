@@ -37,7 +37,7 @@ export function JobAgentBadge({ jobId }: JobAgentBadgeProps) {
   return (
     <Link
       href={`/agent-studio?target_type=job&target_id=${encodeURIComponent(jobId)}`}
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-xl border border-wedo-cyan/40 bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan text-xs font-medium hover:bg-wedo-cyan/20 transition-colors motion-reduce:transition-none cursor-pointer"
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-xl border border-wedo-cyan/40 bg-wedo-cyan/10 text-wedo-cyan-text dark:text-wedo-cyan text-xs font-medium hover:bg-wedo-cyan/20 transition-colors motion-reduce:transition-none cursor-pointer"
       title={label}
       aria-label={label}
     >

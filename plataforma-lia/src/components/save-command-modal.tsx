@@ -50,11 +50,11 @@ export interface SavedCommandData {
 const categories = [
   { id:"candidates", name:"Candidatos", icon: Users, color:"text-lia-text-secondary" },
   { id:"jobs", name:"Vagas", icon: Briefcase, color:"text-status-success" },
-  { id:"analytics", name:"Indicadores", icon: BarChart3, color:"text-wedo-purple" },
-  { id:"automation", name:"Automações", icon: Zap, color:"text-wedo-orange" },
-  { id:"reports", name:"Relatórios", icon: FileText, color:"text-wedo-cyan" },
-  { id:"communication", name:"Comunicação", icon: Mail, color:"text-wedo-magenta" },
-  { id:"custom", name:"Personalizado", icon: Brain, color:"text-wedo-purple" }
+  { id:"analytics", name:"Indicadores", icon: BarChart3, color:"text-wedo-purple-text" },
+  { id:"automation", name:"Automações", icon: Zap, color:"text-wedo-orange-text" },
+  { id:"reports", name:"Relatórios", icon: FileText, color:"text-wedo-cyan-text" },
+  { id:"communication", name:"Comunicação", icon: Mail, color:"text-wedo-magenta-text" },
+  { id:"custom", name:"Personalizado", icon: Brain, color:"text-wedo-purple-text" }
 ]
 
 export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResult, onSave, existingData }: SaveCommandModalProps) {

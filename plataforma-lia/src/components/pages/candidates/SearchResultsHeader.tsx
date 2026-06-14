@@ -35,10 +35,10 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
   // DS v4.2.1: Tailwind tokens — sem hex hardcoded
   const pillStyles: Record<string, { pill: string; icon: string }> = {
     job_title:        { pill: 'bg-lia-bg-tertiary text-lia-text-secondary',      icon: 'text-lia-text-secondary' },
-    location:         { pill: 'bg-wedo-purple/10 text-wedo-purple',   icon: 'text-wedo-purple' },
+    location:         { pill: 'bg-wedo-purple/10 text-wedo-purple-text',   icon: 'text-wedo-purple-text' },
     years_experience: { pill: 'bg-status-warning/10 text-status-warning',     icon: 'text-status-warning' },
     skill:            { pill: 'bg-status-success/10 text-status-success', icon: 'text-status-success' },
-    industry:         { pill: 'bg-wedo-cyan/10 text-wedo-cyan-dark',       icon: 'text-wedo-cyan-dark' },
+    industry:         { pill: 'bg-wedo-cyan/10 text-wedo-cyan-text',       icon: 'text-wedo-cyan-text' },
   }
 
   const getIcon = (type: string, iconClass: string) => {

@@ -358,7 +358,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
  item.category === 'behavioral' || item.category === 'Comportamental'
                                         ? ' border border-wedo-purple/30'
                                         : item.category === 'technical' || item.category === 'Técnica'
-                                        ? 'bg-lia-bg-tertiary text-wedo-cyan-dark border border-lia-border-default'
+                                        ? 'bg-lia-bg-tertiary text-wedo-cyan-text border border-lia-border-default'
                                         : ' border border-status-success/30'
                                     }`}>
                                       {item.category === 'behavioral' ? 'Comport.' 

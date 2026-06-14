@@ -170,7 +170,7 @@ export function GlossaryDrawer({ term, onClose }: GlossaryDrawerProps) {
             target="_blank"
             rel="noreferrer"
             data-testid="glossary-drawer-docs-link"
-            className="inline-flex items-center gap-1 text-sm text-wedo-cyan hover:underline"
+            className="inline-flex items-center gap-1 text-sm text-wedo-cyan-text hover:underline"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             Abrir entrada completa em docs/GLOSSARY.md

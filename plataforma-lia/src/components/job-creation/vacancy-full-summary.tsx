@@ -235,7 +235,7 @@ export function VacancyFullSummary({
                     <DollarSign className="h-4 w-4 text-wedo-cyan-dark" />
                     <div className="flex-1">
                       <p className="text-micro text-lia-text-tertiary">Bônus</p>
-                      <p className="text-xs font-semibold text-wedo-cyan-dark">
+                      <p className="text-xs font-semibold text-wedo-cyan-text">
                         {vacancy.salary_range.bonus_min ? formatCurrency(vacancy.salary_range.bonus_min) : 'N/A'} - {vacancy.salary_range.bonus_max ? formatCurrency(vacancy.salary_range.bonus_max) : 'N/A'}
                       </p>
                     </div>

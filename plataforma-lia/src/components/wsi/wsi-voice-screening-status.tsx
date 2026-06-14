@@ -111,7 +111,7 @@ export function WSIVoiceScreeningStatus({
     processing: {
       icon: Brain,
       label: t('voiceScreening.statusProcessing'),
-      color: 'text-wedo-purple',
+      color: 'text-wedo-purple-text',
       bgColor: 'bg-wedo-purple/10 dark:bg-wedo-purple/20',
       animate: true
     },

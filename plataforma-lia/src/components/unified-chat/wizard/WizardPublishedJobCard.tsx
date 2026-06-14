@@ -85,7 +85,7 @@ export function WizardPublishedJobCard({
             <LinkComponent
               href={url}
               data-testid="wizard-published-job-link"
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-wedo-cyan/10 px-3 py-1.5 text-xs font-medium text-wedo-cyan transition-colors hover:bg-wedo-cyan/20 motion-reduce:transition-none"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-wedo-cyan/10 px-3 py-1.5 text-xs font-medium text-wedo-cyan-text transition-colors hover:bg-wedo-cyan/20 motion-reduce:transition-none"
             >
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
               Abrir página da vaga

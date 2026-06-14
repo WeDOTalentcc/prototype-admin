@@ -423,7 +423,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 </div>
                 {liaAnalysis?.suggestedSkills && (
                   <div className="mt-3 p-3 bg-lia-bg-tertiary rounded-xl">
-                    <p className="text-xs text-wedo-cyan-dark mb-2 flex items-center gap-1">
+                    <p className="text-xs text-wedo-cyan-text mb-2 flex items-center gap-1">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
                       Sugestões da LIA baseadas no perfil:
                     </p>
@@ -536,7 +536,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                           <span className="text-sm text-lia-text-primary">Fit Técnico</span>
                           <Zap className="w-4 h-4 text-wedo-purple" />
                         </div>
-                        <div className="text-2xl font-semibold text-wedo-purple">{liaAnalysis.technicalFit}%</div>
+                        <div className="text-2xl font-semibold text-wedo-purple-text">{liaAnalysis.technicalFit}%</div>
                         <div className="w-full bg-lia-interactive-active rounded-full h-1.5 mt-2">
                           <div
                             className="bg-wedo-purple h-1.5 rounded-full"
@@ -570,12 +570,12 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-3">
                           <AlertCircle className="w-4 h-4 text-wedo-orange" />
-                          <h4 className="font-semibold text-wedo-orange">Pontos de Atenção</h4>
+                          <h4 className="font-semibold text-wedo-orange-text">Pontos de Atenção</h4>
                         </div>
                         <ul className="space-y-1">
                           {(liaAnalysis.improvements || []).map((improvement: string, index: number) => (
-                            <li key={`improvement-${index}`} className="text-sm text-wedo-orange flex items-start gap-2">
-                              <span className="text-wedo-orange mt-0.5">•</span>
+                            <li key={`improvement-${index}`} className="text-sm text-wedo-orange-text flex items-start gap-2">
+                              <span className="text-wedo-orange-text mt-0.5">•</span>
                               {improvement}
                             </li>
                           ))}
@@ -589,9 +589,9 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                     <CardContent className="pt-4">
                       <div className="flex items-center gap-2 mb-2">
                         <LIAIcon size="sm" />
-                        <h4 className="font-semibold text-wedo-cyan-dark">Recomendação da LIA</h4>
+                        <h4 className="font-semibold text-wedo-cyan-text">Recomendação da LIA</h4>
                       </div>
-                      <p className="text-sm text-wedo-cyan-dark">{liaAnalysis.recommendation}</p>
+                      <p className="text-sm text-wedo-cyan-text">{liaAnalysis.recommendation}</p>
                     </CardContent>
                   </Card>
 

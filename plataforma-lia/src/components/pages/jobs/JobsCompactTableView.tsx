@@ -616,7 +616,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                               <div className="space-y-1">
                                 <Chip
                                   variant="neutral"
-                                  className={`border-0 text-xs font-normal px-2 py-0.5 ${job.status === 'Concluída' ? 'text-wedo-purple' : 'text-lia-text-primary'}`}
+                                  className={`border-0 text-xs font-normal px-2 py-0.5 ${job.status === 'Concluída' ? 'text-wedo-purple-text' : 'text-lia-text-primary'}`}
                                   style={{backgroundColor: getStatusColor(job.status)}} /* dynamic */
                                 >
                                   {statusLabels[job.status] || job.status}

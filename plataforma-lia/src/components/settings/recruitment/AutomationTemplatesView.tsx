@@ -256,7 +256,7 @@ export function AutomationTemplatesView({ onUseTemplate }: Props) {
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-start gap-2">
                   <Icon
-                    className="w-4 h-4 text-wedo-cyan shrink-0 mt-0.5"
+                    className="w-4 h-4 text-wedo-cyan-text shrink-0 mt-0.5"
                     aria-hidden="true"
                     data-testid={`template-icon-${tpl.id}`}
                   />
@@ -275,7 +275,7 @@ export function AutomationTemplatesView({ onUseTemplate }: Props) {
                 <button
                   type="button"
                   onClick={() => onUseTemplate(tpl.state)}
-                  className="text-xs text-wedo-cyan hover:underline inline-flex items-center gap-1 mt-1"
+                  className="text-xs text-wedo-cyan-text hover:underline inline-flex items-center gap-1 mt-1"
                   data-testid={`template-use-${tpl.id}`}
                 >
                   Usar este{" "}

@@ -58,7 +58,7 @@ export function CandidateOpinionsTab({
           </div>
           <p className={`${textStyles.subtitle} mb-1`}>Não foi possível carregar os pareceres</p>
           {onRetryHistory && (
-            <button onClick={onRetryHistory} className="text-xs text-wedo-cyan hover:underline mt-1">
+            <button onClick={onRetryHistory} className="text-xs text-wedo-cyan-text hover:underline mt-1">
               Tentar novamente
             </button>
           )}

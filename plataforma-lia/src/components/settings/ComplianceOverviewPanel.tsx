@@ -160,7 +160,7 @@ export function ComplianceOverviewPanel({ onNavigateToSubsection }: Props = {}) 
                   <button
                     type="button"
                     onClick={() => onNavigateToSubsection(metric.subsectionLink!)}
-                    className="flex items-center gap-1 text-xs text-wedo-cyan hover:underline mt-1"
+                    className="flex items-center gap-1 text-xs text-wedo-cyan-text hover:underline mt-1"
                     data-testid={`compliance-card-link-${metric.id}`}
                   >
                     Ver detalhes <ArrowRight className="w-3 h-3" aria-hidden="true" />

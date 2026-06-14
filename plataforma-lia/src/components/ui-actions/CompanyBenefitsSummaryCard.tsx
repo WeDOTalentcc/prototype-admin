@@ -24,12 +24,12 @@ import type { CompanyBenefit } from"@/types/benefits"
 
 const CATEGORY_MAP: Record<string, { name: string; icon: LucideIcon; color: string }> = {
   health: { name:"Saúde", icon: Stethoscope, color:"text-status-error" },
-  food: { name:"Alimentação", icon: Utensils, color:"text-wedo-orange" },
+  food: { name:"Alimentação", icon: Utensils, color:"text-wedo-orange-text" },
   transport: { name:"Transporte", icon: Car, color:"text-lia-text-secondary" },
-  education: { name:"Educação", icon: GraduationCap, color:"text-wedo-purple" },
+  education: { name:"Educação", icon: GraduationCap, color:"text-wedo-purple-text" },
   financial: { name:"Financeiro", icon: Wallet, color:"text-status-success" },
   quality_life: { name:"Qualidade", icon: Home, color:"text-lia-text-secondary" },
-  family: { name:"Família", icon: Baby, color:"text-wedo-magenta" },
+  family: { name:"Família", icon: Baby, color:"text-wedo-magenta-text" },
   security: { name:"Segurança", icon: Shield, color:"text-lia-text-primary" },
 }
 
@@ -80,7 +80,7 @@ export function CompanyBenefitsSummaryCard({
           <Gift className="w-4 h-4 text-wedo-purple" />
           <span>Benefícios da Empresa</span>
           {highlighted_count && highlighted_count > 0 && (
-            <Chip density="relaxed" variant="neutral" className="ml-auto text-wedo-purple">
+            <Chip density="relaxed" variant="neutral" className="ml-auto text-wedo-purple-text">
               <Star className="w-3 h-3 mr-1 fill-current" />
               {highlighted_count} em destaque
             </Chip>
@@ -123,7 +123,7 @@ export function CompanyBenefitsSummaryCard({
           {remainingCount > 0 && (
             <Chip
               variant="neutral"
-              className="py-1 px-2 text-xs bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple cursor-pointer hover:bg-wedo-purple/15"
+              className="py-1 px-2 text-xs bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple-text dark:text-wedo-purple cursor-pointer hover:bg-wedo-purple/15"
               onClick={onViewAll}
             >
               +{remainingCount} mais
@@ -136,7 +136,7 @@ export function CompanyBenefitsSummaryCard({
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs text-wedo-purple hover:text-wedo-purple hover:bg-wedo-purple/10"
+              className="text-xs text-wedo-purple-text hover:text-wedo-purple hover:bg-wedo-purple/10"
               onClick={() => onAction?.("view_all", data) || onViewAll?.()}
             >
               Ver todos os benefícios

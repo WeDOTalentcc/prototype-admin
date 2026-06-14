@@ -206,7 +206,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                       searchSource === 'local' 
                         ?"bg-wedo-green/15 ring-1 ring-wedo-green" 
                         :"hover:bg-lia-bg-tertiary"
-                    , searchSource === 'local' ?"text-wedo-green" :"text-lia-text-tertiary"
+                    , searchSource === 'local' ?"text-wedo-green-text" :"text-lia-text-tertiary"
                     )}
                   >
                     <Home className="w-4 h-4" />
@@ -230,7 +230,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                         searchSource === 'hybrid' 
                           ?"bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                           :"hover:bg-lia-bg-tertiary"
-                      , searchSource === 'hybrid' ?"text-wedo-orange" :"text-lia-text-tertiary"
+                      , searchSource === 'hybrid' ?"text-wedo-orange-text" :"text-lia-text-tertiary"
                       )}
                     >
                       <Zap className="w-4 h-4" />
@@ -281,7 +281,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                           requireEmails 
                             ?"bg-wedo-green/15 ring-1 ring-wedo-green" 
                             :"hover:bg-lia-bg-tertiary"
-                        , requireEmails ?"text-wedo-green" :"text-lia-text-tertiary"
+                        , requireEmails ?"text-wedo-green-text" :"text-lia-text-tertiary"
                         )}
                       >
                         <Mail className="w-3.5 h-3.5" />
@@ -304,7 +304,7 @@ export function SSIJDMode(props: SSIJDModeProps) {
                           requirePhoneNumbers 
                             ?"bg-wedo-green/15 ring-1 ring-wedo-green" 
                             :"hover:bg-lia-bg-tertiary"
-                        , requirePhoneNumbers ?"text-wedo-green" :"text-lia-text-tertiary"
+                        , requirePhoneNumbers ?"text-wedo-green-text" :"text-lia-text-tertiary"
                         )}
                       >
                         <Phone className="w-3.5 h-3.5" />

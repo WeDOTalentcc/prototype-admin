@@ -114,7 +114,7 @@ export function getCategoryBadge(category?: string) {
     case "system":
       return { label: "Sistema", icon: Lock, color: "text-lia-text-tertiary bg-lia-bg-secondary/50" }
     case "default":
-      return { label: "Padrão", icon: Target, color: "text-wedo-cyan-dark bg-wedo-cyan/10" }
+      return { label: "Padrão", icon: Target, color: "text-wedo-cyan-text bg-wedo-cyan/10" }
     case "custom":
       return { label: "Custom", icon: Settings, color: "text-status-warning bg-status-warning/10" }
     default:

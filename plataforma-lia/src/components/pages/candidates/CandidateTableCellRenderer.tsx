@@ -131,9 +131,9 @@ export function createCellRenderer(deps: CellRendererDeps) {
         if (!candidate.enrichment_source) return <span className="text-xs text-lia-text-tertiary">—</span>
         const esrc = String(candidate.enrichment_source).toLowerCase()
         const eConfig = esrc === 'apify'
-          ? { label: 'Apify', cls: 'bg-wedo-orange/15 text-wedo-orange' }
+          ? { label: 'Apify', cls: 'bg-wedo-orange/15 text-wedo-orange-text' }
           : esrc === 'pearch'
-            ? { label: 'Pearch', cls: 'bg-wedo-cyan/15 text-wedo-cyan' }
+            ? { label: 'Pearch', cls: 'bg-wedo-cyan/15 text-wedo-cyan-text' }
             : esrc === 'local'
               ? { label: 'Local', cls: 'bg-stone-400/15 text-stone-500' }
               : { label: candidate.enrichment_source, cls: 'bg-lia-bg-tertiary text-lia-text-secondary' }
@@ -542,7 +542,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         const statusColors: Record<string, string> = {
           novo: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary",
           triagem: "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning",
-          entrevista: "bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple",
+          entrevista: "bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple-text dark:text-wedo-purple",
           aprovado: "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success",
           reprovado: "bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error",
         }

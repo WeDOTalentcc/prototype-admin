@@ -4,9 +4,9 @@ import { Filter } from "lucide-react"
 
 const JOB_COLORS = [
   { bar: "bg-lia-btn-primary-bg", text: "text-lia-text-secondary", light: "bg-lia-bg-tertiary" },
-  { bar: "bg-wedo-purple", text: "text-wedo-purple", light: "bg-wedo-purple/15" },
+  { bar: "bg-wedo-purple", text: "text-wedo-purple-text", light: "bg-wedo-purple/15" },
   { bar: "bg-status-success", text: "text-status-success", light: "bg-status-success/15" },
-  { bar: "bg-wedo-orange", text: "text-wedo-orange", light: "bg-wedo-orange/15" },
+  { bar: "bg-wedo-orange", text: "text-wedo-orange-text", light: "bg-wedo-orange/15" },
 ]
 
 interface Job {

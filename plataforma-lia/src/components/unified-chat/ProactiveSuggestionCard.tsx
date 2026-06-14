@@ -162,7 +162,7 @@ export function ProactiveSuggestionCard({ hints, className }: Props) {
                     data-testid={`proactive-suggestion-action-${hint.id}`}
                     className={cn(
                       "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px]",
-                      "border border-wedo-cyan/30 bg-wedo-cyan/5 text-wedo-cyan",
+                      "border border-wedo-cyan/30 bg-wedo-cyan/5 text-wedo-cyan-text",
                       "hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none",
                     )}
                   >

@@ -181,7 +181,7 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
             size="sm"
             disabled={!hasCompany}
             onClick={() => generateMutation.mutate({ force: false })}
-            className="h-6 text-xs text-wedo-cyan hover:text-wedo-cyan"
+            className="h-6 text-xs text-wedo-cyan-text hover:text-wedo-cyan"
           >
             Gerar resumo
           </Button>

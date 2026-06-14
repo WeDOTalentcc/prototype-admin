@@ -309,7 +309,7 @@ export function CandidateCard({
                           <Button
                             variant="link"
                             size="sm"
-                            className="w-full h-6 text-xs text-wedo-cyan"
+                            className="w-full h-6 text-xs text-wedo-cyan-text"
                             onClick={onViewMoreCommunications}
                           >
                             Ver mais ({totalCommunications - 5} comunicações)

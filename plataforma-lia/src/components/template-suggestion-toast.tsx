@@ -97,9 +97,9 @@ export function TemplateSuggestionToast({
   // Ícone baseado no motivo
   const getReasonIcon = () => {
     if (suggestion.repetitions >= 3) {
-      return <Zap className="w-4 h-4 text-wedo-orange" />
+      return <Zap className="w-4 h-4 text-wedo-orange-text" />
     } else if (suggestion.complexity >= 8) {
-      return <Brain className="w-4 h-4 text-wedo-cyan" />
+      return <Brain className="w-4 h-4 text-wedo-cyan-text" />
     } else {
       return <Lightbulb className="w-4 h-4 text-lia-text-secondary" />
     }

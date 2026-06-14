@@ -84,7 +84,7 @@ export const integrations: Integration[] = [
     category: "job_board",
     status: "not_configured",
     iconBg: "bg-wedo-cyan/10",
-    iconColor: "text-wedo-cyan",
+    iconColor: "text-wedo-cyan-text",
     iconLetter: "LI",
     connectAction: "config",
     capabilities: [
@@ -104,7 +104,7 @@ export const integrations: Integration[] = [
     category: "ai_models",
     status: "connected",
     iconBg: "bg-wedo-cyan/10",
-    iconColor: "text-wedo-cyan",
+    iconColor: "text-wedo-cyan-text",
     iconLetter: "G",
     isActiveProvider: true,
     connectAction: "config",
@@ -126,7 +126,7 @@ export const integrations: Integration[] = [
     category: "ai_models",
     status: "connected",
     iconBg: "bg-wedo-orange/10",
-    iconColor: "text-wedo-orange",
+    iconColor: "text-wedo-orange-text",
     iconLetter: "C",
     isActiveProvider: false,
     connectAction: "config",
@@ -147,7 +147,7 @@ export const integrations: Integration[] = [
     category: "ai_models",
     status: "connected",
     iconBg: "bg-wedo-green/10",
-    iconColor: "text-wedo-green",
+    iconColor: "text-wedo-green-text",
     iconLetter: "O",
     isActiveProvider: false,
     connectAction: "config",
@@ -170,7 +170,7 @@ export const integrations: Integration[] = [
     category: "ats",
     status: "not_configured",
     iconBg: "bg-wedo-magenta/10",
-    iconColor: "text-wedo-magenta",
+    iconColor: "text-wedo-magenta-text",
     iconLetter: "Gy",
     connectAction: "config",
     capabilities: [
@@ -190,7 +190,7 @@ export const integrations: Integration[] = [
     category: "ats",
     status: "not_configured",
     iconBg: "bg-wedo-green-bright/10",
-    iconColor: "text-wedo-green-bright",
+    iconColor: "text-wedo-green-text-bright",
     iconLetter: "Pp",
     connectAction: "config",
     capabilities: [
@@ -209,7 +209,7 @@ export const integrations: Integration[] = [
     category: "ats",
     status: "not_configured",
     iconBg: "bg-wedo-purple/10",
-    iconColor: "text-wedo-purple",
+    iconColor: "text-wedo-purple-text",
     iconLetter: "M",
     connectAction: "config",
     capabilities: [
@@ -248,7 +248,7 @@ export const integrations: Integration[] = [
     category: "calendar",
     status: "not_configured",
     iconBg: "bg-wedo-cyan/10",
-    iconColor: "text-wedo-cyan",
+    iconColor: "text-wedo-cyan-text",
     iconLetter: "MC",
     connectAction: "config",
     capabilities: [
@@ -268,7 +268,7 @@ export const integrations: Integration[] = [
     category: "communication",
     status: "not_configured",
     iconBg: "bg-wedo-purple/10",
-    iconColor: "text-wedo-purple",
+    iconColor: "text-wedo-purple-text",
     iconLetter: "T",
     connectAction: "webhook",
     capabilities: [
@@ -288,7 +288,7 @@ export const integrations: Integration[] = [
     category: "communication",
     status: "coming_soon",
     iconBg: "bg-wedo-green-bright/10",
-    iconColor: "text-wedo-green-bright",
+    iconColor: "text-wedo-green-text-bright",
     iconLetter: "W",
     connectAction: "none",
     capabilities: [
@@ -324,7 +324,7 @@ export const integrations: Integration[] = [
     category: "crm_hris",
     status: "coming_soon",
     iconBg: "bg-wedo-cyan/10",
-    iconColor: "text-wedo-cyan",
+    iconColor: "text-wedo-cyan-text",
     iconLetter: "SF",
     connectAction: "none",
     capabilities: [
@@ -342,7 +342,7 @@ export const integrations: Integration[] = [
     category: "crm_hris",
     status: "coming_soon",
     iconBg: "bg-wedo-purple/10",
-    iconColor: "text-wedo-purple",
+    iconColor: "text-wedo-purple-text",
     iconLetter: "SAP",
     connectAction: "none",
     capabilities: [
@@ -360,7 +360,7 @@ export const integrations: Integration[] = [
     category: "crm_hris",
     status: "coming_soon",
     iconBg: "bg-wedo-orange/10",
-    iconColor: "text-wedo-orange",
+    iconColor: "text-wedo-orange-text",
     iconLetter: "Wd",
     connectAction: "none",
     capabilities: [
@@ -399,7 +399,7 @@ export const integrations: Integration[] = [
     category: "mcps_apis",
     status: "connected",
     iconBg: "bg-wedo-cyan/10",
-    iconColor: "text-wedo-cyan",
+    iconColor: "text-wedo-cyan-text",
     iconLetter: "API",
     connectAction: "none",
     capabilities: [

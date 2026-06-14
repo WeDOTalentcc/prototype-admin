@@ -89,7 +89,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
           </div>
           <div className="flex items-center gap-3 bg-lia-bg-primary rounded-xl px-3 py-2 border border-lia-border-subtle">
             <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-wedo-green-light/10 text-wedo-green-light text-sm">
+              <AvatarFallback className="bg-wedo-green-light/10 text-wedo-green-text-light text-sm">
                 {(candidateContext.name as string)?.split(' ').map((n: string) => n[0]).join('') || 'C'}
               </AvatarFallback>
             </Avatar>
@@ -101,7 +101,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 {candidateContext.position} • Score: {(candidateContext as any).liaAnalysis?.score || candidateContext.score}%
               </div>
             </div>
-            <Chip variant="neutral" muted className="bg-wedo-green-light/10 text-wedo-green-light border-0 text-micro">
+            <Chip variant="neutral" muted className="bg-wedo-green-light/10 text-wedo-green-text-light border-0 text-micro">
               Foco Individual
             </Chip>
           </div>

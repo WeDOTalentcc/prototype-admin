@@ -83,7 +83,7 @@ export function JdSimilarCard({ items, onReuse, onCreateFresh, loading }: Props)
                 )}
               </div>
               {item.similarity != null && (
-                <span className="text-xs text-wedo-cyan font-mono shrink-0">
+                <span className="text-xs text-wedo-cyan-text font-mono shrink-0">
                   {Math.round(item.similarity * 100)}%
                 </span>
               )}

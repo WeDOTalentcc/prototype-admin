@@ -52,7 +52,7 @@ interface InputStepProps {
 function getFileIcon(filename: string) {
   const ext = filename.split('.').pop()?.toLowerCase()
   if (ext === 'pdf') return <FileText className="w-4 h-4 text-status-error" />
-  if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-wedo-cyan-dark" />
+  if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-wedo-cyan-text" />
   return <File className="w-4 h-4 text-lia-text-tertiary" />
 }
 

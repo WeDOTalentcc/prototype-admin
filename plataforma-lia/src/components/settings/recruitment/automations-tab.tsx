@@ -663,7 +663,7 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
                           workflow.status === "active" ? "bg-wedo-cyan/10" : "bg-lia-bg-tertiary"
                         }`}>
                           <Sparkles className={`w-4 h-4 ${
-                            workflow.status === "active" ? "text-wedo-cyan" : "text-lia-text-tertiary"
+                            workflow.status === "active" ? "text-wedo-cyan-text" : "text-lia-text-tertiary"
                           }`} />
                         </div>
                         <div className="min-w-0">

@@ -156,7 +156,7 @@ interface SummaryCardProps {
 function SummaryCard({ icon: Icon, label, value, accent }: SummaryCardProps) {
   const accentMap: Record<SummaryCardProps["accent"], string> = {
     neutral: "text-lia-text-secondary bg-lia-bg-tertiary",
-    info: "text-wedo-cyan bg-wedo-cyan/10",
+    info: "text-wedo-cyan-text bg-wedo-cyan/10",
     warning: "text-status-warning bg-status-warning/10",
     danger: "text-status-error bg-status-error/10",
     success: "text-status-success bg-status-success/10",

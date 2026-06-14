@@ -72,7 +72,7 @@ export function LIAScoreCard({
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-2">
           <Brain
-            className="w-4 h-4 text-wedo-cyan"
+            className="w-4 h-4 text-wedo-cyan-text"
             aria-hidden="true"
           />
           <span className="text-xs font-medium text-lia-text-secondary">LIA Score</span>

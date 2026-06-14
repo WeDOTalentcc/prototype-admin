@@ -281,9 +281,9 @@ export function CandidatePreviewHeader({
             {c.enrichment_source && !c.is_enriching && (() => {
               const src = String(c.enrichment_source).toLowerCase()
               const config = src === 'apify'
-                ? { label: 'Apify', cls: 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30' }
+                ? { label: 'Apify', cls: 'bg-wedo-orange/15 text-wedo-orange-text border-wedo-orange/30' }
                 : src === 'pearch'
-                  ? { label: 'Pearch', cls: 'bg-wedo-cyan/15 text-wedo-cyan border-wedo-cyan/30' }
+                  ? { label: 'Pearch', cls: 'bg-wedo-cyan/15 text-wedo-cyan-text border-wedo-cyan/30' }
                   : src === 'local'
                     ? { label: 'Local', cls: 'bg-stone-400/15 text-stone-500 border-stone-400/30' }
                     : { label: String(c.enrichment_source), cls: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default' }

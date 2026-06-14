@@ -78,8 +78,8 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-wedo-purple font-medium">Faixa Salarial</p>
-                <p className="text-2xl font-semibold text-wedo-purple">
+                <p className="text-sm text-wedo-purple-text font-medium">Faixa Salarial</p>
+                <p className="text-2xl font-semibold text-wedo-purple-text">
                   {loading ?"..." : salary ? `P${salary.market_percentile}` :"--"}
                 </p>
                 <p className="text-xs text-lia-text-primary">
@@ -88,7 +88,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               </div>
               <AlertTriangle className="w-8 h-8 text-wedo-purple" />
             </div>
-            <div className="mt-2 text-xs text-wedo-purple">
+            <div className="mt-2 text-xs text-wedo-purple-text">
               {salary ? salary.competitive_analysis :"Carregando..."}
             </div>
           </CardContent>
@@ -98,8 +98,8 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-wedo-orange font-medium">Salário Sugerido</p>
-                <p className="text-2xl font-semibold text-wedo-orange">
+                <p className="text-sm text-wedo-orange-text font-medium">Salário Sugerido</p>
+                <p className="text-2xl font-semibold text-wedo-orange-text">
                   {loading ?"..." : salary ? formatBRL(salaryMin) : `${CURRENCY_SYMBOL} --`}
                 </p>
                 <p className="text-xs text-lia-text-primary">
@@ -108,7 +108,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               </div>
               <DollarSign className="w-8 h-8 text-wedo-orange" />
             </div>
-            <div className="mt-2 text-xs text-wedo-orange">
+            <div className="mt-2 text-xs text-wedo-orange-text">
               {salary ? `${Math.round(salary.confidence * 100)}% confiança` :"Calculando..."}
             </div>
           </CardContent>

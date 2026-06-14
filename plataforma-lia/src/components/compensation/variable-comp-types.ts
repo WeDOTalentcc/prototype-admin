@@ -50,11 +50,11 @@ export interface CompKindGroup {
 /** Tipos de verba variavel — ordem + visual + rotulo (PT hardcoded, igual compensation-policies). */
 export const COMP_KIND_GROUPS: CompKindGroup[] = [
   { id: "bonus", label: "Bônus", icon: Target, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
-  { id: "plr", label: "PLR / PPR", icon: TrendingUp, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
-  { id: "ppr", label: "PPR", icon: Award, color: "text-wedo-cyan", bgColor: "bg-wedo-cyan/10 dark:bg-wedo-cyan/20" },
-  { id: "commission", label: "Comissão", icon: Percent, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/20" },
+  { id: "plr", label: "PLR / PPR", icon: TrendingUp, color: "text-wedo-purple-text", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+  { id: "ppr", label: "PPR", icon: Award, color: "text-wedo-cyan-text", bgColor: "bg-wedo-cyan/10 dark:bg-wedo-cyan/20" },
+  { id: "commission", label: "Comissão", icon: Percent, color: "text-wedo-orange-text", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/20" },
   { id: "spot_bonus", label: "Bônus Pontual", icon: Zap, color: "text-status-warning", bgColor: "bg-status-warning/10 dark:bg-status-warning/20" },
-  { id: "equity", label: "Stock Options / Equity", icon: PieChart, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
+  { id: "equity", label: "Stock Options / Equity", icon: PieChart, color: "text-wedo-magenta-text", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
   { id: "other", label: "Outros", icon: MoreHorizontal, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
 ]
 

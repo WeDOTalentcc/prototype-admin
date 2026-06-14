@@ -82,7 +82,7 @@ export function AgentMemoryIndicator({
         className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer text-xs text-lia-text-secondary select-none transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover"
       >
         <Brain
-          className="text-wedo-cyan flex-shrink-0 w-3.5 h-3.5"
+          className="text-wedo-cyan-text flex-shrink-0 w-3.5 h-3.5"
         />
 
         <span

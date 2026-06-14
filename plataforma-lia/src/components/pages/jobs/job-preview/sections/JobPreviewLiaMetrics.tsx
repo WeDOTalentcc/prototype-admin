@@ -273,7 +273,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
           <div>
             <div className="flex items-center justify-between mb-1">
               <span className={`${textStyles.bodySmall}`}>Aguardando</span>
-              <span className="text-xs font-bold text-wedo-cyan-dark dark:text-wedo-cyan-dark">
+              <span className="text-xs font-bold text-wedo-cyan-text dark:text-wedo-cyan-dark">
                 {(() => {
                   const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
                   const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0

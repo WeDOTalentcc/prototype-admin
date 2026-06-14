@@ -136,7 +136,7 @@ export function DailyBriefingCard({
     const hour = new Date().getHours()
     if (hour < 12) return <Sun className="w-5 h-5 text-status-warning" />
     if (hour < 18) return <Cloud className="w-5 h-5 text-lia-text-secondary" />
-    return <Moon className="w-5 h-5 text-wedo-purple" />
+    return <Moon className="w-5 h-5 text-wedo-purple-text" />
   }
 
   useEffect(() => {
@@ -197,7 +197,7 @@ export function DailyBriefingCard({
       case 'Lightbulb': return <Lightbulb className="w-4 h-4" />
       case 'BarChart3': return <BarChart3 className="w-4 h-4" />
       case 'CheckCircle': return <CheckCircle className="w-4 h-4" />
-      default: return <Brain className="w-4 h-4 text-wedo-cyan" />
+      default: return <Brain className="w-4 h-4 text-wedo-cyan-text" />
     }
   }
 
@@ -208,7 +208,7 @@ export function DailyBriefingCard({
       case 'opportunity':
         return 'bg-status-success/10 border-status-success/30 text-status-success'
       case 'suggestion':
-        return 'bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark'
+        return 'bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-text'
       case 'success':
         return 'bg-status-success/10 border-status-success/30 text-status-success'
       default:
@@ -364,7 +364,7 @@ export function DailyBriefingCard({
                 <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Urgentes</span>
               </div>
-              <p className="text-lg font-semibold text-wedo-cyan-dark">
+              <p className="text-lg font-semibold text-wedo-cyan-text">
                 {briefing.summary.urgent_count}
               </p>
             </div>
@@ -379,7 +379,7 @@ export function DailyBriefingCard({
                 <Target className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Tarefas Hoje</span>
               </div>
-              <p className="text-lg font-semibold text-wedo-cyan-dark">
+              <p className="text-lg font-semibold text-wedo-cyan-text">
                 {briefing.summary.tasks_today}
               </p>
             </div>
@@ -394,7 +394,7 @@ export function DailyBriefingCard({
                 <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Entrevistas</span>
               </div>
-              <p className="text-lg font-semibold text-wedo-cyan-dark">
+              <p className="text-lg font-semibold text-wedo-cyan-text">
                 {briefing.summary.interviews_today}
               </p>
             </div>
@@ -409,7 +409,7 @@ export function DailyBriefingCard({
                 <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="text-xs font-medium text-lia-text-secondary">Alertas</span>
               </div>
-              <p className="text-lg font-semibold text-wedo-cyan-dark">
+              <p className="text-lg font-semibold text-wedo-cyan-text">
                 {briefing.summary.alerts_active}
               </p>
             </div>
@@ -417,7 +417,7 @@ export function DailyBriefingCard({
 
           {briefing.urgent_actions.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-dark">
+              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-text">
                 <Zap className="w-4 h-4 text-lia-text-secondary" />
                 Ações Urgentes
               </h4>
@@ -429,7 +429,7 @@ export function DailyBriefingCard({
                     className="flex items-center justify-between p-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate text-wedo-cyan-dark">
+                      <p className="text-xs font-medium truncate text-wedo-cyan-text">
                         {action.title}
                       </p>
                       <p className="text-xs truncate text-lia-text-secondary">
@@ -453,7 +453,7 @@ export function DailyBriefingCard({
 
           {briefing.schedule.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-dark">
+              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-text">
                 <Calendar className="w-4 h-4 text-lia-text-secondary" />
                 Agenda do Dia
               </h4>
@@ -469,7 +469,7 @@ export function DailyBriefingCard({
                       <Clock className="w-4 h-4 text-lia-text-secondary" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-wedo-cyan-dark">
+                      <p className="text-xs font-medium text-wedo-cyan-text">
                         {item.time}
                       </p>
                       <p className="text-xs truncate text-lia-text-secondary">
@@ -489,7 +489,7 @@ export function DailyBriefingCard({
 
           {briefing.insights.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-dark">
+              <h4 className="text-xs font-medium flex items-center gap-2 text-wedo-cyan-text">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Insights IA
               </h4>
@@ -526,7 +526,7 @@ export function DailyBriefingCard({
 
           {briefing.recruiter_benchmark?.benchmark_available && (
             <div className="p-3 rounded-xl border bg-lia-bg-secondary">
-              <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-wedo-cyan-dark">
+              <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-wedo-cyan-text">
                 <TrendingUp className="w-4 h-4 text-wedo-cyan" />
                 Benchmark do Recrutador
               </h4>
@@ -564,7 +564,7 @@ export function DailyBriefingCard({
 
           {briefing.pipeline_prediction?.available && (briefing.pipeline_prediction.at_risk_count ?? 0) > 0 && (
             <div className="p-3 rounded-xl border bg-lia-bg-secondary">
-              <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-wedo-cyan-dark">
+              <h4 className="text-xs font-medium flex items-center gap-2 mb-2 text-wedo-cyan-text">
                 <Target className="w-4 h-4 text-wedo-cyan" />
                 Predição de Pipeline
               </h4>

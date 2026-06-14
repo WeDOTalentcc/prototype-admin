@@ -42,7 +42,7 @@ export function DonePanel({ data }: Props) {
             onClick={() => window.dispatchEvent(new CustomEvent("lia:navigation-hint", {
               detail: { page: "vagas", hint: `Vaga ${jobTitle || jobId}` },
             }))}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20 transition-colors text-sm font-medium"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md bg-wedo-cyan/10 text-wedo-cyan-text hover:bg-wedo-cyan/20 transition-colors text-sm font-medium"
           >
             <ExternalLink className="w-4 h-4" />
             Ir para a vaga
@@ -54,7 +54,7 @@ export function DonePanel({ data }: Props) {
           onClick={() => window.dispatchEvent(new CustomEvent("lia:prefill-message", {
             detail: { message: `Quero calibrar perfis de candidatos para a vaga ${jobTitle || jobId || ''}` },
           }))}
-          className="w-full flex flex-col gap-0.5 px-3 py-2.5 rounded-md bg-wedo-cyan/15 text-wedo-cyan hover:bg-wedo-cyan/25 transition-colors text-sm font-medium border border-wedo-cyan/20"
+          className="w-full flex flex-col gap-0.5 px-3 py-2.5 rounded-md bg-wedo-cyan/15 text-wedo-cyan-text hover:bg-wedo-cyan/25 transition-colors text-sm font-medium border border-wedo-cyan/20"
         >
           <div className="flex items-center gap-2.5">
             <Target className="w-4 h-4" />

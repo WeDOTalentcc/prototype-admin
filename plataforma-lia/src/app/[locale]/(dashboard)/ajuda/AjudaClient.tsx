@@ -216,7 +216,7 @@ export default function AjudaPage() {
                     <Chip 
                       key={field} 
                       variant="neutral" 
-                      className="text-xs text-wedo-cyan border-wedo-cyan/30"
+                      className="text-xs text-wedo-cyan-text border-wedo-cyan/30"
                     >
                       {field}
                     </Chip>

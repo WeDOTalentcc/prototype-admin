@@ -243,7 +243,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                       <span className="flex-1 text-left text-lia-text-primary truncate">
                         {stage.displayName}
                       </span>
-                      {isCurrent && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0" />}
+                      {isCurrent && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-text flex-shrink-0" />}
                     </button>
                   )
                 })}
@@ -276,7 +276,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                   onSetTransitionInterviewAlert({ name: candidate.name as string, date: dateStr })
                   openTransition([candidate], stage, stage)
                 }}
-                className="w-5 h-5 rounded-md flex items-center justify-center text-wedo-cyan-dark hover:bg-wedo-cyan/10 dark:hover:bg-wedo-cyan-dark/20 transition-colors motion-reduce:transition-none flex-shrink-0"
+                className="w-5 h-5 rounded-md flex items-center justify-center text-wedo-cyan-text hover:bg-wedo-cyan/10 dark:hover:bg-wedo-cyan-dark/20 transition-colors motion-reduce:transition-none flex-shrink-0"
                 title={t('manageInterviewTitle', { date: (candidate.interviewDate as string | undefined) || new Date(candidate.agendada as string).toLocaleDateString('pt-BR') })}
               >
                 <Video className="w-3 h-3" />

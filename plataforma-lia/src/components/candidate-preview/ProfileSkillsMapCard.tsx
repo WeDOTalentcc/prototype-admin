@@ -203,10 +203,10 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <Heart className="w-3 h-3 text-wedo-magenta" />
-              <span className={`${textStyles.label} text-wedo-magenta`}>Interesses</span>
+              <span className={`${textStyles.label} text-wedo-magenta-text`}>Interesses</span>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="text-wedo-magenta cursor-help text-micro">ⓘ</span>
+                  <span className="text-wedo-magenta-text cursor-help text-micro">ⓘ</span>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="text-xs">
                   Áreas de interesse declaradas pelo candidato
@@ -217,7 +217,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               {interests.map((interest: string) => (
                 <Chip variant="neutral" muted 
                   key={interest} 
-                  className="text-micro px-1.5 py-0 h-4 flex items-center bg-wedo-magenta/10 text-wedo-magenta border-0"
+                  className="text-micro px-1.5 py-0 h-4 flex items-center bg-wedo-magenta/10 text-wedo-magenta-text border-0"
                 >
                   {interest}
                 </Chip>

@@ -61,8 +61,8 @@ interface BulkActionsBarProps {
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'Novo', color: 'bg-lia-bg-tertiary text-lia-text-primary' },
-  { value: 'screening', label: 'Em Triagem', color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-dark' },
-  { value: 'interview', label: 'Entrevista', color: 'bg-wedo-purple/15 text-wedo-purple' },
+  { value: 'screening', label: 'Em Triagem', color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-text' },
+  { value: 'interview', label: 'Entrevista', color: 'bg-wedo-purple/15 text-wedo-purple-text' },
   { value: 'offer', label: 'Proposta', color: 'bg-status-warning/15 text-status-warning' },
   { value: 'hired', label: 'Contratado', color: 'bg-status-success/15 text-status-success' },
   { value: 'rejected', label: 'Recusado', color: 'bg-status-error/15 text-status-error' },

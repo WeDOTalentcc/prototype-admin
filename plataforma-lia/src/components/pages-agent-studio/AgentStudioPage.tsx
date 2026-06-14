@@ -70,8 +70,8 @@ const SECTOR_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 }
 
 const STATUS_CONFIG_STYLES = {
-  active:    { labelKey: "studio.status.active" as const,    dot: "bg-wedo-green", bg: "bg-wedo-green/10", text: "text-wedo-green", pulse: true  },
-  paused:    { labelKey: "studio.status.paused" as const,    dot: "bg-wedo-orange", bg: "bg-wedo-orange/10", text: "text-wedo-orange", pulse: false },
+  active:    { labelKey: "studio.status.active" as const,    dot: "bg-wedo-green", bg: "bg-wedo-green/10", text: "text-wedo-green-text", pulse: true  },
+  paused:    { labelKey: "studio.status.paused" as const,    dot: "bg-wedo-orange", bg: "bg-wedo-orange/10", text: "text-wedo-orange-text", pulse: false },
   completed: { labelKey: "studio.status.completed" as const, dot: "bg-lia-border-default", bg: "bg-lia-bg-tertiary", text: "text-lia-text-tertiary", pulse: false },
 }
 
@@ -410,7 +410,7 @@ export default function AgentStudioPage({
         <>
           {liveJobs.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-micro font-semibold uppercase tracking-widest text-wedo-green">
+              <p className="text-micro font-semibold uppercase tracking-widest text-wedo-green-text">
                 {liveJobs.length} vaga{liveJobs.length !== 1 ? "s" : ""} ativa{liveJobs.length !== 1 ? "s" : ""}
               </p>
               {liveJobs.map(j => (
@@ -429,7 +429,7 @@ export default function AgentStudioPage({
           )}
           {draftJobs.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-micro font-semibold uppercase tracking-widest text-wedo-orange">
+              <p className="text-micro font-semibold uppercase tracking-widest text-wedo-orange-text">
                 {draftJobs.length} em configuração
               </p>
               {draftJobs.map(j => (
@@ -441,7 +441,7 @@ export default function AgentStudioPage({
                 >
                   <div className="w-2 h-2 rounded-full bg-wedo-orange flex-shrink-0" />
                   <span className="flex-1 text-sm text-lia-text-primary truncate">{j.title}</span>
-                  <span className="text-micro text-wedo-orange opacity-0 group-hover:opacity-100 transition-opacity">Completar →</span>
+                  <span className="text-micro text-wedo-orange-text opacity-0 group-hover:opacity-100 transition-opacity">Completar →</span>
                 </button>
               ))}
             </div>
@@ -664,7 +664,7 @@ export default function AgentStudioPage({
             {alertCount > 0 && (
               <div className="rounded-xl border border-wedo-orange/40 bg-wedo-orange/10 overflow-hidden">
                 <div className="px-4 py-2.5 flex items-center justify-between border-b border-wedo-orange/20">
-                  <span className="text-micro font-semibold uppercase tracking-widest text-wedo-orange">
+                  <span className="text-micro font-semibold uppercase tracking-widest text-wedo-orange-text">
                     {alertCount} alerta{alertCount !== 1 ? "s" : ""} do Studio
                   </span>
                 </div>
@@ -882,7 +882,7 @@ function AgentCard({
       ) : (
         <>
           <Brain className="w-3 h-3 text-wedo-orange" />
-          <span className="text-micro text-wedo-orange">{t("studio.card.noLink")}</span>
+          <span className="text-micro text-wedo-orange-text">{t("studio.card.noLink")}</span>
         </>
       )}
     </div>

@@ -92,7 +92,7 @@ export function CandidateProfilePanel({ data }: CandidateProfilePanelProps) {
           {sanitizeUrl(profile.linkedin_url) && (
             <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
               <Globe className="w-3.5 h-3.5 text-lia-text-disabled" />
-              <a href={sanitizeUrl(profile.linkedin_url)!} target="_blank" rel="noopener noreferrer" className="text-wedo-cyan hover:underline truncate">
+              <a href={sanitizeUrl(profile.linkedin_url)!} target="_blank" rel="noopener noreferrer" className="text-wedo-cyan-text hover:underline truncate">
                 LinkedIn
               </a>
             </div>

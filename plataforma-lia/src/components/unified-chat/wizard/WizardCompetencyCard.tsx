@@ -21,8 +21,8 @@ interface WizardCompetencyCardProps {
 function BlockBadge({ block }: { block?: string }) {
   if (!block) return null
   const map: Record<string, { label: string; cls: string }> = {
-    technical: { label: "Técnica", cls: "bg-wedo-cyan/10 text-wedo-cyan" },
-    behavioral: { label: "Comportamental", cls: "bg-wedo-purple/10 text-wedo-purple" },
+    technical: { label: "Técnica", cls: "bg-wedo-cyan/10 text-wedo-cyan-text" },
+    behavioral: { label: "Comportamental", cls: "bg-wedo-purple/10 text-wedo-purple-text" },
   }
   const b = map[block] ?? { label: block, cls: "bg-lia-bg-primary text-lia-text-secondary" }
   return (
@@ -121,7 +121,7 @@ export function WizardCompetencyCard({ data, onOpenPanel }: WizardCompetencyCard
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className="w-full px-3 py-2 text-xs text-wedo-cyan hover:bg-lia-interactive-hover transition-colors text-left"
+            className="w-full px-3 py-2 text-xs text-wedo-cyan-text hover:bg-lia-interactive-hover transition-colors text-left"
           >
             Ver todas as {tree.length} competências
           </button>
@@ -132,7 +132,7 @@ export function WizardCompetencyCard({ data, onOpenPanel }: WizardCompetencyCard
             <button
               type="button"
               onClick={onOpenPanel}
-              className="flex items-center gap-1.5 text-[11px] text-wedo-cyan hover:underline"
+              className="flex items-center gap-1.5 text-[11px] text-wedo-cyan-text hover:underline"
             >
               <ExternalLink className="w-3 h-3" aria-hidden="true" />
               Abrir no painel

@@ -255,7 +255,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
           </button>
           <button
             onClick={() => router.push('/configuracoes')}
-            className="w-full px-3 py-1.5 rounded-xl text-xs font-medium text-wedo-cyan-dark bg-wedo-cyan/10 border border-wedo-cyan/30 hover:bg-wedo-cyan/15 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1"
+            className="w-full px-3 py-1.5 rounded-xl text-xs font-medium text-wedo-cyan-text bg-wedo-cyan/10 border border-wedo-cyan/30 hover:bg-wedo-cyan/15 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1"
           >
             <Settings className="w-3 h-3" />
             Ver configurações

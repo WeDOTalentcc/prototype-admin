@@ -52,7 +52,7 @@ const DENSITY = "compact" as const
 const RIBBON_VARIANT_CLS = {
   warning: "text-status-warning",
   danger: "text-status-error",
-  info: "text-wedo-cyan-dark dark:text-wedo-cyan",
+  info: "text-wedo-cyan-text dark:text-wedo-cyan",
 } as const
 
 const DEADLINE_CHIP_VARIANT = {

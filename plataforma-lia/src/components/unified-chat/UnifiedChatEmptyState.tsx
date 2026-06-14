@@ -60,7 +60,7 @@ export function UnifiedChatEmptyState({
           )}
         >
           <Building
-            className={cn("text-wedo-cyan", isCompact ? "w-6 h-6" : "w-8 h-8")}
+            className={cn("text-wedo-cyan-text", isCompact ? "w-6 h-6" : "w-8 h-8")}
             strokeWidth={1.5}
           />
         </div>
@@ -92,7 +92,7 @@ export function UnifiedChatEmptyState({
                 onClick={() => onSuggestionClick(command)}
                 className="flex items-center gap-3 p-3 rounded-md text-left border border-lia-border-subtle bg-lia-bg-primary hover:bg-lia-bg-secondary hover:border-wedo-cyan/30 transition-all"
               >
-                <div className="p-1.5 rounded-md bg-wedo-cyan/10 text-wedo-cyan flex-shrink-0">
+                <div className="p-1.5 rounded-md bg-wedo-cyan/10 text-wedo-cyan-text flex-shrink-0">
                   <chip.icon className="w-4 h-4" />
                 </div>
                 <span className="text-sm font-medium text-lia-text-primary">
@@ -120,7 +120,7 @@ export function UnifiedChatEmptyState({
         )}
       >
         <Brain
-          className={cn("text-wedo-cyan", isCompact ? "w-6 h-6" : "w-8 h-8")}
+          className={cn("text-wedo-cyan-text", isCompact ? "w-6 h-6" : "w-8 h-8")}
           strokeWidth={1.5}
         />
       </div>

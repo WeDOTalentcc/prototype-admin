@@ -51,7 +51,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </div>
               <div>
                 <h2 className="text-xl font-semibold">{t('testLibrary.title')}</h2>
-                <p className="text-wedo-purple text-sm">{t('testLibrary.subtitle')}</p>
+                <p className="text-wedo-purple-text text-sm">{t('testLibrary.subtitle')}</p>
               </div>
             </div>
             <button
@@ -75,7 +75,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                 { icon: <Target className="w-4 h-4" />, label: t('testLibrary.catMarketingSales'), count: 20, color: 'text-lia-text-primary' },
                 { icon: <Building className="w-4 h-4" />, label: t('testLibrary.catAdministrative'), count: 10, color: 'text-lia-text-secondary' },
                 { icon: <Globe className="w-4 h-4" />, label: t('testLibrary.catLanguages'), count: 8, color: 'text-lia-text-primary' },
-                { icon: <Brain className="w-4 h-4 text-wedo-cyan" />, label: t('testLibrary.catSoftSkills'), count: 14, color: 'text-lia-text-primary' }
+                { icon: <Brain className="w-4 h-4 text-wedo-cyan-text" />, label: t('testLibrary.catSoftSkills'), count: 14, color: 'text-lia-text-primary' }
               ].map((category) => (
                 <button
                   key={category.label}

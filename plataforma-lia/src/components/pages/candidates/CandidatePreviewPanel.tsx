@@ -96,7 +96,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <div className={`${textStyles.label} text-lia-text-primary`}>
                       Senior Developer
                     </div>
-                    <div className={`${textStyles.bodySmall} text-wedo-green dark:text-wedo-green`}>
+                    <div className={`${textStyles.bodySmall} text-wedo-green-text dark:text-wedo-green`}>
                       Tech Corp • 2021 - {t('current')}
                     </div>
                     <div className={`${textStyles.bodySmall} mt-1`}>

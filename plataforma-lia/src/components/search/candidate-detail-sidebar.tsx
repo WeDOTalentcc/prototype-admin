@@ -171,7 +171,7 @@ export function CandidateDetailSidebar({
                         candidate.enrichment_source === "apify"
                           ? "border-status-info/30 bg-status-info/10 text-status-info"
                           : candidate.enrichment_source === "pearch"
-                          ? "border-wedo-cyan/30 bg-wedo-cyan/10 text-wedo-cyan"
+                          ? "border-wedo-cyan/30 bg-wedo-cyan/10 text-wedo-cyan-text"
                           : "border-lia-border-default bg-lia-bg-secondary text-lia-text-secondary"
                       }`}
                     >

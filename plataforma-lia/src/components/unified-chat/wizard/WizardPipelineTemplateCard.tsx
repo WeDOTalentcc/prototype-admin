@@ -115,7 +115,7 @@ export function WizardPipelineTemplateCard({
                 className={cn(
                   "mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md",
                   isSuggested
-                    ? "bg-wedo-cyan/15 text-wedo-cyan"
+                    ? "bg-wedo-cyan/15 text-wedo-cyan-text"
                     : "bg-lia-bg-tertiary text-lia-text-secondary",
                 )}
                 aria-hidden="true"
@@ -128,7 +128,7 @@ export function WizardPipelineTemplateCard({
                     {option.name}
                   </span>
                   {isSuggested && !isSelected && (
-                    <span className="rounded-full bg-wedo-cyan/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-wedo-cyan">
+                    <span className="rounded-full bg-wedo-cyan/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-wedo-cyan-text">
                       Sugerido
                     </span>
                   )}

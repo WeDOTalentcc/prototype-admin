@@ -252,11 +252,11 @@ export const JobTitlesSection = ({
                 variant="neutral" muted
                 className={cn("pl-2 pr-1 py-1 flex items-center gap-1",
                   isAiSuggested
-                    ?"bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple"
+                    ?"bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple-text"
                     :"bg-lia-bg-tertiary text-lia-text-primary"
                 )}
               >
-                {isAiSuggested && <Brain className="w-3 h-3 text-wedo-purple" />}
+                {isAiSuggested && <Brain className="w-3 h-3 text-wedo-purple-text" />}
                 <span className="text-xs">{title}</span>
                 <button
                   onClick={() => removeFromArray("job","titles", title)}
@@ -291,8 +291,8 @@ export const JobTitlesSection = ({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-purple" />
-              <span className="text-xs font-medium text-wedo-purple">Sugestões da LIA</span>
-              <span className="text-micro text-wedo-purple">
+              <span className="text-xs font-medium text-wedo-purple-text">Sugestões da LIA</span>
+              <span className="text-micro text-wedo-purple-text">
                 (clique para selecionar múltiplos)
               </span>
             </div>
@@ -316,11 +316,11 @@ export const JobTitlesSection = ({
                   className={cn("px-2 py-1 rounded-md text-xs border transition-colors flex items-center gap-1",
                     isSelected
                       ?"border-wedo-purple/30  font-medium"
-                      :"border-wedo-purple/30 bg-lia-bg-primary text-wedo-purple hover:bg-wedo-purple/10"
+                      :"border-wedo-purple/30 bg-lia-bg-primary text-wedo-purple-text hover:bg-wedo-purple/10"
                   )}
                 >
                   {isSelected && <Check className="w-3 h-3" />}
-                  {!isSelected && <span className="text-wedo-purple">+</span>}
+                  {!isSelected && <span className="text-wedo-purple-text">+</span>}
                   {title}
                 </button>
               )

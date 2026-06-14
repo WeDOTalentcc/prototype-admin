@@ -212,7 +212,7 @@ Equipe de Recrutamento`
       case 'approve_to_triage':
         return {
           title: 'Aprovar para Triagem',
-          icon: <Brain className="w-5 h-5 text-wedo-cyan" />,
+          icon: <Brain className="w-5 h-5 text-wedo-cyan-text" />,
           steps: [
             { id: 'approve', label: 'Aprovação', status: 'current' as const },
             { id: 'triage', label: 'Triagem IA', status: 'upcoming' as const },

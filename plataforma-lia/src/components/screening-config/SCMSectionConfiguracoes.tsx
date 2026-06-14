@@ -61,7 +61,7 @@ export function SCMSectionConfiguracoes({
                   }`}>
                     {statusValue === 'active' && <Play className="w-3.5 h-3.5 text-status-success" />}
                     {statusValue === 'paused' && <Pause className="w-3.5 h-3.5 text-status-warning" />}
-                    {statusValue === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-dark" />}
+                    {statusValue === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-text" />}
                     {statusValue === 'not_started' && <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />}
                     {statusValue === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />}
                   </div>
@@ -70,7 +70,7 @@ export function SCMSectionConfiguracoes({
                     <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
                       statusValue === 'active' ? 'bg-status-success/15 text-status-success dark:bg-status-success/30' :
                       statusValue === 'paused' ? 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30' :
-                      statusValue === 'completed' ? 'bg-wedo-cyan/15 text-wedo-cyan-dark' :
+                      statusValue === 'completed' ? 'bg-wedo-cyan/15 text-wedo-cyan-text' :
                       statusValue === 'not_started' ? 'bg-lia-interactive-active text-lia-text-secondary' :
                       'bg-lia-bg-tertiary text-lia-text-tertiary'
                     }`}>
@@ -372,7 +372,7 @@ export function SCMSectionConfiguracoes({
                   }`}>
                     {statusValue === 'active' && <Play className="w-3.5 h-3.5 text-status-success" />}
                     {statusValue === 'paused' && <Pause className="w-3.5 h-3.5 text-status-warning" />}
-                    {statusValue === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-dark" />}
+                    {statusValue === 'completed' && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-text" />}
                     {statusValue === 'not_started' && <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />}
                     {statusValue === 'not_configured' && <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />}
                   </div>
@@ -381,7 +381,7 @@ export function SCMSectionConfiguracoes({
                     <span className={`ml-2 text-micro font-medium px-2 py-0.5 rounded-full ${
                       statusValue === 'active' ? 'bg-status-success/15 text-status-success dark:bg-status-success/30' :
                       statusValue === 'paused' ? 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30' :
-                      statusValue === 'completed' ? 'bg-wedo-cyan/15 text-wedo-cyan-dark' :
+                      statusValue === 'completed' ? 'bg-wedo-cyan/15 text-wedo-cyan-text' :
                       statusValue === 'not_started' ? 'bg-lia-interactive-active text-lia-text-secondary' :
                       'bg-lia-bg-tertiary text-lia-text-tertiary'
                     }`}>

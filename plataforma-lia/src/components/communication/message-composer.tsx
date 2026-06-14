@@ -211,7 +211,7 @@ export function MessageComposer({
   return (
     <div className={className}>
       {successMessage && (
-        <div className="mb-3 px-3 py-2 rounded-xl flex items-center gap-2 bg-lia-interactive-active/30 border border-wedo-cyan/30 text-wedo-cyan-dark">
+        <div className="mb-3 px-3 py-2 rounded-xl flex items-center gap-2 bg-lia-interactive-active/30 border border-wedo-cyan/30 text-wedo-cyan-text">
           <Check className="w-4 h-4 text-lia-text-secondary" />
           <span className="text-xs">{successMessage}</span>
         </div>
@@ -438,7 +438,7 @@ export function MessageComposer({
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {aiResultModal.changesMade.map((change, idx) => (
-                    <Chip density="relaxed" variant="neutral" muted key={idx} className="px-2 py-0.5 rounded-full bg-lia-interactive-active/30 text-wedo-cyan-dark">
+                    <Chip density="relaxed" variant="neutral" muted key={idx} className="px-2 py-0.5 rounded-full bg-lia-interactive-active/30 text-wedo-cyan-text">
                       <Check className="w-3 h-3 mr-1" />
                       {change}
                     </Chip>

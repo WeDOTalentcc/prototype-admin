@@ -20,7 +20,7 @@ import {
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
-  'minha-empresa': 'text-wedo-cyan',
+  'minha-empresa': 'text-wedo-cyan-text',
   'pipeline': 'text-emerald-500',
   'screening': 'text-amber-500',
   'templates-assinatura': 'text-violet-500',

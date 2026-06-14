@@ -35,12 +35,12 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 const STATUS_ICON: Record<string, React.ReactNode> = {
-  draft: <Clock className="w-4 h-4 text-wedo-orange" />,
+  draft: <Clock className="w-4 h-4 text-wedo-orange-text" />,
   sent: <Clock className="w-4 h-4 text-lia-text-primary" />,
   viewed: <Clock className="w-4 h-4 text-lia-text-secondary" />,
-  accepted: <CheckCircle2 className="w-4 h-4 text-wedo-green" />,
+  accepted: <CheckCircle2 className="w-4 h-4 text-wedo-green-text" />,
   declined: <XCircle className="w-4 h-4 text-lia-text-tertiary" />,
-  counter_proposed: <RefreshCw className="w-4 h-4 text-wedo-orange" />,
+  counter_proposed: <RefreshCw className="w-4 h-4 text-wedo-orange-text" />,
   expired: <XCircle className="w-4 h-4 text-lia-border-default" />,
   cancelled: <XCircle className="w-4 h-4 text-lia-border-default" />,
 }

@@ -380,7 +380,7 @@ export function EAPModals({
               {pendingSourceChange === 'hybrid' && (
                 <div className="flex justify-between text-micro">
                   <span className="text-lia-text-secondary">Local:</span>
-                  <span className="font-medium text-wedo-green-light">Grátis</span>
+                  <span className="font-medium text-wedo-green-text-light">Grátis</span>
                 </div>
               )}
               <div className="flex justify-between text-micro">

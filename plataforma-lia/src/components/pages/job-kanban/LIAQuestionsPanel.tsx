@@ -30,7 +30,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
               </div>
               <div>
                 <h2 className="text-lg font-semibold">{t('liaQuestionSuggestions')}</h2>
-                <p className="text-wedo-purple text-xs">{t('basedOnJobProfile')}</p>
+                <p className="text-wedo-purple-text text-xs">{t('basedOnJobProfile')}</p>
               </div>
             </div>
             <button

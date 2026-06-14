@@ -29,7 +29,7 @@ const filterCategories = [
   { id: 'triagem', label: 'Triagem', color: ' dark:bg-status-success/20 dark:text-status-success' },
   { id: 'entrevistas', label: 'Entrevistas', color: ' dark:bg-wedo-purple/20 dark:text-wedo-purple' },
   { id: 'onboarding', label: 'Onboarding', color: ' dark:bg-wedo-orange/20 dark:text-wedo-orange' },
-  { id: 'analytics', label: 'Analytics', color: 'bg-wedo-magenta/15 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta' },
+  { id: 'analytics', label: 'Analytics', color: 'bg-wedo-magenta/15 text-wedo-magenta-text dark:bg-wedo-magenta/20 dark:text-wedo-magenta' },
   { id: 'integracao', label: 'Integração', color: ' dark:bg-wedo-purple/20 dark:text-wedo-purple' }
 ]
 

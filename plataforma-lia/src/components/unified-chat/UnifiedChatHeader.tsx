@@ -276,7 +276,7 @@ export function UnifiedChatHeader({
         {showOpenJobButton && onOpenJob && (
           <button
             onClick={onOpenJob}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-wedo-cyan/40 bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20 transition-colors motion-reduce:transition-none flex-shrink-0"
+            className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-wedo-cyan/40 bg-wedo-cyan/10 text-wedo-cyan-text hover:bg-wedo-cyan/20 transition-colors motion-reduce:transition-none flex-shrink-0"
             title="Reabrir o painel da vaga em criação"
             aria-label="Reabrir o painel lateral da vaga em criação"
             data-testid="open-job-panel-button"
@@ -371,7 +371,7 @@ export function UnifiedChatHeader({
                     <opt.icon className="w-4 h-4" />
                     <span>{opt.label}</span>
                     {mode === opt.mode && (
-                      <span className="ml-auto text-wedo-cyan text-xs">{'\u2713'}</span>
+                      <span className="ml-auto text-wedo-cyan-text text-xs">{'\u2713'}</span>
                     )}
                   </button>
                 ))}

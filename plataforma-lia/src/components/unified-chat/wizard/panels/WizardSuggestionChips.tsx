@@ -134,7 +134,7 @@ export function WizardSuggestionChips({ data, onUpdate }: Props) {
                 setDismissed((prev) => new Set([...prev, field]))
               }}
               title={s.explanation}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border border-wedo-cyan/30 bg-wedo-cyan/[0.08] text-wedo-cyan hover:bg-wedo-cyan/15 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border border-wedo-cyan/30 bg-wedo-cyan/[0.08] text-wedo-cyan-text hover:bg-wedo-cyan/15 transition-colors cursor-pointer"
             >
               <span className="font-medium">{label}:</span>
               <span>{valueText}</span>

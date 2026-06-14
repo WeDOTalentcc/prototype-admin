@@ -38,17 +38,17 @@ const INSIGHT_STYLES: Record<LiaInsight["type"], {
   analysis: {
     bg: "bg-wedo-purple/10",
     border: "border-wedo-purple/30",
-    iconColor: "text-wedo-purple",
+    iconColor: "text-wedo-purple-text",
     badgeText: "Análise",
-    badgeBg: "bg-wedo-purple/15 text-wedo-purple",
+    badgeBg: "bg-wedo-purple/15 text-wedo-purple-text",
     icon: Search,
   },
   comparative: {
     bg: "bg-wedo-cyan/10",
     border: "border-wedo-cyan/30",
-    iconColor: "text-wedo-cyan-dark",
+    iconColor: "text-wedo-cyan-text",
     badgeText: "Comparativo",
-    badgeBg: "bg-wedo-cyan/15 text-wedo-cyan-dark",
+    badgeBg: "bg-wedo-cyan/15 text-wedo-cyan-text",
     icon: ArrowRightLeft,
   },
   attention: {

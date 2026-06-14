@@ -751,7 +751,7 @@ export function ActionButtons({
             variant="ghost"
             size="sm"
             className={`h-7 w-7 p-0 hover:bg-wedo-orange/15 dark:hover:bg-wedo-orange/10/20 ${
- isFavorite ? 'text-wedo-orange' : 'text-lia-text-secondary'
+ isFavorite ? 'text-wedo-orange-text' : 'text-lia-text-secondary'
             }`}
             onClick={onToggleFavorite}
             title={isFavorite ?"Remover dos favoritos" :"Adicionar aos favoritos"}

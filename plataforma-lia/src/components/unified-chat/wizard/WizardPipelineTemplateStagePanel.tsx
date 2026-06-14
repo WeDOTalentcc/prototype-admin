@@ -21,7 +21,7 @@ import type { WizardPipelineTemplateSuggestion } from "@/components/unified-chat
  *   - "Aplicar este template" é action secundária por template.
  *
  * Design tokens canonical (Design System v4.2.x):
- *   - Header com accent cyan (`text-wedo-cyan`) — LIA "agindo".
+ *   - Header com accent cyan (`text-wedo-cyan-text`) — LIA "agindo".
  *   - Botão PRIMARY canonical (`bg-lia-text-primary`) reservado para
  *     "Usar Padrão da Empresa" (CTA principal do stage).
  *   - Botões "Aplicar este template" usam o mesmo estilo Ink mas em
@@ -101,13 +101,13 @@ export function WizardPipelineTemplateStagePanel({
       {/* Header — LIA falando, accent cyan apropriado */}
       <div className="flex items-center gap-2">
         <span
-          className="flex h-7 w-7 items-center justify-center rounded-md bg-wedo-cyan/15 text-wedo-cyan"
+          className="flex h-7 w-7 items-center justify-center rounded-md bg-wedo-cyan/15 text-wedo-cyan-text"
           aria-hidden="true"
         >
           <Sparkles className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-wedo-cyan">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-wedo-cyan-text">
             {t("title")}
           </p>
           <p className="text-sm font-semibold text-lia-text-primary">
@@ -144,7 +144,7 @@ export function WizardPipelineTemplateStagePanel({
                       {isSuggested && (
                         <span
                           data-testid={`wizard-pipeline-template-stage-suggested-${template.template_id}`}
-                          className="inline-flex items-center rounded-full bg-wedo-cyan/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-wedo-cyan"
+                          className="inline-flex items-center rounded-full bg-wedo-cyan/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-wedo-cyan-text"
                         >
                           {t("suggestedBadge")}
                         </span>

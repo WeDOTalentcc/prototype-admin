@@ -320,7 +320,7 @@ export default function CalibrationCardModal({
               {candidate.auto_tags && candidate.auto_tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-4">
                   {candidate.auto_tags.map((tag, i) => (
-                    <span key={i} className="px-2 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan text-[11px] font-medium">
+                    <span key={i} className="px-2 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan-text text-[11px] font-medium">
                       {tag}
                     </span>
                   ))}

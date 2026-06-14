@@ -300,11 +300,11 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                       </div>
 
                       <div className="bg-lia-bg-primary rounded-xl p-3 border border-wedo-orange/30">
-                        <h5 className="text-xs font-medium text-wedo-orange mb-2 flex items-center gap-1">
+                        <h5 className="text-xs font-medium text-wedo-orange-text mb-2 flex items-center gap-1">
                           <AlertCircle className="w-3 h-3 text-wedo-orange" />
                           Pontos de Atenção:
                         </h5>
-                        <ul className="text-xs text-wedo-orange space-y-1">
+                        <ul className="text-xs text-wedo-orange-text space-y-1">
                           {liaInsights.analysis?.concerns?.slice(0, 3).map((concern: string, idx: number) => (
                             <li key={`con-${idx}`}>• {concern}</li>
                           ))}

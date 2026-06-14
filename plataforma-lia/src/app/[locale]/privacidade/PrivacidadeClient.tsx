@@ -225,7 +225,7 @@ export default function PrivacidadePage() {
             <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
               LGPD Art. 18
             </Chip>
-            <Chip variant="neutral" muted className="bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30">
+            <Chip variant="neutral" muted className="bg-wedo-cyan/10 text-wedo-cyan-text border-wedo-cyan/30">
               Art. 20 — IA
             </Chip>
           </div>
@@ -254,10 +254,10 @@ export default function PrivacidadePage() {
                   <h3 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">
                     Direito à Revisão de Decisão Automatizada
                   </h3>
-                  <Chip variant="neutral" muted className="bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 text-xs">
+                  <Chip variant="neutral" muted className="bg-wedo-cyan/10 text-wedo-cyan-text border-wedo-cyan/30 text-xs">
                     LGPD Art. 20
                   </Chip>
-                  <Chip variant="neutral" muted className="bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 text-xs">
+                  <Chip variant="neutral" muted className="bg-wedo-cyan/10 text-wedo-cyan-text border-wedo-cyan/30 text-xs">
                     EU AI Act
                   </Chip>
                 </div>
@@ -278,7 +278,7 @@ export default function PrivacidadePage() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="border-wedo-cyan/40 text-wedo-cyan-dark hover:bg-wedo-cyan/10"
+                    className="border-wedo-cyan/40 text-wedo-cyan-text hover:bg-wedo-cyan/10"
                     onClick={() => setArt20Expanded((v) => !v)}
                   >
                     <Info className="w-4 h-4 mr-2" />
@@ -358,7 +358,7 @@ export default function PrivacidadePage() {
                     { step: '5', text: 'Receberá uma resposta fundamentada em até 15 dias úteis, conforme exigido pela LGPD Art. 18, §3º.' },
                   ].map(({ step, text }) => (
                     <li key={step} className="flex items-start gap-3 text-xs text-lia-text-secondary">
-                      <span className="w-5 h-5 rounded-full bg-wedo-cyan/20 text-wedo-cyan-dark font-semibold flex items-center justify-center flex-shrink-0 text-xs">
+                      <span className="w-5 h-5 rounded-full bg-wedo-cyan/20 text-wedo-cyan-text font-semibold flex items-center justify-center flex-shrink-0 text-xs">
                         {step}
                       </span>
                       {text}

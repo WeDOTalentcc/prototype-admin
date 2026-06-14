@@ -12,8 +12,8 @@ function getEnrichmentBadge(enrichmentSource: string | null | undefined, isEnric
   }
   if (!enrichmentSource) return null
   const src = enrichmentSource.toLowerCase()
-  if (src === 'apify') return { label: "Apify", className: "bg-wedo-orange/15 text-wedo-orange", icon: null }
-  if (src === 'pearch') return { label: "Pearch", className: "bg-wedo-cyan/15 text-wedo-cyan", icon: null }
+  if (src === 'apify') return { label: "Apify", className: "bg-wedo-orange/15 text-wedo-orange-text", icon: null }
+  if (src === 'pearch') return { label: "Pearch", className: "bg-wedo-cyan/15 text-wedo-cyan-text", icon: null }
   if (src === 'local') return { label: "Local", className: "bg-stone-400/15 text-stone-500", icon: null }
   return { label: enrichmentSource, className: "bg-lia-bg-tertiary text-lia-text-secondary", icon: null }
 }
@@ -57,7 +57,7 @@ export function renderSourceCell(candidate: Candidate, t?: TranslateFn): React.R
           </div>
           <div className="text-xs text-lia-text-tertiary mb-1">{sourceInfo.subtext}</div>
           {isLocal ? (
-            <div className="text-xs font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-lia-border-strong text-wedo-green-light">
+            <div className="text-xs font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-lia-border-strong text-wedo-green-text-light">
               <CheckCircle className="w-3 h-3" />
               {t ? t('noCredits') : "Sem consumo de créditos"}
             </div>

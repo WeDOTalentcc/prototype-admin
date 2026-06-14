@@ -108,7 +108,7 @@ export function LiaChatHeader({
             className={cn(
               "p-1.5 rounded-md transition-colors",
               showHistory
-                ? "text-wedo-cyan bg-lia-bg-tertiary"
+                ? "text-wedo-cyan-text bg-lia-bg-tertiary"
                 : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
             )}
             title="Histórico de conversas"

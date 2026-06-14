@@ -80,7 +80,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
               </span>
 
               {ss.is_waiting && ss.is_active && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan-dark text-micro font-medium">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan-text text-micro font-medium">
                   {t("waiting")}
                 </span>
               )}

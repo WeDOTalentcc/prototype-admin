@@ -200,7 +200,7 @@ export function QualificationMatrixCard({
         <CardContent className="flex items-center gap-3 p-3 text-lia-text-secondary">
           <AlertCircle className="h-4 w-4 flex-shrink-0 text-status-warning" />
           <span className="text-xs flex-1">Não foi possível avaliar os critérios da busca</span>
-          <button onClick={() => refetch()} className="text-xs text-wedo-cyan hover:underline">
+          <button onClick={() => refetch()} className="text-xs text-wedo-cyan-text hover:underline">
             Tentar novamente
           </button>
         </CardContent>

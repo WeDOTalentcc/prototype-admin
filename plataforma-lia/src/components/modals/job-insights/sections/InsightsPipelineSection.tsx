@@ -169,7 +169,7 @@ export function InsightsPipelineSection({
                   <span className="text-xs font-medium text-lia-text-tertiary">{job.title}</span>
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {job.behavioral_competencies?.map((comp, i) => (
-                      <span key={i} className="text-micro px-2 py-0.5 rounded-full bg-wedo-purple/15 text-wedo-purple">
+                      <span key={i} className="text-micro px-2 py-0.5 rounded-full bg-wedo-purple/15 text-wedo-purple-text">
                         {comp.competency}
                       </span>
                     ))}

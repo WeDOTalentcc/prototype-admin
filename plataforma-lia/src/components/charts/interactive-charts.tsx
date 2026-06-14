@@ -651,9 +651,9 @@ export function PredictiveAnalyticsChart() {
             <div className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-wedo-orange" />
               <div>
-                <p className="text-sm font-medium text-wedo-orange">Atenção Necessária</p>
-                <p className="text-lg font-semibold text-wedo-orange">Tech</p>
-                <p className="text-xs text-wedo-orange">Demanda crescente</p>
+                <p className="text-sm font-medium text-wedo-orange-text">Atenção Necessária</p>
+                <p className="text-lg font-semibold text-wedo-orange-text">Tech</p>
+                <p className="text-xs text-wedo-orange-text">Demanda crescente</p>
               </div>
             </div>
           </CardContent>

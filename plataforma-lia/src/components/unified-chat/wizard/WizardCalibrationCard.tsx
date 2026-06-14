@@ -73,7 +73,7 @@ export function WizardCalibrationCard({ data }: { data: Record<string, unknown> 
           <p className="text-xs text-lia-text-secondary">
             {approvedCount}/{threshold} perfis avaliados
             {poolCount !== null && (
-              <span className="ml-2 text-wedo-cyan">
+              <span className="ml-2 text-wedo-cyan-text">
                 · {poolCount.toLocaleString("pt-BR")} no pool
               </span>
             )}
@@ -197,7 +197,7 @@ function InlineCandidateCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
             <p className="text-xs font-medium text-lia-text-primary truncate">{candidate.name}</p>
-            <span className="text-[10px] text-wedo-cyan font-medium flex-shrink-0">
+            <span className="text-[10px] text-wedo-cyan-text font-medium flex-shrink-0">
               {Math.round(candidate.match_score * 100)}%
             </span>
           </div>

@@ -137,7 +137,7 @@ function FichaField({
         >
           {value}
           {inferred && (
-            <span className="ml-1 text-[10px] text-wedo-cyan bg-wedo-cyan/10 px-1.5 py-0.5 rounded-full font-normal">inferido</span>
+            <span className="ml-1 text-[10px] text-wedo-cyan-text bg-wedo-cyan/10 px-1.5 py-0.5 rounded-full font-normal">inferido</span>
           )}
         </Chip>
       ) : editable ? (
@@ -436,7 +436,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {extractedKeywords.map((kw, i) => (
-              <span key={i} className="px-2 py-0.5 text-micro rounded-full bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/20">
+              <span key={i} className="px-2 py-0.5 text-micro rounded-full bg-wedo-cyan/10 text-wedo-cyan-text border border-wedo-cyan/20">
                 {kw}
               </span>
             ))}

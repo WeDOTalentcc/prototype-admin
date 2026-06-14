@@ -111,7 +111,7 @@ export function JobProcessSection({
             <div className="flex items-center gap-1"><Lock className="w-3 h-3" /><span><strong>Sistema:</strong> Fixas</span></div>
             <div className="flex items-center gap-1"><Target className="w-3 h-3" /><span><strong>Padrão:</strong> Nome editável</span></div>
             <div className="flex items-center gap-1"><Settings className="w-3 h-3" /><span><strong>Custom:</strong> Editável</span></div>
-            <div className="flex items-center gap-1 ml-auto"><Brain className="w-3 h-3 text-wedo-cyan" /><span className="text-wedo-cyan"><strong>IA</strong> auxilia</span></div>
+            <div className="flex items-center gap-1 ml-auto"><Brain className="w-3 h-3 text-wedo-cyan-text" /><span className="text-wedo-cyan-text"><strong>IA</strong> auxilia</span></div>
           </div>
         </div>
         <div className="flex items-center justify-between">

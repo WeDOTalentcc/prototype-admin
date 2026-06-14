@@ -45,7 +45,7 @@ export function CandidateChatHeader({
         {logoUrl ? (
           <img src={logoUrl} alt={companyName ?? 'Empresa'} className="h-full w-full object-contain" />
         ) : (
-          <span className="text-wedo-cyan text-sm font-semibold">
+          <span className="text-wedo-cyan-text text-sm font-semibold">
             {(companyName ?? 'E')[0].toUpperCase()}
           </span>
         )}

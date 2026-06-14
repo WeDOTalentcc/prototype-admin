@@ -60,7 +60,7 @@ const STATUS_CONFIG: Record<ScreeningStatus, { label: string; color: string; bgC
   not_started: { label: SCREENING_STATUS_LABELS.not_started, color: 'text-lia-text-secondary', bgColor: 'bg-lia-interactive-active', darkBgColor: 'dark:bg-lia-bg-elevated', icon: Clock },
   active: { label: SCREENING_STATUS_LABELS.active, color: 'text-status-success', bgColor: 'bg-status-success/15', darkBgColor: 'dark:bg-status-success/30', icon: Play },
   paused: { label: SCREENING_STATUS_LABELS.paused, color: 'text-status-warning', bgColor: 'bg-status-warning/15', darkBgColor: 'dark:bg-status-warning/30', icon: Pause },
-  completed: { label: SCREENING_STATUS_LABELS.completed, color: 'text-wedo-cyan-dark', bgColor: 'bg-wedo-cyan/15', darkBgColor: 'dark:bg-wedo-cyan/10/30', icon: CheckCircle2 },
+  completed: { label: SCREENING_STATUS_LABELS.completed, color: 'text-wedo-cyan-text', bgColor: 'bg-wedo-cyan/15', darkBgColor: 'dark:bg-wedo-cyan/10/30', icon: CheckCircle2 },
 }
 
 export function ScreeningStatusModal({
@@ -274,9 +274,9 @@ export function ScreeningStatusModal({
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-wedo-cyan-dark mt-0.5" />
                   <div>
-                    <p className="text-xs font-medium text-wedo-cyan-dark">Triagem Concluída</p>
+                    <p className="text-xs font-medium text-wedo-cyan-text">Triagem Concluída</p>
                     {screeningConfig?.status?.completed_at && (
-                      <p className="text-micro text-wedo-cyan-dark mt-1">
+                      <p className="text-micro text-wedo-cyan-text mt-1">
                         Concluída em {new Date(screeningConfig.status.completed_at).toLocaleDateString('pt-BR')}
                       </p>
                     )}
@@ -351,7 +351,7 @@ export function ScreeningStatusModal({
                 variant="outline"
                 onClick={() => handleStatusChange('completed')}
                 disabled={isUpdating}
-                className="flex-1 h-9 text-xs font-medium border-wedo-cyan/30 text-wedo-cyan-dark hover:bg-wedo-cyan/10 dark:border-wedo-cyan/30 dark:hover:bg-wedo-cyan/10/20 gap-1.5"
+                className="flex-1 h-9 text-xs font-medium border-wedo-cyan/30 text-wedo-cyan-text hover:bg-wedo-cyan/10 dark:border-wedo-cyan/30 dark:hover:bg-wedo-cyan/10/20 gap-1.5"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Concluir

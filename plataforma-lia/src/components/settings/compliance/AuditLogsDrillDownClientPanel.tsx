@@ -45,11 +45,11 @@ const CATEGORY_FILTERS = [
 ]
 
 const CATEGORY_BADGE: Record<string, string> = {
-  data_access: "bg-wedo-cyan/10 text-wedo-cyan",
-  user_management: "bg-wedo-purple/10 text-wedo-purple",
+  data_access: "bg-wedo-cyan/10 text-wedo-cyan-text",
+  user_management: "bg-wedo-purple/10 text-wedo-purple-text",
   authentication: "bg-muted text-muted-foreground",
   configuration: "bg-status-warning/10 text-status-warning",
-  ai_decision: "bg-wedo-magenta/10 text-wedo-magenta",
+  ai_decision: "bg-wedo-magenta/10 text-wedo-magenta-text",
 }
 
 export function AuditLogsDrillDownClientPanel() {

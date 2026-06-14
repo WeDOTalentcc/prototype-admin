@@ -221,7 +221,7 @@ export function AddColumnPopover({
           )}
           {inferredBehavior && (
             <div className="flex items-center gap-2 p-2 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
-              <span className="text-micro px-2 py-0.5 rounded-full font-medium bg-wedo-cyan/15 text-wedo-cyan">
+              <span className="text-micro px-2 py-0.5 rounded-full font-medium bg-wedo-cyan/15 text-wedo-cyan-text">
                 {inferredBehavior.suggested_behavior}
               </span>
               <span className="text-micro text-lia-text-disabled">

@@ -34,7 +34,7 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
     score >= 70
       ? "text-status-success"
       : score >= 50
-        ? "text-wedo-cyan"
+        ? "text-wedo-cyan-text"
         : "text-status-warning"
 
   if (!enriched) return null
@@ -101,7 +101,7 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
                       key={i}
                       className="text-xs text-lia-text-secondary flex items-start gap-1.5"
                     >
-                      <span className="text-wedo-cyan mt-0.5 flex-shrink-0" aria-hidden="true">
+                      <span className="text-wedo-cyan-text mt-0.5 flex-shrink-0" aria-hidden="true">
                         ·
                       </span>
                       {r}
@@ -133,7 +133,7 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
               <button
                 type="button"
                 onClick={onOpenPanel}
-                className="flex items-center gap-1.5 text-[11px] text-wedo-cyan hover:underline"
+                className="flex items-center gap-1.5 text-[11px] text-wedo-cyan-text hover:underline"
               >
                 <ExternalLink className="w-3 h-3" aria-hidden="true" />
                 Abrir no painel

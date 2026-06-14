@@ -485,7 +485,7 @@ export function VoiceChatButton({
       className={cn(
         "transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-lia-border-default",
         mode === 'streaming'
-          ? "text-wedo-cyan hover:text-wedo-cyan-dark hover:bg-wedo-cyan/10 animate-pulse motion-reduce:animate-none px-3"
+          ? "text-wedo-cyan-text hover:text-wedo-cyan-dark hover:bg-wedo-cyan/10 animate-pulse motion-reduce:animate-none px-3"
           : mode === 'recording'
             ? "text-status-error hover:text-status-error hover:bg-status-error/10 animate-pulse motion-reduce:animate-none px-3"
             : mode === 'playing'

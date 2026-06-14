@@ -41,7 +41,7 @@ export function LiaMetricsDetailsSection({ data }: LiaMetricsDetailsSectionProps
                   <AlertCircle className="w-4 h-4 text-wedo-orange" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-wedo-orange">
+                  <div className="text-sm font-semibold text-wedo-orange-text">
                     {pendingApproval} Ações Pendentes
                   </div>
                   <div className="text-xs text-wedo-orange/80">

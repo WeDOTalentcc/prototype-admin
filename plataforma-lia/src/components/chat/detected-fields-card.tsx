@@ -22,10 +22,10 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
 
   const confidenceColor = (conf?: "high" | "medium" | "low") => {
     switch (conf) {
-      case "high": return "text-wedo-cyan"
+      case "high": return "text-wedo-cyan-text"
       case "medium": return "text-lia-text-secondary"
       case "low": return "text-lia-text-tertiary"
-      default: return "text-wedo-cyan"
+      default: return "text-wedo-cyan-text"
     }
   }
 

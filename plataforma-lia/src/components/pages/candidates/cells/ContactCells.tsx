@@ -197,7 +197,7 @@ export function renderPortfolioCell(candidate: Candidate, t?: TranslateFn): Reac
       href={candidate.portfolio_url}
       target="_blank"
       rel="noopener"
-      className="text-wedo-purple hover:underline text-xs flex items-center gap-1"
+      className="text-wedo-purple-text hover:underline text-xs flex items-center gap-1"
     >
       <Globe className="w-3 h-3" /> {t ? t('portfolio') : "Portfólio"}
     </a>

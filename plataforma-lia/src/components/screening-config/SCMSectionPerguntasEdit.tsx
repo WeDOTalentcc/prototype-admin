@@ -192,7 +192,7 @@ export function SCMSectionPerguntasEdit({
                           <span className="text-micro font-semibold text-lia-text-secondary">{step.num}</span>
                         )}
                       </div>
-                      <span className={`text-micro mt-1.5 font-medium whitespace-nowrap transition-colors motion-reduce:transition-none duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-dark' : 'lia-text-secondary'}`}>
+                      <span className={`text-micro mt-1.5 font-medium whitespace-nowrap transition-colors motion-reduce:transition-none duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-text' : 'lia-text-secondary'}`}>
                         {step.label}
                       </span>
                     </div>

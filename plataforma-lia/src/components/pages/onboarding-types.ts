@@ -140,10 +140,10 @@ export const approvedCandidates: ApprovedCandidate[] = [
 export const kanbanStages = [
   { id: 'welcome', name: 'Boas-vindas', color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary', description: 'Email de boas-vindas enviado' },
   { id: 'documentation', name: 'Documentação', color: 'bg-status-warning/15 text-status-warning', description: 'Coleta de documentos' },
-  { id: 'equipment', name: 'Equipamentos', color: 'bg-wedo-orange/15 text-wedo-orange', description: 'Entrega de equipamentos' },
-  { id: 'systems', name: 'Sistemas', color: 'bg-wedo-purple/15 text-wedo-purple', description: 'Criação de acessos' },
-  { id: 'medical', name: 'Médico', color: 'bg-wedo-magenta/15 text-wedo-magenta', description: 'Exames ocupacionais' },
-  { id: 'integration', name: 'Integração', color: 'bg-wedo-purple/15 text-wedo-purple', description: 'Primeiro dia' },
+  { id: 'equipment', name: 'Equipamentos', color: 'bg-wedo-orange/15 text-wedo-orange-text', description: 'Entrega de equipamentos' },
+  { id: 'systems', name: 'Sistemas', color: 'bg-wedo-purple/15 text-wedo-purple-text', description: 'Criação de acessos' },
+  { id: 'medical', name: 'Médico', color: 'bg-wedo-magenta/15 text-wedo-magenta-text', description: 'Exames ocupacionais' },
+  { id: 'integration', name: 'Integração', color: 'bg-wedo-purple/15 text-wedo-purple-text', description: 'Primeiro dia' },
   { id: 'completed', name: 'Concluído', color: 'bg-status-success/15 text-status-success', description: 'Onboarding finalizado' }
 ]
 

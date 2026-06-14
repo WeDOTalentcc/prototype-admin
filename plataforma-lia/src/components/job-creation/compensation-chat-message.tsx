@@ -62,7 +62,7 @@ const STATUS_CONFIG: Record<CompetitivenessStatus, {
     icon: TrendingUp,
     label: 'Acima do Mercado',
     description: 'Remuneração acima da média',
-    className: 'text-wedo-cyan-dark',
+    className: 'text-wedo-cyan-text',
     bgClassName: 'bg-wedo-cyan/10',
     borderClassName: 'border-wedo-cyan/30 dark:border-wedo-cyan/30'
   }

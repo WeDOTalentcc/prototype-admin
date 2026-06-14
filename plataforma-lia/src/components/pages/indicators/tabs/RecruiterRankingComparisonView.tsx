@@ -69,7 +69,7 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-semibold text-wedo-purple">
+                  <div className="text-lg font-semibold text-wedo-purple-text">
                     {recruiter.avgTimeToFill}d
                   </div>
                   <div className="text-xs text-lia-text-primary">
@@ -77,7 +77,7 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-semibold text-wedo-orange">{recruiter.npsScore}%</div>
+                  <div className="text-lg font-semibold text-wedo-orange-text">{recruiter.npsScore}%</div>
                   <div className="text-xs text-lia-text-primary">NPS</div>
                 </div>
                 <div>

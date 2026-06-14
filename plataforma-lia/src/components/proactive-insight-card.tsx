@@ -286,8 +286,8 @@ export function ProactiveInsightCard({
                       variant={model.toLowerCase().includes('remoto') ? 'success' : 'neutral'}
                       className={cn("text-xs py-0.5 px-1.5",
                         model.toLowerCase().includes('remoto') && "bg-status-success/10",
-                        model.toLowerCase().includes('híbrido') && "bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark",
-                        model.toLowerCase().includes('presencial') && "bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple"
+                        model.toLowerCase().includes('híbrido') && "bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-text",
+                        model.toLowerCase().includes('presencial') && "bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple-text"
                       )}
                     >
                       {model}: {count}

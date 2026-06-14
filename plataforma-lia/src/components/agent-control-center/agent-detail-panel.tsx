@@ -149,7 +149,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               </div>
               <div className="text-center">
                 <div
-                  className={`text-xl font-semibold ${agent.progress >= 80 ? 'text-wedo-green-bright' : agent.progress >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
+                  className={`text-xl font-semibold ${agent.progress >= 80 ? 'text-wedo-green-text-bright' : agent.progress >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
                 >
                   {agent.progress}%
                 </div>
@@ -178,7 +178,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     <Minus className="w-3 h-3 text-lia-text-secondary" />
                   )}
                   <span
-                    className={`text-xs ${agent.delta > 0 ? 'text-wedo-green-bright' : agent.delta < 0 ? 'text-status-error' : 'text-lia-text-disabled'}`}
+                    className={`text-xs ${agent.delta > 0 ? 'text-wedo-green-text-bright' : agent.delta < 0 ? 'text-status-error' : 'text-lia-text-disabled'}`}
                   >
                     {agent.delta > 0 ? '+' : ''}{agent.delta}% vs ontem
                   </span>

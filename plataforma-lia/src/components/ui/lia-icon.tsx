@@ -48,7 +48,7 @@ export const LIAIcon = React.memo(function LIAIcon({ className, size = "md", ani
       <Brain 
         className={cn(
           "transition-opacity duration-200",
-          "text-wedo-cyan",
+          "text-wedo-cyan-text",
           speaking && "opacity-30",
           size === "xs" && "w-3.5 h-3.5",
           size === "sm" && "w-4 h-4",

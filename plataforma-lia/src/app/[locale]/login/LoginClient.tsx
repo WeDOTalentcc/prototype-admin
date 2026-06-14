@@ -112,7 +112,7 @@ export default function LoginPage() {
         <div className="flex-1 flex flex-col justify-center px-14 pr-10">
           <div className="mb-7">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/10 text-lia-text-secondary dark:text-lia-text-secondary text-sm font-medium">
-              <span className="text-wedo-cyan text-base leading-none">»</span>
+              <span className="text-wedo-cyan-text text-base leading-none">»</span>
               {t("tagline")}
             </span>
           </div>
@@ -125,7 +125,7 @@ export default function LoginPage() {
           <p className="text-base text-lia-text-secondary dark:text-lia-text-secondary font-normal leading-relaxed">
             {t("heroSubtitle")}<br />
             {t.rich("heroRecruitment", {
-              accent: (chunks) => <span className="text-wedo-cyan font-semibold">{chunks}</span>,
+              accent: (chunks) => <span className="text-wedo-cyan-text font-semibold">{chunks}</span>,
             })}
           </p>
           <p className="mt-5 text-[13px] text-lia-text-tertiary dark:text-lia-text-tertiary tracking-wide border-l-2 border-wedo-cyan/50 pl-3">

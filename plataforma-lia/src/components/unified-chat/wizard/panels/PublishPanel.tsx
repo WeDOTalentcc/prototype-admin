@@ -61,7 +61,7 @@ export function PublishPanel({ data, onUpdate }: Props) {
                 className={cn(
                   "w-full flex items-center justify-between px-3 py-2 rounded-md border text-sm transition-colors",
                   selected
-                    ? "border-wedo-cyan bg-wedo-cyan/5 text-wedo-cyan"
+                    ? "border-wedo-cyan bg-wedo-cyan/5 text-wedo-cyan-text"
                     : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
                 )}
               >
@@ -113,7 +113,7 @@ export function PublishPanel({ data, onUpdate }: Props) {
       {/* Share link */}
       {d.share_link && (
         <div className="p-2.5 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/20">
-          <p className="text-xs text-wedo-cyan font-medium mb-1">Link de compartilhamento</p>
+          <p className="text-xs text-wedo-cyan-text font-medium mb-1">Link de compartilhamento</p>
           <p className="text-xs text-lia-text-primary break-all">{d.share_link}</p>
         </div>
       )}

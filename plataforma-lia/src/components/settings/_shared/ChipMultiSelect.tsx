@@ -56,7 +56,7 @@ export function ChipMultiSelect({
             className={[
               "rounded-full border px-3 py-1 text-xs transition-all",
               isSel
-                ? "border-wedo-cyan bg-wedo-cyan/10 text-wedo-cyan"
+                ? "border-wedo-cyan bg-wedo-cyan/10 text-wedo-cyan-text"
                 : "border-lia-border-default bg-lia-bg-elevated text-lia-text-secondary hover:border-wedo-cyan/50",
             ].join(" ")}
           >

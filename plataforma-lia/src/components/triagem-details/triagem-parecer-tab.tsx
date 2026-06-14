@@ -192,7 +192,7 @@ export function TriagemParecerTab({
                     Perfil de Personalidade
                   </h3>
                   <p className="text-micro text-lia-text-secondary mt-0.5">
-                    Dimensões <span className="text-wedo-purple font-medium">críticas</span> determinam fit de performance e cultura.
+                    Dimensões <span className="text-wedo-purple-text font-medium">críticas</span> determinam fit de performance e cultura.
                   </p>
                 </div>
                 <div className="flex items-center gap-4 text-micro text-lia-text-secondary">
@@ -215,10 +215,10 @@ export function TriagemParecerTab({
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-medium text-lia-text-primary">{traitName}</span>
                           {traitVal.is_critical && (
-                            <span className="text-micro font-semibold px-1.5 py-0.5 rounded-full border text-wedo-purple bg-wedo-purple/10 border-wedo-purple/30" aria-live="polite" aria-atomic="true">Crítica para esta vaga</span>
+                            <span className="text-micro font-semibold px-1.5 py-0.5 rounded-full border text-wedo-purple-text bg-wedo-purple/10 border-wedo-purple/30" aria-live="polite" aria-atomic="true">Crítica para esta vaga</span>
                           )}
                           {status === "gap"   && <span className="text-micro font-bold text-status-warning bg-status-warning/10 px-1.5 py-0.5 rounded-full border border-status-warning/30">⚠️ Diferença</span>}
-                          {status === "acima" && <span className="text-micro font-bold text-wedo-cyan-dark bg-wedo-cyan/10 px-1.5 py-0.5 rounded-full border border-wedo-cyan/30">↑ Acima</span>}
+                          {status === "acima" && <span className="text-micro font-bold text-wedo-cyan-text bg-wedo-cyan/10 px-1.5 py-0.5 rounded-full border border-wedo-cyan/30">↑ Acima</span>}
                           {status === "ok"    && <span className="text-micro font-bold text-status-success bg-status-success/10 px-1.5 py-0.5 rounded-full border border-status-success/30">✓ Alinhado</span>}
                           {hint && (
                             <button className="ml-auto" onClick={() => setBigFiveHint(showHint ? null : key)}>
@@ -309,7 +309,7 @@ export function TriagemParecerTab({
       )}
       {isPendingDecision && !!details && (
         <div className="p-3 border border-lia-border-subtle space-y-3 bg-lia-bg-secondary rounded-lg">
-          <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary"><BookOpen className="w-4 h-4 text-wedo-cyan-dark" /> Feedback para o Candidato</h3>
+          <h3 className="text-xs font-semibold flex items-center gap-2 text-lia-text-primary"><BookOpen className="w-4 h-4 text-wedo-cyan-text" /> Feedback para o Candidato</h3>
           <p className="text-xs text-lia-text-secondary italic" aria-live="polite" aria-atomic="true">Aguardando decisão do recrutador para liberar feedback ao candidato.</p>
           <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-lg p-3"><p className="text-micro text-lia-text-secondary font-medium mb-0.5">Prévia do feedback (rascunho)</p><p className="text-xs text-lia-text-secondary">Agradecemos sua participação na triagem. Suas respostas foram analisadas e entraremos em contato em breve com o próximo passo do processo.</p></div>
         </div>
@@ -430,7 +430,7 @@ export function TriagemParecerTab({
           )}
           {feedback?.personalized_tip && (
             <div className="p-2 rounded-lg mt-2 bg-wedo-cyan/[0.08] border border-wedo-cyan/20">
-              <p className="text-micro font-medium mb-0.5 text-wedo-cyan">Dica Personalizada</p>
+              <p className="text-micro font-medium mb-0.5 text-wedo-cyan-text">Dica Personalizada</p>
               <p className="text-xs text-lia-text-secondary">{feedback.personalized_tip}</p>
             </div>
           )}

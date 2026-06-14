@@ -86,7 +86,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
       name: 'Presencial',
       icon: Building,
       description: 'Encontro no escritório',
-      color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30'
+      color: 'bg-wedo-purple/10 text-wedo-purple-text border-wedo-purple/30'
     }
   ]
 

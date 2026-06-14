@@ -175,7 +175,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
             <div className="flex items-center justify-between px-6 py-4 bg-lia-bg-secondary">
               <div className="flex items-center gap-3">
                 {activeModal === 'scoreGeral' && <BrainCircuit className="w-5 h-5 text-lia-text-primary" />}
-                {activeModal === 'triagem' && <BrainCircuit className="w-5 h-5 text-wedo-cyan" />}
+                {activeModal === 'triagem' && <BrainCircuit className="w-5 h-5 text-wedo-cyan-text" />}
                 {activeModal === 'testeTecnico' && <FileText className="w-5 h-5 text-lia-text-secondary" />}
                 {activeModal === 'testeIngles' && <Languages className="w-5 h-5 text-lia-text-secondary" />}
                 <div>

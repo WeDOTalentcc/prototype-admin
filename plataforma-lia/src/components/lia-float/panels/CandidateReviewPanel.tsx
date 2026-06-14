@@ -159,7 +159,7 @@ export function CandidateReviewPanel({ data, onUpdateData }: CandidateReviewPane
               <CheckCircle2 className="w-4 h-4" /> Finalizar Calibração
             </button>
           ) : (
-            <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-wedo-cyan hover:bg-lia-bg-secondary transition-colors">
+            <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-wedo-cyan-text hover:bg-lia-bg-secondary transition-colors">
               Revisar mais <ChevronRight className="w-3.5 h-3.5" />
             </button>
           )}

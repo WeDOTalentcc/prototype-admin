@@ -173,7 +173,7 @@ const NotificationItem = React.memo(({
             {notification.actionUrl && notification.actionLabel && (
               <a
                 href={notification.actionUrl}
-                className="text-[10px] font-medium text-wedo-cyan hover:underline flex items-center gap-0.5"
+                className="text-[10px] font-medium text-wedo-cyan-text hover:underline flex items-center gap-0.5"
                 onClick={(e) => e.stopPropagation()}
               >
                 {notification.actionLabel}
@@ -244,7 +244,7 @@ export function NotificationSystem({
         toast(newest.title, {
           description: newest.message?.slice(0, 80),
           duration: 5000,
-          icon: <Bell className="w-4 h-4 text-wedo-cyan" />,
+          icon: <Bell className="w-4 h-4 text-wedo-cyan-text" />,
           position: "bottom-right",
           className: "notification-toast",
         })
@@ -376,7 +376,7 @@ export function NotificationSystem({
                     variant="ghost"
                     size="sm"
                     onClick={markAllAsRead}
-                    className="text-[10px] h-6 px-2 text-wedo-cyan hover:text-wedo-cyan/80"
+                    className="text-[10px] h-6 px-2 text-wedo-cyan-text hover:text-wedo-cyan/80"
                   >
                     <Check className="w-3 h-3 mr-1" />
                     Marcar todas lidas
@@ -403,7 +403,7 @@ export function NotificationSystem({
                 className={cn(
                   "px-2.5 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5",
                   activeCategory === null
-                    ? "bg-wedo-cyan/15 text-wedo-cyan font-medium"
+                    ? "bg-wedo-cyan/15 text-wedo-cyan-text font-medium"
                     : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
                 )}
               >
@@ -421,7 +421,7 @@ export function NotificationSystem({
                     className={cn(
                       "px-2.5 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5",
                       activeCategory === cat
-                        ? "bg-wedo-cyan/15 text-wedo-cyan font-medium"
+                        ? "bg-wedo-cyan/15 text-wedo-cyan-text font-medium"
                         : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
                     )}
                   >

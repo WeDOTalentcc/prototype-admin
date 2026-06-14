@@ -116,7 +116,7 @@ export function JobFiltersPanel({
                 onClick={() => toggleJobFilter('position', 'workModels', 'remoto')}
                 className={`h-8 text-xs justify-start ${
                   jobFilters.position?.workModels?.includes('remoto')
-                    ? 'bg-lia-bg-secondary border-lia-btn-primary-bg dark:border-lia-border-subtle text-wedo-cyan-dark font-semibold'
+                    ? 'bg-lia-bg-secondary border-lia-btn-primary-bg dark:border-lia-border-subtle text-wedo-cyan-text font-semibold'
                     : ''
                 }`}
               >
@@ -129,7 +129,7 @@ export function JobFiltersPanel({
                 onClick={() => toggleJobFilter('funnel', 'emptyPipeline', true)}
                 className={`h-8 text-xs justify-start ${
                   jobFilters.funnel?.emptyPipeline
-                    ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange font-semibold'
+                    ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange-text font-semibold'
                     : ''
                 }`}
               >
@@ -174,7 +174,7 @@ export function JobFiltersPanel({
                   variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.stages?.includes(stage)
-                      ? 'bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple font-medium'
+                      ? 'bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple-text font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => toggleJobFilter('status', 'stages', stage)}
@@ -387,7 +387,7 @@ export function JobFiltersPanel({
                 variant="neutral"
                 className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                   jobFilters.publishing?.unpublished
-                    ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange font-medium'
+                    ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange-text font-medium'
                     : 'bg-lia-bg-primary text-lia-text-primary'
                 }`}
                 onClick={() => toggleJobFilter('publishing', 'unpublished', !jobFilters.publishing?.unpublished)}

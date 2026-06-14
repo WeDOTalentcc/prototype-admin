@@ -132,7 +132,7 @@ export function JobEditTab({
                       onClick={() => setActiveSection(section.id)}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans text-xs leading-[1.125rem] font-medium ${
                         activeSection === section.id
-                          ? "bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-dark"
+                          ? "bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-text"
                           : "hover:bg-lia-interactive-hover text-lia-text-primary border border-transparent"
                       }`}
                     >
@@ -167,7 +167,7 @@ export function JobEditTab({
                       onClick={() => setActiveSection(section.id)}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans text-xs leading-[1.125rem] font-medium ${
                         activeSection === section.id
-                          ? "bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-dark"
+                          ? "bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-text"
                           : "hover:bg-lia-interactive-hover text-lia-text-primary border border-transparent"
                       }`}
                     >

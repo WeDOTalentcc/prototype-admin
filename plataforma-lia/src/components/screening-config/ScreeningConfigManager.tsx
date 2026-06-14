@@ -108,7 +108,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors motion-reduce:transition-none font-open-sans text-xs leading-[1.125rem] font-medium ${
  activeSection === section.id
-                      ? 'bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-dark'
+                      ? 'bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-text'
                       : 'hover:bg-lia-interactive-hover text-lia-text-primary border border-transparent'
                   }`}
                   
@@ -288,7 +288,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         />
                       </button>
                     ) : job.screeningStatus === 'completed' ? (
-                      <span className="text-micro font-medium px-2 py-0.5 rounded-full bg-wedo-cyan/15 text-wedo-cyan-dark">
+                      <span className="text-micro font-medium px-2 py-0.5 rounded-full bg-wedo-cyan/15 text-wedo-cyan-text">
                         Concluída
                       </span>
                     ) : (

@@ -248,14 +248,14 @@ export function LiaSuperPrompt() {
                 <div className="flex rounded-lg overflow-hidden border">
                   <button
                     onClick={() => setActiveTab("conversa")}
-                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none border-r border-lia-border-subtle ${activeTab === "conversa" ? "bg-lia-bg-secondary text-wedo-cyan" : "bg-transparent text-lia-text-tertiary"}`}
+                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none border-r border-lia-border-subtle ${activeTab === "conversa" ? "bg-lia-bg-secondary text-wedo-cyan-text" : "bg-transparent text-lia-text-tertiary"}`}
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
                     Conversa
                   </button>
                   <button
                     onClick={() => setActiveTab("controle")}
-                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none ${activeTab === "controle" ? "bg-lia-bg-secondary text-wedo-cyan" : "bg-transparent text-lia-text-tertiary"}`}
+                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none ${activeTab === "controle" ? "bg-lia-bg-secondary text-wedo-cyan-text" : "bg-transparent text-lia-text-tertiary"}`}
                   >
                     <LayoutDashboard className="w-3.5 h-3.5" />
                     Centro de Controle
@@ -285,7 +285,7 @@ export function LiaSuperPrompt() {
                   onClick={handleToggleHistory}
                   className={`p-2 rounded-lg transition-colors motion-reduce:transition-none ${
  showHistory
-                      ? "text-wedo-cyan bg-lia-bg-tertiary"
+                      ? "text-wedo-cyan-text bg-lia-bg-tertiary"
                       : "lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
                   }`}
                   title="Histórico de conversas"
@@ -368,7 +368,7 @@ export function LiaSuperPrompt() {
                               Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                             </p>
                             {hasContextualData && (
-                              <p className="text-xs text-wedo-cyan font-medium">
+                              <p className="text-xs text-wedo-cyan-text font-medium">
                                 Sugestões personalizadas baseadas na sua atividade recente
                               </p>
                             )}

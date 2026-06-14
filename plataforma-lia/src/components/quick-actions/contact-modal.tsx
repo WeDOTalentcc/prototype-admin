@@ -404,7 +404,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 onClick={() => setActiveTab('phone')}
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'phone'
-                    ? 'bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30'
+                    ? 'bg-wedo-purple/10 text-wedo-purple-text border border-wedo-purple/30'
                     : 'hover:bg-lia-bg-secondary text-lia-text-primary border border-transparent'
                 }`}
               >

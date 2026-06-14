@@ -34,7 +34,7 @@ export function NavigationHintCard({ hint, className }: Props) {
       className={cn(
         "flex items-center gap-2 mt-2 px-3 py-2 rounded-md",
         "border border-wedo-cyan/30 bg-wedo-cyan/5",
-        "text-sm text-wedo-cyan hover:bg-wedo-cyan/10",
+        "text-sm text-wedo-cyan-text hover:bg-wedo-cyan/10",
         "transition-colors motion-reduce:transition-none",
         "",
         className

@@ -169,7 +169,7 @@ export function MessageFeedback({
             className={cn(
               "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-lia-border-default",
               correctionSubmitted
-                ? "bg-wedo-cyan/15 text-wedo-cyan-dark"
+                ? "bg-wedo-cyan/15 text-wedo-cyan-text"
                 : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
             )}
             title="Sugerir correção"

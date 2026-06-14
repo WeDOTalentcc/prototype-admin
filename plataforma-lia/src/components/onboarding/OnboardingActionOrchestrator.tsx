@@ -326,7 +326,7 @@ export function OnboardingActionOrchestrator() {
                       : status === "skipped"
                         ? "bg-lia-bg-tertiary text-lia-text-disabled"
                         : isCurrent
-                          ? "border-2 border-wedo-cyan text-wedo-cyan"
+                          ? "border-2 border-wedo-cyan text-wedo-cyan-text"
                           : "bg-lia-bg-tertiary text-lia-text-disabled"
                   }`}
                 >

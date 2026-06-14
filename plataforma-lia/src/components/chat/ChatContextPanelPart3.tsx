@@ -42,8 +42,8 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                 <div className="p-4 rounded-xl bg-status-error/10 dark:bg-status-error/20">
                   <h4 className="font-medium mb-2 text-lia-text-primary">Base de Análise</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><span className="text-wedo-cyan-dark">Processos Históricos:</span><p className="font-semibold">{data.analysis_base.historical_processes}</p></div>
-                    <div><span className="text-wedo-cyan-dark">Pontos de Dados:</span><p className="font-semibold">{data.analysis_base.data_points.toLocaleString()}</p></div>
+                    <div><span className="text-wedo-cyan-text">Processos Históricos:</span><p className="font-semibold">{data.analysis_base.historical_processes}</p></div>
+                    <div><span className="text-wedo-cyan-text">Pontos de Dados:</span><p className="font-semibold">{data.analysis_base.data_points.toLocaleString()}</p></div>
                   </div>
                 </div>
                 <div>

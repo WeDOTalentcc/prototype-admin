@@ -135,7 +135,7 @@ export function CommunicationPreviewPanel({
           <div className="mt-4 bg-lia-bg-tertiary border border-lia-border-default rounded-xl p-3">
             <div className="flex items-start gap-2">
               <CalendarDays className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5" />
-              <div className="text-micro text-wedo-cyan-dark">
+              <div className="text-micro text-wedo-cyan-text">
                 <strong>Após Confirmação:</strong>
                 <ul className="mt-1 space-y-0.5 ml-2">
                   <li>• Candidato escolhe horário disponível</li>

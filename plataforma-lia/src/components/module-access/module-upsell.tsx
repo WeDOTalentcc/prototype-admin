@@ -31,7 +31,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
   const getModuleIcon = (moduleId: string) => {
     switch (moduleId) {
       case 'onboarding_automation': return <Clock className="w-8 h-8" />
-      case 'ml_prediction': return <Brain className="w-8 h-8 text-wedo-cyan" />
+      case 'ml_prediction': return <Brain className="w-8 h-8 text-wedo-cyan-text" />
       case 'ats_integrations': return <Building className="w-8 h-8" />
       case 'advanced_analytics': return <BarChart3 className="w-8 h-8" />
       default: return <Star className="w-8 h-8" />

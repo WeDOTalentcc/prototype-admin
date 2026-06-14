@@ -528,7 +528,7 @@ export function KanbanColumnRenderer({
                       className={
                         "inline-flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 border transition-colors motion-reduce:transition-none " +
                         (isCompareSelected
-                          ? "bg-wedo-cyan/20 border-wedo-cyan text-wedo-cyan-dark dark:text-wedo-cyan"
+                          ? "bg-wedo-cyan/20 border-wedo-cyan text-wedo-cyan-text dark:text-wedo-cyan"
                           : "border-lia-border-default text-lia-text-tertiary hover:bg-lia-interactive-hover hover:text-lia-text-secondary") +
                         (isCompareLocked ? " opacity-40 cursor-not-allowed" : " cursor-pointer")
                       }

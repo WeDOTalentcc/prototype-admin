@@ -223,7 +223,7 @@ export function LiaEditor({
     Link.configure({
       openOnClick: false,
       HTMLAttributes: {
-        class: "text-wedo-cyan underline hover:text-wedo-cyan-dark",
+        class: "text-wedo-cyan-text underline hover:text-wedo-cyan-dark",
       },
     }),
     Placeholder.configure({ placeholder }),
@@ -256,11 +256,11 @@ export function LiaEditor({
           "text-lia-text-primary",
           "prose-headings:text-lia-text-primary prose-headings:font-semibold",
           "prose-p:text-lia-text-primary prose-p:leading-relaxed prose-p:my-1",
-          "prose-a:text-wedo-cyan prose-a:no-underline hover:prose-a:underline",
+          "prose-a:text-wedo-cyan-text prose-a:no-underline hover:prose-a:underline",
           "prose-strong:text-lia-text-primary prose-strong:font-semibold",
           "prose-ul:my-1 prose-ol:my-1 prose-li:my-0",
           "prose-blockquote:border-lia-border-subtle prose-blockquote:text-lia-text-secondary",
-          "prose-code:text-wedo-cyan-dark prose-code:bg-lia-bg-tertiary prose-code:px-1 prose-code:rounded",
+          "prose-code:text-wedo-cyan-text prose-code:bg-lia-bg-tertiary prose-code:px-1 prose-code:rounded",
           "prose-hr:border-lia-border-subtle",
           editorClassName
         ),

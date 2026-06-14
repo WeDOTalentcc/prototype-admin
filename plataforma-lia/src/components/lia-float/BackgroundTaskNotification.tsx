@@ -64,7 +64,7 @@ export function BackgroundTaskNotification({
           {isSuccess && onViewResult && (
             <button
               onClick={() => onViewResult(task)}
-              className="inline-flex items-center gap-1 text-xs text-wedo-cyan hover:underline font-medium"
+              className="inline-flex items-center gap-1 text-xs text-wedo-cyan-text hover:underline font-medium"
             >
               Ver resultado
               <ArrowRight className="w-3 h-3" />

@@ -322,7 +322,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                       className="shrink-0 p-1 -m-1 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
                     >
                       <Star 
-                        className={`w-4 h-4 ${isFavorite ? 'fill-current text-wedo-orange' : 'text-lia-text-tertiary'}`}
+                        className={`w-4 h-4 ${isFavorite ? 'fill-current text-wedo-orange-text' : 'text-lia-text-tertiary'}`}
                       />
                     </button>
                   </div>

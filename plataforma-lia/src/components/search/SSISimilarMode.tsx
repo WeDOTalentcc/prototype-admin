@@ -305,8 +305,8 @@ function ScopeButton({ icon: Icon, active, activeColor, onClick, label, sublabel
     : activeColor === 'wedo-orange' ? 'bg-wedo-orange/15 ring-1 ring-wedo-orange'
     : activeColor === 'wedo-cyan' ? 'bg-wedo-cyan/15 ring-1 ring-lia-btn-primary-bg/20'
     : ''
-  const textClass = activeColor === 'wedo-green' ? 'text-wedo-green'
-    : activeColor === 'wedo-orange' ? 'text-wedo-orange'
+  const textClass = activeColor === 'wedo-green' ? 'text-wedo-green-text'
+    : activeColor === 'wedo-orange' ? 'text-wedo-orange-text'
     : activeColor === 'wedo-cyan' ? 'text-lia-text-primary'
     : ''
   return (

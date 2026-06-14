@@ -13,7 +13,7 @@ export function DreyfusRow({ dreyfusEsperado, dreyfusDemonstrado, senioridade }:
   const isCritical = delta <= -2
   const isAtencao  = delta === -1
   const isAcima    = delta > 0
-  const color = isCritical ? "text-status-error" : isAtencao ? "text-status-warning" : isAcima ? "text-wedo-cyan-dark" : "text-status-success"
+  const color = isCritical ? "text-status-error" : isAtencao ? "text-status-warning" : isAcima ? "text-wedo-cyan-text" : "text-status-success"
   const bg    = isCritical ? "bg-status-error/10 border-status-error/30" : isAtencao ? "bg-status-warning/10 border-status-warning/30" : isAcima ? "bg-wedo-cyan/10 border-wedo-cyan/30" : "bg-status-success/10 border-status-success/30"
   const lbl   = isCritical ? "Gap crítico" : isAtencao ? "Atenção" : isAcima ? "Acima" : "Alinhado"
   return (

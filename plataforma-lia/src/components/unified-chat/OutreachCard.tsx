@@ -37,7 +37,7 @@ const CHANNEL_META: Record<OutreachChannel, { icon: React.ElementType; label: st
   email: { icon: Mail, label: "Email", color: "text-lia-text-secondary" },
   whatsapp: { icon: MessageSquare, label: "WhatsApp", color: "text-status-success" },
   phone: { icon: Phone, label: "Ligação", color: "text-lia-text-secondary" },
-  webchat: { icon: Globe, label: "Chat Web", color: "text-wedo-cyan" },
+  webchat: { icon: Globe, label: "Chat Web", color: "text-wedo-cyan-text" },
   voip: { icon: Mic2, label: "VoIP", color: "text-lia-text-secondary" },
 }
 
@@ -163,7 +163,7 @@ function EmailContent({
       {hasMore && (
         <button
           onClick={onToggle}
-          className="flex items-center gap-0.5 text-[10px] text-wedo-cyan hover:underline"
+          className="flex items-center gap-0.5 text-[10px] text-wedo-cyan-text hover:underline"
         >
           {expanded ? (
             <><ChevronUp className="w-3 h-3" aria-hidden="true" /> ver menos</>

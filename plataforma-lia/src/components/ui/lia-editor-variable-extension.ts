@@ -56,7 +56,7 @@ export const TemplateVariable = Node.create<TemplateVariableOptions>({
       mergeAttributes(HTMLAttributes, {
         "data-variable": node.attrs.name,
         class:
-          "lia-variable-chip inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 rounded bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan text-xs font-mono select-none border border-wedo-cyan/30",
+          "lia-variable-chip inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 rounded bg-wedo-cyan/15 text-wedo-cyan-text dark:text-wedo-cyan text-xs font-mono select-none border border-wedo-cyan/30",
         contenteditable: "false",
       }),
       `{{${node.attrs.name}}}`,

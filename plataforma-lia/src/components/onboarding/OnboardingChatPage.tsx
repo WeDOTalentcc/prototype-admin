@@ -158,7 +158,7 @@ function OnboardingProgressBar({
                     completed
                       ? "bg-wedo-cyan text-white"
                       : active
-                        ? "border-2 border-wedo-cyan text-wedo-cyan"
+                        ? "border-2 border-wedo-cyan text-wedo-cyan-text"
                         : "bg-lia-bg-tertiary text-lia-text-disabled"
                   }`}
                 >

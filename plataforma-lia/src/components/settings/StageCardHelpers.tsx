@@ -68,7 +68,7 @@ export function ActionBehaviorBadge({ behavior }: { behavior?: string }) {
   }
   if (!behavior || !BEHAVIOR_KEYS[behavior]) return null
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/15 text-wedo-cyan">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/15 text-wedo-cyan-text">
       {t(BEHAVIOR_KEYS[behavior])}
     </span>
   )

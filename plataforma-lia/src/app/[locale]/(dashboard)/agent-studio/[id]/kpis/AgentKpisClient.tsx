@@ -77,7 +77,7 @@ function LearningBadge({ label, srText }: LearningBadgeProps) {
     <span
       className={cn(
         "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs",
-        "border-wedo-cyan/40 bg-wedo-cyan/15 text-wedo-cyan",
+        "border-wedo-cyan/40 bg-wedo-cyan/15 text-wedo-cyan-text",
       )}
       title={srText}
       role="status"
@@ -304,7 +304,7 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
         <button
           type="button"
           onClick={handleConsumptionLink}
-          className="inline-flex items-center gap-1 text-xs font-medium text-wedo-cyan hover:text-wedo-cyan-dark transition-colors"
+          className="inline-flex items-center gap-1 text-xs font-medium text-wedo-cyan-text hover:text-wedo-cyan-dark transition-colors"
         >
           {t("viewConsumption")}
           <ArrowRight className="h-3 w-3" />

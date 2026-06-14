@@ -144,12 +144,12 @@ export function ReviewPanel({ data, onUpdate }: Props) {
               >
                 <Icon className={classes(
                   "w-4 h-4 flex-shrink-0 mt-0.5",
-                  selected ? "text-wedo-cyan" : "text-lia-text-tertiary",
+                  selected ? "text-wedo-cyan-text" : "text-lia-text-tertiary",
                 )} />
                 <div className="flex-1 min-w-0">
                   <div className={classes(
                     "text-xs font-medium",
-                    selected ? "text-wedo-cyan" : "text-lia-text-primary",
+                    selected ? "text-wedo-cyan-text" : "text-lia-text-primary",
                   )}>
                     {label}
                   </div>
@@ -186,7 +186,7 @@ export function ReviewPanel({ data, onUpdate }: Props) {
             ))}
             <div className="pt-0.5 border-t border-lia-border-subtle mt-1 flex justify-between text-[10px] font-medium">
               <span className="text-lia-text-secondary">Total estimado</span>
-              <span className="text-wedo-cyan">{chronogram[chronogram.length - 1].offset_end} dias</span>
+              <span className="text-wedo-cyan-text">{chronogram[chronogram.length - 1].offset_end} dias</span>
             </div>
           </div>
         </div>

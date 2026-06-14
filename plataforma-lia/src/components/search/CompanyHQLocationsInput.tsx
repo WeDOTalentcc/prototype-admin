@@ -220,7 +220,7 @@ export function CompanyHQLocationsInput({
           >
             {filteredCities.length > 0 && (
               <>
-                <div className="px-3 py-1.5 text-xs font-semibold text-wedo-purple uppercase tracking-wide bg-lia-bg-secondary">
+                <div className="px-3 py-1.5 text-xs font-semibold text-wedo-purple-text uppercase tracking-wide bg-lia-bg-secondary">
                   Cities
                 </div>
                 {filteredCities.map((location, index) => (
@@ -239,7 +239,7 @@ export function CompanyHQLocationsInput({
             
             {filteredRegions.length > 0 && (
               <>
-                <div className="px-3 py-1.5 text-xs font-semibold text-wedo-purple uppercase tracking-wide bg-lia-bg-secondary border-t">
+                <div className="px-3 py-1.5 text-xs font-semibold text-wedo-purple-text uppercase tracking-wide bg-lia-bg-secondary border-t">
                   Regions
                 </div>
                 {filteredRegions.map((location, index) => (

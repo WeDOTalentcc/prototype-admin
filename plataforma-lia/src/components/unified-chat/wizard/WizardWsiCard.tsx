@@ -22,8 +22,8 @@ interface WizardWsiCardProps {
 function QBadge({ block }: { block?: string }) {
   if (!block) return null
   const map: Record<string, { label: string; cls: string }> = {
-    technical: { label: "Técnica", cls: "bg-wedo-cyan/10 text-wedo-cyan" },
-    behavioral: { label: "Comportamental", cls: "bg-wedo-purple/10 text-wedo-purple" },
+    technical: { label: "Técnica", cls: "bg-wedo-cyan/10 text-wedo-cyan-text" },
+    behavioral: { label: "Comportamental", cls: "bg-wedo-purple/10 text-wedo-purple-text" },
     cbi: { label: "CBI", cls: "bg-status-warning/10 text-status-warning" },
   }
   const b = map[block] ?? {
@@ -187,7 +187,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className="w-full px-3 py-2 text-xs text-wedo-cyan hover:bg-lia-interactive-hover transition-colors text-left"
+            className="w-full px-3 py-2 text-xs text-wedo-cyan-text hover:bg-lia-interactive-hover transition-colors text-left"
           >
             Ver todas as {questions.length} perguntas
           </button>
@@ -198,7 +198,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
             <button
               type="button"
               onClick={onOpenPanel}
-              className="text-[11px] text-wedo-cyan hover:underline"
+              className="text-[11px] text-wedo-cyan-text hover:underline"
             >
               Abrir no painel
             </button>

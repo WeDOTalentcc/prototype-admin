@@ -99,7 +99,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       format: 'csv' as const,
       label: 'CSV',
       description: 'Dados brutos para análise',
-      color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default',
+      color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-text border-lia-border-default dark:border-lia-border-default',
       recommended: false
     },
     {
@@ -203,7 +203,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                       onClick={() => setExportConfig(prev => ({ ...prev, dateRange: period }))}
                       className={`px-3 py-2 text-xs rounded-md border transition-colors motion-reduce:transition-none ${
  exportConfig.dateRange === period
-                          ? 'border-lia-btn-primary-bg bg-lia-bg-secondary dark:bg-lia-bg-primary text-wedo-cyan-dark'
+                          ? 'border-lia-btn-primary-bg bg-lia-bg-secondary dark:bg-lia-bg-primary text-wedo-cyan-text'
                           : 'border-lia-border-subtle text-lia-text-secondary hover:border-lia-border-default'
                       }`}
                     >
@@ -300,10 +300,10 @@ export function ExportTools({ data, className }: ExportToolsProps) {
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                 <div>
- <h4 className="text-sm font-medium text-wedo-cyan-dark mb-1">
+ <h4 className="text-sm font-medium text-wedo-cyan-text mb-1">
                     Dicas de Exportação
                   </h4>
- <ul className="text-xs text-wedo-cyan-dark space-y-1">
+ <ul className="text-xs text-wedo-cyan-text space-y-1">
                     <li>• Use <strong>Excel</strong> para análises detalhadas com gráficos</li>
                     <li>• Use <strong>PDF</strong> para apresentações executivas</li>
                     <li>• Use <strong>CSV</strong> para importar em outras ferramentas</li>

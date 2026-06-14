@@ -112,7 +112,7 @@ export function SchedulingPanel({ data, onUpdateData }: SchedulingPanelProps) {
                         !slot.available
                           ? "bg-lia-bg-tertiary text-lia-text-disabled border-transparent cursor-not-allowed line-through"
                           : selectedSlot === slot.id
-                            ? "bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan"
+                            ? "bg-wedo-cyan/10 text-wedo-cyan-text border-wedo-cyan"
                             : "bg-lia-bg-primary text-lia-text-primary border-lia-border-subtle hover:border-wedo-cyan/50"
                       )}
                     >

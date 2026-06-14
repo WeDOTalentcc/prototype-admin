@@ -151,7 +151,7 @@ export function useLiaMetrics(candidates: DashboardCandidate[]) {
       rate: interviewConversionRate,
       avgTime: avgTimeInterview,
       icon: React.createElement(Calendar, { className: "w-4 h-4" }),
-      color: 'text-wedo-purple',
+      color: 'text-wedo-purple-text',
       bgColor: 'bg-wedo-purple/10'
     }
   ]

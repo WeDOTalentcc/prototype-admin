@@ -243,7 +243,7 @@ const MessageBubble = memo(function MessageBubble({
                 ttsFailed
                   ? "text-status-error"
                   : isAudioPlaying
-                    ? "bg-wedo-cyan/20 text-wedo-cyan"
+                    ? "bg-wedo-cyan/20 text-wedo-cyan-text"
                     : "bg-transparent text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-bg-tertiary",
                 isTtsLoading && "cursor-wait"
               )}

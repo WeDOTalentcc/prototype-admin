@@ -194,7 +194,7 @@ export function SwitchTaskModal({
                         </span>
                       )}
                       {isCurrent && (
-                        <span className="text-xs text-wedo-cyan font-medium ml-1">
+                        <span className="text-xs text-wedo-cyan-text font-medium ml-1">
                           atual
                         </span>
                       )}

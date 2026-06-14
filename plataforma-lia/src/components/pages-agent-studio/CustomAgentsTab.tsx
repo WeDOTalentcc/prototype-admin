@@ -622,7 +622,7 @@ export function CreateCustomAgentModal({
             </div>
             {linkType === "none" && (
               <div className="mt-2 px-3 py-2 rounded-md bg-wedo-orange/10 border border-wedo-orange/30">
-                <p className="text-xs text-wedo-orange">{tStudio('noLinkWarning')}</p>
+                <p className="text-xs text-wedo-orange-text">{tStudio('noLinkWarning')}</p>
               </div>
             )}
             {linkType === "job" && (

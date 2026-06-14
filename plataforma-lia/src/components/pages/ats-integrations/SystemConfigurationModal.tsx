@@ -428,7 +428,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                       <p className="text-sm text-lia-text-secondary">Alta Confiança (≥90%)</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-semibold text-wedo-orange">{liaFields.filter(f => f.required && !mappings.some(m => m.targetField === f.id)).length}</p>
+                      <p className="text-2xl font-semibold text-wedo-orange-text">{liaFields.filter(f => f.required && !mappings.some(m => m.targetField === f.id)).length}</p>
                       <p className="text-sm text-lia-text-secondary">Obrigatórios Pendentes</p>
                     </div>
                   </div>

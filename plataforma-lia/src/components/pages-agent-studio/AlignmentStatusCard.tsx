@@ -126,8 +126,8 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-3 rounded-xl border border-lia-border-subtle p-3.5 bg-lia-bg-secondary">
             <div className="flex-shrink-0">
-              {isApproved && <CheckCircle2 className="w-5 h-5 text-wedo-green" />}
-              {isPending && <Clock className="w-5 h-5 text-wedo-orange" />}
+              {isApproved && <CheckCircle2 className="w-5 h-5 text-wedo-green-text" />}
+              {isPending && <Clock className="w-5 h-5 text-wedo-orange-text" />}
               {(isRejected || isExpired) && <XCircle className="w-5 h-5 text-lia-text-tertiary" />}
             </div>
             <div className="flex-1 min-w-0">

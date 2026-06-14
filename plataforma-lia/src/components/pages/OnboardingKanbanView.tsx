@@ -93,7 +93,7 @@ export function OnboardingKanbanView({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Tempo Médio</p>
-                <p className="text-2xl font-semibold text-wedo-purple">12d</p>
+                <p className="text-2xl font-semibold text-wedo-purple-text">12d</p>
                 <p className="text-xs text-lia-text-primary">para conclusão</p>
               </div>
               <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">

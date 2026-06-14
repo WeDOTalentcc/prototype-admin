@@ -264,7 +264,7 @@ export function FilteredNoContactModal({
                             href={c.linkedin_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-wedo-cyan hover:underline"
+                            className="inline-flex items-center gap-1 text-wedo-cyan-text hover:underline"
                           >
                             {t('table.openProfile')}
                             <ExternalLink className="h-3 w-3" />

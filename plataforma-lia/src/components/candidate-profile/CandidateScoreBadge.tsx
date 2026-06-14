@@ -21,7 +21,7 @@ function getScoreColor(score: number, format: ScoreFormat): string {
   // (WSI_VISUAL_3TIER: verde >=7.5, amarelo >=6.0, vermelho <6.0).
   if (format === "wsi" || format === "decimal") return getWsiScoreColor(score)
   if (score >= 80) return "text-status-success"
-  if (score >= 60) return "text-wedo-orange"
+  if (score >= 60) return "text-wedo-orange-text"
   return "text-status-error"
 }
 

@@ -18,10 +18,10 @@ interface Props {
 }
 
 const FRAMEWORK_COLORS: Record<string, string> = {
-  CBI: "bg-wedo-cyan/10 text-wedo-cyan",
-  Bloom: "bg-wedo-purple/10 text-wedo-purple",
-  Dreyfus: "bg-wedo-magenta/10 text-wedo-magenta",
-  BigFive: "bg-wedo-green/10 text-wedo-green",
+  CBI: "bg-wedo-cyan/10 text-wedo-cyan-text",
+  Bloom: "bg-wedo-purple/10 text-wedo-purple-text",
+  Dreyfus: "bg-wedo-magenta/10 text-wedo-magenta-text",
+  BigFive: "bg-wedo-green/10 text-wedo-green-text",
 }
 
 /**
@@ -152,7 +152,7 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onToggleA
           <span className="text-lia-text-secondary">{behavCount} comportamentais</span>
         </div>
         {mode && (
-          <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan text-[10px] font-medium">
+          <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan-text text-[10px] font-medium">
             Modo {mode === "compact" ? "Compacto" : "Completo"}
           </span>
         )}
@@ -388,7 +388,7 @@ function QuestionCard({
               </span>
             )}
             {question.trait_ocean && (
-              <span className="px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-[10px] text-wedo-cyan font-medium">
+              <span className="px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-[10px] text-wedo-cyan-text font-medium">
                 {question.trait_ocean}
               </span>
             )}
@@ -430,7 +430,7 @@ function QuestionCard({
           <div className="flex items-center gap-1.5 pt-1.5 border-t border-lia-border-subtle mt-1.5">
             <button
               onClick={() => onRegenerate?.(index)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-wedo-cyan hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none"
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-wedo-cyan-text hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none"
             >
               <RefreshCw className="w-3 h-3" />
               Regenerar

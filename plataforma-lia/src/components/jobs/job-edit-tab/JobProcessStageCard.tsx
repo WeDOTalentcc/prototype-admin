@@ -130,8 +130,8 @@ export function JobProcessStageCard({
                   {badge.label}
                 </span>
                 {isLiaAssisted && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-cyan bg-wedo-cyan/10">
-                    <Brain className="w-2.5 h-2.5 text-wedo-cyan" />IA auxilia
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-cyan-text bg-wedo-cyan/10">
+                    <Brain className="w-2.5 h-2.5 text-wedo-cyan-text" />IA auxilia
                   </span>
                 )}
                 <div className="flex items-center gap-1 ml-auto">

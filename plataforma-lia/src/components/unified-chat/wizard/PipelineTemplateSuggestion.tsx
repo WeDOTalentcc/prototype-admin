@@ -21,7 +21,7 @@ import type { WizardPipelineTemplateSuggestion } from "@/components/unified-chat
  *     a vaga em curso.
  *
  * Design tokens canonical (Design System v4.2.x):
- *   - Header com accent cyan (`text-wedo-cyan`) — LIA "agindo" (memory
+ *   - Header com accent cyan (`text-wedo-cyan-text`) — LIA "agindo" (memory
  *     `project_white_label_ai_assistant`).
  *   - Botão primário "Aplicar este template" usa variant Ink canonical
  *     (`bg-lia-text-primary`), NUNCA cyan — cyan é exclusivo da
@@ -113,13 +113,13 @@ export function PipelineTemplateSuggestion({
       {/* Header — LIA falando, accent cyan apropriado */}
       <div className="flex items-center gap-2">
         <span
-          className="flex h-7 w-7 items-center justify-center rounded-md bg-wedo-cyan/15 text-wedo-cyan"
+          className="flex h-7 w-7 items-center justify-center rounded-md bg-wedo-cyan/15 text-wedo-cyan-text"
           aria-hidden="true"
         >
           <Sparkles className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-wedo-cyan">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-wedo-cyan-text">
             {t("suggestionTitle")}
           </p>
           <p className="text-sm font-semibold text-lia-text-primary">

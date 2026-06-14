@@ -48,7 +48,7 @@ export const getTaskTypeIcon = (type: 'feedback' | 'entrevista' | 'sourcing') =>
   switch (type) {
     case 'feedback': return <MessageSquare className="w-3.5 h-3.5 text-violet-500" />
     case 'entrevista': return <Calendar className="w-3.5 h-3.5 text-emerald-500" />
-    case 'sourcing': return <Search className="w-3.5 h-3.5 text-wedo-cyan" />
+    case 'sourcing': return <Search className="w-3.5 h-3.5 text-wedo-cyan-text" />
   }
 }
 
@@ -57,7 +57,7 @@ export const getAlertIcon = (type: string) => {
     case 'urgent': return <AlertTriangle className="w-4 h-4 text-rose-500" />
     case 'warning': return <AlertCircle className="w-4 h-4 text-amber-500" />
     case 'success': return <CheckCircle className="w-4 h-4 text-emerald-500" />
-    default: return <Info className="w-4 h-4 text-wedo-cyan" />
+    default: return <Info className="w-4 h-4 text-wedo-cyan-text" />
   }
 }
 

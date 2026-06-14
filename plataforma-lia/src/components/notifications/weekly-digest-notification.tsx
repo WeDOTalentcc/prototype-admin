@@ -54,7 +54,7 @@ export function WeeklyDigestNotification({
         <div className="px-4 py-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-lia-text-primary">Notificações</h3>
           <button
-            className="text-xs text-wedo-cyan hover:text-wedo-cyan-dark font-medium transition-colors"
+            className="text-xs text-wedo-cyan-text hover:text-wedo-cyan-dark font-medium transition-colors"
             onClick={onViewAll}
           >
             Marcar todas como lidas
@@ -101,7 +101,7 @@ export function WeeklyDigestNotification({
         {onViewAll && (
           <div className="px-4 py-2.5 border-t border-lia-border-subtle bg-lia-bg-secondary">
             <button
-              className="w-full text-xs text-wedo-cyan hover:text-wedo-cyan-dark font-medium text-center transition-colors"
+              className="w-full text-xs text-wedo-cyan-text hover:text-wedo-cyan-dark font-medium text-center transition-colors"
               onClick={onViewAll}
             >
               Ver todas as notificações

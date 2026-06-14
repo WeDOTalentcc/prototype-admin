@@ -250,7 +250,7 @@ export const textStyles = {
   sidebarItemActive: "font-sans text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Links (cyan para LIA/IA)
-  link: "font-sans text-xs font-medium text-wedo-cyan hover:text-wedo-cyan-dark transition-colors",
+  link: "font-sans text-xs font-medium text-wedo-cyan-text hover:text-wedo-cyan-dark transition-colors",
   linkSubtle: "font-sans text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors",
 } as const
 
@@ -320,16 +320,16 @@ export const badgeStyles = {
   success: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success',
   warning: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   error: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error',
-  info: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark',
+  info: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-text dark:text-wedo-cyan-dark',
   
   // v4.1: WeDo accent colors (uso limitado - 10%) com dark mode
-  cyan: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
+  cyan: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-text dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
   green: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-green/10 text-status-success dark:bg-wedo-green/20 dark:text-wedo-green',
-  orange: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-orange/10 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange',
-  purple: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple',
+  orange: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-orange/10 text-wedo-orange-text dark:bg-wedo-orange/20 dark:text-wedo-orange',
+  purple: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-purple/10 text-wedo-purple-text dark:bg-wedo-purple/20 dark:text-wedo-purple',
 
   // Alias para compatibilidade
-  primary: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
+  primary: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-text dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
   
   // v4.1: Outline variants com dark mode
   outlineDefault: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-lia-border-default text-lia-text-secondary dark:border-lia-border-default dark:text-lia-text-secondary',
@@ -550,7 +550,7 @@ export const kanbanChipStyles = {
     danger:
       'border-status-error/30 dark:border-status-error/30 text-status-error dark:text-status-error',
     info:
-      'border-wedo-cyan/30 dark:border-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan',
+      'border-wedo-cyan/30 dark:border-wedo-cyan/30 text-wedo-cyan-text dark:text-wedo-cyan',
   },
   muted: 'text-lia-text-tertiary dark:text-lia-text-tertiary',
 } as const

@@ -124,7 +124,7 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory, de
         data-step-total={stepTotal}
       >
         <div className="flex items-center justify-between gap-2 mb-1.5">
-          <span className="text-[11px] font-medium text-wedo-cyan truncate">
+          <span className="text-[11px] font-medium text-wedo-cyan-text truncate">
             {stepSummary}
           </span>
           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -176,7 +176,7 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory, de
     >
       {/* Cabeçalho da etapa (audit #5): "Etapa X de Y · Nome" + Cancelar. */}
       <div className="flex items-center justify-between gap-2 mb-1.5">
-        <span className="text-[11px] font-medium text-wedo-cyan truncate">
+        <span className="text-[11px] font-medium text-wedo-cyan-text truncate">
           {stepSummary}
         </span>
         <div className="flex items-center gap-2 flex-shrink-0">

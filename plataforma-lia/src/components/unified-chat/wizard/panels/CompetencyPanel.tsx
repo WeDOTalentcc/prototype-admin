@@ -78,7 +78,7 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
             className={cn(
               "flex flex-col items-center gap-1 px-3 py-2.5 rounded-md border text-center transition-colors motion-reduce:transition-none",
               mode === "compact"
-                ? "border-wedo-cyan bg-wedo-cyan/5 text-wedo-cyan"
+                ? "border-wedo-cyan bg-wedo-cyan/5 text-wedo-cyan-text"
                 : "border-lia-border-subtle text-lia-text-secondary hover:border-lia-text-tertiary hover:bg-lia-bg-secondary",
             )}
           >
@@ -91,7 +91,7 @@ export function CompetencyPanel({ data, onUpdate }: Props) {
             className={cn(
               "flex flex-col items-center gap-1 px-3 py-2.5 rounded-md border text-center transition-colors motion-reduce:transition-none",
               mode === "full"
-                ? "border-wedo-cyan bg-wedo-cyan/5 text-wedo-cyan"
+                ? "border-wedo-cyan bg-wedo-cyan/5 text-wedo-cyan-text"
                 : "border-lia-border-subtle text-lia-text-secondary hover:border-lia-text-tertiary hover:bg-lia-bg-secondary",
             )}
           >

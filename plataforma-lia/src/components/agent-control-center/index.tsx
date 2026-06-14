@@ -404,7 +404,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                           {a.fairness_checks ? `${a.fairness_checks} checks` : '—'}
                         </td>
                         <td className="p-2 text-center">
-                          {a.trend === 'improving' && <span className="text-wedo-green-bright">▲</span>}
+                          {a.trend === 'improving' && <span className="text-wedo-green-text-bright">▲</span>}
                           {a.trend === 'stable' && <span className="text-lia-text-disabled">━</span>}
                           {a.trend === 'degrading' && <span className="text-status-error">▼</span>}
                           {a.trend === 'insufficient_data' && <span className="text-lia-text-disabled">?</span>}
@@ -469,7 +469,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       <td className="p-2 text-center">
                         {v.is_overdue
                           ? <span className="text-status-error font-medium">Atrasada</span>
-                          : <span className="text-wedo-green-bright">No prazo</span>
+                          : <span className="text-wedo-green-text-bright">No prazo</span>
                         }
                       </td>
                     </tr>
@@ -531,13 +531,13 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       <tr key={d.domain} className={`hover:bg-lia-bg-secondary/50 ${d.needs_calibration ? 'bg-status-warning/5' : ''}`}>
                         <td className="p-2 font-medium text-lia-text-primary">{d.domain}</td>
                         <td className="p-2 text-right text-lia-text-secondary">{d.total_events}</td>
-                        <td className="p-2 text-right text-wedo-green-bright">{d.agree_count}</td>
+                        <td className="p-2 text-right text-wedo-green-text-bright">{d.agree_count}</td>
                         <td className="p-2 text-right text-status-error">{d.disagree_count}</td>
                         <td className="p-2 text-right text-lia-text-secondary">{(d.agreement_rate * 100).toFixed(0)}%</td>
                         <td className="p-2 text-center">
                           {d.needs_calibration
                             ? <span className="text-status-warning font-medium">Calibrar</span>
-                            : <span className="text-wedo-green-bright">OK</span>
+                            : <span className="text-wedo-green-text-bright">OK</span>
                           }
                         </td>
                       </tr>
@@ -651,7 +651,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       Progresso
                     </span>
                     <span 
-                      className={`text-lg font-semibold ${agent.progress >= 80 ? 'text-wedo-green-bright' : agent.progress >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
+                      className={`text-lg font-semibold ${agent.progress >= 80 ? 'text-wedo-green-text-bright' : agent.progress >= 50 ? 'text-lia-btn-primary-bg' : 'text-status-warning'}`}
                     >
                       {agent.progress}%
                     </span>
