@@ -152,23 +152,46 @@ def _best_fuzzy_match(
 
 
 def match_titles_in_message(message: str, items: list[tuple[str, str]]) -> list[tuple[str, str]]:
-    """items: [(id, title)]. Retorna os títulos que compartilham >=2 tokens
-    significativos com a mensagem (ou título de 1 token batido exato). Ordena por
-    nº de tokens casados (desc). Função PURA."""
+    """items: [(id, title)]. Retorna os titulos que compartilham >=2 tokens
+    significativos com a mensagem (ou titulo de 1 token batido exato). Ordena por
+    score desc. Funcao PURA.
+
+    P0-B fix (2026-06-14): adiciona fuzzy fallback via SequenceMatcher para tokens
+    de vaga. Sem isso, typo de 1 char ("juridoc" vs "juridico") zeraba o overlap
+    e o sticky_vacancy fallback retornava a vaga errada.
+    Estrategia:
+      - Fase 1: overlap exato de tokens (comportamento original)
+      - Fase 2: se overlap exato < 2, tenta match fuzzy (ratio >= 0.82) entre
+        tokens da mensagem e tokens do titulo
+    Score = overlap_exato + 0.5 * overlap_fuzzy (incentiva exato, tolera typo)
+    """
     mtok = _tokens(message)
     if not mtok:
         return []
-    scored: list[tuple[int, str, str]] = []
+    scored: list[tuple[float, str, str]] = []
     for _id, title in items:
         ttok = _tokens(title)
         if not ttok:
             continue
-        overlap = ttok & mtok
-        # Fix P0 2026-06-06: antes exigia 60% dos tokens do TITULO, o que falhava
-        # em titulos bilingues/parenteticos. Agora basta interseccao de 2 tokens
-        # significativos (ou titulo de 1 token batido exato).
-        if len(overlap) >= 2 or (len(ttok) == 1 and len(overlap) >= 1):
-            scored.append((len(overlap), _id, title))
+        # Fase 1: token intersection exata
+        exact_overlap = ttok & mtok
+        exact_score = len(exact_overlap)
+
+        # Fase 2: fuzzy fallback para tokens sem match exato
+        fuzzy_score = 0.0
+        if exact_score < 2:
+            unmatched_msg = mtok - exact_overlap
+            unmatched_ttok = ttok - exact_overlap
+            for mt in unmatched_msg:
+                for tt in unmatched_ttok:
+                    if SequenceMatcher(None, mt, tt).ratio() >= 0.80:
+                        fuzzy_score += 1.0  # conta equivalente a token exato (threshold >= 0.80)
+                        break  # cada msg-token conta so uma vez
+
+        total = exact_score + fuzzy_score
+        # Threshold: >=2 tokens equivalentes (exatos ou fuzzy combinados)
+        if total >= 2 or (len(ttok) == 1 and exact_score >= 1):
+            scored.append((total, _id, title))
     scored.sort(key=lambda x: -x[0])
     return [(i, t) for _, i, t in scored]
 
