@@ -120,3 +120,43 @@ plataforma-lia/src/components/settings/.
 - Dashboard DEI dedicado: nao existe.
 
 Para detalhe completo ver Notion HANDOFF Fairness+LGPD (Jun 2026).
+
+---
+
+## 9. Detalhes tecnicos internos (fairness_global.md Abr 2026)
+
+> Secao derivada de docs/audit/fairness_global.md v1 (Abr 2026 -- nao sobrescrito por este arquivo).
+> Incorporada aqui para consolidar as duas fontes para engenheiros e auditores.
+
+### Estado interno do FairnessGuard
+
+- _PATTERNS_VERSION = 5 -- deve ser incrementada ao adicionar regras; requer redeploy para recarregar
+- FAIRNESS_LAYER3_ENABLED=False por default -- camada semantica LLM nao roda em producao standard
+  Em producao padrao apenas Camada 1 (regex) + Camada 2 (lexico) estao ativas.
+- check_with_sector(sector) -- regras por setor: tech/finance/health/RPO (habilitados); retail/logistics (desabilitados)
+
+### Cobertura por agente (lacuna identificada)
+
+Apenas 4 de 14 agentes que herdam de EnhancedAgentMixin chamam _fairness_pre_check diretamente:
+- WizardReActAgent
+- TalentReActAgent
+- KanbanReActAgent
+- JobsManagementReActAgent
+
+Os outros 10 dependem exclusivamente do gate no MainOrchestrator. Se um agente for invocado
+diretamente (bypass do orquestrador), o gate de fairness nao dispara.
+
+### Gaps de observability e correlacao de auditoria
+
+| Gap | Local | Impacto |
+|---|---|---|
+| FairnessAuditLog sem execution_id / session_id | app/domains/compliance/ | Eventos de fairness nao correlacionaveis com ExecutionAuditRecord |
+| AuditCallback sem campos de fairness | app/shared/audit_callback.py | Bloqueio de fairness dentro de agente nao aparece no audit trail de execucao |
+| GET /v1/fairness-reports desconectado do timeline | app/api/v1/fairness_reports.py | API existe mas dados separados do audit trail principal |
+
+### Propostas de roadmap (fairness_global.md Abr 2026)
+
+- Tabela fairness_rules no DB -- regras editaveis via admin sem redeploy (CRUD API)
+- Domain-scoped rules -- regras diferentes por dominio (sourcing, triagem, rejeicao)
+- Integracao com observability -- fairness events no mesmo timeline que execucoes (via execution_id)
+- Estimativa: 4-6 dias de engenharia
