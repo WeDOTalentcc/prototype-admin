@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback, useEffect } from "react"
+import React, { useState, useRef, useCallback, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { MessageSquareDashed, RefreshCw, ExternalLink, X } from "lucide-react"
 import { usePathname } from "next/navigation"
@@ -19,6 +19,7 @@ export function GlobalSelectionChat() {
   const [question, setQuestion] = useState("")
   const [isMounted, setIsMounted] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const frozenRef = React.useRef<{ text: string; rect: DOMRect } | null>(null)
 
   useEffect(() => { setIsMounted(true) }, [])
 
@@ -32,6 +33,7 @@ export function GlobalSelectionChat() {
 
   const openChat = useCallback((chosenIntent: "answer" | "suggest_rewrite") => {
     setIntent(chosenIntent)
+    frozenRef.current = { text: selection.text, rect: selection.rect! }
     setIsChatOpen(true)
     reset()
     setQuestion("")
@@ -63,9 +65,10 @@ export function GlobalSelectionChat() {
     openMainChat()
   }, [handleClose, openMainChat])
 
-  if (!isMounted || !selection.isActive || !selection.rect) return null
+  if (!isMounted) return null
+  if (!isChatOpen && (!selection.isActive || !selection.rect)) return null
 
-  const rect = selection.rect
+  const rect = (isChatOpen ? frozenRef.current?.rect : null) ?? selection.rect
   // Toolbar: appears just above the selection
   const toolbarStyle: React.CSSProperties = {
     position: "fixed",

@@ -236,7 +236,9 @@ export type VacancyActionKind =
   | "dispatch-screening"       // aguardando_aprovacao → POST dispatch-screening (audience='new_only')
   | "open-publish-modal"       // publicada → <JobPublishModal> inline
   | "open-status-modal"        // ao_vivo → <JobStatusModal> inline
-  | "noop"                     // encerrada → CTA disabled
+  | "noop"                     // fallback unknown stage
+  | "duplicate"               // encerrada → POST /job-vacancies/{id}/duplicate
+  | "reactivate"              // encerrada secondary → reopen job to Ativa
 
 export type VacancyStatusModalMode = "pause" | "activate" | "cancel"
 
@@ -248,6 +250,8 @@ export type VacancyAction =
   | { kind: "open-publish-modal"; label: string }
   | { kind: "open-status-modal"; label: string; mode: VacancyStatusModalMode }
   | { kind: "noop"; label: string; disabled: true }
+  | { kind: "duplicate"; label: string }
+  | { kind: "reactivate"; label: string }
 
 function assertNeverAction(_kind: never): never {
   throw new Error("Unhandled VacancyActionKind — did you add a stage without updating getVacancyAction?")
@@ -281,7 +285,7 @@ function getVacancyAction(
     case "ao_vivo":
       return { kind: "open-status-modal", label: t("vacancyCard.openStatus"), mode: "pause" }
     case "encerrada":
-      return { kind: "noop", label: t("vacancyCard.openClosed"), disabled: true }
+      return { kind: "duplicate", label: t("vacancyCard.duplicateJob") }
     default:
       // Unknown stage — read-only fallback to surface the issue without crashing.
       return { kind: "noop", label: t("vacancyCard.openClosed"), disabled: true }
@@ -299,6 +303,8 @@ export function vacancyActionKindIsExhaustive(kind: VacancyActionKind): true {
     case "open-publish-modal":
     case "open-status-modal":
     case "noop":
+    case "duplicate":
+    case "reactivate":
       return true
     default:
       return assertNeverAction(kind)
@@ -621,11 +627,11 @@ export function PipelineOverviewPage() {
       setPreviewVacancyDetail(null)
       return
     }
-    let cancelled = false
-    fetch(`/api/backend-proxy/job-vacancies/${previewVacancy.id}`)
+    const controller = new AbortController()
+    fetch(`/api/backend-proxy/job-vacancies/${previewVacancy.id}`, { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (cancelled || !data) return
+        if (controller.signal.aborted || !data) return
         setPreviewVacancyDetail({
           screening_questions: data.screening_questions ?? [],
           screening_status: data.screening_status ?? "not_configured",
@@ -636,12 +642,11 @@ export function PipelineOverviewPage() {
           is_published: !!(data.published_linkedin || data.published_indeed || data.published_website),
         })
       })
-      .catch(() => {
-        if (!cancelled) setPreviewVacancyDetail(null)
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return
+        if (!controller.signal.aborted) setPreviewVacancyDetail(null)
       })
-    return () => {
-      cancelled = true
-    }
+    return () => { controller.abort() }
   }, [previewVacancy?.id, previewVacancy?.status, previewVacancy?.approval_status])
 
   // Phase A: stage-aware action dispatcher. Branches the discriminated
@@ -697,6 +702,34 @@ export function PipelineOverviewPage() {
         setStatusModalMode(action.mode)
         setShowStatusModal(true)
         return
+      case "duplicate": {
+        try {
+          const res = await fetch(
+            `/api/backend-proxy/job-vacancies/${vacancy.id}/duplicate`,
+            { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }
+          )
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          toast.success("Vaga duplicada", { description: `Cópia de "${vacancy.title}" criada` })
+          fetchLifecycleOverview()
+        } catch (err) {
+          toast.error("Falha ao duplicar vaga", { description: err instanceof Error ? err.message : "Erro desconhecido" })
+        }
+        return
+      }
+      case "reactivate": {
+        try {
+          const res = await fetch(
+            `/api/backend-proxy/job-readiness/job/${vacancy.id}/reactivate`,
+            { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }
+          )
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          toast.success("Vaga reativada", { description: `"${vacancy.title}" está ativa novamente` })
+          fetchLifecycleOverview()
+        } catch (err) {
+          toast.error("Falha ao reativar vaga", { description: err instanceof Error ? err.message : "Erro desconhecido" })
+        }
+        return
+      }
       case "noop":
         return
       default: {

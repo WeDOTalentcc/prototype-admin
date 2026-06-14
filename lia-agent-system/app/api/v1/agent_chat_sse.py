@@ -906,6 +906,18 @@ company_id: str = Depends(require_company_id)):
                             "[SSEChat-T12] post-wizard offer skipped: %s", _t12_offer_exc,
                         )
 
+                # P0-E fix (2026-06-14): propagar ui_action do wizard payload
+                # (ex.: navigate_to page=chat quando user pede chat full no wizard).
+                _wiz_ui_action = (
+                    _wiz_payload.get("ui_action")
+                    if isinstance(_wiz_payload, dict)
+                    else None
+                )
+                _wiz_ui_params = (
+                    _wiz_payload.get("ui_action_params")
+                    if isinstance(_wiz_payload, dict)
+                    else None
+                )
                 yield format_sse_event(
                     serialize_message(
                         content=_wiz_clean,
@@ -914,6 +926,8 @@ company_id: str = Depends(require_company_id)):
                         source="wizard_session_canonical",
                         conversation_id=req.conversation_id,
                         ws_stage_payload=_wiz_payload if isinstance(_wiz_payload, dict) else None,
+                        ui_action=_wiz_ui_action,
+                        ui_action_params=_wiz_ui_params,
                     ),
                     next_id(),
                 )

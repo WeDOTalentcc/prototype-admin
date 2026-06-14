@@ -20,7 +20,7 @@
  * See `.planning/vacancy-pipeline-plan.md` Phase I.2.d.
  */
 import { Button } from "@/components/ui/button"
-import { Pause, CheckCircle, XCircle } from "lucide-react"
+import { Pause, CheckCircle, XCircle, Copy, RotateCcw } from "lucide-react"
 import type { VacancyAction, VacancyStatusModalMode } from "@/components/pages/pipeline-overview-page"
 
 /**
@@ -45,6 +45,31 @@ export function VacancyDecisionBar<V extends VacancyDecisionBarVacancy>({ vacanc
   // encerrada -> CTA disabled, render nothing.
   if (action.kind === "noop") {
     return null
+  }
+
+  // encerrada (active path) -> Duplicar + Reativar
+  if (action.kind === "duplicate") {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 border-t border-lia-border-subtle">
+        <Button
+          size="sm"
+          className="h-7 px-3 text-xs flex-1"
+          onClick={() => onAction(action, vacancy)}
+        >
+          <Copy className="w-3 h-3 mr-1.5" />
+          {action.label}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 px-3 text-xs flex-1"
+          onClick={() => onAction({ kind: "reactivate", label: "Reativar vaga" }, vacancy)}
+        >
+          <RotateCcw className="w-3 h-3 mr-1.5" />
+          Reativar
+        </Button>
+      </div>
+    )
   }
 
   // ao_vivo -> 3 buttons (mode picker for the JobStatusModal mode).

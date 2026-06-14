@@ -1919,7 +1919,12 @@
       "openPublish": "Publish job",
       "openStatus": "Manage status",
       "openKanban": "Open kanban",
-      "openClosed": "View closure"
+      "openClosed": "View closure",
+      "requestApproval": "Request approval",
+      "duplicateJob": "Duplicate job",
+      "reactivateJob": "Reactivate job",
+      "duplicateJobSuccess": "Job duplicated successfully",
+      "reactivateJobSuccess": "Job reactivated successfully"
     },
     "empty": {
       "noVacancies": "No jobs in this stage",

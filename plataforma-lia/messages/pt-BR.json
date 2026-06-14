@@ -1919,7 +1919,12 @@
       "openPublish": "Publicar vaga",
       "openStatus": "Gerenciar status",
       "openKanban": "Abrir kanban",
-      "openClosed": "Ver encerramento"
+      "openClosed": "Ver encerramento",
+      "requestApproval": "Solicitar aprovação",
+      "duplicateJob": "Duplicar vaga",
+      "reactivateJob": "Reativar vaga",
+      "duplicateJobSuccess": "Vaga duplicada com sucesso",
+      "reactivateJobSuccess": "Vaga reativada com sucesso"
     },
     "empty": {
       "noVacancies": "Nenhuma vaga neste estágio",

@@ -725,6 +725,27 @@ def _handle_set_salary(
     )
 
 
+
+def _handle_open_fullscreen_chat(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Navega o recrutador para o chat em tela cheia (/pt/oi ou /pt/chat).
+
+    P0-E fix (2026-06-14): wizard nao tinha essa tool; LLM dizia 'vou expandir
+    o painel' quando usuario pedia 'me leve para chat full'.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    return ToolResult(
+        llm_message=(
+            "Redirecionando para o chat em tela cheia. "
+            "Confirme ao recrutador que ele sera levado para la."
+        ),
+        state_updates={"_navigate_to_fullscreen_chat": True},
+    )
+
+
 def _handle_navigate_to_jobs(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -1017,6 +1038,19 @@ NAVIGATE_TO_JOBS = WizardTool(
 )
 
 
+
+OPEN_FULLSCREEN_CHAT = WizardTool(
+    name="open_fullscreen_chat",
+    description=(
+        "Leva o recrutador para o chat em tela cheia (pagina dedicada de chat). "
+        "Use quando ele pedir 'me leve para o chat full', 'abrir chat em tela "
+        "cheia', 'quero ir pro chat completo', 'chat full', 'chat dedicado'."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_open_fullscreen_chat,
+)
+
+
 OPEN_PANEL = WizardTool(
     name="open_panel",
     description=(
@@ -1066,6 +1100,7 @@ PURE_TOOLS: tuple[WizardTool, ...] = (
     APPROVE_JOB_DESCRIPTION,
     SET_SALARY,
     NAVIGATE_TO_JOBS,
+    OPEN_FULLSCREEN_CHAT,
     OPEN_PANEL,
     CLOSE_PANEL,
     GET_WIZARD_STATUS,

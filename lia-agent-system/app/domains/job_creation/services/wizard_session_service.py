@@ -1316,6 +1316,12 @@ class WizardSessionService:
                 data=data,
                 completeness=calculate_completeness(stage),
             )
+            # P0-E fix (2026-06-14): user pediu "me leve pro chat full" no wizard.
+            # Emite ui_action="navigate_to" page="chat" para o SSE handler propagar
+            # ao frontend (useUIAction.dispatchOrEmit -> router.push /pt/chat).
+            if new_state.get("_navigate_to_fullscreen_chat"):
+                payload["ui_action"] = "navigate_to"
+                payload["ui_action_params"] = {"page": "chat"}
         except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: payload é best-effort (UI continua com payload vazio), reply já foi gerado
             logger.warning(
                 "[WizardOrchestrator] payload build failed: %s", type(exc).__name__,
