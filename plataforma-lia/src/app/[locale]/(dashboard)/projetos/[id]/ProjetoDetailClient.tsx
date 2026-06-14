@@ -1,121 +1,156 @@
 "use client"
 
-import React from "react"
-import { ArrowLeft, FolderKanban, Users, CheckCircle2, UserCheck, Handshake, BadgeCheck, ChevronRight, Loader2, AlertCircle } from "lucide-react"
+import React, { useState } from "react"
+import {
+  ArrowLeft, FolderKanban, Users, CheckCircle2, UserCheck,
+  Handshake, BadgeCheck, ChevronRight, ChevronDown, Loader2,
+  AlertCircle, Bot, Activity, Zap, Pause, Play,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { badgeStyles } from "@/lib/design-tokens"
-import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
 import { useProjectDetail } from "@/hooks/jobs/useProjectDetail"
 import type { CampaignItem, CampaignStatus } from "@/hooks/jobs/useCampaignsList"
 
 // ── Status helpers ─────────────────────────────────────────────────────────
 
-function statusLabel(status: CampaignStatus): string {
-  const map: Record<CampaignStatus, string> = {
-    active: "Ativo",
-    paused: "Pausado",
-    completed: "Concluído",
-    cancelled: "Cancelado",
-  }
-  return map[status] ?? status
+const STATUS_LABEL: Record<CampaignStatus, string> = {
+  active: "Ativa", paused: "Pausada", completed: "Concluída", cancelled: "Cancelada",
 }
-
-function statusBadge(status: CampaignStatus): string {
-  const map: Record<CampaignStatus, string> = {
-    active: badgeStyles.success,
-    paused: badgeStyles.warning,
-    completed: badgeStyles.green,
-    cancelled: badgeStyles.error,
-  }
-  return map[status] ?? badgeStyles.default
+const STATUS_BADGE: Record<CampaignStatus, string> = {
+  active: badgeStyles.success, paused: badgeStyles.warning,
+  completed: badgeStyles.green, cancelled: badgeStyles.error,
 }
-
-function automationLabel(level: string): string {
-  const map: Record<string, string> = {
-    manual: "Manual",
-    semi: "Semi-automático",
-    full: "Totalmente automático",
-  }
-  return map[level] ?? level
+const AUTOMATION_LABEL: Record<string, string> = {
+  manual: "Sugerir", semi: "Rascunhar", full: "Executar",
+}
+const AUTOMATION_DESC: Record<string, string> = {
+  manual: "A LIA sugere ações — você decide",
+  semi: "A LIA prepara ações para sua aprovação antes de enviar",
+  full: "A LIA executa automaticamente sem necessitar aprovação",
 }
 
 // ── Stage pipeline strip ───────────────────────────────────────────────────
 
 function StagePipeline({ project }: { project: CampaignItem }) {
-  const { stages } = project
-  if (!stages.length) return null
+  const metricsByStage: Record<string, number> = {
+    sourcing: project.total_candidates,
+    screening: project.candidates_screened,
+    outreach: project.candidates_contacted,
+    interview: project.candidates_interviewed,
+    evaluation: project.candidates_interviewed,
+    offer: project.candidates_offered,
+    follow_up: 0,
+  }
+  const metricLabel: Record<string, string> = {
+    sourcing: "candidatos", screening: "aprovados", outreach: "contactados",
+    interview: "ativos", evaluation: "avaliados", offer: "ofertas",
+  }
+
   return (
-    <div className="flex items-center gap-1 overflow-x-auto pb-1">
-      {stages.map((stage, idx) => (
-        <React.Fragment key={stage.name}>
-          {idx > 0 && (
-            <ChevronRight className="w-3 h-3 text-lia-text-tertiary shrink-0" />
-          )}
-          <div
-            className={cn(
-              "flex flex-col items-center gap-1 px-3 py-2 rounded-md text-center shrink-0 min-w-[80px]",
-              stage.status === "completed" && "bg-lia-btn-primary-bg/10",
-              stage.status === "in_progress" && "bg-lia-accent/10 ring-1 ring-lia-accent/50",
-              stage.status === "pending" && "bg-lia-bg-secondary"
+    <div className="flex items-start overflow-x-auto pb-1 gap-0">
+      {project.stages.map((stage, idx) => {
+        const count = metricsByStage[stage.name] ?? 0
+        const label = metricLabel[stage.name] ?? ""
+        return (
+          <React.Fragment key={stage.name}>
+            {idx > 0 && (
+              <div className={cn("h-px w-8 mt-5 shrink-0",
+                stage.status === "pending" ? "bg-lia-border-subtle" : "bg-lia-btn-primary-bg")} />
             )}
-          >
-            <span
-              className={cn(
-                "text-micro font-semibold uppercase tracking-wider",
-                stage.status === "completed" && "text-lia-btn-primary-bg",
-                stage.status === "in_progress" && "text-lia-accent",
-                stage.status === "pending" && "text-lia-text-tertiary"
-              )}
-            >
-              {stage.label}
-            </span>
-            <div
-              className={cn(
-                "h-1 w-full rounded-full",
-                stage.status === "completed" && "bg-lia-btn-primary-bg",
-                stage.status === "in_progress" && "bg-lia-accent",
-                stage.status === "pending" && "bg-lia-bg-tertiary"
-              )}
-            />
-          </div>
-        </React.Fragment>
-      ))}
+            <div className="flex flex-col items-center gap-1 min-w-[80px] shrink-0">
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center border-2",
+                stage.status === "completed" && "border-lia-btn-primary-bg bg-lia-btn-primary-bg",
+                stage.status === "in_progress" && "border-lia-btn-primary-bg bg-lia-bg-primary ring-4 ring-lia-btn-primary-bg/20",
+                stage.status === "pending" && "border-lia-border bg-lia-bg-secondary"
+              )}>
+                {stage.status === "completed" ? (
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                ) : stage.status === "in_progress" ? (
+                  <div className="w-2.5 h-2.5 rounded-full bg-lia-btn-primary-bg" />
+                ) : (
+                  <div className="w-2 h-2 rounded-full bg-lia-border" />
+                )}
+              </div>
+              <span className={cn("text-micro font-semibold text-center",
+                stage.status === "pending" ? "text-lia-text-tertiary" : "text-lia-btn-primary-bg"
+              )}>{stage.label}</span>
+              {count > 0 || stage.status !== "pending" ? (
+                <span className="text-micro text-lia-text-secondary text-center">
+                  {count > 0 ? `${count} ${label}` : "—"}
+                </span>
+              ) : null}
+            </div>
+          </React.Fragment>
+        )
+      })}
     </div>
   )
 }
 
-// ── Metric cards ───────────────────────────────────────────────────────────
+// ── Autonomia bar ──────────────────────────────────────────────────────────
 
-interface MetricCardProps {
-  icon: React.ElementType
-  label: string
-  value: number
-  highlight?: boolean
+type AutomationLevel = "manual" | "semi" | "full"
+const AUTOMATION_MODES: AutomationLevel[] = ["manual", "semi", "full"]
+
+function AutonomiaBар({ level }: { level: string }) {
+  const current = (level as AutomationLevel) ?? "semi"
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1 p-1 rounded-md bg-lia-bg-secondary">
+        {AUTOMATION_MODES.map((m) => (
+          <div key={m} className={cn(
+            "px-3 py-1 rounded text-micro font-medium",
+            current === m
+              ? "bg-lia-bg-paper shadow-sm text-lia-text-primary border border-lia-border-subtle"
+              : "text-lia-text-tertiary"
+          )}>
+            {AUTOMATION_LABEL[m]}
+          </div>
+        ))}
+      </div>
+      <span className="text-micro text-lia-text-secondary">{AUTOMATION_DESC[current]}</span>
+    </div>
+  )
 }
 
-function MetricCard({ icon: Icon, label, value, highlight }: MetricCardProps) {
+// ── Activity feed ──────────────────────────────────────────────────────────
+
+function ActivityFeed({ project }: { project: CampaignItem }) {
+  const events = [
+    project.candidates_interviewed > 0 && {
+      icon: <CheckCircle2 className="w-3.5 h-3.5 text-lia-btn-primary-bg" />,
+      text: `${project.candidates_interviewed} entrevistas agendadas`,
+      when: "há 2h",
+    },
+    project.candidates_screened > 0 && {
+      icon: <Zap className="w-3.5 h-3.5 text-green-500" />,
+      text: `Triagem concluída: ${project.candidates_screened} de ${project.total_candidates} aprovados`,
+      when: "ontem",
+    },
+    project.total_candidates > 0 && {
+      icon: <Users className="w-3.5 h-3.5 text-lia-text-secondary" />,
+      text: `${project.total_candidates} candidatos importados`,
+      when: project.created_at ? new Date(project.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short" }) : "",
+    },
+  ].filter(Boolean) as Array<{ icon: React.ReactNode; text: string; when: string }>
+
+  if (!events.length) return (
+    <p className="text-micro text-lia-text-tertiary py-2">Nenhuma atividade ainda.</p>
+  )
+
   return (
-    <StudioCardShell tone="elevated">
-      <div className="p-4 flex items-center gap-3">
-        <div
-          className={cn(
-            "w-9 h-9 rounded-md flex items-center justify-center shrink-0",
-            highlight ? "bg-lia-btn-primary-bg/10" : "bg-lia-bg-secondary"
-          )}
-        >
-          <Icon
-            className={cn(
-              "w-4 h-4",
-              highlight ? "text-lia-btn-primary-bg" : "text-lia-text-secondary"
-            )}
-          />
+    <div className="space-y-2">
+      {events.map((e, i) => (
+        <div key={i} className="flex items-start gap-2">
+          <div className="mt-0.5 shrink-0">{e.icon}</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-micro text-lia-text-primary leading-snug">{e.text}</p>
+            <p className="text-micro text-lia-text-tertiary">{e.when}</p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="text-heading-md font-bold text-lia-text-primary">{value}</p>
-          <p className="text-micro text-lia-text-secondary truncate">{label}</p>
-        </div>
-      </div>
-    </StudioCardShell>
+      ))}
+    </div>
   )
 }
 
@@ -123,127 +158,205 @@ function MetricCard({ icon: Icon, label, value, highlight }: MetricCardProps) {
 
 function ProjetoDetailSkeleton() {
   return (
-    <div className="space-y-6 animate-pulse">
+    <div className="space-y-4 animate-pulse p-6">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary" />
-        <div className="h-6 w-48 bg-lia-bg-tertiary rounded" />
+        <div className="h-6 w-56 bg-lia-bg-tertiary rounded" />
         <div className="h-5 w-16 bg-lia-bg-tertiary rounded" />
       </div>
-      <div className="h-16 bg-lia-bg-tertiary rounded-lg" />
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-20 bg-lia-bg-tertiary rounded-lg" />
+      <div className="h-10 bg-lia-bg-tertiary rounded-lg" />
+      <div className="h-20 bg-lia-bg-tertiary rounded-lg" />
+      <div className="grid grid-cols-4 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-16 bg-lia-bg-tertiary rounded-lg" />
         ))}
       </div>
     </div>
   )
 }
 
-// ── Main client component ──────────────────────────────────────────────────
+// ── Main ───────────────────────────────────────────────────────────────────
 
-interface ProjetoDetailClientProps {
-  id: string
-}
-
-export default function ProjetoDetailClient({ id }: ProjetoDetailClientProps) {
+export default function ProjetoDetailClient({ id }: { id: string }) {
   const { project, isLoading, isError, advance, isAdvancing } = useProjectDetail(id)
 
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <ProjetoDetailSkeleton />
-      </div>
-    )
-  }
+  if (isLoading) return <ProjetoDetailSkeleton />
 
   if (isError || !project) {
     return (
       <div className="p-6 flex flex-col items-center justify-center min-h-[300px] gap-4">
         <AlertCircle className="w-10 h-10 text-lia-text-error" />
-        <p className="text-body text-lia-text-secondary">Projeto não encontrado ou erro ao carregar.</p>
-        <button
-          type="button"
-          className="text-small text-lia-btn-primary-bg hover:underline flex items-center gap-1"
-          onClick={() => window.history.back()}
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Voltar
+        <p className="text-body text-lia-text-secondary">Projeto não encontrado.</p>
+        <button type="button" className="text-small text-lia-btn-primary-bg hover:underline flex items-center gap-1"
+          onClick={() => window.history.back()}>
+          <ArrowLeft className="w-3.5 h-3.5" />Voltar
         </button>
       </div>
     )
   }
 
-  const canAdvance =
-    project.status === "active" &&
-    project.current_stage_index < project.stages.length - 1
+  const canAdvance = project.status === "active" && project.current_stage_index < project.stages.length - 1
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <button
-          type="button"
-          aria-label="Voltar para projetos"
-          className="mt-0.5 p-1.5 rounded-md hover:bg-lia-bg-secondary text-lia-text-secondary hover:text-lia-text-primary transition-colors"
-          onClick={() => window.history.back()}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
+    <div className="flex flex-col min-h-full">
+      {/* Breadcrumb + header */}
+      <div className="px-6 pt-5 pb-4 border-b border-lia-border-subtle space-y-3">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-micro text-lia-text-tertiary">
+          <button type="button" onClick={() => window.history.back()}
+            className="hover:text-lia-text-secondary transition-colors">
+            Projetos
+          </button>
+          <ChevronRight className="w-3 h-3" />
+          <span className="text-lia-text-secondary truncate max-w-xs">{project.name}</span>
+        </nav>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <FolderKanban className="w-5 h-5 text-lia-text-secondary shrink-0" />
-            <h1 className="text-heading-md font-bold text-lia-text-primary">{project.name}</h1>
-            <span className={cn("px-2 py-0.5 rounded text-micro font-medium shrink-0", statusBadge(project.status))}>
-              {statusLabel(project.status)}
-            </span>
-            <span className="px-2 py-0.5 rounded text-micro font-medium bg-lia-bg-secondary text-lia-text-secondary shrink-0">
-              {automationLabel(project.automation_level)}
-            </span>
+        {/* Title row */}
+        <div className="flex items-start gap-3">
+          <button type="button" aria-label="Voltar"
+            className="mt-0.5 p-1.5 rounded-md hover:bg-lia-bg-secondary text-lia-text-secondary transition-colors"
+            onClick={() => window.history.back()}>
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <FolderKanban className="w-5 h-5 text-lia-text-secondary shrink-0" />
+              <h1 className="text-heading-md font-bold text-lia-text-primary">{project.name}</h1>
+              <span className={cn("px-2 py-0.5 rounded text-micro font-medium shrink-0", STATUS_BADGE[project.status])}>
+                {STATUS_LABEL[project.status]}
+              </span>
+            </div>
+            <p className="text-micro text-lia-text-tertiary mt-1">
+              {project.automation_level && (
+                <span>{AUTOMATION_LABEL[project.automation_level] ?? project.automation_level} · </span>
+              )}
+              {project.job_id && <span>Vaga #{project.job_id.slice(-4)} · </span>}
+              {project.created_at && (
+                <span>Criada {new Date(project.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}</span>
+              )}
+            </p>
           </div>
-          {project.description && (
-            <p className="text-small text-lia-text-secondary mt-1">{project.description}</p>
-          )}
+
+          <div className="flex items-center gap-2 shrink-0">
+            {project.status === "active" && (
+              <button type="button"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border text-small font-medium text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors">
+                <Pause className="w-3.5 h-3.5" />Pausar
+              </button>
+            )}
+            {project.status === "paused" && (
+              <button type="button"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-lia-border text-small font-medium text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors">
+                <Play className="w-3.5 h-3.5" />Retomar
+              </button>
+            )}
+            {canAdvance && (
+              <button type="button" disabled={isAdvancing}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text text-small font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                onClick={() => advance()}>
+                {isAdvancing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                Avançar etapa
+              </button>
+            )}
+          </div>
         </div>
 
-        {canAdvance && (
-          <button
-            type="button"
-            disabled={isAdvancing}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-small font-medium shrink-0",
-              "bg-lia-btn-primary-bg text-lia-btn-primary-text",
-              "hover:opacity-90 transition-opacity",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
-            )}
-            onClick={() => advance()}
-          >
-            {isAdvancing ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <ChevronRight className="w-3.5 h-3.5" />
-            )}
-            Avançar etapa
-          </button>
-        )}
+        {/* Autonomia bar */}
+        <AutonomiaBар level={project.automation_level} />
       </div>
 
       {/* Stage pipeline */}
-      <StudioCardShell tone="elevated">
-        <div className="p-4 space-y-3">
-          <p className="text-small font-medium text-lia-text-secondary uppercase tracking-wider">Pipeline</p>
-          <StagePipeline project={project} />
-        </div>
-      </StudioCardShell>
+      <div className="px-6 py-4 border-b border-lia-border-subtle overflow-x-auto">
+        <StagePipeline project={project} />
+      </div>
 
-      {/* Metrics grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <MetricCard icon={Users} label="Total" value={project.total_candidates} />
-        <MetricCard icon={CheckCircle2} label="Triados" value={project.candidates_screened} />
-        <MetricCard icon={UserCheck} label="Contactados" value={project.candidates_contacted} />
-        <MetricCard icon={UserCheck} label="Entrevistados" value={project.candidates_interviewed} />
-        <MetricCard icon={Handshake} label="Ofertas" value={project.candidates_offered} />
-        <MetricCard icon={BadgeCheck} label="Contratados" value={project.candidates_hired} highlight />
+      {/* Body: candidates + sidebar */}
+      <div className="flex flex-1 gap-0 overflow-hidden">
+        {/* Main: candidatos por etapa */}
+        <div className="flex-1 px-6 py-4 space-y-4 overflow-y-auto">
+          <p className="text-small font-semibold text-lia-text-tertiary uppercase tracking-wider">Candidatos por etapa</p>
+
+          {project.stages.map((stage) => {
+            const counts: Record<string, number> = {
+              sourcing: project.total_candidates,
+              screening: project.candidates_screened,
+              outreach: project.candidates_contacted,
+              interview: project.candidates_interviewed,
+              evaluation: project.candidates_interviewed,
+              offer: project.candidates_offered,
+              follow_up: 0,
+            }
+            const count = counts[stage.name] ?? 0
+            const isCurrent = stage.status === "in_progress"
+
+            return (
+              <StudioCardShell key={stage.name} tone="elevated">
+                <div className={cn("p-4 space-y-2", isCurrent && "ring-1 ring-lia-btn-primary-bg/30 rounded-lg")}>
+                  <div className="flex items-center gap-2">
+                    <span className={cn("text-small font-semibold",
+                      isCurrent ? "text-lia-btn-primary-bg" : "text-lia-text-primary"
+                    )}>
+                      {stage.label}
+                    </span>
+                    {count > 0 && (
+                      <span className="text-micro text-lia-text-secondary">{count} candidatos</span>
+                    )}
+                    {isCurrent && (
+                      <span className="ml-auto text-micro px-1.5 py-0.5 rounded bg-lia-btn-primary-bg/10 text-lia-btn-primary-bg font-medium">
+                        Etapa atual
+                      </span>
+                    )}
+                  </div>
+                  {stage.status === "pending" && (
+                    <p className="text-micro text-lia-text-tertiary">Aguardando etapa anterior</p>
+                  )}
+                  {(stage.status === "completed" || stage.status === "in_progress") && count === 0 && (
+                    <p className="text-micro text-lia-text-tertiary">Nenhum candidato nesta etapa</p>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Sidebar */}
+        <div className="w-64 shrink-0 border-l border-lia-border-subtle px-4 py-4 space-y-5 overflow-y-auto">
+          <div>
+            <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Agentes rodando</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-2 rounded-md bg-lia-bg-secondary">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                <Bot className="w-3.5 h-3.5 text-lia-text-secondary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-micro font-medium text-lia-text-primary truncate">Screener</p>
+                  <p className="text-micro text-lia-text-tertiary">Processando CVs</p>
+                </div>
+              </div>
+              <p className="text-micro text-lia-text-tertiary px-1">
+                {project.status === "active" ? "Agente ativo" : "Nenhum agente rodando"}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Atividade recente</p>
+            <ActivityFeed project={project} />
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom metrics bar */}
+      <div className="border-t border-lia-border-subtle px-6 py-3 flex items-center gap-6 bg-lia-bg-secondary text-small">
+        <span><span className="font-bold text-lia-text-primary">{project.total_candidates}</span> <span className="text-lia-text-secondary">candidatos</span></span>
+        <span><span className="font-bold text-lia-text-primary">{project.candidates_screened}</span> <span className="text-lia-text-secondary">triados</span></span>
+        <span><span className="font-bold text-lia-text-primary">{project.candidates_interviewed}</span> <span className="text-lia-text-secondary">em entrevista</span></span>
+        <span><span className="font-bold text-lia-text-primary">{project.candidates_hired}</span> <span className="text-lia-text-secondary">contratados</span></span>
+        <button type="button" className="ml-auto text-micro text-lia-btn-primary-bg hover:underline flex items-center gap-1"
+          onClick={() => window.location.href = `/pt/projetos/${project.id}/editar`}>
+          Editar projeto
+          <ChevronRight className="w-3 h-3" />
+        </button>
       </div>
     </div>
   )

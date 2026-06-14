@@ -4,7 +4,6 @@ import React from "react"
 import { Megaphone, Users, CheckCircle2, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { badgeStyles } from "@/lib/design-tokens"
-import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
 import { useCampaignsList, type CampaignItem, type CampaignStatus } from "@/hooks/jobs/useCampaignsList"
 
 // ── Status config ──────────────────────────────────────────────────────────
@@ -118,7 +117,7 @@ function CampaignCard({ campaign }: { campaign: CampaignItem }) {
     null
 
   return (
-    <StudioCardShell tone="elevated">
+    <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-paper shadow-sm">
       <div className="p-4 space-y-3">
         {/* Header */}
         <div className="flex items-start gap-3">
@@ -158,7 +157,7 @@ function CampaignCard({ campaign }: { campaign: CampaignItem }) {
           </button>
         </div>
       </div>
-    </StudioCardShell>
+    </div>
   )
 }
 
