@@ -109,7 +109,7 @@ export function ContratacaoHub() {
       setLocalNegotiation(null)
       setLocalRounds(null)
       queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.offerRules() })
-      dispatchSettingsUpdate({ section: "contratacao", source: "ui" })
+      dispatchSettingsUpdate({ actionId: "configure_contratacao", section: "contratacao", source: "ui", ts: Date.now() })
       toast.success("Configurações de contratação salvas")
     },
     onError: (err: Error) => {

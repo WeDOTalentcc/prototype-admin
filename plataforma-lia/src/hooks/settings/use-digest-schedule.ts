@@ -75,7 +75,7 @@ export function useDigestSchedule() {
     mutationFn: (body: DigestScheduleRequest) => putSchedule(USER_SCHEDULE_URL, body),
     onSuccess: (updated) => {
       queryClient.setQueryData(SETTINGS_QUERY_KEYS.digestSchedule(), updated)
-      dispatchSettingsUpdate({ section: "notifications", source: "ui" })
+      dispatchSettingsUpdate({ actionId: "configure_notifications", section: "notifications", source: "ui", ts: Date.now() })
     },
   })
 
@@ -87,7 +87,7 @@ export function useDigestSchedule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.digestSchedule() })
-      dispatchSettingsUpdate({ section: "notifications", source: "ui" })
+      dispatchSettingsUpdate({ actionId: "configure_notifications", section: "notifications", source: "ui", ts: Date.now() })
     },
   })
 
@@ -126,7 +126,7 @@ export function useCompanyDigestSchedule() {
     mutationFn: (body: DigestScheduleRequest) => putSchedule(COMPANY_SCHEDULE_URL, body),
     onSuccess: (updated) => {
       queryClient.setQueryData(SETTINGS_QUERY_KEYS.digestScheduleCompany(), updated)
-      dispatchSettingsUpdate({ section: "notifications", source: "ui" })
+      dispatchSettingsUpdate({ actionId: "configure_notifications", section: "notifications", source: "ui", ts: Date.now() })
     },
   })
 
