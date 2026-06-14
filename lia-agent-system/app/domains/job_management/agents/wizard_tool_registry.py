@@ -1966,6 +1966,8 @@ STAGE_TOOLS: dict[str, list[str]] = {
     "aguardando_aprovacao": ["dispatch_screening"],
     "publicada": ["publish_vacancy", "change_vacancy_status"],
     "ao_vivo": ["change_vacancy_status", "publish_vacancy"],
+    # Phase E — closed vacancy (encerrada): allow chat to reactivate or get info
+    "encerrada": ["change_vacancy_status", "generate_report"],
 }
 
 
