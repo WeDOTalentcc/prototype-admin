@@ -5,12 +5,12 @@ import { getAuthHeaders } from '@/lib/api/auth-headers'
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 interface RouteParams {
-  params: { candidateId: string }
+  params: Promise<{ candidateId: string }>
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { candidateId } = params
+    const { candidateId } = await params
     if (!candidateId) {
       return NextResponse.json({ error: 'candidateId obrigatório' }, { status: 400 })
     }
