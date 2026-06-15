@@ -70,10 +70,20 @@ _CANONICAL_SOURCES: dict[str, tuple[str, str]] = {
     "sourcing": ("app.domains.sourcing.agents.sourcing_tool_registry", "get_sourcing_tools"),
     "talent_pool": ("app.domains.talent_pool.agents.talent_pool_tool_registry", "get_talent_pool_tools"),
     "ui": ("app.domains.recruiter_assistant.agents.ui_tool_registry", "get_ui_tools"),
-    # autonomous = MENOR prioridade: re-implementa tools de outros dominios
-    # (_wrap_auto_*) p/ execucao autonoma. Em colisao de nome, o dominio
-    # CANONICO vence (first-wins na ordem). Fase 5 reconciliacao.
-    "autonomous": ("app.domains.autonomous.agents.autonomous_tool_registry", "get_autonomous_tools"),
+    # cv_screening_pipeline: read tools from pipeline_tool_registry (view_screening_results, etc.)
+    # Separado de cv_screening (candidate mutation tools) para dedup por nome.
+    "cv_screening_pipeline": (
+        "app.domains.cv_screening.agents.pipeline_tool_registry",
+        "get_pipeline_tools",
+    ),
+    # interview_scheduling: agendamento de entrevistas (schedule_interview, check_interviewer_availability)
+    "interview_scheduling": (
+        "app.domains.interview_scheduling.agents.interview_scheduling_tool_registry",
+        "get_interview_scheduling_tools",
+    ),
+    # autonomous REMOVIDO (P2-3, 2026-06-15): diretório app/domains/autonomous/ NÃO existe.
+    # Mantê-lo causava ModuleNotFoundError silencioso em toda carga do catálogo.
+    # Sensor: tests/contract/test_federation_spec_completeness.py::test_autonomous_not_in_canonical_sources
 }
 
 
@@ -187,8 +197,12 @@ _REGISTRY_SCOPE: dict[str, set[str]] = {
     "jobs_mgmt": {"job_table"},
     "analytics": {"job_table"},
     "workforce": {"job_table", "global"},
+    # cv_screening_pipeline: view_screening_results disponível em in_job e talent_funnel
+    "cv_screening_pipeline": {"in_job", "talent_funnel"},
+    # interview_scheduling: agendar entrevista disponivel em in_job
+    "interview_scheduling": {"in_job", "talent_funnel"},
     # wizard: roda como state machine SEPARADA (pre-router) -- federado nao usa.
-    # company_settings / policy / automation / ats_integration / autonomous:
+    # company_settings / policy / automation / ats_integration:
     # fora do escopo inicial (decisao #3 -- expandir PromptScope quando preciso).
 }
 
