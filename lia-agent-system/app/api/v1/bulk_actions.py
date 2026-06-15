@@ -249,7 +249,7 @@ company_id: str = Depends(require_company_id)):
                 # Compliance: per-candidate audit trail (Task #311)
                 try:
                     await audit_service.log_decision(
-                        company_id=getattr(current_user, "company_id", ""),
+                        company_id=company_id,
                         agent_name="bulk_actions_api",
                         decision_type=_DECISION_TYPE_MAP.get(request.new_status, "move_stage"),
                         action=f"bulk_update_status_{request.new_status}",
@@ -605,6 +605,8 @@ company_id: str = Depends(require_company_id)):
         else:
             logger.info(f"Saturation override active for bulk screening job {request.job_vacancy_id} by {current_user.id}")
 
+        triagem_svc = TriagemSessionService()
+
         for candidate_id in request.candidate_ids:
             try:
                 candidate = await repo.get_candidate_by_id(uuid.UUID(candidate_id))
@@ -623,7 +625,6 @@ company_id: str = Depends(require_company_id)):
                     ))
                     continue
 
-                triagem_svc = TriagemSessionService()
                 voice_mode = request.screening_type == "voice"
                 session = await triagem_svc.create_session(
                     db=repo.db,
@@ -884,7 +885,7 @@ company_id: str = Depends(require_company_id)):
                 # Compliance: per-candidate audit trail (Task #311)
                 try:
                     await audit_service.log_decision(
-                        company_id=getattr(current_user, "company_id", ""),
+                        company_id=company_id,
                         agent_name="bulk_actions_api",
                         decision_type="reject_candidate",
                         action="bulk_delete",
