@@ -15,6 +15,9 @@ from typing import Any
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.communication.repositories.digest_schedule_repository import (
+    DigestScheduleRepository,
+)
 from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
@@ -479,11 +482,38 @@ class WeeklyDigestService:
             skipped = 0
             errors = 0
 
+            _digest_repo = DigestScheduleRepository()
+
             for user in users:
                 prefs = getattr(user, "notification_preferences", None) or {}
                 if isinstance(prefs, dict) and prefs.get("weekly_report_enabled") is False:
                     skipped += 1
                     continue
+
+                # F5: verificar preferência de frequência antes de enviar
+                try:
+                    company_id = getattr(user, "company_id", None)
+                    if company_id:
+                        pref, _source = await _digest_repo.get_effective(
+                            db, company_id=company_id, user_id=str(user.id)
+                        )
+                        freq = pref.frequency if pref else "daily"
+                    else:
+                        freq = "daily"
+
+                    from app.domains.automation.services.automation_scheduler import AutomationScheduler
+                    if not AutomationScheduler._is_digest_due(freq):
+                        logger.debug(
+                            "[WeeklyDigest] Skipping user=%s frequency=%s (not due today)",
+                            user.id, freq,
+                        )
+                        skipped += 1
+                        continue
+                except Exception as freq_exc:
+                    logger.warning(
+                        "[WeeklyDigest] Could not check frequency for user=%s, sending anyway: %s",
+                        user.id, freq_exc,
+                    )
 
                 try:
                     await self.generate_and_deliver(
