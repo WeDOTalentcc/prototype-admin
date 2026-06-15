@@ -34,6 +34,7 @@ import { DashboardChatPanel } from "@/components/unified-chat"
 import { GlobalSearchModal } from "@/components/global-search-modal"
 import { useProactiveHintsInChat } from "@/hooks/proactive/use-proactive-hints-in-chat"  // WT-2022 (chat-first)
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
+import { ProjetosSection } from "@/components/pages/jobs/ProjetosSection"
 import {
   pathFromLabel,
   isDashboardPageLabel,
@@ -500,10 +501,20 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
         )
       case "Recrutar":
         return <PipelineOverviewPage />
+      case "Projetos":
+        return <ProjetosSection />
       case "Configurações":
         return <SettingsPageEnhanced />
       default:
-        return <CandidatesPage />
+        // Neutral fallback. NEVER default to <CandidatesPage /> (Funil): on the
+        // root "/" route DashboardApp renders WITHOUT `children`, so this switch
+        // is live, and handleNavigate sets `currentPage` synchronously BEFORE
+        // router.push commits — an unhandled label here would flash the Funil
+        // ("Quem você procura hoje?") on the way to another route. Labels are
+        // normalized upstream (normalizePageLabel), so this only guards labels
+        // that have a dedicated route page (e.g. "Bancos de Talentos", "Ajuda")
+        // rendered via `children`, plus unwired SPA labels like "Módulos".
+        return null
     }
   }
 
