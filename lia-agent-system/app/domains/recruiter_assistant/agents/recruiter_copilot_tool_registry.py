@@ -47,6 +47,8 @@ _FEDERATION_SPEC: list[tuple[str, str]] = [
     # view_screening_results: lê score WSI e detalhamento de triagem.
     # Fonte: pipeline_tool_registry (cv_screening_pipeline).
     ("cv_screening_pipeline", "view_screening_results"),
+    # BigFive/OCEAN per-candidato (P2-2) -- le lia_opinions.behavioral_analysis.ocean_traits
+    ("talent", "get_candidate_bigfive"),
     # --- Acoes de escrita (P1) — HITL/audit herdados do registry de origem ---
     # F3 (2026-06-09): update_candidate_stage e reject_candidate gateados via hitl_preflight
     ("cv_screening", "update_candidate_stage"),

@@ -976,6 +976,135 @@ async def _wrap_check_pool_health(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+
+@tool_handler("talent")
+async def _wrap_get_candidate_bigfive(**kwargs):
+    candidate_id = kwargs.get("candidate_id", "") or get_active_candidate()
+    company_id = kwargs.get("company_id", "")
+    logger.info(
+        "[talent_tools] get_candidate_bigfive called: candidate=%s company=%s",
+        candidate_id, company_id,
+    )
+    if not candidate_id:
+        return {
+            "success": False,
+            "needs_clarification": True,
+            "message": "Preciso do ID do candidato para buscar o perfil BigFive. Qual candidato?",
+        }
+    if not company_id:
+        return {
+            "success": False,
+            "error": True,
+            "message": "company_id nao disponivel — contexto de tenant ausente (multi-tenancy gate).",
+        }
+
+    try:
+        from app.domains.pipeline.repositories.lia_opinion_repository import (
+            LiaOpinionRepository,
+        )
+        async with AsyncSessionLocal() as db:
+            repo = LiaOpinionRepository(db)
+            opinions = await repo.get_by_candidate(
+                candidate_id=str(candidate_id),
+                company_id=str(company_id),
+                limit=3,
+            )
+
+        ocean_traits = None
+        wsi_classification = None
+        opinion_source = None
+        for op in opinions:
+            ba = op.get("behavioral_analysis") or {}
+            if isinstance(ba, dict):
+                traits = ba.get("ocean_traits")
+                if traits and isinstance(traits, dict) and len(traits) > 0:
+                    ocean_traits = traits
+                    wsi_classification = ba.get("wsi_classification")
+                    opinion_source = op.get("source")
+                    break
+
+        if not ocean_traits:
+            return {
+                "success": True,
+                "found": False,
+                "candidate_id": str(candidate_id),
+                "message": (
+                    "Dados BigFive nao disponiveis para este candidato. "
+                    "O candidato ainda nao realizou triagem WSI, ou a triagem foi muito recente."
+                ),
+            }
+
+        _TRAIT_LABELS_PT = {
+            "openness": "Abertura",
+            "conscientiousness": "Conscienciosidade",
+            "extraversion": "Extraversao",
+            "agreeableness": "Amabilidade",
+            "stability": "Estabilidade emocional",
+            "neuroticism": "Neuroticismo (inverso de estabilidade)",
+        }
+        _CANONICAL_ORDER = [
+            "openness", "conscientiousness", "extraversion", "agreeableness", "stability", "neuroticism"
+        ]
+        big_five_pct = {}
+        for trait in _CANONICAL_ORDER:
+            if trait in ocean_traits:
+                raw = ocean_traits[trait]
+                if isinstance(raw, float) and raw <= 1.0:
+                    big_five_pct[trait] = round(raw * 100)
+                else:
+                    big_five_pct[trait] = round(float(raw))
+
+        score_for_dominance = {
+            t: v for t, v in big_five_pct.items() if t != "neuroticism"
+        }
+        dominant_trait = max(score_for_dominance, key=lambda t: score_for_dominance[t]) if score_for_dominance else None
+
+        trait_lines = [
+            _TRAIT_LABELS_PT.get(t, t) + ": " + str(v) + "/100"
+            for t, v in big_five_pct.items()
+        ]
+        narrative = "; ".join(trait_lines)
+        if dominant_trait:
+            dominant_label = _TRAIT_LABELS_PT.get(dominant_trait, dominant_trait)
+            narrative_summary = (
+                "Traco dominante: " + dominant_label + " (" + str(big_five_pct[dominant_trait]) + "/100). "
+                "Perfil completo: " + narrative + "."
+            )
+        else:
+            narrative_summary = "Perfil BigFive: " + narrative + "."
+
+        return {
+            "success": True,
+            "found": True,
+            "candidate_id": str(candidate_id),
+            "big_five": big_five_pct,
+            "dominant_trait": dominant_trait,
+            "dominant_trait_label_pt": _TRAIT_LABELS_PT.get(dominant_trait, dominant_trait) if dominant_trait else None,
+            "wsi_classification": wsi_classification,
+            "source": opinion_source,
+            "narrative_hint": (
+                "BigFive/OCEAN reflete tracos de personalidade medidos durante triagem WSI. "
+                "Escala 0-100. Alto = traco forte. Stability = estabilidade emocional "
+                "(inverso de Neuroticism). Use para analise de fit comportamental e cultural."
+            ),
+            "message": "Perfil BigFive carregado para candidato " + str(candidate_id) + ". " + narrative_summary,
+        }
+
+    except ValueError as e:
+        return {"success": False, "error": True, "message": "Erro de tenant: " + str(e)}
+    except Exception as e:
+        logger.error(
+            "[talent_tools] get_candidate_bigfive error: %s", type(e).__name__,
+            exc_info=True,
+        )
+        return {
+            "success": False,
+            "error": True,
+            "needs_manual_review": True,
+            "message": "Erro ao buscar BigFive do candidato " + str(candidate_id) + ": " + type(e).__name__,
+        }
+
+
 TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         affects_candidate_decision=True,
@@ -1214,6 +1343,34 @@ TOOL_DEFINITIONS.append(
         },
         output_schema=ToolOutput,
         function=_wrap_generate_report,
+    )
+)
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="get_candidate_bigfive",
+        description=(
+            "Retorna os tracos de personalidade BigFive/OCEAN (Abertura, Conscienciosidade, "
+            "Extraversao, Amabilidade, Estabilidade emocional) medidos durante a triagem WSI "
+            "de um candidato. Escala 0-100. Util para analise de fit comportamental e cultural. "
+            "Use quando o recrutador perguntar sobre perfil de personalidade, tracos dominantes, "
+            "compatibilidade cultural, OCEAN ou BigFive de um candidato especifico."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "candidate_id": {
+                    "type": "string",
+                    "description": "UUID do candidato — use o ID retornado por search_candidates ou view_candidate_profile",
+                },
+            },
+            "required": ["candidate_id"],
+        },
+        touches_pii=False,
+        requires_company_id=True,
+        output_schema=ToolOutput,
+        function=_wrap_get_candidate_bigfive,
     )
 )
 
