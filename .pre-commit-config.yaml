@@ -86,3 +86,15 @@ repos:
         language: system
         pass_filenames: false
         verbose: true
+      - id: migration-merge-safety
+        name: REGRA 5 — no merge commits in migrations
+        description: |
+          BLOCKING on merge state (MERGE_HEAD + migration staged).
+          WARN on Alembic branch forks and migration numbering collisions.
+          Multi-agent parallel sessions create branch forks; this sensor
+          catches them before they corrupt the migration chain.
+          Fix: git merge --abort + rebase, or renumber migration.
+        entry: python3 lia-agent-system/scripts/check_migration_merge_safety.py
+        language: system
+        pass_filenames: false
+        verbose: true
