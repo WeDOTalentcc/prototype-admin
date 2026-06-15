@@ -73,6 +73,7 @@ def _build_wizard_state_summary(state: Any) -> str:
     lines.append(f"Stage atual: {stage}")
 
     field_map = {
+        "nome do recrutador": state.get("parsed_recruiter_name"),
         "título do cargo": state.get("parsed_title"),
         "senioridade": state.get("parsed_seniority"),
         "modelo de trabalho": state.get("parsed_model"),

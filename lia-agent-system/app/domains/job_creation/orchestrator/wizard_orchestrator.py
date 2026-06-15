@@ -131,9 +131,9 @@ _SYSTEM_PROMPT_BASE = (
     "seguir SEM divulgar a faixa, registre com set_salary(decline_to_disclose"
     "=true). Só trate o salário como resolvido após uma dessas ações.\n"
     "- Benefícios e remuneração variável: após confirmar o salário, OFEREÇA "
-    "proativamente os benefícios chamando suggest_benefits e, se a vaga tiver "
-    "componentes variáveis (PLR, bônus, comissão), chame "
-    "suggest_variable_compensation. Ambos buscam o catálogo da empresa e "
+    "proativamente os benefícios chamando suggest_benefits e também chame "
+    "suggest_variable_compensation para oferecer remuneração variável ao "
+    "recrutador. Ambos buscam o catálogo da empresa e "
     "preenchem a vaga automaticamente — o recrutador só confirma ou remove "
     "itens. Se o catálogo estiver vazio, oriente o recrutador a informar "
     "manualmente via chat.\n"
@@ -474,11 +474,20 @@ class WizardOrchestrator:
                 modes_block = f"\n\n## Capacidades de criação\n{rendered}"
         except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: bloco de modos é enriquecimento cosmético — falha não quebra o turn
             logger.debug("[WizardOrchestrator] creation modes block skipped: %s", type(exc).__name__)
+        # Recruiter identity — explicit so LLM never guesses the name
+        recruiter_name = str(state.get("parsed_recruiter_name") or "").strip()
+        recruiter_block = (
+            f"\n\n## Recrutador desta sessão\nVocê está auxiliando **{recruiter_name}**."
+            f" Use este nome ao se referir ao recrutador — nunca use outro nome."
+            if recruiter_name
+            else ""
+        )
         return (
             f"{_SYSTEM_PROMPT_BASE}"
             f"{modes_block}\n\n"
             f"## Estado real da vaga (ficha viva)\n{ficha}"
             f"{tenant_block}"
+            f"{recruiter_block}"
         )
 
     # ── Loop principal ─────────────────────────────────────────────────
