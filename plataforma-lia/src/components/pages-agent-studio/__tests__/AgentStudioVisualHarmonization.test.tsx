@@ -7,6 +7,19 @@
  */
 import { describe, expect, it, vi } from "vitest"
 import { act, render, waitFor } from "@testing-library/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import type { ReactElement } from "react"
+
+// DigitalTwinEmptyState chama useAiPersona() -> useQueryClient(), então qualquer
+// render de TwinsList precisa de um QueryClientProvider no contexto.
+function renderWithQueryClient(ui: ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  )
+}
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, vars?: Record<string, unknown>) => {
@@ -77,7 +90,7 @@ describe("Agent Studio — harmonização visual (Task #1044)", () => {
     vi.stubGlobal("fetch", fetchMock)
     let result: ReturnType<typeof render> | null = null
     await act(async () => {
-      result = render(<TwinsList onCreateTwin={() => {}} />)
+      result = renderWithQueryClient(<TwinsList onCreateTwin={() => {}} />)
     })
     const { container } = result!
     await waitFor(() => {
@@ -98,7 +111,7 @@ describe("Agent Studio — harmonização visual (Task #1044)", () => {
     vi.stubGlobal("fetch", fetchMock)
     let result: ReturnType<typeof render> | null = null
     await act(async () => {
-      result = render(<TwinsList onCreateTwin={() => {}} />)
+      result = renderWithQueryClient(<TwinsList onCreateTwin={() => {}} />)
     })
     const { container } = result!
     await waitFor(() => {
