@@ -144,7 +144,7 @@ export function JobScreeningSection({
                             if (typeof r === "string") return r.trim() || null
                             const s = r.requirement ?? r.text ?? r.name
                             return typeof s === "string" && s.trim() ? s.trim() : null
-                          }).filter(Boolean)
+                          }).filter((s): s is string => typeof s === "string")
                           const hasData = technicalSkills.length > 0 || behavioralSkills.length > 0 || responsibilitySkills.length > 0
 
                           if (!hasData) {
@@ -190,8 +190,8 @@ export function JobScreeningSection({
                                 <div>
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Responsabilidades</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {(responsibilitySkills as string[]).slice(0, 8).map((skill: string) => (
-                                      <Chip variant="warning" muted key={`screening-bucket-4-${skill}`} className="bg-status-warning/10 dark:bg-status-warning/30 text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
+                                    {responsibilitySkills.slice(0, 8).map((skill, idx) => (
+                                      <Chip variant="warning" muted key={`screening-bucket-4-${idx}`} className="bg-status-warning/10 dark:bg-status-warning/30 text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
                                         {skill}
                                       </Chip>
                                     ))}
