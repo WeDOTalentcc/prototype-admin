@@ -104,6 +104,21 @@ async def check_rail_a_capability(
                 "domain": "capability_map",
                 "source": "rail_a_gate",
             }
+        if cap.navigate_page:
+            _nav_params: dict[str, Any] = {"page": cap.navigate_page}
+            if cap.navigate_fallback:
+                _nav_params["fallback"] = cap.navigate_fallback
+            if cap.navigate_query:
+                _nav_params["query"] = cap.navigate_query
+            return {
+                "type": "message",
+                "content": "Abrindo a tela correspondente...",
+                "ui_action": _UI_ACTION_NAVIGATE,
+                "ui_action_params": _nav_params,
+                "confidence": 1.0,
+                "domain": "capability_map",
+                "source": "rail_a_gate",
+            }
         if cap.navigate_fallback:
             return {
                 "type": "message",
