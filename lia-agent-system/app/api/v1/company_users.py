@@ -74,7 +74,7 @@ async def get_global_search_settings(
         raise
     except Exception as e:
         logger.error(f"Error fetching global search settings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/global-search-settings", response_model=GlobalSearchSettingsResponse)
@@ -94,7 +94,7 @@ async def update_global_search_settings(
         raise
     except Exception as e:
         logger.error(f"Error updating global search settings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ==========================================
@@ -118,7 +118,7 @@ async def list_users(
         raise
     except Exception as e:
         logger.error(f"Error listing users: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/users", response_model=UserManagementResponse, status_code=201)
@@ -185,7 +185,7 @@ async def create_user(
         raise
     except Exception as e:
         logger.error(f"Error creating user: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/users/{user_id}", response_model=UserManagementResponse)
@@ -274,7 +274,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail="Invalid user ID format")
     except Exception as e:
         logger.error(f"Error updating user: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/users/{user_id}", status_code=204, response_model=None)
@@ -309,7 +309,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail="Invalid user ID format")
     except Exception as e:
         logger.error(f"Error deleting user: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/users/{user_id}/resend-invitation", response_model=None)
@@ -369,7 +369,7 @@ async def resend_invitation(
         raise HTTPException(status_code=400, detail="Invalid user ID format")
     except Exception as e:
         logger.error(f"Error resending invitation: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/users/list", response_model=CompanyUsersListResponse)
@@ -410,7 +410,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing company users: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ============================================================================
@@ -435,7 +435,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting catalog status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/smart-wizard-greeting", response_model=SmartWizardGreetingResponse)
@@ -549,6 +549,6 @@ Qual opção você prefere?"""
         raise
     except Exception as e:
         logger.error(f"Error getting smart wizard greeting: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

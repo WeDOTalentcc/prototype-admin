@@ -97,7 +97,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting trust center overview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{company_slug}/certifications", response_model=TrustCenterCertificationsResponse, summary="List public certifications")
@@ -145,7 +145,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting certifications: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{company_slug}/controls", response_model=TrustCenterControlsResponse, summary="Get public control status")
@@ -208,7 +208,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting controls: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{company_slug}/bias-audits", response_model=TrustCenterBiasAuditsResponse, summary="Get public bias audit reports")
@@ -253,7 +253,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting bias audits: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{company_slug}/subprocessors", response_model=SubprocessorListResponse, summary="List data subprocessors")
@@ -280,7 +280,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting subprocessors: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{company_slug}/resources", response_model=TrustCenterResourceListResponse, summary="List downloadable resources")
@@ -304,7 +304,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting resources: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{company_slug}/updates", response_model=TrustCenterUpdateListResponse, summary="Get compliance updates")
@@ -330,7 +330,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting updates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/settings", response_model=TrustCenterSettingsResponse, summary="Create trust center settings")
@@ -364,7 +364,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating trust center settings: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/settings", response_model=TrustCenterSettingsResponse, summary="Update trust center settings")
@@ -399,7 +399,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating trust center settings: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/settings", response_model=TrustCenterSettingsResponse, summary="Get trust center settings")
@@ -424,7 +424,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting trust center settings: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/resources", response_model=TrustCenterResourceResponse, summary="Add a resource")
@@ -443,7 +443,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating resource: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/subprocessors", response_model=SubprocessorResponse, summary="Add a subprocessor")
@@ -462,7 +462,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating subprocessor: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/updates", response_model=TrustCenterUpdateResponse, summary="Post an update")
@@ -485,4 +485,4 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating update: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

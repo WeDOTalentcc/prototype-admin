@@ -742,7 +742,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
         raise
     except Exception as e:
         logger.error(f"F11 report generation failed for session {session_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro ao gerar relatório F11: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/ranking/{job_vacancy_id}", summary="F11-6 — Ranking de candidatos por vaga", response_model=None)
@@ -829,7 +829,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"F11-6 vacancy ranking failed for {job_vacancy_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get(
@@ -888,7 +888,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"F11-6 candidate ranking failed for {candidate_id}/{job_vacancy_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ---------------------------------------------------------------------------

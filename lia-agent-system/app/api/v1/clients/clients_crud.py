@@ -98,7 +98,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting client: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get client: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{client_id}/stats", summary="Get client statistics", response_model=None)
@@ -133,7 +133,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting client stats: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get client statistics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("", status_code=201, summary="Create client", response_model=None)
@@ -178,7 +178,7 @@ company_id: str = Depends(require_company_id)):
         try:
             client = await repo.create(client_data)
         except RuntimeError as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail="Internal server error")
 
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created client: {client.name} (ID: {client.id})")
@@ -229,7 +229,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating client: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to create client: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{client_id}", summary="Update client", response_model=None)
@@ -266,7 +266,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating client: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to update client: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{client_id}/status", summary="Update client status", response_model=None)
@@ -304,7 +304,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating client status: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to update client status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{client_id}", summary="Delete client (soft delete)", response_model=None)
@@ -334,4 +334,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting client: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to delete client: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")

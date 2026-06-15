@@ -345,7 +345,7 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"❌ [CANDIDATE_INACTIVE] Error: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao processar candidato inativo: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -704,7 +704,7 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"❌ [CANDIDATE_NO_SHOW] Error: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao processar no-show do candidato: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -870,7 +870,7 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"❌ [OFFER_SENT] Error: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao processar envio de proposta: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -1087,7 +1087,7 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"❌ [CANDIDATE_HIRED] Error: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao processar contratação: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -1308,5 +1308,5 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"❌ [CANDIDATE_REJECTED] Error: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao processar rejeição: {str(e)}"
+            detail="Internal server error"
         )

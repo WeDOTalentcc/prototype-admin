@@ -225,7 +225,7 @@ company_id: str = Depends(require_company_id)) -> SkillConfirmationResponse:
         raise
     except Exception as e:
         logger.error(f"Error confirming skill: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/learning/confirm-responsibility", response_model=ResponsibilityConfirmationResponse)
@@ -266,7 +266,7 @@ company_id: str = Depends(require_company_id)) -> ResponsibilityConfirmationResp
         raise
     except Exception as e:
         logger.error(f"Error confirming responsibility: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/learning/context", response_model=LearningContextResponse)
@@ -293,7 +293,7 @@ company_id: str = Depends(require_company_id)) -> LearningContextResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting learning context: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/learning/job-outcome", response_model=JobOutcomeResponse)
@@ -342,7 +342,7 @@ company_id: str = Depends(require_company_id)) -> JobOutcomeResponse:
         raise
     except Exception as e:
         logger.error(f"Error recording job outcome: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/learning/outcome-insights", response_model=OutcomeInsightsResponse)
@@ -375,7 +375,7 @@ company_id: str = Depends(require_company_id)) -> OutcomeInsightsResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting outcome insights: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/learning/stage-feedback", response_model=StageFeedbackResponse)
@@ -418,7 +418,7 @@ company_id: str = Depends(require_company_id)) -> StageFeedbackResponse:
         raise
     except Exception as e:
         logger.error(f"Error recording stage feedback: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/learning/dashboard", response_model=LearningDashboardResponse)
@@ -445,7 +445,7 @@ company_id: str = Depends(require_company_id)) -> LearningDashboardResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting learning dashboard: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/learning/skills-deduplicated", response_model=SkillsDeduplicatedResponse)
@@ -467,4 +467,4 @@ company_id: str = Depends(require_company_id)) -> SkillsDeduplicatedResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting deduplicated skills: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

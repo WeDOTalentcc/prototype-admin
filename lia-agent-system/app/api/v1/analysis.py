@@ -56,7 +56,7 @@ async def analyze_candidates(request: AnalysisRequest, company_id: str = Depends
         raise
     except Exception as e:
         logger.error(f"Analysis failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/analysis/archetypes", response_model=None)

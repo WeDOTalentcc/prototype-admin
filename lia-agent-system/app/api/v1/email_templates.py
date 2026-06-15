@@ -167,7 +167,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing email templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/categories/list", response_model=None)
@@ -187,7 +187,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing email template categories: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{template_id}", response_model=EmailTemplateResponse)
@@ -230,7 +230,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting email template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("", response_model=EmailTemplateResponse, status_code=201)
@@ -320,7 +320,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating email template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{template_id}", response_model=EmailTemplateResponse)
@@ -414,7 +414,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error updating email template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{template_id}", response_model=None)
@@ -459,7 +459,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error deleting email template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/preview", response_model=EmailPreviewResponse)
@@ -491,7 +491,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error previewing email: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{template_id}/preview", response_model=TemplatePreviewByIdResponse)
@@ -540,7 +540,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error previewing template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{template_id}/send", response_model=EmailSendResponse)
@@ -628,7 +628,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error sending email: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/logs/all", response_model=EmailLogListResponse)
@@ -678,7 +678,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing email logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed-defaults", response_model=DefaultTemplatesResponse)
@@ -723,7 +723,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error seeding default templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/clone-for-client/{client_id}", response_model=None)
@@ -754,7 +754,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error cloning templates for client {client_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed-system-templates", response_model=None)
@@ -785,7 +785,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error seeding system templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/generate", response_model=TemplateGenerateResponse)
@@ -897,7 +897,7 @@ Responda APENAS com o JSON, sem texto adicional."""
             logger.error(f"Failed to parse AI response as JSON: {response_text}")
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to parse AI response: {str(e)}",
+                detail="Internal server error",
             )
 
         return TemplateGenerateResponse(
@@ -913,7 +913,7 @@ Responda APENAS com o JSON, sem texto adicional."""
         raise
     except Exception as e:
         logger.error(f"Error generating template with AI: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/adjust", response_model=TemplateAdjustResponse)
@@ -987,7 +987,7 @@ Responda APENAS com o JSON, sem texto adicional."""
             logger.error(f"Failed to parse AI response as JSON: {response_text}")
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to parse AI response: {str(e)}",
+                detail="Internal server error",
             )
 
         subject = adjusted_data.get("subject")
@@ -1007,6 +1007,6 @@ Responda APENAS com o JSON, sem texto adicional."""
         raise
     except Exception as e:
         logger.error(f"Error adjusting template with AI: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

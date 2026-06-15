@@ -156,7 +156,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing conversations: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{conversation_id}", response_model=ConversationDetailResponse)
@@ -234,7 +234,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting conversation: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("", response_model=ConversationResponse)
@@ -278,7 +278,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error creating conversation: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{conversation_id}/messages", response_model=MessageResponse)
@@ -320,7 +320,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error adding message: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{conversation_id}/summary", response_model=dict[str, Any])
@@ -351,7 +351,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error updating summary: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 
@@ -411,7 +411,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error deleting conversation: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{conversation_id}/archive", response_model=None)
@@ -439,7 +439,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error archiving conversation: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{conversation_id}/clear", response_model=None)
@@ -467,7 +467,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error clearing conversation: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{conversation_id}/context", response_model=None)
@@ -494,6 +494,6 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting conversation context: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

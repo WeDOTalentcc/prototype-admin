@@ -104,7 +104,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting pending actions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/history/{company_id}", response_model=list[ActionResponse])
@@ -140,7 +140,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting action history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/accept/{action_id}", response_model=AcceptRejectResponse)
@@ -164,7 +164,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error accepting action: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/reject/{action_id}", response_model=AcceptRejectResponse)
@@ -187,7 +187,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error rejecting action: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/feed/{company_id}", response_model=list[ProactiveFeedItem])
@@ -228,7 +228,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting proactive feed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/trigger-monitor/{company_id}", response_model=MonitorTriggerResponse)
@@ -261,7 +261,7 @@ async def trigger_pipeline_monitor(company_id: Annotated[str, Path(pattern=DUAL_
         raise
     except Exception as e:
         logger.error(f"Error triggering monitor: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/plan-templates", response_model=list[PlanTemplateResponse])
@@ -288,7 +288,7 @@ async def list_plan_templates(company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing templates: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # D8 — Proactive Insights para Kanban

@@ -203,7 +203,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Batch evaluation failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Batch evaluation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 def _normalize_name(name: str) -> str:

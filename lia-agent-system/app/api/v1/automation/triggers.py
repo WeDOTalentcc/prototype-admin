@@ -106,7 +106,7 @@ async def get_automation_triggers(company_id: str = Depends(require_company_id))
         raise
     except Exception as e:
         logger.error(f"Error getting triggers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/triggers/{trigger_id}", response_model=TriggerUpdateResponse)
@@ -131,7 +131,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating trigger: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/check", response_model=TriggerCheckResponse)
@@ -153,7 +153,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error checking triggers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/status", response_model=AutomationStatusResponse)
@@ -179,7 +179,7 @@ async def get_automation_status(company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting automation status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/stage-suggestions", response_model=StageSuggestionsResponse)
@@ -248,7 +248,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error getting stage suggestions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/execute-action", response_model=ExecuteActionResponse)
@@ -469,7 +469,7 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"Error executing action '{request.action_type}': {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao executar ação '{request.action_type}': {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -544,7 +544,7 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"❌ [SCREEN_CANDIDATE] Error: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao executar triagem: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -713,7 +713,7 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"Error triggering event '{request.event_type}': {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao disparar evento '{request.event_type}': {str(e)}"
+            detail="Internal server error"
         )
 
 

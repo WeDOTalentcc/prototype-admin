@@ -104,7 +104,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateListResponse:
         raise
     except Exception as e:
         logger.error(f"Error listing default templates: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to list default templates: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{template_id}", response_model=None)
@@ -124,7 +124,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting default template: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get default template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=None)
@@ -155,7 +155,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating default template: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to create default template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{template_id}", response_model=None)
@@ -197,7 +197,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating default template: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to update default template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{template_id}", response_model=None)
@@ -224,7 +224,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting default template: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to delete default template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{template_id}/duplicate", response_model=None)
@@ -251,7 +251,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     except Exception as e:
         await db.rollback()
         logger.error(f"Error duplicating default template: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to duplicate default template: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed", response_model=None)
@@ -276,4 +276,4 @@ company_id: str = Depends(require_company_id)) -> SeedTemplatesResponse:
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding default templates: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to seed default templates: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -259,7 +259,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         raise
     except Exception as e:
         logger.error(f"Error listing compensation policies: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/", response_model=CompensationPolicyResponse)
@@ -293,7 +293,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating compensation policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{policy_id}", response_model=CompensationPolicyResponse)
@@ -315,7 +315,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting compensation policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{policy_id}", response_model=CompensationPolicyResponse)
@@ -350,7 +350,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating compensation policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{policy_id}", response_model=None)
@@ -387,7 +387,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting compensation policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed-defaults", response_model=None)
@@ -431,7 +431,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding default policies: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/policy-types/list", response_model=None)

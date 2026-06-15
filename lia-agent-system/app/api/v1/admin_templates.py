@@ -116,7 +116,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing system templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("", response_model=SystemTemplateResponse, status_code=201)
@@ -153,7 +153,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating system template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{template_id}", response_model=SystemTemplateResponse)
@@ -176,7 +176,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail="Invalid template ID format")
     except Exception as e:
         logger.error(f"Error getting system template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{template_id}", response_model=SystemTemplateResponse)
@@ -214,7 +214,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating system template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{template_id}", response_model=None)
@@ -241,7 +241,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting system template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{template_id}/publish", response_model=PublishResult)
@@ -285,6 +285,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error publishing template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

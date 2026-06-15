@@ -91,7 +91,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/comparison", response_model=None)
@@ -113,7 +113,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating comparison: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/candidate/{candidate_id}", response_model=None)
@@ -172,7 +172,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error sending daily briefing: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/weekly/send", response_model=None)
@@ -205,7 +205,7 @@ async def send_weekly_report(request: WeeklyReportSendRequest, company_id: str =
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error sending weekly report: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/monthly/send", response_model=None)
@@ -238,7 +238,7 @@ async def send_monthly_report(request: MonthlyReportSendRequest, company_id: str
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error sending monthly report: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/preview/{report_type}", response_class=HTMLResponse, response_model=None)
@@ -270,7 +270,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/preview/{report_type}/json", response_model=None)
@@ -297,6 +297,6 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

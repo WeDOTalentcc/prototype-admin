@@ -156,7 +156,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing recruitment email templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/stages", response_model=list[StageInfo])
@@ -238,7 +238,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error getting template for stage {stage_name}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{template_id}", response_model=TemplateResponse)
@@ -261,7 +261,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting template {template_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{template_id}", response_model=TemplateResponse)
@@ -300,7 +300,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating template {template_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed", response_model=SeedResponse)
@@ -326,7 +326,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error seeding templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/clone", response_model=SeedResponse)
@@ -351,7 +351,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error cloning templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{template_id}/preview", response_model=TemplatePreviewResponse)
@@ -386,7 +386,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error previewing template {template_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/stage/{stage_name}/preview", response_model=TemplatePreviewResponse)
@@ -431,7 +431,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error previewing stage template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{template_id}", response_model=None)
@@ -467,6 +467,6 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting template {template_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

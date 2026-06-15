@@ -143,7 +143,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error generating public link: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/job-vacancies/{vacancy_id}/share-link", response_model=ShareLinkResponse)
@@ -192,7 +192,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting share link: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ─── Public routes (no auth) ──────────────────────────────────────────────────
@@ -283,7 +283,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching public vacancy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router_public.post("/p/{slug}/apply", response_model=PublicApplicationResponse)

@@ -383,7 +383,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error processing application: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro ao processar candidatura: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/resubmit/{vacancy_id}", response_model=ResubmitResponseDTO)
@@ -553,7 +553,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error processing CV resubmission: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro ao processar reenvio: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/feedback/{vacancy_id}/analytics", response_model=FeedbackAnalyticsDTO)
@@ -585,7 +585,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting feedback analytics: {e}")
-        raise HTTPException(status_code=500, detail=f"Erro ao obter analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/feedback/{feedback_id}/track-click", response_model=None)
@@ -610,7 +610,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error tracking click: {e}")
-        raise HTTPException(status_code=500, detail=f"Erro ao registrar clique: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 

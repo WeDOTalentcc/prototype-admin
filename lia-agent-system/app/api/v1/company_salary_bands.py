@@ -147,7 +147,7 @@ async def get_band_map(
         return await repo.get_band_map(eff)
     except Exception as e:
         logger.error(f"Error building salary band map: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/resolve", response_model=SalaryBandResponse | None)
@@ -180,7 +180,7 @@ async def resolve_band(
         return _to_response(b) if b else None
     except Exception as e:
         logger.error(f"Error resolving salary band: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/", response_model=list[SalaryBandResponse])
@@ -200,7 +200,7 @@ async def list_salary_bands(
         return [_to_response(b) for b in bands]
     except Exception as e:
         logger.error(f"Error listing salary bands: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/", response_model=SalaryBandResponse)
@@ -224,7 +224,7 @@ async def create_salary_band(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating salary band: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{band_id}", response_model=SalaryBandResponse)
@@ -251,7 +251,7 @@ async def update_salary_band(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating salary band: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{band_id}", response_model=None)
@@ -275,7 +275,7 @@ async def delete_salary_band(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting salary band: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed-defaults", response_model=list[SalaryBandResponse])
@@ -295,4 +295,4 @@ async def seed_defaults(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding salary bands: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

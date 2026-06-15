@@ -168,7 +168,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error creating approval request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("", response_model=list[ApprovalRequestResponse])
@@ -210,7 +210,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing approval requests: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/pending", response_model=list[ApprovalRequestResponse])
@@ -232,7 +232,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing pending approvals: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{approval_id}", response_model=ApprovalRequestResponse)
@@ -254,7 +254,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting approval request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{approval_id}/approve", response_model=ApprovalRequestResponse)
@@ -346,7 +346,7 @@ async def approve_request(
         raise
     except Exception as e:
         logger.error(f"Error approving request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{approval_id}/reject", response_model=ApprovalRequestResponse)
@@ -435,7 +435,7 @@ async def reject_request(
         raise
     except Exception as e:
         logger.error(f"Error rejecting request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{approval_id}/cancel", response_model=ApprovalRequestResponse)
@@ -487,7 +487,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error cancelling request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 async def send_approval_request_email(db, approval: ApprovalRequest, email_svc: "EmailService" = None):

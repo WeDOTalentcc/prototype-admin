@@ -229,7 +229,7 @@ company_id: str = Depends(require_company_id)) -> StartSessionResponse:
         raise
     except Exception as e:
         logger.error("[GEMINI VOICE] Start session error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 _active_ws_sessions: dict[str, bool] = {}

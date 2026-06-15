@@ -168,6 +168,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error persisting revealed contact: {e}")
-        raise HTTPException(status_code=500, detail=f"Persist failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 

@@ -152,7 +152,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting screening config: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/vagas/{job_id}/screening-config", response_model=ScreeningConfigResponse)
@@ -224,7 +224,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error updating screening config: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/vagas/{job_id}/screening-status", response_model=None)
@@ -293,4 +293,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating screening status: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

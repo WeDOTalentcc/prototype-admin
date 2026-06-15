@@ -79,7 +79,7 @@ async def start_session(request: StartSessionRequest, company_id: str = Depends(
         raise
     except Exception as e:
         logger.error(f"Error starting session: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/session/stage", response_model=None)
@@ -98,7 +98,7 @@ async def track_stage_change(request: StageChangeRequest, company_id: str = Depe
         raise
     except Exception as e:
         logger.error(f"Error tracking stage change: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/session/field", response_model=None)
@@ -120,7 +120,7 @@ async def track_field_update(request: FieldUpdateRequest, company_id: str = Depe
         raise
     except Exception as e:
         logger.error(f"Error tracking field update: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/session/suggestion", response_model=None)
@@ -140,7 +140,7 @@ async def track_suggestion(request: SuggestionTrackRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error tracking suggestion: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/session/complete", response_model=None)
@@ -165,7 +165,7 @@ async def complete_session(request: CompleteSessionRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error completing session: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/metrics/{company_id}", response_model=None)
@@ -187,7 +187,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting company metrics: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/metrics/{company_id}/recruiter/{recruiter_id}", response_model=None)
@@ -211,7 +211,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting recruiter metrics: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/stages/{company_id}", response_model=None)
@@ -233,7 +233,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting stage breakdown: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/suggestions/{company_id}", response_model=None)
@@ -255,7 +255,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting suggestion effectiveness: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/kpis", response_model=None)
@@ -302,6 +302,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting dashboard data: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

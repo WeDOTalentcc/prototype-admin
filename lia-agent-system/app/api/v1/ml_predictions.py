@@ -139,7 +139,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/predict/salary", response_model=SalaryPredictionResponse)
@@ -223,7 +223,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/predict/skill-success", response_model=SkillSuccessResponse)
@@ -270,7 +270,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/insights/hiring", response_model=HiringInsightsResponse)
@@ -304,7 +304,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Insights failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/models", response_model=None)

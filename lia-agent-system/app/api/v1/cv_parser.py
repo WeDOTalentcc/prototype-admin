@@ -270,7 +270,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"CV upload failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"CV processing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/parse-text", response_model=CVUploadResponse)
@@ -322,7 +322,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"CV text parsing failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"CV text processing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/confirm", response_model=CVConfirmResponse)
@@ -493,7 +493,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"CV confirmation failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to create candidate: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/formats", response_model=SupportedFormatsResponse)
@@ -602,4 +602,4 @@ _company_gate: str = Depends(require_company_id_strict_match("form.company_id"))
         raise
     except Exception as e:
         logger.error(f"upload-and-screen error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro ao processar CV: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")

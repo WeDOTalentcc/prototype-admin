@@ -381,7 +381,7 @@ async def generate_questions(
         raise
     except Exception as e:
         logger.error(f"Failed to generate questions: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to generate questions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/analyze-response", response_model=AnalyzeResponseResponse)
@@ -450,7 +450,7 @@ async def analyze_response(
         raise
     except Exception as e:
         logger.error(f"Failed to analyze response: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to analyze response: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/calculate-wsi", response_model=CalculateWSIResponse)
@@ -523,7 +523,7 @@ async def calculate_wsi(
         raise
     except Exception as e:
         logger.error(f"Failed to calculate WSI: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to calculate WSI: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/sessions/{session_id}", response_model=None)
@@ -577,7 +577,7 @@ async def get_session(
         raise
     except Exception as e:
         logger.error(f"Failed to get session: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get session: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/results/candidate/{candidate_id}", response_model=None)
@@ -613,7 +613,7 @@ async def get_candidate_results(
         raise
     except Exception as e:
         logger.error(f"Failed to get candidate results: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get candidate results: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/results/{result_id}/details", response_model=None)
@@ -709,7 +709,7 @@ async def get_result_details(
         raise
     except Exception as e:
         logger.error(f"Failed to get result details: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get result details: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/ranking/{job_vacancy_id}", response_model=None)
@@ -759,7 +759,7 @@ async def get_vacancy_ranking(
         raise
     except Exception as e:
         logger.error(f"Failed to get vacancy ranking: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get vacancy ranking: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/candidate/{candidate_id}/ranking/{job_vacancy_id}", response_model=None)
@@ -788,7 +788,7 @@ async def get_candidate_ranking_in_vacancy(
         raise
     except Exception as e:
         logger.error(f"Failed to get candidate ranking: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get candidate ranking: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ============================================================================
@@ -857,7 +857,7 @@ async def start_voice_screening(
         raise
     except Exception as e:
         logger.error(f"Failed to start voice screening: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to start voice screening: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/voice-screening/{session_id}", response_model=VoiceScreeningStatusResponse)
@@ -881,7 +881,7 @@ async def get_voice_screening_status(
         raise
     except Exception as e:
         logger.error(f"Failed to get voice screening status: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get voice screening status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/voice-screening/by-call/{call_id}", response_model=None)
@@ -905,7 +905,7 @@ async def get_voice_screening_by_call(
         raise
     except Exception as e:
         logger.error(f"Failed to get voice screening: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get voice screening: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ============================================================================
@@ -1262,7 +1262,7 @@ Responda APENAS com JSON válido:
         raise
     except Exception as e:
         logger.error(f"Failed to generate screening questions: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to generate screening questions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/results/{result_id}/trigger-feedback", response_model=None)
@@ -1353,7 +1353,7 @@ async def trigger_post_screening_feedback(
         raise
     except Exception as e:
         logger.error(f"Failed to trigger post-screening feedback: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to trigger feedback: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/results/{result_id}/feedback-status", response_model=None)
@@ -1422,7 +1422,7 @@ async def get_feedback_status(
         raise
     except Exception as e:
         logger.error(f"Failed to get feedback status: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get feedback status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/candidates/{job_vacancy_id}/scores", response_model=None)
@@ -1457,4 +1457,4 @@ async def get_candidates_wsi_scores(
         raise
     except Exception as e:
         logger.error(f"Failed to get candidates WSI scores: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get candidates WSI scores: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")

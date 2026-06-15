@@ -232,7 +232,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Calibration feedback failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Calibration feedback failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/calibration/start", response_model=CalibrationStartResponse)
@@ -313,7 +313,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Start calibration failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Start calibration failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/calibration/{session_id}/status", response_model=CalibrationStatusResponse)
@@ -389,7 +389,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Get calibration status failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Get calibration status failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/vacancy/goal-check", response_model=VacancyGoalResponse)
@@ -428,7 +428,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Vacancy goal check failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Vacancy goal check failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class AddCandidatesToVacancyRequest(WeDoBaseModel):
@@ -645,7 +645,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Add candidates to vacancy failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Add candidates to vacancy failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/vacancy/{vacancy_id}/candidates/count", response_model=None)
@@ -684,4 +684,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Get vacancy candidates count failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Get vacancy candidates count failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -204,7 +204,7 @@ async def register_webhook(
         raise
     except Exception as e:
         logger.error(f"Error registering webhook: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/", response_model=WebhookListResponse)
@@ -262,7 +262,7 @@ async def list_webhooks(
         raise
     except Exception as e:
         logger.error(f"Error listing webhooks: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{webhook_id}", response_model=WebhookResponse)
@@ -308,7 +308,7 @@ async def get_webhook(
         raise
     except Exception as e:
         logger.error(f"Error getting webhook: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.patch("/{webhook_id}", response_model=WebhookResponse)
@@ -370,7 +370,7 @@ async def update_webhook(
         raise
     except Exception as e:
         logger.error(f"Error updating webhook: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{webhook_id}", response_model=None)
@@ -404,7 +404,7 @@ async def delete_webhook(
         raise
     except Exception as e:
         logger.error(f"Error deleting webhook: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{webhook_id}/test", response_model=WebhookTestResponse)
@@ -446,7 +446,7 @@ async def test_webhook(
         raise
     except Exception as e:
         logger.error(f"Error testing webhook: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{webhook_id}/logs", response_model=WebhookLogsResponse)
@@ -496,7 +496,7 @@ async def get_webhook_logs(
         raise
     except Exception as e:
         logger.error(f"Error getting webhook logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/events/available", response_model=list[WebhookEventResponse])

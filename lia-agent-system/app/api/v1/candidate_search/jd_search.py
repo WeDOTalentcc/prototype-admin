@@ -153,7 +153,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Job description search failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/candidates/refine", response_model=SearchResponseDTO)
@@ -235,7 +235,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Refine failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/candidates/local", response_model=SearchResponseDTO)
@@ -288,7 +288,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Local search failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class ParseQueryRequest(WeDoBaseModel):

@@ -226,7 +226,7 @@ async def list_active_components(
         raise
     except Exception as e:
         logger.error(f"Error listing active compensation components: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/", response_model=list[CompensationComponentResponse])
@@ -245,7 +245,7 @@ async def list_components(
         return [_to_response(c) for c in comps]
     except Exception as e:
         logger.error(f"Error listing compensation components: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/", response_model=CompensationComponentResponse)
@@ -275,7 +275,7 @@ async def create_component(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating compensation component: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{component_id}", response_model=CompensationComponentResponse)
@@ -318,7 +318,7 @@ async def update_component(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating compensation component: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{component_id}", response_model=None)
@@ -343,7 +343,7 @@ async def delete_component(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting compensation component: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed-defaults", response_model=None)
@@ -361,4 +361,4 @@ async def seed_defaults(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding compensation defaults: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

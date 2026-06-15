@@ -108,7 +108,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing policies: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/categories", response_model=CategoryListResponse)
@@ -126,7 +126,7 @@ async def list_categories(db: AsyncSession = Depends(get_db), company_id: str = 
         raise
     except Exception as e:
         logger.error(f"Error listing categories: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{policy_id}", response_model=PolicyWithHistoryResponse)
@@ -157,7 +157,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting policy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{policy_id}", response_model=PolicyResponse)
@@ -206,7 +206,7 @@ async def update_policy(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating policy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{policy_id}/history", response_model=PolicyAuditLogListResponse)
@@ -234,7 +234,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting policy history: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed", response_model=SeedPoliciesResponse)
@@ -259,6 +259,6 @@ async def seed_default_policies(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding policies: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

@@ -110,7 +110,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating consent version: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get(
@@ -149,7 +149,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing consent versions: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get(
@@ -180,7 +180,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting current consent version: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get(
@@ -211,7 +211,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting consent version: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post(
@@ -277,7 +277,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating consent event: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get(
@@ -326,7 +326,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing consent events: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get(
@@ -402,7 +402,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting subject consent history: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post(
@@ -481,7 +481,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error revoking consent: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/stats", response_model=ConsentStats, summary="Get consent statistics")
@@ -549,6 +549,6 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting consent stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

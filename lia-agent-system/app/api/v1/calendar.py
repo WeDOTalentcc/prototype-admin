@@ -96,7 +96,7 @@ async def check_availability(request: AvailabilityRequest, company_id: str = Dep
         raise
     except Exception as e:
         logger.error(f"Error checking availability: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/find-meeting-times", response_model=list[dict], dependencies=[Depends(check_graph_configured)])
@@ -121,7 +121,7 @@ async def find_meeting_times(request: FindMeetingTimeRequest, company_id: str = 
         raise
     except Exception as e:
         logger.error(f"Error finding meeting times: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/schedule-interview", response_model=dict)
@@ -186,7 +186,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error scheduling interview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class CancelInterviewResponse(BaseModel):
@@ -217,7 +217,7 @@ async def cancel_interview(request: CancelInterviewRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error cancelling interview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/reschedule-interview", response_model=dict, dependencies=[Depends(check_graph_configured)])
@@ -244,7 +244,7 @@ async def reschedule_interview(request: RescheduleInterviewRequest, company_id: 
         raise
     except Exception as e:
         logger.error(f"Error rescheduling interview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ---------------------------------------------------------------------------
@@ -333,7 +333,7 @@ async def google_check_availability(request: GoogleAvailabilityRequest, company_
         raise
     except Exception as e:
         logger.error("Error checking Google Calendar availability: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class GoogleScheduleInterviewResponse(BaseModel):
@@ -364,7 +364,7 @@ async def google_schedule_interview(request: GoogleScheduleInterviewRequest, com
         raise
     except Exception as e:
         logger.error("Error scheduling Google Calendar interview: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class GoogleCancelInterviewResponse(BaseModel):
@@ -392,7 +392,7 @@ async def google_cancel_interview(request: GoogleCancelInterviewRequest, company
         raise
     except Exception as e:
         logger.error("Error cancelling Google Calendar interview: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ---------------------------------------------------------------------------
@@ -542,7 +542,7 @@ async def google_oauth_callback(
         raise
     except Exception as e:
         logger.error("Error in Google OAuth callback: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ---------------------------------------------------------------------------
@@ -719,7 +719,7 @@ async def microsoft_oauth_callback(
         raise
     except Exception as e:
         logger.error("Error in Microsoft OAuth callback: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class MicrosoftOAuthStatusResponse(BaseModel):
@@ -753,7 +753,7 @@ async def microsoft_oauth_status(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     if creds and creds.is_active:
         return {
@@ -810,7 +810,7 @@ async def google_oauth_status(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     if creds and creds.is_active:
         return {

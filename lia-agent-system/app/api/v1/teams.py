@@ -680,7 +680,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error retrieving audit logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error retrieving audit logs: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/messages", response_model=None)
@@ -810,7 +810,7 @@ async def receive_teams_message(
         raise
     except Exception as e:
         logger.error(f"Error processing Teams message: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 router.add_api_route(
@@ -1002,7 +1002,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error sending proactive notification: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 def _create_notification_card(notification_type: str, data: dict[str, Any]) -> dict[str, Any]:
@@ -1077,7 +1077,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"[Teams] proactivity check error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/proactive/new-candidate", response_model=None)
@@ -1106,7 +1106,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"[Teams] notify_new_candidate error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/proactive/screening-complete", response_model=None)
@@ -1139,7 +1139,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"[Teams] notify_screening_complete error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/proactive/daily-digest", response_model=None)
 async def send_daily_digest(

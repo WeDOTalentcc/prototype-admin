@@ -428,7 +428,7 @@ async def process_queue(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN
         raise
     except Exception as e:
         logger.error(f"Error processing queue: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/job-vacancies/{job_id}/unlock-pipeline", response_model=UnlockPipelineResponse, tags=["saturation"])

@@ -210,7 +210,7 @@ company_id: str = Depends(require_company_id)) -> OrchestratedJobChatResponse:
         logger.error(f"[JobChat] Error: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Error processing job chat: {str(e)}"
+            detail="Internal server error"
         )
 
 @router.get("/orchestrator/job-chat/intents", response_model=None)

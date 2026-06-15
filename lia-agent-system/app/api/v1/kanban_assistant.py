@@ -115,7 +115,7 @@ async def kanban_assistant(request: KanbanAssistantRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Kanban assistant failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class StageMoveContext(BaseModel):

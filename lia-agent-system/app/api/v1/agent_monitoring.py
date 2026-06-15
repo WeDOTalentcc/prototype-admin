@@ -616,7 +616,7 @@ async def get_execution_reasoning(
     except Exception as exc:
         raise HTTPException(
             status_code=500,
-            detail=f"Reasoning payload corrompido (shape divergente): {exc}",
+            detail="Internal server error",
         )
 
     # Aggregate data_fields_accessed across all steps (LGPD audit summary).

@@ -150,7 +150,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing screening questions: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/company/screening-questions", response_model=ScreeningQuestionResponse)
@@ -233,7 +233,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error creating screening question: {e}", exc_info=True)
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/company/screening-questions/{question_id}", response_model=ScreeningQuestionResponse)
@@ -311,7 +311,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error updating screening question: {e}", exc_info=True)
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/company/screening-questions/{question_id}", response_model=None)
@@ -347,7 +347,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error deleting screening question: {e}", exc_info=True)
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/company/screening-questions/reorder", response_model=None)
@@ -375,7 +375,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error reordering screening questions: {e}", exc_info=True)
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/company/screening-questions/seed", response_model=None)
@@ -433,7 +433,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error seeding screening questions: {e}", exc_info=True)
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/company/screening-questions/categories", response_model=CategoriesResponse)

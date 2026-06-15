@@ -447,7 +447,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error testing custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Test execution failed: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ── Q4.1 Sandbox dry-run (2026-05-29) ─────────────────────────────────────────
@@ -559,7 +559,7 @@ async def dry_run_custom_agent(
         raise
     except Exception as e:
         logger.error("Error in dry-run for custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Dry-run failed: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{agent_id}/execute", response_model=ExecuteCustomAgentResponse)
@@ -855,7 +855,7 @@ company_id: str = Depends(require_company_id)):
                 )
         except Exception as _wh_err:
             logger.warning("[Webhook] execution.failed dispatch error: %s", _wh_err)
-        raise HTTPException(status_code=500, detail=f"Execution failed: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{agent_id}/publish", response_model=MarketplaceListingResponse)
@@ -1761,7 +1761,7 @@ Responda APENAS com o JSON, sem texto adicional."""
         raise
     except Exception as e:
         logger.error("Error generating agent config: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro ao gerar configuracao: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{agent_id}/clone", summary="Clone an existing agent")

@@ -308,7 +308,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error importing candidates to staging: {e}")
-        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class PromoteCandidateResponse(BaseModel):
@@ -740,6 +740,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error promoting candidate: {e}")
-        raise HTTPException(status_code=500, detail=f"Promotion failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 

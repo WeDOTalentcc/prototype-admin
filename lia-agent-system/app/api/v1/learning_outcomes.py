@@ -100,7 +100,7 @@ async def record_outcome(request: OutcomeRecordRequest, db: AsyncSession = Depen
         raise
     except Exception as e:
         logger.error(f"Failed to record outcome: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/outcomes/{company_id}", response_model=list[OutcomeResponse])
@@ -150,7 +150,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Failed to list outcomes: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/outcomes/{company_id}/stats", response_model=OutcomeStatsResponse)
@@ -182,7 +182,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Failed to get outcome stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/outcomes/{company_id}/patterns", response_model=list[OutcomePatternResponse])
@@ -212,6 +212,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Failed to get outcome patterns: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

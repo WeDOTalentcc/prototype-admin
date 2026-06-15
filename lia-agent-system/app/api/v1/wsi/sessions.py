@@ -77,7 +77,7 @@ async def get_session(session_id: str, db: AsyncSession = Depends(get_db), compa
         raise
     except Exception as e:
         logger.error(f"Failed to get session: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/results/{candidate_id}", response_model=None)
@@ -129,7 +129,7 @@ async def get_candidate_results(
         raise
     except Exception as e:
         logger.error(f"Failed to get results: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/results/{result_id}/details", response_model=None)
@@ -235,7 +235,7 @@ async def get_result_details(
         raise
     except Exception as e:
         logger.error(f"Failed to get result details: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get result details: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ---------------------------------------------------------------------------

@@ -603,7 +603,7 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
         logger.error(f"[JobsManagement] Error: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error processing jobs management chat: {str(e)}",
+            detail="Internal server error",
         )
 
 

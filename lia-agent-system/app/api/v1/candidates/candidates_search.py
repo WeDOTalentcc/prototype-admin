@@ -104,7 +104,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Local search failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Local search failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/search", response_model=PearchSearchResponse)
@@ -148,7 +148,7 @@ company_id: str = Depends(require_company_id)):
             logger.warning(f"Audit log failed for global_search: {audit_err}")
         return result
     except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
     except HTTPException:
         raise
     except Exception as e:
@@ -172,7 +172,7 @@ company_id: str = Depends(require_company_id)):
         req = PearchSearchRequest(query=query, type=_type, limit=limit)
         return await pearch_svc.search_candidates(request=req, timeout=timeout)
     except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
     except HTTPException:
         raise
     except Exception as e:
@@ -194,7 +194,7 @@ company_id: str = Depends(require_company_id)):
             job_description=job_description, location=location, limit=limit
         )
     except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
     except HTTPException:
         raise
     except Exception as e:

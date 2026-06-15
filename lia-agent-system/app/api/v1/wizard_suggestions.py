@@ -155,7 +155,7 @@ company_id: str = Depends(require_company_id)) -> FieldSuggestionsResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting suggestion for field {field}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting suggestion: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/suggestions/all", response_model=None)
@@ -231,7 +231,7 @@ company_id: str = Depends(require_company_id)) -> AllFieldSuggestionsResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting all suggestions: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting suggestions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/similar-jobs", response_model=None)
@@ -270,7 +270,7 @@ company_id: str = Depends(require_company_id)) -> list[SimilarJobResponse]:
         raise
     except Exception as e:
         logger.error(f"Error getting similar jobs: {e}")
-        raise HTTPException(status_code=500, detail=f"Error finding similar jobs: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/data-coverage", response_model=None)
@@ -326,7 +326,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting data coverage: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting coverage: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/sources-priority", response_model=None)

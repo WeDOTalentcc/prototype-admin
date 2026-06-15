@@ -259,7 +259,7 @@ async def get_company_catalog(
         logger.error(f"Error retrieving catalog for company {company_id}: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error retrieving skills catalog: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -327,7 +327,7 @@ company_id: str = Depends(require_company_id)) -> AddSkillResponse:
         logger.error(f"Error adding skill to catalog: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error adding skill: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -394,7 +394,7 @@ company_id: str = Depends(require_company_id)) -> SyncTechStackResponse:
         logger.error(f"Error syncing tech stack: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error syncing tech stack: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -485,7 +485,7 @@ company_id: str = Depends(require_company_id)) -> SuggestSkillsResponse:
         logger.error(f"Error suggesting skills: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error generating skill suggestions: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -568,7 +568,7 @@ company_id: str = Depends(require_company_id)) -> RecordSkillUsageResponse:
         logger.error(f"Error recording skill usage: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error recording skill usage: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -610,7 +610,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
         logger.error(f"Error getting static suggestions for {job_title}: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error generating suggestions: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -650,5 +650,5 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
         logger.error(f"Error searching skills for query '{q}': {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error searching skills: {str(e)}"
+            detail="Internal server error"
         )

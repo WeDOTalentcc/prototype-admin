@@ -334,7 +334,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         raise
     except Exception as e:
         logger.error(f"Error listing company benefits: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/upload-extract", response_model=None)
@@ -501,7 +501,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating company benefit: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/active", response_model=list[CompanyBenefitResponse])
@@ -544,7 +544,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         raise
     except Exception as e:
         logger.error(f"Error listing active company benefits: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/highlighted", response_model=list[CompanyBenefitResponse])
@@ -565,7 +565,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         raise
     except Exception as e:
         logger.error(f"Error listing highlighted company benefits: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/summary", response_model=None)
@@ -622,7 +622,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         raise
     except Exception as e:
         logger.error(f"Error getting company benefits summary: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{benefit_id}/history", response_model=list[BenefitHistoryEntry])
@@ -660,7 +660,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error fetching benefit history benefit_id=%s: %s", benefit_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{benefit_id}", response_model=CompanyBenefitResponse)
@@ -680,7 +680,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting company benefit: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{benefit_id}", response_model=CompanyBenefitResponse)
@@ -745,7 +745,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating company benefit: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{benefit_id}", response_model=None)
@@ -802,7 +802,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting company benefit: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed-defaults", response_model=None)
@@ -825,7 +825,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding default benefits: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/categories/list", response_model=None)

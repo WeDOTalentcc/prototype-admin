@@ -162,7 +162,7 @@ async def get_available_commands(company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting available commands: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/execute", response_model=AnalyticsResultResponse)
@@ -200,7 +200,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error executing command: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/natural-query", response_model=AnalyticsResultResponse)
@@ -241,7 +241,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error processing natural query: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/quick-insights/{job_id}", response_model=QuickInsightsResponse)
@@ -287,7 +287,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting quick insights for job {job_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/compare", response_model=AnalyticsResultResponse)
@@ -322,7 +322,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error comparing jobs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/suggestions/{job_id}", response_model=SuggestionsResponse)
@@ -369,7 +369,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting suggestions for job {job_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/batch-analyze", response_model=BatchAnalyzeResponse)

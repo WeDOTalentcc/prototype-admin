@@ -275,7 +275,7 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagResponse:
         raise
     except Exception as e:
         logger.error(f"Error setting feature flag: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/feature-flags", response_model=None)
@@ -303,7 +303,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error getting feature flags: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/feature-flags/check/{flag_key}", response_model=None)
@@ -330,7 +330,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error checking feature flag: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ---------------------------------------------------------------------------

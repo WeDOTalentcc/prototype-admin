@@ -371,7 +371,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/execution-plans/{plan_id}", response_model=None)

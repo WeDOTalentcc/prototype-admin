@@ -115,7 +115,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"[TalentChat] Error: {e}", exc_info=True)
         raise HTTPException(
-            status_code=500, detail=f"Error processing talent chat: {str(e)}"
+            status_code=500, detail="Internal server error"
         )
 
 @router.get("/talent-chat/intents", response_model=None)

@@ -186,7 +186,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage summary: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/usage", response_model=UsageSummaryResponse, summary="Get current period usage")
@@ -202,7 +202,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage summary: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/usage/{client_id}", response_model=UsageSummaryResponse, summary="Get client usage (admin)")
@@ -266,7 +266,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting client usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/history", response_model=UsageHistoryResponse, summary="Get usage history")
@@ -318,7 +318,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage history: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/by-agent", response_model=UsageByAgentListResponse, summary="Get usage by agent type")
@@ -381,7 +381,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage by agent: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/agent-trend", response_model=AgentDailyTrendListResponse, summary="Get daily trend per agent")
@@ -418,7 +418,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting agent daily trend: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 async def _get_daily_usage_data(days: int, company_id: str, db: AsyncSession) -> UsageByDayListResponse:
@@ -467,7 +467,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting daily usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/by-day", response_model=UsageByDayListResponse, summary="Get daily usage")
@@ -484,7 +484,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage by day: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/balance", response_model=BalanceResponse, summary="Get credits balance")
@@ -517,7 +517,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting balance: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/record", response_model=AiConsumptionResponse, summary="Record AI consumption")
@@ -589,7 +589,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error recording consumption: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/limits/{client_id}", response_model=BalanceResponse, summary="Update client limits (admin)")
@@ -645,7 +645,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating limits: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 def get_user_id_from_header(
@@ -713,7 +713,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting user usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @ai_usage_router.get("/company", summary="Get company AI usage")
@@ -750,7 +750,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting company usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @ai_usage_router.get("/agents", summary="Get AI usage by agent type (admin)")
@@ -784,7 +784,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting agents usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @ai_usage_router.get("/limits", summary="Get configured usage limits")
@@ -812,7 +812,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting limits: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @ai_usage_router.post("/check-limits", summary="Check if within usage limits")
@@ -872,7 +872,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error checking limits: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @ai_usage_router.get("/real-time", summary="Get real-time usage statistics")
@@ -900,7 +900,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting real-time usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ============================================================================

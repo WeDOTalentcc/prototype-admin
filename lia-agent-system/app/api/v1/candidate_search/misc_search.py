@@ -131,7 +131,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"CV search failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"CV search failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ============================================================================
@@ -263,7 +263,7 @@ async def analyze_search_results(request: AnalyzeSearchRequest, company_id: str 
         raise
     except Exception as e:
         logger.error(f"Search analysis failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class EnhancePromptRequest(WeDoBaseModel):

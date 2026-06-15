@@ -173,7 +173,7 @@ company_id: str = Depends(require_company_id)) -> VoiceStreamStartResponse:
         raise
     except Exception as e:
         logger.error("[VOICE STREAM] Start session error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.websocket("/voice-stream/live")

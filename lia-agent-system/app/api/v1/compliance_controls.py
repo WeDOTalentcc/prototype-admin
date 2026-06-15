@@ -80,7 +80,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing control library: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/controls", response_model=ControlLibraryResponse, summary="Create control library entry")
@@ -109,7 +109,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating control library entry: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/controls/{framework}", response_model=ControlLibraryListResponse, summary="Get controls by framework")
@@ -137,7 +137,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting controls by framework: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/company-controls", response_model=CompanyControlListResponse, summary="List company controls")
@@ -180,7 +180,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing company controls: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/company-controls", response_model=CompanyControlResponse, summary="Create company control")
@@ -217,7 +217,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating company control: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/company-controls/{control_id}", response_model=CompanyControlResponse, summary="Update company control")
@@ -254,7 +254,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error updating company control: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/company-controls/{control_id}/evidence", response_model=CompanyControlResponse, summary="Upload evidence")
@@ -290,7 +290,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error uploading evidence: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/audits", response_model=ComplianceAuditListResponse, summary="List compliance audits")
@@ -325,7 +325,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing audits: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/audits", response_model=ComplianceAuditResponse, summary="Create compliance audit")
@@ -356,7 +356,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating audit: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/audits/dashboard", response_model=ResponseEnvelope[ComplianceDashboardResponse], summary="Get compliance dashboard")
@@ -428,7 +428,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting compliance dashboard: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/sox", response_model=SOXControlListResponse, summary="List SOX controls")
@@ -463,7 +463,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing SOX controls: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/sox", response_model=SOXControlResponse, summary="Create SOX control")
@@ -494,7 +494,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating SOX control: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/sox/{control_id}", response_model=SOXControlResponse, summary="Update SOX control")
@@ -524,7 +524,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error updating SOX control: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed", response_model=SeedDataResponse, summary="Seed control library data")
@@ -784,6 +784,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error seeding control library: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

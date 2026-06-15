@@ -500,7 +500,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error creating shared search: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("", response_model=None)
@@ -594,7 +594,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing shared searches: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{search_id}", response_model=None)
@@ -700,7 +700,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting shared search: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{search_id}/resend", response_model=None)
@@ -752,7 +752,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error resending invite: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.patch("/{search_id}", response_model=None)
@@ -804,7 +804,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error updating shared search: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{search_id}", response_model=None)
@@ -837,7 +837,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error deleting shared search: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{search_id}/add-to-job", response_model=None)
@@ -941,6 +941,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error adding candidates to job: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

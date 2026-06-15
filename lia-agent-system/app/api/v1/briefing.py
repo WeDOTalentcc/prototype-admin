@@ -243,4 +243,4 @@ async def refresh_briefing(
         )
         inc_briefing_generated(company_id or "", "error")
         obs_briefing_duration(company_id or "", _elapsed)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -230,7 +230,7 @@ company_id: str = Depends(require_company_id)) -> ScreeningQuestionResponse:
         logger.error(f"Error generating screening questions: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to generate screening questions: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -320,7 +320,7 @@ company_id: str = Depends(require_company_id)) -> list[ScreeningQuestion]:
         logger.error(f"Error regenerating questions: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to regenerate questions: {str(e)}"
+            detail="Internal server error"
         )
 
 

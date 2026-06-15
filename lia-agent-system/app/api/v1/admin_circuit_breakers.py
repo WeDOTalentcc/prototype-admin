@@ -113,7 +113,7 @@ async def list_circuit_breakers(_user=Depends(require_admin), company_id: str = 
         raise
     except Exception as exc:
         logger.error("[CircuitBreakerAdmin] Erro ao listar circuits: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{circuit_name}/reset", summary="Reset manual de um circuit breaker", response_model=None)

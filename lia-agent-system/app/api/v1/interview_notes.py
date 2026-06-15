@@ -712,7 +712,7 @@ Responda em formato JSON com a estrutura:
         logger.error(f"Error generating interview questions: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to generate interview questions: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -944,7 +944,7 @@ company_id: str = Depends(require_company_id)) -> WSIScore:
         logger.error(f"Error calculating WSI score: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to calculate WSI score: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -1076,7 +1076,7 @@ Responda em formato JSON:
         logger.error(f"Error generating interview parecer: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to generate interview parecer: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -1129,7 +1129,7 @@ company_id: str = Depends(require_company_id)) -> InterviewNoteCreateResponse:
         raise
     except Exception as e:
         logger.error(f"Error creating interview note: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to create interview note: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{note_id}", response_model=InterviewNoteResponse)

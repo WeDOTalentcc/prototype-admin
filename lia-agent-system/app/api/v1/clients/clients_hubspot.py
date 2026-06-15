@@ -48,7 +48,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting HubSpot status: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get HubSpot status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{client_id}/hubspot/sync", summary="Sync client to HubSpot", response_model=None)
@@ -80,7 +80,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error syncing to HubSpot: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to sync to HubSpot: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{client_id}/hubspot/onboarding", summary="Update HubSpot onboarding status", response_model=None)
@@ -113,4 +113,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating HubSpot onboarding: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to update HubSpot onboarding status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")

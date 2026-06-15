@@ -107,7 +107,7 @@ async def hubspot_webhook(request: Request, ):
         raise
     except Exception as e:
         logger.error(f"[hubspot-webhook] Error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ─── POST /automation/onboard-client ─────────────────────────────────────────
@@ -166,7 +166,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"[onboard-client] Error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ─── GET /automation/onboarding-status ───────────────────────────────────────
@@ -195,7 +195,7 @@ async def get_onboarding_status(_admin: User = Depends(require_admin), company_i
         raise
     except Exception as e:
         logger.error(f"[onboarding-status] Error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ─── GET /admin/integrations/health ──────────────────────────────────────────

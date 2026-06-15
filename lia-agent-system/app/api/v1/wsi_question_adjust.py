@@ -95,7 +95,7 @@ async def adjust_questions(request: AdjustQuestionsRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error adjusting WSI questions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/jd-evaluate", response_model=None)
@@ -117,7 +117,7 @@ async def evaluate_jd(request: EvaluateJDRequest, company_id: str = Depends(requ
         raise
     except Exception as e:
         logger.error(f"Error evaluating JD: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/questions/save", response_model=SaveQuestionsResponse)
@@ -169,7 +169,7 @@ async def save_questions(request: SaveQuestionsRequest, company_id: str = Depend
         raise
     except Exception as e:
         logger.error(f"Error saving WSI questions for job {request.job_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/questions/{job_id}", response_model=GetQuestionsResponse)

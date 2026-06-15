@@ -92,7 +92,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing candidate lists: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("", response_model=None)
@@ -130,7 +130,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error creating candidate list: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{list_id}", response_model=None)
@@ -204,7 +204,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting candidate list: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.patch("/{list_id}", response_model=None)
@@ -246,7 +246,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error updating candidate list: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{list_id}", response_model=None)
@@ -274,7 +274,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error deleting candidate list: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{list_id}/candidates", response_model=None)
@@ -348,7 +348,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error adding candidates to list: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/{list_id}/candidates", response_model=None)
@@ -393,7 +393,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error removing candidates from list: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{list_id}/assign-jobs", response_model=None)
@@ -466,6 +466,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error assigning list to jobs: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

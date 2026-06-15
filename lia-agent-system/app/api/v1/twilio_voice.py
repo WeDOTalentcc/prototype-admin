@@ -142,7 +142,7 @@ async def initiate_voice_screening(
         raise
     except Exception as e:
         logger.error("[TWILIO VOICE API] Initiate call error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     fallback = None
     if session_obj.status in ("fallback", "failed"):
@@ -191,7 +191,7 @@ async def twiml_greeting(
         return _twiml_response(twiml)
     except (TwilioVoiceError, TwilioVoiceUnconfiguredError) as e:
         logger.error("[TWILIO VOICE] Greeting TwiML error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 def _parse_consent_speech(speech: str) -> bool:
@@ -276,7 +276,7 @@ async def twiml_consent_response(
             )
         except (TwilioVoiceError, TwilioVoiceUnconfiguredError) as e:
             logger.error("[TWILIO VOICE] Stream TwiML error: %s", e)
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail="Internal server error")
     else:
         twiml = twilio_voice_service.generate_end_twiml(
             message=(
@@ -770,7 +770,7 @@ async def generate_voip_token(request_body: VoIPTokenRequest, ) -> VoIPTokenResp
         raise
     except Exception as e:
         logger.error("[TWILIO VOIP] Token generation failed: %s", e)
-        raise HTTPException(status_code=500, detail=f"Failed to generate VoIP token: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/twilio-voice/voip-connect", response_model=None)
@@ -821,7 +821,7 @@ async def twiml_voip_connect(
         return _twiml_response(twiml)
     except (TwilioVoiceError, TwilioVoiceUnconfiguredError) as e:
         logger.error("[TWILIO VOIP] VoIP connect TwiML error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/twilio-voice/health", response_model=None)

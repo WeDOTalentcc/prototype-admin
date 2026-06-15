@@ -66,7 +66,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error fetching detected patterns: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{company_id}/skills", response_model=None)
@@ -114,7 +114,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error fetching promoted skills: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{company_id}/success-profiles", response_model=None)
@@ -158,7 +158,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error fetching success profiles: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{company_id}/trigger-detection", response_model=None)
@@ -183,6 +183,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error triggering pattern detection: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

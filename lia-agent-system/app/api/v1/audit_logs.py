@@ -131,7 +131,7 @@ async def get_audit_stats(
         raise
     except Exception as e:
         logger.error(f"Error getting audit stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/export", summary="Export audit logs as CSV", response_model=None)
@@ -184,7 +184,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error exporting audit logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/retention-policies", response_model=AuditRetentionPolicyListResponse)
@@ -202,7 +202,7 @@ async def list_retention_policies(db: AsyncSession = Depends(get_db), company_id
         raise
     except Exception as e:
         logger.error(f"Error listing retention policies: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/retention-policies/seed", response_model=SeedRetentionPoliciesResponse)
@@ -222,7 +222,7 @@ async def seed_retention_policies(db: AsyncSession = Depends(get_db), company_id
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding retention policies: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/retention-policies", response_model=AuditRetentionPolicyResponse)
@@ -252,7 +252,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating retention policy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{log_id}", response_model=AuditLogResponse)
@@ -276,7 +276,7 @@ _company_gate: str = Depends(require_company_id)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid log ID format")
     except Exception as e:
         logger.error(f"Error getting audit log: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("", response_model=AuditLogListResponse)
@@ -317,7 +317,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing audit logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("", response_model=AuditLogResponse)
@@ -371,6 +371,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating audit log: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

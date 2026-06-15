@@ -129,7 +129,7 @@ async def send_message(request: SendMessageRequest, current_user: User = Depends
         raise
     except Exception as e:
         logger.error(f"[MULTI_CHANNEL_API] Erro ao enviar mensagem: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/status/{message_id}", response_model=DeliveryStatusResponse)
@@ -154,7 +154,7 @@ async def get_delivery_status(message_id: Annotated[str, Path(pattern=DUAL_ID_PA
         logger.error(
             f"[MULTI_CHANNEL_API] Erro ao verificar status: {e}", exc_info=True
         )
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/channels", response_model=ChannelStatusResponse)
@@ -169,7 +169,7 @@ async def list_available_channels(current_user: User = Depends(get_current_user_
         logger.error(
             f"[MULTI_CHANNEL_API] Erro ao listar canais: {e}", exc_info=True
         )
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/bulk", response_model=BulkSendResponse)
@@ -232,6 +232,6 @@ async def send_bulk_messages(request: BulkSendRequest, current_user: User = Depe
         logger.error(
             f"[MULTI_CHANNEL_API] Erro no envio em massa: {e}", exc_info=True
         )
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

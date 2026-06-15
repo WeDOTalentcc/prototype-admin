@@ -258,7 +258,7 @@ company_id: str = Depends(require_company_id)):
         logger.error("Seeding failed: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to seed database: {str(e)}",
+            detail="Internal server error",
         )
 
 
@@ -289,7 +289,7 @@ company_id: str = Depends(require_company_id)):
         logger.error("Task template seeding failed: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to seed task templates: {str(e)}",
+            detail="Internal server error",
         )
 
 
@@ -320,7 +320,7 @@ company_id: str = Depends(require_company_id)):
         logger.error("Alert rule seeding failed: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to seed alert rules: {str(e)}",
+            detail="Internal server error",
         )
 
 
@@ -368,7 +368,7 @@ company_id: str = Depends(require_company_id)):
         logger.error("Demo data seeding failed: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to seed demo data: {str(e)}",
+            detail="Internal server error",
         )
 
 
@@ -414,5 +414,5 @@ company_id: str = Depends(require_company_id)):
         logger.error("Demo data clearing failed: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to clear demo data: {str(e)}",
+            detail="Internal server error",
         )

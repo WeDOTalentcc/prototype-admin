@@ -229,4 +229,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ [ATS_SYNC] Error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro ao sincronizar com ATS: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")

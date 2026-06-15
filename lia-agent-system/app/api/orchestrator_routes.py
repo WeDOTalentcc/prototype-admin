@@ -135,7 +135,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Orchestrator API error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/conversation/{conversation_id}", response_model=None)
@@ -239,7 +239,7 @@ async def execute_tool(request: ExecuteToolRequest, company_id: str = Depends(re
         raise
     except Exception as e:
         logger.error(f"❌ Tool execution error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/tools", response_model=None)

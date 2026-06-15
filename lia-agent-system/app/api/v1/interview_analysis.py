@@ -345,7 +345,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"❌ Failed to analyze interview {interview_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/analyze-transcript", response_model=None)
@@ -396,7 +396,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"❌ Failed to analyze raw transcript: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/teams-webhook", response_model=None)
@@ -506,7 +506,7 @@ company_id: str = Depends(require_company_id)) -> AnalysisStatusResponse:
         raise
     except Exception as e:
         logger.error(f"❌ Failed to get analysis status for {interview_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/results/{interview_id}", response_model=None)
@@ -547,7 +547,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Failed to get analysis results for {interview_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 async def process_meeting_transcript(resource_data: dict, resource_path: str = ""):

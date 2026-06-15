@@ -183,7 +183,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to list providers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/providers/{category}", response_model=list[ProviderResponse])
@@ -222,7 +222,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Failed to list connections: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/connections", response_model=ConnectionResponse)
@@ -261,7 +261,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Failed to create connection: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/connections/{connection_id}", response_model=ConnectionResponse)
@@ -302,7 +302,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as e:
         logger.error(f"Failed to update connection: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/connections/{connection_id}", response_model=None)
@@ -331,7 +331,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as e:
         logger.error(f"Failed to delete connection: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/connections/{connection_id}/test", response_model=None)
@@ -365,7 +365,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Failed to test connection: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/connections/{connection_id}/sync", response_model=None)
@@ -399,7 +399,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as e:
         logger.error(f"Failed to trigger sync: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/connections/{connection_id}/logs", response_model=list[SyncLogResponse])
@@ -440,7 +440,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Failed to get sync logs: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/health", response_model=HealthResponse)
@@ -484,7 +484,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Failed to get integration health: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/ai/recommend", response_model=AIRecommendationResponse)
@@ -569,7 +569,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to get AI recommendations: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed-providers", response_model=None)
@@ -589,7 +589,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to seed providers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/apify/health")

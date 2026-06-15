@@ -173,7 +173,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching job vacancy metrics: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ─── Deep Analytics ───────────────────────────────────────────────────────────
@@ -416,7 +416,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching job vacancy analytics: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ─── History ──────────────────────────────────────────────────────────────────
@@ -503,7 +503,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching job vacancy history: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ─── Stats Overview ───────────────────────────────────────────────────────────
@@ -849,7 +849,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching job vacancies stats overview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ─── Job Report ──────────────────────────────────────────────────────────────
@@ -1173,7 +1173,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching pipeline overview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     stage_map: dict[str, list[PipelineOverviewCandidateItem]] = {}
     stage_counts: dict[str, int] = {}
@@ -1473,7 +1473,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching jobs for lifecycle overview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     buckets: dict[str, list[JobLifecycleVacancyItem]] = {k: [] for k in JOB_LIFECYCLE_ORDER}
 

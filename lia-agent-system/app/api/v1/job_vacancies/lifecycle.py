@@ -443,7 +443,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error publishing job vacancy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/jobs/{job_id}/confirm-global-search", response_model=ConfirmGlobalSearchResponseV2)
@@ -505,7 +505,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error confirming global search: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/jobs/{job_id}/sourcing-status", response_model=SourcingStatusResponseV2)
@@ -554,7 +554,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting sourcing status: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ─── Close vacancy ────────────────────────────────────────────────────────────
@@ -704,7 +704,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     except Exception as e:
         logger.error(f"Error closing vacancy: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ─── Bulk operations ─────────────────────────────────────────────────────────

@@ -101,7 +101,7 @@ async def seed_permissions(db: AsyncSession = Depends(get_db)):
         }
     except Exception as exc:
         logger.error("[RBAC] seed_permissions error: %s", exc)
-        raise HTTPException(status_code=500, detail=f"Erro ao executar seed: {exc}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/permissions/check", summary="Verifica se role pode executar action em resource")
@@ -172,4 +172,4 @@ async def update_permission(
         raise
     except Exception as exc:
         logger.error("[RBAC] update_permission error: %s", exc)
-        raise HTTPException(status_code=500, detail=f"Erro ao atualizar permissao: {exc}")
+        raise HTTPException(status_code=500, detail="Internal server error")

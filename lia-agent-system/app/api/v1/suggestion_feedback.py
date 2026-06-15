@@ -105,7 +105,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to record suggestion feedback: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{company_id}/stats", response_model=SuggestionStatsResponse)
@@ -142,7 +142,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Failed to get suggestion stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{company_id}/adjustments", response_model=list[AdjustmentResponse])
@@ -179,6 +179,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Failed to get learned adjustments: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)

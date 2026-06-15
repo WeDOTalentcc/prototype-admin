@@ -267,7 +267,7 @@ async def submit_thumbs(
         raise
     except Exception as e:
         logger.exception("Failed to record thumbs feedback")
-        raise HTTPException(status_code=500, detail=f"Failed to record feedback: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @feedback_router.post("/rating", response_model=FeedbackAck, status_code=201)
@@ -305,7 +305,7 @@ async def submit_rating(
         raise
     except Exception as e:
         logger.exception("Failed to record rating feedback")
-        raise HTTPException(status_code=500, detail=f"Failed to record feedback: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @feedback_router.post("/correction", response_model=FeedbackAck, status_code=201)
@@ -343,7 +343,7 @@ async def submit_correction(
         raise
     except Exception as e:
         logger.exception("Failed to record correction feedback")
-        raise HTTPException(status_code=500, detail=f"Failed to record feedback: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @feedback_router.get("/metrics")
@@ -362,7 +362,7 @@ async def get_metrics(
         raise
     except Exception as e:
         logger.exception("Failed to load feedback metrics")
-        raise HTTPException(status_code=500, detail=f"Failed to load metrics: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @feedback_router.get(
@@ -425,7 +425,7 @@ async def get_feedback_by_conversation(
         raise
     except Exception as e:
         logger.exception("Failed to load conversation feedback")
-        raise HTTPException(status_code=500, detail=f"Failed to load feedback: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @feedback_router.post(
@@ -627,7 +627,7 @@ async def submit_implicit_signal(
     except Exception as e:
         logger.exception("Failed to record implicit signal")
         raise HTTPException(
-            status_code=500, detail=f"Failed to record implicit signal: {e}"
+            status_code=500, detail="Internal server error"
         )
 
     if result.persisted:

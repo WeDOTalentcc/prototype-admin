@@ -151,7 +151,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting health check summary: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/export", summary="Export health check items", response_model=None)
@@ -214,7 +214,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error exporting health check: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/seed", response_model=SeedHealthCheckResponse, summary="Seed default health check items")
@@ -235,7 +235,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error seeding health check items: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/sync-from-library", response_model=SeedHealthCheckResponse, summary="Sync controls from library")
@@ -256,7 +256,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error syncing from control library: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{req_id}/history", response_model=HealthCheckHistoryListResponse, summary="Get item history")
@@ -285,7 +285,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting item history: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{req_id}/check", response_model=HealthCheckItemResponse, summary="Mark item as verified")
@@ -319,7 +319,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error marking item as checked: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{req_id}/status", response_model=HealthCheckItemResponse, summary="Update item status")
@@ -354,7 +354,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error updating item status: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{req_id}", response_model=HealthCheckItemResponse, summary="Get health check item by req_id")
@@ -378,7 +378,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting health check item: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("", response_model=HealthCheckItemListResponse, summary="List health check items")
@@ -416,7 +416,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing health check items: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("", response_model=HealthCheckItemResponse, status_code=status.HTTP_201_CREATED, summary="Create health check item")
@@ -451,6 +451,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating health check item: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 reorder_collection_before_item(router)
