@@ -368,6 +368,12 @@ celery_app.conf.update(
             "schedule": crontab(minute=0),  # todo início de hora
             "options": {"expires": 3500},
         },
+        # GAP-07-001: process_queued_messages NÃO tinha caller — emails QUEUED ficavam presos
+        "communication-process-queued": {
+            "task": "communication.process_queued_messages",
+            "schedule": crontab(minute="*/5"),  # a cada 5 min
+            "options": {"expires": 280, "queue": "onboarding_low"},
+        },
         # Triagem WSI abandonada — a cada 4h (Gap B)
         "wsi-abandoned-check": {
             "task": "wsi.check_abandoned",
