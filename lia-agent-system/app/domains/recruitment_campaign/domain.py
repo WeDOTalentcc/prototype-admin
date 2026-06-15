@@ -510,14 +510,18 @@ class RecruitmentCampaignDomain(ComplianceDomainPrompt):
                 return False
 
             bus = AgentBus()
+            # AgentBus roteia ponto-a-ponto por (company_id, to_agent); nao ha
+            # kwarg channel/message. Subscriber downstream = Fase 2 (ausente).
             await bus.publish(
-                channel=f"campaign.{dispatch_config['domain']}",
-                message={
-                    "action": dispatch_config["action"],
-                    "params": dispatch_config["params"],
+                from_agent="recruitment_campaign",
+                to_agent=dispatch_config["domain"],
+                event_type=dispatch_config["action"],
+                payload={
+                    **dispatch_config["params"],
                     "triggered_by": user_id,
                     "source": "recruitment_campaign",
                 },
+                company_id=company_id,
             )
 
             logger.info(
@@ -527,8 +531,8 @@ class RecruitmentCampaignDomain(ComplianceDomainPrompt):
             return True
 
         except Exception as e:
-            logger.warning(
-                "[Campaign] Failed to dispatch auto-action '%s': %s",
-                action_name, e,
+            logger.error(
+                "[Campaign] Failed to dispatch auto-action %s: %s",
+                action_name, e, exc_info=True,
             )
             return False
