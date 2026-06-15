@@ -196,7 +196,8 @@ class CommunicationService:
             )
             now = get_tenant_now(settings) if settings else self._get_brazil_now()
             return is_brazilian_holiday(now.date())
-        except Exception:
+        except Exception as e:
+            logger.warning("[communication] Holiday check failed, defaulting to False: %s", e, exc_info=True)
             return False
 
     def _get_next_sending_window(self, settings: dict | None = None) -> datetime:
@@ -1079,8 +1080,8 @@ class CommunicationService:
                         template_id=rendered.get("template_id", ""),
                         context={"message_type": message_type.value, "candidate_id": candidate_id},
                     )
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("[communication] template_learning record_send skipped: %s", e)
 
             return send_result
 

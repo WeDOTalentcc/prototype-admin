@@ -684,8 +684,8 @@ class EmailService:
                     except Exception as tracking_error:
                         try:
                             await db.rollback()
-                        except Exception:
-                            pass
+                        except Exception as rb_err:
+                            logger.debug("[email] db.rollback() also failed during tracking update: %s", rb_err)
                         logger.warning(f"⚠️ Failed to update welcome_email tracking: {tracking_error}")
             else:
                 # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
@@ -695,8 +695,8 @@ class EmailService:
         except Exception as e:
             try:
                 await db.rollback()
-            except Exception:
-                pass
+            except Exception as rb_err:
+                logger.debug("[email] db.rollback() also failed during welcome email: %s", rb_err)
             # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Error sending welcome email to {primary_email}: {e}")
             return False
