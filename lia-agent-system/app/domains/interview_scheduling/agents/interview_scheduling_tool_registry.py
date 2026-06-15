@@ -143,7 +143,7 @@ def get_interview_scheduling_tools() -> list[ToolDefinition]:
                 "when_not_to_use: verificar disponibilidade (use check_interviewer_availability)."
             ),
             parameters_schema=_SCHEDULE_INTERVIEW_SCHEMA,
-            handler=_wrap_schedule_interview,
+            function=_wrap_schedule_interview,
             side_effects=["write"],
             touches_pii=True,
             affects_candidate_decision=True,
@@ -158,6 +158,6 @@ def get_interview_scheduling_tools() -> list[ToolDefinition]:
                 "when_not_to_use: agendar efetivamente (use schedule_interview)."
             ),
             parameters_schema=_CHECK_AVAILABILITY_SCHEMA,
-            handler=_wrap_check_interviewer_availability,
+            function=_wrap_check_interviewer_availability,
         ),
     ]
