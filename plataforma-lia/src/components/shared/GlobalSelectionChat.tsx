@@ -38,7 +38,7 @@ export function GlobalSelectionChat() {
     reset()
     setQuestion("")
     setTimeout(() => inputRef.current?.focus(), 60)
-  }, [reset])
+  }, [selection.text, selection.rect, reset])
 
   const handleClose = useCallback(() => {
     setIsChatOpen(false)
@@ -58,7 +58,7 @@ export function GlobalSelectionChat() {
       page_url: pathname,
     }, intent)
     setQuestion("")
-  }, [question, intent, isLoading, submit, pathname])
+  }, [question, intent, isLoading, submit, pathname, selection.text])
 
   const handleOpenFullChat = useCallback(() => {
     handleClose()
@@ -119,8 +119,10 @@ export function GlobalSelectionChat() {
         <div
           role="dialog"
           aria-label="LIA — chat inline"
+          data-inline-chat
           style={chatStyle}
           className="rounded-lg border border-zinc-200 bg-white shadow-lg shadow-black/5"
+          onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Selected text preview */}

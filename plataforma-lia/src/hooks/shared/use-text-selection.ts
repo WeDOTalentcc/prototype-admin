@@ -27,7 +27,9 @@ export function useTextSelection() {
   }, [])
 
   useEffect(() => {
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
+      // Don't clear selection when interacting inside the inline chat popover
+      if ((e.target as HTMLElement)?.closest?.("[data-inline-chat]")) return
       clearTimeout(timerRef.current)
       timerRef.current = setTimeout(() => {
         const sel = window.getSelection()
