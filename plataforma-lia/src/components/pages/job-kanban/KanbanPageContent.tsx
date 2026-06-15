@@ -14,6 +14,7 @@ import { KanbanTableView } from "@/components/pages/job-kanban/KanbanTableView"
 import { KanbanBoardSection } from "@/components/pages/job-kanban/KanbanBoardSection"
 import { getLiaAlerts } from "@/components/pages/job-kanban/utils/kanbanHelpers"
 import type { KanbanPageCoreState } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
+import { DataRequestDetailsModal } from "@/components/ui/data-request-details-modal"
 
 interface KanbanPageContentProps {
   state: KanbanPageCoreState
@@ -59,6 +60,7 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
     handleSendEmail, handleSendWhatsApp, handleSendTriagem,
     handleSendAgendamento, handleSendFeedback,
     favoriteCandidates, jobData,
+    dataRequestDetailsId, showDataRequestDetailsModal, setShowDataRequestDetailsModal,
   } = state
 
   if (activeTab === 'agents') {
@@ -99,6 +101,7 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
   }
 
   return (
+    <>
     <div data-testid="kanban-page-content" className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0">
       {viewMode === "table" && (
         <div className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-primary px-4 py-2">
@@ -304,5 +307,11 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
         )}
       </div>
     </div>
+    <DataRequestDetailsModal
+      requestId={dataRequestDetailsId}
+      open={showDataRequestDetailsModal}
+      onClose={() => setShowDataRequestDetailsModal(false)}
+    />
+  </>
   )
 }

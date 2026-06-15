@@ -388,6 +388,8 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const [showJobEditor, setShowJobEditor] = useState(false)
   const [editingSection, setEditingSection] = useState<string | null>(null)
   const [savingJobSection, setSavingJobSection] = useState<string | null>(null)
+  const [dataRequestDetailsId, setDataRequestDetailsId] = useState<string | null>(null)
+  const [showDataRequestDetailsModal, setShowDataRequestDetailsModal] = useState(false)
 
   const { handleLiaUiAction, handleAICommand, handleOrchestratedMessage } = useKanbanLIAHandlers({
     liaMessages: uiModals.state.liaMessages,
@@ -573,7 +575,16 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     handleDataRequestSubmit,
     getDataRequestForCandidate,
     handleDataRequestResend: (_candidateId: string) => {},
-    handleDataRequestViewDetails: (_candidateId: string) => {},
+    handleDataRequestViewDetails: (candidateId: string) => {
+      const req = getDataRequestForCandidate(candidateId)
+      if (req?.id) {
+        setDataRequestDetailsId(req.id)
+        setShowDataRequestDetailsModal(true)
+      }
+    },
+    dataRequestDetailsId,
+    showDataRequestDetailsModal,
+    setShowDataRequestDetailsModal,
     handleOpenScoreModal,
     currentJob,
     jobData: currentJob,
