@@ -69,6 +69,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NotificationSystem } from "@/components/notification-system"
+import { ProactiveActionsBell } from "@/components/autonomous/proactive-actions-bell"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { AgentsQuotaBadge } from "@/components/pages-agent-studio/AgentsQuotaBadge"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
@@ -779,6 +780,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               onExternalToggle={onNotificationToggle}
             />
           ) : null}
+          <ProactiveActionsBell />
         </div>
       )}
       {/* Bell only — collapsed sidebar */}
@@ -791,6 +793,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             externalIsOpen={notificationOpen}
             onExternalToggle={onNotificationToggle}
           />
+          <ProactiveActionsBell />
         </div>
       )}
 
