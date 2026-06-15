@@ -54,6 +54,14 @@ export function LIAGlobalModals() {
   // B3b: Configurações LIA em modal (hiring_policy_config / configurar_policy capability)
   const hiringPolicyConfig = useModalOpenListener("hiring_policy_config")
 
+  // GAP-04-001 fix: canonical path — chat LIA open_ui(send_offer) emits
+  // lia:open_modal {modal_id:"offer_review"} via useUIAction case "open_modal".
+  const offerReview = useModalOpenListener<{
+    candidate_id?: string
+    job_id?: string
+    draft_id?: string
+  }>("offer_review")
+
   // PR-B Trigger A: Rail A Card 5.1 sends ui_action="open_offer_review".
   // useUIAction dispatches `lia:open_offer_review` CustomEvent — handled here
   // so the modal works from any page (chat home, lateral, floating).
@@ -72,6 +80,18 @@ export function LIAGlobalModals() {
     window.addEventListener("lia:open_offer_review", handleOfferReview)
     return () => window.removeEventListener("lia:open_offer_review", handleOfferReview)
   }, [openOfferReview])
+
+  // GAP-04-001: bridge canonical lia:open_modal path → openOfferReview
+  useEffect(() => {
+    if (offerReview.isOpen && offerReview.data.candidate_id && offerReview.data.job_id) {
+      openOfferReview({
+        candidateId: offerReview.data.candidate_id,
+        jobId: offerReview.data.job_id,
+        draftId: offerReview.data.draft_id,
+      })
+      offerReview.close()
+    }
+  }, [offerReview, openOfferReview])
 
   return (
     <>
