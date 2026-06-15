@@ -1075,11 +1075,20 @@ class WizardSessionService:
         _raw_msg = (context or {}).get("_raw_user_message") or user_message or ""
         _email = _extract_manager_email(_raw_msg)
         if _email:
-            state["parsed_manager_email"] = _email
-            logger.info(
-                "[WizardOrchestrator] manager_email capturado deterministicamente "
-                "(len=%d) thread=%s", len(_email), thread_id,
-            )
+            # Bug 2a fix: skip if email matches the recruiter's own email.
+            # parsed_recruiter_email is set from JWT/session at login time.
+            _recruiter_email = (state.get("parsed_recruiter_email") or "").lower().strip()
+            if _email.lower() != _recruiter_email:
+                state["parsed_manager_email"] = _email
+                logger.info(
+                    "[WizardOrchestrator] manager_email capturado deterministicamente "
+                    "(len=%d) thread=%s", len(_email), thread_id,
+                )
+            else:
+                logger.debug(
+                    "[WizardOrchestrator] manager_email ignorado (igual ao email do recrutador) "
+                    "thread=%s", thread_id,
+                )
 
         # ── Captura determinISTICa do NOME do gestor (audit 2026-06-05) ─────
         # Mesma razao do email (decisao Paulo 2026-05-31, estendida): por LGPD
@@ -1193,6 +1202,11 @@ class WizardSessionService:
             # Idiomas confirmados (item #3) — surfacar pro painel.
             if new_state.get("confirmed_languages"):
                 data["confirmed_languages"] = new_state.get("confirmed_languages")
+            # Bug 3a fix: Benefits and variable compensation — surface to JobCreationPanel.
+            if new_state.get("confirmed_benefits"):
+                data["confirmed_benefits"] = new_state.get("confirmed_benefits")
+            if new_state.get("confirmed_variable_compensation"):
+                data["confirmed_variable_compensation"] = new_state.get("confirmed_variable_compensation")
             # B3 fix: competency_tree p/ o CompetencyPanel (add/remove).
             _ctree = _competency_tree_for_panel(new_state)
             if _ctree:

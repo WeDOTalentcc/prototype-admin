@@ -675,6 +675,10 @@ class WizardOrchestrator:
                             if _jd:
                                 accumulated_response_blocks.append({
                                     "kind": "jd_preview",
+                                    "block_id": f"jd_preview_{id(_jd)}",
+                                    "role": "answer",
+                                    "layout": "wide",
+                                    "state": "ready",
                                     "title": _jd.get("titulo_padronizado", "Descrição da Vaga"),
                                     "body": _jd.get("about_role", ""),
                                     "data": _jd,
