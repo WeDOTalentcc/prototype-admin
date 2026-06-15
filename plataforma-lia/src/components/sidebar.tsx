@@ -61,15 +61,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NotificationSystem } from "@/components/notification-system"
-import { ProactiveActionsBell } from "@/components/autonomous/proactive-actions-bell"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { AgentsQuotaBadge } from "@/components/pages-agent-studio/AgentsQuotaBadge"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
@@ -539,7 +533,6 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
-  const [overflowOpen, setOverflowOpen] = useState(false)
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -780,7 +773,6 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               onExternalToggle={onNotificationToggle}
             />
           ) : null}
-          <ProactiveActionsBell />
         </div>
       )}
       {/* Bell only — collapsed sidebar */}
@@ -793,7 +785,6 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             externalIsOpen={notificationOpen}
             onExternalToggle={onNotificationToggle}
           />
-          <ProactiveActionsBell />
         </div>
       )}
 
@@ -957,56 +948,30 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             </span>
           )}
 
-          {/* 4. Overflow › — Config, Idioma, Ajuda, HITL e futuros ícones */}
-          {/* isMounted guard prevents Radix useId() mismatch between SSR and client hydration */}
-          {isMounted && (
-          <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-lia-text-muted hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
-                title="Mais opções"
-                onMouseEnter={() => setOverflowOpen(true)}
-              >
-                <ChevronRight className="w-3 h-3" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              side="top"
-              align="end"
-              sideOffset={8}
-              className="w-auto p-2"
-              onMouseLeave={() => setOverflowOpen(false)}
-            >
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => { onNavigate("Configurações"); setOverflowOpen(false) }}
-                  className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-                  title={t("labels.settings")}
-                >
-                  <Settings className="w-3 h-3" />
-                </Button>
+          {/* 4. Config, Idioma, Ajuda, HITL — inline ao lado do avatar */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigate("Configurações")}
+            className="h-6 w-6 p-0 text-lia-text-muted hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
+            title={t("labels.settings")}
+          >
+            <Settings className="w-3 h-3" />
+          </Button>
 
-                <LanguageSwitcher collapsed={false} />
+          <LanguageSwitcher collapsed={false} />
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => { handleShowTipsModal(); setOverflowOpen(false) }}
-                  className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-                  title={t("labels.helpTips")}
-                >
-                  <HelpCircle className="w-3 h-3" />
-                </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShowTipsModal}
+            className="h-6 w-6 p-0 text-lia-text-muted hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
+            title={t("labels.helpTips")}
+          >
+            <HelpCircle className="w-3 h-3" />
+          </Button>
 
-                <HitlPendingBadge />
-              </div>
-            </PopoverContent>
-          </Popover>
-          )}
+          {isMounted && <HitlPendingBadge />}
 
         </div>
       </div>
