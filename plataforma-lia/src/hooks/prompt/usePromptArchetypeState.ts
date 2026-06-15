@@ -100,7 +100,8 @@ export function usePromptArchetypeState({
           const data = await jobsRes.json()
           setClosedJobsForArchetype(data.jobs || data || [])
         }
-      } catch {
+      } catch (error) {
+        console.error("[usePromptArchetypeState] Error:", error)
       }
     }
     loadArchetypesAndJobs()

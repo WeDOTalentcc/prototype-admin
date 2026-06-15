@@ -165,6 +165,7 @@ export function useUIActions(options: UseUIActionsOptions = {}) {
               handleUIAction(message.action as UIAction)
             }
           } catch (error) {
+            console.error("[useUIActions] Error:", error)
           }
         }
         

@@ -190,7 +190,8 @@ const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaC
             const newEvent: ReturnEvent = JSON.parse(event.data)
             setEvents(prev => [newEvent, ...prev].slice(0, 100))
             processEvent(newEvent)
-          } catch {}
+          } catch (error) {}
+            console.error("[use-return-events] Error:", error)
         }
 
         eventSource.onerror = () => {

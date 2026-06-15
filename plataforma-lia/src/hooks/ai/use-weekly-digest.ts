@@ -33,7 +33,8 @@ function shouldShowDigest(userId?: string): boolean {
 function markDigestShown(userId?: string): void {
   try {
     localStorage.setItem(getStorageKey(userId), new Date().toISOString())
-  } catch {
+  } catch (error) {
+    console.error("[use-weekly-digest] Error:", error)
     // ignore
   }
 }

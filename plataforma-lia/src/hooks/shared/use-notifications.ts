@@ -229,7 +229,8 @@ export function useNotifications({
         )
         setServerUnreadCount(prev => prev !== null && prev > 0 ? prev - 1 : prev)
       }
-    } catch {
+    } catch (error) {
+      console.error("[use-notifications] markAsRead failed:", error)
     }
   }, [userId])
 
@@ -260,7 +261,8 @@ export function useNotifications({
       if (data.success) {
         setNotifications(prev => prev.filter(n => n.id !== id))
       }
-    } catch {
+    } catch (error) {
+      console.error("[use-notifications] markAllAsRead failed:", error)
     }
   }, [userId])
 

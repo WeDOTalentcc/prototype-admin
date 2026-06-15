@@ -72,7 +72,8 @@ export function useAgentMemory({
         setMemory(null);
         setFullMemory(null);
       }
-    } catch {
+    } catch (error) {
+      console.error("[useAgentMemory] Error:", error)
       // silent
     }
   }, [sessionId, domain]);

@@ -247,6 +247,7 @@ export function useBatchApproval({ candidates, onApprovalComplete }: {
           total_processed: selectedCount
         })
       } catch (error) {
+        console.error("[use-batch-approval] Error:", error)
       }
     }
   }

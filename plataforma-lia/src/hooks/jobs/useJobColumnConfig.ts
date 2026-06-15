@@ -114,7 +114,8 @@ export function useJobColumnConfig() {
           setSavedViews(stored.savedViews)
         }
       }
-    } catch {
+    } catch (error) {
+      console.error("[useJobColumnConfig] Error:", error)
     }
     setIsLoaded(true)
   // eslint-disable-next-line react-hooks/exhaustive-deps

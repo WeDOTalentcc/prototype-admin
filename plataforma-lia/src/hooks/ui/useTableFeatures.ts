@@ -147,7 +147,8 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
         if (savedSort.field && columns.some(c => c.sortKey === savedSort.field)) {
           setSortState(savedSort)
         }
-      } catch {
+      } catch (error) {
+        console.error("[useTableFeatures] Error:", error)
       }
     }
   }, [isHydrated, tableId, columns, defaultWidths, defaultOrder, movableColumnIds, fixedColumnIds, tableStore])

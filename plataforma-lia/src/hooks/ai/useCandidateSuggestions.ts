@@ -72,6 +72,7 @@ export function useCandidateSuggestions(
       })
       mutate()
     } catch (e) {
+      console.error("[useCandidateSuggestions] Error:", e)
     }
   }
 
@@ -83,6 +84,7 @@ export function useCandidateSuggestions(
         body: JSON.stringify({ reason }),
       })
       mutate()
+        console.error("[useCandidateSuggestions] Error:", error)
     } catch (e) {
     }
   }

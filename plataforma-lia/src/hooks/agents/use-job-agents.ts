@@ -64,7 +64,8 @@ async function postAttachJobAgent(
     try {
       const data = await res.json()
       detail = data?.detail || data?.message || ""
-    } catch {
+    } catch (error) {
+      console.error("[use-job-agents] Error:", error)
       /* ignore */
     }
     throw new Error(detail || `Failed to attach agent: ${res.status}`)
