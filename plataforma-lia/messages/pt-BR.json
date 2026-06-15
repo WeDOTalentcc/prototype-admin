@@ -3641,7 +3641,12 @@
       "tagsAdded": "Tags adicionadas",
       "tagsAddedDesc": "{count} candidato(s) atualizado(s)",
       "tagsRemoved": "Tags removidas",
-      "tagsRemovedDesc": "{count} candidato(s) atualizado(s)"
+      "tagsRemovedDesc": "{count} candidato(s) atualizado(s)",
+      "export": "Exportar",
+      "exporting": "Exportando...",
+      "exportSuccess": "Candidatos exportados com sucesso",
+      "exportFallback": "Exportado em CSV (XLSX indisponível temporariamente)",
+      "exportError": "Erro ao exportar candidatos"
     },
     "controls": {
       "sortScoreDesc": "Maior Score",

@@ -3641,7 +3641,12 @@
       "tagsAdded": "Tags added",
       "tagsAddedDesc": "{count} candidate(s) updated",
       "tagsRemoved": "Tags removed",
-      "tagsRemovedDesc": "{count} candidate(s) updated"
+      "tagsRemovedDesc": "{count} candidate(s) updated",
+      "export": "Export",
+      "exporting": "Exporting...",
+      "exportSuccess": "Candidates exported successfully",
+      "exportFallback": "Exported as CSV (XLSX temporarily unavailable)",
+      "exportError": "Error exporting candidates"
     },
     "controls": {
       "sortScoreDesc": "Highest Score",

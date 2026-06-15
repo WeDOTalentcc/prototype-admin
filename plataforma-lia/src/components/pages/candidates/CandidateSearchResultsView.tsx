@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { SearchResultsHeader } from "./SearchResultsHeader"
 import { CrossTabFilterBanner } from "./CrossTabFilterBanner"
 import { ViewingListBanner } from "./ViewingListBanner"
 import { ColumnConfigSidebar } from "./ColumnConfigSidebar"
 import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
-import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database, Eye, Tag } from "lucide-react"
+import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database, Eye, Tag, Download } from "lucide-react"
 import { CandidatesFilterPanel } from "./CandidatesFilterPanel"
 import { SearchControlsBar } from "./SearchControlsBar"
 import { ActiveFiltersBadge } from "./ActiveFiltersBadge"
@@ -18,6 +18,7 @@ import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
 import type { TableColumn } from "./CandidateSearchResultsView.types"
 import { toast } from "sonner"
+import { bulkExport } from '@/services/lia-api/bulk-api'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -277,6 +278,37 @@ export function CandidateSearchResultsView({
   const [showTagDialog, setShowTagDialog] = useState<'add' | 'remove' | null>(null)
   const [tagInput, setTagInput] = useState('')
   const [isTagLoading, setIsTagLoading] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+
+  const handleBulkExport = useCallback(async () => {
+    if (selectedCandidatesForBatch.size === 0) return
+    setIsExporting(true)
+    try {
+      const result = await bulkExport({
+        candidate_ids: Array.from(selectedCandidatesForBatch),
+        format: 'xlsx',
+      })
+      if ('blob' in result) {
+        const url = URL.createObjectURL(result.blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `candidatos-${new Date().toISOString().slice(0, 10)}.${result.formatFallback ? 'csv' : 'xlsx'}`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        if (result.formatFallback) {
+          toast.warning(t('results.exportFallback'))
+        } else {
+          toast.success(t('results.exportSuccess'))
+        }
+      }
+    } catch (error) {
+      toast.error(t('results.exportError'))
+    } finally {
+      setIsExporting(false)
+    }
+  }, [selectedCandidatesForBatch, t])
 
   // Critérios para QualificationMatrixCard: prefere filtros de tabela ativos;
   // senão usa os critérios parseados da última busca natural.
@@ -423,6 +455,15 @@ export function CandidateSearchResultsView({
             disabled: isSavingToBase,
             loading: isSavingToBase,
             hidden: !(selectedPearchCount > 0),
+          },
+          {
+            id: 'export',
+            label: t('results.export'),
+            icon: <Download className="w-3.5 h-3.5 text-lia-text-secondary" />,
+            onClick: handleBulkExport,
+            disabled: isExporting,
+            loading: isExporting,
+            loadingLabel: t('results.exporting'),
           },
           {
             id: 'add_tags',
