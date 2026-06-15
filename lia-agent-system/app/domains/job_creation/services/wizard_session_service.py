@@ -1316,6 +1316,9 @@ class WizardSessionService:
                 data=data,
                 completeness=calculate_completeness(stage),
             )
+            # Bug #3 fix: surface response_blocks (RRP juicybox cards) from orchestrator
+            if result.response_blocks:
+                payload["response_blocks"] = result.response_blocks
             # P0-E fix (2026-06-14): user pediu "me leve pro chat full" no wizard.
             # Emite ui_action="navigate_to" page="chat" para o SSE handler propagar
             # ao frontend (useUIAction.dispatchOrEmit -> router.push /pt/chat).

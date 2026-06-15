@@ -918,6 +918,12 @@ company_id: str = Depends(require_company_id)):
                     if isinstance(_wiz_payload, dict)
                     else None
                 )
+                # Bug #3 fix: RRP juicybox cards from wizard orchestrator
+                _wiz_response_blocks = (
+                    _wiz_payload.get("response_blocks")
+                    if isinstance(_wiz_payload, dict)
+                    else None
+                )
                 yield format_sse_event(
                     serialize_message(
                         content=_wiz_clean,
@@ -928,6 +934,7 @@ company_id: str = Depends(require_company_id)):
                         ws_stage_payload=_wiz_payload if isinstance(_wiz_payload, dict) else None,
                         ui_action=_wiz_ui_action,
                         ui_action_params=_wiz_ui_params,
+                        response_blocks=_wiz_response_blocks,
                     ),
                     next_id(),
                 )

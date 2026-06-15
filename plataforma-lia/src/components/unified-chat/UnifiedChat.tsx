@@ -556,7 +556,10 @@ export function UnifiedChat({
         const snap = await fetchWizardSessionState(chatSessionId);
         if (cancelled) return;
         if (!snap || !snap.active || !snap.current_stage) {
-          wizardReset();
+          // Bug #1a guard: SSE may have already opened panel while GET was in-flight.
+          // lastDynamicPanelRef tracks the last non-null panel state — skip reset
+          // if a live panel is already active to avoid closing a wizard mid-turn.
+          if (!lastDynamicPanelRef.current?.stage) wizardReset();
           return;
         }
         wizardHandleStagePayload({

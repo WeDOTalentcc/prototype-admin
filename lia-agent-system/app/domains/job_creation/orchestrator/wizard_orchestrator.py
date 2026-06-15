@@ -313,6 +313,7 @@ class OrchestratorResult:
     tool_calls: list[str] = field(default_factory=list)
     iterations: int = 0
     error: bool = False
+    response_blocks: list[dict] = field(default_factory=list)
 
 
 def _emit_reasoning_sync(label: str) -> None:
@@ -540,6 +541,7 @@ class WizardOrchestrator:
         # executa a tool e continua, e a iteração seguinte (vazia) cairia no
         # fallback genérico. Ver TDD test_wizard_orchestrator_text_accumulation.
         accumulated_text: list[str] = []
+        accumulated_response_blocks: list[dict] = []
         max_iters = _get_max_iterations()
 
         _emit_reasoning_sync('Analisando sua mensagem...')
@@ -617,6 +619,7 @@ class WizardOrchestrator:
                     state_updates=accumulated_updates,
                     tool_calls=tool_calls,
                     iterations=iteration,
+                    response_blocks=accumulated_response_blocks,
                 )
 
             # Há tool_use → executa cada uma, monta tool_result, continua loop.
@@ -658,6 +661,15 @@ class WizardOrchestrator:
                         if result.state_updates:
                             accumulated_updates.update(result.state_updates)
                             working_state.update(result.state_updates)
+                        if name == "enrich_job_description" and not result.error:
+                            _jd = (accumulated_updates or {}).get("jd_enriched") or {}
+                            if _jd:
+                                accumulated_response_blocks.append({
+                                    "kind": "jd_preview",
+                                    "title": _jd.get("titulo_padronizado", "Descrição da Vaga"),
+                                    "body": _jd.get("about_role", ""),
+                                    "data": _jd,
+                                })
                     except Exception as exc:  # noqa: BLE001 — fail-soft p/ o LLM
                         logger.warning(
                             "[WizardOrchestrator] tool %s raised: %s", name, exc
@@ -687,6 +699,7 @@ class WizardOrchestrator:
             state_updates=accumulated_updates,
             tool_calls=tool_calls,
             iterations=max_iters,
+            response_blocks=accumulated_response_blocks,
         )
 
 
