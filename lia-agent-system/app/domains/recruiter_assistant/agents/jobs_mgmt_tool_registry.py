@@ -261,7 +261,20 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
             "rendered_as_card": True,
             "narrative": f"{total} vagas (filtro status={status}).",
             "response_blocks": _all_blocks,
-            "render_hint": _hint,
+            "render_hint": (
+                "CARD VISUAL JÁ ENVIADO. Escreva APENAS 1-2 frases narrativas resumindo o total e destaques. "
+                "NUNCA repita dados em tabela markdown. "
+                "Os IDs em jobs_index estão disponíveis para follow-up."
+            ),
+            "jobs_index": [
+                {
+                    "id": str(j.get("id", "")),
+                    "title": j.get("title", ""),
+                    "status": j.get("status", ""),
+                    "department": j.get("department", ""),
+                }
+                for j in jobs[:20]
+            ],
         }
     else:
         _data = {
@@ -801,7 +814,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "Lista vagas com status, metricas e informacoes resumidas do portfolio. "
             "Use o parametro 'query' para buscar por nome/titulo (substring case-insensitive). "
             "Exemplo: query='Diretor Juridico' retorna vagas cujo titulo contem essa expressao. "
-            "Sem query retorna as 50 vagas mais recentes/prioritarias."
+            "Sem query retorna as 50 vagas mais recentes/prioritarias. "
+            "Os IDs retornados em jobs_index podem ser usados diretamente em view_job_details(job_id=...) para detalhes de uma vaga especifica."
         ),
         parameters={
             "type": "object",
@@ -824,7 +838,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
         parameters={
             "type": "object",
             "properties": {
-                "job_id": {"type": "string", "description": "ID da vaga"},
+                "job_id": {"type": "string", "description": "ID da vaga — use os IDs do jobs_index retornado pelo list_jobs"},
             },
             "required": ["job_id"],
         },

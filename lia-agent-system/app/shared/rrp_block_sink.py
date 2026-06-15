@@ -88,16 +88,36 @@ def drain_sink() -> list[dict]:
 def _strip_blocks_for_llm(result):
     """Apos teear os blocks pro sink, remove-os da copia que vai pra LLM
     (ToolMessage). O card RRP e a fonte visual unica -> sem os blocks no texto a
-    LLM nao re-tabula (2-table P2). Nunca levanta; nao muta o original."""
+    LLM nao re-tabula (2-table P2). Nunca levanta; nao muta o original.
+
+    P0-3: quando rendered_as_card=True, tambem remove colecoes (list/dict) do
+    data para evitar que o LLM gere tabelas markdown a partir de status_breakdown
+    ou outros dicts estruturados. Preserva jobs_index (necessario para follow-up
+    via view_job_details).
+    """
     try:
         if not isinstance(result, dict):
             return result
         data = result.get("data")
-        if isinstance(data, dict) and data.get("response_blocks"):
-            return {**result, "data": {**data, "response_blocks": None}}
+        if not isinstance(data, dict):
+            return result
+        stripped_data = {**data}
+        # Sempre remove response_blocks (vao pro sink, nao pro LLM)
+        if stripped_data.get("response_blocks"):
+            stripped_data["response_blocks"] = None
+        # Quando card ja foi renderizado, remove colecoes para evitar re-tabulacao
+        if stripped_data.get("rendered_as_card"):
+            keys_to_strip = [
+                k for k, v in stripped_data.items()
+                if isinstance(v, (list, dict)) and k not in ("jobs_index",)
+            ]
+            for k in keys_to_strip:
+                stripped_data.pop(k, None)
+        if stripped_data == data:
+            return result
+        return {**result, "data": stripped_data}
     except Exception:
         return result
-    return result
 
 
 def tee_tool_function(fn):
