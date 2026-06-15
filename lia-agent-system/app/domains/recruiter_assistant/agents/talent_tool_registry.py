@@ -336,6 +336,16 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
         logger.warning("[talent_tools] candidate_card skipped: %s", type(_e).__name__)
     if _rrp_blocks:
         profile = {**profile, "response_blocks": _rrp_blocks, "render_hint": _RRP_NARRATE_HINT}
+    # LGPD Art.11 gate — dados sensíveis de diversidade nunca enviados ao LLM.
+    # gender/race/ethnicity/religion/health_info/disability_status são "dados sensíveis"
+    # (Art.11 caput). Acesso via analytics agregados (N>=10, Art.12 §1) — não via
+    # perfil individual enviado ao contexto do LLM. Default-deny; visibilidade
+    # role-based a adicionar via resolve_pii_field_visibility em sprint futuro.
+    _LGPD_ART11_SENSITIVE = frozenset({
+        "gender", "race", "ethnicity", "religion",
+        "health_info", "disability_status",
+    })
+    profile = {k: v for k, v in profile.items() if k not in _LGPD_ART11_SENSITIVE}
     if profile_error is not None:
         # Carregamento do perfil falhou: reportar honestamente (REGRA 4).
         return {
