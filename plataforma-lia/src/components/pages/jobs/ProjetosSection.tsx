@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { NovoProjetoWizard } from "@/app/[locale]/(dashboard)/projetos/new/NovoProjetoWizard"
 import { Megaphone, Users, CheckCircle2, ChevronRight, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { badgeStyles } from "@/lib/design-tokens"
+import { badgeStyles, textStyles } from "@/lib/design-tokens"
 import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
 import { useCampaignsList, type CampaignItem, type CampaignStatus } from "@/hooks/jobs/useCampaignsList"
 
@@ -97,13 +97,16 @@ function CampaignCardSkeleton() {
 // ── Empty state ────────────────────────────────────────────────────────────
 
 function CampanhasEmptyState() {
+  // Alinhado ao padrão canônico do estado vazio (DigitalTwinEmptyState do Agent
+  // Studio): ícone w-12 h-12 rounded-md bg-lia-bg-tertiary + text-graphite,
+  // título textStyles.h3, descrição textStyles.description max-w-md.
   return (
-    <div className="col-span-full flex flex-col items-center justify-center py-16 text-center gap-3">
-      <div className="w-12 h-12 rounded-full bg-lia-bg-secondary flex items-center justify-center">
-        <Megaphone className="w-6 h-6 text-lia-text-secondary" />
+    <div className="col-span-full flex flex-col items-center py-12 px-6">
+      <div className="flex items-center justify-center w-12 h-12 rounded-md bg-lia-bg-tertiary mb-4">
+        <Megaphone className="w-6 h-6 text-graphite" />
       </div>
-      <p className="text-body text-lia-text-primary font-medium">Nenhum projeto ativo</p>
-      <p className="text-small text-lia-text-secondary max-w-xs">
+      <h3 className={`${textStyles.h3} text-center mb-1`}>Nenhum projeto ativo</h3>
+      <p className={`${textStyles.description} text-center max-w-md`}>
         Crie um projeto para organizar e automatizar seu processo de sourcing e triagem.
       </p>
     </div>
