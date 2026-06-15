@@ -107,6 +107,17 @@ def _classify_permission(state: JobCreationState, resume_msg: str):
         _cid = state.get("workspace_id") or state.get("company_id")
         _uid = state.get("user_id") or state.get("recruiter_id")
 
+        # Task #1123 fix: últimas 6 msgs do histórico → últimas 3 turnos no
+        # classificador (trunca a 300 chars por msg + 1200 total no classify).
+        # Sem isso o LLM não sabe que título/gestor já foram fornecidos e gera
+        # respostas do tipo "preciso de algumas infos básicas: qual o título?".
+        _conv_msgs = state.get("conversation_messages") or []
+        _last_turns: list[str] | None = [
+            str(m.get("content", "")).strip()
+            for m in _conv_msgs[-6:]
+            if m.get("content")
+        ] or None
+
         def _coro():
             return classifier.classify(
                 user_message=resume_msg,
@@ -116,6 +127,7 @@ def _classify_permission(state: JobCreationState, resume_msg: str):
                 hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
                 company_id=str(_cid) if _cid else None,
                 user_id=str(_uid) if _uid else None,
+                last_turns=_last_turns,
             )
 
         out = run_coro_in_threadpool(_coro, timeout=30.0)
@@ -401,6 +413,8 @@ def _ficha_data(
         "salary_min": state.get("salary_min"),
         "salary_max": state.get("salary_max"),
         "salary_range": state.get("salary_range"),
+        "parsed_manager_email": state.get("parsed_manager_email"),
+        "parsed_manager_name": state.get("parsed_manager_name"),
     }
     _ct = state.get("confirmed_technical_competencies")
     _cb = state.get("confirmed_behavioral_competencies")
