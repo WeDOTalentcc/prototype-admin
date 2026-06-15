@@ -189,5 +189,7 @@ export type BulkActionType =
   | 'duplicate'
   | 'toggle_status'
   | 'assign_recruiter'
+  | 'add_tags'
+  | 'remove_tags'
 
 export type { BulkActionItem, BulkActionsBarProps }

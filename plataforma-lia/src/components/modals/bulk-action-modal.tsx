@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -21,7 +22,8 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
-  Mail
+  Mail,
+  Tag
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { REJECTION_REASONS } from '@/lib/recruitment-stages'
@@ -60,6 +62,7 @@ export interface BulkActionExecuteData {
   rejectionReason?: string
   rejectionNotes?: string
   message?: string
+  tags?: string[]
 }
 
 interface ProgressState {
@@ -156,6 +159,16 @@ const ACTION_CONFIG: Record<BulkActionType, { title: string; description: string
     description: 'Atribua um recrutador aos candidatos selecionados.',
     icon: <Users className="w-4 h-4 text-lia-text-secondary" />
   },
+  add_tags: {
+    title: 'Adicionar Tags',
+    description: 'Adicione tags aos candidatos selecionados. Separe por vírgula.',
+    icon: <Tag className="w-4 h-4 text-lia-text-secondary" />
+  },
+  remove_tags: {
+    title: 'Remover Tags',
+    description: 'Remova tags dos candidatos selecionados. Separe por vírgula.',
+    icon: <Tag className="w-4 h-4 text-status-error" />
+  },
 }
 
 const getRandomAvatarUrl = (_candidateId: string, _name: string): string | undefined => {
@@ -188,6 +201,7 @@ export function BulkActionModal({
   const [targetStage, setTargetStage] = useState<string>('')
   const [rejectionReason, setRejectionReason] = useState<string>('')
   const [rejectionNotes, setRejectionNotes] = useState('')
+  const [tagInput, setTagInput] = useState('')
   const [progress, setProgress] = useState<ProgressState>({
     total: 0,
     completed: 0,
@@ -211,10 +225,13 @@ export function BulkActionModal({
         return !!targetStage
       case 'reject':
         return !!rejectionReason
+      case 'add_tags':
+      case 'remove_tags':
+        return tagInput.trim().length > 0
       default:
         return true
     }
-  }, [actionType, targetStage, rejectionReason, isExecuting])
+  }, [actionType, targetStage, rejectionReason, tagInput, isExecuting])
 
   const handleExecute = useCallback(async () => {
     if (!canExecute) return
@@ -235,6 +252,9 @@ export function BulkActionModal({
         targetStage: actionType === 'move_stage' ? targetStage : undefined,
         rejectionReason: actionType === 'reject' ? rejectionReason : undefined,
         rejectionNotes: actionType === 'reject' ? rejectionNotes : undefined,
+        tags: (actionType === 'add_tags' || actionType === 'remove_tags')
+          ? tagInput.split(',').map(t => t.trim()).filter(Boolean)
+          : undefined,
       }
 
       const results = await onExecute(data)
@@ -272,6 +292,7 @@ export function BulkActionModal({
     setTargetStage('')
     setRejectionReason('')
     setRejectionNotes('')
+    setTagInput('')
     onClose()
   }, [isExecuting, onClose])
 
@@ -383,6 +404,21 @@ export function BulkActionModal({
             </div>
           )}
 
+          {(actionType === 'add_tags' || actionType === 'remove_tags') && !isComplete && (
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-lia-text-primary">
+                {actionType === 'add_tags' ? 'Tags para adicionar' : 'Tags para remover'}
+              </Label>
+              <Input
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                placeholder="ex: python, senior, disponível"
+                className="text-xs"
+              />
+              <p className="text-xs text-lia-text-tertiary">Separe múltiplas tags por vírgula</p>
+            </div>
+          )}
+
           {actionType === 'reject' && !isComplete && (
             <>
               <div className="space-y-2">
@@ -468,6 +504,8 @@ export function BulkActionModal({
                     {actionType === 'send_message' && 'Enviar Mensagem'}
                     {actionType === 'export' && 'Exportar'}
                     {actionType === 'add_to_list' && 'Adicionar'}
+                    {actionType === 'add_tags' && 'Adicionar Tags'}
+                    {actionType === 'remove_tags' && 'Remover Tags'}
                   </>
                 )}
               </Button>
