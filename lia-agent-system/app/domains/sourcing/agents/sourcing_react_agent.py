@@ -98,7 +98,16 @@ class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
         Falls back to legacy DOMAIN_INSTRUCTIONS if PromptComposer fails.
         """
         try:
+            from app.orchestrator.context.view_context import (
+                format_view_context,
+                view_context_from_context,
+            )
             ctx = input.context or {}
+            # P0.1: estado-da-tela vivo no prompt (agente ciente da visao atual).
+            _view_block = format_view_context(view_context_from_context(ctx))
+            _stage = ctx.get("stage_context", "") or ""
+            if _view_block:
+                _stage = (_view_block + "\n\n" + _stage).strip()
             return self._compose_runtime_prompt(
                 input,
                 agent_type="sourcing",
@@ -106,7 +115,7 @@ class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
             few_shot_examples=SOURCING_FEW_SHOT_EXAMPLES,
                 reasoning_template=SOURCING_REASONING_PROMPT,
                 memory_summary=ctx.get("memory_summary", ""),
-                stage_context=ctx.get("stage_context", ""),
+                stage_context=_stage,
             ).text
         except Exception as exc:
             logger.warning(
