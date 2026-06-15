@@ -78,7 +78,13 @@ export const bulkSendEmailSchema = bulkIdsSchema.extend({
   custom_data: z.record(z.string(), z.unknown()).optional(),
 })
 
-export const bulkDeleteSchema = bulkIdsSchema
+export const bulkDeleteSchema = bulkIdsSchema.extend({
+  permanent: z.boolean().optional().default(false),
+  hard_delete: z.boolean().optional(),
+}).transform((data) => ({
+  candidate_ids: data.candidate_ids,
+  permanent: data.hard_delete ?? data.permanent ?? false,
+}))
 
 export const bulkExportSchema = bulkIdsSchema.extend({
   format: z.enum(['csv', 'xlsx']).optional().default('csv'),
