@@ -503,7 +503,7 @@ export function NotificationSystem({
                   {visibleHints.map((hint: ProactiveHint) => (
                     <div key={hint.id} className="px-3 py-2">
                       <div className="flex items-start gap-2">
-                        <div className={} />
+                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-lia-text-tertiary" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-lia-text-primary line-clamp-1">{hint.title}</p>
                           <p className="text-[11px] text-lia-text-tertiary line-clamp-2 mt-0.5">{hint.message}</p>
