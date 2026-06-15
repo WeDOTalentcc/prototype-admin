@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { NovoProjetoWizard } from "@/app/[locale]/(dashboard)/projetos/new/NovoProjetoWizard"
-import { Megaphone, Users, CheckCircle2, ChevronRight } from "lucide-react"
+import { Megaphone, Users, CheckCircle2, ChevronRight, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { badgeStyles } from "@/lib/design-tokens"
 import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
@@ -156,7 +156,14 @@ export function ProjetosSection() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-heading-sm text-lia-text-primary font-semibold">Projetos de Recrutamento</h2>
-        <Button onClick={() => setShowWizard(true)}>+ Novo projeto</Button>
+        <Button
+          size="sm"
+          onClick={() => setShowWizard(true)}
+          className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+        >
+          <Plus className="w-4 h-4" />
+          Novo projeto
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

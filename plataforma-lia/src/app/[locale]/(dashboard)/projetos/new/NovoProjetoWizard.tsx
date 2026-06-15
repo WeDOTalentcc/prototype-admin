@@ -56,7 +56,6 @@ const TEMPLATES = [
     days: 6,
     description: "Banco → Triagem rápida → Convite → Follow-up",
     stages: ["sourcing", "screening", "outreach", "follow_up"],
-    color: "bg-wedo-purple/10",
   },
   {
     key: "multi_canal",
@@ -66,7 +65,6 @@ const TEMPLATES = [
     description: "LinkedIn + Email + WhatsApp → Triagem → Entrevista",
     stages: ["sourcing", "screening", "outreach", "interview", "evaluation"],
     popular: true,
-    color: "bg-wedo-cyan/10",
   },
   {
     key: "end_to_end_rapido",
@@ -75,7 +73,6 @@ const TEMPLATES = [
     days: 12,
     description: "Sourcing → Triagem → Entrevista → Avaliação → Proposta",
     stages: ["sourcing", "screening", "interview", "evaluation", "offer"],
-    color: "bg-wedo-green/10",
   },
   {
     key: "triagem_intensiva",
@@ -84,7 +81,6 @@ const TEMPLATES = [
     days: 5,
     description: "WSI + scoring → Decisão rápida → Aprovação gestor",
     stages: ["screening", "evaluation", "offer"],
-    color: "bg-wedo-amber/10",
   },
 ]
 
@@ -112,7 +108,7 @@ function StepIndicator({ current }: { current: number }) {
             <div className="flex flex-col items-center gap-1 shrink-0">
               <div
                 className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center text-small font-semibold border-2 transition-colors",
+                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors",
                   done && "bg-lia-btn-primary-bg border-lia-btn-primary-bg text-lia-btn-primary-text",
                   active && "bg-lia-btn-primary-bg border-lia-btn-primary-bg text-lia-btn-primary-text",
                   !done && !active && "bg-lia-bg-primary border-lia-border-subtle text-lia-text-tertiary"
@@ -154,18 +150,18 @@ function Step1Basico({
   return (
     <div className="space-y-5">
       <div className="space-y-1.5">
-        <label className="text-small font-medium text-lia-text-primary">Nome da campanha</label>
+        <label className="text-xs font-semibold text-lia-text-primary">Nome da campanha</label>
         <input
           type="text"
           value={data.name}
           onChange={(e) => onChange({ name: e.target.value })}
           placeholder="Ex: SWE Sênior — Engenharia Backend"
-          className="w-full px-3 py-2.5 rounded-md border border-lia-border-subtle bg-lia-bg-paper text-body text-lia-text-primary placeholder:text-lia-text-tertiary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
+          className="w-full px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-sm text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-small font-medium text-lia-text-primary">Tipo de campanha</label>
+        <label className="text-xs font-semibold text-lia-text-primary">Tipo de campanha</label>
         <div className="grid grid-cols-3 gap-3">
           {types.map(({ key, label, icon: Icon }) => (
             <button
@@ -173,10 +169,10 @@ function Step1Basico({
               type="button"
               onClick={() => onChange({ campaignType: key })}
               className={cn(
-                "flex flex-col items-center gap-2 p-4 rounded-md border-2 text-small font-medium transition-colors",
+                "flex flex-col items-center gap-2 p-4 rounded-md border text-xs font-medium transition-colors",
                 data.campaignType === key
-                  ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg/10 text-lia-btn-primary-bg"
-                  : "border-lia-border-subtle bg-lia-bg-paper text-lia-text-secondary hover:border-lia-border"
+                  ? "border-lia-btn-primary-bg bg-lia-bg-tertiary text-lia-text-primary"
+                  : "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-bg-tertiary"
               )}
             >
               <Icon className="w-5 h-5" />
@@ -187,7 +183,7 @@ function Step1Basico({
       </div>
 
       <div className="space-y-2">
-        <label className="text-small font-medium text-lia-text-primary">Acesso</label>
+        <label className="text-xs font-semibold text-lia-text-primary">Acesso</label>
         <div className="space-y-2">
           {(["shared", "private"] as const).map((val) => (
             <label key={val} className="flex items-start gap-3 cursor-pointer">
@@ -199,7 +195,7 @@ function Step1Basico({
                 className="mt-0.5 accent-lia-btn-primary-bg"
               />
               <div>
-                <p className="text-small font-medium text-lia-text-primary">
+                <p className="text-xs font-semibold text-lia-text-primary">
                   {val === "shared" ? "Compartilhada" : "Privada"}
                 </p>
                 <p className="text-micro text-lia-text-secondary">
@@ -263,7 +259,7 @@ function Step2Vaga({
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <label className="text-small font-medium text-lia-text-primary">Vaga vinculada</label>
+        <label className="text-xs font-semibold text-lia-text-primary">Vaga vinculada</label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-tertiary pointer-events-none" />
           <input
@@ -271,7 +267,7 @@ function Step2Vaga({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por título de vaga..."
-            className="w-full pl-9 pr-3 py-2.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-body text-lia-text-primary placeholder:text-lia-text-tertiary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
+            className="w-full pl-9 pr-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-sm text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/30"
           />
         </div>
 
@@ -279,10 +275,10 @@ function Step2Vaga({
           {loading ? (
             <div className="flex items-center justify-center py-6 gap-2 text-lia-text-tertiary">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-small">Carregando vagas...</span>
+              <span className="text-sm">Carregando vagas...</span>
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-small text-lia-text-tertiary text-center py-6">
+            <p className="text-sm text-lia-text-tertiary text-center py-6">
               {search ? "Nenhuma vaga encontrada" : "Nenhuma vaga disponível"}
             </p>
           ) : (
@@ -294,7 +290,7 @@ function Step2Vaga({
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors border-b border-lia-border-subtle last:border-0",
                   data.jobId === job.id
-                    ? "bg-lia-btn-primary-bg/10"
+                    ? "bg-lia-bg-tertiary"
                     : "hover:bg-lia-bg-secondary"
                 )}
               >
@@ -302,22 +298,22 @@ function Step2Vaga({
                   className={cn(
                     "w-7 h-7 rounded-md flex items-center justify-center shrink-0",
                     data.jobId === job.id
-                      ? "bg-lia-btn-primary-bg/20"
+                      ? "bg-lia-bg-primary"
                       : "bg-lia-bg-tertiary"
                   )}
                 >
                   <Briefcase
                     className={cn(
                       "w-3.5 h-3.5",
-                      data.jobId === job.id ? "text-lia-btn-primary-bg" : "text-lia-text-tertiary"
+                      data.jobId === job.id ? "text-lia-text-primary" : "text-lia-text-tertiary"
                     )}
                   />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p
                     className={cn(
-                      "text-small font-medium truncate",
-                      data.jobId === job.id ? "text-lia-btn-primary-bg" : "text-lia-text-primary"
+                      "text-sm font-medium truncate",
+                      data.jobId === job.id ? "text-lia-text-primary" : "text-lia-text-primary"
                     )}
                   >
                     {job.title}
@@ -328,7 +324,7 @@ function Step2Vaga({
                   </p>
                 </div>
                 {data.jobId === job.id && (
-                  <Check className="w-4 h-4 text-lia-btn-primary-bg shrink-0" />
+                  <Check className="w-4 h-4 text-lia-text-primary shrink-0" />
                 )}
               </button>
             ))
@@ -338,12 +334,12 @@ function Step2Vaga({
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <label className="text-small font-medium text-lia-text-primary">Banco de talentos</label>
+          <label className="text-xs font-semibold text-lia-text-primary">Banco de talentos</label>
           <span className="text-micro text-lia-text-tertiary">Pré-carrega candidatos já conhecidos</span>
         </div>
         <button
           type="button"
-          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-small text-lia-text-tertiary hover:bg-lia-bg-tertiary transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-sm text-lia-text-tertiary hover:bg-lia-bg-tertiary transition-colors"
           onClick={() => {}}
         >
           <FolderKanban className="w-4 h-4" />
@@ -368,17 +364,17 @@ function Step3Template({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 p-1 rounded-md bg-lia-bg-secondary">
+      <div className="grid grid-cols-3 gap-2">
         {modes.map((m) => (
           <button
             key={m}
             type="button"
             onClick={() => setMode(m)}
             className={cn(
-              "flex-1 py-1.5 px-3 rounded text-small font-medium transition-colors",
+              "rounded-md border px-3 py-2 text-xs font-medium text-center transition-colors",
               mode === m
-                ? "bg-lia-bg-paper shadow-sm text-lia-text-primary border border-lia-border-subtle"
-                : "text-lia-text-secondary hover:text-lia-text-primary"
+                ? "border-lia-btn-primary-bg bg-lia-bg-tertiary text-lia-text-primary"
+                : "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-bg-tertiary"
             )}
           >
             {m}
@@ -388,7 +384,7 @@ function Step3Template({
 
       {mode === "Templates" && (
         <div>
-          <p className="text-small text-lia-text-secondary mb-3">Selecione um template de sequência</p>
+          <p className="text-sm text-lia-text-secondary mb-3">Selecione um template de sequência</p>
           <div className="grid grid-cols-2 gap-3">
             {TEMPLATES.map((t) => (
               <button
@@ -401,11 +397,10 @@ function Step3Template({
                   })
                 }
                 className={cn(
-                  "relative p-4 rounded-md border-2 text-left transition-all",
+                  "relative p-4 rounded-md border text-left transition-colors",
                   data.templateKey === t.key
-                    ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg/10"
-                    : "border-lia-border-subtle hover:border-lia-border",
-                  t.color
+                    ? "border-lia-btn-primary-bg bg-lia-bg-tertiary"
+                    : "border-lia-border-subtle bg-lia-bg-secondary hover:bg-lia-bg-tertiary"
                 )}
               >
                 {t.popular && (
@@ -413,7 +408,7 @@ function Step3Template({
                     Popular
                   </span>
                 )}
-                <p className="text-small font-semibold text-lia-text-primary mb-2">{t.label}</p>
+                <p className="text-sm font-semibold text-lia-text-primary mb-2">{t.label}</p>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-micro px-1.5 py-0.5 rounded-full bg-lia-bg-paper text-lia-text-secondary">
                     {t.stages_count} etapas
@@ -432,17 +427,17 @@ function Step3Template({
       {mode === "Do zero" && (
         <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
           <FolderKanban className="w-10 h-10 text-lia-text-tertiary" />
-          <p className="text-small text-lia-text-secondary">
+          <p className="text-sm text-lia-text-secondary">
             Você configurará as etapas manualmente após criar o projeto.
           </p>
           <button
             type="button"
             onClick={() => onChange({ templateKey: "custom", stages: [] })}
             className={cn(
-              "px-4 py-2 rounded-md border-2 text-small font-medium transition-colors",
+              "px-4 py-2 rounded-md border text-xs font-medium transition-colors",
               data.templateKey === "custom"
-                ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg/10 text-lia-btn-primary-bg"
-                : "border-lia-border-subtle text-lia-text-secondary hover:border-lia-border"
+                ? "border-lia-btn-primary-bg bg-lia-bg-tertiary text-lia-text-primary"
+                : "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-bg-tertiary"
             )}
           >
             {data.templateKey === "custom" ? "✓ Selecionado" : "Continuar sem template"}
@@ -453,17 +448,17 @@ function Step3Template({
       {mode === "Gerar com IA" && (
         <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
           <Bot className="w-10 h-10 text-lia-text-tertiary" />
-          <p className="text-small text-lia-text-secondary">
+          <p className="text-sm text-lia-text-secondary">
             A LIA gerará um pipeline otimizado com base na vaga selecionada.
           </p>
           <button
             type="button"
             onClick={() => onChange({ templateKey: "ai_generated", stages: [] })}
             className={cn(
-              "px-4 py-2 rounded-md border-2 text-small font-medium transition-colors",
+              "px-4 py-2 rounded-md border text-xs font-medium transition-colors",
               data.templateKey === "ai_generated"
-                ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg/10 text-lia-btn-primary-bg"
-                : "border-lia-border-subtle text-lia-text-secondary hover:border-lia-border"
+                ? "border-lia-btn-primary-bg bg-lia-bg-tertiary text-lia-text-primary"
+                : "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-bg-tertiary"
             )}
           >
             {data.templateKey === "ai_generated" ? "✓ Selecionado" : "Gerar pipeline com IA"}
@@ -517,12 +512,12 @@ function Step4Agente({
 
   return (
     <div className="space-y-3">
-      <p className="text-small text-lia-text-secondary">Selecione o agente responsável por esta campanha</p>
+      <p className="text-sm text-lia-text-secondary">Selecione o agente responsável por esta campanha</p>
 
       {loading ? (
         <div className="flex items-center justify-center py-6 gap-2 text-lia-text-tertiary">
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-small">Carregando agentes...</span>
+          <span className="text-sm">Carregando agentes...</span>
         </div>
       ) : (
         <div className="space-y-2">
@@ -532,22 +527,22 @@ function Step4Agente({
               type="button"
               onClick={() => selectAgent(agent.id)}
               className={cn(
-                "w-full flex items-center gap-3 p-3 rounded-md border-2 text-left transition-colors",
+                "w-full flex items-center gap-3 p-3 rounded-md border text-left transition-colors",
                 data.agentId === agent.id
-                  ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg/10"
-                  : "border-lia-border-subtle hover:border-lia-border bg-lia-bg-paper"
+                  ? "border-lia-btn-primary-bg bg-lia-bg-tertiary"
+                  : "border-lia-border-subtle hover:bg-lia-bg-tertiary bg-lia-bg-secondary"
               )}
             >
               <div
                 className={cn(
                   "w-9 h-9 rounded-md flex items-center justify-center shrink-0",
-                  data.agentId === agent.id ? "bg-lia-btn-primary-bg/20" : "bg-lia-bg-secondary"
+                  data.agentId === agent.id ? "bg-lia-bg-primary" : "bg-lia-bg-secondary"
                 )}
               >
                 <Bot
                   className={cn(
                     "w-4 h-4",
-                    data.agentId === agent.id ? "text-lia-btn-primary-bg" : "text-lia-text-secondary"
+                    data.agentId === agent.id ? "text-lia-text-primary" : "text-lia-text-secondary"
                   )}
                 />
               </div>
@@ -555,8 +550,8 @@ function Step4Agente({
                 <div className="flex items-center gap-2">
                   <span
                     className={cn(
-                      "text-small font-medium",
-                      data.agentId === agent.id ? "text-lia-btn-primary-bg" : "text-lia-text-primary"
+                      "text-sm font-medium",
+                      data.agentId === agent.id ? "text-lia-text-primary" : "text-lia-text-primary"
                     )}
                   >
                     {agent.name}
@@ -572,7 +567,7 @@ function Step4Agente({
                 )}
               </div>
               {data.agentId === agent.id && (
-                <Check className="w-4 h-4 text-lia-btn-primary-bg shrink-0" />
+                <Check className="w-4 h-4 text-lia-text-primary shrink-0" />
               )}
             </button>
           ))}
@@ -581,10 +576,10 @@ function Step4Agente({
             type="button"
             onClick={() => selectAgent(null)}
             className={cn(
-              "w-full flex items-center gap-3 p-3 rounded-md border-2 text-left transition-colors",
+              "w-full flex items-center gap-3 p-3 rounded-md border text-left transition-colors",
               data.agentId === null
-                ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg/10"
-                : "border-dashed border-lia-border-subtle hover:border-lia-border bg-lia-bg-secondary"
+                ? "border-lia-btn-primary-bg bg-lia-bg-tertiary"
+                : "border-dashed border-lia-border-subtle hover:bg-lia-bg-tertiary bg-lia-bg-secondary"
             )}
           >
             <div className="w-9 h-9 rounded-md bg-lia-bg-tertiary flex items-center justify-center shrink-0">
@@ -592,14 +587,14 @@ function Step4Agente({
             </div>
             <span
               className={cn(
-                "text-small",
-                data.agentId === null ? "text-lia-btn-primary-bg font-medium" : "text-lia-text-secondary"
+                "text-sm",
+                data.agentId === null ? "text-lia-text-primary font-medium" : "text-lia-text-secondary"
               )}
             >
               Sem agente — gerenciar manualmente
             </span>
             {data.agentId === null && (
-              <Check className="w-4 h-4 text-lia-btn-primary-bg shrink-0 ml-auto" />
+              <Check className="w-4 h-4 text-lia-text-primary shrink-0 ml-auto" />
             )}
           </button>
         </div>
@@ -683,11 +678,12 @@ export function NovoProjetoWizard({ open, onClose }: { open: boolean; onClose: (
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
-        className="max-w-2xl bg-lia-bg-primary border border-lia-border-medium shadow-lia-lg rounded-xl p-6"
+        className="max-w-2xl bg-lia-bg-primary border-lia-border-subtle max-h-[90vh] overflow-y-auto"
         data-testid="novo-projeto-wizard"
       >
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold text-lia-text-primary">
+          <DialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
+            <FolderKanban className="w-4 h-4 text-graphite" />
             Novo projeto de recrutamento
           </DialogTitle>
           <DialogDescription className="text-xs text-lia-text-muted">
@@ -714,7 +710,7 @@ export function NovoProjetoWizard({ open, onClose }: { open: boolean; onClose: (
           {step === 3 && <Step3Template data={data} onChange={patch} />}
           {step === 4 && <Step4Agente data={data} onChange={patch} />}
           {error && (
-            <p className="mt-3 text-small text-lia-text-error">{error}</p>
+            <p className="mt-3 text-sm text-lia-text-error">{error}</p>
           )}
         </div>
 
@@ -727,7 +723,7 @@ export function NovoProjetoWizard({ open, onClose }: { open: boolean; onClose: (
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={onClose} disabled={submitting}>
+            <Button variant="ghost" onClick={onClose} disabled={submitting}>
               Cancelar
             </Button>
             {step < 4 ? (
