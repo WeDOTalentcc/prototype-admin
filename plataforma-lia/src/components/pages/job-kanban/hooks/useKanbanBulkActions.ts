@@ -76,6 +76,14 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
       case 'share_search':
         setShowShareGestorModal(true)
         break
+      case 'add_tags':
+        setBulkActionType('add_tags' as BulkActionType)
+        setShowBulkActionModal(true)
+        break
+      case 'remove_tags':
+        setBulkActionType('remove_tags' as BulkActionType)
+        setShowBulkActionModal(true)
+        break
       default:
         toast.success("Ação em Lote", { description: `Ação "${actionId}" para ${selectedCandidates.size} candidato(s)` })
     }
@@ -211,6 +219,31 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
             results.push({ candidateId, success: true })
           } catch (error) {
             results.push({ candidateId, success: false, error: 'Erro ao solicitar dados' })
+          }
+        }
+
+      } else if (data.actionType === 'add_tags' || data.actionType === 'remove_tags') {
+        const endpoint = data.actionType === 'add_tags'
+          ? '/api/backend-proxy/candidates/bulk/add-tags'
+          : '/api/backend-proxy/candidates/bulk/remove-tags'
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ candidate_ids: data.candidateIds, tags: data.tags ?? [] }),
+        })
+
+        if (!response.ok) {
+          throw new Error(data.actionType === 'add_tags' ? 'Erro ao adicionar tags' : 'Erro ao remover tags')
+        }
+        const apiResult = await response.json()
+        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error_message: string }) => [e.id, e.error_message]) || [])
+
+        for (const candidateId of data.candidateIds) {
+          if (failedMap.has(candidateId)) {
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) })
+          } else {
+            results.push({ candidateId, success: true })
           }
         }
 

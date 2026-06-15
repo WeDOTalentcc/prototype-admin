@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useTranslations } from "next-intl"
-import { X, ArrowRight, List, Share2, Fingerprint, FileText, Mail, Star, XCircle } from "lucide-react"
+import { X, ArrowRight, List, Share2, Fingerprint, FileText, Mail, Star, XCircle, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { BulkActionsBar, type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { PipelineStagesCarousel } from "@/components/ui/pipeline-stages-carousel"
@@ -200,6 +200,19 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
                 label: t('rejectBulk'),
                 icon: <XCircle className="w-3.5 h-3.5" />,
                 onClick: () => handleBulkAction('reject' as BulkActionType | string),
+                variant: 'destructive' as const,
+              },
+              {
+                id: 'add_tags',
+                label: 'Adicionar Tags',
+                icon: <Tag className="w-3.5 h-3.5 text-lia-text-secondary" />,
+                onClick: () => handleBulkAction('add_tags' as BulkActionType | string),
+              },
+              {
+                id: 'remove_tags',
+                label: 'Remover Tags',
+                icon: <Tag className="w-3.5 h-3.5 text-status-error" />,
+                onClick: () => handleBulkAction('remove_tags' as BulkActionType | string),
                 variant: 'destructive' as const,
               },
             ]}
