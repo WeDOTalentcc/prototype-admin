@@ -642,6 +642,13 @@ export function useChatTransport(
             if (!mountedRef.current) return
 
             if (sseFailureCountRef.current < maxSseFailures) {
+              // GAP-09-002: skip retry if turn already received terminal event
+              // (message/clarification/error) — re-POST would cause double processing
+              if (receivedTerminal) {
+                setIsStreaming(false)
+                console.warn("[useChatTransport] Stream dropped after terminal event — skipping retry to avoid duplicate processing")
+                return
+              }
               const retryDelay = reconnectBaseDelay * Math.pow(2, attempt)
               setError(
                 `Erro na conexão SSE (tentativa ${sseFailureCountRef.current}/${maxSseFailures}). Reconectando...`,

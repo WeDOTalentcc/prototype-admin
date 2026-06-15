@@ -20,6 +20,7 @@ for a subsequent phase. Currently, if the SSE connection drops mid-stream,
 the client re-sends the original message.
 """
 import asyncio
+import hashlib
 import json
 import logging
 import os
@@ -409,6 +410,50 @@ company_id: str = Depends(require_company_id)):
         company_id=company_id,
         user_id=user_id,
     )
+
+
+    # ── SSE reconnect dedup guard (GAP-09-002) ──────────────────────
+    # When FE reconnects after a stream drop, it re-POSTs the same message.
+    # Without this guard, the agent re-processes and tools execute twice.
+    # Redis SETNX ensures at-most-once processing per (session, message) pair.
+    _turn_hash = hashlib.sha256(f"{session_id}:{content}:{user_id}".encode()).hexdigest()[:16]
+    _dedup_key = f"sse_turn_dedup:{session_id}:{_turn_hash}"
+    _is_reconnect = bool(last_event_id)
+    try:
+        from app.core.redis_client import get_redis
+        _redis = get_redis()
+        if _redis:
+            _already = _redis.get(_dedup_key)
+            if _already and _is_reconnect:
+                logger.info(
+                    "[SSE-dedup] Reconnect detected session=%s last_event_id=%s — skipping re-processing",
+                    session_id, last_event_id,
+                )
+                async def _reconnect_generator():
+                    yield format_sse_event(
+                        {"type": "info", "message": "Reconectado — resposta anterior preservada."},
+                        f"{session_id[:8]}-reconn-1",
+                    )
+                    yield format_sse_event(
+                        {"type": "done", "reconnected": True},
+                        f"{session_id[:8]}-reconn-2",
+                    )
+                return StreamingResponse(
+                    _reconnect_generator(),
+                    media_type="text/event-stream",
+                    headers={"Cache-Control": "no-cache", "Connection": "keep-alive",
+                             "X-Accel-Buffering": "no", "X-Transport": "sse"},
+                )
+            if _already and not _is_reconnect:
+                logger.warning(
+                    "[SSE-dedup] Duplicate POST without Last-Event-ID session=%s — allowing (may be intentional retry)",
+                    session_id,
+                )
+            else:
+                _redis.set(_dedup_key, "1", ex=120, nx=True)
+    except Exception as _dedup_exc:
+        logger.debug("[SSE-dedup] Redis dedup check failed (fail-open): %s", _dedup_exc)
+    # ── end dedup guard ─────────────────────────────────────────────
 
     async def event_generator():
         event_seq = 0
