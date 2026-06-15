@@ -12,6 +12,7 @@ CRITICAL: Toggles control AI DATA CONSUMPTION only, not UI visibility.
 - When is_active=False, agents use fallback strategies (job history, benchmarks)
 """
 import logging
+import time
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum
 from typing import Any
@@ -30,6 +31,22 @@ from lia_models.lia_field_toggles import (
 )
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Module-level TTL cache — same pattern as TenantContextService.
+# Key: (company_id, None) — only cached when job_context is None so that
+# per-job department inheritance is always fresh.
+# ---------------------------------------------------------------------------
+_lia_field_config_cache: dict[tuple, tuple] = {}
+_LIA_FIELD_CONFIG_TTL = 60.0  # seconds
+
+
+def invalidate_lia_field_config_cache(company_id: str) -> None:
+    """Remove all cache entries for a tenant (call after settings save)."""
+    keys_to_del = [k for k in list(_lia_field_config_cache) if k[0] == company_id]
+    for k in keys_to_del:
+        _lia_field_config_cache.pop(k, None)
+
 
 
 class DataSource(StrEnum):
@@ -192,6 +209,20 @@ class LiaFieldConfigService:
         Returns:
             LiaFieldConfigResult with all field configs, contexts, and prompt
         """
+        # Cache lookup — only cache when job_context is None (per-department
+        # configs vary; same bypass pattern as TenantContextService).
+        _cache_key = (company_id, None)
+        if job_context is None:
+            _cached = _lia_field_config_cache.get(_cache_key)
+            if _cached is not None:
+                _result, _ts = _cached
+                if time.time() - _ts < _LIA_FIELD_CONFIG_TTL:
+                    logger.debug(
+                        "[LiaFieldConfigService] cache hit company=%s age=%.1fs",
+                        company_id, time.time() - _ts,
+                    )
+                    return _result
+
         try:
             company_uuid = UUID(company_id)
         except ValueError:
@@ -277,7 +308,7 @@ class LiaFieldConfigService:
         context_prompt = self._build_context_prompt(field_contexts, job_context)
         data_quality_score = self._calculate_data_quality(field_contexts)
         
-        return LiaFieldConfigResult(
+        result = LiaFieldConfigResult(
             company_id=company_id,
             active_fields=active_fields,
             inactive_fields=inactive_fields,
@@ -286,6 +317,12 @@ class LiaFieldConfigService:
             context_prompt=context_prompt,
             data_quality_score=data_quality_score
         )
+
+        # Store in cache only when job_context is None (stable per-tenant config).
+        if job_context is None:
+            _lia_field_config_cache[_cache_key] = (result, time.time())
+
+        return result
     
     async def _load_toggles(self, company_uuid: UUID) -> dict[str, LiaFieldToggle]:
         """Load all field toggles for a company."""
