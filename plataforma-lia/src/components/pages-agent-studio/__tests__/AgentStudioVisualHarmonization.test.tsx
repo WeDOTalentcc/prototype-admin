@@ -16,7 +16,6 @@ vi.mock("next-intl", () => ({
 }))
 
 import {
-  DigitalTwinHeader,
   TwinsList,
 } from "../DigitalTwinComponents"
 import SourcingTab from "@/components/pages-talent-pools/sub-tabs/sourcing-tab"
@@ -28,17 +27,6 @@ _viCanonical.mock("@/hooks/talent-pools/use-ideal-profile", () => ({
 }))
 
 describe("Agent Studio — harmonização visual (Task #1044)", () => {
-  it("DigitalTwinHeader renderiza header curto (h2 text-sm) sem hero/gradient", () => {
-    const { container } = render(<DigitalTwinHeader />)
-    const h2 = container.querySelector("h2")
-    expect(h2).not.toBeNull()
-    expect(h2?.className).toContain("text-sm")
-    expect(h2?.className).toContain("font-semibold")
-    // Não deve trazer eyebrow/gradient/blob do hero antigo
-    expect(container.querySelector(".bg-gradient-to-br")).toBeNull()
-    expect(container.querySelector("section")).toBeNull()
-  })
-
   it("DigitalTwinOnboarding REMOVIDO (P0 rewrite 2026-05-26): export não existe", async () => {
     // Antes da rewrite, página Gêmeos Digitais renderizava 4 cards "Passo 1-4"
     // + banner com citação concorrente (Eightfold Andromeda). Paulo locked 2026-05-26:

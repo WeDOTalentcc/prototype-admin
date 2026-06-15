@@ -2031,8 +2031,6 @@
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
         "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
         "label": "Gêmeos Digitais",
-        "headerTitle": "Gêmeos Digitais",
-        "subheader": "Crie um agente IA que aprende o padrão de avaliação dos seus melhores especialistas.",
         "createCta": "Criar Gêmeo Digital",
         "emptyState": {
           "title": "Nenhum Gêmeo Digital criado ainda",

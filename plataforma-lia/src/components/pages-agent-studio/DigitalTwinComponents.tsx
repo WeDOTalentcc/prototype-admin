@@ -16,7 +16,6 @@ import {
   textStyles, cardStyles, badgeStyles, buttonStyles, inputStyles, formStyles
 } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
-import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 
 interface DigitalTwin {
   id: string
@@ -54,17 +53,6 @@ interface TwinEvaluation {
 // (4 cards horizontais "Passo 1-4"), e marketing copy ("DIFERENCIAL", "Unico no mercado",
 // "globalmente", "built-in"). Vide CLAUDE.md "Quiet Operator" + memory
 // project_white_label_ai_assistant.
-export function DigitalTwinHeader() {
-  const t = useTranslations("agents.studio.twins")
-
-  return (
-    <TabSectionHeader
-      title={t("headerTitle")}
-      subtitle={t("subheader")}
-    />
-  )
-}
-
 interface DigitalTwinEmptyStateProps {
   onCreateTwin: () => void
 }

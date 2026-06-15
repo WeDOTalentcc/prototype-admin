@@ -2031,8 +2031,6 @@
         "cloneReasoning": "Clone the reasoning of your best evaluators",
         "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening.",
         "label": "Digital Twins",
-        "headerTitle": "Digital Twins",
-        "subheader": "Create an AI agent that learns the evaluation pattern of your best experts.",
         "createCta": "Create Digital Twin",
         "emptyState": {
           "title": "No Digital Twin created yet",
