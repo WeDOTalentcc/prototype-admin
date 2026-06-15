@@ -135,6 +135,15 @@ export interface CandidateCardBlock extends BaseBlock {
   unverified: boolean;
 }
 
+
+// ── jd_preview (wizard inline JD) ────────────────────────────────────────────
+export interface JdPreviewBlock extends BaseBlock {
+  kind: "jd_preview";
+  title: string;
+  body: string;
+  data?: Record<string, unknown> | null;
+}
+
 // ── União discriminada ────────────────────────────────────────────────────────
 export type ResponseBlock =
   | ProseBlock
@@ -142,7 +151,8 @@ export type ResponseBlock =
   | ScoreExplainerBlock
   | EvidenceStackBlock
   | FunnelBlock
-  | CandidateCardBlock;
+  | CandidateCardBlock
+  | JdPreviewBlock;
 
 export type ResponseBlockKind = ResponseBlock["kind"];
 

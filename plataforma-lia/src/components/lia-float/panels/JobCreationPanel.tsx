@@ -83,6 +83,31 @@ export function JobCreationPanel({ data }: JobCreationPanelProps) {
           ))}
         </div>
 
+
+        {/* Benefits */}
+        {!!(data.confirmed_benefits || data.confirmed_variable_compensation) && (
+          <div className="px-4 py-3 border-t border-lia-border-subtle">
+            <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Benefícios</p>
+            {Array.isArray(data.confirmed_benefits) ? (data.confirmed_benefits as string[]).map((b, i) => (
+              <div key={i} className="flex items-center gap-2 py-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
+                <p className="text-xs text-lia-text-primary">{String(b)}</p>
+              </div>
+            )) : null}
+            {Array.isArray(data.confirmed_variable_compensation) ? (
+              <div className="mt-1">
+                <p className="text-micro text-lia-text-tertiary uppercase tracking-wider mb-1">Remuneração Variável</p>
+                {(data.confirmed_variable_compensation as string[]).map((v, i) => (
+                  <div key={i} className="flex items-center gap-2 py-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
+                    <p className="text-xs text-lia-text-primary">{String(v)}</p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        )}
+
         {jdPreview && (
           <div className="px-4 py-3 border-t border-lia-border-subtle">
             <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Preview do JD</p>

@@ -18,6 +18,7 @@ import type {
   EvidenceStackBlock,
   FunnelBlock,
   CandidateCardBlock,
+  JdPreviewBlock,
   ScoreFactor,
 } from "@/types/rrp-blocks";
 
@@ -449,6 +450,19 @@ function CandidateCardView({ block }: { block: CandidateCardBlock }) {
   );
 }
 
+function JdPreviewView({ block }: { block: JdPreviewBlock }) {
+  return (
+    <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-3 space-y-1.5">
+      <p className="text-xs font-semibold text-lia-text-primary">{block.title}</p>
+      {block.body ? (
+        <p className="text-xs text-lia-text-secondary whitespace-pre-wrap leading-relaxed line-clamp-6">
+          {block.body}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 // AD5: skeleton de carregamento (state='loading') — placeholder shimmer.
 function BlockSkeleton() {
   return (
@@ -496,6 +510,8 @@ function RenderOne({
       return <FunnelView block={block} />;
     case "candidate_card":
       return <CandidateCardView block={block} />;
+    case "jd_preview":
+      return <JdPreviewView block={block} />;
     default: {
       // AD6: kind desconhecido (skew de deploy FE/BE) → fallback, nunca throw.
       // Exhaustiveness compile-time: kind novo na union ResponseBlock sem case

@@ -673,7 +673,7 @@ export function UnifiedMessageList({
                   // (list_jobs_result, search_candidates_result, calibration_result)
                   // são renderizados abaixo pelo map() dedicado.
                   const rrpBlocks = message.response_blocks!.filter(
-                    (b) => "kind" in (b as Record<string, unknown>)
+                    (b) => "kind" in (b as unknown as Record<string, unknown>)
                   )
                   return rrpBlocks.length > 0 ? (
                     <ResponseBlockRenderer blocks={rrpBlocks} mode={mode} />
