@@ -1035,10 +1035,11 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         stage,
         requires_approval: Boolean(detail.requires_approval),
       });
-      // Manus F1 — done fecha + limpa estado stale (só se usuário não expandiu
-      // ativamente esta sessão). handoff NÃO reseta — é transição intermediária.
-      // tool open/close_panel aplica preferencia via data.panel_pref. Sem pref => sticky.
-      if (stage === "done") {
+      // Manus F1 — done/handoff fecha + limpa estado stale (só se usuário não expandiu
+      // ativamente esta sessão). handoff = stage terminal real (wizard emite quando
+      // job_id existe + navega pro jobs). done = alternativa legada (raramente emitida).
+      // Ambos disparam o cleanup. tool open/close_panel aplica preferencia via data.panel_pref.
+      if (stage === "done" || stage === "handoff") {
         if (!userExpandedRef.current) {
           setWizardPanelModeState("docked");
         }
