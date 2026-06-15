@@ -173,7 +173,24 @@ class PipelineStageService:
                 )
                 if not is_valid:
                     raise TransitionError(error_msg)
-            
+
+                # P1-BLOCKING: bloquear transicao se existe DataRequest obrigatorio pendente
+                # na etapa de origem. force=True bypass (usado por agentes com permissao).
+                blocking_req = await self.data_request_service.find_blocking_pending_request(
+                    db=db,
+                    candidate_id=vacancy_candidate.candidate_id,
+                    vacancy_id=vacancy_candidate.vacancy_id,
+                    stage=from_stage,
+                )
+                if blocking_req:
+                    pct = int(blocking_req.get_completion_percentage())
+                    raise TransitionError(
+                        f"Transicao bloqueada: solicitacao de dados obrigatoria pendente "
+                        f"na etapa {from_stage} "
+                        f"(request_id={blocking_req.id}, {pct}% preenchido). "
+                        "O candidato deve preencher os dados solicitados antes de avancar."
+                    )
+
             to_sub_status_obj = None
             if to_sub_status:
                 sub_statuses = await self._get_stage_sub_statuses(db, str(to_stage_obj.id))
@@ -784,8 +801,26 @@ class PipelineStageService:
             )
             
             if not trigger_config:
-                logger.debug(f"No data request trigger for stage '{new_stage}'")
-                return None
+                # P2-FASE4: fallback para data_fields.auto_collect na etapa
+                try:
+                    stages = await self._get_company_stages(db, company_id)
+                    stage_obj = next((s for s in stages if s.name == new_stage), None)
+                    raw_fields = (stage_obj.data_fields or []) if stage_obj else []
+                    auto_fields = [f for f in raw_fields if f.get('auto_collect', False)]
+                    if not auto_fields:
+                        logger.debug(f"No data request trigger for stage '{new_stage}'")
+                        return None
+                    trigger_config = {
+                        'source': 'data_fields_auto_collect',
+                        'fields': [f['id'] for f in auto_fields],
+                        'is_blocking': any(f.get('required', False) for f in auto_fields),
+                        'trigger_type': 'stage_entry',
+                        'template_id': None,
+                    }
+                    logger.info(f"P2-FASE4: {len(auto_fields)} auto_collect fields for '{new_stage}'")
+                except Exception as _fa4_err:
+                    logger.warning(f"Fase4 auto_collect fallback failed: {_fa4_err}")
+                    return None
             
             if trigger_config.get("source") == "default_mapping":
                 logger.debug(
@@ -838,10 +873,30 @@ class PipelineStageService:
             )
             
             try:
+                # P2-CANAL: ler canal preferido da empresa (preferred_data_channel)
+                # em vez de hardcodar "email" — mesmo padrão de data_request.py:413
+                _channels = ["email"]
+                try:
+                    from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+                        HiringPolicyRepository,
+                    )
+                    _hp_auto = await HiringPolicyRepository(db).get_by_company(
+                        uuid.UUID(company_id) if isinstance(company_id, str) else company_id
+                    )
+                    _pref_auto = (
+                        (_hp_auto.communication_rules or {}).get("preferred_data_channel")
+                        if _hp_auto and _hp_auto.communication_rules
+                        else None
+                    )
+                    _valid = frozenset({"email", "whatsapp", "voice", "web"})
+                    if _pref_auto and _pref_auto in _valid:
+                        _channels = [_pref_auto]
+                except Exception as _chan_err:
+                    logger.debug("Falha ao carregar canal preferido para auto-trigger: %s", _chan_err)
                 await self.data_request_service.send_notification(
                     db=db,
                     data_request_id=data_request.id,
-                    channels=["email"],
+                    channels=_channels,
                 )
             except Exception as e:
                 logger.warning(f"Failed to send data request notification: {e}")

@@ -798,6 +798,31 @@ class DataRequestService:
         
         return None
     
+    async def find_blocking_pending_request(
+        self,
+        db,
+        candidate_id,
+        vacancy_id,
+        stage,
+    ):
+        from sqlalchemy import select, and_
+        from lia_models.data_request import DataRequest, DataRequestStatus
+        query = select(DataRequest).where(
+            and_(
+                DataRequest.candidate_id == candidate_id,
+                DataRequest.trigger_stage == stage,
+                DataRequest.is_blocking == True,
+                DataRequest.status.in_([
+                    DataRequestStatus.PENDING,
+                    DataRequestStatus.PARTIALLY_FILLED
+                ])
+            )
+        )
+        if vacancy_id:
+            query = query.where(DataRequest.vacancy_id == vacancy_id)
+        result = await db.execute(query)
+        return result.scalar_one_or_none()
+
     async def check_existing_pending_request(
         self,
         db: AsyncSession,
