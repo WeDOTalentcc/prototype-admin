@@ -135,7 +135,11 @@ export function JobScreeningSection({
                           const technicalSkills = ((previewJob.technicalRequirements || []) as unknown[])
                             .map((tr) => normalizeTechnicalRequirement(tr))
                             .filter((s): s is string => Boolean(s))
-                          const behavioralSkills = ((previewJob.behavioralCompetencies || []) as BehavioralCompetency[]).map((bc: BehavioralCompetency) => typeof bc === 'string' ? bc : bc.competency || bc.name).filter(Boolean)
+                          const behavioralSkills = ((previewJob.behavioralCompetencies || []) as BehavioralCompetency[]).map((bc: BehavioralCompetency) => {
+                            if (typeof bc === 'string') return bc
+                            const s = bc.competency || bc.name
+                            return typeof s === 'string' ? s : null
+                          }).filter(Boolean)
                           const responsibilitySkills = (previewJob.requirements || [] as Requirement[]).map((r: Requirement) => {
                             if (typeof r === "string") return r.trim() || null
                             const s = r.requirement ?? r.text ?? r.name
