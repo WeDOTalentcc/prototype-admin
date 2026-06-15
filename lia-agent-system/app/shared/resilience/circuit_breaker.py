@@ -66,7 +66,7 @@ async def _notify_circuit_open(service_name: str) -> None:
         try:
             import redis.asyncio as _aioredis
             from lia_config.config import settings as _settings
-            _redis = _aioredis.from_url(_settings.REDIS_URL, decode_responses=True)  # síncrono
+            _redis = _aioredis.from_url(_settings.REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)  # síncrono
             dedup_key = f"cb_alert:{service_name}"
             if await _redis.get(dedup_key):
                 await _redis.aclose()

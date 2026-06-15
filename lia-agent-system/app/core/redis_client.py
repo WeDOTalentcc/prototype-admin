@@ -59,7 +59,12 @@ async def get_redis():
         url = os.getenv("REDIS_URL", "redis://localhost:6379")
         _log_redis_url_info(url, "get_redis:")
         _redis_client = aioredis.from_url(
-            url, encoding="utf-8", decode_responses=True
+            url,
+            encoding="utf-8",
+            decode_responses=True,
+            socket_connect_timeout=5,
+            socket_timeout=5,
+            retry_on_timeout=True,
         )
     return _redis_client
 

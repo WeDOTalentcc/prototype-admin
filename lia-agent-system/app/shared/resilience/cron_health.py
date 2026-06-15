@@ -31,11 +31,11 @@ def _get_sync_redis():
     """Return a synchronous redis.Redis client using REDIS_URL from settings.
 
     Uses the same sync redis pattern as wsi_async_session_service and
-    jd_template_cache_service — both call redis.from_url(settings.REDIS_URL).
+    jd_template_cache_service — both call redis.from_url(settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5).
     """
     import redis as redis_lib
     from lia_config.config import settings
-    return redis_lib.from_url(settings.REDIS_URL, decode_responses=True)
+    return redis_lib.from_url(settings.REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)
 
 
 def record_cron_run(task_name: str, redis_client=None) -> None:

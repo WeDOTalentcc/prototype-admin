@@ -417,7 +417,7 @@ class FairnessPolicyService:
     async def _cache_get(self, key: str) -> dict | None:
         try:
             import redis.asyncio as aioredis
-            client = aioredis.from_url(_REDIS_URL, decode_responses=True)
+            client = aioredis.from_url(_REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)
             raw = await client.get(key)
             await client.aclose()
             if raw:
@@ -429,7 +429,7 @@ class FairnessPolicyService:
     async def _cache_set(self, key: str, value: dict, ttl: int = 300) -> None:
         try:
             import redis.asyncio as aioredis
-            client = aioredis.from_url(_REDIS_URL, decode_responses=True)
+            client = aioredis.from_url(_REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)
             await client.setex(key, ttl, json.dumps(value, default=str))
             await client.aclose()
         except Exception as exc:

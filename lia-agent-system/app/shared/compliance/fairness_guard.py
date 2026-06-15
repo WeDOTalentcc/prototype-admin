@@ -883,7 +883,7 @@ class FairnessGuard:
 
             import redis.asyncio as _aioredis
             from lia_config.config import settings
-            _redis = _aioredis.from_url(settings.REDIS_URL)
+            _redis = _aioredis.from_url(settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5)
             cached = await _redis.get(cache_key)
             if cached:
                 cached_data = json.loads(cached)

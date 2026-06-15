@@ -152,7 +152,7 @@ company_id: str = Depends(require_company_id)) -> dict:
 
             import redis
             from lia_config.config import settings
-            _r = redis.from_url(settings.REDIS_URL)
+            _r = redis.from_url(settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5)
             _data = _r.get(f"wsi_async:{token}")
             if _data:
                 _session_data = json.loads(_data)

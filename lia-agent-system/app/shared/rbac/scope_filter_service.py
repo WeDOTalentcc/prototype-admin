@@ -95,7 +95,7 @@ class ScopeFilterService:
         """Invalida cache de um role (ou todo o cache RBAC)."""
         try:
             import redis.asyncio as aioredis
-            client = aioredis.from_url(_REDIS_URL, decode_responses=True)
+            client = aioredis.from_url(_REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)
             star = "*"
             pattern = f"rbac:scope:{role or star}:*"
             keys = await client.keys(pattern)
@@ -108,7 +108,7 @@ class ScopeFilterService:
     async def _cache_get(self, key: str):
         try:
             import redis.asyncio as aioredis
-            client = aioredis.from_url(_REDIS_URL, decode_responses=True)
+            client = aioredis.from_url(_REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)
             raw = await client.get(key)
             await client.aclose()
             if raw is not None:
@@ -120,7 +120,7 @@ class ScopeFilterService:
     async def _cache_set(self, key: str, value: bool) -> None:
         try:
             import redis.asyncio as aioredis
-            client = aioredis.from_url(_REDIS_URL, decode_responses=True)
+            client = aioredis.from_url(_REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)
             await client.setex(key, _CACHE_TTL, json.dumps(value))
             await client.aclose()
         except Exception:

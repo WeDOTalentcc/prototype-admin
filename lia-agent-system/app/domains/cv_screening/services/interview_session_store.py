@@ -44,7 +44,7 @@ class InterviewSessionStore:
             return self._redis
         try:
             from app.core.config import settings
-            self._redis = aioredis.from_url(settings.REDIS_URL, decode_responses=False)
+            self._redis = aioredis.from_url(settings.REDIS_URL, decode_responses=False, socket_connect_timeout=5, socket_timeout=5)
             # Probe with a ping
             await self._redis.ping()
             self._redis_available = True

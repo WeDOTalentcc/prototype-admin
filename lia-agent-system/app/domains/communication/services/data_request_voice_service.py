@@ -94,7 +94,7 @@ async def _check_voice_budget(
     try:
         import redis.asyncio as _aioredis
         from lia_config.config import settings as _settings
-        _r = _aioredis.from_url(_settings.REDIS_URL)
+        _r = _aioredis.from_url(_settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5)
         try:
             key = _voice_redis_key(company_id)
             raw = await _r.get(key)
@@ -128,7 +128,7 @@ async def _increment_voice_calls(company_id: str) -> int:
     try:
         import redis.asyncio as _aioredis
         from lia_config.config import settings as _settings
-        _r = _aioredis.from_url(_settings.REDIS_URL)
+        _r = _aioredis.from_url(_settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5)
         try:
             key = _voice_redis_key(company_id)
             new_total = await _r.incr(key)

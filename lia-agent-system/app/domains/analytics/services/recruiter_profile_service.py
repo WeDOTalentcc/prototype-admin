@@ -83,7 +83,7 @@ class RecruiterProfileService:
 
             import redis
             from lia_config.config import settings
-            _r = redis.from_url(settings.REDIS_URL)
+            _r = redis.from_url(settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5)
             data = _r.get(f"recruiter_profile:{cache_key}")
             if data:
                 d = json.loads(data)
@@ -112,7 +112,7 @@ class RecruiterProfileService:
 
             import redis
             from lia_config.config import settings
-            _r = redis.from_url(settings.REDIS_URL)
+            _r = redis.from_url(settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5)
             cache_key = f"{profile.company_id}:{profile.user_id}"
             _r.setex(
                 f"recruiter_profile:{cache_key}",
