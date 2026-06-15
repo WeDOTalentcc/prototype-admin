@@ -6,6 +6,7 @@ import { NovoProjetoWizard } from "@/app/[locale]/(dashboard)/projetos/new/NovoP
 import { Megaphone, Users, CheckCircle2, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { badgeStyles } from "@/lib/design-tokens"
+import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
 import { useCampaignsList, type CampaignItem, type CampaignStatus } from "@/hooks/jobs/useCampaignsList"
 
 // ── Status config ──────────────────────────────────────────────────────────
@@ -63,7 +64,7 @@ function StatsRow({ campaign }: { campaign: CampaignItem }) {
         {campaign.total_candidates} candidatos
       </span>
       {campaign.candidates_hired > 0 && (
-        <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+        <span className="flex items-center gap-1 text-status-success">
           <CheckCircle2 className="w-3 h-3" />
           {campaign.candidates_hired} contratados
         </span>
@@ -119,33 +120,14 @@ function CampaignCard({ campaign }: { campaign: CampaignItem }) {
     null
 
   return (
-    <div className="rounded-lg border border-lia-border-subtle bg-lia-bg-paper shadow-sm">
-      <div className="p-4 space-y-3">
-        {/* Header */}
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-md bg-lia-bg-secondary flex items-center justify-center shrink-0">
-            <Megaphone className="w-4 h-4 text-lia-text-secondary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-small font-medium text-lia-text-primary truncate">{campaign.name}</p>
-              <span className={cn("px-1.5 py-0.5 rounded text-micro font-medium shrink-0", statusCfg.badge)}>
-                {statusCfg.label}
-              </span>
-            </div>
-            {currentStageLabel && (
-              <p className="text-micro text-lia-text-secondary mt-0.5">
-                Etapa atual: {currentStageLabel}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Stage strip */}
-        <StageStrip campaign={campaign} />
-
-        {/* Stats + action */}
-        <div className="flex items-center justify-between">
+    <StudioCardShell
+      icon={<Megaphone className="w-4 h-4 text-lia-text-secondary" />}
+      title={campaign.name}
+      statusBadge={<span className={statusCfg.badge}>{statusCfg.label}</span>}
+      subtitle={currentStageLabel ? `Etapa atual: ${currentStageLabel}` : undefined}
+      bodySlot={<StageStrip campaign={campaign} />}
+      actionsSlot={
+        <div className="flex w-full items-center justify-between">
           <StatsRow campaign={campaign} />
           <button
             type="button"
@@ -158,8 +140,8 @@ function CampaignCard({ campaign }: { campaign: CampaignItem }) {
             <ChevronRight className="w-3 h-3" />
           </button>
         </div>
-      </div>
-    </div>
+      }
+    />
   )
 }
 

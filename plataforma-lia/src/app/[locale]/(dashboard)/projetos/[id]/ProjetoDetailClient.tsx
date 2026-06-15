@@ -127,7 +127,7 @@ function ActivityFeed({ project }: { project: CampaignItem }) {
       when: "há 2h",
     },
     project.candidates_screened > 0 && {
-      icon: <Zap className="w-3.5 h-3.5 text-green-500" />,
+      icon: <Zap className="w-3.5 h-3.5 text-status-success" />,
       text: `Triagem concluída: ${project.candidates_screened} de ${project.total_candidates} aprovados`,
       when: "ontem",
     },
@@ -167,11 +167,11 @@ function ProjetoDetailSkeleton() {
         <div className="h-6 w-56 bg-lia-bg-tertiary rounded" />
         <div className="h-5 w-16 bg-lia-bg-tertiary rounded" />
       </div>
-      <div className="h-10 bg-lia-bg-tertiary rounded-lg" />
-      <div className="h-20 bg-lia-bg-tertiary rounded-lg" />
+      <div className="h-10 bg-lia-bg-tertiary rounded-md" />
+      <div className="h-20 bg-lia-bg-tertiary rounded-md" />
       <div className="grid grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-16 bg-lia-bg-tertiary rounded-lg" />
+          <div key={i} className="h-16 bg-lia-bg-tertiary rounded-md" />
         ))}
       </div>
     </div>
@@ -236,7 +236,7 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
             <div className="flex items-center gap-2 flex-wrap">
               <FolderKanban className="w-5 h-5 text-lia-text-secondary shrink-0" />
               <h1 className="text-heading-md font-bold text-lia-text-primary">{project.name}</h1>
-              <span className={cn("px-2 py-0.5 rounded text-micro font-medium shrink-0", STATUS_BADGE[project.status])}>
+              <span className={cn("shrink-0", STATUS_BADGE[project.status])}>
                 {STATUS_LABEL[project.status]}
               </span>
             </div>
@@ -311,7 +311,7 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
 
             return (
               <div key={stage.name} className={cn(
-                "rounded-lg border border-lia-border-subtle bg-lia-bg-paper shadow-sm p-4 space-y-2",
+                "rounded-md border border-lia-border-subtle bg-lia-bg-paper p-4 space-y-2",
                 isCurrent && "ring-1 ring-lia-btn-primary-bg/30"
               )}>
                   <div className="flex items-center gap-2">
@@ -324,7 +324,7 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
                       <span className="text-micro text-lia-text-secondary">{count} candidatos</span>
                     )}
                     {isCurrent && (
-                      <span className="ml-auto text-micro px-1.5 py-0.5 rounded bg-lia-btn-primary-bg/10 text-lia-btn-primary-bg font-medium">
+                      <span className="ml-auto text-micro px-1.5 py-0.5 rounded-full bg-lia-btn-primary-bg/10 text-lia-btn-primary-bg font-medium">
                         Etapa atual
                       </span>
                     )}
@@ -346,7 +346,7 @@ export default function ProjetoDetailClient({ id }: { id: string }) {
             <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-2">Agentes rodando</p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 p-2 rounded-md bg-lia-bg-secondary">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-status-success shrink-0" />
                 <Bot className="w-3.5 h-3.5 text-lia-text-secondary shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-micro font-medium text-lia-text-primary truncate">Screener</p>

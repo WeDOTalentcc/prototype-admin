@@ -56,7 +56,7 @@ const TEMPLATES = [
     days: 6,
     description: "Banco → Triagem rápida → Convite → Follow-up",
     stages: ["sourcing", "screening", "outreach", "follow_up"],
-    color: "bg-blue-50 dark:bg-blue-950/30",
+    color: "bg-wedo-purple/10",
   },
   {
     key: "multi_canal",
@@ -75,7 +75,7 @@ const TEMPLATES = [
     days: 12,
     description: "Sourcing → Triagem → Entrevista → Avaliação → Proposta",
     stages: ["sourcing", "screening", "interview", "evaluation", "offer"],
-    color: "bg-green-50 dark:bg-green-950/30",
+    color: "bg-wedo-green/10",
   },
   {
     key: "triagem_intensiva",
@@ -84,7 +84,7 @@ const TEMPLATES = [
     days: 5,
     description: "WSI + scoring → Decisão rápida → Aprovação gestor",
     stages: ["screening", "evaluation", "offer"],
-    color: "bg-amber-50 dark:bg-amber-950/30",
+    color: "bg-wedo-amber/10",
   },
 ]
 
@@ -401,7 +401,7 @@ function Step3Template({
                   })
                 }
                 className={cn(
-                  "relative p-4 rounded-lg border-2 text-left transition-all",
+                  "relative p-4 rounded-md border-2 text-left transition-all",
                   data.templateKey === t.key
                     ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg/10"
                     : "border-lia-border-subtle hover:border-lia-border",
@@ -409,16 +409,16 @@ function Step3Template({
                 )}
               >
                 {t.popular && (
-                  <span className="absolute top-2 right-2 text-micro font-semibold px-1.5 py-0.5 rounded bg-lia-btn-primary-bg text-lia-btn-primary-text">
+                  <span className="absolute top-2 right-2 text-micro font-semibold px-1.5 py-0.5 rounded-full bg-lia-btn-primary-bg text-lia-btn-primary-text">
                     Popular
                   </span>
                 )}
                 <p className="text-small font-semibold text-lia-text-primary mb-2">{t.label}</p>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-micro px-1.5 py-0.5 rounded bg-lia-bg-paper text-lia-text-secondary">
+                  <span className="text-micro px-1.5 py-0.5 rounded-full bg-lia-bg-paper text-lia-text-secondary">
                     {t.stages_count} etapas
                   </span>
-                  <span className="text-micro px-1.5 py-0.5 rounded bg-lia-bg-paper text-lia-text-secondary">
+                  <span className="text-micro px-1.5 py-0.5 rounded-full bg-lia-bg-paper text-lia-text-secondary">
                     {t.days} dias
                   </span>
                 </div>
@@ -562,7 +562,7 @@ function Step4Agente({
                     {agent.name}
                   </span>
                   {agent.category && (
-                    <span className="text-micro px-1.5 py-0.5 rounded bg-lia-bg-secondary text-lia-text-tertiary">
+                    <span className="text-micro px-1.5 py-0.5 rounded-full bg-lia-bg-secondary text-lia-text-tertiary">
                       {categoryLabel[agent.category] ?? agent.category}
                     </span>
                   )}

@@ -72,7 +72,7 @@ export function EditProjetoModal({ project, open, onClose, onSaved }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg bg-lia-bg-primary border border-lia-border-medium shadow-lia-lg rounded-xl p-6">
+      <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-medium shadow-lia-lg rounded-xl p-6">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold text-lia-text-primary">
             Editar projeto
