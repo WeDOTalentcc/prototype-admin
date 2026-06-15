@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { textStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Activity, Loader2, AlertCircle, RefreshCw } from "lucide-react"
+import { Plus, Activity, Loader2, AlertCircle, RefreshCw, Brain } from "lucide-react"
 import { DailyBriefingCard } from "@/components/daily-briefing-card"
 import { ActivityFeed } from "@/components/activity-feed"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
@@ -17,6 +17,7 @@ import { ActiveAlertsCard } from "./tasks/ActiveAlertsCard"
 import { ActiveJobsCard } from "./tasks/ActiveJobsCard"
 import { AgentsCard } from "./tasks/AgentsCard"
 import { AgentRunningBanner } from "./tasks/AgentRunningBanner"
+import { useProactiveHints } from "@/hooks/proactive/use-proactive-hints"
 import dynamic from "next/dynamic"
 // C5.4 (2026-05-29): lazy-load DecisionTreeDrawer (Radix Sheet + reasoning query)
 // so its chunk only downloads when an execution is actually opened. Combined with
@@ -68,6 +69,12 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
   const [activityActorFilter, setActivityActorFilter] = useState<'todos' | 'lia' | 'recrutador'>('todos')
   // Onda 2 F2 — Drawer canonical Onda 1 disparado por AgentsCard.
   const [activeExecutionId, setActiveExecutionId] = useState<string | null>(null)
+
+  // F2 hints proativas urgentes (severity high|critical) para exibir no Decidir
+  const { hints: proactiveHints } = useProactiveHints()
+  const urgentHints = proactiveHints
+    .filter((h) => h.severity === "high" || h.severity === "critical")
+    .slice(0, 5)
 
   return (
     <>
@@ -173,6 +180,21 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     onOpenJob={handleOpenJob}
                     userName={user?.name?.split(' ')[0] || 'Recrutador'}
                   />
+
+                  {urgentHints.length > 0 && (
+                    <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
+                        <h3 className="text-xs font-semibold text-lia-text-primary">Sugerido pela LIA</h3>
+                      </div>
+                      {urgentHints.map((hint) => (
+                        <div key={hint.id} className="p-2.5 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary/50">
+                          <p className="text-xs font-medium text-lia-text-primary leading-tight">{hint.title}</p>
+                          <p className="text-micro text-lia-text-secondary mt-0.5 leading-tight">{hint.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   <ActiveAlertsCard
                     activeAlerts={activeAlerts}

@@ -361,6 +361,39 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserId])
 
+  // F2 — Polling de 2 minutos para alertas: gerados pelo backend assincronamente,
+  // precisam aparecer sem reload manual. Polling só de alertas (não todas as 4 queries)
+  // para nao sobrecarregar o backend. Segue padrao refetchIntervalInBackground=false:
+  // document.hidden evita polling desnecessario quando aba nao esta visivel.
+  useEffect(() => {
+    const ALERTS_REFRESH_MS = 120_000 // 2 minutos
+    const fetchAlertsOnly = async () => {
+      if (!mountedRef.current || document.hidden) return
+      try {
+        const res = await fetchEndpointWithRetry(`${API_BASE}/alerts?limit=20&status=active`)
+        if (!res.ok || !mountedRef.current) return
+        const alertsData = await res.json()
+        const alertsList: BackendAlert[] = Array.isArray(alertsData) ? alertsData : (alertsData.alerts || [])
+        const mapped: ActiveAlert[] = alertsList.map((a) => ({
+          id: a.id,
+          title: a.title || "",
+          description: a.message || a.description || "",
+          severity: mapAlertSeverity(a.severity),
+          jobId: a.job_id || "",
+          jobTitle: a.context?.job_title || a.title || "",
+          createdAt: a.created_at ? new Date(a.created_at) : new Date(),
+          action: a.suggested_actions?.[0] || "Verificar",
+        }))
+        if (mountedRef.current) setActiveAlerts(mapped)
+      } catch {
+        // Silencioso: polling e best-effort; erros nao devem perturbar a UI.
+      }
+    }
+    const intervalId = setInterval(fetchAlertsOnly, ALERTS_REFRESH_MS)
+    return () => clearInterval(intervalId)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const fetchAllData = async () => {
     if (!mountedRef.current) return
     setLoading(true)
