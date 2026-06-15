@@ -287,6 +287,15 @@ class AutomationScheduler:
                 replace_existing=True,
             )
 
+            # F3 — AutonomousActionsEngine: executa ações de baixo risco automaticamente
+            self.scheduler.add_job(
+                self._run_autonomous_actions,
+                IntervalTrigger(minutes=30),
+                id="autonomous_actions",
+                name="F3 — AutonomousActionsEngine (low-risk auto-execute)",
+                replace_existing=True,
+            )
+
             self.scheduler.start()
             # Daily digest — 08:00 BRT, Mon–Fri
             self.scheduler.add_job(
@@ -318,6 +327,25 @@ class AutomationScheduler:
             logger.error(f"❌ Failed to start Automation Scheduler: {e}")
             raise
     
+    @staticmethod
+    def _is_digest_due(frequency: str) -> bool:
+        """Verifica se é hora de enviar o digest conforme frequência configurada.
+
+        O scheduler cron roda Mon-Fri às 08h. A decisão:
+        - daily / twice_daily: sempre (cron já limita a dias úteis)
+        - weekly: somente segunda-feira (weekday == 0)
+        - monthly: somente dia 1 do mês
+
+        Qualquer valor desconhecido → True (fail-open, envia por segurança).
+        """
+        now = datetime.now(UTC)
+        if frequency == "weekly":
+            return now.weekday() == 0  # somente segunda-feira
+        if frequency == "monthly":
+            return now.day == 1
+        # daily, twice_daily, ou desconhecido → enviar
+        return True
+
     async def _run_daily_digest(self):
         """Cron job: send daily morning digest to all recruiters (08:00 BRT Mon-Fri)."""
         logger.info("[AutomationScheduler] Running daily platform digest...")
@@ -1198,6 +1226,67 @@ Equipe de Recrutamento
             )
         except Exception as exc:
             logger.error("L4 lgpd_cleanup failed: %s", exc)
+
+
+    async def _run_autonomous_actions(self) -> None:
+        """F3 — Wire AutonomousActionsEngine no scheduler.
+
+        Para cada empresa ativa, coleta os alerts do MonitoringLoop (via run_checks)
+        e os repassa para AutonomousActionsEngine.process_monitoring_alerts().
+        Ações de baixo risco com confidence >= 0.85 são executadas automaticamente.
+        Ações de médio risco geram notificação. Alto risco requer confirmação.
+        """
+        logger.info("[Scheduler] Running autonomous_actions job")
+        try:
+            from app.domains.recruiter_assistant.services.autonomous_actions_engine import (
+                AutonomousActionsEngine,
+            )
+            from app.domains.recruiter_assistant.services.monitoring_loop import (
+                MonitoringLoop,
+            )
+
+            engine = AutonomousActionsEngine.get_instance()
+            monitoring = MonitoringLoop.get_instance()
+
+            async with async_session_factory() as db:
+                company_ids = await AutomationScheduler._select_active_company_ids(db)
+
+            logger.info(
+                "[Scheduler] autonomous_actions: %s companies para processar",
+                len(company_ids),
+            )
+            actions_total = 0
+            for company_id in company_ids:
+                try:
+                    # Obtém alerts já armazenados no MonitoringLoop (sem novo I/O por empresa)
+                    alerts = monitoring.get_alerts(company_id)
+                    if not alerts:
+                        # Se não há alerts em memória, roda run_checks para popula-los
+                        alerts = await monitoring.run_checks(company_id)
+                    if alerts:
+                        actions = await engine.process_monitoring_alerts(
+                            company_id=company_id,
+                            alerts=alerts,
+                        )
+                        actions_total += len(actions)
+                        logger.debug(
+                            "[Scheduler] autonomous_actions company=%s alerts=%s actions=%s",
+                            company_id,
+                            len(alerts),
+                            len(actions),
+                        )
+                except Exception as exc:
+                    logger.warning(
+                        "[Scheduler] autonomous_actions company=%s falhou: %s",
+                        company_id,
+                        exc,
+                    )
+            logger.info(
+                "[Scheduler] autonomous_actions concluído: %s actions propostas",
+                actions_total,
+            )
+        except Exception as exc:
+            logger.error("[Scheduler] Error in autonomous_actions: %s", exc, exc_info=True)
 
 
 automation_scheduler = AutomationScheduler()
