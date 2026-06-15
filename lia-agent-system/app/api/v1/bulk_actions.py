@@ -43,6 +43,41 @@ router = APIRouter()
 
 MAX_BULK_ITEMS = 100
 VALID_CANDIDATE_STATUSES = ["new", "screening", "interview", "offer", "hired", "rejected"]
+# State machine: maps current_status -> set of allowed target statuses.
+# Prevents nonsensical transitions (e.g. hired->new) while allowing
+# legitimate recruiting flows including reconsideration (rejected->screening).
+STATUS_TRANSITIONS: dict[str, set[str]] = {
+    "new":        {"screening", "interview", "offer", "hired", "rejected"},
+    "screening":  {"new", "interview", "offer", "hired", "rejected"},
+    "interview":  {"new", "screening", "offer", "hired", "rejected"},
+    "offer":      {"interview", "hired", "rejected"},
+    "hired":      {"rejected"},          # only reversal allowed
+    "rejected":   {"new", "screening"},  # reconsideration only
+}
+# Sentinela: candidatos sem status (None/empty) podem ir pra qualquer estado
+_STATUS_UNKNOWN = "__unknown__"
+
+
+def _check_status_transition(current_status, new_status):
+    """Returns error message if transition is invalid, None if allowed.
+
+    Unknown current status (None/empty) is always allowed -- fail-open
+    for legacy data without a status set.
+    """
+    if not current_status:
+        return None
+    allowed = STATUS_TRANSITIONS.get(current_status)
+    if allowed is None:
+        return None  # unknown current status -- fail-open
+    if new_status not in allowed:
+        return (
+            f"Transicao invalida: {current_status!r} -> {new_status!r}. "
+            f"Permitido: {', '.join(sorted(allowed))}. "
+            f"Para corrigir: escolha um dos status permitidos para candidatos em {current_status!r}."
+        )
+    return None
+
+
 
 DEFAULT_SATURATION_THRESHOLD = 20
 DEFAULT_UNLOCK_INCREMENT = 10
@@ -238,6 +273,15 @@ company_id: str = Depends(require_company_id)):
                     errors.append(BulkOperationError(
                         id=candidate_id,
                         error_message="Candidate is inactive"
+                    ))
+                    continue
+
+                # State machine guard -- per-item error, does not fail the whole operation
+                transition_error = _check_status_transition(candidate.status, request.new_status)
+                if transition_error:
+                    errors.append(BulkOperationError(
+                        id=candidate_id,
+                        error_message=transition_error,
                     ))
                     continue
 
