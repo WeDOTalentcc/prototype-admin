@@ -1081,6 +1081,22 @@ export function UnifiedChat({
     [close, enterFullscreen, open],
   );
 
+  // When the user explicitly closes an overlay chat (via X button), reset chatMode
+  // to "sidebar" so UnifiedChatConditional can transition from showFullscreen=true
+  // back to the bubble. Without this, chatMode stays "fullscreen" after close and
+  // the fullscreen panel re-appears (since showFullscreen no longer checks isOpen).
+  const handleClose = useCallback(() => {
+    close();
+    if (renderMode === "overlay") {
+      window.dispatchEvent(
+        new CustomEvent("lia:chat-mode-changed", {
+          detail: { mode: "sidebar", prevMode: mode },
+        }),
+      );
+      setPersisted(MODE_STORAGE_KEY, "sidebar");
+    }
+  }, [close, mode, renderMode]);
+
   // RRP (AD8): blocos wide/panel pedem expansao p/ tela cheia via evento.
   // handleModeChange e o bridge canonico (setMode + persist + transicoes);
   // o renderer (deeply nested) nao o alcanca por prop, entao usa evento.
@@ -1220,7 +1236,7 @@ export function UnifiedChat({
           <UnifiedChatHeader
             mode={effectiveMode}
             onModeChange={handleModeChange}
-            onClose={close}
+            onClose={handleClose}
             onNewChat={handleNewChat}
             onSwitchTask={() => setShowSwitchTask(true)}
             conversationTitle={conversationTitle}

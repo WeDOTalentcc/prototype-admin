@@ -63,7 +63,10 @@ export function UnifiedChatConditional() {
 
   const showFloating = isOpen && chatMode === "floating" && !hasInlineChat
   const showSidebarOverlay = isOpen && chatMode === "sidebar" && !hasInlineChat && !hasDashboardShell
-  const showFullscreen = isOpen && chatMode === "fullscreen" && !hasInlineChat
+  // isOpen is intentionally excluded: enterFullscreen() sets isOpen=false as a non-destructive
+  // hide (preserves dynamicPanel/entityContext), but fullscreen mode should render regardless.
+  // The X close button resets chatMode→sidebar via lia:chat-mode-changed, hiding this correctly.
+  const showFullscreen = chatMode === "fullscreen" && !hasInlineChat
 
   return (
     <>
