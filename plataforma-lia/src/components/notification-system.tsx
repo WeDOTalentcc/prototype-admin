@@ -23,6 +23,8 @@ import {
   ChevronsLeft,
   ExternalLink,
   Trash2,
+  Brain,
+  ArrowRight,
 } from "lucide-react"
 import {
   useNotifications,
@@ -30,6 +32,7 @@ import {
   type Notification,
   type NotificationCategory,
 } from "@/hooks/shared/use-notifications"
+import { useProactiveHints, type ProactiveHint } from "@/hooks/proactive/use-proactive-hints"
 import { cn } from "@/lib/utils"
 
 const CATEGORY_ICONS: Record<NotificationCategory, React.ElementType> = {
@@ -241,6 +244,15 @@ export function NotificationSystem({
   const cleanupRef = useRef<(() => void) | null>(null)
   const [portalPosition, setPortalPosition] = useState({ top: 0, left: 0, right: 0, fromSidebar: false })
   const prevUnreadCountRef = useRef(unreadCount)
+
+  // Proactive hints — merged into this panel
+  const { hints, isLoading: hintsLoading, dismiss: dismissHint } = useProactiveHints()
+  const [deferredHintIds, setDeferredHintIds] = useState<Set<string>>(new Set())
+  const visibleHints = useMemo(
+    () => hints.filter((h: ProactiveHint) => !deferredHintIds.has(h.id)),
+    [hints, deferredHintIds]
+  )
+  const totalBadgeCount = unreadCount + visibleHints.length
 
   useEffect(() => {
     if (prevUnreadCountRef.current !== null && unreadCount > prevUnreadCountRef.current) {
@@ -467,6 +479,62 @@ export function NotificationSystem({
               </div>
             )}
           </div>
+
+          {/* Sugestões da IA — proactive hints merged from ProactiveActionsBell */}
+          {(visibleHints.length > 0 || hintsLoading) && (
+            <div className="border-t border-lia-border-subtle">
+              <div className="px-3 py-2 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Brain className="w-3.5 h-3.5 text-wedo-cyan-dark" />
+                  <span className="text-[11px] font-semibold text-lia-text-primary">Sugestões da IA</span>
+                </div>
+                {visibleHints.length > 0 && (
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-lia-btn-primary-bg/15 text-wedo-cyan-dark">
+                    {visibleHints.length}
+                  </span>
+                )}
+              </div>
+              {hintsLoading ? (
+                <div className="flex justify-center py-3">
+                  <Loader2 className="w-4 h-4 animate-spin text-lia-text-secondary" />
+                </div>
+              ) : (
+                <div className="divide-y divide-lia-border-subtle max-h-[200px] overflow-y-auto">
+                  {visibleHints.map((hint: ProactiveHint) => (
+                    <div key={hint.id} className="px-3 py-2">
+                      <div className="flex items-start gap-2">
+                        <div className={} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-lia-text-primary line-clamp-1">{hint.title}</p>
+                          <p className="text-[11px] text-lia-text-tertiary line-clamp-2 mt-0.5">{hint.message}</p>
+                          {hint.action && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <ArrowRight className="w-3 h-3 text-lia-text-secondary shrink-0" />
+                              <span className="text-[11px] text-lia-text-secondary font-medium line-clamp-1">{hint.action}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1 mt-1.5">
+                            <button
+                              onClick={() => dismissHint(hint.id)}
+                              className="text-[11px] px-1.5 py-0.5 rounded text-lia-text-secondary hover:text-status-error hover:bg-status-error/10 transition-colors"
+                            >
+                              Dispensar
+                            </button>
+                            <button
+                              onClick={() => setDeferredHintIds(prev => new Set([...prev, hint.id]))}
+                              className="text-[11px] px-1.5 py-0.5 rounded text-lia-text-secondary hover:text-status-warning hover:bg-status-warning/10 transition-colors"
+                            >
+                              Depois
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
