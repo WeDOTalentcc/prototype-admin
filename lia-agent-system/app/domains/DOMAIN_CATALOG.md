@@ -11,7 +11,8 @@ Support files (`base.py`, `compliance_base.py`, `registry.py`, `workflow.py`) n�
 | **Special Agentic** | `domain.py` com `@register_domain`, arquitetura não-padrão (LangGraph nodes ou platform) | 2 |
 | **Micro-Action** | `domain.py` com `@register_domain`, ≤10 arquivos, sem `agents/` | 2 |
 | **Service** | Sem `domain.py` — apenas `services/` e `repositories/`, não roteável | 13 |
-| **Agent Studio em Desenvolvimento** | Sem `domain.py` — lógica de serviço pronta; serão custom agents no Agent Studio | 4 |
+| **Agentic Stub Registrado** | `domain.py` com `@register_domain` e `intent_keywords: {}` — registrado, não roteável ainda | 3 |
+| **Agent Studio em Desenvolvimento** | Sem `domain.py` — lógica de serviço pronta; será custom agent no Agent Studio | 1 |
 | **Orphaned/Minimal** | Sem roteamento ativo ou stub mínimo sem implementação real | 0 |
 
 **Total: 36 diretórios de domínio.**
@@ -90,16 +91,23 @@ Proveem acesso a dados e lógica de negócio via `services/` e `repositories/`.
 
 ---
 
-## Agent Studio em Desenvolvimento (4)
+## Agent Studio em Desenvolvimento (1)
 
-Lógica de serviço substancial já implementada. **Não têm `domain.py` por decisão arquitetural**: serão criados como agentes customizados no Agent Studio (`agent_studio` domain), sem promover ao namespace de agentic domains canônicos (preserva o inventário sentinela de 16 ReActAgents em `test_tenant_aware_rollout_t_d.py`).
+Lógica de serviço substancial já implementada. **Não têm `domain.py`**: será criado como agente customizado no Agent Studio (`agent_studio` domain).
 
 | Domain | Arquivos | Conteúdo atual | Plano |
 |--------|----------|----------------|-------|
-| `interview_intelligence` | 20 | `services/`: bias_detector, comparative_analysis, feedback_generator, interview_wsi, strategic_opinion, transcription | Agente de inteligência de entrevistas no Agent Studio |
-| `talent_intelligence` | 22 | `services/`: skills_ontology_engine. `tools/`: candidate_nurture, internal_mobility, interview_intelligence_tools, market_intelligence, skills_ontology, workforce_planning | Agente de inteligência de talentos no Agent Studio |
 | `voice` | 40 | `services/`: gemini_live_audio, voice_core_orchestrator, voice_screening, voice_service, realtime_credit_session. `plugins/`: data_collection, studio_voice, wsi_voice. `protocols/`: voice_core_plugin | Agente de triagem por voz no Agent Studio |
-| `workforce` | 13 | `agents/`: workforce_tool_registry. `services/`: headcount_import_service | Agente de planejamento de workforce no Agent Studio |
+
+### Agentic Stub Registrado (Em Desenvolvimento) (3)
+
+Têm `domain.py` com `@register_domain` e `intent_keywords: {}` — registrados no `DomainRegistry`, roteáveis pelo CascadedRouter, mas sem intenções mapeadas (stubs honestos). O roteador nunca os seleciona em produção até que `capabilities.yaml` seja populado. Serão promovidos a Agentic quando implementação estiver pronta.
+
+| Domain | Arquivos | Conteúdo atual | Plano |
+|--------|----------|----------------|-------|
+| `interview_intelligence` | 20 | `domain.py` (stub) + `services/`: bias_detector, comparative_analysis, feedback_generator, interview_wsi, strategic_opinion, transcription | Agente de inteligência de entrevistas no Agent Studio |
+| `talent_intelligence` | 22 | `domain.py` (stub) + `services/`: skills_ontology_engine. `tools/`: candidate_nurture, internal_mobility, interview_intelligence_tools, market_intelligence, skills_ontology, workforce_planning | Agente de inteligência de talentos no Agent Studio |
+| `workforce` | 13 | `domain.py` (stub) + `agents/`: workforce_tool_registry. `services/`: headcount_import_service | Agente de planejamento de workforce no Agent Studio |
 
 ---
 
@@ -111,4 +119,5 @@ Nenhum. `autonomous/` e `triagem/` removidos (Sprint 13 cleanup).
 
 ## Changelog
 
+- **2026-06-14:** Reclassificados `interview_intelligence`, `talent_intelligence`, `workforce` de "Agent Studio em Desenvolvimento" para nova subcategoria "Agentic Stub Registrado" — os 3 têm `domain.py` com `intent_keywords: {}` (stubs honestos, registrados no DomainRegistry). `voice` permanece único em "Agent Studio em Desenvolvimento" (sem `domain.py`). Count: 4 → 1 + nova subcategoria de 3.
 - **Sprint 13 (2026-06-13):** Removidos `autonomous/` e `triagem/` (órfãos). Consolidado `policy` → `hiring_policy` (domain_id único). Removidos 4 dead-code items: `pipeline/kanban_assistant_service.py`, `sourcing/tools.py`, `sourcing/prompts.py`, `modules/routes/`. Adicionado `__domain_type__` a 8 domínios. Removidos diretórios vazios pós-T14. Total: 38 → 36 domínios.
