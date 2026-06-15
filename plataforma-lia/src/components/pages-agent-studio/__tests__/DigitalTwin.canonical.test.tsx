@@ -92,11 +92,8 @@ describe("DigitalTwin — canonical (no competitor/marketing copy)", () => {
     const { TwinsList } = await import("../DigitalTwinComponents")
     renderWithIntl(<TwinsList onCreateTwin={() => {}} />)
 
-    // Sub-header explains the concept WITHOUT marketing
-    const subHeader = await screen.findByText(
-      /agente IA que aprende o padrão de avaliação/i
-    )
-    expect(subHeader).toBeTruthy()
+    // Wait for empty state to render (loading -> empty)
+    await screen.findByText(/Nenhum Gêmeo Digital criado ainda/i)
 
     // Empty state owns the primary action ("Criar primeiro Gêmeo Digital")
     const emptyCta = screen.getAllByRole("button").find((b) =>

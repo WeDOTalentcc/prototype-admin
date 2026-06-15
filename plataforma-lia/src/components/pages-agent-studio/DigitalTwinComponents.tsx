@@ -643,22 +643,19 @@ export function TwinsList({ onEvaluate, onCreateTwin, refreshKey = 0 }: TwinsLis
   }
 
   // P0 rewrite 2026-05-26 (Paulo): layout canonical idêntico Marketplace/Personalizados.
-  // Header (título + sub-header neutro) + CTA topo direito + grid cards OU empty state.
+  // CTA topo direito + grid cards OU empty state. Header (título + sub-header) é
+  // renderizado pelo pai (AgentStudioPage) via TabSectionHeader — não duplicar aqui.
   // SEM banner concorrente, SEM 4 cards "Passo 1-4" — esses blocos foram removidos.
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2 max-w-2xl">
-          <h2 className={textStyles.h3}>{tTwins("headerTitle")}</h2>
-          <p className={textStyles.description}>{tTwins("subheader")}</p>
-        </div>
-        {!isLoading && twins.length > 0 && (
+      {!isLoading && twins.length > 0 && (
+        <div className="flex items-start justify-end gap-4">
           <Button className={buttonStyles.primary} onClick={onCreateTwin}>
             <Plus className="w-4 h-4 mr-1.5" />
             {tTwins("createCta")}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {isLoading ? (
         <p className={textStyles.caption}>{t("loadingTwins")}</p>

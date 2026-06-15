@@ -606,9 +606,8 @@ export default function AgentStudioPage({
               <RefreshCw className="w-4 h-4" />
             </Button>
             <Button
-              size="sm"
+              className="gap-2 h-8 px-3 bg-lia-btn-primary-hover"
               onClick={() => setShowCreateModal(true)}
-              className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
             >
               <Plus className="w-4 h-4" />
               {t("studio.createAgent")}

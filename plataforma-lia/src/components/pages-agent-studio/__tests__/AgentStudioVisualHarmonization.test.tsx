@@ -114,10 +114,12 @@ describe("Agent Studio — harmonização visual (Task #1044)", () => {
     })
     const { container } = result!
     await waitFor(() => {
-      // Sub-header canonical aparece (TwinsList tem header próprio agora).
-      // O mock useTranslations devolve a key crua, então procuramos por elas.
-      expect(container.textContent).toMatch(/subheader|headerTitle/i)
+      // Loading concluído (estado vazio renderizado).
+      expect(container.textContent).not.toContain("loadingTwins")
     })
+    // Header duplicado removido: TwinsList NÃO renderiza header próprio
+    // (headerTitle/subheader) — o header é do pai (AgentStudioPage via TabSectionHeader).
+    expect(container.textContent).not.toMatch(/subheader|headerTitle/i)
     // NÃO renderiza 4-step onboarding section nem banner concorrente.
     // (Conteúdo do banner removido: "Eightfold" / "DIFERENCIAL" / 4 step blocks.)
     expect(container.textContent).not.toMatch(/Eightfold/i)
