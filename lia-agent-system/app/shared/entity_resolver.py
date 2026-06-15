@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from dataclasses import dataclass, field
 from difflib import SequenceMatcher
 from typing import Any
 from contextvars import ContextVar
@@ -408,3 +409,205 @@ async def resolve_named_entities(
 
     result["hint"] = "\n".join(hints)
     return result
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Structured EntityResolver — FIX-P0-01
+# Pure-Python, synchronous, works with pre-fetched list[dict] rows.
+# No LLM — deterministic disambiguation only.
+# ─────────────────────────────────────────────────────────────────────────────
+
+@dataclass
+class ResolvedEntity:
+    entity_type: str
+    entity_id: str | int
+    display_name: str
+    confidence: float  # 1.0 = exact; 0.9 = prefix; 0.6-1.0 = fuzzy
+
+
+@dataclass
+class ResolutionResult:
+    matches: list[ResolvedEntity]
+    selected: ResolvedEntity | None  # auto-set only when exactly 1 match
+    ambiguous: bool
+    requires_disambiguation: bool    # True → ask user to pick from matches
+    error: str | None
+
+
+def _match_confidence(norm_input: str, norm_field: str) -> float:
+    """Return confidence [0.0, 1.0] for input vs one field value.
+
+    Strategy (in order of priority):
+      1.0  exact        norm_input == norm_field
+      0.9  prefix       norm_field starts with norm_input
+      0.85 substring    norm_input is a substring of norm_field
+      r    fuzzy        difflib ratio >= 0.6
+      0.0  no match
+    """
+    if not norm_input or not norm_field:
+        return 0.0
+    if norm_input == norm_field:
+        return 1.0
+    if norm_field.startswith(norm_input):
+        return 0.9
+    if norm_input in norm_field:
+        return 0.85
+    ratio = SequenceMatcher(None, norm_input, norm_field).ratio()
+    return ratio if ratio >= 0.6 else 0.0
+
+
+def _build_display_name(row: dict, display_fields: list[str]) -> str:
+    """Build a human-readable label from the display_fields of a row."""
+    parts = [str(row[f]) for f in display_fields if row.get(f)]
+    return " — ".join(parts) if parts else str(row.get("id", "unknown"))
+
+
+
+
+def _is_email(s: str) -> bool:
+    """True if s looks like an email address."""
+    return "@" in s and "." in s.split("@")[-1]
+
+
+def _email_norm(s: str) -> str:
+    """Normalize email for comparison: lowercase + strip (preserves @ and .)."""
+    return (s or "").lower().strip()
+
+class EntityResolver:
+    """Resolves a user text hint to zero-or-more entity records.
+
+    Usage:
+        resolver = EntityResolver()
+        result = resolver.resolve("candidate", "João", pre_fetched_rows)
+        if result.selected:
+            use(result.selected.entity_id)
+        elif result.requires_disambiguation:
+            show_list(result.matches)  # 2-5 options → ask user
+        else:
+            show_error(result.error)
+
+    Never calls an LLM — selection is always deterministic.
+    """
+
+    def resolve(
+        self,
+        entity_type: str,
+        user_input: str,
+        candidates: list[dict],
+    ) -> ResolutionResult:
+        """Resolve user_input against pre-fetched candidates list.
+
+        Args:
+            entity_type: "candidate" | "job" | "company" | "user"
+            user_input:  raw text from recruiter, e.g. "João", "paulo@email.com"
+            candidates:  DB rows (list[dict]) already fetched and company-scoped
+
+        Returns:
+            ResolutionResult with disambiguation outcome.
+        """
+        from app.shared.entities.registry import get_entity_type
+
+        entity_def = get_entity_type(entity_type)
+        # Emails: _norm strips @ and . making all emails look similar via fuzzy.
+        # Detect email input and use _email_norm (no accent/punct stripping).
+        _input_is_email = _is_email(user_input)
+        norm_input = _email_norm(user_input) if _input_is_email else _norm(user_input)
+
+        if not norm_input:
+            return ResolutionResult(
+                matches=[],
+                selected=None,
+                ambiguous=False,
+                requires_disambiguation=False,
+                error=f"Empty input for entity type {entity_type}",
+            )
+
+        scored: list[tuple[float, ResolvedEntity]] = []
+
+        for row in candidates:
+            entity_id = str(
+                row.get(entity_def.unique_id_field)
+                or row.get("id")
+                or ""
+            )
+            display_name = _build_display_name(row, entity_def.display_fields)
+            max_conf = 0.0
+
+            for fname in entity_def.searchable_fields:
+                val = row.get(fname)
+                if not val:
+                    continue
+                val_str = str(val)
+                _field_is_email = _is_email(val_str)
+                if _input_is_email and _field_is_email:
+                    # Email vs email: STRICT exact match only (no fuzzy — shared domain
+                    # suffix like @x.com gives false positives via SequenceMatcher).
+                    conf = 1.0 if _email_norm(norm_input) == _email_norm(val_str) else 0.0
+                elif _input_is_email or _field_is_email:
+                    # Email input vs non-email field (or vice versa): skip
+                    conf = 0.0
+                else:
+                    conf = _match_confidence(norm_input, _norm(val_str))
+                if conf > max_conf:
+                    max_conf = conf
+
+            if max_conf > 0.0:
+                scored.append((
+                    max_conf,
+                    ResolvedEntity(
+                        entity_type=entity_type,
+                        entity_id=entity_id,
+                        display_name=display_name,
+                        confidence=round(max_conf, 4),
+                    ),
+                ))
+
+        scored.sort(key=lambda x: -x[0])
+        matches = [e for _, e in scored]
+
+        if not matches:
+            return ResolutionResult(
+                matches=[],
+                selected=None,
+                ambiguous=False,
+                requires_disambiguation=False,
+                error=f"No match found for {user_input}",
+            )
+
+        if len(matches) == 1:
+            return ResolutionResult(
+                matches=matches,
+                selected=matches[0],
+                ambiguous=False,
+                requires_disambiguation=False,
+                error=None,
+            )
+
+        if len(matches) <= 5:
+            return ResolutionResult(
+                matches=matches,
+                selected=None,
+                ambiguous=True,
+                requires_disambiguation=True,
+                error=None,
+            )
+
+        # >5 — too ambiguous, show top 5 and ask for more context
+        return ResolutionResult(
+            matches=matches[:5],
+            selected=None,
+            ambiguous=True,
+            requires_disambiguation=False,
+            error=f"Too many matches for {user_input}, please be more specific",
+        )
+
+
+class EntityResolverFactory:
+    """Creates EntityResolver instances with upfront entity_type validation."""
+
+    @staticmethod
+    def create(entity_type: str) -> EntityResolver:
+        """Return a ready EntityResolver, raising ValueError for unknown types."""
+        from app.shared.entities.registry import get_entity_type
+        get_entity_type(entity_type)  # validates; raises ValueError if unknown
+        return EntityResolver()
