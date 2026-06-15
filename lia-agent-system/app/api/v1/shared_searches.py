@@ -291,6 +291,28 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=400, detail="Company ID inválido para criar compartilhamento")
 
         candidate_uuids = [uuid.UUID(str(cid)) for cid in data.candidate_ids]
+
+        # G6 LGPD consent gate — sharing PII with third parties requires explicit consent (Art. 7)
+        # ADR-LGPD-002: this is NOT recruiter viewing own data (Art. 7 II legítimo interesse);
+        # this is sharing with EXTERNAL recipients (hiring managers) via link+OTP = third-party disclosure
+        candidates_for_consent = await repo.get_candidates_by_ids(candidate_uuids)
+        candidates_without_consent = [
+            str(c.id) for c in candidates_for_consent
+            if not getattr(c, "communication_consent", False)
+        ]
+        if candidates_without_consent:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "lgpd_consent_missing",
+                    "message": (
+                        f"{len(candidates_without_consent)} candidato(s) não consentiram com "
+                        f"compartilhamento de dados. Obtenha o consentimento antes de compartilhar."
+                    ),
+                    "candidate_ids_without_consent": candidates_without_consent,
+                },
+            )
+
         snapshot_data = await build_candidate_snapshot(repo, candidate_uuids)
 
         if not snapshot_data:
