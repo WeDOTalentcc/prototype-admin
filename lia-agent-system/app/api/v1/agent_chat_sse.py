@@ -59,6 +59,15 @@ from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, SESSION_ID_PATH_PATT
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# PII identity cache: (user_id, company_id) -> (mask_bool, user_name, user_email, ts)
+# TTL=300s: user role/PII visibility does not change per-turn.
+# Harness: guide=computacional (deterministic cache, no inference).
+# ---------------------------------------------------------------------------
+import time as _time_module
+_pii_identity_cache: dict[tuple, tuple] = {}
+_PII_IDENTITY_TTL = 300.0  # 5 minutes
+
 router = APIRouter(tags=["chat-sse"])
 # ---------------------------------------------------------------------------
 # STREAMING BEHAVIOR (UC-P3-06)
@@ -426,20 +435,35 @@ company_id: str = Depends(require_company_id)):
             try:
                 import uuid as _uuid_b2
                 from app.shared.pii_masking import set_chat_pii_mask_identity, chat_should_mask_identity
-                from app.core.database import AsyncSessionLocal as _SessB2
-                from app.domains.company.repositories.user_repository import UserRepository as _UserRepoB2
-                from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository as _HPRepoB2
                 if user_id and user_id != "anonymous" and company_id:
-                    async with _SessB2() as _db_b2:
-                        _u_b2 = await _UserRepoB2(_db_b2).get_by_id(_uuid_b2.UUID(str(user_id)), company_id=company_id)
-                        _pol_b2 = await _HPRepoB2(_db_b2).get_by_company(company_id)
-                    _rd_b2 = (getattr(_pol_b2, "pii_visibility_defaults", None) or {}) if _pol_b2 else {}
-                    if _u_b2 is not None:
-                        set_chat_pii_mask_identity(chat_should_mask_identity(_u_b2, _rd_b2))
-                        # W0-A: wizard recruiter identity — carried in context so _build_state can populate
-                        # parsed_recruiter_name/email at session start without a separate DB lookup at publish.
-                        context.setdefault("user_name", getattr(_u_b2, "name", None) or None)
-                        context.setdefault("user_email", getattr(_u_b2, "email", None) or None)
+                    _b2_cache_key = (str(user_id), str(company_id))
+                    _b2_cached = _pii_identity_cache.get(_b2_cache_key)
+                    if _b2_cached is not None and _time_module.time() - _b2_cached[3] < _PII_IDENTITY_TTL:
+                        # Cache hit: apply cached identity without any DB round-trip
+                        _mask_b2, _name_b2, _email_b2, _ = _b2_cached
+                        set_chat_pii_mask_identity(_mask_b2)
+                        context.setdefault("user_name", _name_b2)
+                        context.setdefault("user_email", _email_b2)
+                        logger.debug("[B2] pii_identity cache hit user=%s", user_id)
+                    else:
+                        from app.core.database import AsyncSessionLocal as _SessB2
+                        from app.domains.company.repositories.user_repository import UserRepository as _UserRepoB2
+                        from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository as _HPRepoB2
+                        async with _SessB2() as _db_b2:
+                            _u_b2 = await _UserRepoB2(_db_b2).get_by_id(_uuid_b2.UUID(str(user_id)), company_id=company_id)
+                            _pol_b2 = await _HPRepoB2(_db_b2).get_by_company(company_id)
+                        _rd_b2 = (getattr(_pol_b2, "pii_visibility_defaults", None) or {}) if _pol_b2 else {}
+                        if _u_b2 is not None:
+                            _mask_val = chat_should_mask_identity(_u_b2, _rd_b2)
+                            _name_val = getattr(_u_b2, "name", None) or None
+                            _email_val = getattr(_u_b2, "email", None) or None
+                            set_chat_pii_mask_identity(_mask_val)
+                            # W0-A: wizard recruiter identity — carried in context so _build_state can populate
+                            # parsed_recruiter_name/email at session start without a separate DB lookup at publish.
+                            context.setdefault("user_name", _name_val)
+                            context.setdefault("user_email", _email_val)
+                            # Store in cache for subsequent turns (TTL=300s)
+                            _pii_identity_cache[_b2_cache_key] = (_mask_val, _name_val, _email_val, _time_module.time())
             except Exception:
                 logger.debug("[B2] chat identity-masking setup skipped (non-blocking)", exc_info=True)
 

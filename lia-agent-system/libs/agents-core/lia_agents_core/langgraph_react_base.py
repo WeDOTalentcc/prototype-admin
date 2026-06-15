@@ -222,13 +222,26 @@ class LangGraphReActBase(LangGraphBase):
             system_prompt = f"{system_prompt}\n\n{extra_context}"
 
         # --- WorkingMemory: incrementa iteração e sincroniza stage ---
+        # Fire-and-forget: increment is an analytics counter; LLM response does NOT
+        # depend on its result. Using create_task removes the await from the hot path.
+        # Harness: guide=computacional (perf improvement, no inference change).
         if hasattr(self, "_memory_service"):
+            import asyncio as _asyncio_react
+            async def _incr_iter():
+                try:
+                    await self._memory_service.increment_iteration(  # type: ignore[attr-defined]
+                        input.session_id, self.domain_name
+                    )
+                except Exception as exc:
+                    logger.debug("[%s] working_memory increment falhou: %s", self.__class__.__name__, exc)
             try:
-                await self._memory_service.increment_iteration(  # type: ignore[attr-defined]
-                    input.session_id, self.domain_name
-                )
-            except Exception as exc:
-                logger.debug("[%s] working_memory increment falhou: %s", self.__class__.__name__, exc)
+                _asyncio_react.get_event_loop().create_task(_incr_iter())
+            except RuntimeError:
+                # No running loop (e.g. tests) — fall back to awaiting directly
+                try:
+                    await _incr_iter()
+                except Exception:
+                    pass
 
         # --- Estado inicial LangGraph ---
         try:
