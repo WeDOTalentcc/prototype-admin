@@ -9,7 +9,7 @@ import { SCREENING_STATUS_LABELS } from"@/types/screening"
 import { liaApi } from"@/services/lia-api"
 import {
   ArrowLeft, Settings, Share2, FileText, Layers3, ListChecks, Lightbulb,
-  PauseCircle, PlayCircle, Archive, Calendar, Link2, RotateCcw, Brain,
+  PauseCircle, PlayCircle, Archive, Calendar, Link2, RotateCcw, Brain, Search,
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -37,6 +37,7 @@ interface KanbanJobHeaderProps {
   setShowJobEditor: (show: boolean) => void
   pipelineInheritance: { isCustomized: boolean; isLoading: boolean; resetToCompanyDefault: () => Promise<boolean> }
   setJobLocalOverrides: (fn: (prev: Record<string, unknown>) => Record<string, unknown>) => void
+  onOpenVacancySearch?: () => void
 }
 
 export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: KanbanJobHeaderProps) {
@@ -297,6 +298,12 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
 
             {/* Right: Action Buttons */}
             <div className="flex items-center gap-2 pt-1 flex-shrink-0">
+              {props.onOpenVacancySearch && (
+                <Button variant="outline" size="sm" className="gap-2 h-8" onClick={props.onOpenVacancySearch}>
+                  <Search className="w-3.5 h-3.5" />
+                  {t('searchCandidates')}
+                </Button>
+              )}
               <Button variant="outline" size="sm" className="gap-2 h-8" onClick={handleShowReport}>
                 <FileText className="w-3.5 h-3.5" />
                 {t('report')}

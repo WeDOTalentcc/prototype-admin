@@ -7,12 +7,31 @@ import { KanbanJobHeader } from "@/components/pages/job-kanban/KanbanJobHeader"
 import { KanbanPageModals } from "@/components/pages/job-kanban/KanbanPageModals"
 import { KanbanPageContent } from "@/components/pages/job-kanban/KanbanPageContent"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
+import { useVacancySearch } from "@/hooks/search/useVacancySearch"
+import dynamic from "next/dynamic"
+
+const VacancySearchModal = dynamic(
+  () => import("@/components/pages/job-kanban/VacancySearchModal").then(m => ({ default: m.VacancySearchModal })),
+  { ssr: false, loading: () => null }
+)
+const VacancyCandidateSearchResults = dynamic(
+  () => import("@/components/pages/job-kanban/VacancyCandidateSearchResults").then(m => ({ default: m.VacancyCandidateSearchResults })),
+  { ssr: false, loading: () => null }
+)
 import VagaProgressBar from "@/components/jobs/VagaProgressBar"
 import "@/components/pages/job-kanban-page.css"
 
 export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, onBack?: () => void }) {
   const t = useTranslations('kanban')
   const state = useKanbanPageCore({ job, onBack })
+  const vacancyId = String(state.currentJob?.backendId || state.currentJob?.id || "")
+  const enrichedJD = (() => {
+    const ej = state.currentJob?.enriched_jd
+    if (!ej) return (state.currentJob?.description as string) || ""
+    if (typeof ej === "string") return ej
+    return (ej as Record<string, unknown>)?.content as string || JSON.stringify(ej)
+  })()
+  const vs = useVacancySearch(vacancyId)
 
   if (!state.isClient) {
     return (
@@ -49,6 +68,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         setShowJobEditor={state.setShowJobEditor}
         pipelineInheritance={state.pipelineInheritance}
         setJobLocalOverrides={state.setJobLocalOverrides}
+        onOpenVacancySearch={vs.openModal}
       />
 
       {/* Workflow Rail — Campaign progress bar */}
@@ -82,6 +102,45 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
       <KanbanPageContent state={state} />
 
       <KanbanPageModals {...state} />
+
+      <VacancySearchModal
+        isOpen={vs.showModal}
+        onClose={vs.closeModal}
+        vacancyTitle={(state.currentJob?.title as string) || ""}
+        enrichedJD={enrichedJD}
+        searchSource={vs.searchSource}
+        onSearchSourceChange={vs.setSearchSource}
+        requireEmails={vs.requireEmails}
+        onRequireEmailsChange={vs.setRequireEmails}
+        requirePhoneNumbers={vs.requirePhoneNumbers}
+        onRequirePhoneNumbersChange={vs.setRequirePhoneNumbers}
+        mode={vs.mode}
+        onModeChange={vs.setMode}
+        autoConfig={vs.autoConfig}
+        onAutoConfigChange={vs.setAutoConfig}
+        onSubmit={vs.handleSearchSubmit}
+      />
+
+      <VacancyCandidateSearchResults
+        isOpen={vs.showResults}
+        onClose={vs.closeResults}
+        vacancyTitle={(state.currentJob?.title as string) || ""}
+        mode={vs.mode}
+        autoConfig={vs.autoConfig}
+        isSearching={vs.isSearching}
+        searchResults={vs.searchResults}
+        totalResults={vs.totalResults}
+        selectedIds={vs.selectedIds}
+        searchFeedbacks={vs.searchFeedbacks}
+        onToggleSelect={vs.toggleSelect}
+        onSelectAll={vs.selectAll}
+        onClearSelection={vs.clearSelection}
+        onFeedback={vs.handleFeedback}
+        onAddToVacancy={vs.addSelectedToVacancy}
+        onAddAuto={vs.addAutoCandidates}
+        onLoadMore={vs.handleLoadMore}
+        onEditSearch={vs.handleEditSearch}
+      />
 
     </div>
     </ErrorBoundarySection>
