@@ -417,7 +417,7 @@ export function JobPublishModal({
                         <div>
                           <Label className="text-micro text-lia-text-secondary mb-1 block">
                             Previsão de descongelamento
-                            <span className="text-lia-text-disabled ml-1">(LIA irá notificá-lo)</span>
+                            <span className="text-lia-text-disabled ml-1">(A IA irá notificá-lo)</span>
                           </Label>
                           <Input
                             type="date"
@@ -449,7 +449,7 @@ export function JobPublishModal({
                         {notifyApplicants && (
                           <div className="mt-1.5 flex items-center gap-1.5 text-micro text-lia-text-secondary bg-lia-bg-secondary/50 px-2 py-1 rounded-full">
                             <Brain className="w-3 h-3 text-wedo-cyan" />
-                            <span>LIA abrirá o modal de envio por email/WhatsApp com template sugerido</span>
+                            <span>A IA abrirá o modal de envio por email/WhatsApp com template sugerido</span>
                           </div>
                         )}
                       </div>
@@ -582,7 +582,7 @@ export function JobPublishModal({
                           <Label htmlFor="autoSearchInternal" className="text-xs font-medium text-lia-text-primary cursor-pointer">
                             Busca na base interna
                           </Label>
-                          <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">LIA encontra candidatos no banco de talentos</p>
+                          <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">A IA encontra candidatos no banco de talentos</p>
                         </div>
                       </div>
                       

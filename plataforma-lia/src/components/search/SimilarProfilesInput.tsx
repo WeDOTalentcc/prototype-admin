@@ -92,7 +92,7 @@ export function SimilarProfilesInput({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs max-w-sidebar-content">
-                    Adicione até 2 perfis para a LIA criar um perfil ideal combinado
+                    Adicione até 2 perfis para a IA criar um perfil ideal combinado
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -171,7 +171,7 @@ export function SimilarProfilesInput({
           ) : (
             <>
               <Wand2 className="w-3.5 h-3.5" />
-              Analisar e combinar perfis com LIA
+              Analisar e combinar perfis com IA
             </>
           )}
         </button>
@@ -183,7 +183,7 @@ export function SimilarProfilesInput({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-              <span className="text-xs font-medium text-lia-text-primary">Perfil Ideal sugerido pela LIA</span>
+              <span className="text-xs font-medium text-lia-text-primary">Perfil Ideal sugerido pela IA</span>
             </div>
             <TooltipProvider>
               <Tooltip>
@@ -191,7 +191,7 @@ export function SimilarProfilesInput({
                   <Info className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-xs max-w-[280px]">
-                  A LIA analisou os perfis e combinou skills, experiências e senioridade em comum. Edite ou remova tags antes de buscar.
+                  A IA analisou os perfis e combinou skills, experiências e senioridade em comum. Edite ou remova tags antes de buscar.
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -233,7 +233,7 @@ export function SimilarProfilesInput({
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-secondary">
-            <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
+            <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a IA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
           </p>
         </div>
       </div>

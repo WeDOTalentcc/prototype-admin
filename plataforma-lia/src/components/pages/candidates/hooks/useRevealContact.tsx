@@ -79,7 +79,7 @@ export function useRevealContact({
             })
             const persistData = await persistResponse.json()
             if (persistData.success) {
-              toast.success("LIA salvou o contato", { description: persistData.is_new ? "Candidato adicionado à sua base local" : "Dados atualizados no cadastro existente", duration: 3000 })
+              toast.success("Contato salvo automaticamente", { description: persistData.is_new ? "Candidato adicionado à sua base local" : "Dados atualizados no cadastro existente", duration: 3000 })
             } else {
               toast.warning("Aviso", { description: "Contato revelado mas não foi salvo na base. Use 'Salvar na Base' para persistir.", duration: 4000 })
             }

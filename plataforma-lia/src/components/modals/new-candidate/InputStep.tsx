@@ -291,7 +291,7 @@ export function InputStep({
           <div className="flex items-center gap-2 p-2.5 bg-lia-bg-secondary/50 border border-lia-border-default rounded-xl">
             <Brain className="w-4 h-4 text-wedo-cyan" />
             <p className="text-xs text-lia-text-secondary font-sans" aria-live="polite" aria-atomic="true">
-              A LIA irá buscar os dados do candidato
+              A IA irá buscar os dados do candidato
             </p>
           </div>
 
@@ -384,7 +384,7 @@ export function InputStep({
               {manualData.linkedinUrl.includes('linkedin.com/in/') && (
                 <p className="text-micro text-lia-text-secondary flex items-center gap-1 font-sans">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
-                  A LIA irá buscar os dados do candidato
+                  A IA irá buscar os dados do candidato
                 </p>
               )}
             </div>

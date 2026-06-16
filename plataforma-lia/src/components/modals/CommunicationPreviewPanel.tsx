@@ -124,7 +124,7 @@ export function CommunicationPreviewPanel({
                 <ul className="mt-1 space-y-0.5 ml-2">
                   <li>• Candidato recebe a mensagem com link</li>
                   <li>• Ao clicar, visualiza aviso LGPD e aceita termos</li>
-                  <li>• LIA inicia a conversa de triagem automaticamente</li>
+                  <li>• A triagem é iniciada automaticamente</li>
                 </ul>
               </div>
             </div>

@@ -246,7 +246,7 @@ export function SearchArchetypeCreateTab({
             ) : (
               <>
                 <Brain className="w-4 h-4 mr-1 text-wedo-cyan" />
-                Criar Arquétipo com LIA
+                Criar Arquétipo com IA
               </>
             )}
           </Button>
@@ -255,7 +255,7 @@ export function SearchArchetypeCreateTab({
             <div className="flex items-start gap-2">
               <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
               <p className="text-xs text-lia-text-secondary">
-                <strong>Dica:</strong> Descreva o perfil ideal e a LIA vai extrair automaticamente cargo,
+                <strong>Dica:</strong> Descreva o perfil ideal e a IA vai extrair automaticamente cargo,
                 senioridade e skills para criar o arquétipo.
               </p>
             </div>

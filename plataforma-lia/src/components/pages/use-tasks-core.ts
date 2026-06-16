@@ -543,7 +543,7 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
   const navigateToLIA = useCallback((prompt: string) => {
     useUIPreferencesStore.getState().setLiaPrompt(prompt)
-    if (onNavigate) onNavigate('Chat com LIA')
+    if (onNavigate) onNavigate('Chat com IA')
   }, [onNavigate])
 
   const handleConfirmTask = useCallback(async (task: PendingTask) => {
@@ -603,11 +603,11 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
         setActiveAlerts(prev => prev.filter(a => a.id !== alert.id))
         toast.success(isCritical ? 'Alerta resolvido' : 'Alerta reconhecido', alert.title)
       } else {
-        toast.error('Erro ao processar alerta', 'Redirecionando para LIA...')
+        toast.error('Erro ao processar alerta', 'Redirecionando para o assistente...')
         navigateToLIA(`${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`)
       }
     } catch {
-      toast.error('Erro de conexão', 'Redirecionando para LIA...')
+      toast.error('Erro de conexão', 'Redirecionando para o assistente...')
       navigateToLIA(`${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`)
     }
   }, [navigateToLIA, currentUserId])

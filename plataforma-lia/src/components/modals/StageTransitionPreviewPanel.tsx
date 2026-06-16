@@ -54,7 +54,7 @@ export function StageTransitionPreviewPanel({
               <Brain className="w-4 h-4 text-wedo-cyan mt-0.5 shrink-0" />
               <div>
                 <p className="text-xs text-lia-text-primary font-medium">
-                  LIA personalizou esta mensagem considerando:
+                  Mensagem personalizada por IA considerando:
                 </p>
                 <p className="text-micro text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
                   nome, cargo, vaga e contexto do candidato
@@ -100,7 +100,7 @@ export function StageTransitionPreviewPanel({
                   <div className="absolute inset-0 bg-lia-bg-primary/80 rounded-xl flex items-center justify-center z-10" role="status" aria-live="polite" aria-label="Carregando...">
                     <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
                       <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-                      <span className="text-xs text-lia-text-secondary font-medium">LIA regenerando mensagem...</span>
+                      <span className="text-xs text-lia-text-secondary font-medium">Regenerando mensagem...</span>
                     </div>
                   </div>
                 )}

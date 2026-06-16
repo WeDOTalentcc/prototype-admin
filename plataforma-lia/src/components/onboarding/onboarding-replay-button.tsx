@@ -112,7 +112,7 @@ export function OnboardingReplayButton({
           <div className="flex-1">
             <div className="font-medium">Feedback</div>
             <div className="text-xs text-lia-text-primary">
-              Ajude-nos a melhorar a LIA
+              Ajude-nos a melhorar a IA
             </div>
           </div>
         </DropdownMenuItem>

@@ -109,7 +109,7 @@ export function UnsavedPearchWarningModal({
               </div>
 
               <p className="text-xs text-lia-text-secondary">
-                LIA recomenda salvar os candidatos relevantes antes de sair.
+                Recomendamos salvar os candidatos relevantes antes de sair.
               </p>
             </div>
           </AlertDialogDescription>

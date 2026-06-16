@@ -42,9 +42,9 @@ export const ONBOARDING_TOUR_STEPS: TourStep[] = [
   {
     id: "tour_lia",
     type: "spotlight",
-    message: "4. EU — a LIA! Estou em TODAS as telas. Voce pode me chamar a qualquer momento pelo chat, por texto ou por AUDIO. E eu APRENDO com cada decisao sua.",
+    message: "4. EU — sua assistente de IA! Estou em TODAS as telas. Voce pode me chamar a qualquer momento pelo chat, por texto ou por AUDIO. E eu APRENDO com cada decisao sua.",
     selector: "[data-tour='chat-input'], [data-tour='lia-chat'], textarea",
-    spotlightText: "Chat da LIA — sua assistente pessoal",
+    spotlightText: "Chat — sua assistente de IA",
     position: "top",
   },
 

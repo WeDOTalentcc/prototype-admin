@@ -90,13 +90,13 @@ const STEPS: StepDef[] = [
     title: "Políticas de recrutamento",
     question: "Como você quer que a LIA conduza o processo? Aprovações, triagem automática, horários permitidos.",
     prompt:
-      "Quero configurar as políticas de recrutamento: aprovação de oferta, triagem automática, autonomia da LIA e horários permitidos para contato.",
+      "Quero configurar as políticas de recrutamento: aprovação de oferta, triagem automática, autonomia da IA e horários permitidos para contato.",
     cta: "Configurar políticas",
   },
   {
     key: "persona",
     actionId: "configure_persona",
-    title: "Personalidade da LIA",
+    title: "Personalidade da IA",
     question: "Quer dar um nome ou escolher um tom de voz para a sua assistente?",
     prompt:
       "Quero personalizar a assistente: escolher um nome customizado e o tom de comunicação que combina com a nossa empresa.",
@@ -284,7 +284,7 @@ export function OnboardingActionOrchestrator() {
     >
       <header className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-lia-text-primary">
-          Configurar empresa com a LIA
+          Configurar empresa com a IA
         </h2>
         <span
           aria-label="Progresso"

@@ -517,7 +517,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                   </span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
-                  Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
+                  Enquanto você descreve o perfil, a IA analisa e sugere melhorias:
                 </p>
                 <ul className="text-micro space-y-1 text-lia-text-primary">
                   <li className="flex items-start gap-1.5">

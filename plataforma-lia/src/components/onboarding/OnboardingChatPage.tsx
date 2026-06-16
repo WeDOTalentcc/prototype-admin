@@ -134,7 +134,7 @@ function OnboardingProgressBar({
   totalSteps: number
 }) {
   const STEPS = [
-    { id: "whatsapp", label: "Conhecendo a LIA" },
+    { id: "whatsapp", label: "Conhecendo a IA" },
     { id: "login", label: "Primeiro acesso" },
     { id: "tour", label: "Tour da plataforma" },
     { id: "action", label: "Primeira acao" },

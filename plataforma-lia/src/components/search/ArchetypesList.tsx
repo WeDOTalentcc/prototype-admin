@@ -145,7 +145,7 @@ export function ArchetypesList({
         {naturalSearchValue && hasParsedEntities() && (
           <div className="flex items-center gap-2">
             <div className="flex-1 h-px bg-lia-interactive-active" />
-            <span className="text-micro text-lia-text-tertiary">ou crie do zero com LIA</span>
+            <span className="text-micro text-lia-text-tertiary">ou crie do zero com IA</span>
             <div className="flex-1 h-px bg-lia-interactive-active" />
           </div>
         )}
@@ -174,7 +174,7 @@ export function ArchetypesList({
           ) : (
             <>
               <Wand2 className="w-3.5 h-3.5" />
-              Criar Arquétipo com LIA
+              Criar Arquétipo com IA
             </>
           )}
         </button>

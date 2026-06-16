@@ -97,7 +97,7 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
   const t = useTranslations("agents.studio.kpis")
   const router = useRouter()
   const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "LIA"
+  const personaName = persona?.name ?? "IA"
 
   const [period, setPeriod] = useState<AgentKpiPeriod>("30d")
   const { data, isLoading, error, refetch } = useAgentKpis(agentId, period)
