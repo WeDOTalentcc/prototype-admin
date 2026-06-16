@@ -36,7 +36,7 @@ export function useUIActions(options: UseUIActionsOptions = {}) {
     onPanelClose, 
     onChatCardAction,
     websocketUrl,
-    enableWebSocket = false
+    enableWebSocket = true
   } = options
   
   const [state, setState] = useState<UIActionsState>({
