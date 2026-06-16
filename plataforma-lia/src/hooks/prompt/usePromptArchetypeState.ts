@@ -150,7 +150,8 @@ export function usePromptArchetypeState({
         toast.success("Arquétipo salvo!", { description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado a partir da sua busca.` })
       } else {
         const error = await res.json()
-        toast.error("Erro ao salvar arquétipo", { description: error.detail || error.error || "Não foi possível salvar o arquétipo." })
+        const _rid = error.request_id ? ` (ID: ${error.request_id})` : ""
+        toast.error("Erro ao salvar arquétipo", { description: `${error.detail || error.error || "Não foi possível salvar o arquétipo."}${_rid}` })
       }
     } catch {
       toast.error("Erro ao salvar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
@@ -181,7 +182,8 @@ export function usePromptArchetypeState({
         toast.success("Arquétipo criado", { description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.` })
       } else {
         const error = await res.json()
-        toast.error("Erro ao criar arquétipo", { description: error.detail || error.error || "Não foi possível criar o arquétipo." })
+        const _rid = error.request_id ? ` (ID: ${error.request_id})` : ""
+        toast.error("Erro ao criar arquétipo", { description: `${error.detail || error.error || "Não foi possível criar o arquétipo."}${_rid}` })
       }
     } catch {
       toast.error("Erro ao criar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
@@ -232,7 +234,8 @@ export function usePromptArchetypeState({
         toast.success("Arquétipo atualizado", { description: `"${editArchetypeName}" foi salvo com sucesso.` })
       } else {
         const error = await res.json()
-        toast.error("Erro ao atualizar arquétipo", { description: error.detail || error.error || "Não foi possível salvar as alterações." })
+        const _rid = error.request_id ? ` (ID: ${error.request_id})` : ""
+        toast.error("Erro ao atualizar arquétipo", { description: `${error.detail || error.error || "Não foi possível salvar as alterações."}${_rid}` })
       }
     } catch {
       toast.error("Erro ao atualizar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
@@ -260,7 +263,8 @@ export function usePromptArchetypeState({
         toast.success("Arquétipo excluído", { description: `"${archName}" foi removido com sucesso.` })
       } else {
         const error = await res.json()
-        toast.error("Erro ao excluir arquétipo", { description: error.detail || error.error || "Não foi possível excluir o arquétipo." })
+        const _rid = error.request_id ? ` (ID: ${error.request_id})` : ""
+        toast.error("Erro ao excluir arquétipo", { description: `${error.detail || error.error || "Não foi possível excluir o arquétipo."}${_rid}` })
       }
     } catch {
       toast.error("Erro ao excluir arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })

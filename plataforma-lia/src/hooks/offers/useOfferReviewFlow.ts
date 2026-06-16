@@ -46,7 +46,7 @@ export function useOfferReviewFlow() {
       // Components watching the store will open the modal
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao abrir proposta"
-      toast.error("Não foi possível abrir a proposta", message)
+      toast.error("Não foi possível abrir a proposta", { description: message })
       console.error("[useOfferReviewFlow] openOfferReview error:", err)
     }
   }, [loadDraft, setDraft, setOpen])

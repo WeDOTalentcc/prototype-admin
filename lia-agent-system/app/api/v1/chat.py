@@ -504,7 +504,7 @@ company_id: str = Depends(require_company_id)):
             ),
         )
 
-    raise HTTPException(status_code=500, detail="Failed to generate response")
+    raise
 
 
 @router.post("/with-attachments", response_model=ChatResponse)
@@ -680,7 +680,7 @@ company_id: str = Depends(require_company_id)):
             ),
         )
 
-    raise HTTPException(status_code=500, detail="Failed to generate response")
+    raise
 
 
 @router.get("/conversations", response_model=ConversationListResponse)
@@ -1124,7 +1124,7 @@ company_id: str = Depends(require_company_id)):
         if _security_result and _security_result.get("blocked"):
             return JSONResponse(
                 status_code=400,
-                content={"error": True, "message": "Mensagem bloqueada por verificacao de seguranca."}
+                content={"error": True, "message": "Mensagem bloqueada por verificacao de seguranca.", "request_id": getattr(request.state, "request_id", "unknown")}
             )
 
         _fairness_guard = FairnessGuard()
@@ -1144,7 +1144,7 @@ company_id: str = Depends(require_company_id)):
                 pass
             return JSONResponse(
                 status_code=400,
-                content={"error": True, "message": _fairness_result.educational_message or "Sua solicitacao contem termos que podem gerar vies."}
+                content={"error": True, "message": _fairness_result.educational_message or "Sua solicitacao contem termos que podem gerar vies.", "request_id": getattr(request.state, "request_id", "unknown")}
             )
     except Exception as e:
         logger.debug("[LIA-P01] SSE compliance check skipped (fail-open): %s", e)
@@ -1168,6 +1168,7 @@ company_id: str = Depends(require_company_id)):
                             f"Limite diario de uso de IA atingido ({_bgt_used_leg:,}/{_bgt_lim_leg:,} tokens). "
                             "O budget sera renovado a meia-noite UTC."
                         ),
+                        "request_id": getattr(request.state, "request_id", "unknown"),
                     },
                 )
         except Exception as _bgt_exc_leg:
@@ -1198,6 +1199,7 @@ company_id: str = Depends(require_company_id)):
                         "error_code": "consent_revoked",
                         "message": "Processamento bloqueado: consentimento LGPD revogado para este candidato.",
                         "candidate_id": str(_vctx_cid),
+                        "request_id": getattr(request.state, "request_id", "unknown"),
                     },
                 )
     except Exception as _cons_exc_leg:
@@ -1273,7 +1275,7 @@ company_id: str = Depends(require_company_id)):
     intent_key = "atualizar_campo_candidato"
     action_config = ACTIONABLE_INTENTS.get(intent_key)
     if not action_config:
-        raise HTTPException(status_code=500, detail="Action config not found for atualizar_campo_candidato")
+        raise
 
     company_id = getattr(current_user, "company_id", None)
 

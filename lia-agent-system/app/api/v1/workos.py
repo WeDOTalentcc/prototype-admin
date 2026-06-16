@@ -1535,7 +1535,7 @@ async def scim_webhook(
         logger.warning("Invalid WorkOS webhook signature")
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"error": "Invalid signature"}
+            content={"error": "Invalid signature", "request_id": getattr(request.state, "request_id", "unknown")}
         )
 
     try:
@@ -1544,7 +1544,7 @@ async def scim_webhook(
         logger.error(f"Failed to parse webhook JSON: {e}")
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "Invalid JSON payload"}
+            content={"error": "Invalid JSON payload", "request_id": getattr(request.state, "request_id", "unknown")}
         )
 
     event_type = event.get("event")
