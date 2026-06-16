@@ -87,7 +87,7 @@ async def handle_merge_webhook(
     except ValidationError as exc:
         await _eoa(provider="merge", decision="malformed_payload", company_id=None)
         logger.warning("[MERGE] Invalid payload schema: %s", exc)
-        raise HTTPException(status_code=422, detail=exc.errors())
+        raise HTTPException(status_code=422, detail=exc.errors(include_url=False))
 
     event_type = event.hook.get("event")
 

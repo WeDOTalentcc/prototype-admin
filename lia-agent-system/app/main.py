@@ -937,11 +937,14 @@ async def lia_compliance_error_handler(request: FastAPIRequest, exc: LIAComplian
 async def lia_error_handler(request: FastAPIRequest, exc: LIAError):
     """LIA platform errors return structured JSON with appropriate status code."""
     request_id = getattr(request.state, "request_id", "unknown")
-    status = 400 if exc.recoverable else 500
-    logger.warning(
-        "LIAError: code=%s recoverable=%s [request_id=%s]",
-        exc.code, exc.recoverable, request_id,
+    status = exc.http_status
+    log_fn = logger.error if status >= 500 else logger.warning
+    log_fn(
+        "LIAError: type=%s code=%s http=%d recoverable=%s [request_id=%s]",
+        type(exc).__name__, exc.code, status, exc.recoverable, request_id,
     )
+    if status >= 500:
+        sentry_sdk.capture_exception(exc)
     return JSONResponse(
         status_code=status,
         content={**exc.to_dict(), "request_id": request_id},
@@ -1131,7 +1134,7 @@ async def request_validation_error_handler(request: FastAPIRequest, exc: Request
             "status_code": 422,
             "code": "REQUEST_VALIDATION_ERROR",
             "message": "Requisição inválida",
-            "errors": exc.errors(),
+            "errors": exc.errors(include_url=False),
             "request_id": request_id,
         },
     )

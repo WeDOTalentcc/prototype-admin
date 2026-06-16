@@ -49,7 +49,7 @@ def validate_params(schema: type[BaseModel], action_id: str = ""):
                 validated_dict = validated.model_dump()
                 return await func(validated_dict, context, **kwargs)
             except ValidationError as e:
-                errors = e.errors()
+                errors = e.errors(include_url=False)
                 logger.warning(
                     f"[PARAM-VALIDATION] {aid}: {len(errors)} validation errors. "
                     f"Params keys: {list(params.keys())}"
