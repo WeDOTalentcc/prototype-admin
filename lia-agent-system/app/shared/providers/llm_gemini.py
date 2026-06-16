@@ -2,7 +2,7 @@
 import logging
 import os
 
-from tenacity import retry, retry_if_result, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_result, stop_after_attempt, wait_exponential_jitter
 
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
 from app.shared.resilience.circuit_breaker import GEMINI_CIRCUIT, circuit_breaker_decorator
@@ -57,7 +57,7 @@ class GeminiLLMProvider(LLMProviderABC):
     
     @circuit_breaker_decorator(GEMINI_CIRCUIT)
     @llm_transient_retry
-    @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=3), retry=retry_if_result(_is_empty_response))
+    @retry(stop=stop_after_attempt(2), wait=wait_exponential_jitter(initial=1, max=3, jitter=1), retry=retry_if_result(_is_empty_response))
     async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         client = self._get_client()
         response = client.models.generate_content(model=model or self._default_model, contents=prompt)
@@ -68,7 +68,7 @@ class GeminiLLMProvider(LLMProviderABC):
     
     @circuit_breaker_decorator(GEMINI_CIRCUIT)
     @llm_transient_retry
-    @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, max=3), retry=retry_if_result(_is_empty_response))
+    @retry(stop=stop_after_attempt(2), wait=wait_exponential_jitter(initial=1, max=3, jitter=1), retry=retry_if_result(_is_empty_response))
     async def generate_with_system(self, system_prompt, user_message, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         from google.genai import types
         client = self._get_client()

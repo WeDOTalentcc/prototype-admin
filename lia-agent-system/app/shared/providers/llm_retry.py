@@ -34,7 +34,7 @@ from tenacity import (
     retry,
     retry_if_exception,
     stop_after_attempt,
-    wait_exponential,
+    wait_exponential_jitter,
 )
 
 logger = logging.getLogger(__name__)
@@ -92,7 +92,7 @@ def _is_transient_llm_error(exc: BaseException) -> bool:
 llm_transient_retry = retry(
     retry=retry_if_exception(_is_transient_llm_error),
     stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=10),
+    wait=wait_exponential_jitter(initial=1, max=10, jitter=2),
     before_sleep=before_sleep_log(logger, logging.WARNING),
     reraise=True,  # re-raise after exhausting attempts (circuit breaker must see it)
 )
