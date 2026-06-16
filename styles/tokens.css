@@ -1,0 +1,42 @@
+/* ==========================================================
+   WeDOTalent Design Tokens — Admin Console
+   Fonte: admin-ui/src/styles/design-tokens.css
+   ========================================================== */
+:root {
+  /* Backgrounds */
+  --lia-bg-primary:           #FFFFFF;
+  --lia-bg-secondary:         #F9FAFB;
+  --lia-bg-tertiary:          #F3F4F6;
+
+  /* Borders */
+  --lia-border-subtle:        #E5E7EB;
+  --lia-border-default:       #D1D5DB;
+
+  /* Text */
+  --lia-text-primary:         #111827;
+  --lia-text-secondary:       #6B7280;
+  --lia-text-tertiary:        #9CA3AF;
+  --lia-text-disabled:        #D1D5DB;
+
+  /* Brand */
+  --lia-brand-primary:        #C74446;
+  --lia-brand-primary-hover:  #B23B3D;
+  --lia-brand-primary-light:  #FEF2F2;
+
+  /* WeDO Accent Palette */
+  --wedo-cyan:                #60BED1;
+  --wedo-green:               #5DA47A;
+  --wedo-orange:              #D19960;
+  --wedo-purple:              #9860D1;
+
+  /* Shadows */
+  --lia-shadow-sm:            0 1px 2px 0 rgb(0 0 0 / 0.02);
+  --lia-shadow-default:       0 1px 3px 0 rgb(0 0 0 / 0.05);
+  --lia-shadow-md:            0 4px 6px -1px rgb(0 0 0 / 0.05);
+
+  /* Layout */
+  --sidebar-width-expanded:   256px;
+  --sidebar-width-collapsed:  64px;
+  --topbar-height:            56px;
+  --sidebar-transition:       300ms ease;
+}
