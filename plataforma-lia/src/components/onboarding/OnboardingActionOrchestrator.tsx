@@ -9,6 +9,7 @@ import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import type { ProposedSaves } from "@/lib/website-proposal-mapper"
 import { buildWebsiteProposalMessage } from "@/components/unified-chat/website-proposal-injector"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 /**
  * OnboardingActionOrchestrator — Task #712
@@ -96,7 +97,7 @@ const STEPS: StepDef[] = [
   {
     key: "persona",
     actionId: "configure_persona",
-    title: "Personalidade da IA",
+    title: `Personalidade de ${personaName}`,
     question: "Quer dar um nome ou escolher um tom de voz para a sua assistente?",
     prompt:
       "Quero personalizar a assistente: escolher um nome customizado e o tom de comunicação que combina com a nossa empresa.",
@@ -186,6 +187,8 @@ async function pushProgress(stepKey: string, status: StepStatus) {
 }
 
 export function OnboardingActionOrchestrator() {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [state, setState] = useState<ProgressState>(() => loadLocal())
   const { triggerAction, sendChatPrompt } = useSettingsConversational()
   // Task #1180 — passo "website" abre o modal pré-análise em vez de
@@ -284,7 +287,7 @@ export function OnboardingActionOrchestrator() {
     >
       <header className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-lia-text-primary">
-          Configurar empresa com a IA
+          {`Configurar empresa com ${personaName}`}
         </h2>
         <span
           aria-label="Progresso"
