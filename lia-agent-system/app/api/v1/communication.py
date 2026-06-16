@@ -20,6 +20,9 @@ from app.shared.pii_masking import get_masked_logger
 from app.shared.security.require_company_id import require_company_id
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.types import WeDoBaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_db
+from app.domains.communication.services.consent_gate import CommunicationConsentGate
 
 logger = get_masked_logger(__name__)
 
@@ -93,8 +96,9 @@ class SendResponse(BaseModel):
 @router.post("/send-email", response_model=SendResponse, status_code=status.HTTP_200_OK)
 async def send_email(
     request: SendEmailRequest,
+    db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
-company_id: str = Depends(get_verified_company_id)):
+    company_id: str = Depends(get_verified_company_id)):
     """
     Send an email via the CommunicationDispatcher (Mailgun primary, Resend fallback).
 
@@ -118,6 +122,25 @@ company_id: str = Depends(get_verified_company_id)):
                 "message": "O texto contem conteudo bloqueado (vies, PII de documento ou risco juridico). Revise antes de enviar.",
             },
         )
+
+    # GAP-07-004: LGPD consent gate — fail-closed per Art. 7
+    if request.candidate_id:
+        _email_gate = CommunicationConsentGate(db)
+        _email_consent = await _email_gate.check(request.candidate_id, company_id, "email")
+        if not _email_consent.allowed:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "lgpd_consent_required",
+                    "reason": _email_consent.reason,
+                    "message": (
+                        "Envio bloqueado: o candidato n\u00e3o possui consentimento LGPD "
+                        "para este canal. Solicite consentimento antes de comunicar (LGPD Art. 7)."
+                    ),
+                    "candidate_id": request.candidate_id,
+                    "channel": "email",
+                },
+            )
 
     try:
         logger.info(f"Sending email for company {company_id}")
@@ -224,8 +247,9 @@ company_id: str = Depends(get_verified_company_id)):
 @router.post("/send-whatsapp", response_model=SendResponse, status_code=status.HTTP_200_OK)
 async def send_whatsapp(
     request: SendWhatsAppRequest,
+    db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
-company_id: str = Depends(get_verified_company_id)):
+    company_id: str = Depends(get_verified_company_id)):
     """
     Send a WhatsApp message via the CommunicationDispatcher (Twilio).
 
@@ -246,6 +270,25 @@ company_id: str = Depends(get_verified_company_id)):
                 "message": "Mensagem bloqueada (vies ou PII de documento). Revise antes de enviar.",
             },
         )
+
+    # GAP-07-004: LGPD consent gate for WhatsApp — fail-closed per Art. 7
+    if request.candidate_id:
+        _wa_gate = CommunicationConsentGate(db)
+        _wa_consent = await _wa_gate.check(request.candidate_id, company_id, "whatsapp")
+        if not _wa_consent.allowed:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "lgpd_consent_required",
+                    "reason": _wa_consent.reason,
+                    "message": (
+                        "Envio bloqueado: o candidato n\u00e3o possui consentimento LGPD "
+                        "para WhatsApp. Solicite consentimento antes de comunicar (LGPD Art. 7)."
+                    ),
+                    "candidate_id": request.candidate_id,
+                    "channel": "whatsapp",
+                },
+            )
 
     try:
         logger.info(f"Sending WhatsApp for company {company_id}")
