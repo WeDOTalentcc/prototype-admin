@@ -128,7 +128,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
 
       const events = [
         { date: fmt(openDate), event:"Vaga publicada", status:"completed" as const },
-        { date: fmt(addDays(openDate, Math.min(3, daysOpen))), event:"Primeira triagem LIA", status: daysOpen >= 3 ?"completed" as const :"pending" as const },
+        { date: fmt(addDays(openDate, Math.min(3, daysOpen))), event:"Primeira triagem", status: daysOpen >= 3 ?"completed" as const :"pending" as const },
         { date: fmt(addDays(openDate, Math.min(7, daysOpen))), event:"Início das entrevistas", status: daysOpen >= 7 ?"completed" as const : daysOpen >= 3 ?"in-progress" as const :"pending" as const },
         { date: fmt(addDays(openDate, Math.round(predictedDays * 0.6))), event:"Testes técnicos", status: daysOpen >= predictedDays * 0.6 ?"completed" as const : daysOpen >= 7 ?"in-progress" as const :"pending" as const },
         { date: fmt(addDays(openDate, Math.round(predictedDays * 0.85))), event:"Decisão final", status: daysOpen >= predictedDays * 0.85 ?"completed" as const :"pending" as const },
