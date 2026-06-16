@@ -185,7 +185,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                     <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-3 space-y-2">
                       <div className="flex items-center gap-2">
                         <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                        <h3 className="text-xs font-semibold text-lia-text-primary">Sugerido pela LIA</h3>
+                        <h3 className="text-xs font-semibold text-lia-text-primary">Sugestão automática</h3>
                       </div>
                       {urgentHints.map((hint) => (
                         <div key={hint.id} className="p-2.5 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary/50">

@@ -221,7 +221,7 @@ export function JobAssignRecruiterModal({
                     </div>
                     <div>
                       <h5 className="text-xs font-semibold text-lia-text-primary mb-0.5">
-                        Sugestão da LIA
+                        Sugestão automática
                       </h5>
                       <p className="text-xs text-lia-text-primary leading-relaxed">
                         Recomendo <strong>{recommendedRecruiter.name}</strong> ({recommendedRecruiter.active_jobs_count ?? 0} vagas, {recommendedRecruiter.performance_score ?? 0}% perf.)

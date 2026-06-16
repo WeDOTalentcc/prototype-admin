@@ -1546,7 +1546,7 @@ function PipelineCandidateCard({
 
   const scores = [
     { id: "geral" as const, icon: Gauge, value: generalScore, label: "Nota Geral" },
-    { id: "triagem" as const, icon: Brain, value: triagemScore, label: "Triagem LIA/WSI" },
+    { id: "triagem" as const, icon: Brain, value: triagemScore, label: "Triagem Automática" },
     { id: "cv" as const, icon: Target, value: cvScore, label: "Match CV vs Vaga" },
     { id: "tecnico" as const, icon: Code, value: techScore, label: "Teste Técnico" },
     { id: "ingles" as const, icon: Globe, value: engScore, label: "Teste de Inglês" },

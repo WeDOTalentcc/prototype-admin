@@ -449,7 +449,7 @@ function Step3Template({
         <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
           <Bot className="w-10 h-10 text-lia-text-tertiary" />
           <p className="text-sm text-lia-text-secondary">
-            A LIA gerará um pipeline otimizado com base na vaga selecionada.
+            A IA gerará um pipeline otimizado com base na vaga selecionada.
           </p>
           <button
             type="button"

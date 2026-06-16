@@ -104,7 +104,7 @@ export function LiaFieldToggle({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bot className="w-4 h-4 text-wedo-cyan" />
-                  <span className="text-sm font-semibold text-lia-text-primary">Instrução para LIA</span>
+                  <span className="text-sm font-semibold text-lia-text-primary">Instrução para a IA</span>
                 </div>
                 <button
                   onClick={() => setIsPopoverOpen(false)}
@@ -229,7 +229,7 @@ export function LiaFieldToggle({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bot className="w-4 h-4 text-wedo-cyan" />
-                <span className="text-sm font-semibold text-lia-text-primary">Instrução para LIA</span>
+                <span className="text-sm font-semibold text-lia-text-primary">Instrução para a IA</span>
               </div>
               <button
                 onClick={() => setIsPopoverOpen(false)}

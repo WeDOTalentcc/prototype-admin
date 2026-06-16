@@ -20,7 +20,7 @@ import { tabStyles } from "@/lib/design-tokens"
 
 const TABS = [
   { id: "persona", label: "Persona da IA" },
-  { id: "instrucoes-lia", label: "Instrucoes por Campo" },
+  { id: "instrucoes-lia", label: "Instruções por Campo" },
   { id: "learning-loops", label: "Learning Loops" },
 ] as const
 

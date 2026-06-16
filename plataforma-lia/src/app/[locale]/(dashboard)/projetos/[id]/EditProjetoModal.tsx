@@ -21,9 +21,9 @@ interface Props {
 }
 
 const AUTOMATION_OPTIONS = [
-  { key: "manual" as const, label: "Sugerir", desc: "A LIA sugere — você decide" },
-  { key: "semi" as const, label: "Rascunhar", desc: "A LIA prepara para aprovação" },
-  { key: "full" as const, label: "Executar", desc: "A LIA executa automaticamente" },
+  { key: "manual" as const, label: "Sugerir", desc: "A IA sugere — você decide" },
+  { key: "semi" as const, label: "Rascunhar", desc: "A IA prepara para aprovação" },
+  { key: "full" as const, label: "Executar", desc: "A IA executa automaticamente" },
 ]
 
 export function EditProjetoModal({ project, open, onClose, onSaved }: Props) {

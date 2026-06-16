@@ -145,7 +145,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
             <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
             <TabsTrigger value="professional">Profissional</TabsTrigger>
             <TabsTrigger value="skills">Habilidades</TabsTrigger>
-            <TabsTrigger value="analysis">Análise LIA</TabsTrigger>
+            <TabsTrigger value="analysis">Análise de Compatibilidade</TabsTrigger>
           </TabsList>
 
           <div className="flex-1 overflow-y-auto px-1">
@@ -425,7 +425,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                   <div className="mt-3 p-3 bg-lia-bg-tertiary rounded-xl">
                     <p className="text-xs text-lia-text-muted mb-2 flex items-center gap-1">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
-                      Sugestões da LIA baseadas no perfil:
+                      Sugestões baseadas no perfil:
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {liaAnalysis.suggestedSkills.map((skill: string) => (
@@ -487,9 +487,9 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                   <CardContent className="pt-6">
                     <div className="text-center py-8">
                       <LIAIcon size="lg" className="mx-auto mb-4 opacity-50" />
-                      <h3 className="text-lg font-semibold mb-2 text-lia-text-primary">Análise Inteligente com LIA</h3>
+                      <h3 className="text-lg font-semibold mb-2 text-lia-text-primary">Análise de Compatibilidade</h3>
                       <p className="text-sm text-lia-text-primary mb-4">
-                        A análise da LIA fica disponível na ficha do candidato após o cadastro.
+                        A análise de compatibilidade fica disponível na ficha do candidato após o cadastro.
                       </p>
                     </div>
                   </CardContent>
@@ -589,7 +589,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                     <CardContent className="pt-4">
                       <div className="flex items-center gap-2 mb-2">
                         <LIAIcon size="sm" />
-                        <h4 className="font-semibold text-wedo-cyan-text">Recomendação da LIA</h4>
+                        <h4 className="font-semibold text-wedo-cyan-text">Recomendação</h4>
                       </div>
                       <p className="text-sm text-lia-text-muted">{liaAnalysis.recommendation}</p>
                     </CardContent>

@@ -241,7 +241,7 @@ export function LiaFieldsConfigPanel() {
                     instruction={lia.comments[field.key] || ""}
                     onInstructionSave={(text) => handleInstructionSave(field.key, text)}
                     isSaving={lia.savingKeys.has(field.key)}
-                    placeholder="Instrução opcional para a LIA sobre este campo..."
+                    placeholder="Instrução opcional para a IA sobre este campo..."
                   />
                 ))}
               </div>

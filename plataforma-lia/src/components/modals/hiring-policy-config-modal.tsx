@@ -40,7 +40,7 @@ export function HiringPolicyConfigModal({ isOpen, onClose }: HiringPolicyConfigM
               <Settings2 className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <DialogTitle className="text-sm font-semibold text-lia-text-primary">
-              Configurações da LIA
+              Configurações de IA
             </DialogTitle>
           </div>
         </DialogHeader>

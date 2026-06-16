@@ -94,9 +94,9 @@ export const CANDIDATES_DEFAULT_COLUMNS = [
   { id: 'business_emails', label: 'Emails Corporativos', visible: false, order: 73, category: 'busca_global', isGlobalSearch: true },
   { id: 'company_followers_count', label: 'Seguidores da Empresa', visible: false, order: 74, category: 'busca_global', isGlobalSearch: true },
   { id: 'company_keywords', label: 'Palavras-chave da Empresa', visible: false, order: 75, category: 'busca_global', isGlobalSearch: true },
-  // Insights LIA / IA
-  { id: 'lia_score', label: 'Score LIA', visible: true, order: 64, category: 'ia' },
-  { id: 'lia_insights', label: 'Insights LIA', visible: false, order: 65, category: 'ia' },
+  // Insights / IA
+  { id: 'lia_score', label: 'Score', visible: true, order: 64, category: 'ia' },
+  { id: 'lia_insights', label: 'Insights', visible: false, order: 65, category: 'ia' },
   { id: 'skills_match_percentage', label: '% Match de habilidades', visible: false, order: 66, category: 'ia' },
   // Status e Workflow
   { id: 'status', label: 'Status no funil', visible: false, order: 56, category: 'status' },
@@ -154,7 +154,7 @@ const DEFAULT_SAVED_COLUMN_VIEWS = [
     id: '1', name: 'Visualização Padrão',
     columns: [
       { id: 'name', label: 'Nome completo', visible: true, order: 0 },
-      { id: 'score_lia', label: 'Score LIA', visible: true, order: 1 },
+      { id: 'score_lia', label: 'Score', visible: true, order: 1 },
       { id: 'role_name', label: 'Cargo atual', visible: true, order: 2 },
       { id: 'current_company', label: 'Empresa atual', visible: true, order: 3 },
       { id: 'city', label: 'Cidade', visible: true, order: 4 },

@@ -44,7 +44,7 @@ const IntegrationsHub = dynamic(() => import("@/components/settings/Integrations
 const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 const ConsumoHub = dynamic(() => import("@/components/settings/ConsumoHub").then(m => ({ default: m.ConsumoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando consumo..." /> })
-const LiaPersonalizacaoHub = dynamic(() => import("@/components/settings/LiaPersonalizacaoHub").then(m => ({ default: m.LiaPersonalizacaoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando LIA..." /> })
+const LiaPersonalizacaoHub = dynamic(() => import("@/components/settings/LiaPersonalizacaoHub").then(m => ({ default: m.LiaPersonalizacaoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
@@ -64,7 +64,7 @@ type SettingsSectionGroup = "empresa" | "processo" | "lia" | "comunicacao" | "pl
 const SECTION_GROUPS: { id: SettingsSectionGroup; label: string; defaultExpanded: boolean }[] = [
   { id: "empresa", label: "Empresa", defaultExpanded: true },
   { id: "processo", label: "Processo", defaultExpanded: true },
-  { id: "lia", label: "LIA & Personalização", defaultExpanded: true },
+  { id: "lia", label: "IA & Personalização", defaultExpanded: true },
   { id: "comunicacao", label: "Comunicação", defaultExpanded: true },
   { id: "plataforma", label: "Plataforma", defaultExpanded: false },
 ]
@@ -117,7 +117,7 @@ const getDefaultSections = (): SettingsSection[] => [
   },
   {
     id: 'lia-personalizacao',
-    title: 'LIA & Personalizacao',
+    title: 'IA & Personalização',
     description: 'Persona da IA, instrucoes por campo e learning loops',
     icon: Brain,
     status: 'incomplete',
@@ -165,7 +165,7 @@ const getDefaultSections = (): SettingsSection[] => [
   {
     id: 'comunicacao-alertas',
     title: 'Comunicação & Alertas',
-    description: 'Horários LGPD, alertas e notificações da LIA',
+    description: 'Horários LGPD, alertas e notificações',
     icon: Bell,
     status: 'incomplete',
     priority: 'medium',

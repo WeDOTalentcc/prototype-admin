@@ -109,7 +109,7 @@ export function InsightsPipelineSection({
         </h3>
         <div className="grid grid-cols-5 gap-3">
           {[
-            { Icon: GitBranch, label: "Funil LIA", value: liaFunnelMetrics.pipeline_lia, color: "text-lia-text-primary" },
+            { Icon: GitBranch, label: "Funil de Triagem", value: liaFunnelMetrics.pipeline_lia, color: "text-lia-text-primary" },
             { Icon: CalendarCheck, label: "Triagens Agendadas", value: liaFunnelMetrics.triagens_agendadas, color: "text-lia-text-primary" },
             { Icon: PhoneCall, label: "Triagens Realizadas", value: liaFunnelMetrics.triagens_realizadas, color: "text-status-success" },
             { Icon: MessageCircleX, label: "Sem Resposta", value: liaFunnelMetrics.sem_resposta, color: "text-lia-text-secondary" },

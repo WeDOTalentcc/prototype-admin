@@ -517,7 +517,7 @@ export function InsightsOverviewSection({
                           {job.performance_score || "--"}%
                         </span>
                       </div>
-                      <span className="text-xs text-lia-text-tertiary">Score LIA</span>
+                      <span className="text-xs text-lia-text-tertiary">Score</span>
                     </div>
                   </div>
                 </div>

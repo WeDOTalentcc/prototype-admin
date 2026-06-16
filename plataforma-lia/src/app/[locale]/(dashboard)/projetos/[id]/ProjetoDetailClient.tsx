@@ -27,9 +27,9 @@ const AUTOMATION_LABEL: Record<string, string> = {
   manual: "Sugerir", semi: "Rascunhar", full: "Executar",
 }
 const AUTOMATION_DESC: Record<string, string> = {
-  manual: "A LIA sugere ações — você decide",
-  semi: "A LIA prepara ações para sua aprovação antes de enviar",
-  full: "A LIA executa automaticamente sem necessitar aprovação",
+  manual: "A IA sugere ações — você decide",
+  semi: "A IA prepara ações para sua aprovação antes de enviar",
+  full: "A IA executa automaticamente sem necessitar aprovação",
 }
 
 // ── Stage pipeline strip ───────────────────────────────────────────────────
