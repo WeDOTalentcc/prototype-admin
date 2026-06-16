@@ -144,8 +144,9 @@ export function useChatMessages({
           if (jobData.title) ctx.job_title = jobData.title;
           if (jobData.company_id) ctx.company_id = jobData.company_id;
           ctx.job_context = jobData;
-        } catch (error) {}
-          console.error("[useChatMessages] Error:", error)
+        } catch (error) {
+          console.warn("[useChatMessages] Failed to parse job context from DOM attribute", error)
+        }
       }
 
       const candidatesEl = document.querySelector("[data-candidates-context]");
@@ -157,8 +158,9 @@ export function useChatMessages({
           if (Array.isArray(candidatesData) && candidatesData.length > 0) {
             ctx.candidates = candidatesData;
           }
-            console.error("[useChatMessages] Error:", error)
-        } catch {}
+        } catch (error) {
+          console.warn("[useChatMessages] Failed to parse candidates context from DOM attribute", error)
+        }
       }
     } catch {}
     // GAP-02-001: merge pagination + modal state from lia-context-store
