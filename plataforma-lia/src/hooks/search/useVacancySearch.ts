@@ -232,6 +232,95 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string, onCandid
     const limit = mode === "auto" ? autoConfig.maxCandidates : 15
     const { url, body } = buildSearchPayload(query, metadata, limit)
 
+    // Incremental loading for hybrid: local first (fast), then global (slow)
+    if (searchSource === "hybrid") {
+      let hasLocalResults = false
+      try {
+        // Phase 1: Local search (~1-3s) — results appear immediately
+        const localBody = { ...body, search_source: "local" }
+        const localRes = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(localBody),
+        })
+
+        advanceProgressToResponse()
+
+        if (localRes.ok) {
+          const localData = await localRes.json()
+          const localCandidates = localData?.data?.candidates || localData?.candidates || localData?.data || []
+          if (localCandidates.length > 0) {
+            hasLocalResults = true
+            setSearchResults(localCandidates)
+            setTotalResults(localCandidates.length)
+          }
+        }
+
+        // Phase 2: Global search (~30-60s) — runs while local results already visible
+        const globalBody = { ...body, search_source: "pearch" }
+        const globalRes = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(globalBody),
+        })
+
+        if (!globalRes.ok) {
+          const errBody = await globalRes.json().catch(() => ({}))
+          if (errBody?.error === "fairness_blocked" || errBody?.fairness_blocked) {
+            toast.error(errBody.educational_message || "Busca bloqueada")
+            if (!hasLocalResults) {
+              resetProgress()
+              setShowResults(false)
+            } else {
+              completeProgress()
+            }
+            return
+          }
+          if (!hasLocalResults) {
+            throw new Error(errBody?.message || `Search failed: ${globalRes.status}`)
+          }
+        } else {
+          const globalData = await globalRes.json()
+          const globalCandidates = globalData?.data?.candidates || globalData?.candidates || globalData?.data || []
+          const fp = globalData?.data?.search_fingerprint || globalData?.search_fingerprint || null
+          setSearchFingerprint(fp)
+          setThreadId(globalData?.data?.thread_id || globalData?.thread_id)
+
+          setSearchResults(prev => {
+            const seenEmails = new Set(
+              prev.map(c => ((c.email as string) || "").toLowerCase()).filter(Boolean)
+            )
+            const seenLinkedins = new Set(
+              prev.map(c => ((c.linkedin_url as string) || "").toLowerCase()).filter(Boolean)
+            )
+            const fresh = globalCandidates.filter((c: Record<string, unknown>) => {
+              const email = ((c.email as string) || "").toLowerCase()
+              const linkedin = ((c.linkedin_url as string) || "").toLowerCase()
+              if (email && seenEmails.has(email)) return false
+              if (linkedin && seenLinkedins.has(linkedin)) return false
+              return true
+            })
+            const merged = [...prev, ...fresh]
+            setTotalResults(merged.length)
+            return merged
+          })
+        }
+
+        completeProgress()
+        if (mode === "auto") setShowAutoConfirm(true)
+      } catch (err) {
+        toast.error("Erro na busca", { description: (err as Error).message })
+        if (!hasLocalResults) {
+          resetProgress()
+          setShowResults(false)
+        }
+      } finally {
+        setIsSearching(false)
+      }
+      return
+    }
+
+    // Non-hybrid: single fetch
     try {
       const res = await fetch(url, {
         method: "POST",
@@ -256,7 +345,6 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string, onCandid
       const data = await res.json()
       const candidates = data?.data?.candidates || data?.candidates || data?.data || []
 
-      // Store search fingerprint (feature 3)
       const fp = data?.data?.search_fingerprint || data?.search_fingerprint || null
       setSearchFingerprint(fp)
 
@@ -265,7 +353,6 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string, onCandid
       setThreadId(data?.data?.thread_id || data?.thread_id)
       completeProgress()
 
-      // Auto confirmation flow (feature 4)
       if (mode === "auto") {
         setShowAutoConfirm(true)
       }

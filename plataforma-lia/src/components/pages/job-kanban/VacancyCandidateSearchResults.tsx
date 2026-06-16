@@ -420,7 +420,9 @@ export function VacancyCandidateSearchResults({
             {isSearching && searchResults.length > 0 && (
               <div className="flex items-center gap-2 text-xs text-lia-text-secondary mr-2">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                {t("analyzing", { done: searchResults.length, total: totalResults })}
+                {dominantSource === "local"
+                  ? <span className="flex items-center gap-1"><Globe className="w-3 h-3" />Buscando na base global...</span>
+                  : t("analyzing", { done: searchResults.length, total: totalResults })}
               </div>
             )}
             <ColumnConfigDropdown columns={columns} onToggle={toggleColumn} />
