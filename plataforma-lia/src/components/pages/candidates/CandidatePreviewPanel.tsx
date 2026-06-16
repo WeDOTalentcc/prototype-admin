@@ -305,7 +305,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
               onClick={() => {}}
             >
               <LIAIcon size="sm" />
-              LIA
+              IA
             </Button>
           </div>
         </div>

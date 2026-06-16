@@ -83,7 +83,7 @@ function DraftsEmptyState() {
         Nenhum rascunho por aqui
       </p>
       <p className="text-sm text-lia-text-secondary max-w-xs">
-        Peça à LIA para iniciar uma nova vaga — ela vai gerar um rascunho inteligente para você revisar.
+        Peça à IA para iniciar uma nova vaga — ela vai gerar um rascunho inteligente para você revisar.
       </p>
     </div>
   )

@@ -68,7 +68,7 @@ export function TimelineSection() {
     <Card className="border border-lia-border-subtle">
       <CardHeader className="pb-4">
         <CardTitle className="text-base font-semibold text-lia-text-primary">
-          Atividades sendo executadas pela LIA
+          Atividades sendo executadas pela IA
         </CardTitle>
       </CardHeader>
 

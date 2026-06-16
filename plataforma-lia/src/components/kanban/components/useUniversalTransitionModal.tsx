@@ -60,59 +60,59 @@ export interface UniversalTransitionModalProps {
 
 export const ACTION_BEHAVIOR_CONFIG: Record<string, { label: string; icon: React.ReactNode; description: string }> = {
   intake: {
-    label: 'Orientação LIA',
+    label: 'Orientação IA',
     icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />,
-    description: 'LIA orienta o recrutador sobre o candidato recebido',
+    description: 'IA orienta o recrutador sobre o candidato recebido',
   },
   screening: {
     label: 'Convidar para Triagem WSI',
     icon: <ClipboardList className="w-3.5 h-3.5" />,
-    description: 'LIA conduz triagem automatizada com o candidato',
+    description: 'IA conduz triagem automatizada com o candidato',
   },
   scheduling: {
     label: 'Abrir Agendamento',
     icon: <Calendar className="w-3.5 h-3.5" />,
-    description: 'LIA envia convite de agendamento ao candidato',
+    description: 'IA envia convite de agendamento ao candidato',
   },
   evaluation: {
     label: 'Enviar Teste',
     icon: <FileText className="w-3.5 h-3.5" />,
-    description: 'LIA envia teste técnico ou avaliação',
+    description: 'IA envia teste técnico ou avaliação',
   },
   verification: {
     label: 'Solicitar Documentos',
     icon: <FileText className="w-3.5 h-3.5" />,
-    description: 'LIA solicita documentos necessários',
+    description: 'IA solicita documentos necessários',
   },
   offer: {
     label: 'Enviar Proposta',
     icon: <Gift className="w-3.5 h-3.5" />,
-    description: 'LIA prepara e envia proposta formal',
+    description: 'IA prepara e envia proposta formal',
   },
   passive: {
-    label: 'Orientação LIA',
+    label: 'Orientação IA',
     icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />,
-    description: 'LIA orienta sobre a movimentação do candidato',
+    description: 'IA orienta sobre a movimentação do candidato',
   },
   standby: {
     label: 'Banco de Talentos',
     icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />,
-    description: 'LIA registra candidato no banco de talentos',
+    description: 'IA registra candidato no banco de talentos',
   },
   conclusion_hired: {
     label: 'Enviar Boas-vindas',
     icon: <Mail className="w-3.5 h-3.5" />,
-    description: 'LIA envia mensagem de boas-vindas e próximos passos',
+    description: 'IA envia mensagem de boas-vindas e próximos passos',
   },
   conclusion_rejected: {
     label: 'Enviar Feedback',
     icon: <MessageSquare className="w-3.5 h-3.5" />,
-    description: 'LIA envia feedback construtivo ao candidato',
+    description: 'IA envia feedback construtivo ao candidato',
   },
   conclusion_declined: {
     label: 'Agradecimento',
     icon: <Mail className="w-3.5 h-3.5" />,
-    description: 'LIA envia agradecimento e mantém porta aberta',
+    description: 'IA envia agradecimento e mantém porta aberta',
   },
 }
 

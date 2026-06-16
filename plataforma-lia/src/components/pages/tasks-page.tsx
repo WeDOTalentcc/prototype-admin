@@ -242,7 +242,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       <div className="flex gap-1">
                         {([
                           { key: 'todos', label: 'Todos' },
-                          { key: 'lia', label: 'LIA' },
+                          { key: 'lia', label: 'IA' },
                           { key: 'recrutador', label: 'Recrutador' },
                         ] as const).map(({ key, label }) => (
                           <Button

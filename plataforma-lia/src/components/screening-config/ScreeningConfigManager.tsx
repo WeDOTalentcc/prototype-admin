@@ -368,7 +368,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     </div>
                     <p className="text-xs leading-relaxed text-lia-text-secondary"  aria-live="polite" aria-atomic="true">
                       {showScreeningToggleConfirm === 'activate'
-                        ? 'A LIA começará a avaliar candidatos automaticamente conforme as configurações definidas neste roteiro.'
+                        ? 'A IA começará a avaliar candidatos automaticamente conforme as configurações definidas neste roteiro.'
                         : 'Candidatos em avaliação serão mantidos no estado atual até a reativação. Nenhum novo candidato será triado enquanto a triagem estiver pausada.'
                       }
                     </p>

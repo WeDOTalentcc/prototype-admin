@@ -30,8 +30,6 @@ interface EditArchetypeTagsSectionProps {
 }
 
 export function EditArchetypeTagsSection({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   editArchetypeTags, onEditArchetypeTagsChange,
   newTagInput, onNewTagInputChange,
   aiSuggestedTags, onAiSuggestedTagsChange,
@@ -41,6 +39,8 @@ export function EditArchetypeTagsSection({
   semanticTagSuggestions, isLoadingSemanticTags,
   searchSemanticTags, clearSemanticTagSuggestions,
 }: EditArchetypeTagsSectionProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div>
       <label className="text-xs font-medium mb-1 flex items-center gap-1.5 text-lia-text-secondary">
@@ -127,7 +127,7 @@ export function EditArchetypeTagsSection({
             }}
             disabled={editArchetypeTags.length === 0 || isFindingSimilarTags}
             className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeTags.length > 0 ? "bg-wedo-cyan/15 text-lia-text-primary" : "bg-lia-bg-tertiary text-lia-text-tertiary"}`}
-            title=`Buscar tags similares com ${personaName}`
+            title={`Buscar tags similares com ${personaName}`}
           >
             {isFindingSimilarTags ? (
               <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />

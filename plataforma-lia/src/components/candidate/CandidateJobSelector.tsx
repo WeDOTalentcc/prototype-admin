@@ -46,7 +46,7 @@ export function CandidateJobSelector({
             <p className="text-sm text-muted-foreground">em {companyName}</p>
           )}
           <p className="text-sm text-muted-foreground">
-            Selecione a vaga sobre a qual deseja conversar com a LIA.
+            Selecione a vaga sobre a qual deseja conversar com a IA.
           </p>
         </div>
 

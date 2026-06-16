@@ -15,8 +15,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import {
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
+import {
   Share2,
   Loader2,
   Check,
@@ -91,8 +91,6 @@ const BASE_CHANNELS: Omit<ChannelConfig, 'connected'>[] = [
 ]
 
 export function JobPublishModal({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   isOpen,
   onClose,
   jobs,
@@ -100,6 +98,8 @@ export function JobPublishModal({
   onUnpublish,
   onOpenCommunicationModal
 }: JobPublishModalProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [selectedChannels, setSelectedChannels] = useState<Set<string>>(new Set())
   const [scheduleType, setScheduleType] = useState<'now' | 'scheduled'>('now')
   const [scheduleDate, setScheduleDate] = useState('')

@@ -160,8 +160,6 @@ function QuestionItem({
 }
 
 export function InterviewNoteCard({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   interviewNote,
   onSave,
   onGenerateParecer,
@@ -173,6 +171,8 @@ export function InterviewNoteCard({
   onEscalate,
   isLoading = false,
 }: InterviewNoteCardProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [note, setNote] = useState<InterviewNote>(interviewNote)
   const [isTranscriptionOpen, setIsTranscriptionOpen] = useState(false)
   const [isGeneratingParecer, setIsGeneratingParecer] = useState(false)

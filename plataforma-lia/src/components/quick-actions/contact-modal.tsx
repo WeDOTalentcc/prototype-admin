@@ -253,7 +253,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
     return [
       {
         id: '1',
-        title: 'Sugestão Personalizada da LIA',
+        title: 'Sugestão Personalizada de IA',
         context: context,
         content: (baseTemplates as Record<string, Record<string, unknown>>)[context]?.[channel] ?? baseTemplates.professional[channel as keyof typeof baseTemplates.professional],
         reasons: [
@@ -452,7 +452,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               <div className="flex items-center justify-between mb-3">
                 <h4 className={`${textStyles.label} flex items-center gap-2`}>
                   <Brain className="w-4 h-4 text-wedo-cyan" />
-                  LIA - Assistente Inteligente
+                  IA - Assistente Inteligente
                 </h4>
                 <div className="flex items-center gap-2">
                   <select
@@ -477,12 +477,12 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                   {isLiaGenerating ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />
-                      LIA gerando...
+                      IA gerando...
                     </>
                   ) : (
                     <>
                       <Brain className="w-4 h-4 text-wedo-cyan" />
-                      Gerar com LIA
+                      Gerar com IA
                     </>
                   )}
                 </button>

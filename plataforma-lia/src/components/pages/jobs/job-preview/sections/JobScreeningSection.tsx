@@ -567,7 +567,7 @@ export function JobScreeningSection({
                                             {block.description}
                                           </p>
                                           <p className="text-micro text-lia-text-muted mt-1">
-                                            Gerenciado automaticamente pela LIA
+                                            Gerenciado automaticamente pela IA
                                           </p>
                                         </div>
                                       )

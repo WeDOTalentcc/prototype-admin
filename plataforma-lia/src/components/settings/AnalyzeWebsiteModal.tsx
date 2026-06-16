@@ -217,7 +217,7 @@ export function AnalyzeWebsiteModal({
             Analisar nosso site
           </DialogTitle>
           <DialogDescription className="text-xs text-lia-text-tertiary">
-            A LIA lê o site institucional e devolve uma proposta de campos no
+            A IA lê o site institucional e devolve uma proposta de campos no
             chat. Você revisa, edita e escolhe o que salvar.
           </DialogDescription>
         </DialogHeader>

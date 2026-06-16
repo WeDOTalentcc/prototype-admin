@@ -37,8 +37,6 @@ interface ArchetypesListProps {
 }
 
 export function ArchetypesList({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   archetypes,
   filteredArchetypes,
   archetypeSearchFilter,
@@ -58,6 +56,8 @@ export function ArchetypesList({
   onDeleteArchetype,
   onUseAsBase,
 }: ArchetypesListProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div className="space-y-4">
       {/* Criar Arquétipo */}

@@ -203,7 +203,7 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
       <div className="flex items-center justify-between mt-2">
         {generatedLabel ? (
           <p className="text-micro text-lia-text-secondary">
-            Gerado pela LIA em {generatedLabel}
+            Gerado por IA em {generatedLabel}
           </p>
         ) : (
           <span />

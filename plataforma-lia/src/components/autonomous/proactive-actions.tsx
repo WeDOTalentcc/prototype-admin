@@ -130,7 +130,7 @@ export function ProactiveActions({
             Tudo em dia!
           </h3>
           <p className="text-xs text-lia-text-tertiary text-center max-w-sm">
-            Não há ações proativas pendentes no momento. A LIA está monitorando e notificará quando houver sugestões.
+            Não há ações proativas pendentes no momento. A IA está monitorando e notificará quando houver sugestões.
           </p>
         </CardContent>
       </Card>

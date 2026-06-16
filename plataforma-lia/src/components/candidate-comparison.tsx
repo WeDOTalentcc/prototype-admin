@@ -286,7 +286,7 @@ export function CandidateComparison({
               Comparação Inteligente de Candidatos
             </h3>
             <p className="text-sm text-lia-text-secondary">
-              Análise comparativa com insights da LIA • {candidates.length} candidatos
+              Análise comparativa com insights de IA • {candidates.length} candidatos
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>

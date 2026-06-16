@@ -30,8 +30,6 @@ interface ArchetypeCreateViewProps {
 }
 
 export function ArchetypeCreateView({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   archetypeCreateMode,
   onArchetypeCreateModeChange,
   jobSearchQuery,
@@ -45,6 +43,8 @@ export function ArchetypeCreateView({
   onCreateArchetypeFromDescription,
   onSearchJobsForArchetype,
 }: ArchetypeCreateViewProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div className="space-y-3">
       <div className="flex gap-2">

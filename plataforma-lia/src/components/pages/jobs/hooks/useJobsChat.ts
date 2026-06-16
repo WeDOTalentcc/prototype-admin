@@ -93,8 +93,6 @@ interface UseJobsChatReturn {
 }
 
 export function useJobsChat({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   filteredJobs,
   selectedJobsForBatch,
   onAddRecentItem,
@@ -104,6 +102,8 @@ export function useJobsChat({
   openCompareModal,
   loadBackendJobs,
 }: UseJobsChatOptions): UseJobsChatReturn {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const { companyId: resolvedCompanyId } = useCompanyId();
   const { open: openGlobalChat } = useLiaFloat();
 

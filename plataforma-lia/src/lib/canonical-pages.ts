@@ -172,7 +172,7 @@ export function canonicalPageLabel(page: CanonicalPageValue): string {
     case CANONICAL_PAGES.AGENT_STUDIO:        return "Agent Studio"
     case CANONICAL_PAGES.AJUDA:               return "Ajuda"
     case CANONICAL_PAGES.BANCOS_TALENTOS:     return "Bancos de Talentos"
-    case CANONICAL_PAGES.BIBLIOTECA:          return "Biblioteca LIA"
+    case CANONICAL_PAGES.BIBLIOTECA:          return "Biblioteca"
     case CANONICAL_PAGES.CENTRAL_COMUNICACAO: return "Central de Comunicação"
     case CANONICAL_PAGES.TASKS:               return "Tarefas"
     case CANONICAL_PAGES.CHAT:                return "Chat"

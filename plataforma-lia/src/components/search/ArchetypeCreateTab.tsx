@@ -35,8 +35,6 @@ export interface ArchetypeCreateTabProps {
 }
 
 export function ArchetypeCreateTab({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   archetypeCreateMode,
   onArchetypeCreateModeChange,
   jobSearchQuery,
@@ -50,6 +48,8 @@ export function ArchetypeCreateTab({
   onCreateArchetypeFromDescription,
   onSearchJobsForArchetype,
 }: ArchetypeCreateTabProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div className="space-y-3">
       <div className="flex gap-2">

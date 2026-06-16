@@ -283,7 +283,7 @@ export function RubricEvaluationCard({
           <FileText className="w-3.5 h-3.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
           <div>
             <span className={`${textStyles.caption} text-lia-text-secondary font-medium block mb-0.5`}>
-              Resumo LIA:
+              Resumo:
             </span>
             <p className={`${textStyles.bodySmall} text-lia-text-primary ${isExpanded ? '' : 'line-clamp-2'} italic`}>"{displaySummary}"
             </p>

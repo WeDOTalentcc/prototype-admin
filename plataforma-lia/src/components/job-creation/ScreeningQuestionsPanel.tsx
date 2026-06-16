@@ -225,7 +225,7 @@ export function ScreeningQuestionsPanel({
                 <div>
                   <p className="text-xs font-medium text-lia-text-primary">Metodologia WSI</p>
                   <p className="text-micro text-lia-text-secondary leading-relaxed mt-0.5" aria-live="polite" aria-atomic="true">
-                    A LIA gera perguntas seguindo a metodologia WeDoTalent Skill Index,
+                    A IA gera perguntas seguindo a metodologia WeDoTalent Skill Index,
                     calibrando complexidade conforme senioridade e skills da vaga.
                   </p>
                 </div>

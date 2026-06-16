@@ -332,7 +332,7 @@ export function LearningLoopsPanel() {
             <div className="space-y-1 min-w-0">
               <h3 className={textStyles.h3}>{MASTER_DEF.label}</h3>
               <p className="text-sm text-lia-text-secondary dark:text-lia-text-secondary">
-                Configure quais mecanismos de aprendizado automático a LIA usa para melhorar sugestões ao longo do tempo.
+                Configure quais mecanismos de aprendizado automático a IA usa para melhorar sugestões ao longo do tempo.
               </p>
               <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary">
                 {MASTER_DEF.description}

@@ -9,8 +9,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu"
-import {
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
+import {
   BookOpen, HelpCircle,
   Video, FileText, Heart
 } from "lucide-react"

@@ -168,7 +168,7 @@ export function TemplatesPage() {
         <div>
           <h1 className="text-2xl font-semibold font-sans text-lia-text-primary mb-2 flex items-center gap-2">
             <Brain className="w-6 h-6 text-wedo-cyan" />
-            Templates LIA
+            Templates de IA
           </h1>
           <p className="text-lia-text-secondary">
             Gerencie comandos personalizados e acelere seu workflow de recrutamento

@@ -224,7 +224,7 @@ export function EventsSection() {
             </h4>
             {event.isSuggested && (
  <Chip density="relaxed" variant="neutral" className="border-lia-border-default text-lia-text-secondary">
-                LIA
+                IA
               </Chip>
             )}
             {getPriorityBadge(event.priority)}

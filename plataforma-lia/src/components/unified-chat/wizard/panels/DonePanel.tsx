@@ -61,7 +61,7 @@ export function DonePanel({ data }: Props) {
             Calibrar perfis antes de buscar
           </div>
           <span className="text-[10px] text-wedo-cyan/70 font-normal ml-[26px]">
-            A LIA aprende seu critério e libera o sourcing automático
+            A IA aprende seu critério e libera o sourcing automático
           </span>
         </button>
 

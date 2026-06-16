@@ -99,7 +99,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
     <div className="sticky top-0 self-start">
       <div className="flex items-center justify-between mb-2">
         <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide">
-          Descrição Gerada pela LIA
+          Descrição Gerada pela IA
         </label>
         <Button
           variant="outline"
@@ -236,7 +236,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
               </p>
             ) : (
               <p className="text-xs text-lia-text-muted text-center">
-                Descrição gerada pela LIA aparecerá aqui
+                Descrição gerada pela IA aparecerá aqui
               </p>
             )}
           </div>

@@ -93,7 +93,7 @@ export function ScreeningChannelsModal({
                 Canais de Comunicação
               </DialogTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
-                Defina por onde a LIA pode contatar candidatos
+                Defina por onde a IA pode contatar candidatos
               </p>
             </div>
           </div>

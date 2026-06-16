@@ -94,7 +94,7 @@ export const WSI_AUTOMATIC_MESSAGES: Record<number, WSIAutomaticMessage> = {
     title: 'Abordagem Inicial via WhatsApp',
     message: `Olá {candidato.nome}! 👋
 
-Aqui é a LIA, assistente de recrutamento da {empresa.nome}.
+Aqui é a IA, assistente de recrutamento da {empresa.nome}.
 
 Vi que você se candidatou para a vaga de {vaga.titulo} e gostaria de conversar sobre a oportunidade.
 

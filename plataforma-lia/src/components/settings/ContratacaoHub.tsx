@@ -145,7 +145,7 @@ export function ContratacaoHub() {
           <h3 className="text-sm font-medium text-lia-text-primary">Dias de início permitidos</h3>
         </div>
         <p className="text-xs text-lia-text-secondary">
-          Propostas geradas pela LIA sugerirem somente datas nesses dias. Dias 29–31 excluídos
+          Propostas geradas pela IA sugerirem somente datas nesses dias. Dias 29–31 excluídos
           para cobrir fevereiro.
         </p>
         <AllowedStartDaysPicker

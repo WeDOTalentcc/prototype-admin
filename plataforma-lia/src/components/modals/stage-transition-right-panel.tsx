@@ -34,8 +34,6 @@ interface StageTransitionRightPanelProps {
 }
 
 export function StageTransitionRightPanel({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   needsMessageComposition,
   channel,
   selectedAction,
@@ -49,6 +47,8 @@ export function StageTransitionRightPanel({
   handleMessageChange,
   regenerateMessage,
 }: StageTransitionRightPanelProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div className="w-1/2 bg-lia-bg-secondary/50 overflow-y-auto">
       <div className="p-5 space-y-4">

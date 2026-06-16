@@ -234,7 +234,7 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
         score: result.lia_score || 0,
         archetype: result.archetype || 'Não Identificado',
         recommendation: recommendation,
-        summary: result.explanation || 'Análise realizada pela LIA',
+        summary: result.explanation || 'Análise realizada pela IA',
         score_breakdown: result.score_breakdown ? {
           skills_match: result.score_breakdown.match_tecnico || null,
           personality_fit: result.score_breakdown.fit_personalidade || null,

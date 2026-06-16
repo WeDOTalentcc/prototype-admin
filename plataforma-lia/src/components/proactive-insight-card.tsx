@@ -109,7 +109,7 @@ export function ProactiveInsightCard({
                 Análise da Busca
               </h3>
               <p className={`${textStyles.bodySmall}`}>
-                Insights proativos da LIA
+                Insights proativos de IA
               </p>
             </div>
           </div>

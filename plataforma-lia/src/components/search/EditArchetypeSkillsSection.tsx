@@ -30,8 +30,6 @@ interface EditArchetypeSkillsSectionProps {
 }
 
 export function EditArchetypeSkillsSection({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   editArchetypeSkills, onEditArchetypeSkillsChange,
   newSkillInput, onNewSkillInputChange,
   aiSuggestedSkills, onAiSuggestedSkillsChange,
@@ -41,6 +39,8 @@ export function EditArchetypeSkillsSection({
   semanticSkillSuggestions, isLoadingSemanticSkills,
   searchSemanticSkills, clearSemanticSkillSuggestions,
 }: EditArchetypeSkillsSectionProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div>
       <label className="text-xs font-medium mb-1 flex items-center gap-1.5 text-lia-text-secondary">
@@ -127,7 +127,7 @@ export function EditArchetypeSkillsSection({
             }}
             disabled={editArchetypeSkills.length === 0 || isFindingSimilarSkills}
             className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeSkills.length > 0 ? "bg-wedo-cyan/15 text-lia-text-primary" : "bg-lia-bg-tertiary text-lia-text-tertiary"}`}
-            title=`Buscar skills similares com ${personaName}`
+            title={`Buscar skills similares com ${personaName}`}
           >
             {isFindingSimilarSkills ? (
               <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />

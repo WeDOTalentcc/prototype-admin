@@ -334,7 +334,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                     {action === 'lia_auto' ? (
                       <>
                         <Brain className="w-3.5 h-3.5 mr-1.5 text-wedo-cyan" />
-                        Confirmar com LIA
+                        Confirmar com IA
                       </>
                     ) : (
                       <>

@@ -176,7 +176,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                 Salvar Novo Comando
               </CardTitle>
               <p className="text-sm text-lia-text-tertiary">
-                Adicione este comando à biblioteca da LIA para futuros usos
+                Adicione este comando à biblioteca de IA para futuros usos
               </p>
             </div>
           </div>

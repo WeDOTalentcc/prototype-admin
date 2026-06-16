@@ -4,8 +4,8 @@ import React, { useCallback } from "react"
 import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import { toast } from "sonner"
 import { useChatStateStore } from "@/stores/chat-state-store"
-import type {
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
+import type {
   ArchetypeData,
   UseEAPCallbacksParams,
 } from './useEAPCallbacksTypes'

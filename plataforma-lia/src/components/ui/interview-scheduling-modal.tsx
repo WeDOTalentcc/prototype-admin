@@ -182,7 +182,7 @@ export function InterviewSchedulingModal({
                   </Label>
                   <Chip variant="neutral" muted className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
                     <Brain className="w-3 h-3 mr-1 text-wedo-cyan" />
-                    Gerado por LIA
+                    Gerado por IA
                   </Chip>
                 </div>
 

@@ -93,7 +93,7 @@ export function TwilioCallButton({ candidate, jobTitle, jobId, companyId }: Twil
         ? ` Canal alternativo disponível: ${fallbackChannel}.`
         : ""
       toast.success(
-        `Ligação iniciada${sidPart} — a LIA vai discar para o candidato em instantes.${fbPart}`
+        `Ligação iniciada${sidPart} — a IA vai discar para o candidato em instantes.${fbPart}`
       )
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e)

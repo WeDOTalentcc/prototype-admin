@@ -86,11 +86,11 @@ Atenciosamente,
 
 Esperamos que esteja bem!
 
-Estamos avan\u00e7ando em nosso processo seletivo para a posi\u00e7\u00e3o de {{vaga}} e gostar\u00edamos de convid\u00e1-lo(a) para a pr\u00f3xima etapa: uma triagem r\u00e1pida com a nossa assistente LIA.
+Estamos avan\u00e7ando em nosso processo seletivo para a posi\u00e7\u00e3o de {{vaga}} e gostar\u00edamos de convid\u00e1-lo(a) para a pr\u00f3xima etapa: uma triagem r\u00e1pida com a nossa assistente de IA.
 
 \ud83d\udccb Sobre a triagem:
 \u2022 Dura\u00e7\u00e3o estimada: 15-20 minutos
-\u2022 Formato: Conversa por chat ou WhatsApp com a LIA
+\u2022 Formato: Conversa por chat ou WhatsApp com a IA
 \u2022 Objetivo: Conhecer melhor sua forma de pensar e resolver problemas
 
 \ud83d\udd17 Para iniciar, escolha uma das op\u00e7\u00f5es:
@@ -252,12 +252,12 @@ Estamos avan\u00e7ando no processo seletivo para {{vaga}} e gostar\u00edamos de 
 
 \ud83d\udccb *Sobre a triagem:*
 \u2022 Dura\u00e7\u00e3o: 15-20 min
-\u2022 Formato: Conversa com a LIA, nossa assistente
+\u2022 Formato: Conversa com a IA, nossa assistente
 
 \u26a0\ufe0f *Aviso LGPD*
 Antes de iniciar, voc\u00ea receber\u00e1 informa\u00e7\u00f5es sobre como seus dados ser\u00e3o tratados e os termos de uso do processo.
 
-Podemos come\u00e7ar? Ao confirmar, a LIA iniciar\u00e1 a conversa! \ud83c\udfaf
+Podemos come\u00e7ar? Ao confirmar, a IA iniciar\u00e1 a conversa! \ud83c\udfaf
 
 Responda "SIM" para come\u00e7ar \ud83d\ude0a`,
     variables: ['candidato_nome', 'vaga', 'link_triagem'],
@@ -282,7 +282,7 @@ Gostar\u00edamos de agendar uma entrevista {{formato_entrevista}} com voc\u00ea.
 \u2022 Formato: {{link_entrevista}}
 
 \ud83d\uddd3\ufe0f *Escolha seu hor\u00e1rio preferido:*
-A LIA vai te mostrar as op\u00e7\u00f5es dispon\u00edveis!
+A IA vai te mostrar as op\u00e7\u00f5es dispon\u00edveis!
 
 \u2705 Ap\u00f3s confirmar:
 \u2022 Voc\u00ea receber\u00e1 email de confirma\u00e7\u00e3o

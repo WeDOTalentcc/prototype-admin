@@ -158,8 +158,6 @@ interface CandidateActivitiesTabProps {
 }
 
 export function CandidateActivitiesTab({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   candidate,
   onShowLiaModal,
   onOpenTriagemDetails,
@@ -173,6 +171,8 @@ export function CandidateActivitiesTab({
   onSetPreviewType,
   onSetShowPreview,
 }: CandidateActivitiesTabProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
   const [activityFilter, setActivityFilter] = useState<ActivityFilterType>("all")
   const [activityView, setActivityView] = useState<ActivityViewType>("timeline")

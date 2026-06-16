@@ -175,7 +175,7 @@ export const JOBS_COLUMN_CONFIG: Record<string, { label: string; sortable: boole
   id: { label: 'ID', sortable: true, align: 'left' },
   vaga: { label: 'Vaga', sortable: true, align: 'left' },
   candidatos: { label: 'Candidatos', sortable: true, align: 'center' },
-  performance: { label: 'Performance LIA Triagens', sortable: false, align: 'left' },
+  performance: { label: 'Performance de Triagens', sortable: false, align: 'left' },
   status: { label: 'Status', sortable: true, align: 'left' },
   nps: { label: 'NPS', sortable: true, align: 'left' },
   recrutador: { label: 'Recrutador(a)', sortable: true, align: 'left' },

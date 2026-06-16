@@ -342,7 +342,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               <div>
                 <p className="text-micro font-medium text-lia-text-secondary mb-1">Calibração Automática</p>
                 <p className="text-micro text-lia-text-secondary leading-relaxed">
-                  Após atingir volume suficiente, a LIA recalibra automaticamente os cortes por percentil histórico,
+                  Após atingir volume suficiente, a IA recalibra automaticamente os cortes por percentil histórico,
                   mantendo a qualidade das contratações.
                 </p>
               </div>

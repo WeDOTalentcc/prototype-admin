@@ -157,8 +157,8 @@ export const ALL_COLUMN_DEFINITIONS: StandardColumnDefinition[] = [
   // ============================================
   // INSIGHTS LIA / IA
   // ============================================
-  { id: 'lia_score', label: 'Score LIA', defaultVisible: false, defaultOrder: 54, category: 'ia', width: 100, sortable: true, align: 'center' },
-  { id: 'lia_insights', label: 'Insights LIA', defaultVisible: false, defaultOrder: 55, category: 'ia', width: 200 },
+  { id: 'lia_score', label: 'Score IA', defaultVisible: false, defaultOrder: 54, category: 'ia', width: 100, sortable: true, align: 'center' },
+  { id: 'lia_insights', label: 'Insights', defaultVisible: false, defaultOrder: 55, category: 'ia', width: 200 },
   { id: 'skills_match_percentage', label: '% Match de habilidades', defaultVisible: false, defaultOrder: 56, category: 'ia', width: 100, align: 'center' },
 
   // ============================================
@@ -447,7 +447,7 @@ export const COLUMN_PRESETS: ColumnPreset[] = [
   },
   {
     id: 'lia_analysis',
-    name: 'Análise LIA',
+    name: 'Análise',
     description: 'Scores e insights da IA',
     columns: ['name', 'current_title', 'match_score', 'lia_score', 'skills_match_percentage', 'lia_insights', 'technical_skills']
   },

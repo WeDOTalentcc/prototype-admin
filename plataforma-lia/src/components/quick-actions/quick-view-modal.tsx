@@ -204,7 +204,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-medium text-status-success flex items-center gap-2">
                 <Brain className="w-4 h-4 text-status-success" />
-                Insights Instantâneos da LIA
+                Insights Instantâneos de IA
               </h4>
               <Button
                 variant="ghost"

@@ -48,8 +48,6 @@ type DecisionType = "approve" | "reject" | "pending"
 type FeedbackAction = "send_now" | "schedule" | "none"
 
 export function NextStepModal({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   isOpen,
   onClose,
   candidateName,
@@ -58,6 +56,8 @@ export function NextStepModal({
   availableStages,
   onConfirm,
 }: NextStepModalProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [decisionType, setDecisionType] = useState<DecisionType | null>(null)
   const [selectedStage, setSelectedStage] = useState<string>("")
   const [feedbackAction, setFeedbackAction] = useState<FeedbackAction>("none")

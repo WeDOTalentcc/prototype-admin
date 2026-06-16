@@ -192,7 +192,7 @@ export const defaultCommands = (handlers: {
   {
     id: 'schedule',
     label: 'Agendar Entrevista',
-    description: 'Criar novo agendamento via LIA',
+    description: 'Criar novo agendamento via IA',
     icon: <Calendar className="w-4 h-4" />,
     category: 'actions',
     shortcut: 'A',
@@ -210,7 +210,7 @@ export const defaultCommands = (handlers: {
   {
     id: 'email',
     label: 'Gerar Email',
-    description: 'Email personalizado com LIA',
+    description: 'Email personalizado com IA',
     icon: <Mail className="w-4 h-4" />,
     category: 'actions',
     onSelect: handlers.onEmail || (() => {})

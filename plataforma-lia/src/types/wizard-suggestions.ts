@@ -98,7 +98,7 @@ export type WizardField = typeof WIZARD_FIELDS[number];
 
 export const SOURCE_LABELS: Record<DataSource, string> = {
   'company_settings': 'Configurações',
-  'lia_history': 'Histórico LIA',
+  'lia_history': 'Histórico',
   'imported_ats': 'ATS Importado',
   'workforce_planning': 'Planejamento',
   'curated_templates': 'Template'

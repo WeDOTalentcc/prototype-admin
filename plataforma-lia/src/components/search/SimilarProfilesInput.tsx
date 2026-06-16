@@ -34,8 +34,6 @@ interface SimilarProfilesInputProps {
 }
 
 export function SimilarProfilesInput({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   similarUrls,
   similarCvFiles,
   isAnalyzingProfiles,
@@ -51,6 +49,8 @@ export function SimilarProfilesInput({
   onAnalyzeProfiles,
   onSearch,
 }: SimilarProfilesInputProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const cvFileInputRef = useRef<HTMLInputElement>(null)
   const validUrls = similarUrls.filter(u => u.trim())
   const hasSource = validUrls.length > 0 || similarCvFiles.length > 0

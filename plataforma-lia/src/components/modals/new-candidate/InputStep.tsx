@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import {
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
+import {
   User, Mail, Phone, Upload, FileText,
   X, Brain, AlertCircle,
   Linkedin, Loader2, File
@@ -66,8 +66,6 @@ function formatFileSize(bytes: number) {
 }
 
 export function InputStep({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   activeTab,
   setActiveTab,
   setError,
@@ -96,6 +94,8 @@ export function InputStep({
   fieldErrors,
   setFieldErrors,
 }: InputStepProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (

@@ -241,7 +241,7 @@ export function UnifiedChatHeader({
         {mode === "fullscreen" ? (
           <div className="flex items-center gap-1 min-w-0">
             <span className="text-sm text-lia-text-secondary">
-              LIA
+              IA
             </span>
             <span className="text-sm text-lia-text-disabled">/</span>
             {isRenaming ? renderTitle() : renderTitleButton("max-w-[200px]")}

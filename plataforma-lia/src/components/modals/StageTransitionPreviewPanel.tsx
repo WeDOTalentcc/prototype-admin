@@ -33,8 +33,6 @@ interface StageTransitionPreviewPanelProps {
 }
 
 export function StageTransitionPreviewPanel({
-  const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "IA"
   needsMessageComposition,
   selectedAction,
   channel,
@@ -48,6 +46,8 @@ export function StageTransitionPreviewPanel({
   showPulse,
   regenerateMessage,
 }: StageTransitionPreviewPanelProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div className="w-1/2 bg-lia-bg-secondary/50 overflow-y-auto">
       <div className="p-5 space-y-4">

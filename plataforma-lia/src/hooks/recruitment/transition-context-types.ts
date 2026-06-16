@@ -133,7 +133,7 @@ export function getAvailableActionsForTransition(fromStage: string, toStage: str
     actions.push({
       id: 'triagem_wsi',
       name: 'Convidar para Triagem WSI',
-      description: 'LIA ir\u00e1 conduzir a triagem automaticamente',
+      description: 'IA ir\u00e1 conduzir a triagem automaticamente',
       recommended: true,
       template_category: 'convite_triagem'
     })
@@ -268,7 +268,7 @@ Equipe de Recrutamento`
 
 Ficamos muito felizes com seu interesse em nossa vaga de ${jobTitle}!
 
-Gostar\u00edamos de convid\u00e1-lo(a) para a pr\u00f3xima etapa: uma triagem r\u00e1pida com a nossa assistente LIA.
+Gostar\u00edamos de convid\u00e1-lo(a) para a pr\u00f3xima etapa: uma triagem r\u00e1pida com nossa assistente de IA.
 
 \ud83d\udccb Sobre a triagem:
 \u2022 Dura\u00e7\u00e3o estimada: 15-20 minutos

@@ -38,7 +38,7 @@ function SuggestionBadge({ isNew }: { isNew: boolean }) {
   return (
     <Chip density="relaxed" variant="neutral" className="ml-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
       <Lightbulb className="w-3 h-3 mr-1" />
-      Sugerido pela LIA
+      Sugerido pela IA
     </Chip>
   );
 }
@@ -353,7 +353,7 @@ export function JobDescriptionPreview({
         <div className="text-xs text-lia-text-tertiary flex items-center gap-4">
           <span className="flex items-center gap-1">
             <Lightbulb className="w-3 h-3 text-lia-text-secondary" />
-            = Sugerido pela LIA
+            = Sugerido pela IA
           </span>
           <span className="flex items-center gap-1">
             <AlertTriangle className="w-3 h-3 text-status-warning" />

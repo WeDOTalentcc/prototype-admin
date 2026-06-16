@@ -105,7 +105,7 @@ function OutOfScopeIndicator() {
           </span>
           <span className="text-micro text-lia-text-tertiary">
             Aqui eu cuido de concluir esta etapa do candidato. Para outras ações
-            (e-mail a outros candidatos, criar vaga, relatórios), use o chat lateral da LIA.
+            (e-mail a outros candidatos, criar vaga, relatórios), use o chat lateral da IA.
           </span>
         </div>
       </div>
@@ -317,7 +317,7 @@ export function TransitionChatPanel({
                 {BEHAVIOR_DESCRIPTIONS[actionBehavior] || "Posso ajudar a concluir esta transição."}
               </p>
               <p className="text-micro text-lia-text-tertiary max-w-[260px]">
-                Foco nesta etapa do candidato. Para outras ações, use o chat lateral da LIA.
+                Foco nesta etapa do candidato. Para outras ações, use o chat lateral da IA.
               </p>
             </div>
           ) : (
@@ -495,7 +495,7 @@ export function TransitionChatPanel({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={placeholder || 'Envie mensagem para a LIA...'}
+              placeholder={placeholder || 'Envie mensagem para a IA...'}
               className="flex-1 text-base-ui bg-transparent focus:outline-none min-w-0 text-lia-text-primary placeholder:text-lia-text-tertiary"
              
               disabled={isLoading}

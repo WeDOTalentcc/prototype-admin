@@ -23,6 +23,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { BenefitBadgeList } from"@/components/benefits/BenefitBadgeList"
 import { toCompanyBenefit, type CompanyBenefit } from"@/types/benefits"
+import usePersonaName from "@/hooks/company/usePersonaName"
 
 export interface VacancyFullDetails {
   id: string
@@ -138,6 +139,7 @@ const EMPLOYMENT_TYPE_LABELS: Record<string, string> = {
 }
 
 export function VacancyFullSummary({
+  const personaName = usePersonaName()
   vacancy,
   editableFields,
   lockedFields,
@@ -147,9 +149,9 @@ export function VacancyFullSummary({
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
         <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
-          <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
+          <AvatarImage src="/images/lia-avatar.png" alt={personaName} />
           <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
-            LIA
+            {personaName}
           </AvatarFallback>
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
@@ -170,9 +172,9 @@ export function VacancyFullSummary({
   return (
     <div className="flex items-start gap-3 max-w-[95%]">
       <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
-        <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
+        <AvatarImage src="/images/lia-avatar.png" alt={personaName} />
         <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
-          LIA
+            {personaName}
         </AvatarFallback>
       </Avatar>
 
