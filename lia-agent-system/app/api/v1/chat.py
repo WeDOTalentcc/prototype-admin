@@ -304,6 +304,31 @@ company_id: str = Depends(require_company_id)):
     if _c3b_pre.fairness_blocked:
         raise HTTPException(status_code=422, detail=_c3b_pre.block_reason or "Solicitação bloqueada por critérios de equidade.")
 
+    # GAP-00-001: daily token budget check — paridade com agent_chat_sse.py
+    if _c3b_company:
+        try:
+            from app.domains.credits.services.token_budget_service import (
+                check_budget as _chk_bgt_rest,
+                get_plan_for_company as _get_plan_rest,
+            )
+            _bgt_plan_rest = await _get_plan_rest(_c3b_company)
+            _bgt_ok_rest, _bgt_used_rest, _bgt_lim_rest = await _chk_bgt_rest(_c3b_company, _bgt_plan_rest)
+            if not _bgt_ok_rest:
+                raise HTTPException(
+                    status_code=429,
+                    detail={
+                        "error_code": "budget_exhausted",
+                        "message": (
+                            f"Limite diario de uso de IA atingido ({_bgt_used_rest:,}/{_bgt_lim_rest:,} tokens). "
+                            "O budget sera renovado a meia-noite UTC."
+                        ),
+                    },
+                )
+        except HTTPException:
+            raise
+        except Exception as _bgt_exc_rest:
+            logger.debug("[LIA-BUDGET-REST] Budget check skipped (fail-open): %s", _bgt_exc_rest)
+
     # Paridade de transporte (WS/SSE): passa o texto CRU (pré-masking) ao
     # wizard p/ captura determinística do email do gestor no servidor. NUNCA
     # vai ao LLM (que vê clean_message); o wizard extrai via regex no state.
@@ -1105,12 +1130,78 @@ company_id: str = Depends(require_company_id)):
         _fairness_guard = FairnessGuard()
         _fairness_result = _fairness_guard.check(user_content)
         if _fairness_result and _fairness_result.is_blocked:
+            try:
+                import asyncio as _fg_loop
+                _fg_loop.get_event_loop().create_task(
+                    _fairness_guard.log_check(
+                        result=_fairness_result,
+                        context="chat_legacy_stream",
+                        company_id=_company_id or None,
+                        recruiter_id=str(current_user.id) if current_user else None,
+                    )
+                )
+            except Exception:
+                pass
             return JSONResponse(
                 status_code=400,
                 content={"error": True, "message": _fairness_result.educational_message or "Sua solicitacao contem termos que podem gerar vies."}
             )
     except Exception as e:
         logger.debug("[LIA-P01] SSE compliance check skipped (fail-open): %s", e)
+
+    # GAP-00-001: daily token budget check — paridade com agent_chat_sse.py
+    if _company_id:
+        try:
+            from app.domains.credits.services.token_budget_service import (
+                check_budget as _chk_bgt_leg,
+                get_plan_for_company as _get_plan_leg,
+            )
+            _bgt_plan_leg = await _get_plan_leg(_company_id)
+            _bgt_ok_leg, _bgt_used_leg, _bgt_lim_leg = await _chk_bgt_leg(_company_id, _bgt_plan_leg)
+            if not _bgt_ok_leg:
+                return JSONResponse(
+                    status_code=429,
+                    content={
+                        "error": True,
+                        "error_code": "budget_exhausted",
+                        "message": (
+                            f"Limite diario de uso de IA atingido ({_bgt_used_leg:,}/{_bgt_lim_leg:,} tokens). "
+                            "O budget sera renovado a meia-noite UTC."
+                        ),
+                    },
+                )
+        except Exception as _bgt_exc_leg:
+            logger.debug("[LIA-BUDGET] Budget check skipped (fail-open): %s", _bgt_exc_leg)
+
+    # GAP-00-001: LGPD consent gate (simplified) — paridade com agent_chat_sse.py
+    # Checks candidate_id from view_context when recruiter is viewing a candidate.
+    try:
+        _vctx_cid = (view_context or {}).get("candidate_id") or (view_context or {}).get("candidateId")
+        if _vctx_cid and _company_id:
+            from app.core.database import AsyncSessionLocal as _ConsentASL_leg
+            from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService as _CSvc_leg
+            async with _ConsentASL_leg() as _cons_db_leg:
+                _cons_result_leg = await _CSvc_leg(_cons_db_leg).check_candidate_consent(
+                    candidate_id=str(_vctx_cid),
+                    company_id=_company_id,
+                    purpose="ai_screening",
+                )
+            if not _cons_result_leg.allowed and not _cons_result_leg.soft_warning:
+                logger.warning(
+                    "[LIA-CONSENT] Consent revogado — path legacy stream: company=%s candidate=%s",
+                    _company_id, _vctx_cid,
+                )
+                return JSONResponse(
+                    status_code=451,
+                    content={
+                        "error": True,
+                        "error_code": "consent_revoked",
+                        "message": "Processamento bloqueado: consentimento LGPD revogado para este candidato.",
+                        "candidate_id": str(_vctx_cid),
+                    },
+                )
+    except Exception as _cons_exc_leg:
+        logger.debug("[LIA-CONSENT] Consent gate (fail-open): %s", _cons_exc_leg)
 
     _disable_unified = os.getenv("LIA_DISABLE_SSE_UNIFIED", "").lower() in ("1", "true", "yes")
     _generator = (

@@ -189,6 +189,8 @@ ci: ## Suite completa de sensores (todos os 4, warn-only). Uso: make ci
 	@python3 scripts/check_capability_catalog_sync.py || true
 	@echo "--- tool-registry-sync ---"
 	@python3 scripts/check_tool_registry_sync.py || true
+	@echo "--- chat-path-parity ---"
+	@python3 scripts/check_chat_path_parity.py || true
 	@echo "=== Done ==="
 
 ci-fast: ## Só sensores rápidos bloqueadores (< 5s). Uso: make ci-fast

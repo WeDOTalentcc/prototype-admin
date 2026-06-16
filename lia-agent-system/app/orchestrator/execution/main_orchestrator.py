@@ -480,6 +480,19 @@ class MainOrchestrator:
                         ).inc()
                 except Exception:
                     pass
+                # GAP-00-001: log_check() para audit trail do bloqueio
+                try:
+                    import asyncio as _fg_asyncio_orch
+                    _fg_asyncio_orch.get_event_loop().create_task(
+                        self._fairness_guard.log_check(
+                            result=_fairness_result,
+                            context="main_orchestrator",
+                            company_id=str(ctx.company_id) if ctx.company_id else None,
+                            recruiter_id=str(ctx.user_id) if ctx.user_id else None,
+                        )
+                    )
+                except Exception:
+                    pass
                 return ChatResponse(
                     success=False,
                     content=_fairness_result.educational_message or (
@@ -551,6 +564,38 @@ class MainOrchestrator:
                 except Exception as _aic_exc:
                     logger.debug("[MainOrchestrator] ai_credit_gate skipped (fail-safe): %s", _aic_exc)
 
+            # GAP-00-001: daily token budget check (defense-in-depth) ─────
+            # agent_chat_sse.py checks before calling orchestrator;
+            # this catches any other caller that skips the entry-point check.
+            try:
+                from app.domains.credits.services.token_budget_service import (
+                    check_budget as _chk_bgt_orch,
+                    get_plan_for_company as _get_plan_orch,
+                )
+                _bgt_plan_orch = await _get_plan_orch(str(ctx.company_id))
+                _bgt_ok_orch, _bgt_used_orch, _bgt_lim_orch = await _chk_bgt_orch(
+                    str(ctx.company_id), _bgt_plan_orch
+                )
+                if not _bgt_ok_orch:
+                    logger.warning(
+                        "[MainOrchestrator] Daily token budget exhausted: company=%s used=%d limit=%d",
+                        ctx.company_id, _bgt_used_orch, _bgt_lim_orch,
+                    )
+                    return ChatResponse(
+                        success=False,
+                        content=(
+                            f"Limite diario de uso de IA atingido "
+                            f"({_bgt_used_orch:,}/{_bgt_lim_orch:,} tokens). "
+                            "O budget sera renovado a meia-noite UTC."
+                        ),
+                        agent_used="token_budget_gate",
+                        confidence=1.0,
+                        intent_detected="blocked_budget_exhausted",
+                        conversation_id=conv_id,
+                    )
+            except Exception as _bgt_orch_exc:
+                logger.debug("[MainOrchestrator] token_budget_gate skipped (fail-safe): %s", _bgt_orch_exc)
+
             # ── P1-W4-11: PolicyGate soft-enforcement ─────────────────────
             # Soft gate: valida intent contra policies do tenant. Log violations,
             # nunca bloqueia fluxo (hard gate em sprint futuro quando policies
@@ -584,6 +629,42 @@ class MainOrchestrator:
                         # quando policies estiverem validadas em produção.
                 except Exception as _pg_err:
                     logger.debug("[PolicyGate] P1-W4-11 evaluate error (non-blocking): %s", _pg_err)
+
+            # GAP-00-001: LGPD consent gate (defense-in-depth) ────────────
+            # get_active_candidate() reads a ContextVar set by the calling
+            # layer (agent_chat_sse entity resolver). For calls from chat.py
+            # without entity resolution, this is a no-op (None candidate).
+            try:
+                from app.shared.entity_resolver import get_active_candidate as _get_cand_orch
+                _orch_cand_id = _get_cand_orch()
+                if _orch_cand_id and ctx.company_id:
+                    from app.core.database import AsyncSessionLocal as _ConsentASL_orch
+                    from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService as _CSvc_orch
+                    async with _ConsentASL_orch() as _cons_db_orch:
+                        _cons_result_orch = await _CSvc_orch(_cons_db_orch).check_candidate_consent(
+                            candidate_id=_orch_cand_id,
+                            company_id=str(ctx.company_id),
+                            purpose="ai_screening",
+                        )
+                    if not _cons_result_orch.allowed and not _cons_result_orch.soft_warning:
+                        logger.warning(
+                            "[MainOrchestrator] LGPD consent revogado: company=%s candidate=%s",
+                            ctx.company_id, _orch_cand_id,
+                        )
+                        return ChatResponse(
+                            success=False,
+                            content=(
+                                "Nao posso processar informacoes deste candidato por IA porque o "
+                                "consentimento LGPD foi revogado. Solicite novo consentimento via "
+                                "Gestao de Consentimentos."
+                            ),
+                            agent_used="lgpd_consent_gate",
+                            confidence=1.0,
+                            intent_detected="blocked_consent_revoked",
+                            conversation_id=conv_id,
+                        )
+            except Exception as _cons_orch_exc:
+                logger.debug("[MainOrchestrator] consent gate (fail-safe): %s", _cons_orch_exc)
 
             # Enriquecer contexto com informações do tenant
             # R4 (Task T-F): idempotente + paridade com agent_chat_sse.py.
