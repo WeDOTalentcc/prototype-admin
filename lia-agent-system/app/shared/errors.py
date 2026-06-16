@@ -223,6 +223,23 @@ class LIAConflictError(LIAError):
 
 
 # ---------------------------------------------------------------------------
+# State transition errors — FSM violation (terminal state, invalid move)
+# ---------------------------------------------------------------------------
+
+class LIAInvalidStateTransition(LIAConflictError):
+    """Candidate is in a terminal state and cannot be transitioned further."""
+
+    def __init__(
+        self,
+        message: str = "Transição de estado inválida",
+        code: str = "INVALID_STATE_TRANSITION",
+        **kwargs,
+    ):
+        kwargs.setdefault("recoverable", False)
+        super().__init__(message=message, code=code, **kwargs)
+
+
+# ---------------------------------------------------------------------------
 # Not-configured errors — feature/integration not set up
 # ---------------------------------------------------------------------------
 

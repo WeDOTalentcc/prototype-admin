@@ -40,6 +40,18 @@ from lia_models.recruitment_stages import (
 
 logger = logging.getLogger(__name__)
 
+_fsm_validate = None
+
+
+def _get_fsm_validate():
+    """Lazy import to avoid circular dependencies."""
+    global _fsm_validate
+    if _fsm_validate is None:
+        from app.services.state_machines.candidate_fsm import validate_stage_transition
+        _fsm_validate = validate_stage_transition
+    return _fsm_validate
+
+
 _event_dispatcher = None
 
 
@@ -168,6 +180,9 @@ class PipelineStageService:
             from_sub_status = vacancy_candidate.status
             
             if not force:
+                # FSM: block transitions from terminal stages (rejected/hired/cancelled/not_selected)
+                _get_fsm_validate()(from_stage, to_stage, force=False)
+
                 is_valid, error_msg = await self._validate_transition(
                     db, company_id, from_stage, to_stage
                 )

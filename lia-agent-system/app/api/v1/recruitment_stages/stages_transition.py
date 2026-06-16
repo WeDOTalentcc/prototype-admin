@@ -38,6 +38,7 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAInvalidStateTransition
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
@@ -79,6 +80,8 @@ company_id: str = Depends(require_company_id)):
         return result
     except TransitionError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except LIAInvalidStateTransition as e:
+        raise HTTPException(status_code=409, detail=e.message)
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
     except ValueError as e:
