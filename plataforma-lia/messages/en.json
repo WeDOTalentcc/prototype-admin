@@ -1756,7 +1756,15 @@
       "compensation": "Compensation",
       "process": "Process",
       "other": "Other"
-    }
+    },
+    "sortFieldScore": "AI Score",
+    "sortFieldName": "Name",
+    "sortFieldAppliedDate": "Applied Date",
+    "sortFieldFitScore": "CV Match",
+    "sortFieldNotaLiaGeral": "Overall AI Score",
+    "sortOrderAsc": "Ascending",
+    "sortOrderDesc": "Descending",
+    "sortLabel": "Sort by"
   },
   "pipeline": {
     "title": "Talent Pipeline",

@@ -68,6 +68,8 @@ import { KanbanCardScores } from "./KanbanCardScores"
 import { KanbanCardStatusBadges } from "./KanbanCardStatusBadges"
 import { KanbanCardInterviewButtons } from "./KanbanCardInterviewButtons"
 import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
+import { sortKanbanCandidates } from "./utils/kanbanHelpers"
+import { useKanbanStore } from "@/stores/kanban-store"
 
 type KanbanCandidate = CandidateLocal & {
   score?: number
@@ -277,14 +279,10 @@ export function KanbanColumnRenderer({
   const stageInfo = getStageByName(stageId)
   const displayTitle = dynamicStage?.displayName || stageInfo?.displayName || stageId
 
-  let sortedCandidates = [...candidates]
-  if (stageId === "screening") {
-    sortedCandidates = candidates.sort((a, b) => {
-      if (a.needsAction && !b.needsAction) return -1
-      if (!a.needsAction && b.needsAction) return 1
-      return (b.score ?? 0) - (a.score ?? 0)
-    })
-  }
+  // GAP-03-006: sort by store-driven field+order (replaces hardcoded screening-only sort)
+  const kanbanSortBy = useKanbanStore((s) => s.kanbanSortBy)
+  const kanbanSortOrder = useKanbanStore((s) => s.kanbanSortOrder)
+  const sortedCandidates = sortKanbanCandidates(candidates, kanbanSortBy, kanbanSortOrder)
 
   const filteredCandidates = sortedCandidates.filter((candidate) => {
     if (searchQuery) {

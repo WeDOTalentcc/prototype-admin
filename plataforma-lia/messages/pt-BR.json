@@ -1756,7 +1756,15 @@
       "compensation": "Remuneração",
       "process": "Processo",
       "other": "Outros"
-    }
+    },
+    "sortFieldScore": "Score IA",
+    "sortFieldName": "Nome",
+    "sortFieldAppliedDate": "Data de Candidatura",
+    "sortFieldFitScore": "Aderência CV",
+    "sortFieldNotaLiaGeral": "Nota Geral IA",
+    "sortOrderAsc": "Crescente",
+    "sortOrderDesc": "Decrescente",
+    "sortLabel": "Ordenar por"
   },
   "pipeline": {
     "title": "Funil de Talentos",
