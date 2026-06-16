@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { LIA_FIELD_DEFINITIONS, LiaFieldKey } from '@/hooks/company/use-company-lia-instructions'
+import { useAiPersona } from '@/hooks/company/use-ai-persona'
 
 interface LiaFieldToggleProps {
   fieldKey: LiaFieldKey
@@ -38,6 +39,8 @@ export function LiaFieldToggle({
   compact = false,
 }: LiaFieldToggleProps) {
   const t = useTranslations('settings.liaField')
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? 'IA'
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [instruction, setInstruction] = useState(currentInstruction)
   const [isSaving, setIsSaving] = useState(false)
@@ -104,7 +107,7 @@ export function LiaFieldToggle({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bot className="w-4 h-4 text-wedo-cyan" />
-                  <span className="text-sm font-semibold text-lia-text-primary">Instrução para a IA</span>
+                  <span className="text-sm font-semibold text-lia-text-primary">{`Instrução para ${personaName}`}</span>
                 </div>
                 <button
                   onClick={() => setIsPopoverOpen(false)}
@@ -229,7 +232,7 @@ export function LiaFieldToggle({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bot className="w-4 h-4 text-wedo-cyan" />
-                <span className="text-sm font-semibold text-lia-text-primary">Instrução para a IA</span>
+                <span className="text-sm font-semibold text-lia-text-primary">{`Instrução para ${personaName}`}</span>
               </div>
               <button
                 onClick={() => setIsPopoverOpen(false)}

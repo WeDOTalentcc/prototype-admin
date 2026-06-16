@@ -13,6 +13,7 @@
 import dynamic from "next/dynamic"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Settings2 } from "lucide-react"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 const LiaPersonalizacaoHub = dynamic(
   () =>
@@ -28,6 +29,8 @@ interface HiringPolicyConfigModalProps {
 }
 
 export function HiringPolicyConfigModal({ isOpen, onClose }: HiringPolicyConfigModalProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
@@ -40,7 +43,7 @@ export function HiringPolicyConfigModal({ isOpen, onClose }: HiringPolicyConfigM
               <Settings2 className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <DialogTitle className="text-sm font-semibold text-lia-text-primary">
-              Configurações de IA
+              {`Configurações de ${personaName}`}
             </DialogTitle>
           </div>
         </DialogHeader>

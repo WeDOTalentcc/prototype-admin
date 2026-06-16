@@ -149,7 +149,7 @@ interface UseAiPersonaResult {
   update: (patch: Partial<AiPersona>) => Promise<boolean>
 }
 
-const DEFAULT_PERSONA: AiPersona = { name: "LIA", tone: "profissional" }
+const DEFAULT_PERSONA: AiPersona = { name: "IA", tone: "profissional" }
 
 export function useAiPersona(): UseAiPersonaResult {
   const queryClient = useQueryClient()

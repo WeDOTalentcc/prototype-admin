@@ -35,6 +35,7 @@ import { textStyles } from "@/lib/design-tokens"
 import { HubLoadingState, ConfigurableFieldCard } from "./_shared"
 import { apiFetch } from "@/lib/api/api-fetch"
 import { useAllLiaFieldToggles } from "@/hooks/settings/useLiaFieldTogglesForSection"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -76,6 +77,8 @@ interface TenantOverrideListResponse {
 
 export function LiaFieldsConfigPanel() {
   const t = useTranslations("settings.liaFields")
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   // E1 (audit 2026-05-21): only WeDOTalent staff (role wedotalent_admin) can
   // see / edit the raw YAML tenant override tab. Customer-end users — even
   // their org-level admin — must not have access. This is defense-in-depth:
@@ -241,7 +244,7 @@ export function LiaFieldsConfigPanel() {
                     instruction={lia.comments[field.key] || ""}
                     onInstructionSave={(text) => handleInstructionSave(field.key, text)}
                     isSaving={lia.savingKeys.has(field.key)}
-                    placeholder="Instrução opcional para a IA sobre este campo..."
+                    placeholder={`Instrução opcional para ${personaName} sobre este campo...`}
                   />
                 ))}
               </div>

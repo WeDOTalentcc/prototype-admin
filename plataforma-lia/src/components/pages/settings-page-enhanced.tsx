@@ -50,6 +50,7 @@ import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import { SETTINGS_SECTION_ALIASES } from "@/lib/settings/resolve-settings-target"
 
 interface SettingsSubsection {
@@ -235,6 +236,8 @@ const getCompletionBadgeColor = (percentage: number): string => {
 
 export default function SettingsPageEnhanced() {
   const { companyId, tenantInfo, isLoading: isTenantLoading } = useCompanyId()
+  const { persona: _aiPersona } = useAiPersona()
+  const _personaName = _aiPersona?.name ?? "IA"
   const [activeSection, setActiveSection] = useState<string>('minha-empresa')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['minha-empresa']))
@@ -689,7 +692,7 @@ export default function SettingsPageEnhanced() {
                         aria-expanded={expandedGroups.has(grp.id)}
                         aria-controls={`group-${grp.id}`}
                       >
-                        <span>{grp.label}</span>
+                        <span>{grp.id === "lia" ? `${_personaName} & Personalização` : grp.label}</span>
                         {expandedGroups.has(grp.id)
                           ? <ChevronDown className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
                           : <ChevronRight className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
