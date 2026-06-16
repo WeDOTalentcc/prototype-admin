@@ -1423,33 +1423,28 @@ company_id: str = Depends(require_company_id)):
                         "session=%s candidate=%s reason=%s",
                         session_id, _resolved_cid, _consent_result.reason,
                     )
-                    async def _consent_denied_generator():
-                        _seq = 0
-                        _seq += 1
-                        yield format_sse_event(
-                            {
-                                "type": "message",
-                                "content": (
-                                    "Nao posso processar informacoes deste candidato "
-                                    "por IA porque o consentimento LGPD foi revogado. "
-                                    "Para prosseguir, solicite novo consentimento ao "
-                                    "candidato via Gestao de Consentimentos."
-                                ),
-                                "consent_blocked": True,
-                                "candidate_id": _resolved_cid,
-                            },
-                            f"{session_id[:8]}-{_seq}",
-                        )
-                        _seq += 1
-                        yield format_sse_event(
-                            {"type": "done", "consent_blocked": True},
-                            f"{session_id[:8]}-{_seq}",
-                        )
-                    return StreamingResponse(
-                        _consent_denied_generator(),
-                        media_type="text/event-stream",
-                        headers=_SSE_HEADERS,
+                    _seq = 0
+                    _seq += 1
+                    yield format_sse_event(
+                        {
+                            "type": "message",
+                            "content": (
+                                "Nao posso processar informacoes deste candidato "
+                                "por IA porque o consentimento LGPD foi revogado. "
+                                "Para prosseguir, solicite novo consentimento ao "
+                                "candidato via Gestao de Consentimentos."
+                            ),
+                            "consent_blocked": True,
+                            "candidate_id": _resolved_cid,
+                        },
+                        f"{session_id[:8]}-{_seq}",
                     )
+                    _seq += 1
+                    yield format_sse_event(
+                        {"type": "done", "consent_blocked": True},
+                        f"{session_id[:8]}-{_seq}",
+                    )
+                    return
                 elif _consent_result.soft_warning:
                     logger.info(
                         "[SSEChat] LGPD consent absent (soft warning) "
