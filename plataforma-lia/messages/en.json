@@ -285,6 +285,13 @@
       "expandSubmenu": "Expand submenu",
       "collapseSubmenu": "Collapse submenu"
     },
+    "focusedJob": {
+      "label": "In Focus",
+      "dismiss": "Close focused job",
+      "pipeline": "Pipeline",
+      "candidates": "Candidates",
+      "configure": "Configure job"
+    },
     "user": {
       "admin": "Administrator",
       "recruiter": "Recruiter",

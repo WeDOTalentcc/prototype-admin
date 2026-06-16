@@ -42,6 +42,7 @@ import {
   Package,
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/shared/use-recent-items"
+import { useFocusedJobStore } from "@/stores/focused-job-store"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -119,6 +120,11 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
     label: "",
     items: [
       { icon: MessageCircle, label: "Conversar", isCore: true },
+    ],
+  },
+  {
+    label: "",
+    items: [
       {
         icon: GitBranch,
         label: "Recrutar",
@@ -501,9 +507,77 @@ const RecentItemRow = React.memo(({
 
 RecentItemRow.displayName = 'RecentItemRow'
 
+const FocusedJobSection = React.memo(({
+  job,
+  onNavigate,
+  onClear,
+  shouldShowContent,
+}: {
+  job: { id: string; title: string; candidateCount: number; todayInterviewCount: number }
+  onNavigate: (page: string) => void
+  onClear: () => void
+  shouldShowContent: boolean
+}) => {
+  const t = useTranslations('sidebar')
+
+  if (!shouldShowContent) return null
+
+  return (
+    <div className="mb-1">
+      <div className="flex items-center justify-between px-2 mb-1">
+        <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-[0.18em] uppercase opacity-70">
+          {t('focusedJob.label')}
+        </span>
+        <button
+          onClick={onClear}
+          className="p-0.5 rounded hover:bg-lia-interactive-hover text-lia-text-muted hover:text-lia-text-secondary"
+          title={t('focusedJob.dismiss')}
+          aria-label={t('focusedJob.dismiss')}
+        >
+          <X className="w-3 h-3" />
+        </button>
+      </div>
+      <div className="px-2 py-1 mb-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+        <span className="text-xs font-medium text-lia-text-primary line-clamp-1">{job.title}</span>
+      </div>
+      <div className="space-y-0.5">
+        <button
+          onClick={() => onNavigate(`jobs/${job.id}`)}
+          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-lia-interactive-hover text-lia-text-secondary min-h-8"
+        >
+          <GitBranch className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="text-sm-ui">{t('focusedJob.pipeline')}</span>
+        </button>
+        <button
+          onClick={() => onNavigate(`Funil de Talentos`)}
+          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-lia-interactive-hover text-lia-text-secondary min-h-8"
+        >
+          <Users className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="text-sm-ui flex-1">{t('focusedJob.candidates')}</span>
+          {job.candidateCount > 0 && (
+            <span className="text-micro bg-lia-interactive-active px-1.5 py-0.5 rounded-full">
+              {job.candidateCount}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => onNavigate(`jobs/${job.id}?tab=edit&section=configuracoes`)}
+          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-lia-interactive-hover text-lia-text-secondary min-h-8"
+        >
+          <Settings className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="text-sm-ui">{t('focusedJob.configure')}</span>
+        </button>
+      </div>
+    </div>
+  )
+})
+
+FocusedJobSection.displayName = 'FocusedJobSection'
+
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch, notificationOpen, onNotificationToggle }: SidebarProps) {
   const t = useTranslations('sidebar')
   const { agents } = useSidebarDynamicItems()
+  const { focusedJob, clearFocusedJob } = useFocusedJobStore()
   const { user: authUser, refreshUser } = useAuth()
   const { userId: authenticatedUserId, isReady: isAuthReady } = useAuthenticatedUserId()
 
@@ -756,29 +830,39 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       <div className={`py-4 flex-1 overflow-y-auto ${shouldShowContent ? 'px-4' : 'px-2'}`}>
         <nav className="space-y-4">
           {menuSections.map((section, sectionIdx) => (
-            <div key={section.label || String(sectionIdx)}>
-              {shouldShowContent && section.label && (
-                <h3 className="text-[10px] font-semibold text-lia-text-tertiary mb-1.5 tracking-[0.18em] uppercase px-2 opacity-70">
-                  {sectionLabelKeys[section.label] ? t(sectionLabelKeys[section.label]) : section.label}
-                </h3>
-              )}
-              {!shouldShowContent && sectionIdx > 0 && section.label && (
-                <div className="border-t border-lia-border-subtle my-1.5" />
-              )}
-              <div className="space-y-1">
-                {section.items.map((item) => (
-                  <MenuItem
-                    key={item.label}
-                    item={item}
-                    currentPage={currentPage}
-                    onNavigate={handleDynamicNavigate}
-                    isCollapsed={isCollapsed}
-                    shouldShowContent={shouldShowContent}
-                    t={t}
-                  />
-                ))}
+            <React.Fragment key={section.label || String(sectionIdx)}>
+              <div>
+                {shouldShowContent && section.label && (
+                  <h3 className="text-[10px] font-semibold text-lia-text-tertiary mb-1.5 tracking-[0.18em] uppercase px-2 opacity-70">
+                    {sectionLabelKeys[section.label] ? t(sectionLabelKeys[section.label]) : section.label}
+                  </h3>
+                )}
+                {!shouldShowContent && sectionIdx > 0 && section.label && (
+                  <div className="border-t border-lia-border-subtle my-1.5" />
+                )}
+                <div className="space-y-1">
+                  {section.items.map((item) => (
+                    <MenuItem
+                      key={item.label}
+                      item={item}
+                      currentPage={currentPage}
+                      onNavigate={handleDynamicNavigate}
+                      isCollapsed={isCollapsed}
+                      shouldShowContent={shouldShowContent}
+                      t={t}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+              {sectionIdx === 0 && focusedJob && (
+                <FocusedJobSection
+                  job={focusedJob}
+                  onNavigate={handleDynamicNavigate}
+                  onClear={clearFocusedJob}
+                  shouldShowContent={shouldShowContent}
+                />
+              )}
+            </React.Fragment>
           ))}
         </nav>
 

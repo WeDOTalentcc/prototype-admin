@@ -285,6 +285,13 @@
       "expandSubmenu": "Expandir submenu",
       "collapseSubmenu": "Recolher submenu"
     },
+    "focusedJob": {
+      "label": "Em Foco",
+      "dismiss": "Fechar vaga em foco",
+      "pipeline": "Pipeline",
+      "candidates": "Candidatos",
+      "configure": "Configurar vaga"
+    },
     "user": {
       "admin": "Administrador(a)",
       "recruiter": "Recrutador(a)",
