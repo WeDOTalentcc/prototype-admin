@@ -15,6 +15,16 @@ const SmartSearchInput = dynamic(
   { ssr: false }
 )
 
+type CreditEstimate = {
+  base_cost: number
+  insights_cost: number
+  freshness_cost: number
+  cost_per_candidate: number
+  total_estimated: number
+  limit: number
+  cost_level: "low" | "medium" | "high" | "very-high"
+} | null
+
 interface VacancySearchModalProps {
   isOpen: boolean
   onClose: () => void
@@ -31,6 +41,14 @@ interface VacancySearchModalProps {
   autoConfig: AutoConfig
   onAutoConfigChange: (c: AutoConfig) => void
   onSubmit: (query: string, entities: ParsedEntities, mode: SearchMode, metadata: SearchMetadata) => void
+  creditEstimate: CreditEstimate
+}
+
+const COST_LEVEL_COLORS: Record<string, string> = {
+  low: "text-status-success",
+  medium: "text-status-warning",
+  high: "text-wedo-orange",
+  "very-high": "text-status-error",
 }
 
 export function VacancySearchModal({
@@ -41,6 +59,7 @@ export function VacancySearchModal({
   mode, onModeChange,
   autoConfig, onAutoConfigChange,
   onSubmit,
+  creditEstimate,
 }: VacancySearchModalProps) {
   const t = useTranslations("vacancySearch")
   const [value, setValue] = useState("")
@@ -55,15 +74,48 @@ export function VacancySearchModal({
     if (e.target === e.currentTarget) onClose()
   }
 
-  const creditsText = searchSource === "local"
-    ? t("creditsLocal")
-    : searchSource === "hybrid"
-      ? t("creditsHybrid", { credits: "60" })
-      : t("creditsGlobal", { credits: "120" })
-
   const pearchOptions: ModalPearchSearchOptions = {
     requireEmails,
     requirePhoneNumbers,
+  }
+
+  const renderCreditsFooter = () => {
+    if (searchSource === "local") {
+      return (
+        <p className="text-xs text-status-success">
+          {t("creditsLocal")}
+        </p>
+      )
+    }
+
+    if (!creditEstimate) {
+      return (
+        <p className="text-xs text-lia-text-tertiary animate-pulse">
+          Calculando créditos...
+        </p>
+      )
+    }
+
+    const colorClass = COST_LEVEL_COLORS[creditEstimate.cost_level] || "text-lia-text-tertiary"
+
+    return (
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-lia-text-tertiary">
+          {"Custo estimado: "}
+          <span className={`font-semibold ${colorClass}`}>
+            {creditEstimate.total_estimated} créditos
+          </span>
+          <span className="text-lia-text-quaternary ml-1">
+            ({creditEstimate.cost_per_candidate} por candidato)
+          </span>
+        </p>
+        {creditEstimate.cost_level === "very-high" && (
+          <span className="text-[10px] text-status-error font-medium">
+            Custo elevado
+          </span>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -202,9 +254,9 @@ export function VacancySearchModal({
           </div>
         )}
 
-        {/* Footer: credits only */}
+        {/* Footer: credits */}
         <div className="flex-shrink-0 border-t border-lia-border-subtle px-6 py-3">
-          <p className="text-xs text-lia-text-tertiary">{creditsText}</p>
+          {renderCreditsFooter()}
         </div>
       </div>
     </div>

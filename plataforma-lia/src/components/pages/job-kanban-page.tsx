@@ -31,7 +31,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
     if (typeof ej === "string") return ej
     return (ej as Record<string, unknown>)?.content as string || JSON.stringify(ej)
   })()
-  const vs = useVacancySearch(vacancyId)
+  const vs = useVacancySearch(vacancyId, enrichedJD)
 
   if (!state.isClient) {
     return (
@@ -119,6 +119,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         autoConfig={vs.autoConfig}
         onAutoConfigChange={vs.setAutoConfig}
         onSubmit={vs.handleSearchSubmit}
+        creditEstimate={vs.creditEstimate}
       />
 
       <VacancyCandidateSearchResults
@@ -140,6 +141,13 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         onAddAuto={vs.addAutoCandidates}
         onLoadMore={vs.handleLoadMore}
         onEditSearch={vs.handleEditSearch}
+        searchProgress={vs.searchProgress}
+        lastSearchQuery={vs.lastSearchParams?.query || ""}
+        lastSearchEntities={vs.lastSearchParams?.entities || null}
+        showAutoConfirm={vs.showAutoConfirm}
+        autoQualifyingPreview={vs.autoQualifyingPreview}
+        onConfirmAutoAdd={vs.confirmAutoAdd}
+        onCancelAutoAdd={vs.cancelAutoAdd}
       />
 
     </div>

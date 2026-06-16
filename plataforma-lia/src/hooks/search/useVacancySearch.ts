@@ -1,8 +1,14 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect, useRef, useMemo } from "react"
 import { toast } from "sonner"
+import { useCreditEstimator, getCostLevel } from "@/hooks/search/useCreditEstimator"
+import type { CreditEstimate } from "@/lib/api/candidate-search"
 import type { SearchSource, ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
+
+// ---------------------------------------------------------------------------
+// Exported types
+// ---------------------------------------------------------------------------
 
 export type VacancySearchMode = "manual" | "auto"
 
@@ -21,7 +27,16 @@ export interface AutoConfig {
   minScore: number
 }
 
-export function useVacancySearch(vacancyId: string) {
+export interface CreditEstimateWithLevel extends CreditEstimate {
+  cost_level: "low" | "medium" | "high" | "very-high"
+}
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
+export function useVacancySearch(vacancyId: string, enrichedJD: string) {
+  // ---- core state ----
   const [mode, setMode] = useState<VacancySearchMode>("auto")
   const [showModal, setShowModal] = useState(false)
   const [showResults, setShowResults] = useState(false)
@@ -37,13 +52,155 @@ export function useVacancySearch(vacancyId: string) {
   const [threadId, setThreadId] = useState<string | undefined>()
   const [searchFeedbacks, setSearchFeedbacks] = useState<Record<string, "like" | "dislike">>({})
 
+  // ---- credit estimator (feature 1) ----
+  const { calculateLocal } = useCreditEstimator()
+  const [creditEstimate, setCreditEstimate] = useState<CreditEstimateWithLevel | null>(null)
+
+  useEffect(() => {
+    const limit = mode === "auto" ? autoConfig.maxCandidates : 15
+    const raw = calculateLocal({
+      searchType: "fast",
+      limit,
+      highFreshness: false,
+      requireEmails,
+      showEmails: requireEmails,
+      requirePhoneNumbers,
+      showPhoneNumbers: requirePhoneNumbers,
+      requirePhonesOrEmails: requireEmails || requirePhoneNumbers,
+    })
+    setCreditEstimate({
+      ...raw,
+      cost_level: getCostLevel(raw.total_estimated),
+    })
+  }, [searchSource, requireEmails, requirePhoneNumbers, mode, autoConfig.maxCandidates, calculateLocal])
+
+  // ---- search fingerprint (feature 3) ----
+  const [searchFingerprint, setSearchFingerprint] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!searchFingerprint || !vacancyId) return
+    let cancelled = false
+    const rehydrate = async () => {
+      try {
+        const res = await fetch(
+          `/api/backend-proxy/search/feedback/by-search?fingerprint=${encodeURIComponent(searchFingerprint)}&job_id=${encodeURIComponent(vacancyId)}`,
+        )
+        if (!res.ok || cancelled) return
+        const data = await res.json()
+        const feedbacks: Record<string, "like" | "dislike"> = {}
+        const items = data?.data?.feedbacks || data?.feedbacks || []
+        for (const fb of items) {
+          if (fb.candidate_id && fb.feedback_type) {
+            feedbacks[String(fb.candidate_id)] = fb.feedback_type as "like" | "dislike"
+          }
+        }
+        if (!cancelled) setSearchFeedbacks(feedbacks)
+      } catch {
+        // best-effort re-hydration
+      }
+    }
+    rehydrate()
+    return () => { cancelled = true }
+  }, [searchFingerprint, vacancyId])
+
+  // ---- auto confirmation flow (feature 4) ----
+  const [showAutoConfirm, setShowAutoConfirm] = useState(false)
+
+  // ---- search progress simulation (feature 5) ----
+  const [searchProgress, setSearchProgress] = useState(0)
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const startProgressSimulation = useCallback(() => {
+    setSearchProgress(20)
+    if (progressIntervalRef.current) clearInterval(progressIntervalRef.current)
+    progressIntervalRef.current = setInterval(() => {
+      setSearchProgress(prev => {
+        if (prev >= 55) return prev // cap during search phase
+        return prev + Math.floor(Math.random() * 5) + 1
+      })
+    }, 400)
+  }, [])
+
+  const advanceProgressToResponse = useCallback(() => {
+    if (progressIntervalRef.current) clearInterval(progressIntervalRef.current)
+    setSearchProgress(60)
+    progressIntervalRef.current = setInterval(() => {
+      setSearchProgress(prev => {
+        if (prev >= 90) return prev // cap during parsing phase
+        return prev + Math.floor(Math.random() * 8) + 2
+      })
+    }, 200)
+  }, [])
+
+  const completeProgress = useCallback(() => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current)
+      progressIntervalRef.current = null
+    }
+    setSearchProgress(100)
+  }, [])
+
+  const resetProgress = useCallback(() => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current)
+      progressIntervalRef.current = null
+    }
+    setSearchProgress(0)
+  }, [])
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current)
+    }
+  }, [])
+
+  // ---- modal helpers ----
   const openModal = useCallback(() => setShowModal(true), [])
   const closeModal = useCallback(() => setShowModal(false), [])
   const closeResults = useCallback(() => {
     setShowResults(false)
     setSelectedIds(new Set())
+    setShowAutoConfirm(false)
   }, [])
 
+  // ---- determine search endpoint (feature 2) ----
+  const buildSearchPayload = useCallback((
+    query: string,
+    metadata: SearchMetadata,
+    limit: number,
+  ): { url: string; body: Record<string, unknown> } => {
+    const useJDEndpoint =
+      (metadata.mode === "jd" || !!metadata.jobDescription) && !!enrichedJD
+
+    if (useJDEndpoint) {
+      return {
+        url: "/api/backend-proxy/search/candidates/by-job-description",
+        body: {
+          job_description: enrichedJD,
+          search_source: searchSource,
+          require_emails: requireEmails,
+          limit,
+        },
+      }
+    }
+
+    return {
+      url: "/api/backend-proxy/search/candidates",
+      body: {
+        query: query.trim(),
+        search_source: searchSource,
+        require_emails: requireEmails,
+        require_phone_numbers: requirePhoneNumbers,
+        limit,
+        ...(metadata.jobDescription ? { job_description: metadata.jobDescription } : {}),
+        ...(metadata.booleanQuery ? { boolean_query: metadata.booleanQuery } : {}),
+        ...(metadata.filters ? { filters: metadata.filters } : {}),
+      },
+    }
+  }, [enrichedJD, searchSource, requireEmails, requirePhoneNumbers])
+
+  // ---- main search submit ----
   const handleSearchSubmit = useCallback(async (
     query: string,
     entities: ParsedEntities,
@@ -60,27 +217,27 @@ export function useVacancySearch(vacancyId: string) {
     setIsSearching(true)
     setSearchResults([])
     setSelectedIds(new Set())
+    setSearchFingerprint(null)
+    setShowAutoConfirm(false)
+    startProgressSimulation()
+
+    const limit = mode === "auto" ? autoConfig.maxCandidates : 15
+    const { url, body } = buildSearchPayload(query, metadata, limit)
 
     try {
-      const res = await fetch("/api/backend-proxy/search/candidates", {
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: query.trim(),
-          search_source: searchSource,
-          require_emails: requireEmails,
-          require_phone_numbers: requirePhoneNumbers,
-          limit: mode === "auto" ? autoConfig.maxCandidates : 15,
-          ...(metadata.jobDescription ? { job_description: metadata.jobDescription } : {}),
-          ...(metadata.booleanQuery ? { boolean_query: metadata.booleanQuery } : {}),
-          ...(metadata.filters ? { filters: metadata.filters } : {}),
-        }),
+        body: JSON.stringify(body),
       })
+
+      advanceProgressToResponse()
 
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}))
         if (errBody?.error === "fairness_blocked" || errBody?.fairness_blocked) {
           toast.error(errBody.educational_message || "Busca bloqueada")
+          resetProgress()
           setIsSearching(false)
           setShowResults(false)
           return
@@ -90,17 +247,34 @@ export function useVacancySearch(vacancyId: string) {
 
       const data = await res.json()
       const candidates = data?.data?.candidates || data?.candidates || data?.data || []
+
+      // Store search fingerprint (feature 3)
+      const fp = data?.data?.search_fingerprint || data?.search_fingerprint || null
+      setSearchFingerprint(fp)
+
       setSearchResults(candidates)
       setTotalResults(data?.data?.total || data?.total || candidates.length)
       setThreadId(data?.data?.thread_id || data?.thread_id)
+      completeProgress()
+
+      // Auto confirmation flow (feature 4)
+      if (mode === "auto") {
+        setShowAutoConfirm(true)
+      }
     } catch (err) {
       toast.error("Erro na busca", { description: (err as Error).message })
+      resetProgress()
       setShowResults(false)
     } finally {
       setIsSearching(false)
     }
-  }, [searchSource, requireEmails, requirePhoneNumbers, mode, autoConfig])
+  }, [
+    searchSource, requireEmails, requirePhoneNumbers, mode, autoConfig,
+    buildSearchPayload, startProgressSimulation, advanceProgressToResponse,
+    completeProgress, resetProgress,
+  ])
 
+  // ---- load more ----
   const handleLoadMore = useCallback(async () => {
     if (!threadId || !lastSearchParams) return
     setIsSearching(true)
@@ -132,11 +306,14 @@ export function useVacancySearch(vacancyId: string) {
         setSearchResults(prev => [...prev, ...more])
         setTotalResults(data?.data?.total || data?.total || searchResults.length + more.length)
       }
-    } catch { /* silent */ } finally {
+    } catch {
+      // silent
+    } finally {
       setIsSearching(false)
     }
   }, [threadId, lastSearchParams, searchFeedbacks, searchResults])
 
+  // ---- feedback (feature 3 — includes fingerprint) ----
   const handleFeedback = useCallback(async (candidateId: string, type: "like" | "dislike") => {
     setSearchFeedbacks(prev => ({ ...prev, [candidateId]: type }))
     try {
@@ -147,11 +324,15 @@ export function useVacancySearch(vacancyId: string) {
           candidate_id: candidateId,
           feedback_type: type,
           job_id: vacancyId,
+          ...(searchFingerprint ? { search_fingerprint: searchFingerprint } : {}),
         }),
       })
-    } catch { /* best-effort */ }
-  }, [vacancyId])
+    } catch {
+      // best-effort
+    }
+  }, [vacancyId, searchFingerprint])
 
+  // ---- selection ----
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev)
@@ -167,6 +348,7 @@ export function useVacancySearch(vacancyId: string) {
 
   const clearSelection = useCallback(() => setSelectedIds(new Set()), [])
 
+  // ---- add selected to vacancy ----
   const addSelectedToVacancy = useCallback(async () => {
     if (selectedIds.size === 0) return
     const sourceLabel = searchSource === "local" ? "local" : searchSource === "hybrid" ? "hybrid" : "pearch"
@@ -193,11 +375,13 @@ export function useVacancySearch(vacancyId: string) {
       })
       setShowResults(false)
       setSelectedIds(new Set())
+      setShowAutoConfirm(false)
     } catch (err) {
       toast.error("Erro ao adicionar", { description: (err as Error).message })
     }
   }, [selectedIds, vacancyId, searchSource])
 
+  // ---- auto add (used after confirmation — feature 4) ----
   const addAutoCandidates = useCallback(async () => {
     const qualifying = searchResults.filter(c => {
       const score = Number(c.lia_score || c.score || c.match_percentage || 0)
@@ -223,17 +407,40 @@ export function useVacancySearch(vacancyId: string) {
       toast.success(`${data.added_count} candidatos adicionados automaticamente`)
       setShowResults(false)
       setSelectedIds(new Set())
+      setShowAutoConfirm(false)
     } catch (err) {
       toast.error("Erro ao adicionar", { description: (err as Error).message })
     }
   }, [searchResults, autoConfig, searchSource, vacancyId])
 
+  // ---- auto confirmation actions (feature 4) ----
+  const confirmAutoAdd = useCallback(() => {
+    setShowAutoConfirm(false)
+    addAutoCandidates()
+  }, [addAutoCandidates])
+
+  const cancelAutoAdd = useCallback(() => {
+    setShowAutoConfirm(false)
+  }, [])
+
+  // ---- edit search ----
   const handleEditSearch = useCallback(() => {
     setShowResults(false)
     setShowModal(true)
+    setShowAutoConfirm(false)
   }, [])
 
+  // ---- return ----
+  const autoQualifyingPreview = useMemo(() => {
+    if (mode !== "auto") return []
+    return searchResults.filter(c => {
+      const score = Number(c.lia_score || c.score || c.match_percentage || 0)
+      return score >= autoConfig.minScore
+    }).slice(0, autoConfig.maxCandidates)
+  }, [searchResults, autoConfig, mode])
+
   return {
+    // core state
     mode, setMode,
     showModal, openModal, closeModal,
     showResults, closeResults,
@@ -241,17 +448,33 @@ export function useVacancySearch(vacancyId: string) {
     requireEmails, setRequireEmails,
     requirePhoneNumbers, setRequirePhoneNumbers,
     autoConfig, setAutoConfig,
+    // search actions
     handleSearchSubmit,
     handleLoadMore,
     handleFeedback,
+    // selection
     selectedIds, toggleSelect, selectAll, clearSelection,
+    // add actions
     addSelectedToVacancy,
     addAutoCandidates,
+    // edit
     handleEditSearch,
+    // search state
     lastSearchParams,
     isSearching,
     searchResults,
     totalResults,
     searchFeedbacks,
+    // credit estimate (feature 1)
+    creditEstimate,
+    // search fingerprint (feature 3)
+    searchFingerprint,
+    // auto confirmation (feature 4)
+    showAutoConfirm,
+    autoQualifyingPreview,
+    confirmAutoAdd,
+    cancelAutoAdd,
+    // progress (feature 5)
+    searchProgress,
   }
 }
