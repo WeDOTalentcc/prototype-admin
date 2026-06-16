@@ -18,6 +18,7 @@ from app.shared.security.require_company_id import require_company_id, require_c
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.pipeline_rules import is_offer_stage
 
 logger = logging.getLogger(__name__)
 
@@ -45,11 +46,9 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     blockers: list[str] = []
     metadata: dict[str, Any] = {}
     
-    is_offer_stage = target_stage.lower() in [
-        "proposta", "offer", "proposal", "contratação", "hiring"
-    ]
+    _is_offer_stage = is_offer_stage(target_stage)
     
-    if is_offer_stage:
+    if _is_offer_stage:
         min_interviews = pipeline_rules.get("min_interviews_before_offer", 2)
         
         # Onda 4.2d-P0-17 (2026-05-23): cross-tenant guard — filter por company_id.
