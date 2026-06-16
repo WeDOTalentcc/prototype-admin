@@ -1397,6 +1397,68 @@ company_id: str = Depends(require_company_id)):
         except Exception as _he:
             logger.warning("[SSEChat] memoria load (fail-open): %s", _he)
 
+        # ── GAP-07-004: LGPD consent gate (both paths) ──────────────────
+        # When the recruiter's message resolves to a specific candidate,
+        # verify LGPD consent before AI processing. Revoked consent = hard
+        # block (HTTP 451 equivalent via SSE). Absent consent = soft warning
+        # + continue. Fail-open: consent check failure never blocks chat.
+        _consent_blocked = False
+        try:
+            from app.shared.entity_resolver import get_active_candidate
+            _resolved_cid = get_active_candidate()
+            if _resolved_cid:
+                from app.core.database import AsyncSessionLocal as _ConsentASL
+                from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
+                async with _ConsentASL() as _consent_db:
+                    _consent_svc = ConsentCheckerService(_consent_db)
+                    _consent_result = await _consent_svc.check_candidate_consent(
+                        candidate_id=_resolved_cid,
+                        company_id=company_id,
+                        purpose="ai_screening",
+                    )
+                if not _consent_result.allowed:
+                    _consent_blocked = True
+                    logger.warning(
+                        "[SSEChat] LGPD consent revoked — blocking AI processing "
+                        "session=%s candidate=%s reason=%s",
+                        session_id, _resolved_cid, _consent_result.reason,
+                    )
+                    async def _consent_denied_generator():
+                        _seq = 0
+                        _seq += 1
+                        yield format_sse_event(
+                            {
+                                "type": "message",
+                                "content": (
+                                    "Nao posso processar informacoes deste candidato "
+                                    "por IA porque o consentimento LGPD foi revogado. "
+                                    "Para prosseguir, solicite novo consentimento ao "
+                                    "candidato via Gestao de Consentimentos."
+                                ),
+                                "consent_blocked": True,
+                                "candidate_id": _resolved_cid,
+                            },
+                            f"{session_id[:8]}-{_seq}",
+                        )
+                        _seq += 1
+                        yield format_sse_event(
+                            {"type": "done", "consent_blocked": True},
+                            f"{session_id[:8]}-{_seq}",
+                        )
+                    return StreamingResponse(
+                        _consent_denied_generator(),
+                        media_type="text/event-stream",
+                        headers=_SSE_HEADERS,
+                    )
+                elif _consent_result.soft_warning:
+                    logger.info(
+                        "[SSEChat] LGPD consent absent (soft warning) "
+                        "session=%s candidate=%s",
+                        session_id, _resolved_cid,
+                    )
+                    context["_consent_soft_warning"] = True
+        except Exception as _consent_exc:
+            logger.debug("[SSEChat] consent gate (fail-open): %s", _consent_exc)
 
         # F5 memory (2026-06-09): _eff_content hoisted p/ escopo compartilhado
         # supervisor+federado. Ambos recebem: historico recente (text prefix) +
