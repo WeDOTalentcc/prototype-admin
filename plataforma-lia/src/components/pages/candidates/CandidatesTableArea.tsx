@@ -330,6 +330,18 @@ export function CandidatesTableArea({
                 <p className="text-lia-text-primary mb-4">
                   {t('table.emptyDescription')}
                 </p>
+                {showSearchResults && (
+                  <div className="bg-lia-bg-tertiary/50 rounded-lg p-4 mb-4 text-left max-w-md mx-auto">
+                    <p className="text-xs font-medium text-lia-text-secondary mb-2">
+                      {t('table.searchSuggestionsTitle')}
+                    </p>
+                    <ul className="text-xs text-lia-text-secondary space-y-1 list-disc list-inside">
+                      <li>{t('table.searchSuggestion1')}</li>
+                      <li>{t('table.searchSuggestion2')}</li>
+                      <li>{t('table.searchSuggestion3')}</li>
+                    </ul>
+                  </div>
+                )}
                 <Button variant="outline" onClick={clearAllFilters}>
                   {t('table.clearFilters')}
                 </Button>

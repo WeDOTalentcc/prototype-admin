@@ -3732,7 +3732,11 @@
       "first": "First",
       "previous": "Previous",
       "next": "Next",
-      "last": "Last"
+      "last": "Last",
+      "searchSuggestionsTitle": "Tips to refine your search:",
+      "searchSuggestion1": "Use broader terms or synonyms",
+      "searchSuggestion2": "Adjust experience, location, or salary filters",
+      "searchSuggestion3": "Try searching by specific skills instead of job title"
     },
     "profile": {
       "avatarAlt": "{name}'s photo",

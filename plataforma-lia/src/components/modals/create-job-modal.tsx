@@ -89,6 +89,35 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
     setIsSubmitting(false)
   }
 
+  // GAP-3G: restore draft from failed creation attempt
+  React.useEffect(() => {
+    if (!isOpen) return
+    try {
+      const raw = localStorage.getItem("wedotalent_draft_job")
+      if (!raw) return
+      const draft = JSON.parse(raw)
+      const savedAt = new Date(draft.savedAt)
+      const hoursSince = (Date.now() - savedAt.getTime()) / 3600000
+      if (hoursSince > 24) {
+        localStorage.removeItem("wedotalent_draft_job")
+        return
+      }
+      if (draft.title) {
+        setFormData({
+          title: draft.title || "",
+          department: draft.department || "",
+          workModel: draft.workModel || "",
+          employmentType: draft.employmentType || "",
+          manager: draft.manager || "",
+          managerEmail: draft.managerEmail || "",
+        })
+        setStep("manual-form")
+        toast.info("Rascunho restaurado da tentativa anterior.")
+        localStorage.removeItem("wedotalent_draft_job")
+      }
+    } catch {}
+  }, [isOpen])
+
   const handleClose = () => {
     resetModal()
     onClose()
@@ -141,7 +170,19 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
       toast.success("Vaga criada! Escolha o pipeline de seleção.")
     } catch (error: unknown) {
       const detail = error instanceof Error ? error.message : "Erro desconhecido"
-      toast.error(`Erro ao criar vaga: ${detail}`)
+      try {
+        localStorage.setItem("wedotalent_draft_job", JSON.stringify({
+          ...formData,
+          savedAt: new Date().toISOString(),
+        }))
+      } catch {}
+      toast.error(`Erro ao criar vaga: ${detail}`, {
+        description: "Seus dados foram salvos como rascunho.",
+        action: {
+          label: "Tentar novamente",
+          onClick: () => handleSubmit(),
+        },
+      })
     } finally {
       setIsSubmitting(false)
     }
