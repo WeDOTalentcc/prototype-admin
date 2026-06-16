@@ -17,6 +17,7 @@ import { useCompanyBenefits } from '@/hooks/company/useCompanyBenefits'
 import type { JobBenefit, BenefitCategory } from '@/types/benefits'
 import { BENEFIT_CATEGORY_META } from '@/types/benefits'
 import { BENEFITS_CATALOG, CompensationData } from "../types"
+import { toast } from "sonner"
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   health: Stethoscope,
@@ -121,6 +122,8 @@ export function CompensationBenefitsPanel({
   const [observations, setObservations] = useState<string>(
     (initialData.observations as string) || ""
   )
+  const [salaryError, setSalaryError] = useState<string | null>(null)
+  const [bonusError, setBonusError] = useState<string | null>(null)
 
   useEffect(() => {
     if (companyBenefits.length > 0) {
@@ -151,6 +154,18 @@ export function CompensationBenefitsPanel({
   }
 
   const handleSubmit = async () => {
+    setSalaryError(null)
+    setBonusError(null)
+
+    if (salaryMin > 0 && salaryMax > 0 && salaryMin > salaryMax) {
+      setSalaryError("Salário mínimo não pode ser maior que o máximo")
+      return
+    }
+    if (bonusMin > 0 && bonusMax > 0 && bonusMin > bonusMax) {
+      setBonusError("Bônus mínimo não pode ser maior que o máximo")
+      return
+    }
+
     const data: CompensationData = {
       salary_min: salaryMin,
       salary_max: salaryMax,
@@ -160,7 +175,13 @@ export function CompensationBenefitsPanel({
       benefits: benefits.filter((b) => b.enabled),
       observations: observations || undefined
     }
-    await onSubmit(data)
+    try {
+      await onSubmit(data)
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao salvar compensação. Tente novamente."
+      )
+    }
   }
 
   const categorizedBenefits = React.useMemo(() => {
@@ -202,6 +223,9 @@ export function CompensationBenefitsPanel({
               />
             </div>
           </div>
+          {salaryError && (
+            <p className="text-sm text-destructive mt-1" role="alert">{salaryError}</p>
+          )}
         </CardContent>
       </Card>
 
@@ -232,6 +256,9 @@ export function CompensationBenefitsPanel({
               />
             </div>
           </div>
+          {bonusError && (
+            <p className="text-sm text-destructive mt-1" role="alert">{bonusError}</p>
+          )}
           <div className="space-y-2">
             <Label htmlFor="bonus_criteria" className="dark:text-lia-text-secondary">Critérios de Elegibilidade</Label>
             <Textarea
