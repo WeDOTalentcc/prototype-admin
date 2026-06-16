@@ -40,6 +40,9 @@ import {
   Loader2,
   FolderKanban,
   Package,
+  BarChart2,
+  TrendingUp,
+  FileText,
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/shared/use-recent-items"
 import { useFocusedJobStore } from "@/stores/focused-job-store"
@@ -90,6 +93,9 @@ const itemLabelKeys: Record<string, string> = {
   "Funil de Talentos": "items.talentPipeline",
   "Agentes": "items.agentes",
   "Marketplace": "items.marketplace",
+  "Decidir": "items.decidir",
+  "Indicadores": "items.indicadores",
+  "Relatórios": "items.relatorios",
 }
 
 const filterLabelKeys: Record<string, string> = {
@@ -119,7 +125,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
   {
     label: "",
     items: [
-      { icon: MessageCircle, label: "Conversar", isCore: true },
+      { icon: MessageCircle, label: "Conversar", isCore: true, isDifferentiator: true },
     ],
   },
   {
@@ -154,6 +160,15 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         subItems: [
           // NOTE: "Módulos" view is a placeholder — Marketplace page pending implementation
           { icon: Package, label: "Marketplace", isCore: true, navKey: "Módulos" },
+        ],
+      },
+      {
+        icon: BarChart2,
+        label: "Decidir",
+        isCore: true,
+        subItems: [
+          { icon: TrendingUp, label: "Indicadores", isCore: true, navKey: "Decidir" },
+          { icon: FileText, label: "Relatórios", isCore: true, isFuturo: true },
         ],
       },
     ],
@@ -278,7 +293,9 @@ const MenuItem = React.memo(({
             : canAccess
             ? "text-lia-text-primary font-normal"
             : "text-lia-text-primary font-normal",
-          isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
+          isCollapsed && !shouldShowContent ? "justify-center px-1.5" : "",
+          item.isDifferentiator ? "border-l-[3px] border-[#7F77DD] pl-[5px]" : "",
+          item.isFuturo ? "opacity-40 pointer-events-none" : ""
         )}
         title={isCollapsed && !shouldShowContent ? `${itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}${item.isBeta ? ` (${t('labels.beta')})` : ""}` : undefined}
         disabled={isLocked || false}
@@ -366,6 +383,7 @@ const MenuItem = React.memo(({
                   subIsLocked
                     ? "text-lia-text-secondary cursor-default opacity-60"
                     : "hover:bg-lia-interactive-hover",
+                  subItem.isFuturo ? "opacity-40 pointer-events-none" : "",
                   currentPage === subItem.label && subCanAccess
                     ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
                     : subCanAccess

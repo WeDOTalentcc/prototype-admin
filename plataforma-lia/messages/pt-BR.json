@@ -252,7 +252,10 @@
       "modules": "Módulos",
       "projects": "Projetos",
       "agentes": "Agentes",
-      "marketplace": "Marketplace"
+      "marketplace": "Marketplace",
+      "decidir": "Decidir",
+      "indicadores": "Indicadores",
+      "relatorios": "Relatórios"
     },
     "filters": {
       "all": "Todas",

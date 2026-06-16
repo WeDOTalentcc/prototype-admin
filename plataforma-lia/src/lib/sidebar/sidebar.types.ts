@@ -49,6 +49,10 @@ export interface MenuItemType {
   seeAllLabel?: string
   /** Navigation target for the "see all" link */
   seeAllTarget?: string
+  /** Highlights this item as the LIA differentiator (purple left accent) */
+  isDifferentiator?: boolean
+  /** Marks this as a coming-soon placeholder — visually dimmed */
+  isFuturo?: boolean
 }
 
 // ─── Job Filter Item ────────────────────────────────────────────────────────
