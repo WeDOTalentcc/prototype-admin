@@ -31,6 +31,7 @@ from app.middleware.auth_enforcement import AuthEnforcementMiddleware
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.middleware.idempotency import IdempotencyMiddleware
 from app.middleware.request_id import RequestIdMiddleware
+from app.middleware.request_duration import RequestDurationMiddleware
 from app.middleware.audit_access_middleware import AuditAccessMiddleware
 from app.middleware.response_envelope import ResponseEnvelopeMiddleware
 from app.shared.services.embedding_cache_service import embedding_cache
@@ -900,6 +901,9 @@ app.add_middleware(
         "Cache-Control",
     ],
 )
+
+# GAP-12-008: Request duration tracking + slow-request alerting
+app.add_middleware(RequestDurationMiddleware)
 
 # Request ID middleware
 app.add_middleware(RequestIdMiddleware)

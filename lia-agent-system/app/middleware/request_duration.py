@@ -1,0 +1,90 @@
+"""
+GAP-12-008: HTTP request duration tracking with slow-request alerting.
+
+Complements StructuredLoggingMiddleware (which logs every request) by:
+  1. Adding X-Response-Time-Ms header for client-side visibility.
+  2. Logging slow requests as WARNING (structured, with request_id).
+  3. Exposing a Prometheus histogram (http_request_duration_seconds)
+     when prometheus_client is installed.
+
+Mount AFTER RequestIdMiddleware so request.state.request_id is available.
+"""
+import logging
+import os
+import time
+from collections.abc import Callable
+
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+
+logger = logging.getLogger("lia.slow_request")
+
+SLOW_REQUEST_THRESHOLD_MS: float = float(
+    os.getenv("SLOW_REQUEST_THRESHOLD_MS", "3000")
+)
+
+# ---------------------------------------------------------------------------
+# Optional Prometheus histogram — fail-open if prometheus_client not installed
+# ---------------------------------------------------------------------------
+try:
+    from prometheus_client import Histogram
+
+    REQUEST_DURATION_HISTOGRAM: Histogram | None = Histogram(
+        "http_request_duration_seconds",
+        "HTTP request duration in seconds",
+        ["method", "status_code"],
+        buckets=[0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0],
+    )
+except ImportError:  # pragma: no cover
+    REQUEST_DURATION_HISTOGRAM = None
+
+
+# Paths excluded from slow-request alerting (health checks, metrics, SSE streams)
+_EXCLUDED_PREFIXES = ("/health", "/metrics", "/api/v1/lia-assistant/sse")
+
+
+class RequestDurationMiddleware(BaseHTTPMiddleware):
+    """Tracks HTTP request duration, exposes header + histogram + slow alert."""
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        start = time.perf_counter()
+
+        response = await call_next(request)
+
+        duration_s = time.perf_counter() - start
+        duration_ms = duration_s * 1000
+
+        # 1. Response header for client visibility
+        response.headers["X-Response-Time-Ms"] = f"{duration_ms:.0f}"
+
+        path = request.url.path
+
+        # 2. Prometheus histogram (label cardinality kept low — no raw path)
+        if REQUEST_DURATION_HISTOGRAM is not None:
+            REQUEST_DURATION_HISTOGRAM.labels(
+                method=request.method,
+                status_code=str(response.status_code),
+            ).observe(duration_s)
+
+        # 3. Slow-request warning (skip excluded paths)
+        if duration_ms > SLOW_REQUEST_THRESHOLD_MS and not any(
+            path.startswith(p) for p in _EXCLUDED_PREFIXES
+        ):
+            request_id = getattr(request.state, "request_id", "unknown")
+            logger.warning(
+                "Slow request: %s %s took %.0fms (threshold: %.0fms)",
+                request.method,
+                path,
+                duration_ms,
+                SLOW_REQUEST_THRESHOLD_MS,
+                extra={
+                    "request_id": request_id,
+                    "duration_ms": round(duration_ms, 1),
+                    "path": path,
+                    "method": request.method,
+                    "status_code": response.status_code,
+                },
+            )
+
+        return response
