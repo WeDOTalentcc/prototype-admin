@@ -1488,6 +1488,24 @@ company_id: str = Depends(require_company_id)):
                 + "NAO invente outro nome/titulo:\n" + _ehint + "]"
             )
 
+        # GAP-12-004: OTEL span wrapping the full chat turn
+        _chat_span = None
+        try:
+            from app.shared.observability.tracing import get_tracer as _get_chat_tracer
+            _chat_tracer = _get_chat_tracer()
+            _chat_span = _chat_tracer.create_span(
+                "sse_chat.process",
+                attributes={
+                    "session_id": session_id,
+                    "company_id": company_id,
+                    "domain": active_domain,
+                    "path": "supervisor" if _bubble_via_supervisor else "federated",
+                },
+                _start_otel=True,
+            )
+        except Exception:
+            pass
+
         agent_task = asyncio.create_task(
             _run_via_supervisor() if _bubble_via_supervisor else _run_agent()
         )
@@ -1499,6 +1517,13 @@ company_id: str = Depends(require_company_id)):
             except Exception:
                 pass
             _reset_sse_sink(_sse_sink_token)
+            if _chat_span is not None:
+                try:
+                    from app.shared.observability.tracing import finish_span
+                    _exc = _t.exception() if not _t.cancelled() else None
+                    finish_span(_chat_span, status="error" if _exc else "ok", error=_exc)
+                except Exception:
+                    pass
         agent_task.add_done_callback(_cleanup_stream_ctx)
 
         # Harness sensor (2026-06-04): per-frame timing to localize SSE

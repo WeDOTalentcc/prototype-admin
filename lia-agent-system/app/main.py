@@ -116,6 +116,28 @@ async def lifespan(app: FastAPI):
     # (C1.2) abaixo. Garante atributo sempre definido para observabilidade.
     app.state.event_consumer_healthy = False
     logger.info("🚀 Starting LIA Agent System...")
+
+    # ─── GAP-12-004: OTEL distributed tracing bootstrap ─────────────────
+    # Ensures TracerProvider + OTLP exporter are initialized ONCE at startup
+    # (import-time init is fragile under reloads). FastAPIInstrumentor adds
+    # auto-spans for every HTTP request. Fail-open: never blocks app boot.
+    try:
+        from app.shared.observability.tracing import _try_init_otlp, is_otlp_active
+        if not is_otlp_active():
+            _try_init_otlp()
+        if is_otlp_active():
+            try:
+                from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+                FastAPIInstrumentor.instrument_app(app)
+                logger.info("[OTEL] FastAPIInstrumentor wired — auto HTTP spans active")
+            except ImportError:
+                logger.debug("[OTEL] opentelemetry-instrumentation-fastapi not installed — skip auto-instrument")
+            except Exception as _fi_exc:
+                logger.debug("[OTEL] FastAPIInstrumentor failed (fail-open): %s", _fi_exc)
+        else:
+            logger.info("[OTEL] OTLP exporter not active (set OTEL_EXPORTER_OTLP_ENDPOINT to enable)")
+    except Exception as _otel_exc:
+        logger.debug("[OTEL] bootstrap failed (fail-open): %s", _otel_exc)
     logger.info(f"Environment: {settings.APP_ENV}")
     logger.info(f"Debug mode: {settings.DEBUG}")
 

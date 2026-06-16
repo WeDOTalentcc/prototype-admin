@@ -106,6 +106,7 @@ prometheus_client>=0.24.0,<1.0
 opentelemetry-sdk>=1.41.0,<2.0
 opentelemetry-exporter-otlp-proto-http>=1.41.0,<2.0
 opentelemetry-api>=1.41.0,<2.0
+opentelemetry-instrumentation-fastapi>=0.50b0,<1.0
 
 # Sprint 13.6 (2026-05-24): Datadog LLM Observability tracer.
 # Migration Grafana Cloud → Datadog para auto-instrumentation Anthropic/OpenAI/Gemini
