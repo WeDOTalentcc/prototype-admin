@@ -1199,6 +1199,13 @@ async def prometheus_metrics():
         )
         from fastapi.responses import Response
 
+        # GAP-12-011: refresh psutil gauges on every Prometheus scrape
+        try:
+            from app.core.metrics import update_process_metrics
+            update_process_metrics()
+        except Exception:
+            pass  # fail-open — metrics still returned without process gauges
+
         return Response(
             content=generate_latest(REGISTRY),
             media_type=CONTENT_TYPE_LATEST,

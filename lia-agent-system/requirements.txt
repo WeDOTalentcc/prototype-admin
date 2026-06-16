@@ -104,6 +104,7 @@ starlette>=0.42.0
 # opentelemetry-sdk em app/shared/observability/tracing.py.
 # deepeval NÃO pinado: instalado só em test env quando explicitly needed.
 prometheus_client>=0.24.0,<1.0
+psutil>=5.9.0                    # GAP-12-011: process memory/CPU gauges for /metrics
 opentelemetry-sdk>=1.41.0,<2.0
 opentelemetry-exporter-otlp-proto-http>=1.41.0,<2.0
 opentelemetry-api>=1.41.0,<2.0
