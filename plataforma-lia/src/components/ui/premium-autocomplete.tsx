@@ -42,7 +42,7 @@ const CATEGORY_CONFIG = {
     bgColor: "bg-wedo-purple/10",
   },
   recommended: {
-    label: "Recomendados pela LIA",
+    label: "Recomendados pela IA",
     icon: Star,
     color: "text-status-warning",
     bgColor: "bg-status-warning/10",

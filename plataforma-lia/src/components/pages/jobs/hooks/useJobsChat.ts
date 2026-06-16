@@ -156,7 +156,7 @@ export function useJobsChat({
         type: "chat",
         title: initialMessage
           ? `Chat: ${initialMessage.slice(0, 40)}${initialMessage.length > 40 ? "..." : ""}`
-          : "Chat com LIA",
+          : "Chat com IA",
         meta: { conversationId: id },
       });
     },

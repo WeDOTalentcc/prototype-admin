@@ -211,7 +211,7 @@ export function ScreeningQuestionsPanel({
             <div className="relative">
               <input
                 type="text"
-                placeholder="Peça para a LIA gerar mais perguntas..."
+                placeholder="Peça para a IA gerar mais perguntas..."
                 className="w-full h-10 pl-3 pr-10 text-xs border border-lia-border-default rounded-xl focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:border-lia-btn-primary-bg"
               />
               <Button variant="ghost" size="sm" className="absolute right-1 top-1 h-8 w-8 p-0 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active rounded-md">

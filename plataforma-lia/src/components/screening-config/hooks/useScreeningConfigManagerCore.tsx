@@ -148,7 +148,7 @@ export const SCREENING_SECTIONS = [
     id: "descricao",
     title: "Descrição do Cargo",
     icon: FileText,
-    description: "Informações da vaga para a LIA",
+    description: "Informações da vaga para a IA",
   },
   {
     id: "perguntas",

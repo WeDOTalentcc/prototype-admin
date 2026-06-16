@@ -212,18 +212,18 @@ export function AiPersonaPanel() {
             <div className="space-y-3 text-sm">
               <div className="p-3 rounded-xl bg-lia-bg-primary border border-lia-border-default">
                 <p className="text-xs font-medium text-lia-text-tertiary mb-1">
-                  {draftName || "LIA"} → candidato (e-mail / WhatsApp)
+                  {draftName || "IA"} → candidato (e-mail / WhatsApp)
                 </p>
                 <p className="text-lia-text-primary">
                   {previewedTone.preview_message_pt.replace(
                     /\bLIA\b/g,
-                    draftName || "LIA",
+                    draftName || "IA",
                   )}
                 </p>
               </div>
               <div className="p-3 rounded-xl bg-lia-bg-primary border border-lia-border-default">
                 <p className="text-xs font-medium text-lia-text-tertiary mb-1">
-                  {draftName || "LIA"} → você (chat lateral)
+                  {draftName || "IA"} → você (chat lateral)
                 </p>
                 <p className="text-lia-text-primary">
                   {previewedTone.preview_chat_pt}

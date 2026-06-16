@@ -12,7 +12,7 @@
  * fetch. Estado local só para o texto em edição + auto-save on-blur.
  *
  * Facetas:
- *  - toggle (opcional, showToggle): "a LIA usa este campo?" — gates de empresa.
+ *  - toggle (opcional, showToggle): "a IA usa este campo?" — gates de empresa.
  *  - instruction (sempre): texto livre que orienta a LIA.
  * O valor tipado (gate de política) NÃO vive aqui — é editado nos controles
  * tipados (MinhaEmpresaCard). Invariante de segurança: instrução nunca é gate.

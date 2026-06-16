@@ -88,7 +88,7 @@ const STEPS: StepDef[] = [
     key: "policy",
     actionId: "configure_hiring_policy",
     title: "Políticas de recrutamento",
-    question: "Como você quer que a LIA conduza o processo? Aprovações, triagem automática, horários permitidos.",
+    question: "Como você quer que a IA conduza o processo? Aprovações, triagem automática, horários permitidos.",
     prompt:
       "Quero configurar as políticas de recrutamento: aprovação de oferta, triagem automática, autonomia da IA e horários permitidos para contato.",
     cta: "Configurar políticas",

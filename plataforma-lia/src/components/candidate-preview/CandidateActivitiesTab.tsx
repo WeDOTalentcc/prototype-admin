@@ -116,7 +116,7 @@ function normalizeActivity(a: CandidateActivity): NormalizedActivity {
     icon,
     iconColor: color,
     title: a.title ?? a.type,
-    author: (a.author as string | undefined) ?? "LIA",
+    author: (a.author as string | undefined) ?? "IA",
     authorRole: a.author_role as string | undefined,
     date: formattedDate,
     timestamp: dateObj,

@@ -156,7 +156,7 @@ export const integrations: Integration[] = [
       { name: "Embeddings", description: "Representações vetoriais para busca semântica" },
       { name: "Function Calling", description: "Integração com ferramentas da plataforma" },
       { name: "Transcrição (Whisper)", description: "STT para áudio de candidatos em triagens" },
-      { name: "Voz da IA (TTS)", description: "Síntese de voz para perguntas da LIA em triagens" },
+      { name: "Voz da IA (TTS)", description: "Síntese de voz para perguntas de IA em triagens" },
       { name: "Fallback Provider", description: "Terceiro na cadeia de resiliência" },
     ],
     configFields: ["OPENAI_API_KEY"],

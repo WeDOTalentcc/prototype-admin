@@ -238,7 +238,7 @@ export function NextStepModal({
               {suggestedNextStage && selectedStage !== suggestedNextStage && (
                 <p className="text-xs text-lia-text-secondary flex items-center gap-1">
                   <Brain className="h-3 w-3 text-wedo-cyan" />
-                  A LIA sugeriu: <span className="font-medium">{suggestedNextStage}</span>
+                  A IA sugeriu: <span className="font-medium">{suggestedNextStage}</span>
                 </p>
               )}
             </div>

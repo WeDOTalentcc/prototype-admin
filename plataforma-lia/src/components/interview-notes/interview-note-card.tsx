@@ -423,7 +423,7 @@ export function InterviewNoteCard({
             <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-xl p-6 text-center">
               <Bot className="h-8 w-8 text-lia-text-secondary mx-auto mb-2" />
               <p className="text-sm text-lia-text-secondary">
-                Clique em &quot;Gerar Parecer com LIA&quot; para obter uma
+                Clique em &quot;Gerar Parecer com IA&quot; para obter uma
                 análise automática da entrevista.
               </p>
             </div>
@@ -448,7 +448,7 @@ export function InterviewNoteCard({
             className="gap-2"
           >
             <Bot className="h-4 w-4" />
-            {isGeneratingParecer ?"Gerando..." :"Gerar Parecer com LIA"}
+            {isGeneratingParecer ?"Gerando..." :"Gerar Parecer com IA"}
           </Button>
 
           <Button

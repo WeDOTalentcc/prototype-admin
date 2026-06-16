@@ -76,7 +76,7 @@ const CATEGORIES: { value: EventCategory; label: string; icon: string }[] = [
   { value: "interviews", label: "Entrevistas", icon: "🎙️" },
   { value: "offers", label: "Ofertas", icon: "📄" },
   { value: "ats", label: "ATS", icon: "🔗" },
-  { value: "agents", label: "Agentes LIA", icon: "🤖" },
+  { value: "agents", label: "Agentes de IA", icon: "🤖" },
   { value: "system", label: "Sistema", icon: "⚙️" },
 ]
 

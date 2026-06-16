@@ -264,7 +264,7 @@ export function useEAPCommandCallbacks(params: UseEAPCallbacksParams) {
     const selectedCount = selectedCandidates.length
 
     if (selectedCount === 0) {
-      return "Peça à LIA para filtrar candidatos, fazer buscas específicas, analisar perfis, enviar emails, agendar entrevistas, comparar candidatos..."
+      return "Peça à IA para filtrar candidatos, fazer buscas específicas, analisar perfis, enviar emails, agendar entrevistas, comparar candidatos..."
     }
 
     if (selectedCount === 1) {

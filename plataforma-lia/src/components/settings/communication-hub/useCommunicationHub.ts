@@ -537,7 +537,7 @@ export function useCommunicationHub(activeSubsection?: string) {
         }
       } else {
         const errorData = await response.json().catch(() => ({}))
-        showError(errorData.details?.detail || "Erro ao ajustar template com a LIA")
+        showError(errorData.details?.detail || "Erro ao ajustar template com a IA")
       }
     } catch {
       showError("Erro ao conectar com o servico de IA")
@@ -560,7 +560,7 @@ export function useCommunicationHub(activeSubsection?: string) {
         : null,
     })
     showSuccess(
-      "Ajustes da LIA aplicados. Clique em \"Salvar\" para confirmar as alteracoes.",
+      "Ajustes de IA aplicados. Clique em \"Salvar\" para confirmar as alteracoes.",
       5000
     )
     dispatch({ type: "SET_AI_RESULT_MODAL", payload: null })

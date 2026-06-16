@@ -93,7 +93,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
       </div>
 
       <div className="space-y-3">
-        <span className="text-xs font-semibold uppercase tracking-wide block">DESCRIÇÃO ENRIQUECIDA (LIA)</span>
+        <span className="text-xs font-semibold uppercase tracking-wide block">DESCRIÇÃO ENRIQUECIDA (IA)</span>
 
         {enrichedJd && (enrichedJd.generated_jd_text || enrichedJd.description) ? (
           <div className="border rounded-xl p-3 space-y-3 border-wedo-cyan/20 bg-wedo-cyan/[.02]">
