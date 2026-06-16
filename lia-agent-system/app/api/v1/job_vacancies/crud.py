@@ -477,6 +477,8 @@ async def list_job_vacancies(
     status: str | None = None,
     visibility: str | None = None,
     source: str | None = None,  # Phase 4H — filter by 'wizard' | 'ats_import' | 'ats_external' | 'manual'
+    sort_by: str | None = Query(None, description="Sort field: created_at|title|status|updated_at"),
+    sort_order: str = Query("desc", description="Sort direction: asc|desc"),
     skip: int = 0,
     limit: int = 500,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
@@ -504,13 +506,18 @@ company_id: str = Depends(require_company_id)):
 
         company_id = get_user_company_id(current_user)
 
-        all_vacancies = await repo.list_vacancies(
-            company_id=company_id,
-            status=status,
-            visibility=visibility,
-            skip=skip,
-            limit=limit,
-        )
+        try:
+            all_vacancies = await repo.list_vacancies(
+                company_id=company_id,
+                status=status,
+                visibility=visibility,
+                skip=skip,
+                limit=limit,
+                sort_by=sort_by,
+                sort_order=sort_order,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=422, detail=str(e))
 
         job_vacancies = []
         for jv in all_vacancies:

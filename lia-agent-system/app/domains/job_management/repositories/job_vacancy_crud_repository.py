@@ -9,6 +9,34 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.job_vacancy import JobVacancy
 
 
+# -- GAP-03-005: dynamic sort for list endpoint ----------------------------
+# Allowlist: only these columns can be used in order_by. Prevents injection.
+ALLOWED_SORT_FIELDS: dict[str, str] = {
+    "created_at": "created_at",
+    "title": "title",
+    "status": "status",
+    "updated_at": "updated_at",
+}
+
+
+def resolve_sort_clause(sort_by: str | None, sort_order: str):
+    """Return (column_property, direction) for the given sort params.
+
+    Raises ValueError on invalid input (endpoint converts to HTTP 422).
+    """
+    sort_order = (sort_order or "desc").lower().strip()
+    if sort_order not in ("asc", "desc"):
+        raise ValueError(f"sort_order must be asc or desc, got {sort_order!r}")
+
+    field_name = (sort_by or "created_at").lower().strip()
+    if field_name not in ALLOWED_SORT_FIELDS:
+        raise ValueError(
+            f"sort_by={field_name!r} not allowed. "
+            f"Allowed: {sorted(ALLOWED_SORT_FIELDS)}"
+        )
+    return getattr(JobVacancy, ALLOWED_SORT_FIELDS[field_name]), sort_order
+
+
 # -- P1-2: classificacao de funil (pura, testavel) --------------------------
 # Mapeia o ``stage`` de vacancy_candidates para o bucket do funil consumido
 # pelo FE ({screening, interview, final, hired}). Stages de sourcing/rejected
@@ -153,13 +181,18 @@ class JobVacancyCRUDRepository:
         visibility: Optional[str] = None,
         skip: int = 0,
         limit: int = 500,
+        sort_by: str | None = None,
+        sort_order: str = "desc",
     ):
+        col, direction = resolve_sort_clause(sort_by, sort_order)
+        order_clause = col.asc() if direction == "asc" else col.desc()
+
         query = select(JobVacancy).where(JobVacancy.company_id == company_id)
         if status:
             query = query.where(JobVacancy.status == status)
         if visibility:
             query = query.where(JobVacancy.visibility == visibility)
-        query = query.offset(skip).limit(limit).order_by(JobVacancy.created_at.desc())
+        query = query.offset(skip).limit(limit).order_by(order_clause)
         result = await self.db.execute(query)
         return result.scalars().all()
 
