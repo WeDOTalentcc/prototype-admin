@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { AddCandidateModal } from "@/components/modals/add-candidate-modal"
 import { CreateJobModal } from "@/components/modals/create-job-modal"
@@ -92,6 +92,34 @@ export function LIAGlobalModals() {
       offerReview.close()
     }
   }, [offerReview, openOfferReview])
+
+  // GAP-04-004: ref-stable map so the effect closure never goes stale
+  // (useModalOpenListener returns non-memoized close fns — ref pattern avoids
+  //  re-registering the event listener on every render)
+  const _closeModalFns = useRef<Record<string, () => void>>({})
+  _closeModalFns.current = {
+    add_candidate: addCandidate.close,
+    interview_scheduling: interviewScheduling.close,
+    candidate_compare: candidateCompare.close,
+    stage_transition: stageTransition.close,
+    create_job: createJob.close,
+    hiring_policy_config: hiringPolicyConfig.close,
+    offer_review: offerReview.close,
+  }
+
+  // GAP-04-004: selective close — modal_id targets one modal, omission closes all
+  useEffect(() => {
+    function handleCloseModal(e: Event) {
+      const detail = (e as CustomEvent<{ modal_id?: string }>).detail ?? {}
+      if (detail.modal_id) {
+        _closeModalFns.current[detail.modal_id]?.()
+      } else {
+        Object.values(_closeModalFns.current).forEach((fn) => fn())
+      }
+    }
+    window.addEventListener("lia:close_modal", handleCloseModal)
+    return () => window.removeEventListener("lia:close_modal", handleCloseModal)
+  }, [])
 
   return (
     <>

@@ -718,14 +718,18 @@ def _build_select_rows_definition():
 
 
 async def _wrap_close_ui(**kwargs: "Any") -> "dict[str, Any]":
-    """Fecha o modal/painel aberto pela LIA."""
+    """Fecha um modal aberto pela LIA, opcionalmente pelo ID."""
+    modal_id: "str | None" = kwargs.get("modal_id") or None
+    ui_action_params: "dict[str, object]" = {}
+    if modal_id:
+        ui_action_params["modal_id"] = modal_id
     return {
         "success": True,
         "data": {
             "ui_action": "close_modal",
-            "ui_action_params": {},
+            "ui_action_params": ui_action_params,
         },
-        "message": "Modal fechado.",
+        "message": f"Modal '{modal_id}' fechado." if modal_id else "Modal fechado.",
     }
 
 
@@ -733,13 +737,23 @@ def _build_close_ui_definition() -> "ToolDefinition":
     return ToolDefinition(
         name="close_ui",
         description=(
-            "Fecha o modal/painel aberto pela LIA. Use quando o usuario "
-            "pedir para fechar, dispensar ou sair de um modal aberto. "
-            "Nao precisa de parametros."
+            "Fecha um modal aberto pela LIA. Informe modal_id para fechar "
+            "um modal especifico; omita para fechar o modal ativo. Use quando "
+            "o usuario pedir para fechar, dispensar ou sair de um modal."
         ),
         parameters={
             "type": "object",
-            "properties": {},
+            "properties": {
+                "modal_id": {
+                    "type": "string",
+                    "description": (
+                        "Opcional. ID do modal a fechar. Valores validos: "
+                        "add_candidate, interview_scheduling, candidate_compare, "
+                        "create_job, hiring_policy_config, offer_review. "
+                        "Omitir fecha o modal ativo no momento."
+                    ),
+                },
+            },
             "required": [],
         },
         output_schema=ToolOutput,

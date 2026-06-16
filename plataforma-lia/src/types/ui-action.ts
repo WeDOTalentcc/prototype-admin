@@ -40,7 +40,8 @@ export type GlobalUIAction =
     }
   | {
       type: "close_modal";
-      params: Record<string, never>;
+      // GAP-04-004: optional modal_id for selective closing
+      params: { modal_id?: string };
     }
   | {
       type: "open_offer_review";

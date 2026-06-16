@@ -132,7 +132,14 @@ export function useUIAction(): UseUIActionReturn {
         }
 
         case "close_modal": {
-          window.dispatchEvent(new CustomEvent("lia:close_modal", { detail: {} }));
+          // GAP-04-004: forward optional modal_id for selective closing
+          const modal_id =
+            typeof params.modal_id === "string" ? params.modal_id : undefined;
+          window.dispatchEvent(
+            new CustomEvent("lia:close_modal", {
+              detail: modal_id ? { modal_id } : {},
+            }),
+          );
           return true;
         }
 
