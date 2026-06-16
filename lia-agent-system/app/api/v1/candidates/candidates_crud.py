@@ -947,6 +947,24 @@ async def update_candidate_stage(
                     exc_info=True,
                 )
 
+        # GAP-09-001: Real-time kanban broadcast via Redis pub/sub → SSE
+        if previous_stage != vacancy_candidate.stage:
+            try:
+                from app.api.v1.kanban_broadcast import publish_candidate_stage_change
+                background_tasks.add_task(
+                    publish_candidate_stage_change,
+                    company_id=company_id,
+                    candidate_id=str(candidate.id),
+                    candidate_name=candidate.name or "",
+                    vacancy_id=str(vacancy_candidate.vacancy_id),
+                    from_stage=previous_stage,
+                    to_stage=vacancy_candidate.stage,
+                    sub_status=vacancy_candidate.status,
+                    moved_by_user_id=str(current_user.id) if current_user else "",
+                )
+            except Exception as _bc_err:
+                logger.debug("[kanban-broadcast] enqueue failed (fail-open): %s", _bc_err)
+
         return {
             "id": str(candidate.id),
             "name": candidate.name,

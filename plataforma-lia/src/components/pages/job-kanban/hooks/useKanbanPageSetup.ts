@@ -12,6 +12,7 @@ import { useCandidateSuggestions } from "@/hooks/ai/useCandidateSuggestions"
 import { useUniversalTransition } from "@/components/kanban"
 import { usePipelineInheritance } from "@/hooks/recruitment/use-pipeline-inheritance"
 import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
+import { useKanbanBroadcast } from "@/hooks/candidates/use-kanban-broadcast"
 import { enrichStagesWithSubStatuses, buildSubStatusMap, applyVacancyStageOverrides } from "@/components/kanban/utils/stage-utils"
 import { useReturnEvents } from "@/hooks/recruitment/use-return-events"
 import { useBulkCandidateDataRequests } from "@/hooks/candidates/use-candidate-data-requests"
@@ -52,6 +53,10 @@ export function useKanbanPageSetup({ job }: { job?: Record<string, unknown> }) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: pipelineInheritance object excluded to avoid re-runs
   }, [job?.id])
+
+
+  // GAP-09-001: real-time kanban updates via SSE broadcast
+  useKanbanBroadcast(((job?.backendId || job?.id) as string | number | undefined)?.toString())
 
   const viewMode = useKanbanStore((s) => s.viewMode)
   const setViewMode = useKanbanStore((s) => s.setViewMode)

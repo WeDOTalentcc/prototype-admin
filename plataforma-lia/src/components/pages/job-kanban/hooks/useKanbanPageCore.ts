@@ -46,6 +46,7 @@ import { useKanbanNavigation } from "@/components/pages/job-kanban/hooks/useKanb
 import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 import { useKanbanJobFormInit } from "@/components/pages/job-kanban/hooks/useKanbanJobFormInit"
 import { useKanbanDataEffects } from "@/components/pages/job-kanban/hooks/useKanbanDataEffects"
+import { useKanbanBroadcast } from "@/hooks/candidates/use-kanban-broadcast"
 import { toast } from "sonner"
 
 /**
@@ -98,6 +99,10 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     if (job?.id) pipelineInheritance.checkStatus()
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: pipelineInheritance object excluded to avoid re-runs
   }, [job?.id])
+
+
+  // GAP-09-001: real-time kanban updates via SSE broadcast
+  useKanbanBroadcast(job?.id?.toString() || job?.backendId?.toString())
 
   const viewMode = useKanbanStore((s) => s.viewMode)
   const setViewMode = useKanbanStore((s) => s.setViewMode)

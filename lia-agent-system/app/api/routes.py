@@ -264,6 +264,7 @@ from app.api.v1.ml_feedback import router as ml_feedback_router
 from app.api.v1.navigation_intent import router as navigation_intent_router
 from app.api.v1.pipeline_orchestrator import router as pipeline_orchestrator_router
 from app.api.v1.pipeline_policy import router as pipeline_policy_router
+from app.api.v1.kanban_broadcast import router as kanban_broadcast_router
 from app.api.v1.proactive_actions import router as proactive_actions_router
 from app.api.v1.rag_search import router as rag_search_router
 from app.api.v1.search_contextual_hints import router as search_contextual_hints_router
@@ -346,6 +347,7 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Pipeline ──────────────────────────────────────────────────────────────
     app.include_router(pipeline.router, prefix="/api/v1/pipeline", tags=["pipeline"])
+    app.include_router(kanban_broadcast_router, tags=["kanban-broadcast"])
     app.include_router(applications.router, prefix="/api/v1", tags=["applications"])
     app.include_router(recruitment_stages.router, prefix="/api/v1/recruitment-stages", tags=["recruitment-stages"])
     app.include_router(recruitment_stages.screening_questions_router, prefix="/api/v1", tags=["screening-questions"])
