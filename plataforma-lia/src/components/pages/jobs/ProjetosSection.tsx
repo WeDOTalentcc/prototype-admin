@@ -176,7 +176,7 @@ export function ProjetosSection() {
             <CampaignCardSkeleton />
           </>
         ) : isError ? (
-          <div className="col-span-full text-small text-lia-text-error text-center py-8">
+          <div role="alert" className="col-span-full text-small text-lia-text-error text-center py-8">
             Erro ao carregar campanhas. Tente novamente.
           </div>
         ) : campaigns.length === 0 ? (

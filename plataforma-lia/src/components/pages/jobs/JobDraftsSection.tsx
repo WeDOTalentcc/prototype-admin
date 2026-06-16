@@ -185,7 +185,7 @@ export function JobDraftsSection() {
           ))}
         </div>
       ) : isError ? (
-        <p className="text-sm text-status-error">
+        <p role="alert" className="text-sm text-status-error">
           Erro ao carregar rascunhos. Tente recarregar a página.
         </p>
       ) : drafts.length === 0 ? (
