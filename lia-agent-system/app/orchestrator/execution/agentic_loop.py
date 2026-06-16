@@ -75,7 +75,7 @@ MAX_TOOL_ITERATIONS = int(os.getenv("LIA_MAX_TOOL_ITERATIONS", "3"))
 # honest, overload-specific message (REGRA-4 honesty).
 _AGENTIC_OVERLOAD_RETRIES = int(os.getenv("LIA_AGENTIC_OVERLOAD_RETRIES", "2"))
 _AGENTIC_OVERLOAD_BACKOFF_BASE = float(
-    os.getenv("LIA_AGENTIC_OVERLOAD_BACKOFF_BASE", "0.6")
+    os.getenv("LIA_AGENTIC_OVERLOAD_BACKOFF_BASE", "1.0")
 )
 _TRANSIENT_PROVIDER_MARKERS = (
     "overloaded_error",
