@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 
 import type { TransportMode } from "./lia-chat-connection-types"
+import { useFocusedJobStore } from "@/stores/focused-job-store"
 export type { TransportMode }
 
 const WS_BASE_URL =
@@ -247,6 +248,8 @@ export function useChatTransport(
   const sseFailureCountRef = useRef(0)
   const lastEventIdRef = useRef<string>("")
   const onEventRef = useRef(onEvent)
+
+  const { focusedJob } = useFocusedJobStore()
 
   useEffect(() => {
     onEventRef.current = onEvent
@@ -557,6 +560,7 @@ export function useChatTransport(
         context: ctxRest,
         conversation_id: conversationId,
         approve_pending_id: (_approvePendingId as string | null) ?? null,
+        focused_job_id: focusedJob?.id ?? null,
       })
 
       const headers: Record<string, string> = {
@@ -681,7 +685,7 @@ export function useChatTransport(
 
       attemptSSE(0)
     },
-    [authToken, handleParsedEvent, maxSseFailures, reconnectBaseDelay],
+    [authToken, handleParsedEvent, maxSseFailures, reconnectBaseDelay, focusedJob],
   )
 
   useEffect(() => {
