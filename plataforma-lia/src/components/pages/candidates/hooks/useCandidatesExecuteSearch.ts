@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useCallback } from "react"
 import { liaApi, CandidateLocal } from "@/services/lia-api"
 import {
   searchCandidates as searchCandidatesHybrid,
@@ -14,6 +15,12 @@ import type { ChatMessage } from "./candidates-core"
 import { getInitialDisplayedResultsCount } from '@/stores/candidates-store'
 
 export type SearchSource = 'local' | 'global' | 'hybrid'
+
+export interface RetryInfo {
+  attempt: number
+  maxAttempts: number
+  reason: string
+}
 
 // Task #400: dados leves do candidato descartado pelo backend (sem email/telefone
 // após enriquecimento). Permite exibir e exportar para reaproveitamento manual.
@@ -175,6 +182,14 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
     setChatMessages, setIsLoading, setIsSearchActive, setFairnessError,
   } = deps
 
+  const [isRetrying, setIsRetrying] = useState(false)
+  const [retryInfo, setRetryInfo] = useState<RetryInfo | null>(null)
+
+  const onRetry = useCallback((attempt: number, maxAttempts: number, reason: string) => {
+    setIsRetrying(true)
+    setRetryInfo({ attempt, maxAttempts, reason })
+  }, [])
+
   const executeSearch = async (
     query: string,
     entities?: ParsedEntities,
@@ -231,7 +246,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           const response = await fetchWithRetry('/api/backend-proxy/search/candidates/similar', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ linkedin_url: similarUrl, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
-          }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500] })
+          }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500], onRetry })
           if (!response.ok) {
             throw new Error(`Busca por perfil similar falhou (${response.status})`)
           }
@@ -251,7 +266,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         const response = await fetchWithRetry('/api/backend-proxy/search/candidates/by-job-description', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ job_description: metadata.jobDescription, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
-        }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500] })
+        }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500], onRetry })
         if (!response.ok) {
           throw new Error(`Busca por descrição de vaga falhou (${response.status})`)
         }
@@ -270,7 +285,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         const response = await fetchWithRetry(`/api/backend-proxy/search/archetypes/${metadata.archetypeVacancyId}/search`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
-        }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500] })
+        }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500], onRetry })
         if (!response.ok) {
           throw new Error(`Busca por arquétipo falhou (${response.status})`)
         }
@@ -302,7 +317,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           show_emails: pearchSearchOptions.showEmails,
           show_phone_numbers: pearchSearchOptions.showPhoneNumbers, high_freshness: pearchSearchOptions.highFreshness,
           require_emails: pearchSearchOptions.requireEmails, require_phone_numbers: pearchSearchOptions.requirePhoneNumbers
-        })
+        }, { onRetry })
         if (searchResponse.thread_id) setSearchThreadId(searchResponse.thread_id)
         setCanLoadMore(searchResponse.can_load_more ?? false)
         // Fase 2: ancora (provider) + re-hidrata feedback pelos criterios desta busca
@@ -480,8 +495,10 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
     } finally {
       setIsLoading(false)
       setIsSearchActive(false)
+      setIsRetrying(false)
+      setRetryInfo(null)
     }
   }
 
-  return { executeSearch, mapCandidateToInternal }
+  return { executeSearch, mapCandidateToInternal, isRetrying, retryInfo }
 }

@@ -157,7 +157,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
 
   const { setLastSuccessfulQuery: archetypeSetLastSuccessfulQuery } = archetypesHook.actions
 
-  const { executeSearch } = useCandidatesExecuteSearch({
+  const { executeSearch, isRetrying, retryInfo } = useCandidatesExecuteSearch({
     searchSource: params.searchSource,
     pearchSearchOptions: params.pearchSearchOptions,
     searchThreadId: params.searchThreadId,
@@ -280,6 +280,8 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     archetypesHook,
     revealContactHook,
     executeSearch,
+    isRetrying,
+    retryInfo,
     cvHandlers,
     searchHandlers,
   }

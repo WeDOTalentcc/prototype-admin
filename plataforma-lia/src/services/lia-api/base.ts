@@ -88,6 +88,8 @@ export interface FetchWithRetryOptions {
   retryDelaysMs?: number[]
   /** Cap on how long we'll wait for a 429 Retry-After before giving up. */
   maxRetryAfterMs?: number
+  /** Called before each retry with 1-based attempt number, total attempts, and reason. */
+  onRetry?: (attempt: number, maxAttempts: number, reason: string) => void
 }
 
 async function sleepCancellable(ms: number, signal?: AbortSignal | null): Promise<void> {
@@ -133,6 +135,7 @@ export async function fetchWithRetry(
     timeoutMs = 20000,
     retryDelaysMs = [0, 1000, 3000],
     maxRetryAfterMs = 30000,
+    onRetry,
   } = options
 
   const callerSignal = init.signal ?? null
@@ -170,6 +173,7 @@ export async function fetchWithRetry(
           await sleepCancellable(wait, callerSignal)
           // We honored Retry-After — don't pile the next base delay on top.
           if (retryAfterMs !== null) skipNextBaseDelay = true
+          onRetry?.(attempt + 1, attempts, 'rate-limited')
           continue
         }
         // Final attempt — return so caller can read body/status.
@@ -178,6 +182,7 @@ export async function fetchWithRetry(
 
       if (response.status >= 500 && attempt < attempts - 1) {
         lastError = new HttpError(response.status, `HTTP ${response.status}`)
+        onRetry?.(attempt + 1, attempts, `server-${response.status}`)
         continue
       }
 
@@ -193,6 +198,9 @@ export async function fetchWithRetry(
         throw error
       }
       // TimeoutError (own signal) or TypeError (network) — fall through to retry.
+      if (attempt < attempts - 1) {
+        onRetry?.(attempt + 1, attempts, 'network')
+      }
     }
   }
 

@@ -1,7 +1,7 @@
 import { CandidateResult } from "@/components/search/search-results-card"
 // Reuse canonical client-side fetch helper (timeout + retry on 5xx/network).
 // See services/lia-api/base.ts.
-import { fetchWithRetry } from "@/services/lia-api/base"
+import { fetchWithRetry, type FetchWithRetryOptions } from "@/services/lia-api/base"
 
 const API_BASE = ""
 
@@ -217,7 +217,10 @@ export interface CreditBalance {
   last_updated?: string
 }
 
-export async function searchCandidates(request: SearchRequest): Promise<SearchResponse> {
+export async function searchCandidates(
+  request: SearchRequest,
+  fetchOptions?: Partial<FetchWithRetryOptions>,
+): Promise<SearchResponse> {
   // BUG #274: este endpoint pode levar mais de 10s; sem timeout/retry/Abort,
   // qualquer recompilação HMR ou 5xx transiente vira "Failed to fetch" no UI.
   // Reusa fetchWithRetry canônico (3 tentativas, 30s timeout, retry em 5xx).
@@ -247,7 +250,7 @@ export async function searchCandidates(request: SearchRequest): Promise<SearchRe
         include_discovered: request.include_discovered ?? true,
       }),
     },
-    { attempts: 3, timeoutMs: 30000, retryDelaysMs: [0, 1000, 3000] },
+    { attempts: 3, timeoutMs: 30000, retryDelaysMs: [0, 1000, 3000], ...fetchOptions },
   )
 
   if (!response.ok) {
