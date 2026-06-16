@@ -251,7 +251,8 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string, onCandid
           const localCandidates = localData?.data?.candidates || localData?.candidates || localData?.data || []
           if (localCandidates.length > 0) {
             hasLocalResults = true
-            setSearchResults(localCandidates)
+            const tagged = localCandidates.map((c: Record<string, unknown>) => ({ ...c, _searchSource: "lia_database" }))
+            setSearchResults(tagged)
             setTotalResults(localCandidates.length)
           }
         }
@@ -299,7 +300,7 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string, onCandid
               if (email && seenEmails.has(email)) return false
               if (linkedin && seenLinkedins.has(linkedin)) return false
               return true
-            })
+            }).map((c: Record<string, unknown>) => ({ ...c, _searchSource: "pearch" }))
             const merged = [...prev, ...fresh]
             setTotalResults(merged.length)
             return merged
@@ -501,27 +502,39 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string, onCandid
   // ---- add selected to vacancy ----
   const addSelectedToVacancy = useCallback(async () => {
     if (selectedIds.size === 0) return
-    const sourceLabel = searchSource === "local" ? "local" : searchSource === "hybrid" ? "hybrid" : "pearch"
+    const selected = searchResults.filter(c => selectedIds.has(String(c.id)))
+    const grouped: Record<string, string[]> = {}
+    for (const c of selected) {
+      const src = (c._searchSource as string) || (searchSource === "local" ? "lia_database" : "pearch")
+      if (!grouped[src]) grouped[src] = []
+      grouped[src].push(String(c.id))
+    }
     try {
-      const res = await fetch(`/api/backend-proxy/search/vacancy/${vacancyId}/add-candidates`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          candidate_ids: Array.from(selectedIds),
-          source: sourceLabel,
-        }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        if (err?.detail?.error === "calibration_required") {
-          toast.error("Calibração necessária", { description: err.detail.message })
-          return
+      let totalAdded = 0
+      let totalSkipped = 0
+      for (const [src, ids] of Object.entries(grouped)) {
+        const res = await fetch(`/api/backend-proxy/search/vacancy/${vacancyId}/add-candidates`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            candidate_ids: ids,
+            source: src,
+          }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          if (err?.detail?.error === "calibration_required") {
+            toast.error("Calibração necessária", { description: err.detail.message })
+            return
+          }
+          throw new Error(err?.message || `Failed: ${res.status}`)
         }
-        throw new Error(err?.message || `Failed: ${res.status}`)
+        const data = await res.json()
+        totalAdded += data.added_count || 0
+        totalSkipped += data.skipped_count || 0
       }
-      const data = await res.json()
-      toast.success(`${data.added_count} candidatos adicionados`, {
-        description: data.skipped_count > 0 ? `${data.skipped_count} já estavam na vaga` : undefined,
+      toast.success(`${totalAdded} candidatos adicionados`, {
+        description: totalSkipped > 0 ? `${totalSkipped} já estavam na vaga` : undefined,
       })
       setShowResults(false)
       setSelectedIds(new Set())
@@ -530,7 +543,7 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string, onCandid
     } catch (err) {
       toast.error("Erro ao adicionar", { description: (err as Error).message })
     }
-  }, [selectedIds, vacancyId, searchSource, onCandidatesAdded])
+  }, [selectedIds, searchResults, vacancyId, searchSource, onCandidatesAdded])
 
   // ---- auto add (used after confirmation — feature 4) ----
   const addAutoCandidates = useCallback(async () => {
@@ -544,18 +557,26 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string, onCandid
       return
     }
 
-    const ids = qualifying.map(c => String(c.id))
-    setSelectedIds(new Set(ids))
-    const sourceLabel = searchSource === "local" ? "local" : searchSource === "hybrid" ? "hybrid" : "pearch"
+    setSelectedIds(new Set(qualifying.map(c => String(c.id))))
+    const grouped: Record<string, string[]> = {}
+    for (const c of qualifying) {
+      const src = (c._searchSource as string) || (searchSource === "local" ? "lia_database" : "pearch")
+      if (!grouped[src]) grouped[src] = []
+      grouped[src].push(String(c.id))
+    }
     try {
-      const res = await fetch(`/api/backend-proxy/search/vacancy/${vacancyId}/add-candidates`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ candidate_ids: ids, source: sourceLabel }),
-      })
-      if (!res.ok) throw new Error(`Failed: ${res.status}`)
-      const data = await res.json()
-      toast.success(`${data.added_count} candidatos adicionados automaticamente`)
+      let totalAdded = 0
+      for (const [src, ids] of Object.entries(grouped)) {
+        const res = await fetch(`/api/backend-proxy/search/vacancy/${vacancyId}/add-candidates`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ candidate_ids: ids, source: src }),
+        })
+        if (!res.ok) throw new Error(`Failed: ${res.status}`)
+        const data = await res.json()
+        totalAdded += data.added_count || 0
+      }
+      toast.success(`${totalAdded} candidatos adicionados automaticamente`)
       setShowResults(false)
       setSelectedIds(new Set())
       setShowAutoConfirm(false)
