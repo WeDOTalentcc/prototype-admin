@@ -3960,7 +3960,12 @@
       "yearsOld": "{age} anos",
       "more": "+{count} mais",
       "noCredits": "Sem consumo de créditos",
-      "defaultCredits": "1 cred + R$0,05 Apify/cand"
+      "defaultCredits": "1 cred + R$0,05 Apify/cand",
+      "scoreCells": {
+        "noEvaluation": "Sem avaliação",
+        "noEvaluationDesc": "Este candidato ainda não participou de nenhum processo seletivo.",
+        "liaScoreInfo": "O Score LIA é calculado quando o candidato é avaliado para uma vaga específica."
+      }
     },
     "scoreCells": {
       "noEvaluation": "Sem avaliação",

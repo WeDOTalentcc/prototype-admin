@@ -3960,7 +3960,12 @@
       "yearsOld": "{age} years",
       "more": "+{count} more",
       "noCredits": "No credit usage",
-      "defaultCredits": "1 cred + $0.01 Apify/cand"
+      "defaultCredits": "1 cred + $0.01 Apify/cand",
+      "scoreCells": {
+        "noEvaluation": "No evaluation",
+        "noEvaluationDesc": "This candidate has not yet participated in any selection process.",
+        "liaScoreInfo": "The LIA Score is calculated when the candidate is evaluated for a specific position."
+      }
     },
     "scoreCells": {
       "noEvaluation": "No evaluation",
