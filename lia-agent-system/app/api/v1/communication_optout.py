@@ -14,6 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db, get_tenant_db
 from app.domains.communication.repositories.optout_repository import OptoutRepository
+from app.domains.communication.services.communication_optout_service import CommunicationOptOutService
+from app.enums.communication import MessageChannel
 from app.shared.security.require_company_id import require_company_id
 
 
@@ -298,6 +300,19 @@ async def _one_click_unsubscribe_action(db, email: str, user_agent: str, ip: str
             "[Optout] one-click email_hash=%.8s candidates=%d ip=%s",
             email_hash, len(candidates), ip,
         )
+        # GAP-07-005: cross-channel sync — opt-out WhatsApp too
+        optout_svc = CommunicationOptOutService(db)
+        for candidate in candidates:
+            try:
+                await optout_svc.revoke_all_channels(
+                    company_id=str(candidate.company_id) if candidate.company_id else "",
+                    candidate_id=str(candidate.id),
+                    source_channel=MessageChannel.EMAIL,
+                    reason="email one-click unsubscribe (RFC 8058)",
+                    candidate_email=email_norm,
+                )
+            except Exception as exc:
+                logger.warning("[Optout] cross-channel sync failed for %s: %s", candidate.id, exc)
 
 
 @router.post("/unsubscribe", response_class=HTMLResponse, response_model=None,

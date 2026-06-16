@@ -159,18 +159,18 @@ async def test_whatsapp_stop_records_opt_out():
 
     db.get = _fake_get
 
-    with patch("app.domains.communication.services.data_request_whatsapp_service.CommunicationService") as MockSvc:
-        mock_comm_svc = AsyncMock()
-        MockSvc.return_value = mock_comm_svc
+    with patch("app.domains.communication.services.data_request_whatsapp_service.CommunicationOptOutService") as MockSvc:
+        mock_optout_svc = AsyncMock()
+        MockSvc.return_value = mock_optout_svc
 
         result = await svc.process_incoming_message(
             db, UUID("aaaaaaaa-0000-0000-0000-000000000000"), "STOP"
         )
 
     assert result.get("status") == "opted_out"
-    mock_comm_svc.record_opt_out.assert_awaited_once()
-    kwargs = mock_comm_svc.record_opt_out.call_args.kwargs
-    assert kwargs["channel"] == MessageChannel.WHATSAPP
+    mock_optout_svc.revoke_all_channels.assert_awaited_once()
+    kwargs = mock_optout_svc.revoke_all_channels.call_args.kwargs
+    assert kwargs["source_channel"] == MessageChannel.WHATSAPP
     assert str(kwargs["candidate_id"]) == "00000000-0000-0000-0000-000000000001"
 
 
@@ -197,13 +197,13 @@ async def test_whatsapp_stop_variants(msg):
 
     db.get = _fake_get
 
-    with patch("app.domains.communication.services.data_request_whatsapp_service.CommunicationService") as MockSvc:
-        mock_comm_svc = AsyncMock()
-        MockSvc.return_value = mock_comm_svc
+    with patch("app.domains.communication.services.data_request_whatsapp_service.CommunicationOptOutService") as MockSvc:
+        mock_optout_svc = AsyncMock()
+        MockSvc.return_value = mock_optout_svc
         result = await svc.process_incoming_message(db, UUID("aaaaaaaa-0000-0000-0000-000000000000"), msg)
 
     assert result.get("status") == "opted_out"
-    mock_comm_svc.record_opt_out.assert_awaited_once()
+    mock_optout_svc.revoke_all_channels.assert_awaited_once()
 
 
 @pytest.mark.asyncio

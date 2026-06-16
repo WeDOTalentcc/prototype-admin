@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
 from app.domains.communication.services.communication_service import CommunicationService
+from app.domains.communication.services.communication_optout_service import CommunicationOptOutService
 from app.enums.communication import MessageChannel
 from lia_models.candidate import Candidate
 from lia_models.data_request import (
@@ -386,18 +387,17 @@ class DataRequestWhatsAppService:
     
 
     async def _handle_stop_command(self, db, data_request) -> dict:
-        """GAP-07-005: Handle WhatsApp STOP command -- record LGPD opt-out."""
-        svc = CommunicationService()
+        """GAP-07-005: Handle WhatsApp STOP command -- cross-channel LGPD opt-out."""
+        optout_svc = CommunicationOptOutService(db)
         try:
-            await svc.record_opt_out(
+            await optout_svc.revoke_all_channels(
                 company_id=str(data_request.company_id),
                 candidate_id=str(data_request.candidate_id),
-                channel=MessageChannel.WHATSAPP,
-                opted_out_via="whatsapp_stop_command",
-                db=db,
+                source_channel=MessageChannel.WHATSAPP,
+                reason="whatsapp_stop_command",
             )
             logger.info(
-                "[WhatsApp] STOP received -- opt-out recorded for candidate %s",
+                "[WhatsApp] STOP received -- cross-channel opt-out for candidate %s",
                 data_request.candidate_id,
             )
         except Exception:
@@ -408,7 +408,7 @@ class DataRequestWhatsAppService:
             )
         return {
             "status": "opted_out",
-            "message": "Descadastro registrado. Voce nao recebera mais mensagens via WhatsApp.",
+            "message": "Descadastro registrado. Voce nao recebera mais mensagens.",
         }
 
     async def process_document_response(
