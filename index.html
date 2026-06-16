@@ -792,7 +792,7 @@
     </div><!-- /#screen-client-detail -->
 
     <!-- ======================================================
-         SCREEN: CLIENT USERS (WEDO-695)
+         SCREEN: CLIENT USERS (WEDO-727)
          ====================================================== -->
     <div class="screen" id="screen-client-users">
       <div style="padding:24px 32px; max-width:1100px; margin:0 auto;">
@@ -811,6 +811,39 @@
             <p style="font-size:14px; color:#6B7280; margin:0;">4 usuários · iFood Talentos</p>
           </div>
           <button onclick="openModal('invite-user')" style="display:flex; align-items:center; gap:6px; padding:8px 16px; background:#C74446; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;"><i data-lucide="user-plus" style="width:14px; height:14px;"></i>Convidar Usuário</button>
+        </div>
+
+        <!-- Stats Row -->
+        <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:white; border:1px solid #E5E7EB; border-radius:99px; font-size:13px;">
+            <svg width="7" height="7" viewBox="0 0 8 8" fill="#22C55E"><circle cx="4" cy="4" r="4"/></svg>
+            <span style="color:#374151; font-weight:500;">3 ativos</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:white; border:1px solid #E5E7EB; border-radius:99px; font-size:13px;">
+            <svg width="7" height="7" viewBox="0 0 8 8" fill="#D19960"><circle cx="4" cy="4" r="4"/></svg>
+            <span style="color:#374151; font-weight:500;">1 convite pendente</span>
+          </div>
+        </div>
+
+        <!-- Search & Filter Bar -->
+        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+          <div style="flex:1; min-width:200px; position:relative;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Buscar por nome ou e-mail..." style="width:100%; padding:8px 12px 8px 32px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#111827; font-family:inherit; outline:none; background:white; box-sizing:border-box;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'">
+          </div>
+          <select style="padding:8px 12px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#374151; font-family:inherit; background:white; cursor:pointer; outline:none;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'">
+            <option value="">Todas as roles</option>
+            <option>Admin</option>
+            <option>Recrutador</option>
+            <option>Gestor</option>
+            <option>Visualizador</option>
+          </select>
+          <select style="padding:8px 12px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#374151; font-family:inherit; background:white; cursor:pointer; outline:none;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'">
+            <option value="">Todos os status</option>
+            <option>Ativo</option>
+            <option>Convite pendente</option>
+            <option>Inativo</option>
+          </select>
         </div>
 
         <!-- Users Table -->
@@ -3873,7 +3906,7 @@ Este link expira em 7 dias.</textarea>
 </html>
 
     <!-- ======================================================
-         MODAL: CONVIDAR USUÁRIO (WEDO-701)
+         MODAL: CONVIDAR USUÁRIO (WEDO-729)
          ====================================================== -->
     <div class="modal-overlay" id="overlay-invite-user" onclick="handleOverlayClick(event)" style="background:rgba(0,0,0,0.45);">
       <div class="modal" style="width:460px; background:white; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
@@ -3928,7 +3961,7 @@ Este link expira em 7 dias.</textarea>
     </div><!-- /#overlay-invite-user -->
 
     <!-- ======================================================
-         MODAL: GERENCIAR USUÁRIO ATIVO (WEDO-701)
+         MODAL: GERENCIAR USUÁRIO ATIVO (WEDO-730)
          ====================================================== -->
     <div class="modal-overlay" id="overlay-manage-user" onclick="handleOverlayClick(event)" style="background:rgba(0,0,0,0.45);">
       <div class="modal" style="width:500px; background:white; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
@@ -3997,7 +4030,7 @@ Este link expira em 7 dias.</textarea>
     </div><!-- /#overlay-manage-user -->
 
     <!-- ======================================================
-         MODAL: GERENCIAR CONVITE PENDENTE (WEDO-701)
+         MODAL: GERENCIAR CONVITE PENDENTE (WEDO-731)
          ====================================================== -->
     <div class="modal-overlay" id="overlay-manage-user-pending" onclick="handleOverlayClick(event)" style="background:rgba(0,0,0,0.45);">
       <div class="modal" style="width:460px; background:white; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
