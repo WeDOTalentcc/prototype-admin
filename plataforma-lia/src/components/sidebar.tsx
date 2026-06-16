@@ -132,6 +132,15 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
     label: "",
     items: [
       {
+        icon: BarChart2,
+        label: "Decidir",
+        isCore: true,
+        subItems: [
+          { icon: TrendingUp, label: "Indicadores", isCore: true, navKey: "Decidir" },
+          { icon: FileText, label: "Relatórios", isCore: true, isFuturo: true },
+        ],
+      },
+      {
         icon: GitBranch,
         label: "Recrutar",
         isCore: true,
@@ -139,12 +148,13 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         alwaysExpanded: true,
         subItems: [
           { icon: Briefcase, label: "Vagas", isCore: true },
-          { icon: FolderKanban, label: "Projetos", isCore: true },
           {
             icon: Users,
             label: "Funil de Talentos",
             isCore: true,
             navigateOnClick: true,
+            seeAllLabel: "Ver todos os bancos",
+            seeAllTarget: "Funil de Talentos",
           },
         ],
       },
@@ -163,13 +173,9 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         ],
       },
       {
-        icon: BarChart2,
-        label: "Decidir",
+        icon: FolderKanban,
+        label: "Projetos",
         isCore: true,
-        subItems: [
-          { icon: TrendingUp, label: "Indicadores", isCore: true, navKey: "Decidir" },
-          { icon: FileText, label: "Relatórios", isCore: true, isFuturo: true },
-        ],
       },
     ],
   },
@@ -183,6 +189,7 @@ interface DynamicSubItem {
 
 function useSidebarDynamicItems() {
   const [agents, setAgents] = useState<DynamicSubItem[]>([])
+  const [pools, setPools] = useState<DynamicSubItem[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -202,11 +209,28 @@ function useSidebarDynamicItems() {
         if (!cancelled) setAgents(mapped)
       } catch { /* silent */ }
     }
+
+    async function loadPools() {
+      try {
+        const res = await fetch("/api/backend-proxy/talent-pools?per_page=5")
+        if (!res.ok) return
+        const data = await res.json()
+        const items = Array.isArray(data) ? data : (data?.talent_pools || data?.data || [])
+        const mapped = items.slice(0, 5).map((p: { id: string; name: string }) => ({
+          id: p.id,
+          name: p.name,
+          status: "active",
+        }))
+        if (!cancelled) setPools(mapped)
+      } catch { /* silent */ }
+    }
+
     loadAgents()
+    loadPools()
     return () => { cancelled = true }
   }, [])
 
-  return { agents }
+  return { agents, pools }
 }
 
 
@@ -594,7 +618,7 @@ FocusedJobSection.displayName = 'FocusedJobSection'
 
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch, notificationOpen, onNotificationToggle }: SidebarProps) {
   const t = useTranslations('sidebar')
-  const { agents } = useSidebarDynamicItems()
+  const { agents, pools } = useSidebarDynamicItems()
   const { focusedJob, clearFocusedJob } = useFocusedJobStore()
   const { user: authUser, refreshUser } = useAuth()
   const { userId: authenticatedUserId, isReady: isAuthReady } = useAuthenticatedUserId()
@@ -709,6 +733,20 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           ],
         }
       }
+      if (item.label === "Funil de Talentos" && pools.length > 0) {
+        return {
+          ...item,
+          subItems: [
+            ...(item.subItems || []),
+            ...pools.map(p => ({
+              icon: Database,
+              label: p.name,
+              isCore: true,
+              navKey: `pool:${p.id}`,
+            })),
+          ],
+        }
+      }
       if (item.subItems && item.subItems.length > 0) {
         return {
           ...item,
@@ -721,11 +759,15 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       ...section,
       items: section.items.map(item => injectDynamic(item)),
     }))
-  }, [agents])
+  }, [agents, pools])
 
   const handleDynamicNavigate = useCallback((page: string) => {
     if (page.startsWith("agent:")) {
       onNavigate("Agentes")
+      return
+    }
+    if (page.startsWith("pool:")) {
+      onNavigate("Funil de Talentos")
       return
     }
     onNavigate(page)
@@ -846,7 +888,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
       {/* Menu and Workspace - Scrollable */}
       <div className={`py-4 flex-1 overflow-y-auto ${shouldShowContent ? 'px-4' : 'px-2'}`}>
-        <nav className="space-y-4">
+        <nav className="space-y-1">
           {menuSections.map((section, sectionIdx) => (
             <React.Fragment key={section.label || String(sectionIdx)}>
               <div>
