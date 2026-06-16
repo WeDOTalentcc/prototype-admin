@@ -517,6 +517,55 @@ class TransitionDispatchService:
                 created_by=triggered_by,
             )
 
+            if not result.get("success"):
+                phone = candidate_data.get("mobile_phone") or candidate_data.get("phone")
+                if not phone:
+                    phone = await self._reveal_contact_for_dispatch(
+                        candidate_data, "phone", company_id,
+                    )
+                if phone:
+                    logger.warning(
+                        "[DISPATCH] Email failed for candidate %s (%s) \u2014 "
+                        "attempting WhatsApp fallback to %s",
+                        candidate_data.get("candidate_id"),
+                        result.get("error", "unknown"),
+                        phone,
+                    )
+                    plain_msg = re.sub(r"<[^>]+>", "", rendered_html) if rendered_html else rendered_text
+                    wa_result = self.dispatcher.send_whatsapp(
+                        to_phone=phone,
+                        message=plain_msg,
+                    )
+                    wa_status = "sent" if wa_result.get("success") else "failed"
+                    await self._log_dispatch(
+                        template_id=template.id,
+                        candidate_id=str(candidate_data.get("candidate_id", "")),
+                        recipient=phone,
+                        subject=rendered_subject,
+                        body_html=rendered_html,
+                        body_text=plain_msg,
+                        status=wa_status,
+                        error=wa_result.get("error"),
+                        variables=variables,
+                        created_by=triggered_by,
+                    )
+                    if wa_result.get("success"):
+                        return {
+                            "success": True,
+                            "channel": "whatsapp",
+                            "fallback_from": "email",
+                            "original_email_error": result.get("error"),
+                            "message_id": wa_result.get("message_id"),
+                            "template_name": template.name,
+                            "recipient": phone,
+                            "mock": wa_result.get("mock", False),
+                            "ai_personalized": ai_personalized,
+                        }
+                    logger.error(
+                        "[DISPATCH] Both email and WhatsApp failed for candidate %s",
+                        candidate_data.get("candidate_id"),
+                    )
+
             return {
                 "success": result.get("success", False),
                 "channel": "email",

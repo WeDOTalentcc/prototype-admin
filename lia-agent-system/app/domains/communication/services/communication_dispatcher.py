@@ -671,12 +671,49 @@ class CommunicationDispatcher:
         formatted_message: str,
     ) -> dict[str, Any]:
         if channel == "email" and recipient_email:
-            return self.send_email(
+            email_result = self.send_email(
                 to_email=recipient_email,
-                subject=subject or "Atualização do processo seletivo",
+                subject=subject or "Atualiza\u00e7\u00e3o do processo seletivo",
                 body_html=f"<p>{formatted_message}</p>",
                 body_text=formatted_message,
             )
+            if email_result.get("success"):
+                return email_result
+
+            if recipient_phone:
+                logger.warning(
+                    "[DISPATCHER] Email failed for %s (error=%s) \u2014 attempting WhatsApp fallback to %s",
+                    recipient_email,
+                    email_result.get("error", "unknown"),
+                    recipient_phone,
+                )
+                wa_result = self.send_whatsapp(
+                    to_phone=recipient_phone,
+                    message=formatted_message,
+                )
+                if wa_result.get("success"):
+                    wa_result["fallback_from"] = "email"
+                    wa_result["original_email_error"] = email_result.get("error")
+                    return wa_result
+
+                logger.error(
+                    "[DISPATCHER] Both email and WhatsApp failed for %s / %s",
+                    recipient_email,
+                    recipient_phone,
+                )
+                return {
+                    "success": False,
+                    "error": "Both email and WhatsApp failed",
+                    "email_error": email_result.get("error"),
+                    "whatsapp_error": wa_result.get("error"),
+                    "both_channels_failed": True,
+                    "channel": "email",
+                    "recipient": recipient_email,
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+
+            return email_result
+
         elif channel == "whatsapp" and recipient_phone:
             return self.send_whatsapp(
                 to_phone=recipient_phone,
@@ -692,7 +729,7 @@ class CommunicationDispatcher:
         elif recipient_email:
             return self.send_email(
                 to_email=recipient_email,
-                subject=subject or "Atualização do processo seletivo",
+                subject=subject or "Atualiza\u00e7\u00e3o do processo seletivo",
                 body_html=f"<p>{formatted_message}</p>",
                 body_text=formatted_message,
             )
