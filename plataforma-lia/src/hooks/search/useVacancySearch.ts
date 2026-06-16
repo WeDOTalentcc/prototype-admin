@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { useCreditEstimator, getCostLevel } from "@/hooks/search/useCreditEstimator"
 import type { CreditEstimate } from "@/lib/api/candidate-search"
 import type { SearchSource, ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
+import { isGlobalSource } from "@/lib/utils/source-detection"
 
 // ---------------------------------------------------------------------------
 // Exported types
@@ -26,6 +27,8 @@ export interface AutoConfig {
   maxCandidates: number
   minScore: number
 }
+
+export type RevealedContacts = Record<string, { email?: string; phone?: string }>
 
 export interface CreditEstimateWithLevel extends CreditEstimate {
   cost_level: "low" | "medium" | "high" | "very-high"
@@ -51,6 +54,10 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string) {
   const [totalResults, setTotalResults] = useState(0)
   const [threadId, setThreadId] = useState<string | undefined>()
   const [searchFeedbacks, setSearchFeedbacks] = useState<Record<string, "like" | "dislike">>({})
+
+  // ---- reveal contacts (item 5) ----
+  const [revealedContacts, setRevealedContacts] = useState<RevealedContacts>({})
+  const [isRevealing, setIsRevealing] = useState(false)
 
   // ---- credit estimator (feature 1) ----
   const { calculateLocal } = useCreditEstimator()
@@ -219,6 +226,7 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string) {
     setSelectedIds(new Set())
     setSearchFingerprint(null)
     setShowAutoConfirm(false)
+    setRevealedContacts({})
     startProgressSimulation()
 
     const limit = mode === "auto" ? autoConfig.maxCandidates : 15
@@ -331,6 +339,61 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string) {
       // best-effort
     }
   }, [vacancyId, searchFingerprint])
+
+  // ---- reveal contact (item 5) ----
+  const handleRevealContact = useCallback(async (candidateId: string, candidateName: string, type: "email" | "phone", linkedinUrl?: string) => {
+    setIsRevealing(true)
+    try {
+      const linkedinSlug = linkedinUrl?.split("/in/")?.[1]?.replace("/", "") || null
+      const res = await fetch("/api/backend-proxy/search/reveal/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          candidate_id: candidateId,
+          candidate_name: candidateName,
+          reveal_type: type,
+          linkedin_slug: linkedinSlug,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        const value = type === "email" ? data.email : data.phone
+        setRevealedContacts(prev => ({
+          ...prev,
+          [candidateId]: { ...prev[candidateId], [type]: value },
+        }))
+        toast.success(type === "email" ? "Email revelado" : "Telefone revelado", {
+          description: value || "Contato revelado",
+          duration: 5000,
+        })
+        // Auto-persist for pearch candidates
+        const candidate = searchResults.find(c => String(c.id) === candidateId)
+        const source = (candidate?.source_type || candidate?.source || "") as string
+        if (isGlobalSource(source, Boolean(candidate?.pearch_profile_id))) {
+          fetch("/api/backend-proxy/search/candidates/persist-revealed", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              pearch_id: candidate?.pearch_profile_id || candidateId,
+              candidate_name: candidateName,
+              email: type === "email" ? value : null,
+              phone: type === "phone" ? value : null,
+              linkedin_url: linkedinUrl || null,
+              current_title: candidate?.current_title || null,
+              current_company: candidate?.current_company || null,
+              avatar_url: candidate?.avatar_url || null,
+            }),
+          }).catch(() => {})
+        }
+      } else {
+        toast.error("Contato não disponível", { description: data.message || "Não foi possível revelar" })
+      }
+    } catch {
+      toast.error("Erro ao revelar contato")
+    } finally {
+      setIsRevealing(false)
+    }
+  }, [searchResults])
 
   // ---- selection ----
   const toggleSelect = useCallback((id: string) => {
@@ -476,5 +539,9 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string) {
     cancelAutoAdd,
     // progress (feature 5)
     searchProgress,
+    // reveal contacts (item 5)
+    revealedContacts,
+    isRevealing,
+    handleRevealContact,
   }
 }

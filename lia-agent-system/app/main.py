@@ -7,6 +7,7 @@ from app.shared.llm_bootstrap import install_llm_guards
 
 install_llm_guards(entrypoint="fastapi")
 
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager

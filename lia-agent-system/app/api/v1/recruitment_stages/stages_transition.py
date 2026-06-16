@@ -42,6 +42,8 @@ from app.shared.errors import LIAInvalidStateTransition
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from app.services.cache.context_cache import get_context_cache as _get_ctx_cache
+
 
 logger = logging.getLogger(__name__)
 
@@ -522,6 +524,15 @@ company_id: str = Depends(require_company_id)):
             )
         except Exception as audit_err:
             logger.warning(f"[PIPELINE] audit log_decision failed: {audit_err}")
+
+        # GAP-06: invalidate context cache so /me/context + /me/dashboard-stats reflect new stage
+        try:
+            _recruiter_id = str(getattr(current_user, "id", "")) or None
+            if _recruiter_id:
+                _ctx_cache = await _get_ctx_cache()
+                await _ctx_cache.invalidate_for_recruiter(_recruiter_id)
+        except Exception as _cache_err:
+            logger.debug("[ContextCache] invalidation skipped: %s", _cache_err)
 
         return TransitionExecuteResponse(
             success=True,

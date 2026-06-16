@@ -1,3 +1,4 @@
+from datetime import datetime
 """
 Recruiter Profiles API endpoints.
 Manages recruiter personalization profiles, preferences, and settings.
@@ -15,6 +16,9 @@ from app.core.database import get_db, get_tenant_db
 from app.shared.services.recruiter_personalization_service import recruiter_personalization_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+
+from app.services.cache.context_cache import get_context_cache
+
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -349,3 +353,103 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error deleting data: {e}")
         raise HTTPException(status_code=500, detail="Error deleting personalization data")
+
+
+# ── GAP-06-001/002 — ContextCache TTL endpoints ─────────────────────────
+
+class RecruiterContextResponse(BaseModel):
+    recruiter_id: str
+    company_id: str
+    experience_level: str
+    wizard_mode: str
+    source: str  # "cache" | "fresh"
+    cached_at: str | None = None
+
+
+class DashboardStatsResponse(BaseModel):
+    total_jobs_created: int
+    total_corrections_made: int
+    experience_level: str
+    source: str
+
+
+@router.get("/me/context", response_model=RecruiterContextResponse)
+async def get_recruiter_context(
+    db: AsyncSession = Depends(get_tenant_db),
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
+    """
+    Recruiter context snapshot — user, company, role.
+    TTL: 5 minutes. Invalidated on stage transitions and writes.
+    """
+    recruiter_id = str(current_user.id)
+    cache_key = f"recruiter:{recruiter_id}:context"
+
+    try:
+        cache = await get_context_cache()
+        cached = await cache.get_with_ttl(cache_key, ttl_seconds=300)
+        if cached:
+            return RecruiterContextResponse(**cached, source="cache")
+    except Exception as e:
+        logger.warning("[ContextCache] get failed, falling back to fresh: %s", e)
+
+    profile = await recruiter_personalization_service.get_or_create_profile(
+        db, recruiter_id, get_user_company_id(current_user)
+    )
+
+    ctx = {
+        "recruiter_id": recruiter_id,
+        "company_id": company_id,
+        "experience_level": profile.experience_level or "beginner",
+        "wizard_mode": profile.wizard_mode or "standard",
+        "cached_at": datetime.utcnow().isoformat(),
+    }
+
+    try:
+        cache = await get_context_cache()
+        await cache.set_with_ttl(cache_key, ctx, ttl_seconds=300)
+    except Exception as e:
+        logger.warning("[ContextCache] set failed (non-fatal): %s", e)
+
+    return RecruiterContextResponse(**ctx, source="fresh")
+
+
+@router.get("/me/dashboard-stats", response_model=DashboardStatsResponse)
+async def get_dashboard_stats(
+    db: AsyncSession = Depends(get_tenant_db),
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
+    """
+    Dashboard stats — totals from recruiter profile.
+    TTL: 5 minutes. Invalidated on profile recalculation.
+    """
+    recruiter_id = str(current_user.id)
+    cache_key = f"recruiter:{recruiter_id}:dashboard:stats"
+
+    try:
+        cache = await get_context_cache()
+        cached = await cache.get_with_ttl(cache_key, ttl_seconds=300)
+        if cached:
+            return DashboardStatsResponse(**cached, source="cache")
+    except Exception as e:
+        logger.warning("[ContextCache] get failed, falling back to fresh: %s", e)
+
+    profile = await recruiter_personalization_service.get_or_create_profile(
+        db, recruiter_id, get_user_company_id(current_user)
+    )
+
+    stats = {
+        "total_jobs_created": profile.total_jobs_created or 0,
+        "total_corrections_made": profile.total_corrections_made or 0,
+        "experience_level": profile.experience_level or "beginner",
+    }
+
+    try:
+        cache = await get_context_cache()
+        await cache.set_with_ttl(cache_key, stats, ttl_seconds=300)
+    except Exception as e:
+        logger.warning("[ContextCache] set failed (non-fatal): %s", e)
+
+    return DashboardStatsResponse(**stats, source="fresh")

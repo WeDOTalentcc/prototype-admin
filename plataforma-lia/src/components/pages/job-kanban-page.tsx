@@ -148,6 +148,9 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         autoQualifyingPreview={vs.autoQualifyingPreview}
         onConfirmAutoAdd={vs.confirmAutoAdd}
         onCancelAutoAdd={vs.cancelAutoAdd}
+        revealedContacts={vs.revealedContacts}
+        isRevealing={vs.isRevealing}
+        onRevealContact={vs.handleRevealContact}
       />
 
     </div>

@@ -1,12 +1,13 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { X, Loader2, ThumbsUp, ThumbsDown, CheckSquare, Square, Users, Home, Zap, Globe } from "lucide-react"
+import { X, Loader2, ThumbsUp, ThumbsDown, CheckSquare, Square, Users, Home, Zap, Globe, Mail, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { SearchResultsHeader } from "@/components/pages/candidates/SearchResultsHeader"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
-import type { VacancySearchMode, AutoConfig } from "@/hooks/search/useVacancySearch"
+import type { VacancySearchMode, AutoConfig, RevealedContacts } from "@/hooks/search/useVacancySearch"
+import { isGlobalSource } from "@/lib/utils/source-detection"
 
 interface VacancyCandidateSearchResultsProps {
   isOpen: boolean
@@ -34,6 +35,9 @@ interface VacancyCandidateSearchResultsProps {
   autoQualifyingPreview: Record<string, unknown>[]
   onConfirmAutoAdd: () => void
   onCancelAutoAdd: () => void
+  revealedContacts: RevealedContacts
+  isRevealing: boolean
+  onRevealContact: (candidateId: string, candidateName: string, type: "email" | "phone", linkedinUrl?: string) => void
 }
 
 /* ------------------------------------------------------------------ */
@@ -159,6 +163,7 @@ export function VacancyCandidateSearchResults({
   onFeedback, onAddToVacancy, onAddAuto, onLoadMore, onEditSearch,
   lastSearchQuery, lastSearchEntities,
   showAutoConfirm, autoQualifyingPreview, onConfirmAutoAdd, onCancelAutoAdd,
+  revealedContacts, isRevealing, onRevealContact,
 }: VacancyCandidateSearchResultsProps) {
   const t = useTranslations("vacancySearch")
 
@@ -266,6 +271,8 @@ export function VacancyCandidateSearchResults({
                 <th className="px-3 py-2 text-left font-medium text-lia-text-secondary">CANDIDATO</th>
                 <th className="px-3 py-2 text-left font-medium text-lia-text-secondary">CARGO ATUAL</th>
                 <th className="px-3 py-2 text-left font-medium text-lia-text-secondary">EMPRESA ATUAL</th>
+                <th className="px-3 py-2 text-left font-medium text-lia-text-secondary">EMAIL</th>
+                <th className="px-3 py-2 text-left font-medium text-lia-text-secondary">TELEFONE</th>
               </tr>
             </thead>
             <tbody>
@@ -331,6 +338,44 @@ export function VacancyCandidateSearchResults({
                     <td className="px-3 py-2 font-medium text-lia-text-primary max-w-[200px] truncate">{name}</td>
                     <td className="px-3 py-2 text-lia-text-secondary max-w-[200px] truncate">{title}</td>
                     <td className="px-3 py-2 text-lia-text-secondary max-w-[150px] truncate">{company}</td>
+                    <td className="px-3 py-2">
+                      {(() => {
+                        const email = (revealedContacts[id]?.email || c.email || "") as string
+                        const src = (c.source_type || c.source || "") as string
+                        const canReveal = isGlobalSource(src, Boolean(c.pearch_profile_id)) && c.has_email !== false
+                        if (email) return <span className="text-xs text-lia-text-primary truncate max-w-[180px] block">{email}</span>
+                        if (canReveal) return (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onRevealContact(id, name, "email", (c.linkedin_url || "") as string) }}
+                            disabled={isRevealing}
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 text-micro font-medium rounded-full bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active transition-colors disabled:opacity-50"
+                          >
+                            <Mail className="w-3 h-3" />
+                            <span>Revelar</span>
+                          </button>
+                        )
+                        return <span className="text-xs text-lia-text-tertiary">—</span>
+                      })()}
+                    </td>
+                    <td className="px-3 py-2">
+                      {(() => {
+                        const phone = (revealedContacts[id]?.phone || c.phone || c.mobile_phone || "") as string
+                        const src = (c.source_type || c.source || "") as string
+                        const canReveal = isGlobalSource(src, Boolean(c.pearch_profile_id)) && c.has_phone !== false
+                        if (phone) return <span className="text-xs text-lia-text-primary">{phone}</span>
+                        if (canReveal) return (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onRevealContact(id, name, "phone", (c.linkedin_url || "") as string) }}
+                            disabled={isRevealing}
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 text-micro font-medium rounded-full bg-status-success/10 text-status-success hover:bg-status-success/15 transition-colors disabled:opacity-50"
+                          >
+                            <Phone className="w-3 h-3" />
+                            <span>Revelar</span>
+                          </button>
+                        )
+                        return <span className="text-xs text-lia-text-tertiary">—</span>
+                      })()}
+                    </td>
                   </tr>
                 )
               })}
