@@ -77,7 +77,7 @@ function saveUploadedDoc(storageKey: string, doc: UploadedDoc) {
   localStorage.setItem(storageKey, JSON.stringify(filtered))
 }
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024
+import { MAX_FILE_SIZE } from '@/constants/upload'
 
 export function DocumentUploadCard() {
   const t = useTranslations("settings.documentUpload")

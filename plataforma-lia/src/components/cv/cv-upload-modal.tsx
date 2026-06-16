@@ -33,7 +33,7 @@ const ACCEPTED_FILE_TYPES = {
   'text/plain': ['.txt'],
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+import { MAX_FILE_SIZE } from '@/constants/upload'
 
 interface CVUploadModalProps {
   isOpen: boolean

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
-const MAX_FILE_SIZE = 10 * 1024 * 1024
+import { MAX_FILE_SIZE } from '@/constants/upload'
 
 const VALID_DOCUMENT_TYPES = ["handbook", "org_chart", "compensation", "tech_doc", "general"]
 const VALID_TARGET_SECTIONS = new Set([

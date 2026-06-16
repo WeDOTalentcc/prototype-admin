@@ -69,7 +69,7 @@ async function fetchBackendJdConsent(signal: AbortSignal): Promise<boolean> {
 const CV_PATTERN = /\b(?:curricul|cv|resume|curr[íi]culo|perfil|candidat)/i
 const JD_PATTERN = /\b(?:job.?desc|vaga|descri[cç][aã]o.?(?:da|de).?vaga|jd|requisitos|cargo|posi[cç][aã]o)/i
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+import { MAX_FILE_SIZE } from '@/constants/upload'
 const ALLOWED_EXTENSIONS = new Set([
   "pdf", "docx", "doc", "txt", "csv", "xlsx", "json", "png", "jpg", "jpeg", "pptx",
 ])
