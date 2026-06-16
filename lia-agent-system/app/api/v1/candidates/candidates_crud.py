@@ -805,6 +805,11 @@ async def update_candidate_stage(
             vacancy_candidate.rejected_by_human = True
             vacancy_candidate.human_reviewer_id = stage_data.user_id
         if stage_data.sub_status:
+            from app.services.state_machines.candidate_fsm import validate_stage_transition
+            validate_stage_transition(
+                from_stage=vacancy_candidate.status,
+                to_stage=stage_data.sub_status,
+            )
             vacancy_candidate.status = stage_data.sub_status
         vacancy_candidate.updated_at = datetime.utcnow()
         vacancy_candidate = await vc_repo.update(vacancy_candidate)
