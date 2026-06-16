@@ -9,6 +9,7 @@ import { SUB_STATUSES, type SubStatus } from "@/lib/recruitment-stages"
 import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
 import { type KanbanJob } from "@/components/pages/job-kanban/types"
 import { type SubStatusOption } from "@/components/settings/recruitment-journey.types"
+import { toast } from "sonner"
 
 interface DraggedCandidate extends KanbanCandidate {
   fromColumn: string
@@ -185,7 +186,9 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
     const { candidate, fromColumn, toColumn } = pendingMove
     const candidateId = candidate.id
 
+    let snapshot: Record<string, KanbanCandidate[]> | null = null
     setCandidatesData(prev => {
+      snapshot = prev
       const newData = { ...prev }
 
       const fromKey = fromColumn as keyof typeof newData
@@ -233,10 +236,15 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
       })
 
       if (!response.ok) {
-        await response.json().catch(() => ({}))
+        const errorBody = await response.json().catch(() => ({}))
+        if (snapshot) setCandidatesData(snapshot)
+        const errMsg = (errorBody as {detail?:string;message?:string})?.detail
+          || (errorBody as {detail?:string;message?:string})?.message
+        toast.error(errMsg || "Erro ao mover candidato. A alteração foi revertida.")
       }
-    } catch (error) {
-      // Network error — state already updated optimistically
+    } catch (_error) {
+      if (snapshot) setCandidatesData(snapshot)
+      toast.error("Erro de conexão ao mover candidato. A alteração foi revertida.")
     }
   }
 
