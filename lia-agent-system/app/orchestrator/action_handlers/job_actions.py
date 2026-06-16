@@ -9,7 +9,7 @@ from typing import Any
 
 from app.core.database import AsyncSessionLocal
 from app.domains.job_management.services.job_clone_service import job_clone_service
-from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
+from app.orchestrator.action_handlers._handler_hooks import log_action_audit
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,6 @@ async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
             await db.commit()
 
         await log_action_audit("pause_job", company_id, job_vacancy_id=str(job_id))
-        await sync_to_rails("job_paused", "job", str(job_id))
 
         return ActionResult(
             status="executed",
@@ -126,7 +125,6 @@ async def _close_job(params: dict[str, Any], context: dict[str, Any]):
             await db.commit()
 
         await log_action_audit("close_job", company_id, job_vacancy_id=str(job_id))
-        await sync_to_rails("job_closed", "job", str(job_id))
 
         return ActionResult(
             status="executed",
@@ -213,7 +211,6 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
         new_status = created.get("status")
 
         await log_action_audit("duplicate_job", company_id, job_vacancy_id=new_id)
-        await sync_to_rails("job_created", "job", new_id)
 
         return ActionResult(
             status="executed",
@@ -275,7 +272,6 @@ async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
             await db.commit()
 
         await log_action_audit("reopen_job", company_id, job_vacancy_id=str(job_id))
-        await sync_to_rails("job_reopened", "job", str(job_id))
 
         return ActionResult(
             status="executed",
@@ -340,7 +336,6 @@ async def _set_job_urgent(params: dict[str, Any], context: dict[str, Any]):
             await db.commit()
 
         await log_action_audit("set_job_urgent", company_id, job_vacancy_id=str(job_id))
-        await sync_to_rails("job_updated", "job", str(job_id), {"priority": "Urgente"})
 
         return ActionResult(
             status="executed",

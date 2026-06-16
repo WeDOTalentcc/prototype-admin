@@ -141,12 +141,3 @@ def _infer_entity_type(action_type: str) -> str:
         return "message"
     return "action"
 
-
-async def sync_to_rails(
-    event_type: str,
-    entity_type: str,
-    entity_id: str | None = None,
-    data: dict[str, Any] | None = None,
-) -> None:
-    # Rails eliminated (RAILS_API_URL absent) — permanent noop
-    return

@@ -172,31 +172,6 @@ async def list_candidate_applications(candidate_token: str, company_id: str = De
 
     logger.info("[CandidatePortal] list_applications candidate_id=%s", candidate_id)
 
-    try:
-        from app.shared.rails_client import rails_get
-        data = await rails_get(
-            "/v1/candidate-portal/applications",
-            params={"candidate_id": candidate_id},
-            company_id=company_id,
-        )
-
-        # Audit log — list access
-        try:
-            repo = CandidateSelfServiceRepository()
-            await repo.log_portal_access(
-                candidate_id=candidate_id,
-                vacancy_id=token_data.get("vacancy_id", ""),
-                company_id=company_id,
-                channel="web",
-                tools_called=["list_applications"],
-                fairness_triggered=False,
-            )
-        except Exception as audit_exc:
-            logger.debug("[CandidatePortal] audit log failed: %s", audit_exc)
-
-        return APIResponse.ok(data=data)
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.error("[CandidatePortal] list_applications error candidate_id=%s: %s", candidate_id, exc)
-        raise HTTPException(status_code=500, detail="Erro ao buscar candidaturas.")
+    # Rails eliminated (RAILS_API_URL absent) — candidate portal applications
+    # managed via FastAPI CandidateSelfService domain (migration T5 pending).
+    raise HTTPException(status_code=503, detail="Portal do candidato: migração Rails→FastAPI pendente.")

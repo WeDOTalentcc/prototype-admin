@@ -75,10 +75,9 @@ async def _tag_candidates(params: dict[str, Any], context: dict[str, Any]):
                 tagged_count += result.rowcount
             await db.commit()
 
-        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
         for cid in candidate_ids:
             await log_action_audit("tag_candidates", company_id, candidate_id=str(cid))
-            await sync_to_rails("candidate_tagged", "candidate", str(cid), {"tag": tag})
 
         return ActionResult(
             status="executed",
@@ -602,9 +601,8 @@ async def _add_candidate(params: dict[str, Any], context: dict[str, Any]):
 
             await db.commit()
 
-        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
         await log_action_audit("add_candidate", company_id, candidate_id=candidate_id)
-        await sync_to_rails("candidate_created", "candidate", candidate_id, {"name": name, "email": email})
 
         job_info = " e vinculado à vaga" if job_id else ""
         return ActionResult(
@@ -712,7 +710,7 @@ async def _favorite_candidate(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, resolve_candidate_by_name, sync_to_rails
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, resolve_candidate_by_name
 
         candidate_id = params.get("candidate_id", "")
         candidate_name = params.get("candidate_name", "o candidato")
@@ -755,7 +753,6 @@ async def _favorite_candidate(params: dict[str, Any], context: dict[str, Any]):
             await db.commit()
 
         await log_action_audit("favorite_candidate", company_id, candidate_id=str(candidate_id))
-        await sync_to_rails("candidate_favorited", "candidate", str(candidate_id))
 
         return ActionResult(
             status="executed",

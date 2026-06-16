@@ -127,7 +127,6 @@ async def _schedule_interview(params: dict[str, Any], context: dict[str, Any]):
         from app.orchestrator.action_handlers._handler_hooks import (
             log_action_audit,
             resolve_candidate_by_name,
-            sync_to_rails,
         )
 
         candidate_name = params.get("candidate_name", "")
@@ -187,7 +186,6 @@ async def _schedule_interview(params: dict[str, Any], context: dict[str, Any]):
             await db.commit()
 
         await log_action_audit("schedule_interview", company_id, candidate_id=str(candidate_id))
-        await sync_to_rails("interview_scheduled", "interview", interview_id, {"candidate_id": str(candidate_id), "datetime": dt})
 
         return ActionResult(
             status="executed",
@@ -717,7 +715,6 @@ async def _create_template(params: dict[str, Any], context: dict[str, Any]):
         from app.core.database import AsyncSessionLocal
         from app.orchestrator.action_handlers._handler_hooks import (
             log_action_audit,
-            sync_to_rails,
         )
 
         name = (params.get("name") or "").strip()
@@ -810,7 +807,6 @@ async def _create_template(params: dict[str, Any], context: dict[str, Any]):
             )
 
         await log_action_audit("create_template", company_id, details={"template_id": template_id, "name": name})
-        await sync_to_rails("template_created", "email_template", template_id, {"name": name, "channel": channel})
 
         return ActionResult(
             status="executed",

@@ -117,7 +117,6 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
         from app.orchestrator.action_handlers._handler_hooks import (
             log_action_audit,
             resolve_candidate_by_name,
-            sync_to_rails,
         )
 
         candidate_id = params.get("candidate_id", "")
@@ -159,21 +158,6 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
             await db.commit()
 
         await log_action_audit("move_stage", company_id, candidate_id=str(candidate_id))
-        await sync_to_rails("candidate_moved", "candidate", str(candidate_id), {"from_stage": from_stage, "to_stage": to_stage})
-
-        return ActionResult(
-            status="executed",
-            message=f"**{candidate_name}** foi movido(a) para a etapa **{to_stage}**.",
-            data={
-                "candidate_id": str(candidate_id),
-                "candidate_name": candidate_name,
-                "from_stage": from_stage,
-                "to_stage": to_stage,
-                "moved_at": datetime.utcnow().isoformat(),
-                "simulated": False,
-            },
-            action_type="move_candidate",
-        )
     except Exception as e:
         logger.warning(f"move_candidate failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -195,7 +179,6 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
         from app.orchestrator.action_handlers._handler_hooks import (
             log_action_audit,
             resolve_candidate_by_name,
-            sync_to_rails,
         )
 
         candidate_id = params.get("candidate_id", "")
@@ -315,22 +298,6 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
             await db.commit()
 
         await log_action_audit("update_candidate_field", company_id, candidate_id=str(candidate_id))
-        await sync_to_rails("candidate_updated", "candidate", str(candidate_id), {"field": resolved_field, "value": field_value})
-
-        return ActionResult(
-            status="executed",
-            message=f"Campo **{field_name}** de **{candidate_name}** atualizado para **{field_value}**.",
-            data={
-                "candidate_id": str(candidate_id),
-                "candidate_name": candidate_name,
-                "field": resolved_field,
-                "field_label": field_name,
-                "value": field_value,
-                "updated_at": datetime.utcnow().isoformat(),
-                "simulated": False,
-            },
-            action_type="update_candidate_field",
-        )
     except Exception as e:
         logger.warning(f"update_candidate_field failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -354,7 +321,6 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
         from app.orchestrator.action_handlers._handler_hooks import (
             log_action_audit,
             resolve_candidate_by_name,
-            sync_to_rails,
         )
 
         candidate_ids = params.get("candidate_ids", [])
@@ -505,34 +471,6 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                 job_vacancy_id=str(job_vacancy_id),
                 details={"session_id": s["session_id"]},
             )
-            await sync_to_rails(
-                "screening_started", "candidate", s["candidate_id"],
-                {"job_id": str(job_vacancy_id), "session_token": s["token"]},
-            )
-
-        count = len(sessions_created)
-        if count == 1:
-            name = sessions_created[0]["candidate_name"]
-            msg = f"Triagem iniciada para **{name}**. Uma sessão de triagem WSI foi criada."
-        else:
-            msg = f"Triagem iniciada para **{count} candidatos**. Sessões de triagem WSI foram criadas."
-
-        return ActionResult(
-            status="executed",
-            message=msg,
-            data={
-                "action": "start_screening",
-                "candidates_updated": candidates_updated,
-                "sessions_created": [
-                    {"session_id": s["session_id"], "candidate_id": s["candidate_id"]}
-                    for s in sessions_created
-                ],
-                "job_vacancy_id": str(job_vacancy_id),
-                "started_at": datetime.utcnow().isoformat(),
-                "simulated": False,
-            },
-            action_type="start_screening",
-        )
     except Exception as e:
         logger.warning(f"start_screening failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -691,7 +629,7 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
         from sqlalchemy import text
 
         from app.core.database import AsyncSessionLocal
-        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
 
         candidate_ids = params.get("candidate_ids", [])
         to_stage = params.get("to_stage", "")
@@ -726,18 +664,6 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
 
         for cid in candidate_ids:
             await log_action_audit("move_stage", company_id, candidate_id=str(cid))
-            await sync_to_rails("candidate_moved", "candidate", str(cid), {"to_stage": to_stage})
-
-        return ActionResult(
-            status="executed",
-            message=f"**{moved} candidato(s)** movido(s) para a etapa **{to_stage}**.",
-            data={
-                "candidate_ids": candidate_ids, "to_stage": to_stage,
-                "from_stage": from_stage, "moved_count": moved,
-                "moved_at": datetime.utcnow().isoformat(), "simulated": False,
-            },
-            action_type="batch_move_candidates",
-        )
     except Exception as e:
         logger.warning(f"batch_move_candidates failed: {e}")
         from app.orchestrator.action_executor import ActionResult
