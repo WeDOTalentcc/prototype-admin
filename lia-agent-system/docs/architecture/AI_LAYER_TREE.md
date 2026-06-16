@@ -8,10 +8,10 @@
 > in the tree at the time of writing. Noise (`__pycache__`, `*.pyc`, test
 > internals, migration internals) is collapsed or omitted.
 >
-> **Última revisão completa: 2026-06-14.** Atualizado para ADR-031 + Strangler Fig Fases 1-2 MONOLITH-IMPORT:
-> 7 sub-apps Strangler Fig (`apps/`), 11 libs (`config` expandido: 10 módulos), categoria Tool-Library Agentic
-> (3 domínios promovidos), 19 `@register_domain` total, 38 platform tools
-> (23 read + 8 write + 7 HITL-gated). Fases 1-2 MONOLITH-IMPORT: 56 marcadores eliminados;
+> **Última revisão completa: 2026-06-16.** Auditoria código vs ADR: 22 `@register_domain` confirmados
+> (offer, pipeline, job_creation promovidos desde revisão anterior), 31 platform tools (23 read + 8 write;
+> 7 HITL-gated são subconjunto dos write, não soma separada). 7 sub-apps Strangler Fig (`apps/`),
+> 11 libs (`config` expandido: 10 módulos). Fases 1-2 MONOLITH-IMPORT: 56 marcadores eliminados;
 > estado atual: ~1 ativo + 6 shims backward-compat + 7 ACCEPTED-MONOLITH (`init_db` deferido).
 > Ver `docs/architecture/ADR-031-canonical-domain-architecture.md`.
 
@@ -410,8 +410,8 @@ without following the T-D pattern (TenantAwareAgentMixin) breaks the build.
 
 ## 4. Domains — `app/domains/`
 
-**65 directories** no filesystem atual, classified as: **13 Agentic** + **3 Micro-Action**
-+ **3 Tool-Library Agentic** (= **19 `@register_domain`** total), **8 Service** (pure,
+**65 directories** no filesystem atual, classified as: **16 Agentic** + **3 Micro-Action**
++ **3 Tool-Library Agentic** (= **22 `@register_domain`** total), **8 Service** (pure,
 non-registered), **29 Repository-stub**, **2 Canonical-Active-legacy**.
 Registration is via `@register_domain` in `app/domains/registry.py`; base contracts
 in `app/domains/base.py` and `app/domains/compliance_base.py` (all domains MUST
@@ -1247,12 +1247,12 @@ routable ReActAgent. See §14 for why this matters.
 
 ### 10.2 Domains by class (one-line purpose)
 
-**Agentic (13, `@register_domain`, router-routable):** `analytics` (reports,
+**Agentic (16, `@register_domain`, router-routable):** `analytics` (reports,
 dashboards) · `ats_integration` (external ATS sync) · `automation` (tasks /
-reminders / notes) · `communication` (email / WhatsApp / Teams) · `cv_screening`
-(CV analysis + WSI scoring) · `hiring_policy` (policy advisory + FairnessGuard) ·
+reminders / notes) · `candidate_self_service` (candidate portal) · `communication` (email / WhatsApp / Teams) · `company_settings` (tenant settings)
+· `cv_screening` (CV analysis + WSI scoring) · `hiring_policy` (policy advisory + FairnessGuard) ·
 `interview_scheduling` (scheduling + calendar) · `job_creation` (the wizard graph)
-· `job_management` (job lifecycle + WizardReActAgent) · `pipeline` (stage
+· `job_management` (job lifecycle + WizardReActAgent) · `offer` (offer management + OfferConciergeAgent) · `pipeline` (stage
 transitions) · `recruiter_assistant` (general copilot + fallback) · `sourcing`
 (candidate sourcing) · `agent_studio` (custom-agent creation, see §13).
 
