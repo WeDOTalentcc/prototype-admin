@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useUnsavedChanges } from "@/hooks/shared/useUnsavedChanges"
 import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { getCompanyPipelineStages, LIA_ASSISTED_STAGES, LIA_ASSISTED_STAGE_NAMES } from "@/lib/recruitment-stages"
@@ -61,6 +62,10 @@ export function useJobEditTab({
   // ── derived ────────────────────────────────────────────────────────────────
   const currentSection = SECTIONS.find((s) => s.id === activeSection) || SECTIONS[0]
   const isEditing = isCreationMode || editingSection === activeSection
+
+  // GAP-06-003: warn user before navigating away from unsaved job edits
+  useUnsavedChanges(isEditing)
+
   const filled = countFilledFields(jobEditForm, currentSection.fields)
   const total = currentSection.fields.length
 
