@@ -10,8 +10,11 @@ from pydantic import Field
 from app.domains.candidates.dependencies import get_candidate_repo
 from app.domains.candidates.repositories.candidate_repository import CandidateRepository
 from app.schemas.envelope import ok_envelope
+from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+
+_fairness_guard = FairnessGuard()
 
 router = APIRouter(tags=["inline-chat"])
 logger = logging.getLogger(__name__)
@@ -49,6 +52,20 @@ async def inline_chat_ask(
     Multi-tenancy: company_id from JWT via require_company_id. Never from payload.
     No persistent state — each call is independent.
     """
+    # FairnessGuard: bloqueia queries discriminatórias antes de qualquer LLM call
+    _fg_result = _fairness_guard.check(payload.question)
+    if _fg_result.is_blocked:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "fairness_blocked",
+                "fairness_blocked": True,
+                "educational_message": _fg_result.educational_message,
+                "category": _fg_result.category,
+                "blocked_terms": _fg_result.blocked_terms or [],
+            },
+        )
+
     context_lines: list[str] = []
 
     if payload.context_type == "text_selection" and payload.context_data.selected_text:

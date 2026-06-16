@@ -183,6 +183,7 @@ company_id: str = Depends(require_company_id)):
             conversation_id=conversation_id,
             include_messages=include_messages,
             include_summaries=include_summaries,
+            company_id=company_id,
         )
         
         if not conversation:
@@ -400,6 +401,7 @@ company_id: str = Depends(require_company_id)):
         success = await conversation_memory.delete_conversation(
             db=db,
             conversation_id=conversation_id,
+            company_id=company_id,
         )
         
         if not success:
