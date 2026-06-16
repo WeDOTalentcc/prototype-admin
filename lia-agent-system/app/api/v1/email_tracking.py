@@ -38,6 +38,70 @@ _TRANSPARENT_GIF = bytes([
 ])
 
 
+
+async def _handle_email_delivery_action(
+    db,
+    action: str,
+    email: str,
+    raw_event: dict,
+) -> None:
+    """
+    Act on hard bounce / spam / unsubscribe by updating Candidate.channel_opt_out.
+
+    Lookup by email_hash (SHA256 of lowercase-stripped email) to avoid storing PII.
+    Silently skips if the email is not found or action is unexpected.
+    """
+    import hashlib
+    from sqlalchemy import select as _select, or_ as _or
+    from sqlalchemy.orm.attributes import flag_modified
+    try:
+        from lia_models.candidate import Candidate
+    except ImportError:
+        from app.domains.candidates.models.candidate import Candidate
+
+    if not email:
+        return
+
+    email_norm = email.lower().strip()
+    email_hash = hashlib.sha256(email_norm.encode()).hexdigest()
+
+    if action == "bounce":
+        # Only hard bounces (5xx) merit opt-out; Mailgun retries soft bounces automatically.
+        delivery_status = raw_event.get("delivery-status", {})
+        code = delivery_status.get("code", 0)
+        try:
+            code = int(code)
+        except (ValueError, TypeError):
+            code = 0
+        if code < 500:
+            return
+        flag = "email_hard_bounce"
+    elif action in ("spam", "unsubscribe"):
+        flag = "marketing_email"
+    else:
+        return
+
+    try:
+        result = await db.execute(
+            _select(Candidate).where(Candidate.email_hash == email_hash)
+        )
+        candidates = result.scalars().all()
+        if not candidates:
+            return
+        for candidate in candidates:
+            current: list = candidate.channel_opt_out or []
+            if flag not in current:
+                candidate.channel_opt_out = current + [flag]
+                flag_modified(candidate, "channel_opt_out")
+        await db.commit()
+        logger.info(
+            "[EmailTracking] action=%s flag=%s email_hash=%.8s candidates=%d",
+            action, flag, email_hash, len(candidates),
+        )
+    except Exception as exc:
+        logger.warning("[EmailTracking] _handle_email_delivery_action error: %s", exc)
+
+
 @router.get("/pixel/{token}.gif", include_in_schema=False, response_model=None)
 async def tracking_pixel(
     request: Request,
@@ -250,6 +314,9 @@ async def tracking_webhook(
                 timestamp=event.get("timestamp"),
                 raw_event=event,
             )
+
+            if mapped_type in ("bounce", "spam", "unsubscribe") and email_addr:
+                await _handle_email_delivery_action(db, mapped_type, email_addr, event)
 
             if mapped_type in ("open", "click"):
                 company_id = ""

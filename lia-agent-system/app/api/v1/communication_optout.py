@@ -245,3 +245,120 @@ async def process_unsubscribe(token: str, request: Request, db: AsyncSession = D
         await db.rollback()
         logger.error(f"Error processing unsubscribe: {e}", exc_info=True)
         return HTMLResponse(content=ERROR_HTML, status_code=500)
+
+
+# ---------------------------------------------------------------------------
+# RFC 8058 one-click unsubscribe (LOTE-009 / GAP-07-002)
+# Called by email clients when recipient clicks the unsubscribe button in Gmail,
+# Apple Mail, etc. NO authentication — the email is the only identifier.
+# The List-Unsubscribe URL includes ?email= per our mailgun_provider patch.
+# ---------------------------------------------------------------------------
+
+ONE_CLICK_CONFIRM_HTML = """
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+<title>Descadastro confirmado</title>
+<style>body{{font-family:sans-serif;max-width:480px;margin:60px auto;padding:0 16px}}
+h1{{color:#2563eb}}p{{color:#555}}</style></head>
+<body><h1>Descadastro confirmado</h1>
+<p>O endereço <strong>{email}</strong> foi removido da lista de comunicações.</p>
+</body></html>
+"""
+
+
+async def _one_click_unsubscribe_action(db, email: str, user_agent: str, ip: str) -> None:
+    """
+    Add 'marketing_email' to Candidate.channel_opt_out for all candidates matching the
+    email hash. Silently no-ops when email is unknown.
+    """
+    import hashlib
+    from sqlalchemy import select as _select
+    from sqlalchemy.orm.attributes import flag_modified
+
+    try:
+        from lia_models.candidate import Candidate
+    except ImportError:
+        from app.domains.candidates.models.candidate import Candidate
+
+    email_norm = email.lower().strip()
+    email_hash = hashlib.sha256(email_norm.encode()).hexdigest()
+    flag = "marketing_email"
+
+    result = await db.execute(
+        _select(Candidate).where(Candidate.email_hash == email_hash)
+    )
+    candidates = result.scalars().all()
+    for candidate in candidates:
+        current: list = candidate.channel_opt_out or []
+        if flag not in current:
+            candidate.channel_opt_out = current + [flag]
+            flag_modified(candidate, "channel_opt_out")
+    if candidates:
+        await db.commit()
+        logger.info(
+            "[Optout] one-click email_hash=%.8s candidates=%d ip=%s",
+            email_hash, len(candidates), ip,
+        )
+
+
+@router.post("/unsubscribe", response_class=HTMLResponse, response_model=None,
+             summary="RFC 8058 one-click unsubscribe (no auth)")
+async def one_click_unsubscribe(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    RFC 8058 one-click unsubscribe endpoint.
+    Email clients POST here when the recipient clicks 'Unsubscribe' inside the email.
+    Email address is passed as a query param (?email=...) embedded in the List-Unsubscribe URL.
+    No authentication — always returns 200 to prevent email enumeration.
+    """
+    from urllib.parse import unquote_plus
+
+    email_raw = request.query_params.get("email", "")
+    email = unquote_plus(email_raw).strip()
+
+    if not email or "@" not in email:
+        # RFC 8058: always return 200 to prevent enumeration
+        return HTMLResponse(content="", status_code=200)
+
+    try:
+        ip = request.client.host if request.client else ""
+        ua = request.headers.get("user-agent", "")
+        await _one_click_unsubscribe_action(db, email, ua, ip)
+    except Exception as exc:
+        logger.warning("[Optout] one-click action error: %s", exc)
+
+    safe_email = html.escape(email)
+    return HTMLResponse(content=ONE_CLICK_CONFIRM_HTML.format(email=safe_email), status_code=200)
+
+
+@router.get("/unsubscribe", response_class=HTMLResponse, response_model=None,
+            summary="Human-readable unsubscribe landing page (no auth)")
+async def one_click_unsubscribe_get(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Human-readable landing page for the one-click URL.
+    Shown when user manually navigates to the unsubscribe URL.
+    POSTing via form completes the unsubscribe.
+    """
+    from urllib.parse import unquote_plus
+
+    email_raw = request.query_params.get("email", "")
+    email = unquote_plus(email_raw).strip()
+    safe_email = html.escape(email) if email else ""
+
+    # Auto-unsubscribe on GET as well (browser may follow the URL directly)
+    if email and "@" in email:
+        try:
+            ip = request.client.host if request.client else ""
+            ua = request.headers.get("user-agent", "")
+            await _one_click_unsubscribe_action(db, email, ua, ip)
+        except Exception as exc:
+            logger.warning("[Optout] one-click GET action error: %s", exc)
+
+    return HTMLResponse(
+        content=ONE_CLICK_CONFIRM_HTML.format(email=safe_email or "desconhecido"),
+        status_code=200,
+    )

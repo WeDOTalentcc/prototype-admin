@@ -149,10 +149,13 @@ class CommunicationDispatcher:
             if reply_to:
                 data["h:Reply-To"] = reply_to
 
-            # GAP-07-002: CAN-SPAM / Gmail deliverability compliance headers
+            # GAP-07-002 / LOTE-009: CAN-SPAM / Gmail — per-recipient URL for RFC 8058
+            # List-Unsubscribe URL includes ?email= so one-click can identify recipient.
+            import urllib.parse as _ul
             _base_url = os.getenv("APP_BASE_URL", "https://app.wedotalent.cc").rstrip("/")
+            _enc_email = _ul.quote_plus(to_email or "")
             data["h:List-Unsubscribe"] = (
-                f"<{_base_url}/api/v1/communication/unsubscribe>, "
+                f"<{_base_url}/api/v1/communication/unsubscribe?email={_enc_email}>, "
                 f"<mailto:unsubscribe@wedotalent.cc?subject=Unsubscribe>"
             )
             data["h:List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
