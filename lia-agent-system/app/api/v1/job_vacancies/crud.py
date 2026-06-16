@@ -23,6 +23,7 @@ from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
 from app.shared.errors import LIAError
+from app.shared.optimistic_lock import check_optimistic_lock
 from app.shared.types import WeDoBaseModel
 
 # MIGRATION_PLAN item 7.1 — Python CRUD deprecated in favor of Rails (ats-api-copia).
@@ -815,8 +816,15 @@ company_id: str = Depends(require_company_id)):
 
         await assert_mutation_allowed(job_vacancy, current_user, resource_label="vaga")
 
+        # GAP-05-004: Optimistic locking — reject if vacancy was modified
+        # since the client last read it.  Backward-compatible: when
+        # expected_updated_at is not sent (None), the check is skipped.
+        check_optimistic_lock(job_vacancy.updated_at, job_data.expected_updated_at)
+
         update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
         update_data["updated_at"] = datetime.utcnow()
+        # GAP-05-004: Pop control field — not a DB column.
+        update_data.pop("expected_updated_at", None)
 
         changes = {}
         for field, value in update_data.items():

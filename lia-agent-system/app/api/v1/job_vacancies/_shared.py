@@ -365,6 +365,12 @@ class JobVacancyUpdate(WeDoBaseModel):
     deadline_shortlist: datetime | None = None
     deadline_closing: datetime | None = None
 
+    # GAP-05-004: Optimistic locking control field.
+    # When provided, the update is rejected (HTTP 409) if the DB updated_at
+    # has changed since the client last read the vacancy.  Not a DB column;
+    # the endpoint pops it before persisting.
+    expected_updated_at: datetime | None = None
+
     @field_validator("stakeholders", mode="before")
     @classmethod
     def _validate_stakeholders(cls, v):
