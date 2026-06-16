@@ -138,9 +138,19 @@ class MailgunProvider(EmailProvider):
             if bcc:
                 data["bcc"] = ",".join(bcc) if isinstance(bcc, list) else bcc
 
-            if headers:
-                for key, value in headers.items():
-                    data[f"h:{key}"] = value
+            # GAP-07-002: compliance headers merged (caller overrides defaults)
+            _base_url = os.getenv("APP_BASE_URL", "https://app.wedotalent.cc").rstrip("/")
+            _compliance: dict[str, str] = {
+                "List-Unsubscribe": (
+                    f"<{_base_url}/api/v1/communication/unsubscribe>, "
+                    f"<mailto:unsubscribe@wedotalent.cc?subject=Unsubscribe>"
+                ),
+                "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+                "DMARC-Policy": "v=DMARC1; p=quarantine; rua=mailto:dmarc@wedotalent.cc",
+                "X-Mailer": "WeDOTalent/LIA",
+            }
+            for key, value in {**_compliance, **(headers or {})}.items():
+                data[f"h:{key}"] = value
 
             if metadata:
                 for key, value in metadata.items():

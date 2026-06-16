@@ -149,6 +149,16 @@ class CommunicationDispatcher:
             if reply_to:
                 data["h:Reply-To"] = reply_to
 
+            # GAP-07-002: CAN-SPAM / Gmail deliverability compliance headers
+            _base_url = os.getenv("APP_BASE_URL", "https://app.wedotalent.cc").rstrip("/")
+            data["h:List-Unsubscribe"] = (
+                f"<{_base_url}/api/v1/communication/unsubscribe>, "
+                f"<mailto:unsubscribe@wedotalent.cc?subject=Unsubscribe>"
+            )
+            data["h:List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+            data["h:DMARC-Policy"] = "v=DMARC1; p=quarantine; rua=mailto:dmarc@wedotalent.cc"
+            data["h:X-Mailer"] = "WeDOTalent/LIA"
+
             try:
                 import httpx
                 with httpx.Client(timeout=30) as client:
