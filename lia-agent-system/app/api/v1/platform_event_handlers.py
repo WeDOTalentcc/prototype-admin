@@ -851,7 +851,6 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                         from app.domains.communication.services.communication_dispatcher import (
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
                             CommunicationDispatcher,
                         )

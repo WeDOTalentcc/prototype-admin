@@ -19,7 +19,6 @@ from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
 router = APIRouter()
 logger = logging.getLogger(__name__)

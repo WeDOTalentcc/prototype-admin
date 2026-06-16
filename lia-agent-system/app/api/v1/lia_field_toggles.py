@@ -634,7 +634,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     from app.shared.services.lia_field_config_service import LiaFieldConfigService
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
     
     job_ctx = None

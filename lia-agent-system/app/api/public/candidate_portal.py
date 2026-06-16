@@ -39,7 +39,6 @@ from app.shared.types import WeDoBaseModel
 from lia_models.observability import ConsentRecord
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
 
 logger = logging.getLogger(__name__)

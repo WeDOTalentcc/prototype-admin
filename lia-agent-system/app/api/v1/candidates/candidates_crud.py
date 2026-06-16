@@ -37,7 +37,6 @@ from ._shared import (
     normalize_array_field,
 )
 from pydantic import BaseModel
-from app.shared.rails_migration.deprecation import enforce_candidates_deprecation
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
@@ -62,7 +61,7 @@ def _assert_tenant_scope(candidate, current_user) -> None:
 # environment to turn all routes below into HTTP 410 Gone with a pointer at
 # the Rails endpoint. This lets us kill-switch the old API without a deploy.
 router = APIRouter(
-    dependencies=[Depends(enforce_candidates_deprecation)],
+    dependencies=[],
 )
 
 

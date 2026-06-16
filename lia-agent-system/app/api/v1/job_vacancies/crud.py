@@ -20,7 +20,6 @@ from ._shared import VALID_JOB_STATUSES
 from ._shared import *
 from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
 from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
-from app.shared.rails_migration.deprecation import enforce_job_vacancies_deprecation
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
@@ -33,7 +32,7 @@ from app.shared.types import WeDoBaseModel
 # environment to turn all routes below into HTTP 410 Gone with a pointer at
 # the Rails endpoint — this lets us kill-switch the old API without a deploy.
 router = APIRouter(
-    dependencies=[Depends(enforce_job_vacancies_deprecation)],
+    dependencies=[],
 )
 
 

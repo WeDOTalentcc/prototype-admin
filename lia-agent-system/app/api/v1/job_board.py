@@ -21,7 +21,6 @@ from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
 
 router = APIRouter(prefix="/job-boards", tags=["job-boards"])

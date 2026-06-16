@@ -1,4 +1,3 @@
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
 """
 WSI package — F11 report and ranking routes.

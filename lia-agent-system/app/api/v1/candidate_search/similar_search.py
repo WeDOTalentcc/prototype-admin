@@ -259,7 +259,6 @@ company_id: str = Depends(require_company_id)):
     from collections import Counter
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
     
     source_count = len([u for u in urls if u.strip()]) + len(cvs)
