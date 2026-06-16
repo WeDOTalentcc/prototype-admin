@@ -231,7 +231,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         sorted
           .map((c, i) => {
             const score = c.score
-              ? `Score LIA: ${c.score}`
+              ? `Score: ${c.score}`
               : `FitNota: ${c.fitScore || "N/A"}%`;
             return `${i + 1}. **${c.name}**\n   ${c.role || "N/A"} | ${c.currentCompany || ""}\n   ${score}`;
           })

@@ -85,7 +85,7 @@ export function LiaAnalysisPanel({ liaAnalysis }: LiaAnalysisPanelProps) {
           <div className="w-6 h-6 bg-lia-bg-tertiary rounded-xl flex items-center justify-center">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
-          <h3 className="text-base-ui font-semibold text-lia-text-primary">Análise LIA</h3>
+          <h3 className="text-base-ui font-semibold text-lia-text-primary">Análise de IA</h3>
         </div>
       </div>
 

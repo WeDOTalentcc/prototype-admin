@@ -151,7 +151,7 @@ export const SYNC_LOGS: SyncLog[] = [
 ]
 
 export const LIA_FIELDS: SystemField[] = [
-  { id: 'candidate_id', name: 'ID do Candidato', type: 'string', required: true, description: 'Identificador único na LIA' },
+  { id: 'candidate_id', name: 'ID do Candidato', type: 'string', required: true, description: 'Identificador único' },
   { id: 'nome_completo', name: 'Nome Completo', type: 'string', required: true, description: 'Nome completo do candidato' },
   { id: 'email_principal', name: 'Email Principal', type: 'email', required: true, description: 'Email principal de contato' },
   { id: 'telefone_contato', name: 'Telefone', type: 'phone', required: false, description: 'Telefone principal' },
