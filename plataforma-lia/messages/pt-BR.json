@@ -252,7 +252,9 @@
       "pipelineView": "Visão do Funil",
       "agentStudio": "Estúdio de Agentes",
       "modules": "Módulos",
-      "projects": "Projetos"
+      "projects": "Projetos",
+      "agentes": "Agentes",
+      "marketplace": "Marketplace"
     },
     "filters": {
       "all": "Todas",

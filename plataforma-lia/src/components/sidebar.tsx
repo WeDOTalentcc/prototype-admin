@@ -39,6 +39,7 @@ import {
   Check,
   Loader2,
   FolderKanban,
+  Package,
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/shared/use-recent-items"
 import { hasModuleAccess } from "@/utils/license-manager"
@@ -82,12 +83,12 @@ const sectionLabelKeys: Record<string, string> = {
 
 const itemLabelKeys: Record<string, string> = {
   "Conversar": "items.conversar",
-  "Decidir": "items.decidir",
   "Recrutar": "items.recrutar",
   "Vagas": "items.jobs",
-  "Funil de Talentos": "items.talentPipeline",
-  "Estúdio de Agentes": "items.agentStudio",
   "Projetos": "items.projects",
+  "Funil de Talentos": "items.talentPipeline",
+  "Agentes": "items.agentes",
+  "Marketplace": "items.marketplace",
 }
 
 const filterLabelKeys: Record<string, string> = {
@@ -118,7 +119,6 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
     label: "",
     items: [
       { icon: MessageCircle, label: "Conversar", isCore: true },
-      { icon: Target, label: "Decidir", isCore: true },
       {
         icon: GitBranch,
         label: "Recrutar",
@@ -127,6 +127,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         alwaysExpanded: true,
         subItems: [
           { icon: Briefcase, label: "Vagas", isCore: true },
+          { icon: FolderKanban, label: "Projetos", isCore: true },
           {
             icon: Users,
             label: "Funil de Talentos",
@@ -137,23 +138,16 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
       },
       {
         icon: Bot,
-        label: "Estúdio de Agentes",
+        label: "Agentes",
         isCore: true,
         navigateOnClick: true,
         maxVisibleSubItems: 3,
         seeAllLabel: "Ver todos os agentes",
-        seeAllTarget: "Estúdio de Agentes",
+        seeAllTarget: "Agentes",
         isBeta: true,
-      },
-      {
-        icon: FolderKanban,
-        label: "Projetos",
-        isCore: true,
-        navigateOnClick: true,
-        maxVisibleSubItems: 4,
-        seeAllLabel: "Ver todos os projetos",
-        seeAllTarget: "Projetos",
-        isBeta: true,
+        subItems: [
+          { icon: Package, label: "Marketplace", isCore: true, navKey: "Módulos" },
+        ],
       },
     ],
   },
@@ -312,7 +306,7 @@ const MenuItem = React.memo(({
               {item.isBeta && (
                 <BetaBadge size="sm" label={t('labels.beta')} />
               )}
-              {item.label === "Estúdio de Agentes" && (
+              {item.label === "Agentes" && (
                 <AgentsQuotaBadge />
               )}
             </div>
@@ -527,7 +521,7 @@ RecentItemRow.displayName = 'RecentItemRow'
 
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch, notificationOpen, onNotificationToggle }: SidebarProps) {
   const t = useTranslations('sidebar')
-  const { agents, projects } = useSidebarDynamicItems()
+  const { agents } = useSidebarDynamicItems()
   const { user: authUser, refreshUser } = useAuth()
   const { userId: authenticatedUserId, isReady: isAuthReady } = useAuthenticatedUserId()
 
@@ -627,26 +621,18 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
   const menuSections = useMemo(() => {
     const injectDynamic = (item: MenuItemType): MenuItemType => {
-      if (item.label === "Projetos" && projects.length > 0) {
+      if (item.label === "Agentes" && agents.length > 0) {
         return {
           ...item,
-          subItems: projects.map(p => ({
-            icon: FolderKanban,
-            label: p.name,
-            isCore: true,
-            navKey: `project:${p.id}`,
-          })),
-        }
-      }
-      if (item.label === "Estúdio de Agentes" && agents.length > 0) {
-        return {
-          ...item,
-          subItems: agents.map(a => ({
-            icon: Bot,
-            label: a.name,
-            isCore: true,
-            navKey: `agent:${a.id}`,
-          })),
+          subItems: [
+            ...(item.subItems || []),
+            ...agents.map(a => ({
+              icon: Bot,
+              label: a.name,
+              isCore: true,
+              navKey: `agent:${a.id}`,
+            })),
+          ],
         }
       }
       if (item.subItems && item.subItems.length > 0) {
@@ -661,15 +647,11 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       ...section,
       items: section.items.map(item => injectDynamic(item)),
     }))
-  }, [agents, projects])
+  }, [agents])
 
   const handleDynamicNavigate = useCallback((page: string) => {
     if (page.startsWith("agent:")) {
-      onNavigate("Estúdio de Agentes")
-      return
-    }
-    if (page.startsWith("project:")) {
-      onNavigate("Projetos")
+      onNavigate("Agentes")
       return
     }
     onNavigate(page)

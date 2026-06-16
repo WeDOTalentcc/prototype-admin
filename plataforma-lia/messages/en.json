@@ -252,7 +252,9 @@
       "pipelineView": "Pipeline View",
       "agentStudio": "Agent Studio",
       "modules": "Modules",
-      "projects": "Projects"
+      "projects": "Projects",
+      "agentes": "Agents",
+      "marketplace": "Marketplace"
     },
     "filters": {
       "all": "All",
