@@ -110,7 +110,7 @@ export function ProactiveSuggestionCard({ hints, className }: Props) {
         next.delete(hintId)
         return next
       })
-      toast.error("Não consegui dispensar a sugestão. Tente novamente.")
+      toast.error("Não consegui dispensar a sugestão. Tente novamente.", { description: "Verifique sua conexão e tente novamente." })
     }
   }
 

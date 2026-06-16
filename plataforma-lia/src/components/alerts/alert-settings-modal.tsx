@@ -149,10 +149,10 @@ export function AlertSettingsModal({
         onUpdateRules(rules)
         onClose()
       } else {
-        toast.error('Erro ao salvar configurações')
+        toast.error('Erro ao salvar configurações', { description: "O servidor rejeitou as configurações. Verifique os valores e tente novamente." })
       }
     } catch (error) {
-      toast.error('Erro ao salvar configurações')
+      toast.error('Erro ao salvar configurações', { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSaving(false)
     }

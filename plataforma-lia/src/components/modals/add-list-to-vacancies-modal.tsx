@@ -59,7 +59,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
       const response = await liaApi.listJobVacancies('open', 0, 100)
       setVacancies(response.items || [])
     } catch (error) {
-      toast.error("Erro ao carregar vagas")
+      toast.error("Erro ao carregar vagas", { description: "Verifique sua conexão e reabra o modal." })
     } finally {
       setIsLoading(false)
     }
@@ -108,7 +108,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
       onSuccess?.()
       onClose()
     } catch (error) {
-      toast.error("Erro ao adicionar às vagas")
+      toast.error("Erro ao adicionar às vagas", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSubmitting(false)
     }

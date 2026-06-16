@@ -80,16 +80,16 @@ export function LiaEntityModalHost() {
   useEffect(() => {
     if (!active) return
     if (kind === "candidate" && candidateQuery.isError) {
-      toast.error("Não consegui carregar o candidato.")
+      toast.error("Não consegui carregar o candidato.", { description: "Verifique sua conexão e recarregue." })
       setActive(null)
     }
     if (kind === "job" && jobQuery.isError) {
-      toast.error("Não consegui carregar a vaga.")
+      toast.error("Não consegui carregar a vaga.", { description: "Verifique sua conexão e recarregue." })
       setActive(null)
     }
     // B3b: qualquer query com erro fecha o modal
     if (kind === "jobs" && jobsQueries.some((q) => q.isError)) {
-      toast.error("Não consegui carregar uma ou mais vagas.")
+      toast.error("Não consegui carregar uma ou mais vagas.", { description: "Verifique sua conexão e recarregue." })
       setActive(null)
     }
   }, [active, kind, candidateQuery.isError, jobQuery.isError, jobsQueries])

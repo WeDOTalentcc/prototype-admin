@@ -70,7 +70,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
         setIsCreatingNew(true)
       }
     } catch (error) {
-      toast.error("Erro ao carregar listas")
+      toast.error("Erro ao carregar listas", { description: "Verifique sua conexão e reabra o modal." })
     } finally {
       setIsLoading(false)
     }
@@ -114,7 +114,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
       onSuccess?.()
       onClose()
     } catch (error) {
-      toast.error("Erro ao adicionar candidatos")
+      toast.error("Erro ao adicionar candidatos", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSubmitting(false)
     }

@@ -203,10 +203,10 @@ export function PipelineTemplateSheetEditor({
         toast.success(`Pipeline Padr\u00e3o atualizado com o template "${template.name}"!`)
         onOpenChange(false)
       } else {
-        toast.error('Erro ao aplicar template. Tente novamente.')
+        toast.error('Erro ao aplicar template. Tente novamente.', { description: "O servidor recusou a operação. Verifique as configurações do template." })
       }
     } catch {
-      toast.error('Erro ao aplicar template. Tente novamente.')
+      toast.error('Erro ao aplicar template. Tente novamente.', { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setApplyingPadrao(false)
     }
@@ -266,7 +266,7 @@ export function PipelineTemplateSheetEditor({
       onSaved?.()
       onOpenChange(false)
     } catch {
-      toast.error("Erro ao salvar template. Tente novamente.")
+      toast.error("Erro ao salvar template. Tente novamente.", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setSaving(false)
     }
@@ -280,7 +280,7 @@ export function PipelineTemplateSheetEditor({
       toast.success("Template excluído.")
       onOpenChange(false)
     } catch {
-      toast.error("Erro ao excluir template.")
+      toast.error("Erro ao excluir template.", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setDeleting(false)
       setConfirmDelete(false)

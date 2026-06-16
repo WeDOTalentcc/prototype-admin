@@ -101,7 +101,7 @@ export function JobInfoGeralSection({
       toast.success(on ? "Triagem ativada" : "Triagem pausada")
     } catch {
       setScreeningStatusLocal(prev)
-      toast.error("Não foi possível alterar a triagem. Tente novamente.")
+      toast.error("Não foi possível alterar a triagem. Tente novamente.", { description: "Verifique sua conexão e tente novamente." })
     }
   }
 

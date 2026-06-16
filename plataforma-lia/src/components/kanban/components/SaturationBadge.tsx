@@ -124,7 +124,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
       })
 
       if (!response.ok) {
-        toast.error("Erro ao desbloquear funil")
+        toast.error("Erro ao desbloquear funil", { description: "O servidor recusou a operação. Tente novamente." })
         return
       }
 
@@ -135,7 +135,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
 
       await fetchStatus()
     } catch {
-      toast.error("Erro ao conectar com o servidor")
+      toast.error("Erro ao conectar com o servidor", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setActionLoading(false)
     }

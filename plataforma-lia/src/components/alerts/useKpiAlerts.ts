@@ -184,7 +184,7 @@ export function useKpiAlerts(
       await Promise.all([fetchAlertsFromBackend(), fetchPreferences()])
       toast.success('Alertas atualizados com sucesso')
     } catch (error) {
-      toast.error('Erro ao atualizar alertas')
+      toast.error('Erro ao atualizar alertas', { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsRefreshing(false)
     }

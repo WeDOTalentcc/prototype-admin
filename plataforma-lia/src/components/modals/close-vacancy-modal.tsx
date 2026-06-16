@@ -308,7 +308,7 @@ export function CloseVacancyModal({
       toast.success('Vaga fechada com sucesso!')
       onClose()
     } catch (error) {
-      toast.error('Erro ao fechar vaga. Tente novamente.')
+      toast.error('Erro ao fechar vaga. Tente novamente.', { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSubmitting(false)
     }

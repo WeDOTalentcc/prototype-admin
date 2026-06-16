@@ -478,7 +478,7 @@ export function useDepartmentManagement({
       dispatch({ type: "SET_DEPTS_OVERRIDE", payload: data });
     } catch (err) {
       console.error("[Departments] loadDepartments failed:", err);
-      toast.error("Falha ao carregar departamentos. Tente novamente.");
+      toast.error("Falha ao carregar departamentos. Tente novamente.", "Verifique sua conexão e tente novamente.");
     }
   }
 
@@ -631,7 +631,7 @@ export function useDepartmentManagement({
       }
     } catch (err) {
       console.error("[Departments] handleDeleteMember failed:", err);
-      toast.error("Falha ao remover membro. Tente novamente.");
+      toast.error("Falha ao remover membro. Tente novamente.", "Verifique sua conexão e tente novamente.");
     }
   }
 

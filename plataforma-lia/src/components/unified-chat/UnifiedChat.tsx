@@ -867,7 +867,7 @@ export function UnifiedChat({
   const handleRegenerate = useCallback(
     async (messageId: string) => {
       if (!chatSessionId) {
-        toast.error("Nao foi possivel regenerar — sessao indisponivel");
+        toast.error("Não foi possível regenerar — sessão indisponível");
         return;
       }
       try {
@@ -880,7 +880,7 @@ export function UnifiedChat({
         );
       } catch (err) {
         const detail = err instanceof Error ? err.message : "erro desconhecido";
-        toast.error("Nao foi possivel gerar novamente", { description: detail });
+        toast.error("Não foi possível gerar novamente", { description: detail });
       }
     },
     [chatSessionId, sendChatMessage],

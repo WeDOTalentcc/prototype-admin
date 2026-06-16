@@ -311,7 +311,7 @@ export function useJobEditTab({
       await createTemplate({ name: trimmed, stages: mappedStages })
       toast.success("Template salvo com sucesso!")
     } catch {
-      toast.error("Erro ao salvar template. Tente novamente.")
+      toast.error("Erro ao salvar template. Tente novamente.", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSavingAsTemplate(false)
     }
@@ -330,7 +330,7 @@ export function useJobEditTab({
       toast.success("Template de pipeline aplicado com sucesso!")
       onJobUpdate?.({ is_pipeline_customized: false })
     } catch {
-      toast.error("Erro ao aplicar template. Tente novamente.")
+      toast.error("Erro ao aplicar template. Tente novamente.", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsApplyingTemplate(false)
     }
