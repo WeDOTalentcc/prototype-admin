@@ -402,7 +402,7 @@ def _report_to_pdf_bytes(report: FairnessReportResponse) -> bytes:
   </table>
 
   <div class="stamp">
-    Relatório gerado em {report.generated_at} pela Plataforma LIA v{report.report_version}.
+    Relatório gerado em {report.generated_at} pelo WeDOTalent v{report.report_version}.
     Destinado a auditores de compliance. NYC Local Law 144 / EU AI Act Art. 13.
     Método: Four-Fifths Rule (AIR &ge; 0.80 por grupo vs. grupo de referência).
   </div>

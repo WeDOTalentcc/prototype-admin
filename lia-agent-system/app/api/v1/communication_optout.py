@@ -66,7 +66,7 @@ UNSUBSCRIBE_PAGE_HTML = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancelar Inscrição - Plataforma LIA / WeDOTalent</title>
+    <title>Cancelar Inscrição - WeDOTalent</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }}
         .container {{ background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); max-width: 480px; width: 90%; padding: 40px; text-align: center; }}
@@ -81,7 +81,7 @@ UNSUBSCRIBE_PAGE_HTML = """<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <div class="logo">Plataforma LIA / WeDOTalent</div>
+        <div class="logo">WeDOTalent</div>
         <h1>Cancelar Recebimento de Comunicações</h1>
         <p>Você está solicitando o cancelamento do recebimento de e-mails de comunicação para o endereço:</p>
         <p class="email">{email}</p>
@@ -89,7 +89,7 @@ UNSUBSCRIBE_PAGE_HTML = """<!DOCTYPE html>
         <form method="POST">
             <button type="submit">Confirmar Cancelamento</button>
         </form>
-        <div class="footer">Plataforma LIA / WeDOTalent &mdash; Em conformidade com a LGPD</div>
+        <div class="footer">WeDOTalent &mdash; Em conformidade com a LGPD</div>
     </div>
 </body>
 </html>"""
@@ -99,7 +99,7 @@ ALREADY_OPTED_OUT_HTML = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Já Cancelado - Plataforma LIA / WeDOTalent</title>
+    <title>Já Cancelado - WeDOTalent</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }}
         .container {{ background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); max-width: 480px; width: 90%; padding: 40px; text-align: center; }}
@@ -112,12 +112,12 @@ ALREADY_OPTED_OUT_HTML = """<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <div class="logo">Plataforma LIA / WeDOTalent</div>
+        <div class="logo">WeDOTalent</div>
         <div class="check">&#10003;</div>
         <h1>Comunicações Já Canceladas</h1>
         <p>O endereço <strong>{email}</strong> já teve o recebimento de comunicações cancelado anteriormente.</p>
         <p>Nenhuma ação adicional é necessária.</p>
-        <div class="footer">Plataforma LIA / WeDOTalent &mdash; Em conformidade com a LGPD</div>
+        <div class="footer">WeDOTalent &mdash; Em conformidade com a LGPD</div>
     </div>
 </body>
 </html>"""
@@ -127,7 +127,7 @@ CONFIRM_HTML = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancelamento Confirmado - Plataforma LIA / WeDOTalent</title>
+    <title>Cancelamento Confirmado - WeDOTalent</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }}
         .container {{ background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); max-width: 480px; width: 90%; padding: 40px; text-align: center; }}
@@ -140,12 +140,12 @@ CONFIRM_HTML = """<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <div class="logo">Plataforma LIA / WeDOTalent</div>
+        <div class="logo">WeDOTalent</div>
         <div class="check">&#10003;</div>
         <h1>Cancelamento Confirmado</h1>
         <p>O endereço <strong>{email}</strong> foi removido da lista de comunicações com sucesso.</p>
         <p>Você não receberá mais e-mails de comunicação desta empresa.</p>
-        <div class="footer">Plataforma LIA / WeDOTalent &mdash; Em conformidade com a LGPD</div>
+        <div class="footer">WeDOTalent &mdash; Em conformidade com a LGPD</div>
     </div>
 </body>
 </html>"""
@@ -155,7 +155,7 @@ ERROR_HTML = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Erro - Plataforma LIA / WeDOTalent</title>
+    <title>Erro - WeDOTalent</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }}
         .container {{ background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); max-width: 480px; width: 90%; padding: 40px; text-align: center; }}
@@ -167,10 +167,10 @@ ERROR_HTML = """<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <div class="logo">Plataforma LIA / WeDOTalent</div>
+        <div class="logo">WeDOTalent</div>
         <h1>Link Inválido</h1>
         <p>O link de cancelamento é inválido ou expirou. Por favor, entre em contato com o suporte.</p>
-        <div class="footer">Plataforma LIA / WeDOTalent &mdash; Em conformidade com a LGPD</div>
+        <div class="footer">WeDOTalent &mdash; Em conformidade com a LGPD</div>
     </div>
 </body>
 </html>"""

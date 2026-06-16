@@ -518,7 +518,7 @@ async def send_approval_request_email(db, approval: ApprovalRequest, email_svc: 
         "<li>Data: " + date_str + "</li>"
         "</ul>"
         + description_block +
-        "<p>Por favor, acesse a plataforma LIA para aprovar ou rejeitar esta solicitacao.</p>"
+        "<p>Por favor, acesse a WeDOTalent para aprovar ou rejeitar esta solicitacao.</p>"
         "<p>Atenciosamente,<br>Sistema LIA</p>"
         "</body></html>"
     )

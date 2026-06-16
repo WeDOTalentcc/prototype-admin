@@ -594,13 +594,13 @@ LIA - Assistente de Recrutamento"""
     ) -> dict[str, str]:
         """Welcome email for new user."""
         
-        subject = "Bem-vindo(a) à plataforma LIA! 🎉"
+        subject = "Bem-vindo(a) à WeDOTalent! 🎉"
         
         tips_text = "\n".join([f"• {t}" for t in quick_start_tips[:5]]) if quick_start_tips else "• Explore o dashboard para conhecer suas métricas"
         
         body = f"""Olá {user_name},
 
-Seja bem-vindo(a) à plataforma LIA! 🎉
+Seja bem-vindo(a) à WeDOTalent! 🎉
 
 Sua conta foi criada com sucesso.
 
