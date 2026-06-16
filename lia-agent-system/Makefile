@@ -175,3 +175,29 @@ check-all-architecture: ci-architecture	## ADR-031/032: sensors warn-only + conf
 	@echo "=== Running domain structure conformance tests ==="
 	python3 -m pytest tests/contract/test_domain_structure_conformance.py -v --tb=short --no-header --no-cov
 	@echo "=== All architecture checks done ==="
+
+## ── CI / Sensores (GAP-00-008) ────────────────────────────────────────────────
+.PHONY: ci ci-fast hooks-install hooks-check
+
+ci: ## Suite completa de sensores (todos os 4, warn-only). Uso: make ci
+	@echo "=== WeDOTalent CI Sensors (GAP-00-008) ==="
+	@echo "--- migration-merge-safety ---"
+	@python3 scripts/check_migration_merge_safety.py || true
+	@echo "--- pydantic-conventions ---"
+	@python3 scripts/check_pydantic_conventions.py app/ || true
+	@echo "--- capability-catalog-sync ---"
+	@python3 scripts/check_capability_catalog_sync.py || true
+	@echo "--- tool-registry-sync ---"
+	@python3 scripts/check_tool_registry_sync.py || true
+	@echo "=== Done ==="
+
+ci-fast: ## Só sensores rápidos bloqueadores (< 5s). Uso: make ci-fast
+	@echo "=== WeDOTalent CI Fast Sensors ==="
+	@python3 scripts/check_migration_merge_safety.py
+	@echo "=== Done ==="
+
+hooks-install: ## Instala git pre-commit hook. Rode após cada restart do Replit.
+	@bash scripts/install_hooks.sh
+
+hooks-check: ## Verifica se pre-commit hook está instalado.
+	@bash scripts/install_hooks.sh --check
