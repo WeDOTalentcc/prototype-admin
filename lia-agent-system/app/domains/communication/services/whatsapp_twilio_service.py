@@ -62,7 +62,7 @@ class TwilioWhatsAppService(WhatsAppProvider):
         self.account_sid = os.getenv("TWILIO_ACCOUNT_SID")
         self.auth_token = os.getenv("TWILIO_AUTH_TOKEN")
         self.whatsapp_number = os.getenv("TWILIO_WHATSAPP_NUMBER")
-        self.environment = os.getenv("ENVIRONMENT", "development")
+        self.environment = os.getenv("APP_ENV", os.getenv("ENVIRONMENT", "production"))
         
         self._client: Client | None = None
         self._validator: RequestValidator | None = None
