@@ -21,6 +21,7 @@ from app.domains.automation.services.stage_transition_automation import SubStatu
 from app.shared.compliance.audit_service import audit_service  # module-level for test patchability
 from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 _fairness_guard_sta = _FairnessGuard()
 
@@ -575,7 +576,6 @@ company_id: str = Depends(require_company_id)):
     
     try:
         from app.domains.automation.services.stage_transition_automation import (
-from app.shared.errors import LIAError
             stage_transition_service as domain_service,
         )
         results = await domain_service.predict_substatus_bulk_from_db(

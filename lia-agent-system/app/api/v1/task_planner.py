@@ -23,6 +23,7 @@ from app.domains.automation.agents.automation_react_agent import AutomationReAct
 from app.domains.automation.services.planned_task_service import CycleDetectedError, planned_task_service
 from app.models.planned_task import PlannedTaskPriority, PlannedTaskStatus
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -186,7 +187,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error("create_planned_task failed: %s", str(e), exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao criar tarefa — tente novamente")
+        raise LIAError(message="Erro ao criar tarefa — tente novamente")
 
 
 @router.get("/tasks/{task_id}", response_model=None)
@@ -501,7 +502,6 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get details of a specific Plan & Execute template."""
     from app.shared.execution.plan_templates import PlanTemplateRegistry
-from app.shared.errors import LIAError
 
     template = PlanTemplateRegistry.get_template(template_id)
     if not template:

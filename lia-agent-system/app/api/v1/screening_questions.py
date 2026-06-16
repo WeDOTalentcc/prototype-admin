@@ -28,6 +28,7 @@ from app.models.screening_question import (
     CompanyScreeningQuestion,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 import uuid as _uuid_mod
 from app.shared.compliance.audit_service import AuditService  # P1-W1-08
@@ -263,7 +264,6 @@ company_id: str = Depends(require_company_id)):
         if _is_elim and _q_text:
             try:
                 from app.shared.compliance.fairness_guard import FairnessGuard as _FG
-from app.shared.errors import LIAError
                 _guard = _FG()
                 _fg_result = _guard.check(_q_text)
                 if _fg_result.is_blocked:

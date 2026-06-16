@@ -40,6 +40,7 @@ from app.domains.recruitment.repositories.triagem_session_repository import (
 )
 from app.repositories.observability_repository import ObservabilityRepository
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +143,7 @@ async def record_interview_consent(
             exc,
             session_token[:8] + "...",
         )
-        raise HTTPException(status_code=500, detail="Erro interno ao processar sessão")
+        raise LIAError(message="Erro interno ao processar sessão")
 
     # ── 4. Determine legal basis from consent_type ────────────────────────────
     legal_basis = _LEGAL_BASIS_MAP.get(body.consent_type, _DEFAULT_LEGAL_BASIS)

@@ -62,7 +62,7 @@ async def list_permissions(
         }
     except Exception as exc:
         logger.error("[RBAC] list_permissions error: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao listar permissoes")
+        raise LIAError(message="Erro ao listar permissoes")
 
 
 @router.post("/permissions/seed", summary="Popula DEFAULT_ROLE_PERMISSIONS no banco")
@@ -140,7 +140,6 @@ async def update_permission(
     try:
         from lia_models.role_scope_filter import RoleScopeFilter
         from app.shared.rbac.scope_filter_service import get_scope_filter_service
-from app.shared.errors import LIAError
 
         stmt = select(RoleScopeFilter).where(
             RoleScopeFilter.id == uuid.UUID(permission_id)

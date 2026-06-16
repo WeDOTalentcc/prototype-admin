@@ -20,6 +20,7 @@ from app.domains.job_management.repositories.webhook_repository import WebhookRe
 from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
 from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 logger = logging.getLogger(__name__)
@@ -107,7 +108,6 @@ class WebhookUpdateRequest(WeDoBaseModel):
         if v is None:
             return v
         from app.shared.security.url_validator import safe_outbound_url, UnsafeOutboundURLError
-from app.shared.errors import LIAError
         try:
             return safe_outbound_url(v, require_https=True)
         except UnsafeOutboundURLError as exc:

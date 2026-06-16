@@ -18,6 +18,7 @@ from app.core.database import get_db, get_tenant_db
 from app.domains.voice.repositories.wsi_repository import WsiRepository
 from app.shared.services.interview_session_store import interview_session_store
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -370,7 +371,6 @@ async def get_interview_graph_session(session_id: str, company_id: str = Depends
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Retorna o resumo completo da sessão para fins de auditoria e compliance."""
     from app.domains.cv_screening.agents.wsi_interview_graph import wsi_interview_graph
-from app.shared.errors import LIAError
 
     state = await interview_session_store.get(session_id)
     if not state:

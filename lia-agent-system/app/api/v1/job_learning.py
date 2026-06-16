@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 from app.domains.job_management.services.job_pattern_service import job_pattern_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -339,7 +340,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 
         from app.core.database import AsyncSessionLocal
         from app.models.job_pattern import JobPattern
-from app.shared.errors import LIAError
         
         async with AsyncSessionLocal() as db:
             conditions = [

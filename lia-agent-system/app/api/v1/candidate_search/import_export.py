@@ -81,6 +81,7 @@ def _generate_fingerprint(name: str, linkedin_url: str | None = None, email: str
 from app.auth.dependencies import assert_resource_ownership, get_current_user_or_demo, get_user_company_id
 from app.auth.models import User as ImportUser
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 
 @router.post("/candidates/import", response_model=ImportCandidatesResponse)
@@ -354,7 +355,6 @@ company_id: str = Depends(require_company_id)):
     from sqlalchemy import select
 
     from app.models.candidate import (
-from app.shared.errors import LIAError
         Candidate,
         CandidateEducation,
         CandidateExperience,

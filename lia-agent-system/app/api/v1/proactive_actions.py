@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService, get_autonomous_agent_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -313,7 +314,6 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     # If service is a Depends object (test calling directly), create a real instance
     if not hasattr(service, 'get_pending_actions'):
         from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService as _AAS
-from app.shared.errors import LIAError
         service = _AAS()
     """
     Retorna insights proativos da LIA para o Kanban.

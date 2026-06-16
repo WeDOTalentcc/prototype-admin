@@ -38,6 +38,7 @@ from ._shared import (
     get_whatsapp_service,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -672,7 +673,6 @@ company_id: str = Depends(require_company_id)):
             # === Studio Agent Deployments: fire agents bound to this stage ===
             try:
                 from app.services.agent_deployment_service import agent_deployment_service
-from app.shared.errors import LIAError
                 stage_id = request.metadata.get("stage_id") if request.metadata else None
                 if stage_id and request.company_id:
                     stage_deployments = await agent_deployment_service.find_active_deployments_for_trigger(

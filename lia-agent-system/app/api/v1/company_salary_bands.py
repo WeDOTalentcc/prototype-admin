@@ -19,6 +19,7 @@ from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
 from app.domains.company.repositories.salary_band_repository import SalaryBandRepository
 from app.shared.security.require_company_id import require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -118,7 +119,6 @@ def _to_response(b) -> SalaryBandResponse:
 async def _audit(current_user, company_id, target_id, operation):
     try:
         from app.shared.compliance.audit_service import AuditService as _AS
-from app.shared.errors import LIAError
         await _AS().log_action(
             trace_id=get_correlation_id(),
             company_id=str(company_id),

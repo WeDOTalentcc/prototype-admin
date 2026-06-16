@@ -21,6 +21,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.learning_hub_service import learning_hub_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -580,7 +581,6 @@ company_id: str = Depends(require_company_id)) -> Stage10ActiveSourcingResponse:
         from lia_agents_core.agent_interface import AgentInput
 
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-from app.shared.errors import LIAError
 
         search_id = str(uuid4())
 

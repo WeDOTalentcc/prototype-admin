@@ -12,6 +12,7 @@ from app.models.candidate import VacancyCandidate
 from app.models.company import CompanyProfile
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -487,7 +488,6 @@ async def unlock_pipeline(
 
         try:
             from app.domains.automation.services.automation_handlers import process_screening_queue
-from app.shared.errors import LIAError
             await process_screening_queue(
                 db=db,
                 vacancy_id=str(job_id),

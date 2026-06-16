@@ -14,6 +14,7 @@ from app.domains.integrations_hub.repositories.integrations_hub_repository impor
 )
 from app.models.integration_hub import IntegrationCategory
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 import uuid as _uuid_mod
 from app.shared.compliance.audit_service import AuditService  # P1-W3-05
@@ -596,7 +597,6 @@ company_id: str = Depends(require_company_id)):
 async def apify_health_check(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     from app.shared.resilience.circuit_breaker import APIFY_CIRCUIT
-from app.shared.errors import LIAError
 
     cb_state = APIFY_CIRCUIT.state
     last_success = getattr(APIFY_CIRCUIT, "_last_success_time", None)

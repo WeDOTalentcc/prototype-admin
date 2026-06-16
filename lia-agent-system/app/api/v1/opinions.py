@@ -21,6 +21,7 @@ from app.schemas.lia_opinion import (
     LiaOpinionUpdate,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -463,7 +464,7 @@ async def generate_candidate_parecer(
 
     opinion = await repo.get_by_id(opinion_id=UUID(opinion_id), company_id=company_id)
     if not opinion:
-        raise HTTPException(status_code=500, detail="Parecer persisted but not retrievable")
+        raise LIAError(message="Parecer persisted but not retrievable")
     job_title = (
         await repo.get_job_title(opinion.job_vacancy_id) if opinion.job_vacancy_id else None
     )

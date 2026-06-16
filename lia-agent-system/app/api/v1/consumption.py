@@ -16,6 +16,7 @@ from app.domains.billing.services.consumption_tracking_service import (
 )
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 logger = logging.getLogger(__name__)
@@ -115,7 +116,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error generating consumption report: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to generate consumption report")
+        raise LIAError(message="Failed to generate consumption report")
 
 
 @router.get("/invoice-data", response_model=InvoiceDataResponse)
@@ -135,7 +136,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error generating invoice data: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to generate invoice data")
+        raise LIAError(message="Failed to generate invoice data")
 
 
 @router.get("/budget-status", response_model=BudgetStatusResponse)
@@ -162,7 +163,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error getting budget status: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to get budget status")
+        raise LIAError(message="Failed to get budget status")
 
 
 @router.get("/dashboard", response_model=DashboardResponse)
@@ -178,7 +179,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error generating dashboard: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to generate consumption dashboard")
+        raise LIAError(message="Failed to generate consumption dashboard")
 
 
 @router.get("/tenant-summary", response_model=TenantSummaryResponse)
@@ -194,7 +195,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error generating tenant summary: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to generate tenant summary")
+        raise LIAError(message="Failed to generate tenant summary")
 
 
 @router.get(
@@ -220,7 +221,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error generating detailed invoice: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to generate detailed invoice")
+        raise LIAError(message="Failed to generate detailed invoice")
 
 
 @router.get("/pricing-analytics", response_model=PricingAnalyticsResponse)
@@ -236,7 +237,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error generating pricing analytics: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to generate pricing analytics")
+        raise LIAError(message="Failed to generate pricing analytics")
 
 
 class PearchConsumptionResponse(BaseModel):
@@ -288,6 +289,6 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error getting pearch consumption: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to get Pearch consumption data")
+        raise LIAError(message="Failed to get Pearch consumption data")
 
 reorder_collection_before_item(router)

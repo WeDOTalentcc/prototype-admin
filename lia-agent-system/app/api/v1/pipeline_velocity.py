@@ -14,6 +14,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.pipeline_velocity_service import pipeline_velocity_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"pipeline_velocity endpoint error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao calcular métricas de velocidade")
+        raise LIAError(message="Erro ao calcular métricas de velocidade")
 
 
 @router.get("/bottlenecks", response_model=None)
@@ -91,4 +92,4 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"velocity_bottlenecks endpoint error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao buscar candidatos em gargalo")
+        raise LIAError(message="Erro ao buscar candidatos em gargalo")

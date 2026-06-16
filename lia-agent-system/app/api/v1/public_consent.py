@@ -18,6 +18,7 @@ from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.shared.errors import LIAError
 from lia_models.candidate import Candidate
 from lia_models.observability import ConsentRecord
 
@@ -100,4 +101,4 @@ async def list_public_consents(
         raise
     except Exception as exc:
         logger.error("public_consents lookup error: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao consultar consentimentos.")
+        raise LIAError(message="Erro ao consultar consentimentos.")

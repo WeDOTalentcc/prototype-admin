@@ -11,6 +11,7 @@ from app.shared.async_processing.task_persistence import TaskPersistenceService
 from app.shared.async_processing.task_queue import TaskPriority
 from app.shared.async_processing.task_scheduler import TaskScheduler
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -254,7 +255,6 @@ company_id: str = Depends(require_company_id)):
     try:
         manager = EnhancedTaskManager.get_instance()
         from app.shared.async_processing.task_queue import TaskState
-from app.shared.errors import LIAError
 
         task_state = None
         if state:

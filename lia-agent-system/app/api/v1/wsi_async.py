@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db, get_tenant_db
 from app.domains.cv_screening.services.wsi_async_session_service import WSIAsyncSessionService, get_wsi_async_session_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ company_id: str = Depends(require_company_id)) -> dict:
         raise
     except Exception as exc:
         logger.error("[WSI Async] create_invite failed: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao criar convite WSI assíncrono")
+        raise LIAError(message="Erro ao criar convite WSI assíncrono")
 
 
 @router.get("/{token}", response_model=None)
@@ -86,7 +87,7 @@ company_id: str = Depends(require_company_id)) -> dict:
         raise
     except Exception as exc:
         logger.error("[WSI Async] get_session failed: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao buscar sessão")
+        raise LIAError(message="Erro ao buscar sessão")
 
 
 @router.post("/{token}/answer", response_model=None)
@@ -129,7 +130,7 @@ company_id: str = Depends(require_company_id)) -> dict:
         raise
     except Exception as exc:
         logger.error("[WSI Async] submit_answer failed: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao registrar resposta")
+        raise LIAError(message="Erro ao registrar resposta")
 
 
 @router.get("/{token}/complete", response_model=None)
@@ -170,4 +171,4 @@ company_id: str = Depends(require_company_id)) -> dict:
         raise
     except Exception as exc:
         logger.error("[WSI Async] complete_session failed: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao finalizar sessão")
+        raise LIAError(message="Erro ao finalizar sessão")

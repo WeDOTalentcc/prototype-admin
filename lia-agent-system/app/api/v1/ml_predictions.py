@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.services.ml import OutcomePredictor, get_model_registry
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -159,7 +160,6 @@ company_id: str = Depends(require_company_id)):
     if _job_text.strip():
         try:
             from app.shared.compliance.fairness_guard import FairnessGuard
-from app.shared.errors import LIAError
             _fg_result = FairnessGuard().check(_job_text[:1000])
             if _fg_result.is_blocked:
                 logger.warning(

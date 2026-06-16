@@ -15,6 +15,7 @@ from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
 from app.shared.services.recruiter_personalization_service import recruiter_personalization_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 from app.services.cache.context_cache import get_context_cache
@@ -116,7 +117,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting recruiter profile: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving profile")
+        raise LIAError(message="Error retrieving profile")
 
 
 @router.get("/me/settings", response_model=PersonalizationSettingsResponse)
@@ -147,7 +148,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting settings: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving settings")
+        raise LIAError(message="Error retrieving settings")
 
 
 @router.patch("/me/settings", response_model=PersonalizationSettingsResponse)
@@ -185,7 +186,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating settings: {e}")
-        raise HTTPException(status_code=500, detail="Error updating settings")
+        raise LIAError(message="Error updating settings")
 
 
 @router.get("/me/field-preferences", response_model=list[FieldPreferenceResponse])
@@ -224,7 +225,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting field preferences: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving field preferences")
+        raise LIAError(message="Error retrieving field preferences")
 
 
 @router.get("/me/thresholds", response_model=PersonalizedThresholdsResponse)
@@ -255,7 +256,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting thresholds: {e}")
-        raise HTTPException(status_code=500, detail="Error calculating thresholds")
+        raise LIAError(message="Error calculating thresholds")
 
 
 @router.post("/me/events", response_model=None)
@@ -298,7 +299,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error recording event: {e}")
-        raise HTTPException(status_code=500, detail="Error recording event")
+        raise LIAError(message="Error recording event")
 
 
 @router.post("/me/recalculate", response_model=None)
@@ -328,7 +329,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error recalculating profile: {e}")
-        raise HTTPException(status_code=500, detail="Error recalculating profile")
+        raise LIAError(message="Error recalculating profile")
 
 
 @router.delete("/me/data", response_model=None)
@@ -352,7 +353,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting data: {e}")
-        raise HTTPException(status_code=500, detail="Error deleting personalization data")
+        raise LIAError(message="Error deleting personalization data")
 
 
 # ── GAP-06-001/002 — ContextCache TTL endpoints ─────────────────────────

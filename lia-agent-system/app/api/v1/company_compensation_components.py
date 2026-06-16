@@ -20,6 +20,7 @@ from app.domains.company.repositories.compensation_component_repository import (
     CompensationComponentRepository,
 )
 from app.shared.security.require_company_id import require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -177,7 +178,6 @@ async def _append_history(db, component_id, company_id, changed_by, change_type,
 async def _audit(current_user, company_id, target_id, operation, name):
     try:
         from app.shared.compliance.audit_service import AuditService as _AS
-from app.shared.errors import LIAError
         await _AS().log_action(
             trace_id=get_correlation_id(),
             company_id=str(company_id),

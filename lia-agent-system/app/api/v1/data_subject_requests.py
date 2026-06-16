@@ -146,7 +146,6 @@ async def _dsr_rate_limit_check(request: Request) -> None:
     """
     try:
         from app.middleware.rate_limiter import rate_limiter
-from app.shared.errors import LIAError
     except ImportError:
         # Fail-open if rate_limiter unavailable (dev/test env)
         return

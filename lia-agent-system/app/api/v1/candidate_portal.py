@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from app.schemas.api_envelope import APIResponse
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -131,7 +132,7 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request, c
         raise
     except Exception as exc:
         logger.error("[CandidatePortal] chat error candidate_id=%s: %s", candidate_id, exc)
-        raise HTTPException(status_code=500, detail="Erro interno. Tente novamente.")
+        raise LIAError(message="Erro interno. Tente novamente.")
     finally:
         # Audit log — ADR-006: IDs only, no PII
         try:

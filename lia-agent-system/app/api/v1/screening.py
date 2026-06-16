@@ -20,6 +20,7 @@ from app.schemas.screening import (
     ScreeningQuestionResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.services.automated_decision_logger import (
     PROTECTED_CRITERIA_PT,
     log_automated_decision,
@@ -403,7 +404,7 @@ async def auto_trigger_screening(
     except Exception as e:
         logger.error(f"Failed to create auto-screening task: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail="Failed to create screening task")
+        raise LIAError(message="Failed to create screening task")
 
 
 @router.get("/tasks/{job_id}", response_model=None)
@@ -419,7 +420,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to list screening tasks for job {job_id}: {e}")
-        raise HTTPException(status_code=500, detail="Failed to list screening tasks")
+        raise LIAError(message="Failed to list screening tasks")
 
 
 @router.post("/tasks/{task_id}/execute", response_model=None)
@@ -455,6 +456,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Failed to execute screening task {task_id}: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail="Failed to execute screening task")
+        raise LIAError(message="Failed to execute screening task")
 
 reorder_collection_before_item(router)

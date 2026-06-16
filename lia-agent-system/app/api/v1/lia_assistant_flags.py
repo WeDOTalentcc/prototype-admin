@@ -24,6 +24,7 @@ from app.core.database import get_db
 from app.shared.governance.feature_flag_service import FeatureFlagService, get_feature_flag_service
 from app.shared.pii_masking import mask_pii as _mask_pii  # P1-3: LGPD redaction on free-text fields
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -899,7 +900,6 @@ async def sweep_expired_approvals(
         # Forensic audit per cancellation (LGPD Art. 20 trail)
         try:
             from app.shared.compliance.audit_service import AuditService
-from app.shared.errors import LIAError
             payload = approval.target_data or {}
             await AuditService().log_action(
                 trace_id=get_correlation_id(),

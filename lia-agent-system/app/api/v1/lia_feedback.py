@@ -45,6 +45,7 @@ from app.core.database import get_db
 from app.domains.analytics.services.feedback_service import FeedbackService
 from app.shared.compliance.audit_service import AuditService
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from lia_models.feedback import InteractionFeedback
 from lia_models.memory import ConversationMemory
@@ -518,7 +519,7 @@ async def regenerate_response(
     except Exception:
         await db.rollback()
         logger.exception("Failed to stamp regenerated metadata")
-        raise HTTPException(status_code=500, detail="Could not mark message regenerated")
+        raise LIAError(message="Could not mark message regenerated")
 
     await _audit_feedback_action(
         company_id=company_id,
@@ -584,7 +585,6 @@ async def submit_implicit_signal(
     non-error outcome (e.g. criterion not met).
     """
     from app.shared.learning.implicit_feedback_service import (
-from app.shared.errors import LIAError
         implicit_feedback_service,
     )
 

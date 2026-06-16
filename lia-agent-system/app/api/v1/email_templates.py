@@ -41,6 +41,7 @@ from app.schemas.email_template import (
     TemplatePreviewByIdResponse,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.compliance.fairness_guard_middleware import check_fairness_async  # P1-W2-04
 from typing import Annotated
 from fastapi import Path
@@ -936,7 +937,6 @@ company_id: str = Depends(require_company_id)):
     import json
 
     from app.shared.providers.llm_factory import get_provider_for_tenant
-from app.shared.errors import LIAError
 
     try:
         channel_type = "WhatsApp" if request.channel == "whatsapp" else "email"

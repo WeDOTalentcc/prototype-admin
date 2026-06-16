@@ -39,6 +39,7 @@ from ._shared import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.errors import LIAInvalidStateTransition
+from app.shared.errors import LIAError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
@@ -558,7 +559,7 @@ company_id: str = Depends(require_company_id)):
             exc_info=True,
             extra={"vacancy_candidate_id": getattr(request, "vacancy_candidate_id", None)},
         )
-        raise HTTPException(status_code=500, detail="Erro interno ao processar transição")
+        raise LIAError(message="Erro interno ao processar transição")
 
 
 
@@ -595,7 +596,6 @@ async def preview_feedback(
     try:
         from sqlalchemy import select as _sa_sel
         from app.models.company import Company as _Company
-from app.shared.errors import LIAError
         _r = await stage_repo.db.execute(
             _sa_sel(_Company.display_name, _Company.name).where(_Company.id == company_id)
         )

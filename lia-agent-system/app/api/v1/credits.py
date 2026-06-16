@@ -12,6 +12,7 @@ from app.domains.credits.repositories.credits_repository import CreditsRepositor
 from app.domains.credits.services.credit_service import ACTION_CREDIT_COSTS
 from lia_models.billing import CreditTransactionType
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -91,7 +92,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("[Credits] Error fetching balance for %s: %s", company_id, e)
-        raise HTTPException(status_code=500, detail="Error fetching credit balance")
+        raise LIAError(message="Error fetching credit balance")
 
 
 @router.post("/add", response_model=CreditBalanceResponse)
@@ -136,7 +137,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("[Credits] Error adding credits for %s: %s", company_id, e)
-        raise HTTPException(status_code=500, detail="Error adding credits")
+        raise LIAError(message="Error adding credits")
 
 
 @router.post("/consume")
@@ -171,7 +172,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error("[Credits] Error consuming credits for %s: %s", company_id, e)
-        raise HTTPException(status_code=500, detail="Error consuming credits")
+        raise LIAError(message="Error consuming credits")
 
 
 @router.post("/consume-action")
@@ -215,7 +216,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error("[Credits] Error consuming action credits for %s: %s", company_id, e)
-        raise HTTPException(status_code=500, detail="Error consuming credits")
+        raise LIAError(message="Error consuming credits")
 
 
 @router.get("/costs")
@@ -242,4 +243,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("[Credits] Error fetching transactions for %s: %s", company_id, e)
-        raise HTTPException(status_code=500, detail="Error fetching transactions")
+        raise LIAError(message="Error fetching transactions")

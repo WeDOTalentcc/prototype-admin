@@ -26,6 +26,7 @@ from app.schemas.screening import (
     WSIScreeningPipelineResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.services.automated_decision_logger import (
     PROTECTED_CRITERIA_PT,
     log_automated_decision,
@@ -76,7 +77,6 @@ company_id: str = Depends(require_company_id)):
         if request.include_company_questions:
             try:
                 from app.models.screening_question import CompanyScreeningQuestion
-from app.shared.errors import LIAError
 
                 stmt = select(CompanyScreeningQuestion).where(  # ADR-001-EXEMPT: endpoint vive no api/v1 layer (não service), select é inline proposital — CompanyScreeningQuestionRepository não existia quando endpoint foi criado. Migrar para repo em sprint futura.
                     CompanyScreeningQuestion.company_id == company_id,

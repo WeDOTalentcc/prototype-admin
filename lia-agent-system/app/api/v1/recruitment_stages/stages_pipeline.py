@@ -37,6 +37,7 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -231,7 +232,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as exc:
         logger.error("[apply_template_sub_statuses] error: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao aplicar sub-statuses do template")
+        raise LIAError(message="Erro ao aplicar sub-statuses do template")
 
 
 @router.get("/company-pipeline", response_model=None)
@@ -603,7 +604,6 @@ company_id: str = Depends(require_company_id)):
         from sqlalchemy import update as sa_update
 
         from app.models.job_vacancy import JobVacancy
-from app.shared.errors import LIAError
 
         stmt = (
             sa_update(JobVacancy)
@@ -669,7 +669,7 @@ async def update_stage_data_fields(
         {"data_fields": [df.model_dump() for df in payload.data_fields]},
     )
     if not updated:
-        raise HTTPException(status_code=500, detail="Falha ao atualizar data_fields")
+        raise LIAError(message="Falha ao atualizar data_fields")
 
     refreshed = await stage_repo.get_by_id(stage.id)
     return {"success": True, "stage": refreshed.to_dict() if refreshed else None}

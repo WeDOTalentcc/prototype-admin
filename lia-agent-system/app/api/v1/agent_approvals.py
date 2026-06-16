@@ -17,6 +17,7 @@ from app.schemas.agent_approval import (
 )
 from app.services.agent_approval_service import agent_approval_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +104,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error requesting approval: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to request approval")
+        raise LIAError(message="Failed to request approval")
 
 
 # Router for approval management (admin only)
@@ -223,4 +224,4 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error reviewing approval: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to review approval")
+        raise LIAError(message="Failed to review approval")

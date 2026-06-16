@@ -91,6 +91,7 @@ from app.schemas.company import (
 )
 from app.domains.company.services.company_configuration_service import company_config_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 
@@ -517,7 +518,6 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
         if current_user and hasattr(current_user, 'company_id') and current_user.company_id:
             from app.shared.security.tenant_demo_fallback import (
-from app.shared.errors import LIAError
                 DEMO_COMPANY_UUID,
                 is_demo_caller,
                 record_demo_fallback,

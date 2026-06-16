@@ -25,6 +25,7 @@ from .._shared import (
     validate_multi_tenancy,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -434,7 +435,6 @@ async def _persist_lia_opinion_with_ocean(
     """
     try:
         from app.repositories.opinions_repository import (
-from app.shared.errors import LIAError
             OpinionsRepository,
         )
 

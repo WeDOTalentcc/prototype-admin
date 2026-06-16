@@ -18,6 +18,7 @@ from app.schemas.webhook import (
 )
 from app.services.webhook_dispatcher import webhook_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
@@ -60,7 +61,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error creating webhook: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to create webhook")
+        raise LIAError(message="Failed to create webhook")
 
 
 @router.get("", response_model=WebhookListResponse)
@@ -147,6 +148,6 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error queueing test webhook: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to queue test event")
+        raise LIAError(message="Failed to queue test event")
 
 reorder_collection_before_item(router)

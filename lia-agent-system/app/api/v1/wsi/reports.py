@@ -34,6 +34,7 @@ from ._shared import (
     WSI_CLASSIFICATION_MAP,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 # Recovery #3 (2026-05-23) — imports restored para get_wsi_audit_trail
 # (endpoint compliance EU AI Act Art. 12 / LGPD Art. 20 perdido no merge 02361f41c).
 from app.auth.dependencies import (
@@ -709,7 +710,6 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
         try:
             from uuid import UUID as _UUID
             from app.repositories.opinions_repository import (
-from app.shared.errors import LIAError
                 OpinionsRepository,
             )
             _repo = OpinionsRepository(db)

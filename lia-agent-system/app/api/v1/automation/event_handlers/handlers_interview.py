@@ -30,6 +30,7 @@ from .._shared import (
     validate_multi_tenancy,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -440,7 +441,6 @@ Responda em JSON:
 
         try:
             from app.models.lia_opinion import LiaOpinion
-from app.shared.errors import LIAError
 
             score = average_rating if average_rating > 0 else (4.0 if recommendation == "advance" else 2.5 if recommendation == "hold" else 2.0)
 

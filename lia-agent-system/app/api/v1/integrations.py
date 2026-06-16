@@ -24,6 +24,7 @@ from app.domains.communication.services.teams_service import (
 from app.models.integration_hub import IntegrationConnection, IntegrationProvider, IntegrationStatus
 from app.shared.security.require_company_id import require_company_id
 from app.shared.security.url_validator import UnsafeOutboundURLError, safe_outbound_url
+from app.shared.errors import LIAError
 from app.shared.services.credentials_crypto import (
     CredentialsEncryptionError,
     decrypt_credentials,
@@ -200,11 +201,11 @@ async def save_teams_outbound_config(
     except CredentialsEncryptionError as exc:
         await db.rollback()
         logger.error("teams outbound-config encrypt failed for %s: %s", company_id, exc)
-        raise HTTPException(status_code=500, detail="Erro ao criptografar configuração") from exc
+        raise LIAError(message="Erro ao criptografar configuração") from exc
     except Exception as exc:
         await db.rollback()
         logger.error("teams outbound-config save failed for %s: %s", company_id, exc)
-        raise HTTPException(status_code=500, detail="Erro ao salvar configuração") from exc
+        raise LIAError(message="Erro ao salvar configuração") from exc
 
     masked = validated_url[:45] + "..." if len(validated_url) > 48 else validated_url
     logger.info("teams outbound webhook URL updated for company %s (source=db)", company_id)

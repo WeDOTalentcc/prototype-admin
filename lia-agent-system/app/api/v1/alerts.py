@@ -15,6 +15,7 @@ from app.domains.job_management.services.job_alert_service import job_alert_serv
 from app.models.alert import AlertConfig, AlertPreference, AlertSeverity
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -44,7 +45,6 @@ def _emit_legacy_alerts_config_endpoint_counter(
         import hashlib
 
         from app.shared.observability.canary_metrics import (
-from app.shared.errors import LIAError
             legacy_alerts_config_endpoint_calls_total,
         )
 

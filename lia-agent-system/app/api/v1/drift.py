@@ -23,6 +23,7 @@ from app.shared.services.model_drift_service import (
     model_drift_service,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +113,7 @@ company_id: str = Depends(require_company_id)) -> DriftBatchResponse:
         raise
     except Exception as exc:
         logger.error("drift/run-batch erro: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao executar drift batch")
+        raise LIAError(message="Erro ao executar drift batch")
 
 
 @router.get("/status", response_model=DriftStatusResponse)
@@ -139,4 +140,4 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as exc:
         logger.error("drift/status erro company=%s: %s", company_id, exc)
-        raise HTTPException(status_code=500, detail="Erro ao calcular drift status")
+        raise LIAError(message="Erro ao calcular drift status")

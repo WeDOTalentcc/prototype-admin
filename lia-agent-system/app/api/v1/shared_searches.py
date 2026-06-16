@@ -31,6 +31,7 @@ from app.schemas.shared_search import (
     ShareChannel,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -903,7 +904,6 @@ company_id: str = Depends(require_company_id)):
             # Task #1306: record the structural stage link so SLA detection can
             # join by id instead of fragile name matching.
             from app.shared.services.stage_id_resolver import (
-from app.shared.errors import LIAError
                 resolve_recruitment_stage_id,
             )
 

@@ -27,6 +27,7 @@ from app.services.agent_deployment_service import agent_deployment_service
 from app.shared.trigger_mode_validation import validate_trigger_mode
 from lia_models.agent_deployment import DeploymentTargetType
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
@@ -106,7 +107,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error creating deployment: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to create deployment")
+        raise LIAError(message="Failed to create deployment")
 
 
 @router.get("/{agent_id}/deployments", response_model=DeploymentListResponse)
@@ -396,7 +397,7 @@ async def bulk_create_deployments(
     except Exception as e:
         await db.rollback()
         logger.error("[BulkDeploy] failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Bulk deployment failed")
+        raise LIAError(message="Bulk deployment failed")
 
     # LGPD audit trail — single entry per bulk operation.
     try:

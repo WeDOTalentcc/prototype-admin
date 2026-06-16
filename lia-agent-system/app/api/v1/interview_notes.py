@@ -43,6 +43,7 @@ from app.shared.services.interview_notes_service import (
 from app.domains.ai.services.llm import llm_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
@@ -977,7 +978,6 @@ company_id: str = Depends(require_company_id)) -> GenerateParecerResponse:
         ])
         
         from app.shared.prompts.persona_aware_prompt import (
-from app.shared.errors import LIAError
             build_system_prompt_with_persona,
         )
         _persona = await build_system_prompt_with_persona(

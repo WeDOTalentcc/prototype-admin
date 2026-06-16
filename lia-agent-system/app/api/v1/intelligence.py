@@ -14,6 +14,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.intelligence_layer_service import intelligence_layer_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
@@ -87,7 +88,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting data quality: {e}")
-        raise HTTPException(status_code=500, detail="Error assessing data quality")
+        raise LIAError(message="Error assessing data quality")
 
 
 @router.post("/context", response_model=None)
@@ -133,7 +134,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting intelligence context: {e}")
-        raise HTTPException(status_code=500, detail="Error building intelligence context")
+        raise LIAError(message="Error building intelligence context")
 
 
 @router.post("/adjust-field", response_model=None)
@@ -174,7 +175,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error adjusting field: {e}")
-        raise HTTPException(status_code=500, detail="Error applying pattern adjustment")
+        raise LIAError(message="Error applying pattern adjustment")
 
 
 @router.get("/wizard-enhancements", response_model=None)
@@ -220,7 +221,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting wizard enhancements: {e}")
-        raise HTTPException(status_code=500, detail="Error generating wizard enhancements")
+        raise LIAError(message="Error generating wizard enhancements")
 
 
 @router.get("/success-profile", response_model=None)
@@ -272,7 +273,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting success profile: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving success profile")
+        raise LIAError(message="Error retrieving success profile")
 
 
 @router.get("/correlations", response_model=None)
@@ -323,4 +324,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting correlations: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving correlations")
+        raise LIAError(message="Error retrieving correlations")

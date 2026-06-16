@@ -18,6 +18,7 @@ from app.schemas.lia_profile_analysis import (
     LiaProfileAnalysisResponse,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -169,7 +170,6 @@ async def generate_profile_analysis(
     
     try:
         from app.shared.providers.llm_factory import get_provider_for_tenant
-from app.shared.errors import LIAError
 
         container = get_provider_for_tenant()
         # F11 Bug B fix (2026-05-24): pass agent_type="ProfileAnalysisAgent" so

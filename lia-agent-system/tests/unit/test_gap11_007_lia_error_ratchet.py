@@ -8,11 +8,12 @@ lower RATCHET_MAX.
 Ratchet history:
   2026-06-16: 835 (initial baseline recorded by 0e59dccac)
   2026-06-16: 163 (GAP-11-007 bulk-fix: 672 common patterns replaced)
+  2026-06-16: 91  (syntax-error fixes + 100 more replacements)
 """
 import ast
 import os
 
-RATCHET_MAX = 163  # GREEN: 2026-06-16 bulk-fix 672 common patterns → 163 remaining
+RATCHET_MAX = 91  # GREEN: 2026-06-16 bulk-fix2 100 patterns + syntax-error reveals → 91 remaining
 
 
 class _HTTPException500Finder(ast.NodeVisitor):

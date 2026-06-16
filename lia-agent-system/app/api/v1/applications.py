@@ -25,6 +25,7 @@ from app.domains.candidates.services.candidate_feedback_service import candidate
 from app.domains.cv_screening.services.lia_score_service import lia_score_service
 from app.services.notification_service import NotificationType, notification_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -472,7 +473,6 @@ company_id: str = Depends(require_company_id)):
         # WT-2022 P0.C: LGPD Art. 20 audit trail para decisao automatizada de score em resubmit
         try:
             from app.shared.services.automated_decision_logger import (
-from app.shared.errors import LIAError
                 PROTECTED_CRITERIA_PT,
                 log_automated_decision,
             )

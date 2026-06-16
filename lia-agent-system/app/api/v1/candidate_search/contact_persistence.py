@@ -51,6 +51,7 @@ from ._shared import (
 )
 from app.domains.credits.services.credit_service import CreditService, get_credit_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -94,7 +95,6 @@ company_id: str = Depends(require_company_id)):
     from sqlalchemy import select
 
     from app.models.candidate import Candidate
-from app.shared.errors import LIAError
     
     try:
         # Check if candidate already exists by pearch_id

@@ -23,6 +23,7 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -47,7 +48,6 @@ company_id: str = Depends(require_company_id)):
     try:
         candidates_db, total_count = await candidate_repo.search_local(filters)
         from app.schemas.candidate import CandidateResponse
-from app.shared.errors import LIAError
         candidates = [CandidateResponse.model_validate(c) for c in candidates_db]
 
         search_duration_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
@@ -154,7 +154,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Candidate search failed: {e}")
-        raise HTTPException(status_code=500, detail="Candidate search failed")
+        raise LIAError(message="Candidate search failed")
 
 
 @router.get("/search", response_model=PearchSearchResponse)
@@ -178,7 +178,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Candidate search failed: {e}")
-        raise HTTPException(status_code=500, detail="Candidate search failed")
+        raise LIAError(message="Candidate search failed")
 
 
 @router.post("/search/by-job-description", response_model=PearchSearchResponse)
@@ -200,7 +200,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Job description search failed: {e}")
-        raise HTTPException(status_code=500, detail="Job description search failed")
+        raise LIAError(message="Job description search failed")
 
 
 @router.get("/health", response_model=None)

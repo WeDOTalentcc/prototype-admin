@@ -27,6 +27,7 @@ from app.repositories.job_vacancies_analytics_repository import (
     JobVacanciesAnalyticsRepository,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -895,7 +896,6 @@ company_id: str = Depends(require_company_id)):
     # Support db kwarg for backwards compatibility (tests inject db directly)
     if db is not None and not hasattr(repo, 'get_job_by_id_and_company'):
         from app.repositories.job_vacancies_analytics_repository import JobVacanciesAnalyticsRepository as _JVAR
-from app.shared.errors import LIAError
         repo = _JVAR(db)
     """Returns JSON data for the JobReportModal."""
     company_id = get_user_company_id(current_user)
@@ -1128,7 +1128,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching pipeline pulse: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal error fetching pipeline data")
+        raise LIAError(message="Internal error fetching pipeline data")
 
     macro_counts: dict[str, int] = {}
     total = 0

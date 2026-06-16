@@ -20,6 +20,7 @@ from app.shared.services.granular_consent_service import (
     GranularConsentService,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -102,7 +103,7 @@ _company_gate: str = Depends(require_company_id)) -> GranularConsentSummaryRespo
         raise
     except Exception as exc:
         logger.error("granular_consent/%s erro: %s", candidate_id, exc)
-        raise HTTPException(status_code=500, detail="Erro ao buscar consentimentos")
+        raise LIAError(message="Erro ao buscar consentimentos")
 
 
 @router.post("/{candidate_id}/update", response_model=None)
@@ -158,6 +159,6 @@ _company_gate: str = Depends(require_company_id)) -> dict:
         raise
     except Exception as exc:
         logger.error("granular_consent/%s/update erro: %s", candidate_id, exc)
-        raise HTTPException(status_code=500, detail="Erro ao atualizar consentimentos")
+        raise LIAError(message="Erro ao atualizar consentimentos")
 
 reorder_collection_before_item(router)

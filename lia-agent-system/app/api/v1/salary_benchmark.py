@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.shared.services.salary_benchmark_service import salary_benchmark_service
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/salary-benchmark", tags=["salary-benchmark"])
@@ -39,4 +40,4 @@ _company_gate: str = Depends(require_company_id)) -> dict:
         raise
     except Exception as exc:
         logger.error("[salary-benchmark] Erro: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao buscar benchmark salarial")
+        raise LIAError(message="Erro ao buscar benchmark salarial")

@@ -52,6 +52,7 @@ from ._shared import (
 )
 from app.domains.credits.services.credit_service import CreditService, get_credit_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
@@ -176,7 +177,6 @@ company_id: str = Depends(require_company_id)):
         _pgv_ids: set[str] = set()
         try:
             from app.domains.ai.services.candidate_embedding_service import (
-from app.shared.errors import LIAError
                 candidate_embedding_service as _ces,
                 adaptive_k,
             )

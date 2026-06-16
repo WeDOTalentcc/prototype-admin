@@ -25,6 +25,7 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.compliance.audit_service import AuditService  # P1-W1-05
 from typing import Annotated
 from fastapi import Path
@@ -433,7 +434,6 @@ company_id: str = Depends(require_company_id)):
             result = await infer_behavior_llm(request.stage_name, request.description)
         else:
             from app.domains.communication.services.infer_behavior_service import infer_behavior_auto
-from app.shared.errors import LIAError
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # See: app/domains/integrations_hub/services/rails_adapter.py

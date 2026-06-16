@@ -29,6 +29,7 @@ from app.schemas.calendar import (
     TimeSlot,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -209,7 +210,7 @@ async def cancel_interview(request: CancelInterviewRequest, company_id: str = De
         )
         
         if not success:
-            raise HTTPException(status_code=500, detail="Failed to cancel interview")
+            raise LIAError(message="Failed to cancel interview")
         
         return {"status": "cancelled", "event_id": request.event_id}
         
@@ -386,7 +387,7 @@ async def google_cancel_interview(request: GoogleCancelInterviewRequest, company
             calendar_id=request.calendar_id,
         )
         if not success:
-            raise HTTPException(status_code=500, detail="Failed to cancel Google Calendar event.")
+            raise LIAError(message="Failed to cancel Google Calendar event.")
         return {"status": "cancelled", "event_id": request.event_id}
     except HTTPException:
         raise
@@ -537,7 +538,7 @@ async def google_oauth_callback(
         return {"status": "connected", "company_id": company_id_str, "provider": "google"}
 
     except ImportError:
-        raise HTTPException(status_code=500, detail="google-auth-oauthlib required. pip install google-auth-oauthlib")
+        raise LIAError(message="google-auth-oauthlib required. pip install google-auth-oauthlib")
     except HTTPException:
         raise
     except Exception as e:
@@ -804,7 +805,6 @@ async def google_oauth_status(
     try:
         import uuid
         from app.core.database import AsyncSessionLocal
-from app.shared.errors import LIAError
         async with AsyncSessionLocal() as db:
             repo = CalendarCredentialsRepository(db)
             creds = await repo.get_credentials(uuid.UUID(company_id), "google")

@@ -30,6 +30,7 @@ from app.domains.job_management.repositories.job_vacancy_public_repository impor
 from app.models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import NotificationType
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
@@ -463,7 +464,6 @@ company_id: str = Depends(require_company_id)):
         try:
             from lia_events.schemas import CandidateAppliedEvent
             from app.shared.messaging.events_outbox_service import get_events_outbox_service
-from app.shared.errors import LIAError
             from lia_config.database import AsyncSessionLocal
             _evt = CandidateAppliedEvent(
                 company_id=str(job.company_id),
@@ -520,4 +520,4 @@ from app.shared.errors import LIAError
         raise
     except Exception as e:
         logger.error(f"Error processing public application: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao processar candidatura. Tente novamente.")
+        raise LIAError(message="Erro ao processar candidatura. Tente novamente.")

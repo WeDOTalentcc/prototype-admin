@@ -20,6 +20,7 @@ from app.core.database import get_db
 from app.domains.ai.services.rag_pipeline_service import rag_pipeline_service as _rag_service
 from app.domains.ai.services.rag_pipeline_service import RAGSearchResult
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -122,4 +123,4 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             company_id,
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail="Erro interno na busca RAG") from exc
+        raise LIAError(message="Erro interno na busca RAG") from exc

@@ -22,6 +22,7 @@ from app.domains.job_management.repositories.job_vacancy_crud_repository import 
 from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 # MIGRATION_PLAN item 7.1 — Python CRUD deprecated in favor of Rails (ats-api-copia).
@@ -1108,7 +1109,6 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a summary of a job for displaying before cloning."""
     from app.domains.job_management.services.job_clone_service import job_clone_service
-from app.shared.errors import LIAError
 
     db = repo.get_session()
 

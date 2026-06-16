@@ -23,6 +23,7 @@ from .._shared import (
     validate_multi_tenancy,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +104,6 @@ async def _log_ats_sync_audit(db, audit_svc, request, ats_stage: str, is_mapped:
     """Log automation execution log and centralized audit for ATS sync."""
     try:
         from app.models.automation import AutomationExecutionLog
-from app.shared.errors import LIAError
         db.add(AutomationExecutionLog(
             company_id=request.company_id, trigger_event="ats_sync",
             trigger_data={

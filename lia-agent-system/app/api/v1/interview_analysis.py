@@ -35,6 +35,7 @@ from app.services.notification_service import (
     notification_service,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -555,7 +556,6 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
     Background task to process meeting transcript when notified by Teams webhook.
     """
     from app.core.database import AsyncSessionLocal
-from app.shared.errors import LIAError
 
     try:
         meeting_id = resource_data.get("meetingId") or resource_data.get("id")

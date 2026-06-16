@@ -36,6 +36,7 @@ from app.schemas.company import (
 )
 from app.domains.company.services.company_configuration_service import company_config_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.compliance.audit_service import AuditService  # P1-W2-06
 from typing import Annotated
 from fastapi import Path
@@ -262,7 +263,6 @@ company_id: str = Depends(require_company_id)):
                 )
             if update_data.get("pii_field_visibility") is not None:
                 from app.api.v1.pii_visibility_defaults import validate_pii_field_override
-from app.shared.errors import LIAError
                 validate_pii_field_override(update_data["pii_field_visibility"])
 
         user = await user_repo.update(user_uuid, update_data, company_id=company_id)

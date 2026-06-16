@@ -34,6 +34,7 @@ from pydantic import BaseModel
 from app.shared.pii_masking import mask_pii
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -400,7 +401,6 @@ company_id: str = Depends(require_company_id)):
 async def voice_stream_status(company_id: str = Query(""), _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     from app.shared.providers.llm_factory import get_voice_provider_for_tenant
-from app.shared.errors import LIAError
 
     voice_provider = get_voice_provider_for_tenant(
         tenant_id=company_id or None,

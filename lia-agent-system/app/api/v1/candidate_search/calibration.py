@@ -118,6 +118,7 @@ class VacancyGoalResponse(BaseModel):
 
 from app.domains.candidates.services.candidate_goal_service import candidate_goal_service as _recruiter_agent
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 
 @router.post("/calibration/feedback", response_model=CalibrationFeedbackResponse)
@@ -516,7 +517,6 @@ company_id: str = Depends(require_company_id)):
                 )
                 if existing is None:
                     from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
-from app.shared.errors import LIAError
                     initial_stage_id = await resolve_recruitment_stage_id(
                         db, str(vacancy_company_id), "sourcing"
                     )

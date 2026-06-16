@@ -30,6 +30,7 @@ from app.schemas.agent_deployment import (
 )
 from app.services.agent_deployment_service import agent_deployment_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.trigger_mode_validation import validate_trigger_mode
 from lia_models.agent_deployment import AgentDeployment
 from lia_models.custom_agent import CustomAgent
@@ -287,7 +288,7 @@ async def attach_agent_to_job(
     except Exception as e:
         await db.rollback()
         logger.error("[JobAgents] attach failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to attach agent to job")
+        raise LIAError(message="Failed to attach agent to job")
 
     return AgentDeploymentWithAgent(**_to_with_agent(deployment, agent))
 
