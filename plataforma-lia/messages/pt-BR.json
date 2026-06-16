@@ -3975,7 +3975,7 @@
       "scoreCells": {
         "noEvaluation": "Sem avaliação",
         "noEvaluationDesc": "Este candidato ainda não participou de nenhum processo seletivo.",
-        "liaScoreInfo": "O Score LIA é calculado quando o candidato é avaliado para uma vaga específica."
+        "liaScoreInfo": "O Score é calculado quando o candidato é avaliado para uma vaga específica."
       }
     },
     "scoreCells": {
@@ -8168,10 +8168,10 @@
     "yesterday": "Ontem",
     "daysAgo": "Há {count} dias",
     "errorSendMessage": "Erro ao enviar mensagem",
-    "errorSendMessageDesc": "Não foi possível conectar com a LIA. Tente novamente.",
+    "errorSendMessageDesc": "Não foi possível conectar com a IA. Tente novamente.",
     "errorUnknown": "Erro desconhecido",
     "parecerGenerated": "Parecer gerado",
-    "parecerGeneratedDesc": "A LIA gerou um novo parecer para o candidato.",
+    "parecerGeneratedDesc": "A IA gerou um novo parecer para o candidato.",
     "errorGenerateParecer": "Falha ao gerar parecer",
     "errorGenerateParecerTitle": "Erro ao gerar parecer",
     "errorGenerateParecerDesc": "Não foi possível gerar o parecer. Tente novamente.",

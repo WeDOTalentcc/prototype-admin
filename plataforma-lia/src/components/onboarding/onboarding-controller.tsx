@@ -223,7 +223,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
           Acesso Restrito
         </h2>
         <p className="text-lia-text-primary mb-6">
-          Você precisa de um convite para acessar a plataforma LIA.
+          Você precisa de um convite para acessar a WeDOTalent.
         </p>
         <div className="space-y-3">
           <button
@@ -272,7 +272,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
             <p
               className="lia-text-medium animate-in fade-in slide-in-from-bottom-3 duration-300"
             >
-              Personalize a LIA para atender às necessidades da sua empresa
+              Personalize a IA para atender às necessidades da sua empresa
             </p>
           </div>
 
@@ -293,7 +293,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
               <li className="flex items-start gap-3">
                 <div className="w-2 h-2 rounded-full lia-bg-coral mt-2 flex-shrink-0" />
                 <span className="lia-text-medium">
-                  Calibrar a LIA para funcionar de forma personalizada considerando as particularidades da sua empresa e processo de recrutamento
+                  Calibrar a IA para funcionar de forma personalizada considerando as particularidades da sua empresa e processo de recrutamento
                 </span>
               </li>
             </ul>

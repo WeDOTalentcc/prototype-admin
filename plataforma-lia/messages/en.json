@@ -3975,7 +3975,7 @@
       "scoreCells": {
         "noEvaluation": "No evaluation",
         "noEvaluationDesc": "This candidate has not yet participated in any selection process.",
-        "liaScoreInfo": "The LIA Score is calculated when the candidate is evaluated for a specific position."
+        "liaScoreInfo": "The Score is calculated when the candidate is evaluated for a specific position."
       }
     },
     "scoreCells": {
@@ -8168,10 +8168,10 @@
     "yesterday": "Yesterday",
     "daysAgo": "{count} days ago",
     "errorSendMessage": "Error sending message",
-    "errorSendMessageDesc": "Could not connect to LIA. Please try again.",
+    "errorSendMessageDesc": "Could not connect to the AI assistant. Please try again.",
     "errorUnknown": "Unknown error",
     "parecerGenerated": "Opinion generated",
-    "parecerGeneratedDesc": "LIA generated a new opinion for the candidate.",
+    "parecerGeneratedDesc": "AI generated a new opinion for the candidate.",
     "errorGenerateParecer": "Failed to generate opinion",
     "errorGenerateParecerTitle": "Error generating opinion",
     "errorGenerateParecerDesc": "Could not generate the opinion. Please try again.",

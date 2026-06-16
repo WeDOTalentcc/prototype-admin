@@ -4,7 +4,7 @@ import { SettingsRouteClient } from "./SettingsRouteClient"
 
 export const metadata: Metadata = {
   title: "Configurações | WeDoTalent",
-  description: "Configure sua conta, preferências da plataforma, integrações e configurações da empresa no LIA WeDoTalent.",
+  description: "Configure sua conta, preferências da plataforma, integrações e configurações da empresa no WeDOTalent.",
 }
 
 export default function ConfiguracoesPage() {

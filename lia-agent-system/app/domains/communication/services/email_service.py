@@ -210,10 +210,10 @@ class EmailService:
         body_to_use: str = body_override if body_override else template_body_html
 
         if not subject_to_use:
-            subject_to_use = "Notificação — Plataforma LIA"
+            subject_to_use = "Notificação — WeDOTalent"
         if not body_to_use:
             candidate_name = variables.get("candidate_name", "")
-            body_to_use = f"<p>Olá{(' ' + candidate_name) if candidate_name else ''},</p><p>Esta é uma notificação da Plataforma LIA.</p>"
+            body_to_use = f"<p>Olá{(' ' + candidate_name) if candidate_name else ''},</p><p>Esta é uma notificação do WeDOTalent.</p>"
         
         rendered_subject, subject_missing = self.render_template(subject_to_use, variables)
         rendered_html, html_missing = self.render_template(body_to_use, variables)
@@ -404,15 +404,15 @@ class EmailService:
         """
         NOTIFICATION_CONFIG = {
             "invitation": {
-                "subject": "Você foi convidado para a Plataforma LIA",
+                "subject": "Você foi convidado para o WeDOTalent",
                 "template_name": "Convite de Usuário"
             },
             "password_reset": {
-                "subject": "Redefinição de Senha - Plataforma LIA",
+                "subject": "Redefinição de Senha — WeDOTalent",
                 "template_name": "Recuperação de Senha"
             },
             "email_verification": {
-                "subject": "Verifique seu Email - Plataforma LIA",
+                "subject": "Verifique seu Email — WeDOTalent",
                 "template_name": "Verificação de Email"
             }
         }

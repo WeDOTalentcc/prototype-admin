@@ -140,7 +140,7 @@ class TeamsCalendarService:
             await microsoft_graph_service.cancel_calendar_event(
                 event_id=event_id,
                 user_email=organizer_email,
-                cancellation_message=cancellation_message or "Entrevista cancelada via WeDOTalent LIA.",
+                cancellation_message=cancellation_message or "Entrevista cancelada via WeDOTalent.",
             )
             return {"success": True, "message": "✅ Entrevista cancelada. Participantes foram notificados."}
 
