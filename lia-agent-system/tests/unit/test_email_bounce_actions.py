@@ -138,7 +138,7 @@ class TestListUnsubscribeUrlIncludesEmail(unittest.TestCase):
         """communication_dispatcher.py must embed ?email= in List-Unsubscribe."""
         path = os.path.join(
             os.path.dirname(__file__),
-            "../../lia-agent-system/app/domains/communication/services/communication_dispatcher.py",
+            "../../app/domains/communication/services/communication_dispatcher.py",
         )
         with open(os.path.realpath(path)) as f:
             src = f.read()
@@ -150,7 +150,7 @@ class TestListUnsubscribeUrlIncludesEmail(unittest.TestCase):
     def test_mailgun_provider_list_unsubscribe_contains_email_param(self):
         path = os.path.join(
             os.path.dirname(__file__),
-            "../../lia-agent-system/app/domains/communication/services/"
+            "../../app/domains/communication/services/"
             "email_providers/mailgun_provider.py",
         )
         with open(os.path.realpath(path)) as f:
@@ -162,7 +162,7 @@ class TestListUnsubscribeUrlIncludesEmail(unittest.TestCase):
     def test_resend_provider_list_unsubscribe_contains_email_param(self):
         path = os.path.join(
             os.path.dirname(__file__),
-            "../../lia-agent-system/app/domains/communication/services/"
+            "../../app/domains/communication/services/"
             "email_providers/resend_provider.py",
         )
         with open(os.path.realpath(path)) as f:
