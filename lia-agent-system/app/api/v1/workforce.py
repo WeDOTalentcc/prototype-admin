@@ -65,7 +65,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing hiring plans: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/plans", response_model=HiringPlanResponse)
@@ -85,7 +85,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating hiring plan: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/plans/{plan_id}", response_model=HiringPlanWithDetails)
@@ -112,7 +112,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching hiring plan: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.put("/plans/{plan_id}", response_model=HiringPlanResponse)
@@ -138,7 +138,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error updating hiring plan: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.delete("/plans/{plan_id}", response_model=None)
@@ -161,7 +161,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error deleting hiring plan: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/plans/{plan_id}/headcounts", response_model=list[PlannedHeadcountResponse])
@@ -199,7 +199,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing headcounts: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/plans/{plan_id}/headcounts", response_model=PlannedHeadcountResponse)
@@ -227,7 +227,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating headcount: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/headcounts/{headcount_id}", response_model=PlannedHeadcountResponse)
@@ -248,7 +248,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching headcount: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.put("/headcounts/{headcount_id}", response_model=PlannedHeadcountResponse)
@@ -274,7 +274,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error updating headcount: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.delete("/headcounts/{headcount_id}", response_model=None)
@@ -297,7 +297,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error deleting headcount: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/plans/{plan_id}/headcounts/bulk", response_model=list[PlannedHeadcountResponse])
@@ -328,7 +328,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating headcounts in bulk: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/plans/{plan_id}/import/upload", response_model=ImportJobResponse)
@@ -372,7 +372,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error uploading import file: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/plans/{plan_id}/import/{job_id}/preview", response_model=ImportPreview)
@@ -429,7 +429,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting import preview: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/plans/{plan_id}/import/{job_id}/confirm", response_model=ImportResult)
@@ -469,7 +469,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error confirming import: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/import/template", response_model=None)
@@ -500,7 +500,7 @@ async def download_import_template(company_id: str = Depends(require_company_id)
         raise
     except Exception as e:
         logger.error(f"Error generating import template: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/stats", response_model=WorkforcePlanningStats)
@@ -620,7 +620,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error getting workforce stats: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/timeline", response_model=None)
@@ -676,7 +676,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error getting hiring timeline: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/alerts", response_model=None)
@@ -755,7 +755,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error getting workforce alerts: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 from pydantic import BaseModel
@@ -856,7 +856,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error saving workforce entries: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 class WorkforceEntryImportResponse(BaseModel):
@@ -948,7 +948,7 @@ async def download_workforce_entries_import_template(company_id: str = Depends(r
         raise
     except Exception as e:
         logger.error(f"Error generating workforce planning import template: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/entries/import", response_model=None)
@@ -1024,4 +1024,4 @@ async def import_workforce_entries(
         raise
     except Exception as e:
         logger.error(f"Error importing workforce planning: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise

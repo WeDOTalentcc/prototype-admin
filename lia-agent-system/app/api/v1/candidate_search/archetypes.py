@@ -213,7 +213,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error listing archetypes: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/archetypes", response_model=ArchetypeDTO)
@@ -288,7 +288,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/archetypes/from-search", response_model=ArchetypeFromSearchResponse)
@@ -364,7 +364,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype from search: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 # ============================================================================
@@ -465,7 +465,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting closed job suggestions: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/archetypes/from-job/{job_id}", response_model=ArchetypeDTO)
@@ -613,7 +613,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype from job: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 @router.get("/archetypes/{archetype_id}", response_model=ArchetypeDTO)
 async def get_archetype(
@@ -657,7 +657,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error getting archetype: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.delete("/archetypes/{archetype_id}", response_model=None)
@@ -704,7 +704,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error deleting archetype: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.put("/archetypes/{archetype_id}", response_model=ArchetypeDTO)
@@ -779,7 +779,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error updating archetype: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/archetypes/{archetype_id}/search", response_model=ArchetypeSearchResponse)
@@ -1027,7 +1027,7 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"Error searching by archetype: {e}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 # ============================================================================
@@ -1207,13 +1207,13 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         raise
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse AI response: {e}")
-        raise HTTPException(status_code=500, detail="Falha ao processar resposta da IA")
+        raise
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error generating archetype from job: {e}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/archetypes/from-description", response_model=ArchetypeGenerationResponse)
@@ -1331,13 +1331,13 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         raise
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse AI response: {e}")
-        raise HTTPException(status_code=500, detail="Falha ao processar resposta da IA")
+        raise
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error generating archetype from description: {e}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 class ClosedJobSuggestionDTO(BaseModel):
@@ -1409,7 +1409,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error fetching archetype suggestions: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 # ============================================================================

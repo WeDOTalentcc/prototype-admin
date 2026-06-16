@@ -494,7 +494,7 @@ company_id: str = Depends(require_company_id)):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 
@@ -528,7 +528,7 @@ async def get_search_snapshot(
         )
         rows = result.scalars().all()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
     candidates = []
     for row in rows:

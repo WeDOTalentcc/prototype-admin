@@ -34,6 +34,8 @@ from typing import Any
 class LIAError(Exception):
     """Base error for the entire LIA platform."""
 
+    http_status: int = 500
+
     def __init__(
         self,
         message: str = "Erro interno da plataforma",
@@ -67,6 +69,8 @@ class LIAError(Exception):
 class LIAAgentError(LIAError):
     """Error during agent execution (ReAct loop, graph, etc.)."""
 
+    http_status = 502
+
     def __init__(self, message="Erro na execução do agente", code="AGENT_ERROR", **kwargs):
         super().__init__(message=message, code=code, **kwargs)
 
@@ -94,6 +98,8 @@ class LIALLMError(LIAAgentError):
 class LIAValidationError(LIAError):
     """Invalid input data."""
 
+    http_status = 400
+
     def __init__(self, message="Dados de entrada inválidos", code="VALIDATION_ERROR", **kwargs):
         kwargs.setdefault("recoverable", True)
         super().__init__(message=message, code=code, **kwargs)
@@ -106,6 +112,8 @@ class LIAValidationError(LIAError):
 class LIATenantError(LIAError):
     """Tenant not found or isolation violated."""
 
+    http_status = 403
+
     def __init__(self, message="Tenant não encontrado", code="TENANT_ERROR", **kwargs):
         kwargs.setdefault("recoverable", False)
         super().__init__(message=message, code=code, **kwargs)
@@ -117,6 +125,8 @@ class LIATenantError(LIAError):
 
 class LIAComplianceError(LIAError):
     """Compliance violation — consent, fairness, LGPD. NEVER fail-open."""
+
+    http_status = 451
 
     def __init__(
         self,
@@ -149,6 +159,78 @@ class LIAFairnessError(LIAComplianceError):
 class LIAIntegrationError(LIAError):
     """External service failed (email, WhatsApp, calendar, ATS)."""
 
+    http_status = 502
+
     def __init__(self, message="Serviço externo indisponível", code="INTEGRATION_ERROR", **kwargs):
         kwargs.setdefault("recoverable", True)
+        super().__init__(message=message, code=code, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# Not-found errors — resource doesn't exist or is inaccessible
+# ---------------------------------------------------------------------------
+
+class LIANotFoundError(LIAError):
+    """Resource not found or not accessible to caller."""
+
+    http_status = 404
+
+    def __init__(self, message="Recurso não encontrado", code="NOT_FOUND", **kwargs):
+        kwargs.setdefault("recoverable", False)
+        super().__init__(message=message, code=code, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# Authorization errors — caller lacks permission
+# ---------------------------------------------------------------------------
+
+class LIAAuthorizationError(LIAError):
+    """Caller authenticated but not authorized for this resource/action."""
+
+    http_status = 403
+
+    def __init__(self, message="Acesso negado", code="AUTHORIZATION_ERROR", **kwargs):
+        kwargs.setdefault("recoverable", False)
+        super().__init__(message=message, code=code, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# Rate-limit errors — too many requests
+# ---------------------------------------------------------------------------
+
+class LIARateLimitError(LIAError):
+    """Rate limit exceeded — caller should back off and retry."""
+
+    http_status = 429
+
+    def __init__(self, message="Limite de requisições excedido", code="RATE_LIMIT", **kwargs):
+        kwargs.setdefault("recoverable", True)
+        super().__init__(message=message, code=code, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# Conflict errors — state conflict (duplicate, stale, etc.)
+# ---------------------------------------------------------------------------
+
+class LIAConflictError(LIAError):
+    """State conflict — duplicate resource, stale update, etc."""
+
+    http_status = 409
+
+    def __init__(self, message="Conflito de estado", code="CONFLICT", **kwargs):
+        kwargs.setdefault("recoverable", True)
+        super().__init__(message=message, code=code, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# Not-configured errors — feature/integration not set up
+# ---------------------------------------------------------------------------
+
+class LIANotConfiguredError(LIAError):
+    """Feature or integration not configured for this tenant."""
+
+    http_status = 501
+
+    def __init__(self, message="Funcionalidade não configurada", code="NOT_CONFIGURED", **kwargs):
+        kwargs.setdefault("recoverable", False)
         super().__init__(message=message, code=code, **kwargs)

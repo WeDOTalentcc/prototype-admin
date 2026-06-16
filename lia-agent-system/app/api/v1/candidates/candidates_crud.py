@@ -528,7 +528,7 @@ async def list_candidates(
         raise
     except Exception as e:
         logger.error(f"Error listing candidates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/{candidate_id}", response_model=ResponseEnvelope)
@@ -565,7 +565,7 @@ async def get_candidate(
         raise
     except Exception as e:
         logger.error(f"Error getting candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: str):
@@ -664,7 +664,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.put("/{candidate_id}", response_model=None)
@@ -702,7 +702,7 @@ async def update_candidate(
         raise
     except Exception as e:
         logger.error(f"Error updating candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.patch("/{candidate_id}/stage", response_model=None)
@@ -979,7 +979,7 @@ async def update_candidate_stage(
         raise
     except Exception as e:
         logger.error(f"Error updating candidate stage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.put("/{candidate_id}/experiences", response_model=None)
@@ -1054,7 +1054,7 @@ async def update_candidate_experiences(
             "[update_candidate_experiences] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar experiencias do candidato.")
+        raise
 
 
 @router.put("/{candidate_id}/education", response_model=None)
@@ -1124,7 +1124,7 @@ async def update_candidate_education(
             "[update_candidate_education] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar formacao do candidato.")
+        raise
 
 
 @router.put("/{candidate_id}/skills", response_model=None)
@@ -1182,7 +1182,7 @@ async def update_candidate_skills(
             "[update_candidate_skills] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar skills do candidato.")
+        raise
 
 
 @router.put("/{candidate_id}/certifications", response_model=None)
@@ -1243,7 +1243,7 @@ async def update_candidate_certifications(
             "[update_candidate_certifications] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar certificações do candidato.")
+        raise
 
 
 @router.put("/{candidate_id}/identity", response_model=None)
@@ -1328,7 +1328,7 @@ async def update_candidate_identity(
             "[update_candidate_identity] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar identidade do candidato.")
+        raise
 
 
 @router.delete("/{candidate_id}", response_model=None)
@@ -1349,7 +1349,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 # ---------------------------------------------------------------------------
@@ -1399,7 +1399,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error enriching candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 # ---------------------------------------------------------------------------

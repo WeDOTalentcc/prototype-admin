@@ -253,9 +253,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error starting culture analysis")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @router.post("/analyze-direct", response_model=CultureAnalysisResult)
 async def analyze_culture_direct(
     request: CultureAnalysisDirectRequest,
@@ -440,9 +438,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error in direct culture analysis")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @router.get("/status/{job_id}", response_model=CultureAnalysisJobStatus)
 async def get_analysis_status(
     job_id: uuid.UUID,
@@ -472,9 +468,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error fetching job status")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @router.patch("/{company_id}/approve", response_model=CompanyCultureProfileResponse)
 async def approve_culture_profile(
     company_id: uuid.UUID,
@@ -500,9 +494,7 @@ async def approve_culture_profile(
         raise
     except Exception as e:
         logger.exception("Error approving culture profile")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @router.patch("/{company_id}/reject", response_model=CompanyCultureProfileResponse)
 async def reject_culture_profile(
     company_id: uuid.UUID,
@@ -526,9 +518,7 @@ async def reject_culture_profile(
         raise
     except Exception as e:
         logger.exception("Error rejecting culture profile")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @router.get("/{company_id}", response_model=CompanyCultureProfileResponse)
 async def get_culture_profile(
     company_id: uuid.UUID,
@@ -569,9 +559,7 @@ async def get_culture_profile(
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error fetching culture profile")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @router.put("/{company_id}", response_model=CompanyCultureProfileResponse)
 async def update_culture_profile(
     company_id: uuid.UUID,
@@ -688,9 +676,7 @@ async def update_culture_profile(
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error updating culture profile")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @router.delete("/{company_id}", response_model=None)
 async def delete_culture_profile(
     company_id: uuid.UUID,
@@ -720,9 +706,7 @@ async def delete_culture_profile(
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error deleting culture profile")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @router.get("/", response_model=list[CompanyCultureProfileResponse])
 async def list_culture_profiles(
     skip: int = Query(0, ge=0),
@@ -750,9 +734,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error listing culture profiles")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @router.post("/{company_id}/match", response_model=None)
 async def calculate_culture_match(
     company_id: uuid.UUID,
@@ -801,9 +783,7 @@ async def calculate_culture_match(
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error calculating culture match")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 # ─────────────────────────────────────────────────────────────────────────────
 # Legacy ``/company`` router — culture/EVP/enrichment endpoints relocated
 # from ``app/api/v1/company.py`` (T2/#994). Public paths are preserved
@@ -943,9 +923,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error enriching company profile")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @legacy_router.post("/auto-enrich/{profile_id}", response_model=AutoEnrichResponse)
 async def auto_enrich_company(
     profile_id: uuid.UUID,
@@ -1140,9 +1118,7 @@ REGRAS:
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error in auto-enrich")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @legacy_router.post("/profile/{profile_id}/generate-evp", response_model=EVPAnalysisResponse)
 async def generate_evp(
     profile_id: uuid.UUID,
@@ -1257,9 +1233,7 @@ REGRAS:
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error generating EVP")
-        raise HTTPException(status_code=500, detail="internal error") from e
-
-
+        raise
 @legacy_router.post("/analyze-culture", response_model=LegacyCultureAnalysisResponse)
 async def analyze_company_culture(
     data: LegacyCultureAnalysisRequest,
@@ -1435,4 +1409,4 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error analyzing company culture")
-        raise HTTPException(status_code=500, detail="internal error") from e
+        raise

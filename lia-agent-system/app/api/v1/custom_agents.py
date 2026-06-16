@@ -137,7 +137,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error creating custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to create custom agent")
+        raise
 
 
 @router.get("", response_model=CustomAgentListResponse)
@@ -343,7 +343,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error updating custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to update custom agent")
+        raise
 
 
 @router.delete("/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -375,7 +375,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error deleting custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to delete custom agent")
+        raise
 
 
 @router.post("/{agent_id}/test", response_model=TestCustomAgentResponse)
@@ -447,7 +447,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error testing custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 # ── Q4.1 Sandbox dry-run (2026-05-29) ─────────────────────────────────────────
@@ -559,7 +559,7 @@ async def dry_run_custom_agent(
         raise
     except Exception as e:
         logger.error("Error in dry-run for custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/{agent_id}/execute", response_model=ExecuteCustomAgentResponse)
@@ -855,7 +855,7 @@ company_id: str = Depends(require_company_id)):
                 )
         except Exception as _wh_err:
             logger.warning("[Webhook] execution.failed dispatch error: %s", _wh_err)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/{agent_id}/publish", response_model=MarketplaceListingResponse)
@@ -895,7 +895,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error publishing to marketplace: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to publish to marketplace")
+        raise
 
 
 marketplace_router = APIRouter(prefix="/agent-marketplace", tags=["Agent Marketplace"])
@@ -960,7 +960,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error installing agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to install agent")
+        raise
 
 
 @marketplace_router.get("/installations", response_model=AgentInstallationListResponse)
@@ -1013,7 +1013,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error uninstalling agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to uninstall agent")
+        raise
 
 
 @marketplace_router.get("/billing", response_model=list[MarketplaceBillingResponse])
@@ -1075,7 +1075,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error reviewing listing: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to review listing")
+        raise
 
 
 @router.get("/{agent_id}/executions", summary="Get execution history for an agent")
@@ -1138,7 +1138,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error fetching studio consumption: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to fetch studio consumption")
+        raise
 
 
 @router.get("/studio/quota", summary="Get Studio agent quota status")
@@ -1174,7 +1174,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error fetching studio quota: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to fetch studio quota")
+        raise
 
 
 @router.get(
@@ -1224,9 +1224,7 @@ async def get_studio_quota_agents_total(
         raise
     except Exception as e:
         logger.error("Error fetching agents-total quota: %s", e, exc_info=True)
-        raise HTTPException(
-            status_code=500, detail="Failed to fetch agents-total quota"
-        )
+        raise
 
 
 @router.get("/{agent_id}/versions", summary="List agent version history")
@@ -1315,7 +1313,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("[AgentVersion] revert failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to revert agent")
+        raise
 
 
 @router.get("/search", summary="Search agents by name (fuzzy)")
@@ -1761,7 +1759,7 @@ Responda APENAS com o JSON, sem texto adicional."""
         raise
     except Exception as e:
         logger.error("Error generating agent config: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/{agent_id}/clone", summary="Clone an existing agent")
@@ -1817,7 +1815,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error cloning agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to clone agent")
+        raise
 
 
 @router.get("/{agent_id}/preview-prompt")

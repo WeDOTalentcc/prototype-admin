@@ -60,7 +60,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing departments: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/departments", response_model=DepartmentResponse)
@@ -91,7 +91,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error creating department: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.put("/departments/{department_id}", response_model=DepartmentResponse)
@@ -120,7 +120,7 @@ current_user: User = Depends(get_current_user_or_demo),
         raise
     except Exception as e:
         logger.error(f"Error updating department: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.delete("/departments/{department_id}", response_model=None)
@@ -150,7 +150,7 @@ async def delete_department(
         raise
     except Exception as e:
         logger.error(f"Error deleting department: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/departments/{department_id}/members", response_model=list[DepartmentMemberResponse])
@@ -174,7 +174,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing department members: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/departments/{department_id}/members", response_model=DepartmentMemberResponse)
@@ -232,7 +232,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating department member: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.put("/members/{member_id}", response_model=DepartmentMemberResponse)
@@ -261,7 +261,7 @@ current_user: User = Depends(get_current_user_or_demo),
         raise
     except Exception as e:
         logger.error(f"Error updating department member: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.delete("/members/{member_id}", response_model=None)
@@ -291,7 +291,7 @@ async def delete_department_member(
         raise
     except Exception as e:
         logger.error(f"Error deleting department member: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 # =============================================
@@ -331,7 +331,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing managers: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/managers/infer-email", response_model=None)
@@ -374,7 +374,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error inferring manager email: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 # =============================================
@@ -448,7 +448,7 @@ async def download_departments_import_template(company_id: str = Depends(require
         raise
     except Exception as e:
         logger.error(f"Error generating departments import template: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/members/import/template", response_model=None)
@@ -475,7 +475,7 @@ async def download_members_import_template(company_id: str = Depends(require_com
         raise
     except Exception as e:
         logger.error(f"Error generating members import template: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/benefits/import/template", response_model=None)
@@ -504,7 +504,7 @@ async def download_benefits_import_template(company_id: str = Depends(require_co
         raise
     except Exception as e:
         logger.error(f"Error generating benefits import template: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/departments/import", response_model=DepartmentImportResponse)
@@ -597,4 +597,4 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error importing departments: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise

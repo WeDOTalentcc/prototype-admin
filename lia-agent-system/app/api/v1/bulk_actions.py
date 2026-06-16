@@ -340,7 +340,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk update status failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/candidates/bulk/assign-job", response_model=BulkOperationResult)
@@ -470,7 +470,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk assign job failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/candidates/bulk/send-email", response_model=BulkOperationResult)
@@ -589,7 +589,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk send email failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/candidates/bulk/start-screening", response_model=BulkOperationResult)
@@ -724,7 +724,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk start screening failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/candidates/bulk/export", response_model=None)
@@ -885,7 +885,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Bulk export failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.delete("/candidates/bulk/delete", response_model=BulkOperationResult)
@@ -977,7 +977,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk delete failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/candidates/bulk/add-tags", response_model=BulkOperationResult)
@@ -1048,7 +1048,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk add tags failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/candidates/bulk/remove-tags", response_model=BulkOperationResult)
@@ -1119,4 +1119,4 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk remove tags failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
