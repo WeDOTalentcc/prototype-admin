@@ -109,6 +109,8 @@ export interface UseNewCandidateModalReturn {
   uploadProgress: number
   error: string | null
   setError: (error: string | null) => void
+  fieldErrors: Record<string, string>
+  setFieldErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>
   parsedCV: ParsedCV | null
   linkedinUrl: string
   setLinkedinUrl: (url: string) => void

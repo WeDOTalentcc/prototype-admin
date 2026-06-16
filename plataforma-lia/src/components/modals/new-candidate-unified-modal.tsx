@@ -69,6 +69,8 @@ export function NewCandidateUnifiedModal({
               canSubmitManual={modal.canSubmitManual}
               handleSubmitManual={modal.handleSubmitManual}
               error={modal.error}
+              fieldErrors={modal.fieldErrors}
+              setFieldErrors={modal.setFieldErrors}
             />
           )}
           {modal.currentStep === 'duplicate-found' && (

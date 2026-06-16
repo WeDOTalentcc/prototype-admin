@@ -47,6 +47,8 @@ interface InputStepProps {
   handleSubmitManual: () => void
 
   error: string | null
+  fieldErrors: Record<string, string>
+  setFieldErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>
 }
 
 function getFileIcon(filename: string) {
@@ -88,6 +90,8 @@ export function InputStep({
   canSubmitManual,
   handleSubmitManual,
   error,
+  fieldErrors,
+  setFieldErrors,
 }: InputStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -95,7 +99,7 @@ export function InputStep({
     <div data-testid="new-candidate-input-step" className="space-y-4">
       <div className="flex">
         <button
-          onClick={() => { setActiveTab('cv'); setError(null) }}
+          onClick={() => { setActiveTab('cv'); setError(null); setFieldErrors({}) }}
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'cv'
@@ -112,7 +116,7 @@ export function InputStep({
           )}
         </button>
         <button
-          onClick={() => { setActiveTab('linkedin'); setError(null) }}
+          onClick={() => { setActiveTab('linkedin'); setError(null); setFieldErrors({}) }}
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'linkedin'
@@ -129,7 +133,7 @@ export function InputStep({
           )}
         </button>
         <button
-          onClick={() => { setActiveTab('manual'); setError(null) }}
+          onClick={() => { setActiveTab('manual'); setError(null); setFieldErrors({}) }}
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'manual'
@@ -271,12 +275,17 @@ export function InputStep({
               id="linkedin-url"
               placeholder="https://linkedin.com/in/nome-do-usuario"
               value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
+              onChange={(e) => { setLinkedinUrl(e.target.value); setFieldErrors(prev => { const { linkedinUrl: _, ...rest } = prev; return rest }) }}
+              aria-invalid={!!fieldErrors.linkedinUrl}
               className="h-9 text-xs font-sans"
             />
-            <p className="text-xs text-lia-text-tertiary font-sans">
-              Ex: linkedin.com/in/joao-silva
-            </p>
+            {fieldErrors.linkedinUrl ? (
+              <p role="alert" className="text-xs text-status-error">{fieldErrors.linkedinUrl}</p>
+            ) : (
+              <p className="text-xs text-lia-text-tertiary font-sans">
+                Ex: linkedin.com/in/joao-silva
+              </p>
+            )}
           </div>
 
           <div className="flex items-center gap-2 p-2.5 bg-lia-bg-secondary/50 border border-lia-border-default rounded-xl">
@@ -317,10 +326,14 @@ export function InputStep({
                   id="manual-name"
                   placeholder="João Silva"
                   value={manualData.name}
-                  onChange={(e) => setManualData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => { setManualData(prev => ({ ...prev, name: e.target.value })); setFieldErrors(prev => { const { name: _, ...rest } = prev; return rest }) }}
+                  aria-invalid={!!fieldErrors.name}
                   className="pl-8 h-9 text-xs"
                 />
               </div>
+              {fieldErrors.name && (
+                <p role="alert" className="text-xs text-status-error">{fieldErrors.name}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -332,7 +345,7 @@ export function InputStep({
                   type="email"
                   placeholder="joao.silva@email.com"
                   value={manualData.email}
-                  onChange={(e) => setManualData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) => { setManualData(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const { contact: _, ...rest } = prev; return rest }) }}
                   className="pl-8 h-9 text-xs"
                 />
               </div>
@@ -346,10 +359,14 @@ export function InputStep({
                   id="manual-phone"
                   placeholder="(11) 99999-9999"
                   value={manualData.phone}
-                  onChange={(e) => setManualData(prev => ({ ...prev, phone: e.target.value }))}
+                  onChange={(e) => { setManualData(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const { contact: _, ...rest } = prev; return rest }) }}
+                  aria-invalid={!!fieldErrors.contact}
                   className="pl-8 h-9 text-xs"
                 />
               </div>
+              {fieldErrors.contact && (
+                <p role="alert" className="text-xs text-status-error">{fieldErrors.contact}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
