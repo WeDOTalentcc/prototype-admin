@@ -144,6 +144,10 @@ class SSEChatRequest(WeDoBaseModel):
     # HITL (AUD-4 1b-c): quando o usuario aprova uma acao sensivel pendente, o FE
     # re-envia a mensagem original COM este id. Server valida + libera o gate.
     approve_pending_id: str | None = None
+    # Vaga em Foco: when recruiter is on a job kanban page, FE stores the
+    # active job and sends its ID here so LIA can prioritize that job.
+    # Multi-tenancy enforced via get_vacancy_by_id_and_company (company_id from JWT).
+    focused_job_id: str | None = None
 
     class Config:
         from_attributes = True
@@ -546,6 +550,37 @@ company_id: str = Depends(require_company_id)):
                 else:
                     logger.warning("[SSEChat] TenantContext injection skipped: %s", _tc_exc)
 
+        async def _inject_focused_job_async():
+            """Inject Vaga em Foco context into the chat context dict.
+
+            Runs in parallel with other setup tasks. Fail-open: any exception
+            (missing job, invalid UUID, DB error) is silently logged at DEBUG
+            level — a stale focused_job_id must never break the chat turn.
+            Multi-tenancy: company_id comes from JWT (not from req payload).
+            """
+            _fj_id = req.focused_job_id
+            if not _fj_id or not company_id:
+                return
+            try:
+                from app.core.database import AsyncSessionLocal
+                from app.shared.services.lia_agent_context_builder import (
+                    build_focused_job_context,
+                )
+
+                async with AsyncSessionLocal() as _fj_db:
+                    _fj_snippet = await build_focused_job_context(
+                        _fj_id, company_id, _fj_db
+                    )
+                    if _fj_snippet:
+                        context["focused_job_snippet"] = _fj_snippet
+                        logger.info(
+                            "[SSEChat] focused_job injected id=%s", _fj_id
+                        )
+            except Exception as _fj_exc:
+                logger.debug(
+                    "[SSEChat] focused_job injection skipped: %s", _fj_exc
+                )
+
         async def _route_domain_async():
             if active_domain not in ("auto", "recruiter_assistant", ""):
                 return active_domain
@@ -612,15 +647,23 @@ company_id: str = Depends(require_company_id)):
                 pass
             return active_domain
 
-        # All 4 setup tasks run in parallel — budget, routing, B2 identity
-        # masking, and tenant context are fully independent I/O operations.
-        budget_result, resolved_domain, _, _ = await asyncio.gather(
+        # All 5 setup tasks run in parallel — budget, routing, B2 identity
+        # masking, tenant context, and focused job are fully independent I/O ops.
+        budget_result, resolved_domain, _, _, _ = await asyncio.gather(
             _check_budget_async(),
             _route_domain_async(),
             _b2_setup_async(),
             _inject_tenant_context_async(),
+            _inject_focused_job_async(),
         )
         budget_ok, used, limit = budget_result
+        # Vaga em Foco: append focused job snippet to tenant context so all
+        # downstream agents see it as part of the injected company context.
+        if context.get("focused_job_snippet"):
+            context["tenant_context_snippet"] = (
+                context.get("tenant_context_snippet", "")
+                + context["focused_job_snippet"]
+            )
         if not budget_ok:
             yield format_sse_event(
                 serialize_error(

@@ -119,4 +119,51 @@ async def build_company_agent_context(
         return ""
 
 
-__all__ = ["build_company_agent_context"]
+async def build_focused_job_context(
+    focused_job_id: str | None,
+    company_id: str,
+    db: AsyncSession,
+) -> str:
+    """Build a context block for the focused job to inject into LIA system prompt.
+
+    Multi-tenancy: validates job belongs to company_id before injecting.
+    The company_id MUST come from the authenticated JWT context — never from
+    the request payload — so the caller is responsible for that contract.
+
+    Returns:
+        Markdown prompt fragment with a "## Vaga em foco" section, or empty
+        string if the job is not found, company mismatch, or on any error
+        (fail-open so a stale focused_job_id never breaks chat).
+    """
+    if not focused_job_id or not company_id:
+        return ""
+    try:
+        from uuid import UUID
+
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+            JobVacancyCrudRepository,
+        )
+
+        repo = JobVacancyCrudRepository(db)
+        job = await repo.get_vacancy_by_id_and_company(
+            UUID(focused_job_id), company_id
+        )
+        if not job:
+            return ""
+        return (
+            "\n\n## Vaga em foco\n"
+            f'O recrutador está trabalhando na vaga: "{job.title}" (ID: {job.id})\n'
+            "Priorize contexto, perguntas e ações relacionadas a essa vaga quando relevante."
+        )
+    except Exception as exc:
+        logger.debug(
+            "[lia_agent_context_builder] build_focused_job_context skipped "
+            "for focused_job_id=%s company_id=%s: %s",
+            focused_job_id,
+            company_id,
+            exc,
+        )
+        return ""
+
+
+__all__ = ["build_company_agent_context", "build_focused_job_context"]
