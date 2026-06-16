@@ -303,7 +303,7 @@ async def get_anthropic_client(
         track_llm_usage_start(company_id, model=None, domain=domain, operation=operation)
         return get_provider_for_tenant()
     except Exception as e:
-        logger.error(f"Failed to get LLM provider: {e}")
+        logger.error(f"Failed to get LLM provider: {e}", exc_info=True)
         return None
 
 
@@ -351,5 +351,5 @@ async def _run_anthropic_sync(client, model: str, max_tokens: int, messages: lis
         return None
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-        logger.error(f"LLM call failed: {type(e).__name__}: {e}")
+        logger.error(f"LLM call failed: {type(e).__name__}: {e}", exc_info=True)
         return None

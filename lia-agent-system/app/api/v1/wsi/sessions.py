@@ -76,7 +76,7 @@ async def get_session(session_id: str, db: AsyncSession = Depends(get_db), compa
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get session: {e}")
+        logger.error(f"Failed to get session: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -128,7 +128,7 @@ async def get_candidate_results(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to get results: {e}")
+        logger.error(f"Failed to get results: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

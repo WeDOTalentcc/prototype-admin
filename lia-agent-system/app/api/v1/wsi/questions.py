@@ -271,12 +271,12 @@ company_id: str = Depends(require_company_id)):
             # save_question_set faz o db.commit() de flat+set juntos; se falhar,
             # o flat fica uncommitted. Rollback descarta tudo e propaga a falha
             # em vez de mascarar com success:True (orfao flat sem set versionado).
-            logger.error(f"Failed to save question set version (rolling back): {version_err}")
+            logger.error(f"Failed to save question set version (rolling back): {version_err}", exc_info=True)
             await db.rollback()
             return {"success": False, "error": f"version_save_failed: {version_err}"}
         return {"success": True, "saved_count": len(request.questions)}
     except Exception as e:
-        logger.error(f"Failed to save questions: {e}")
+        logger.error(f"Failed to save questions: {e}", exc_info=True)
         try:
             await db.rollback()
             await db.execute(text("""
@@ -329,12 +329,12 @@ company_id: str = Depends(require_company_id)):
             except Exception as version_err:
                 # Audit C9/#1 (2026-06-05): set versionado NAO e opcional (mesma
                 # transacao do flat). Rollback + propaga a falha em vez de success:True.
-                logger.error(f"Failed to save question set version (rolling back): {version_err}")
+                logger.error(f"Failed to save question set version (rolling back): {version_err}", exc_info=True)
                 await db.rollback()
                 return {"success": False, "error": f"version_save_failed: {version_err}"}
             return {"success": True, "saved_count": len(request.questions)}
         except Exception as e2:
-            logger.error(f"Failed even after table creation: {e2}")
+            logger.error(f"Failed even after table creation: {e2}", exc_info=True)
             return {"success": False, "error": str(e2)}
 
 
@@ -360,7 +360,7 @@ company_id: str = Depends(require_company_id)):
             "created_at": qs.created_at.isoformat() if qs.created_at else None,
         }
     except Exception as e:
-        logger.error(f"Failed to get active question set: {e}")
+        logger.error(f"Failed to get active question set: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
 
@@ -375,7 +375,7 @@ company_id: str = Depends(require_company_id)):
         versions = await sqs_svc.list_versions(db, job_id)
         return {"success": True, "versions": versions, "total": len(versions)}
     except Exception as e:
-        logger.error(f"Failed to list question set versions: {e}")
+        logger.error(f"Failed to list question set versions: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
 
@@ -403,7 +403,7 @@ company_id: str = Depends(require_company_id)):
             "created_at": qs.created_at.isoformat() if qs.created_at else None,
         }
     except Exception as e:
-        logger.error(f"Failed to get question set version: {e}")
+        logger.error(f"Failed to get question set version: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
 
@@ -418,7 +418,7 @@ company_id: str = Depends(require_company_id)):
         result = await sqs_svc.check_version_consistency(db, job_id)
         return {"success": True, **result}
     except Exception as e:
-        logger.error(f"Failed to check consistency: {e}")
+        logger.error(f"Failed to check consistency: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
 

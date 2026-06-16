@@ -999,6 +999,28 @@ async def request_budget_exceeded_handler(request: FastAPIRequest, exc: RequestB
     )
 
 
+from app.domains.agent_studio.repositories.pool_agent_assignment_repository import (
+    CrossTenantError,
+)
+
+@app.exception_handler(CrossTenantError)
+async def cross_tenant_error_handler(request: FastAPIRequest, exc: CrossTenantError):
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning(
+        "Cross-tenant access attempt blocked [request_id=%s]: %s",
+        request_id, exc,
+    )
+    return JSONResponse(
+        status_code=403,
+        content={
+            "error": True,
+            "status_code": 403,
+            "message": "Acesso negado",
+            "request_id": request_id,
+        },
+    )
+
+
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: FastAPIRequest, exc: Exception):
     request_id = getattr(request.state, "request_id", "unknown")

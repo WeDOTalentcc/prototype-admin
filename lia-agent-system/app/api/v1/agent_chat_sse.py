@@ -298,7 +298,7 @@ company_id: str = Depends(require_company_id)):
         except HTTPException:
             raise
         except Exception as exc:
-            logger.error("[SSEAction] HITL action failed: %s", exc)
+            logger.error("[SSEAction] HITL action failed: %s", exc, exc_info=True)
             raise HTTPException(status_code=500, detail="Failed to process approval")
 
     return {"status": "ok", "message": "Action received"}
