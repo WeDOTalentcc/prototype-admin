@@ -38,7 +38,7 @@ export interface CreditEstimateWithLevel extends CreditEstimate {
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useVacancySearch(vacancyId: string, enrichedJD: string) {
+export function useVacancySearch(vacancyId: string, enrichedJD: string, onCandidatesAdded?: () => void) {
   // ---- core state ----
   const [mode, setMode] = useState<VacancySearchMode>("auto")
   const [showModal, setShowModal] = useState(false)
@@ -439,10 +439,11 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string) {
       setShowResults(false)
       setSelectedIds(new Set())
       setShowAutoConfirm(false)
+      onCandidatesAdded?.()
     } catch (err) {
       toast.error("Erro ao adicionar", { description: (err as Error).message })
     }
-  }, [selectedIds, vacancyId, searchSource])
+  }, [selectedIds, vacancyId, searchSource, onCandidatesAdded])
 
   // ---- auto add (used after confirmation — feature 4) ----
   const addAutoCandidates = useCallback(async () => {
@@ -471,10 +472,11 @@ export function useVacancySearch(vacancyId: string, enrichedJD: string) {
       setShowResults(false)
       setSelectedIds(new Set())
       setShowAutoConfirm(false)
+      onCandidatesAdded?.()
     } catch (err) {
       toast.error("Erro ao adicionar", { description: (err as Error).message })
     }
-  }, [searchResults, autoConfig, searchSource, vacancyId])
+  }, [searchResults, autoConfig, searchSource, vacancyId, onCandidatesAdded])
 
   // ---- auto confirmation actions (feature 4) ----
   const confirmAutoAdd = useCallback(() => {

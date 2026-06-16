@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { useKanbanPageCore } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
 import { KanbanJobHeader } from "@/components/pages/job-kanban/KanbanJobHeader"
@@ -31,7 +31,10 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
     if (typeof ej === "string") return ej
     return (ej as Record<string, unknown>)?.content as string || JSON.stringify(ej)
   })()
-  const vs = useVacancySearch(vacancyId, enrichedJD)
+  const handleCandidatesAdded = useCallback(() => {
+    state.router?.refresh()
+  }, [state.router])
+  const vs = useVacancySearch(vacancyId, enrichedJD, handleCandidatesAdded)
 
   if (!state.isClient) {
     return (
@@ -124,6 +127,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
 
       <VacancyCandidateSearchResults
         isOpen={vs.showResults}
+        vacancyId={vacancyId}
         onClose={vs.closeResults}
         vacancyTitle={(state.currentJob?.title as string) || ""}
         mode={vs.mode}
