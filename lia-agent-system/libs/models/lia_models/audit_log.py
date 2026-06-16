@@ -89,6 +89,10 @@ class AuditLog(Base):
     # Liga a decisao ao request HTTP que a originou.
     # Substitui o workaround session_id=trace_id (Task #366).
     correlation_id = Column(String(80), nullable=True, index=True)
+
+    # GAP-10-004: LGPD Art. 15 — qual modelo de IA tomou/influenciou a decisão.
+    # Preenchido automaticamente pelo AuditService via agent_model_config.
+    model_version = Column(String(80), nullable=True, index=True)
     
     def __repr__(self):
         return f"<AuditLog {self.id} - {self.agent_name}: {self.decision_type} -> {self.decision}>"
@@ -115,4 +119,5 @@ class AuditLog(Base):
             "human_override": self.human_override,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "retention_until": self.retention_until.isoformat() if self.retention_until else None,
+            "model_version": self.model_version,
         }

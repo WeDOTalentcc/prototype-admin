@@ -16,6 +16,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal
 from app.models.audit_log import AuditLog, DecisionType
 
+# GAP-10-004: resolve model version for LGPD Art. 15 traceability
+def _resolve_model_version(agent_name: str | None, model_version: str | None) -> str | None:
+    """Resolve model_version: explicit > agent config > default."""
+    if model_version:
+        return model_version
+    if not agent_name:
+        return None
+    try:
+        from app.core.agent_model_config import get_model_for_agent
+        return get_model_for_agent(agent_name)
+    except Exception:
+        return None
+
 logger = logging.getLogger(__name__)
 
 
@@ -203,6 +216,7 @@ class AuditService:
         human_review_required: bool = False,
         criteria_ignored: list[str] | None = None,
         actor_user_id: str | None = None,
+        model_version: str | None = None,
     ) -> AuditLog:
         """Public entrypoint — redispatches to main loop when called from a transient loop.
 
@@ -210,10 +224,10 @@ class AuditService:
         """
         if not _running_on_main_loop():
             return _dispatch_on_main_loop(
-                lambda: self._log_decision_impl(company_id=company_id, agent_name=agent_name, decision_type=decision_type, action=action, decision=decision, reasoning=reasoning, criteria_used=criteria_used, candidate_id=candidate_id, job_vacancy_id=job_vacancy_id, score=score, confidence=confidence, human_review_required=human_review_required, criteria_ignored=criteria_ignored, actor_user_id=actor_user_id),
+                lambda: self._log_decision_impl(company_id=company_id, agent_name=agent_name, decision_type=decision_type, action=action, decision=decision, reasoning=reasoning, criteria_used=criteria_used, candidate_id=candidate_id, job_vacancy_id=job_vacancy_id, score=score, confidence=confidence, human_review_required=human_review_required, criteria_ignored=criteria_ignored, actor_user_id=actor_user_id, model_version=model_version),
                 timeout=15.0,
             )
-        return await self._log_decision_impl(company_id=company_id, agent_name=agent_name, decision_type=decision_type, action=action, decision=decision, reasoning=reasoning, criteria_used=criteria_used, candidate_id=candidate_id, job_vacancy_id=job_vacancy_id, score=score, confidence=confidence, human_review_required=human_review_required, criteria_ignored=criteria_ignored, actor_user_id=actor_user_id)
+        return await self._log_decision_impl(company_id=company_id, agent_name=agent_name, decision_type=decision_type, action=action, decision=decision, reasoning=reasoning, criteria_used=criteria_used, candidate_id=candidate_id, job_vacancy_id=job_vacancy_id, score=score, confidence=confidence, human_review_required=human_review_required, criteria_ignored=criteria_ignored, actor_user_id=actor_user_id, model_version=model_version)
 
     async def _log_decision_impl(
         self,
@@ -231,6 +245,7 @@ class AuditService:
         human_review_required: bool = False,
         criteria_ignored: list[str] | None = None,
         actor_user_id: str | None = None,
+        model_version: str | None = None,
     ) -> AuditLog:
         """
         Log an AI decision with full context for auditability.
@@ -317,6 +332,7 @@ class AuditService:
                 # de o caller pular este caminho.
                 created_at=now,
                 correlation_id=_correlation_id,
+                model_version=_resolve_model_version(agent_name, model_version),
             )
 
             session.add(audit_log)
@@ -560,6 +576,7 @@ class AuditService:
         candidate_id: str = None,
         job_vacancy_id: str = None,
         fairness_flags: list = None,
+        model_version: str | None = None,
     ) -> None:
         """
         Registra a saida conversacional da LIA para auditoria completa.
@@ -601,11 +618,12 @@ class AuditService:
                 criteria_ignored=list(PROTECTED_CRITERIA),
                 human_review_required=False,
                 retention_until=retention_until,
+                model_version=_resolve_model_version(agent_used, model_version),
             )
             session.add(audit_log)
             await session.commit()
 
-            logger.info("Output audit logged: agent=%s session=%s candidate=%s", agent_used, session_id, candidate_id)
+            logger.info("Output audit logged: agent=%s session=%s candidate=%s model=%s", agent_used, session_id, candidate_id, _resolve_model_version(agent_used, model_version))
 
     async def record_human_review(
         self,
@@ -763,6 +781,7 @@ class AuditService:
         target_id: str | None = None,
         target_type: str | None = None,
         metadata: dict[str, Any] | None = None,
+        model_version: str | None = None,
     ) -> None:
         """Log an action (email sent, candidate moved, job published).
 
@@ -792,6 +811,7 @@ class AuditService:
                     job_vacancy_id=target_id if target_type == "job" else None,
                     session_id=trace_id,
                     retention_until=datetime.utcnow() + timedelta(days=730),
+                    model_version=_resolve_model_version(actor, model_version),
                 )
                 session.add(log)
                 await session.commit()
