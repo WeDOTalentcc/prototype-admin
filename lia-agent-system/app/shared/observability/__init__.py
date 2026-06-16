@@ -1,1 +1,0 @@
-# Observability — Sentry, LangSmith, OpenTelemetry

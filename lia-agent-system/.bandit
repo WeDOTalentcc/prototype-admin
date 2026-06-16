@@ -1,4 +1,0 @@
-[bandit]
-exclude = /tests,/venv,/node_modules,/.venv
-skips = B101,B601
-targets = app/

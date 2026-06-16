@@ -1,5 +1,0 @@
-export { RecruitmentJourneyTab } from "./recruitment-journey-tab"
-export { AssessmentTab } from "./assessment-tab"
-export { AutomationsTab } from "./automations-tab"
-export { NPSTab } from "./nps-tab"
-export { PipelineTemplatesTab } from "./pipeline-templates-tab"

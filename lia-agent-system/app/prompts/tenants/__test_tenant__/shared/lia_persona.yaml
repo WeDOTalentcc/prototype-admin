@@ -1,8 +1,0 @@
-# W4-040 (2026-05-23): test fixture pra validar tenant override priority.
-# Esse YAML NÃO carrega em produção (tenant_id "__test_tenant__" não existe
-# em CompanyHiringPolicy). Usado APENAS por
-# tests/integration/test_tenant_prompt_override.py.
-persona:
-  name: "LIA Test Override"
-  identity: "Versão de teste para validar W4-040 override mechanism"
-  tone: "test fixture canonical"
