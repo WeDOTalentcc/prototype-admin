@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { MessageSquare, Globe, Phone, Mic, Loader2, Power } from "lucide-react"
 import { toast } from "sonner"
+import { TOAST_MESSAGES } from "@/constants/toast-messages"
 import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
 interface ScreeningChannelsModalProps {
@@ -70,10 +71,10 @@ export function ScreeningChannelsModal({
         toast.success("Canais de comunicação atualizados com sucesso")
         onClose()
       } else {
-        toast.error("Erro ao atualizar canais de comunicação")
+        toast.error(TOAST_MESSAGES.SCREENING_CONFIG.UPDATE_CHANNELS_ERROR)
       }
     } catch (_error) {
-      toast.error("Erro ao salvar configurações")
+      toast.error(TOAST_MESSAGES.SCREENING_CONFIG.SAVE_ERROR)
     } finally {
       setIsSaving(false)
     }

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { CalendarCheck, Target, Calendar, Clock, Timer, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { TOAST_MESSAGES } from "@/constants/toast-messages"
 import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
 interface ScreeningSchedulingModalProps {
@@ -71,10 +72,10 @@ export function ScreeningSchedulingModal({
         toast.success("Configurações de agendamento atualizadas com sucesso")
         onClose()
       } else {
-        toast.error("Erro ao atualizar agendamento")
+        toast.error(TOAST_MESSAGES.SCREENING_CONFIG.UPDATE_SCHEDULING_ERROR)
       }
     } catch (error) {
-      toast.error("Erro ao salvar configurações")
+      toast.error(TOAST_MESSAGES.SCREENING_CONFIG.SAVE_ERROR)
     } finally {
       setIsSaving(false)
     }

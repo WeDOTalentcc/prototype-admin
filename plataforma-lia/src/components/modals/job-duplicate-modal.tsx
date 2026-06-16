@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FormField } from "@/components/ui/form-field"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Select,
@@ -226,15 +227,14 @@ export function JobDuplicateModal({
                   Nova Vaga
                 </h4>
                 <div className="space-y-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-lia-text-primary">Nome</Label>
+                  <FormField label="Nome" labelClassName="text-xs">
                     <Input
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
                       placeholder="Nome da nova vaga"
                       className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
-                  </div>
+                  </FormField>
                   <div className="space-y-1">
                     <Label className="text-xs text-lia-text-primary">Recrutador Responsável</Label>
                     <Select value={recruiterId} onValueChange={setRecruiterId}>
@@ -258,42 +258,39 @@ export function JobDuplicateModal({
                   Novas Datas
                 </h4>
                 <div className="space-y-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-lia-text-primary flex items-center gap-1">
-                      <Calendar className="w-2.5 h-2.5 text-lia-text-muted" />
-                      Deadline Short List
-                    </Label>
+                  <FormField
+                    label={<><Calendar className="w-2.5 h-2.5 text-lia-text-muted" />Deadline Short List</>}
+                    labelClassName="text-xs flex items-center gap-1"
+                  >
                     <Input
                       type="date"
                       value={deadlineShortlist}
                       onChange={(e) => setDeadlineShortlist(e.target.value)}
                       className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-lia-text-primary flex items-center gap-1">
-                      <Calendar className="w-2.5 h-2.5 text-lia-text-muted" />
-                      Fim da Triagem
-                    </Label>
+                  </FormField>
+                  <FormField
+                    label={<><Calendar className="w-2.5 h-2.5 text-lia-text-muted" />Fim da Triagem</>}
+                    labelClassName="text-xs flex items-center gap-1"
+                  >
                     <Input
                       type="date"
                       value={deadlineScreening}
                       onChange={(e) => setDeadlineScreening(e.target.value)}
                       className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-lia-text-primary flex items-center gap-1">
-                      <Calendar className="w-2.5 h-2.5 text-lia-text-muted" />
-                      Conclusão da Vaga
-                    </Label>
+                  </FormField>
+                  <FormField
+                    label={<><Calendar className="w-2.5 h-2.5 text-lia-text-muted" />Conclusão da Vaga</>}
+                    labelClassName="text-xs flex items-center gap-1"
+                  >
                     <Input
                       type="date"
                       value={deadlineClosing}
                       onChange={(e) => setDeadlineClosing(e.target.value)}
                       className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             </div>

@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Settings, Target, Clock, RefreshCw, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { TOAST_MESSAGES } from "@/constants/toast-messages"
 import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
 interface ScreeningSettingsModalProps {
@@ -57,10 +58,10 @@ export function ScreeningSettingsModal({
         toast.success("Configurações de triagem atualizadas com sucesso")
         onClose()
       } else {
-        toast.error("Erro ao atualizar configurações")
+        toast.error(TOAST_MESSAGES.SCREENING_CONFIG.UPDATE_SETTINGS_ERROR)
       }
     } catch (error) {
-      toast.error("Erro ao salvar configurações")
+      toast.error(TOAST_MESSAGES.SCREENING_CONFIG.SAVE_ERROR)
     } finally {
       setIsSaving(false)
     }
