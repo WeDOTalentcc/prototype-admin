@@ -418,7 +418,8 @@ async def generate_candidate_parecer(
             job_id=payload.job_vacancy_id,
         )
     except ParecerGenerationError as e:
-        raise HTTPException(status_code=502, detail=str(e))
+        logger.error("Parecer generation failed", exc_info=True, extra={"candidate": str(candidate_id)})
+        raise HTTPException(status_code=502, detail="Erro ao gerar parecer — tente novamente mais tarde")
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

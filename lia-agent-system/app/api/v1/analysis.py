@@ -51,7 +51,7 @@ async def analyze_candidates(request: AnalysisRequest, company_id: str = Depends
         
     except ValueError as e:
         logger.error(f"Configuration error: {e}")
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail="Serviço de análise indisponível — verifique a configuração")
     except HTTPException:
         raise
     except Exception as e:

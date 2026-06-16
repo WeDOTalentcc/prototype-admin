@@ -110,7 +110,7 @@ async def kanban_assistant(request: KanbanAssistantRequest, company_id: str = De
         
     except ValueError as e:
         logger.error(f"Configuration error in Kanban assistant: {e}")
-        raise HTTPException(status_code=503, detail=f"AI service not configured: {str(e)}")
+        raise HTTPException(status_code=503, detail="Serviço de IA não configurado — contate o suporte")
     except HTTPException:
         raise
     except Exception as e:
