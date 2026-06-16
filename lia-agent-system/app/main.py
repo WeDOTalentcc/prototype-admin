@@ -1021,6 +1021,25 @@ async def cross_tenant_error_handler(request: FastAPIRequest, exc: CrossTenantEr
     )
 
 
+@app.exception_handler(asyncio.TimeoutError)
+async def asyncio_timeout_error_handler(request: FastAPIRequest, exc: asyncio.TimeoutError):
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning(
+        "Request timeout [request_id=%s]: %s",
+        request_id, exc,
+        exc_info=True,
+    )
+    return JSONResponse(
+        status_code=504,
+        content={
+            "error": True,
+            "status_code": 504,
+            "message": "Requisição expirou",
+            "request_id": request_id,
+        },
+    )
+
+
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: FastAPIRequest, exc: Exception):
     request_id = getattr(request.state, "request_id", "unknown")

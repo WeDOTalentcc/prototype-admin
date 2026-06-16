@@ -76,20 +76,29 @@ async def _notify_circuit_open(service_name: str) -> None:
         except Exception:
             pass  # Segue sem dedup se Redis indisponível
 
-        # Enviar notificação
-        async with AsyncSessionLocal() as db:
-            from app.services.notification_service import notification_service
-            await notification_service.send_system_alert(
-                db=db,
-                title=f"⚡ Circuit Breaker ABERTO: {service_name}",
-                message=(
-                    f"O circuit breaker para '{service_name}' foi aberto após múltiplas falhas. "
-                    f"Chamadas estão sendo rejeitadas automaticamente. "
-                    f"O circuit tentará recuperação em {30}s."
-                ),
-                severity="warning",
-                channels=["bell", "teams"],
-                metadata={"circuit_name": service_name, "event": "circuit_open"},
+        # Enviar notificação com timeout (evita hang se DB indisponível)
+        async def _do_notify() -> None:
+            async with AsyncSessionLocal() as db:
+                from app.services.notification_service import notification_service
+                await notification_service.send_system_alert(
+                    db=db,
+                    title=f"⚡ Circuit Breaker ABERTO: {service_name}",
+                    message=(
+                        f"O circuit breaker para '{service_name}' foi aberto após múltiplas falhas. "
+                        f"Chamadas estão sendo rejeitadas automaticamente. "
+                        f"O circuit tentará recuperação em {30}s."
+                    ),
+                    severity="warning",
+                    channels=["bell", "teams"],
+                    metadata={"circuit_name": service_name, "event": "circuit_open"},
+                )
+
+        try:
+            await asyncio.wait_for(_do_notify(), timeout=5.0)
+        except asyncio.TimeoutError:
+            logger.warning(
+                "[CircuitBreaker] Notification DB call timed out for %s (non-blocking)",
+                service_name,
             )
     except Exception as _e:
         logger.debug("[CircuitBreaker] Notification failed (non-blocking): %s", _e)
