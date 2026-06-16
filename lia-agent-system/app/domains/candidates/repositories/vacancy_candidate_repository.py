@@ -300,7 +300,7 @@ class VacancyCandidateRepository:
         rows = await self.db.execute(
             sa_text(
                 """
-                SELECT vc.candidate_id::text, vc.id::text, vc.lia_score
+                SELECT vc.candidate_id::text, vc.id::text, vc.lia_score, vc.source
                 FROM vacancy_candidates vc
                 WHERE vc.vacancy_id::text = :vid AND vc.company_id = :cid
                 """
@@ -308,7 +308,7 @@ class VacancyCandidateRepository:
             {"vid": vacancy_id, "cid": cid},
         )
         return {
-            str(r[0]): {"vc_id": str(r[1]), "match_score": r[2]}
+            str(r[0]): {"vc_id": str(r[1]), "match_score": r[2], "vc_source": r[3]}
             for r in rows.fetchall()
         }
 

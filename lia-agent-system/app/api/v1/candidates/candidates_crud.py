@@ -509,6 +509,8 @@ async def list_candidates(
                 if isinstance(_vc_entry, dict):
                     serialized["vc_id"] = _vc_entry.get("vc_id")
                     serialized["match_score"] = _vc_entry.get("match_score")
+                    if _vc_entry.get("vc_source"):
+                        serialized["source"] = _vc_entry["vc_source"]
                 else:
                     # legado: vc_map ainda retorna string (não deveria, mas defensive)
                     serialized["vc_id"] = _vc_entry

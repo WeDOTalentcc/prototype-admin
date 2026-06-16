@@ -113,6 +113,9 @@ const sourceIcons: Record<string, React.ElementType> = {
   internal: Building,
   lia_database: BrainCircuit,
   recruiter: User,
+  local: Search,
+  hybrid: Globe,
+  pearch: Globe,
 }
 
 const sourceLabels: Record<string, string> = {
@@ -125,6 +128,9 @@ const sourceLabels: Record<string, string> = {
   internal: "Interno",
   lia_database: "Banco LIA",
   recruiter: "Manual",
+  local: "Busca Local",
+  hybrid: "Busca Híbrida",
+  pearch: "Busca Global",
 }
 
 const originIcons: Record<string, React.ElementType> = {
