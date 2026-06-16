@@ -24,6 +24,7 @@ from lia_models.company_hiring_policy import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.domains.ai.services.context_aggregator_service import context_aggregator
 
 logger = logging.getLogger(__name__)
 
@@ -176,6 +177,7 @@ company_id: str = Depends(require_company_id)):
     policy = await _get_or_create_policy(company_id, db)
     _apply_update(policy, update)
     await db.commit()
+    context_aggregator.clear_cache(str(company_id))
 
     logger.info("[AIConfig] Updated by user=%s company=%s", current_user.id, company_id)
     return _extract_config(policy)

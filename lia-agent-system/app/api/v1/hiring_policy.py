@@ -45,6 +45,7 @@ from app.shared.security.require_company_id import require_company_id, require_c
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.domains.ai.services.context_aggregator_service import context_aggregator
 
 logger = logging.getLogger(__name__)
 
@@ -149,6 +150,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         policy.setup_completed_at = datetime.utcnow()
     await repo.flush()
     invalidate_policy_cache(company_id)
+    context_aggregator.clear_cache(str(company_id))
 
     # T-1169: capturar dict ANTES do sync_policy_to_models — esse helper executa
     # db.execute(update())+flush() que expira attributes do `policy`. Acessar
@@ -195,6 +197,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         policy.setup_completed_at = datetime.utcnow()
     await repo.flush()
     invalidate_policy_cache(company_id)
+    context_aggregator.clear_cache(str(company_id))
 
     # T-1169: ver comentário em upsert_policy.
     response_dict = policy.to_dict()
@@ -240,6 +243,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         policy.setup_completed_at = datetime.utcnow()
     await repo.flush()
     invalidate_policy_cache(company_id)
+    context_aggregator.clear_cache(str(company_id))
 
     # T-1169: ver comentário em upsert_policy.
     response_dict = policy.to_dict()

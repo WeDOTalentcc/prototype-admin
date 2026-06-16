@@ -61,6 +61,7 @@ from app.shared.security.require_company_id import (
     require_company_id_strict_match,
 )
 from app.shared.security.url_validator import UnsafeOutboundURLError, safe_outbound_url
+from app.domains.ai.services.context_aggregator_service import context_aggregator
 
 logger = logging.getLogger(__name__)
 
@@ -669,6 +670,7 @@ async def update_culture_profile(
             )
 
         logger.info(f"Updated culture profile for company {company_id}")
+        context_aggregator.clear_cache(str(company_id))
         return profile
 
     except HTTPException:
