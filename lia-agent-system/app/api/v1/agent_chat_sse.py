@@ -662,7 +662,7 @@ company_id: str = Depends(require_company_id)):
         if context.get("focused_job_snippet"):
             context["tenant_context_snippet"] = (
                 context.get("tenant_context_snippet", "")
-                + context["focused_job_snippet"]
+                + context.pop("focused_job_snippet")
             )
         if not budget_ok:
             yield format_sse_event(
