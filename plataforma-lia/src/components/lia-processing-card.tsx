@@ -217,7 +217,7 @@ export function LIAProcessingCard({
             </div>
             <div className="text-left">
               <span className="text-sm font-semibold text-lia-text-primary">
-                {allCompleted ? "Processamento concluído" : "LIA processando..."}
+                {allCompleted ? "Processamento concluído" : "IA processando..."}
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div className="h-1 w-16 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full overflow-hidden">

@@ -111,7 +111,7 @@ Podemos iniciar agora? Leva menos de 10 minutos! 🚀`,
 💰 **Faixa salarial:** {vaga.salario}
 
 Você confirma que tem interesse em prosseguir?`,
-    note: 'Mensagem dinâmica • Personalizada pela LIA com dados da vaga',
+    note: 'Mensagem dinâmica • Personalizada pela IA com dados da vaga',
   },
   5: {
     title: 'Resultado e Encerramento',

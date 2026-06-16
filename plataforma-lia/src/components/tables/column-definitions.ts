@@ -30,7 +30,7 @@ export const COLUMN_CATEGORIES: ColumnCategory[] = [
   { id: 'salario', label: 'Salário', description: 'Informações salariais' },
   { id: 'documentos', label: 'Documentos', description: 'Currículo e documentos' },
   { id: 'origem', label: 'Origem', description: 'Fonte e integração' },
-  { id: 'ia', label: 'IA / Match', description: 'Scores e insights da LIA' },
+  { id: 'ia', label: 'IA / Match', description: 'Scores e insights de IA' },
   { id: 'status', label: 'Status', description: 'Status no funil' },
   { id: 'comunicacao', label: 'Comunicação', description: 'Preferências de comunicação' },
   { id: 'cadastro', label: 'Cadastro', description: 'Status de cadastro' },

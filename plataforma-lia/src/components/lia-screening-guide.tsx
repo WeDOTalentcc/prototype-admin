@@ -47,7 +47,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
             <div>
               <h3 className="text-xl font-semibold font-sans text-lia-text-primary flex items-center gap-2">
                 <Brain className="w-5 h-5 text-status-success" />
-                Roteiro de Triagem LIA
+                Roteiro de Triagem
               </h3>
               <p className="text-sm text-lia-text-primary">
                 Guia completo para triagem da vaga: {j.str('title')}
@@ -170,7 +170,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 Roteiro Personalizado para {j.str('title')}
               </Chip>
               <Chip density="relaxed" variant="neutral" >
-                Gerado pela LIA
+                Gerado pela IA
               </Chip>
             </div>
             <div className="flex items-center gap-3">

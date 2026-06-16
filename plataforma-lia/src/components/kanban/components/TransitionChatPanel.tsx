@@ -34,6 +34,7 @@ import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
+import usePersonaName from "@/hooks/company/usePersonaName"
 
 interface TransitionChatPanelProps {
   messages: ChatMessage[]
@@ -203,6 +204,7 @@ export function TransitionChatPanel({
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const personaName = usePersonaName()
   const { contextPage } = useLiaFloat()
   const { chatHitlPending, sendApproval: globalSendApproval } = useLiaChatContext()
   const activeHitlPending = localHitlPending !== undefined ? localHitlPending : chatHitlPending
@@ -248,7 +250,7 @@ export function TransitionChatPanel({
                 <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <span className="text-base-ui font-bold text-lia-text-primary" >
-                LIA
+                {personaName}
               </span>
               {contextPage && contextPage !== "Conversar" && (
                 <ContextBadge contextPage={contextPage} />
@@ -366,7 +368,7 @@ export function TransitionChatPanel({
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
                       <span className="text-xs font-bold text-lia-text-primary" >
-                        LIA
+                        {personaName}
                       </span>
                       <ConfidenceBadge confidence={meta?.confidence} layer={meta?.layer} />
                     </div>
@@ -443,7 +445,7 @@ export function TransitionChatPanel({
               <div className="flex-1">
                 <div className="flex items-center gap-1.5 mb-1 px-1">
                   <span className="text-xs font-bold text-lia-text-primary" >
-                    LIA
+                    {personaName}
                   </span>
                 </div>
                 <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">

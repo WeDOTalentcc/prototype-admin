@@ -1,4 +1,5 @@
 "use client"
+import usePersonaName from "@/hooks/company/usePersonaName"
 
 import React from "react"
 import { Card } from "@/components/ui/card"
@@ -32,7 +33,7 @@ interface LiaExpandedPanelProps {
 }
 
 export function LiaExpandedPanel({
-  title = "LIA",
+  title = "IA",
   description,
   onClose,
   onNewChat,
@@ -412,6 +413,7 @@ interface LiaChatMessageProps {
 }
 
 export function LiaChatMessage({ type, content, timestamp, messageId, sessionId }: LiaChatMessageProps) {
+  const personaName = usePersonaName()
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   }
@@ -454,7 +456,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 px-1">
           <span className="text-xs font-bold text-lia-text-primary" >
-            LIA
+            {personaName}
           </span>
         </div>
         <div 
@@ -493,7 +495,7 @@ export function LiaLoadingIndicator() {
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1 px-1">
           <span className="text-xs font-bold text-lia-text-primary" >
-            LIA
+            {personaName}
           </span>
         </div>
         <div className="bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px] p-3 inline-block">

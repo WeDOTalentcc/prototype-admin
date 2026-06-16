@@ -56,10 +56,10 @@ const CATEGORY_INFO = {
 const SEARCH_QUERY_EXAMPLES: SearchQueryExample[] = [
   // Análise da Busca (14 ideias)
   { id: 'sq1', icon: Users, question: 'Quantos candidatos encontrei nesta busca?', category: 'analise_busca' },
-  { id: 'sq2', icon: Star, question: 'Qual o score LIA médio dos resultados?', category: 'analise_busca' },
+  { id: 'sq2', icon: Star, question: 'Qual o score médio dos resultados?', category: 'analise_busca' },
   { id: 'sq3', icon: Briefcase, question: 'Quais skills são mais comuns nesta busca?', category: 'analise_busca' },
   { id: 'sq4', icon: Clock, question: 'Qual a experiência média dos candidatos?', category: 'analise_busca' },
-  { id: 'sq5', icon: TrendingUp, question: 'Quantos candidatos têm nota LIA acima de 70?', category: 'analise_busca' },
+  { id: 'sq5', icon: TrendingUp, question: 'Quantos candidatos têm nota acima de 70?', category: 'analise_busca' },
   { id: 'sq6', icon: Globe, question: 'Qual o nível de inglês dos candidatos?', category: 'analise_busca' },
   { id: 'sq7', icon: GraduationCap, question: 'Qual a origem de formação dos candidatos?', category: 'analise_busca' },
   { id: 'sq8', icon: MapPin, question: 'Onde estão localizados os candidatos?', category: 'analise_busca' },

@@ -24,10 +24,10 @@ const tipCategories = [
     icon: Brain,
     color: "text-lia-text-secondary",
     tips: [
-      "Use linguagem natural - a LIA entende contexto e nuances",
+      "Use linguagem natural - a IA entende contexto e nuances",
       "Seja específico nos critérios e filtros para melhores resultados",
       "Combine comandos diferentes para fluxos mais complexos",
-      "A LIA aprende com suas interações e melhora suas sugestões",
+      "A IA aprende com suas interações e melhora suas sugestões",
       "Use comandos específicos como 'encontrar candidatos React'",
       "Pergunte sobre métricas: 'qual nossa taxa de conversão?'",
       "Solicite análises: 'compare candidatos por score'",
@@ -277,7 +277,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Decidir", onNavig
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-lia-text-primary">
-                  Dicas e Comandos da LIA
+                  Dicas e Comandos de IA
                 </h2>
                 <p className="text-xs text-lia-text-primary">
                   Aprenda a maximizar o potencial da sua assistente de IA

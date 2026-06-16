@@ -72,7 +72,7 @@ export function buildActionCommands(
     label: item.label,
     description: item.requires_confirmation
       ? "Abre com confirmação na tela"
-      : "Pedir à LIA",
+      : "Pedir à IA",
     icon: <Sparkles className="w-4 h-4" />,
     category: "actions" as const,
     onSelect: () => sendMessage(item.label),

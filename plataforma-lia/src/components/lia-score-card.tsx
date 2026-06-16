@@ -66,7 +66,7 @@ export function LIAScoreCard({
     <div
       className={`border border-lia-border-subtle rounded-md bg-lia-bg-primary ${className}`}
       role="region"
-      aria-label={`LIA Score${candidateName ? ` para ${candidateName}` : ""}`}
+      aria-label={`Score${candidateName ? ` para ${candidateName}` : ""}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2">

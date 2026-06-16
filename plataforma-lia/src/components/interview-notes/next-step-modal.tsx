@@ -230,7 +230,7 @@ export function NextStepModal({
                         {suggestedNextStage === stage && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1.5 py-0.5 text-micro font-medium text-lia-text-secondary">
                             <Brain className="h-3 w-3 text-wedo-cyan" />
-                            Sugestão LIA
+                            Sugestão de IA
                           </span>
                         )}
                       </div>

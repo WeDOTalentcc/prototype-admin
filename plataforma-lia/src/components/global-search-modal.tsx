@@ -212,7 +212,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
       ].filter(Boolean) as Section[]
     : [
         contextualHints.length > 0
-          ? { id: "lia-hints", label: "SUGESTÕES DA LIA", items: contextualHints }
+          ? { id: "lia-hints", label: "SUGESTÕES DE IA", items: contextualHints }
           : null,
         { id: "nav", label: "NAVEGAÇÃO", items: navItems },
         actionItems.length > 0 ? { id: "actions", label: "AÇÕES RÁPIDAS", items: actionItems } : null,

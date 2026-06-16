@@ -151,7 +151,7 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
             <div className="flex gap-3">
               <Button className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">Gerar Feedback Personalizado</Button>
               <Button variant="outline" className="gap-2">
-                <Brain className="w-4 h-4 text-wedo-cyan-text" />LIA Sugerir
+                <Brain className="w-4 h-4 text-wedo-cyan-text" />Sugerir
               </Button>
             </div>
           </div>
