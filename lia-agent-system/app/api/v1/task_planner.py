@@ -182,8 +182,11 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "task": task.to_dict()
         }
-    except Exception as e:
+    except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error("create_planned_task failed: %s", str(e), exc_info=True)
+        raise HTTPException(status_code=500, detail="Erro ao criar tarefa — tente novamente")
 
 
 @router.get("/tasks/{task_id}", response_model=None)
