@@ -957,7 +957,7 @@ async def http_exception_handler(request: FastAPIRequest, exc: StarletteHTTPExce
             "HTTP %d raised explicitly: %s [request_id=%s]",
             exc.status_code, exc.detail, request_id,
         )
-    safe_message = exc.detail if exc.status_code < 500 else "Internal server error"
+    safe_message = exc.detail if exc.status_code < 500 else "Erro interno do servidor"
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -1013,7 +1013,7 @@ async def unhandled_exception_handler(request: FastAPIRequest, exc: Exception):
         content={
             "error": True,
             "status_code": 500,
-            "message": "Internal server error",
+            "message": "Erro interno do servidor",
             "request_id": request_id,
         }
     )
