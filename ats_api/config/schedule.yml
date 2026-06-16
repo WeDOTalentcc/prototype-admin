@@ -75,4 +75,8 @@ email_followup_checker:
   class: "EmailFollowupCheckerJob"
   queue: default
   description: "Verifica candidatos sem resposta e re-envia emails a cada 24h por até 7 dias"
-
+lgpd_candidate_cleanup:
+  cron: "0 2 * * *" # Daily at 02:00 UTC — LGPD Art. 16/18 data retention
+  class: "LgpdCandidateCleanupJob"
+  queue: low_priority
+  description: "GAP-10-004: Anonymize Rails candidates whose lgpd_expires_at has passed"
