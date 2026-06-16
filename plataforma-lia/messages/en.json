@@ -242,7 +242,6 @@
     },
     "items": {
       "conversar": "Chat",
-      "decidir": "Decide",
       "recrutar": "Recruit",
       "chatLia": "Chat",
       "tasks": "Tasks",
@@ -250,7 +249,6 @@
       "talentPipeline": "Talent Pipeline",
       "newTalentSearch": "New search",
       "pipelineView": "Pipeline View",
-      "agentStudio": "Agent Studio",
       "modules": "Modules",
       "projects": "Projects",
       "agentes": "Agents",

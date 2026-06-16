@@ -146,6 +146,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         seeAllTarget: "Agentes",
         isBeta: true,
         subItems: [
+          // NOTE: "Módulos" view is a placeholder — Marketplace page pending implementation
           { icon: Package, label: "Marketplace", isCore: true, navKey: "Módulos" },
         ],
       },
@@ -161,7 +162,6 @@ interface DynamicSubItem {
 
 function useSidebarDynamicItems() {
   const [agents, setAgents] = useState<DynamicSubItem[]>([])
-  const [projects, setProjects] = useState<DynamicSubItem[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -181,29 +181,11 @@ function useSidebarDynamicItems() {
         if (!cancelled) setAgents(mapped)
       } catch { /* silent */ }
     }
-
-    async function loadProjects() {
-      try {
-        const res = await fetch("/api/backend-proxy/recruitment-campaigns?status=active&limit=8")
-        if (!res.ok) return
-        const data = await res.json()
-        const mapped = (data?.data || [])
-          .filter((p: { status: string }) => p.status === "active" || p.status === "paused")
-          .map((p: { id: string; name: string; status: string }) => ({
-            id: p.id,
-            name: p.name,
-            status: p.status,
-          }))
-        if (!cancelled) setProjects(mapped)
-      } catch { /* silent */ }
-    }
-
     loadAgents()
-    loadProjects()
     return () => { cancelled = true }
   }, [])
 
-  return { agents, projects }
+  return { agents }
 }
 
 
