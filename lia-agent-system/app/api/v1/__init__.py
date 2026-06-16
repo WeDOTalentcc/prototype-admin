@@ -1,0 +1,22 @@
+# API v1
+from app.api.v1 import (
+    ai_config,
+    audit_logs,
+    billing,
+    cache,
+    communication_optout,
+    communications,
+    consent_management,
+    dashboard_data,
+    data_subject_requests,
+    decision_explanation,
+    default_templates,
+    global_policies,
+    jd_import,
+    ml_predictions,
+    observability,
+    saas_metrics,
+    search_archetypes,
+    task_planner,
+    technical_tests,
+)
