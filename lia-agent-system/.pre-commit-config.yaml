@@ -604,6 +604,14 @@ repos:
         files: ^app/.*\.py$
         pass_filenames: false
 
+
+      - id: tool-registry-sync-warn
+        name: tool registry YAML vs domain handlers sync (GAP-00-004, warn-only, baseline 37)
+        entry: python3 scripts/check_tool_registry_sync.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
       - id: capability-catalog-sync-warn
         name: capability catalog sync (anti-ghost, warn-only)
         entry: python3 scripts/check_capability_catalog_sync.py
