@@ -19,6 +19,7 @@ import { formatMessageTime, maskPII } from "./lia-chat-connection-types";
 
 import type { TransportMode } from "./lia-chat-connection-types";
 import { routeToCanonicalPage, CANONICAL_PAGES } from "@/lib/canonical-pages";
+import { getLiaContextSnapshot } from "@/lib/lia-context-store";
 
 export interface UseChatMessagesOptions {
   sessionId: string;
@@ -160,6 +161,8 @@ export function useChatMessages({
         } catch {}
       }
     } catch {}
+    // GAP-02-001: merge pagination + modal state from lia-context-store
+    Object.assign(ctx, getLiaContextSnapshot());
     return ctx;
   }, []);
 

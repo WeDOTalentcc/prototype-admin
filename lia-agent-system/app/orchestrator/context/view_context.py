@@ -102,6 +102,26 @@ def format_view_context(view_context: dict[str, Any] | None) -> str:
         _id_str = entity_focus["id"]
         lines.append(f"- {_label_pt}: {_label} (ID: {_id_str})")
 
+    # GAP-02-001: pagination awareness — agent knows which page recruiter is on
+    pagination = view_context.get("pagination_state")
+    if isinstance(pagination, dict):
+        cur = pagination.get("current_page")
+        total_p = pagination.get("total_pages")
+        page_sz = pagination.get("page_size")
+        total_i = pagination.get("total_items")
+        if cur is not None and total_p is not None:
+            pag_parts = [f"página {cur} de {total_p}"]
+            if page_sz is not None:
+                pag_parts.append(f"{page_sz} itens/pág")
+            if total_i is not None:
+                pag_parts.append(f"{total_i} total")
+            lines.append("- Paginação: " + ", ".join(pag_parts))
+
+    # GAP-02-001: modal awareness — agent knows which modal is open
+    active_modal = view_context.get("active_modal")
+    if isinstance(active_modal, str) and active_modal:
+        lines.append(f"- Modal aberto: {active_modal}")
+
     if not lines:
         return ""
 
