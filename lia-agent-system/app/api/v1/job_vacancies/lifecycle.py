@@ -37,6 +37,7 @@ from app.domains.sourcing.services.sourcing_pipeline_service import sourcing_pip
 from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
 from app.services.notification_service import NotificationChannel, NotificationType
 from app.shared.types import WeDoBaseModel
+from app.shared.vacancy_stage_validation import validate_stage_requirements
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 router = APIRouter()
@@ -131,6 +132,19 @@ company_id: str = Depends(require_company_id)):
     job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
     if not job:
         raise HTTPException(status_code=404, detail="Vaga não encontrada")
+
+    # GAP-06-002: validate required fields before publishing
+    missing_fields = validate_stage_requirements(job, "Ativa")
+    if missing_fields:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "missing_required_fields",
+                "missing_fields": missing_fields,
+                "target_stage": "publicada",
+                "message": "Campos obrigatórios faltando para publicação: " + ", ".join(missing_fields),
+            },
+        )
 
     old_status = job.status
     await repo.publish_vacancy(job)
@@ -385,6 +399,19 @@ company_id: str = Depends(require_company_id)):
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
+
+        # GAP-06-002: validate required fields before publishing
+        missing_fields = validate_stage_requirements(job_vacancy, "Ativa")
+        if missing_fields:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "missing_required_fields",
+                    "missing_fields": missing_fields,
+                    "target_stage": "publicada",
+                    "message": "Campos obrigatórios faltando para publicação: " + ", ".join(missing_fields),
+                },
+            )
 
         old_status = job_vacancy.status
         await repo.publish_vacancy_v2(job_vacancy)
@@ -1045,6 +1072,16 @@ company_id: str = Depends(require_company_id)):
                 errors.append(BulkActionError(
                     job_id=str(job_id),
                     error_message=f"Transição de status não permitida: '{old_status}' -> '{request.new_status}'"
+                ))
+                failed += 1
+                continue
+
+            # GAP-06-002: validate required fields before status transition
+            missing_fields = validate_stage_requirements(job, request.new_status)
+            if missing_fields:
+                errors.append(BulkActionError(
+                    job_id=str(job_id),
+                    error_message="Campos obrigatórios faltando para " + repr(request.new_status) + ": " + ", ".join(missing_fields)
                 ))
                 failed += 1
                 continue
