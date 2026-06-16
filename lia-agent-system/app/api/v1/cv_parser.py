@@ -1,6 +1,7 @@
 """
 CV Parser API endpoints for uploading and parsing CVs.
 """
+import hashlib
 import logging
 import re
 import uuid
@@ -15,6 +16,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
+from app.domains.cv_screening.repositories.candidate_attachment_repository import CandidateAttachmentRepository
 from app.models.candidate import Candidate, CandidateEducation, CandidateExperience
 from app.schemas.cv_parser import (
     CVConfirmRequest,
@@ -225,6 +227,22 @@ company_id: str = Depends(require_company_id)):
         file_content = await file.read()
         file_size = len(file_content)
         await file.seek(0)
+
+        # GAP-05-006: SHA-256 hash for file-level dedup (before saving)
+        file_hash = hashlib.sha256(file_content).hexdigest()
+        attach_repo = CandidateAttachmentRepository(db)
+        existing_attachment = await attach_repo.find_by_hash(
+            file_hash=file_hash, company_id=company_id
+        )
+        file_dup_warning = None
+        if existing_attachment:
+            file_dup_warning = {
+                "is_file_duplicate": True,
+                "existing_attachment_id": existing_attachment.id,
+                "existing_candidate_id": existing_attachment.candidate_id,
+                "existing_candidate_name": existing_attachment.candidate_name,
+            }
+            logger.info(f"Duplicate file by hash: {existing_attachment.id}")
         
         Path(file.filename).suffix.lower() if file.filename else ".pdf"
         safe_filename = re.sub(r'[^\w\-.]', '_', file.filename or "cv")
@@ -258,11 +276,15 @@ company_id: str = Depends(require_company_id)):
         
         _truncate_raw_text_for_response(parsed_cv)
         
+        # Store hash on parsed_cv so confirm endpoint can persist it
+        parsed_cv.file_hash = file_hash
+
         return CVUploadResponse(
             success=True,
             message="CV parsed successfully",
             parsed_cv=parsed_cv,
             duplicate_warning=duplicate_warning,
+            file_duplicate_warning=file_dup_warning,
             candidate_id=None
         )
         
@@ -575,7 +597,6 @@ _company_gate: str = Depends(require_company_id_strict_match("form.company_id"))
 
         # Call create_and_screen_candidate tool
         from app.domains.cv_screening.tools.cv_upload_tool import create_and_screen_candidate
-from app.shared.errors import LIAError
 
         result = await create_and_screen_candidate(
             cv_text=raw_text,

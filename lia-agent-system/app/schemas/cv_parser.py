@@ -58,6 +58,7 @@ class ParsedCV(BaseModel):
     file_type: str | None = Field(None, description="File type (pdf, docx, txt)")
     file_size_bytes: int | None = Field(None, description="File size in bytes")
     file_url: str | None = Field(None, description="URL/path to the saved CV file")
+    file_hash: str | None = Field(None, description="SHA-256 hex digest for file dedup (GAP-05-006)")
     
     confidence_score: float = Field(..., ge=0.0, le=1.0, description="AI extraction confidence (0-1)")
     extraction_notes: list[str] = Field(default_factory=list, description="Fields that need review")
@@ -72,6 +73,7 @@ class CVUploadResponse(BaseModel):
     parsed_cv: ParsedCV | None = None
     duplicate_warning: dict | None = Field(None, description="Warning if potential duplicate found")
     candidate_id: UUID | None = Field(None, description="ID if candidate was auto-created")
+    file_duplicate_warning: dict | None = Field(None, description="Warning if identical file already uploaded (GAP-05-006)")
 
 
 class CVParseTextRequest(WeDoBaseModel):

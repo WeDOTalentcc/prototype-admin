@@ -86,8 +86,10 @@ async def test_find_by_hash_returns_existing_attachment():
     mock_attachment.file_hash = "a" * 64
 
     mock_db = AsyncMock()
+    mock_scalars = MagicMock()
+    mock_scalars.first.return_value = mock_attachment
     mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = mock_attachment
+    mock_result.scalars.return_value = mock_scalars
     mock_db.execute.return_value = mock_result
 
     repo = CandidateAttachmentRepository(db=mock_db)
