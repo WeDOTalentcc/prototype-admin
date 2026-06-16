@@ -1,0 +1,90 @@
+---
+description: Análise de impacto sistêmico — use ANTES de implementar qualquer feature nova, ajuste significativo ou integração. Mapeia 12 dimensões da plataforma LIA para antecipar efeitos colaterais e dependências cruzadas.
+alwaysApply: false
+---
+
+# Feature Impact Analysis — LIA Platform
+
+> Referência completa: `.agents/skills/feature-impact/SKILL.md`
+
+**Execute antes de escrever qualquer linha de código. Identifique o que é bloqueante vs. opcional para o MVP.**
+
+## Checklist de Impacto (12 Dimensões)
+
+### Frontend
+- [ ] Novas páginas/rotas (`src/app/*/page.tsx`)?
+- [ ] Novos componentes ou ajuste em existentes (`src/components/`)?
+- [ ] Novos hooks (`src/hooks/`)?
+- [ ] Novas rotas proxy (`src/app/api/backend-proxy/`)?
+- [ ] Mudanças de layout/design/UX? ← Perguntar antes de implementar
+- [ ] Compatibilidade com DS v4.2.1 (tokens `wedo-*`, `rounded-md`, sem shadows)?
+
+### Backend — API
+- [ ] Novos endpoints REST (`app/api/v1/`)?
+- [ ] Breaking changes em endpoints existentes?
+- [ ] Novos schemas Pydantic (request/response)?
+- [ ] Multi-tenant isolamento (`company_id` em todas as queries)?
+
+### Backend — Services
+- [ ] Novos serviços (`app/services/`)?
+- [ ] Lógica de negócio impactada?
+- [ ] Tratamento de erros e fallbacks?
+
+### Banco de Dados
+- [ ] Novas tabelas ou campos?
+- [ ] Migration Alembic necessária?
+- [ ] Índices para performance?
+- [ ] `company_id` em todos os novos modelos?
+- [ ] Campos PII com mascaramento?
+
+### Camada de IA / Agentes
+- [ ] Impacto em agentes ReAct (Wizard, Pipeline, Sourcing, Talent, JobsMgmt, Kanban, Policy)?
+- [ ] Novos tools no tool registry?
+- [ ] Ajuste de system prompts?
+- [ ] FairnessGuard ou FactChecker precisam de ajuste?
+- [ ] Custo de tokens estimado?
+
+### Comunicações & Notificações
+- [ ] Novos tipos de notificação (bell, email, WhatsApp, Teams)?
+- [ ] Preferências do usuário respeitadas?
+
+### Integrações Externas
+- [ ] WorkOS, Teams/Graph, Pearch AI, Deepgram, Gupy/Pandapé, HubSpot, Stripe?
+- [ ] Novas variáveis de ambiente?
+
+### Compliance, LGPD & Governança
+- [ ] Feature processa dados pessoais (PII)? → Verificar lgpd-data-protection
+- [ ] Auditoria de acesso precisa ser registrada?
+- [ ] Impacto nos controles SOC 2 / ISO 27001 / BCB 498?
+
+### Segurança & Multi-Tenant
+- [ ] Isolamento por `company_id`?
+- [ ] SQL injection, XSS, IDOR?
+- [ ] Rate limiting nas rotas novas?
+
+### Infraestrutura & Async
+- [ ] Tarefas longas precisam ir para Celery?
+- [ ] Redis: novo cache key pattern?
+- [ ] Migrations sem downtime?
+
+### Observabilidade
+- [ ] Logs estruturados adicionados?
+- [ ] LangSmith traces para chamadas LLM?
+- [ ] Activity feed registrado?
+
+### Testes & Qualidade
+- [ ] Casos de teste unitário e integração identificados?
+- [ ] Edge cases (empty state, erro, timeout, multi-tenant)?
+- [ ] Rollback plan?
+
+## Formato de Saída
+
+```markdown
+## Análise de Impacto: [Nome da Feature]
+### Dimensões Impactadas
+| Dimensão | Impacto | O que fazer |
+### Plano de Implementação
+1. [bloqueante] 2. [depende da 1] 3. [paralela com 2]
+### Riscos e Atenções
+### Pronto para implementar? [Sim / Precisa de mais informação]
+```

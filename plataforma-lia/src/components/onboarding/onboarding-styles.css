@@ -1,0 +1,241 @@
+/* Fontes oficiais da LIA para onboarding (DS v4.1 - Open Sans + Inter apenas) */
+
+/**
+ * ESCOPO: Tokens locais exclusivos do Onboarding LIA
+ *
+ * Os tokens --lia-* definidos neste arquivo (--lia-coral, --lia-blue, --lia-yellow,
+ * --lia-salmon, --lia-lavender, --lia-cream, --lia-mint, --lia-black, --lia-white,
+ * --lia-gray-*) sao intencionalmente locais a este modulo.
+ *
+ * Auditoria (2026-04-01): confirmado que esses tokens NAO vazam para outros componentes
+ * alem de onboarding-controller.tsx. Nao foram migrados para design-tokens.css porque
+ * sao especificos da identidade visual do fluxo de onboarding (paleta de marca LIA),
+ * distinta do sistema de design geral da plataforma (gray scale + tokens semanticos).
+ *
+ * Se algum desses tokens precisar ser reutilizado fora do onboarding, migrar para
+ * src/styles/design-tokens.css antes de usar.
+ */
+
+/* Variáveis CSS para onboarding LIA */
+:root {
+  /* Fontes Oficiais LIA (DS v4.1) */
+  --font-source-serif-pro: Open Sans, sans-serif;
+  --font-open-sans: Open Sans, sans-serif;
+
+  /* Paleta Primária LIA (das imagens) */
+  --lia-coral: #E85A4A;           /* Coral vibrante */
+  --lia-blue: #7FB3E3;           /* Azul suave */
+  --lia-yellow: #F4D03F;         /* Amarelo brilhante */
+  --lia-salmon: #F5B7B1;         /* Coral claro */
+  --lia-lavender: #AED6F1;       /* Azul claro */
+  --lia-cream: #F5F5F0;          /* Bege/cream */
+
+  /* Paleta de Apoio LIA (das imagens) */
+  --lia-mint: #A8E6CF;           /* Verde menta */
+  --lia-blue-soft: #B8CCE8;      /* Azul adicional */
+  --lia-coral-light: #F8BBB2;    /* Coral mais claro */
+  --lia-yellow-soft: #F7E89B;    /* Amarelo suave */
+
+  /* Cores base */
+  --lia-black: #000000;
+  --lia-white: #FFFFFF;
+  --lia-gray-light: #F8F9FA;
+  --lia-gray-medium: #6C757D;
+  --lia-gray-dark: #212529;
+}
+
+/* Classes para as fontes oficiais LIA - APENAS ONBOARDING */
+.lia-font-serif {
+  font-family: var(--font-open-sans);
+}
+
+.lia-font-sans {
+  font-family: var(--font-open-sans);
+}
+
+/* Cores da marca LIA - APENAS ONBOARDING */
+.lia-text-coral { color: var(--lia-coral); }
+.lia-text-blue { color: var(--lia-blue); }
+.lia-text-yellow { color: var(--lia-yellow); }
+.lia-text-salmon { color: var(--lia-salmon); }
+.lia-text-lavender { color: var(--lia-lavender); }
+.lia-text-cream { color: var(--lia-cream); }
+.lia-text-mint { color: var(--lia-mint); }
+.lia-text-black { color: var(--lia-black); }
+.lia-text-white { color: var(--lia-white); }
+
+.lia-bg-coral { background-color: var(--lia-coral); }
+.lia-bg-blue { background-color: var(--lia-blue); }
+.lia-bg-yellow { background-color: var(--lia-yellow); }
+.lia-bg-salmon { background-color: var(--lia-salmon); }
+.lia-bg-lavender { background-color: var(--lia-lavender); }
+.lia-bg-cream { background-color: var(--lia-cream); }
+.lia-bg-mint { background-color: var(--lia-mint); }
+.lia-bg-white { background-color: var(--lia-white); }
+.lia-bg-black { background-color: var(--lia-black); }
+
+/* Gradientes orgânicos LIA (como na imagem do blob) */
+.lia-gradient-organic {
+  background: linear-gradient(135deg,
+    var(--lia-coral) 0%,
+    var(--lia-yellow) 30%,
+    var(--lia-blue) 70%,
+    var(--lia-mint) 100%);
+}
+
+.lia-gradient-soft {
+  background: linear-gradient(135deg,
+    var(--lia-salmon) 0%,
+    var(--lia-lavender) 50%,
+    var(--lia-mint) 100%);
+}
+
+/* Typography LIA - DESIGN SOFISTICADO E IMPACTANTE */
+.lia-title-hero {
+  font-family: var(--font-open-sans);
+  font-weight: 700;
+  font-size: clamp(4rem, 8vw, 10rem); /* Fontes MUITO maiores */
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--lia-black);
+}
+
+.lia-title-large {
+  font-family: var(--font-open-sans);
+  font-weight: 600;
+  font-size: clamp(2.5rem, 5vw, 6rem); /* Títulos grandes */
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--lia-black);
+}
+
+.lia-title-medium {
+  font-family: var(--font-open-sans);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 3vw, 3rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--lia-black);
+}
+
+.lia-subtitle {
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  font-size: clamp(1.25rem, 2.5vw, 2rem);
+  line-height: 1.3;
+  color: var(--lia-gray-dark);
+}
+
+.lia-text-large {
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  font-size: clamp(1.125rem, 2vw, 1.5rem); /* Textos maiores */
+  line-height: 1.6;
+  color: var(--lia-gray-dark);
+}
+
+.lia-text-medium {
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  line-height: 1.5;
+  color: var(--lia-gray-medium);
+}
+
+.lia-text-small {
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  font-size: clamp(0.875rem, 1.25vw, 1rem);
+  line-height: 1.4;
+  color: var(--lia-gray-medium);
+}
+
+.lia-text-bold {
+  font-family: var(--font-open-sans);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Elementos especiais LIA */
+.lia-blob-organic {
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  background: var(--lia-gradient-organic);
+  animation: lia-morph 8s ease-in-out infinite;
+}
+
+@keyframes lia-morph {
+  0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+}
+
+/* Cards LIA */
+.lia-card {
+  background: var(--lia-white);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.lia-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12);
+}
+
+/* Containers de onboarding */
+.lia-onboarding-container {
+  min-height: 100vh;
+  font-family: var(--font-open-sans);
+}
+
+.lia-onboarding-slide {
+  padding: 48px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Compatibilidade com classes antigas (fallback) */
+.onboarding-title {
+  font-family: var(--font-open-sans);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.onboarding-subtitle {
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.onboarding-text {
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* Responsividade para diferentes telas */
+@media (max-width: 768px) {
+  .lia-onboarding-slide {
+    padding: 24px 16px;
+  }
+
+  .lia-card {
+    padding: 24px;
+    border-radius: 20px;
+  }
+}
+
+/* Animações suaves */
+.lia-fade-in {
+  animation: lia-fadeIn 0.8s ease-out;
+}
+
+@keyframes lia-fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

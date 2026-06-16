@@ -1,0 +1,81 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=danger density=comfortable muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-error/30 dark:border-status-error/30 text-status-error dark:text-status-error">danger</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=danger density=comfortable muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-error/30 dark:border-status-error/30 text-lia-text-tertiary dark:text-lia-text-tertiary">danger</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=danger density=compact muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-error/30 dark:border-status-error/30 text-status-error dark:text-status-error">danger</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=danger density=compact muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-error/30 dark:border-status-error/30 text-lia-text-tertiary dark:text-lia-text-tertiary">danger</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=info density=comfortable muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-wedo-cyan/30 dark:border-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan">info</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=info density=comfortable muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-wedo-cyan/30 dark:border-wedo-cyan/30 text-lia-text-tertiary dark:text-lia-text-tertiary">info</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=info density=compact muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-wedo-cyan/30 dark:border-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan">info</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=info density=compact muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-wedo-cyan/30 dark:border-wedo-cyan/30 text-lia-text-tertiary dark:text-lia-text-tertiary">info</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=neutral density=comfortable muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border transition-colors motion-reduce:transition-none px-1.5 py-0 border-transparent dark:border-transparent bg-lia-bg-tertiary dark:bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary">neutral</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=neutral density=comfortable muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border transition-colors motion-reduce:transition-none px-1.5 py-0 border-transparent dark:border-transparent bg-lia-bg-tertiary dark:bg-lia-bg-tertiary text-lia-text-tertiary dark:text-lia-text-tertiary">neutral</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=neutral density=compact muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-transparent dark:border-transparent bg-lia-bg-tertiary dark:bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary">neutral</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=neutral density=compact muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-transparent dark:border-transparent bg-lia-bg-tertiary dark:bg-lia-bg-tertiary text-lia-text-tertiary dark:text-lia-text-tertiary">neutral</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=success density=comfortable muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-success/30 dark:border-status-success/30 text-status-success dark:text-status-success">success</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=success density=comfortable muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-success/30 dark:border-status-success/30 text-lia-text-tertiary dark:text-lia-text-tertiary">success</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=success density=compact muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-success/30 dark:border-status-success/30 text-status-success dark:text-status-success">success</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=success density=compact muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-success/30 dark:border-status-success/30 text-lia-text-tertiary dark:text-lia-text-tertiary">success</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=warning density=comfortable muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning">warning</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=warning density=comfortable muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-warning/30 dark:border-status-warning/30 text-lia-text-tertiary dark:text-lia-text-tertiary">warning</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=warning density=compact muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning">warning</span>"`;
+
+exports[`Chip — visual regression matrix > theme: dark > matches snapshot — variant=warning density=compact muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-warning/30 dark:border-status-warning/30 text-lia-text-tertiary dark:text-lia-text-tertiary">warning</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=danger density=comfortable muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-error/30 dark:border-status-error/30 text-status-error dark:text-status-error">danger</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=danger density=comfortable muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-error/30 dark:border-status-error/30 text-lia-text-tertiary dark:text-lia-text-tertiary">danger</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=danger density=compact muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-error/30 dark:border-status-error/30 text-status-error dark:text-status-error">danger</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=danger density=compact muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-error/30 dark:border-status-error/30 text-lia-text-tertiary dark:text-lia-text-tertiary">danger</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=info density=comfortable muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-wedo-cyan/30 dark:border-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan">info</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=info density=comfortable muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-wedo-cyan/30 dark:border-wedo-cyan/30 text-lia-text-tertiary dark:text-lia-text-tertiary">info</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=info density=compact muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-wedo-cyan/30 dark:border-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan">info</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=info density=compact muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-wedo-cyan/30 dark:border-wedo-cyan/30 text-lia-text-tertiary dark:text-lia-text-tertiary">info</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=neutral density=comfortable muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border transition-colors motion-reduce:transition-none px-1.5 py-0 border-transparent dark:border-transparent bg-lia-bg-tertiary dark:bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary">neutral</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=neutral density=comfortable muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border transition-colors motion-reduce:transition-none px-1.5 py-0 border-transparent dark:border-transparent bg-lia-bg-tertiary dark:bg-lia-bg-tertiary text-lia-text-tertiary dark:text-lia-text-tertiary">neutral</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=neutral density=compact muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-transparent dark:border-transparent bg-lia-bg-tertiary dark:bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary">neutral</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=neutral density=compact muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-transparent dark:border-transparent bg-lia-bg-tertiary dark:bg-lia-bg-tertiary text-lia-text-tertiary dark:text-lia-text-tertiary">neutral</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=success density=comfortable muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-success/30 dark:border-status-success/30 text-status-success dark:text-status-success">success</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=success density=comfortable muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-success/30 dark:border-status-success/30 text-lia-text-tertiary dark:text-lia-text-tertiary">success</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=success density=compact muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-success/30 dark:border-status-success/30 text-status-success dark:text-status-success">success</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=success density=compact muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-success/30 dark:border-status-success/30 text-lia-text-tertiary dark:text-lia-text-tertiary">success</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=warning density=comfortable muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning">warning</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=warning density=comfortable muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none px-1.5 py-0 border-status-warning/30 dark:border-status-warning/30 text-lia-text-tertiary dark:text-lia-text-tertiary">warning</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=warning density=compact muted=false 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning">warning</span>"`;
+
+exports[`Chip — visual regression matrix > theme: light > matches snapshot — variant=warning density=compact muted=true 1`] = `"<span class="inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none text-[10px] leading-[14px] px-1 py-0 border-status-warning/30 dark:border-status-warning/30 text-lia-text-tertiary dark:text-lia-text-tertiary">warning</span>"`;

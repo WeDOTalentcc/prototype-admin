@@ -1,0 +1,336 @@
+name: Wizard E2E — Cenário A (daily + PR)
+
+# Task #1054 — roda o `pw-cenario-A` (e2e Playwright do fluxo completo de
+# criação de vaga técnica) contra um stack efêmero (Postgres + Redis +
+# lia-agent-system + plataforma-lia). Sentinela CI das Tasks #1051 (fix
+# canônico do wizard tenant-context leak) + #1052 (eval gate online) +
+# #1053 (fixture de auth Playwright independente de LIA_DEV_AUTO_LOGIN).
+#
+# Por que existe esse workflow separado:
+#   - O cenário A executa o wizard end-to-end com LLM real (Claude/Gemini),
+#     leva ~10-15min e consome quota; por isso NÃO roda em todo PR — só em
+#     PRs que tocam arquivos do wizard (FE/BE/agentes/specs e2e), além do
+#     cron diário.
+#   - Diário às 05:30 UTC garante feedback rápido se algum agente, prompt
+#     ou rota frontend regredir o "fluxo linear até publicação", mesmo que
+#     o PR culpado não tenha tocado em arquivos do wizard explicitamente.
+#   - on PR (paths filter) pega regressões ANTES do merge, evitando que o
+#     bug pouse em main e quebre o cron diário (gate seguinte = release).
+#   - workflow_dispatch permite rodar on-demand antes de releases.
+#
+# Trigger: cron diário 05:30 UTC (~02:30 BRT) + on pull_request (paths
+# filter abaixo) + workflow_dispatch manual.
+
+on:
+  schedule:
+    # Diário às 05:30 UTC, antes do tenant-context-no-regression (06:00 UTC),
+    # para escalonar carga nos servers de LLM e ter contexto separado se algum
+    # falhar.
+    - cron: "30 5 * * *"
+  pull_request:
+    # Só dispara em PRs que mexem com arquivos do wizard / fixture de auth /
+    # agentes envolvidos / o próprio workflow. Mantém o gate enxuto para não
+    # estourar quota de LLM em PRs que mudam só docs ou outros domínios.
+    # Se um arquivo crítico ficar de fora deste filtro, o cron diário pega
+    # no dia seguinte (defesa em profundidade).
+    paths:
+      # Specs e fixture e2e do wizard (incl. helpers compartilhados)
+      - "plataforma-lia/e2e/tests/wizard/**"
+      - "plataforma-lia/e2e/fixtures/auth.fixture.ts"
+      - "plataforma-lia/e2e/helpers/**"
+      - "plataforma-lia/playwright.config.ts"
+      # Frontend do wizard de criação de vaga
+      - "plataforma-lia/src/components/wizard/**"
+      - "plataforma-lia/src/components/jobs/**"
+      - "plataforma-lia/src/app/**/criar-vaga/**"
+      - "plataforma-lia/src/app/**/vagas/**"
+      - "plataforma-lia/src/hooks/wizard/**"
+      # Backend: agente do wizard, classificador, intake e tenant-aware mixin
+      - "lia-agent-system/app/domains/wizard/**"
+      - "lia-agent-system/app/domains/jobs/**"
+      - "lia-agent-system/app/agents/tenant_aware/**"
+      - "lia-agent-system/app/auth/dependencies.py"
+      - "lia-agent-system/app/api/v1/wizard*.py"
+      - "lia-agent-system/app/api/v1/jobs*.py"
+      - "lia-agent-system/app/services/wizard*.py"
+      - "lia-agent-system/app/services/jd_enrichment*.py"
+      - "lia-agent-system/app/router/**"
+      # Auth/fixture cross-cutting
+      - "lia-agent-system/app/api/v1/auth*.py"
+      # Próprio workflow + wrapper
+      - ".github/workflows/wizard-e2e-cenario-a.yml"
+      - "plataforma-lia/scripts/run-pw-cenario-a.sh"
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: "Spec Playwright a rodar (default: 02-vaga-tecnica.spec.ts)"
+        required: false
+        default: "e2e/tests/wizard/02-vaga-tecnica.spec.ts"
+
+concurrency:
+  group: wizard-e2e-cenario-a-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  cenario-a:
+    name: pw-cenario-A (wizard e2e)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: lia
+          POSTGRES_PASSWORD: lia
+          POSTGRES_DB: lia
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lia -d lia"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Backend
+      # ENVIRONMENT=development é REQUISITO para `ensure_demo_user` (gated em
+      # app/auth/dependencies.py:_is_dev_environment) que cria o demo@wedotalent.com
+      # com password bcrypt(demo123) — sem isso o auth.fixture (#1053) falha em
+      # /api/v1/auth/login. APP_ENV mantido como `development` para coerência com o
+      # wrapper run-pw-cenario-a.sh (que também exporta development).
+      APP_ENV: development
+      ENVIRONMENT: development
+      SECRET_KEY: ci-test-secret-key-not-for-production
+      DATABASE_URL: postgresql+asyncpg://lia:lia@localhost:5432/lia
+      SYNC_DATABASE_URL: postgresql://lia:lia@localhost:5432/lia
+      REDIS_URL: redis://localhost:6379/0
+      API_PORT: "8001"
+      LIA_BACKEND_URL: http://localhost:8001
+      # Mantém o fix canônico da Task #1051 explícito em CI.
+      LIA_AGENT_TENANT_STRICT: "true"
+      # LLM keys (LLM real é parte do contrato do cenário A; sem keys o teste
+      # falha cedo com erro claro do agente).
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # Frontend
+      NODE_ENV: development
+      LIA_DEV_AUTO_LOGIN: "true"
+      DEV_AUTO_LOGIN_EMAIL: demo@wedotalent.com
+      DEV_AUTO_LOGIN_PASSWORD: demo123
+      PLAYWRIGHT_BASE_URL: http://localhost:5000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ──────────────────────────────────────────────────────────────────
+      # Backend — lia-agent-system
+      # ──────────────────────────────────────────────────────────────────
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: lia-agent-system/requirements.txt
+
+      - name: Install backend runtime deps
+        working-directory: lia-agent-system
+        run: pip install -r requirements.txt
+
+      - name: Install backend internal libs
+        working-directory: lia-agent-system
+        run: |
+          # Lista canônica de libs/* — bate com `find lia-agent-system/libs -maxdepth 1 -type d`.
+          # Mantenha alinhado se uma lib for adicionada/removida (libs/contexts e libs/auth
+          # existiram no passado e foram refatoradas para dentro de app/).
+          pip install --no-cache-dir \
+            -e libs/config \
+            -e libs/utils \
+            -e libs/audit \
+            -e libs/messaging \
+            -e libs/models \
+            -e libs/schemas \
+            -e libs/agents-core \
+            -e libs/services
+
+      - name: Apply database migrations (alembic)
+        working-directory: lia-agent-system
+        run: alembic upgrade head
+
+      - name: Seed demo company (dados de plataforma)
+        working-directory: lia-agent-system
+        run: |
+          # Popula tabelas de plataforma (vagas/candidatos/pipeline) sob a
+          # Demo Company canônica (UUID 00000000-0000-4000-a000-000000000001).
+          # Idempotente — re-roda em CI sem efeito se já populou.
+          # NÃO cria o auth User — isso é feito no step seguinte.
+          python scripts/seed_full_platform.py --seed
+
+      - name: Seed demo auth user (demo@wedotalent.com / demo123)
+        working-directory: lia-agent-system
+        run: |
+          # Cria/repara o User de auth via app.auth.dependencies.ensure_demo_user
+          # (gated em _is_dev_environment — daí o ENVIRONMENT=development no env do job).
+          # Sem isso, /api/v1/auth/login retorna 401/404 e o auth.fixture (#1053) falha.
+          python -c "
+          import asyncio
+          from app.auth.dependencies import ensure_demo_user
+          from lia_config.database import AsyncSessionLocal
+
+          async def _run():
+              async with AsyncSessionLocal() as db:
+                  user = await ensure_demo_user(db)
+                  print(f'demo user ready: id={user.id} email={user.email} company_id={user.company_id}')
+
+          asyncio.run(_run())
+          "
+
+      - name: Start FastAPI backend (background)
+        working-directory: lia-agent-system
+        run: |
+          mkdir -p .ci-logs
+          nohup uvicorn app.main:app --host 0.0.0.0 --port 8001 \
+            > .ci-logs/backend.log 2>&1 &
+          echo $! > .ci-logs/backend.pid
+
+      - name: Wait for backend health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8001/api/v1/health > /dev/null 2>&1; then
+              echo "Backend up after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::Backend failed to come up in 120s"
+          tail -n 200 lia-agent-system/.ci-logs/backend.log || true
+          exit 1
+
+      - name: Sanity-check demo login (auth contract da Task #1053)
+        run: |
+          # Se isso falhar, o e2e vai falhar com a mesma mensagem na fixture.
+          # Falhar AQUI dá um erro CI mais legível (sem stack do Playwright).
+          curl -fsS -X POST http://localhost:8001/api/v1/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email":"demo@wedotalent.com","password":"demo123"}' \
+            | python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("access_token") or d.get("data",{}).get("access_token"), f"login response missing access_token: {d}"; print("demo login OK")'
+
+      # ──────────────────────────────────────────────────────────────────
+      # Frontend — plataforma-lia (Next.js)
+      # ──────────────────────────────────────────────────────────────────
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: plataforma-lia/pnpm-lock.yaml
+
+      - name: Install frontend deps
+        working-directory: plataforma-lia
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: plataforma-lia
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Start Next.js frontend (background)
+        working-directory: plataforma-lia
+        run: |
+          mkdir -p .ci-logs
+          # Usa npm run dev (mesmo command do workflow Replit) para reproduzir
+          # exatamente o ambiente em que o teste roda hoje. Se vier a ficar
+          # lento demais em CI, trocar para `pnpm build && pnpm start`.
+          nohup npm run dev > .ci-logs/frontend.log 2>&1 &
+          echo $! > .ci-logs/frontend.pid
+
+      - name: Wait for frontend health
+        run: |
+          for i in $(seq 1 90); do
+            if curl -fsS http://localhost:5000/ > /dev/null 2>&1; then
+              echo "Frontend up after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::Frontend failed to come up in 180s"
+          tail -n 200 plataforma-lia/.ci-logs/frontend.log || true
+          exit 1
+
+      # ──────────────────────────────────────────────────────────────────
+      # Run pw-cenario-A
+      # ──────────────────────────────────────────────────────────────────
+      - name: Run pw-cenario-A (wrapper canônico)
+        id: pw
+        working-directory: plataforma-lia
+        env:
+          # Override default spec se workflow_dispatch passou input customizado.
+          PW_SPEC: ${{ github.event.inputs.spec || 'e2e/tests/wizard/02-vaga-tecnica.spec.ts' }}
+        run: |
+          # Wrapper já faz warmup do Next/Turbopack e exporta envs.
+          # `set -e` propaga falha do Playwright para o step (build vermelho).
+          bash scripts/run-pw-cenario-a.sh
+
+      # ──────────────────────────────────────────────────────────────────
+      # Cleanup + artifacts
+      # ──────────────────────────────────────────────────────────────────
+      - name: Stop backend & frontend
+        if: always()
+        run: |
+          for pidfile in lia-agent-system/.ci-logs/backend.pid plataforma-lia/.ci-logs/frontend.pid; do
+            if [ -f "$pidfile" ]; then
+              kill "$(cat $pidfile)" 2>/dev/null || true
+            fi
+          done
+
+      - name: Upload Playwright report + traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pw-cenario-a-report-${{ github.run_id }}
+          path: |
+            plataforma-lia/playwright-report/
+            plataforma-lia/test-results/
+            lia-agent-system/.ci-logs/backend.log
+            plataforma-lia/.ci-logs/frontend.log
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Notify Slack on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL secret not configured — skipping Slack notification"
+            exit 0
+          fi
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          PAYLOAD=$(cat <<EOF
+          {
+            "text": ":rotating_light: pw-cenario-A FAILED (Task #1054)",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*:rotating_light: Wizard E2E Cenário A FAILED*\nO fluxo linear de criação de vaga técnica regrediu — pode ser bug do wizard, dos agentes, ou de auth/fixture.\n\n*Run:* <${RUN_URL}|#${GITHUB_RUN_NUMBER}>\n*Repo:* ${GITHUB_REPOSITORY}\n*Branch:* ${GITHUB_REF_NAME}\n\nBaixe o artifact \`pw-cenario-a-report-${GITHUB_RUN_ID}\` para report HTML, traces, screenshots e logs do backend/frontend."
+                }
+              }
+            ]
+          }
+          EOF
+          )
+          curl -fsS -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"

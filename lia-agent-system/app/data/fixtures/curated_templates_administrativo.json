@@ -1,0 +1,2278 @@
+[
+  {
+    "category": "administrativo",
+    "subcategory": "geral",
+    "title": "Assistente Administrativo",
+    "title_alternatives": [
+      "Administrative Assistant",
+      "Auxiliar Administrativo",
+      "Assistente Adm",
+      "Admin Assistant"
+    ],
+    "seniorities": [
+      "junior",
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Pacote Office",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Organização de Arquivos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Atendimento ao Cliente",
+        "category": "soft",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Controle de Agenda",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Redação Comercial",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Sistemas ERP",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Controle de Documentos",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Fundamental para gestão de documentos e rotinas administrativas"
+      },
+      {
+        "name": "Proatividade",
+        "weight": 0.9,
+        "justification": "Antecipação de necessidades e resolução de problemas"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Interação constante com diferentes áreas e níveis"
+      },
+      {
+        "name": "Atenção aos Detalhes",
+        "weight": 0.8,
+        "justification": "Precisão em documentos e processos"
+      }
+    ],
+    "default_responsibilities": [
+      "Realizar atendimento telefônico e presencial",
+      "Organizar e arquivar documentos físicos e digitais",
+      "Controlar agenda de reuniões e compromissos",
+      "Elaborar relatórios e planilhas de controle",
+      "Apoiar nas rotinas de compras e cotações",
+      "Receber e encaminhar correspondências",
+      "Manter organização do ambiente de trabalho"
+    ],
+    "salary_range": {
+      "junior": {
+        "min": 1800,
+        "max": 2800
+      },
+      "pleno": {
+        "min": 3500,
+        "max": 5000
+      }
+    },
+    "work_model": "onsite",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "geral",
+    "title": "Analista Administrativo",
+    "title_alternatives": [
+      "Administrative Analyst",
+      "Analista Adm",
+      "Business Operations Analyst",
+      "Analista de Operações Administrativas"
+    ],
+    "seniorities": [
+      "pleno",
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Excel Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Análise de Processos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Sistemas ERP (SAP, TOTVS)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Gestão de Indicadores",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Elaboração de Relatórios",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Power BI / Dashboards",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Gestão de Contratos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "BPM (Mapeamento de Processos)",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Pensamento Analítico",
+        "weight": 1.0,
+        "justification": "Análise de dados e processos para melhoria contínua"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.9,
+        "justification": "Gestão de múltiplas demandas e prazos"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Interface com diversas áreas da empresa"
+      },
+      {
+        "name": "Resolução de Problemas",
+        "weight": 0.8,
+        "justification": "Identificação e solução de gargalos operacionais"
+      },
+      {
+        "name": "Visão Sistêmica",
+        "weight": 0.8,
+        "justification": "Entendimento dos processos organizacionais"
+      }
+    ],
+    "default_responsibilities": [
+      "Analisar e otimizar processos administrativos",
+      "Elaborar relatórios gerenciais e indicadores de performance",
+      "Gerenciar contratos de fornecedores e prestadores de serviços",
+      "Apoiar na elaboração e controle de orçamento administrativo",
+      "Desenvolver e implementar procedimentos operacionais",
+      "Realizar análises de custos e propor reduções",
+      "Coordenar atividades de suporte administrativo",
+      "Acompanhar projetos de melhoria de processos"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 4000,
+        "max": 6000
+      },
+      "senior": {
+        "min": 6500,
+        "max": 10000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "geral",
+    "title": "Coordenador Administrativo",
+    "title_alternatives": [
+      "Administrative Coordinator",
+      "Coordenador de Administração",
+      "Admin Operations Coordinator",
+      "Supervisor Administrativo"
+    ],
+    "seniorities": [
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Equipes",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Planejamento Orçamentário",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de Processos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Sistemas ERP (SAP, TOTVS, Oracle)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Gestão de Contratos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "KPIs e Dashboards",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Lean / Six Sigma",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Gestão de Facilities",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Liderança",
+        "weight": 1.0,
+        "justification": "Gestão e desenvolvimento de equipe administrativa"
+      },
+      {
+        "name": "Visão Estratégica",
+        "weight": 0.9,
+        "justification": "Alinhamento das operações com objetivos organizacionais"
+      },
+      {
+        "name": "Tomada de Decisão",
+        "weight": 0.9,
+        "justification": "Decisões rápidas e assertivas em contexto operacional"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.8,
+        "justification": "Articulação com diferentes stakeholders"
+      },
+      {
+        "name": "Gestão de Conflitos",
+        "weight": 0.8,
+        "justification": "Resolução de problemas e mediação de situações"
+      }
+    ],
+    "default_responsibilities": [
+      "Coordenar equipe de assistentes e analistas administrativos",
+      "Gerenciar orçamento da área administrativa",
+      "Desenvolver e implementar políticas e procedimentos administrativos",
+      "Acompanhar indicadores de desempenho da área",
+      "Negociar contratos com fornecedores estratégicos",
+      "Garantir conformidade com normas e regulamentos internos",
+      "Implementar projetos de melhoria contínua",
+      "Reportar resultados à diretoria"
+    ],
+    "salary_range": {
+      "senior": {
+        "min": 8000,
+        "max": 12000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "geral",
+    "title": "Auxiliar de Escritório",
+    "title_alternatives": [
+      "Office Clerk",
+      "Office Assistant",
+      "Auxiliar de Serviços Gerais Administrativos",
+      "Auxiliar Administrativo Júnior"
+    ],
+    "seniorities": [
+      "junior"
+    ],
+    "default_skills": [
+      {
+        "name": "Pacote Office Básico",
+        "category": "technical",
+        "level": "basic",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Atendimento Telefônico",
+        "category": "soft",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Organização de Arquivos",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Protocolo de Documentos",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Serviços de Correio",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Disposição",
+        "weight": 1.0,
+        "justification": "Prontidão para executar diversas tarefas"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.9,
+        "justification": "Manutenção da ordem no ambiente de trabalho"
+      },
+      {
+        "name": "Trabalho em Equipe",
+        "weight": 0.8,
+        "justification": "Colaboração com diferentes setores"
+      }
+    ],
+    "default_responsibilities": [
+      "Realizar atendimento telefônico e recepcionar visitantes",
+      "Organizar e distribuir correspondências",
+      "Arquivar documentos físicos e digitais",
+      "Apoiar em tarefas administrativas diversas",
+      "Realizar serviços externos (banco, correio, cartório)",
+      "Manter organização do escritório e materiais de expediente"
+    ],
+    "salary_range": {
+      "junior": {
+        "min": 1500,
+        "max": 2200
+      }
+    },
+    "work_model": "onsite",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "secretariado",
+    "title": "Secretária Executiva",
+    "title_alternatives": [
+      "Executive Secretary",
+      "Secretária de Diretoria",
+      "Executive Assistant",
+      "Assistente Executiva"
+    ],
+    "seniorities": [
+      "pleno",
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Agenda Executiva",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Redação Empresarial",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Inglês Fluente",
+        "category": "language",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Pacote Office Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Organização de Viagens Corporativas",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Gestão de Eventos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Protocolo Empresarial",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Espanhol",
+        "category": "language",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Discrição",
+        "weight": 1.0,
+        "justification": "Sigilo de informações confidenciais da diretoria"
+      },
+      {
+        "name": "Proatividade",
+        "weight": 1.0,
+        "justification": "Antecipação de necessidades do executivo"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.9,
+        "justification": "Gestão complexa de agendas e prioridades"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Interface com stakeholders internos e externos"
+      },
+      {
+        "name": "Resiliência",
+        "weight": 0.8,
+        "justification": "Lidar com pressão e mudanças de última hora"
+      }
+    ],
+    "default_responsibilities": [
+      "Gerenciar agenda complexa de executivos e diretores",
+      "Organizar viagens nacionais e internacionais",
+      "Elaborar atas de reuniões e apresentações executivas",
+      "Filtrar e priorizar demandas direcionadas à diretoria",
+      "Coordenar eventos corporativos e reuniões de board",
+      "Preparar relatórios e documentos confidenciais",
+      "Representar a diretoria em contatos estratégicos",
+      "Gerenciar despesas e prestação de contas da área"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 5000,
+        "max": 8000
+      },
+      "senior": {
+        "min": 8000,
+        "max": 12000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "secretariado",
+    "title": "Recepcionista",
+    "title_alternatives": [
+      "Receptionist",
+      "Atendente de Recepção",
+      "Front Desk Receptionist",
+      "Recepcionista Bilíngue"
+    ],
+    "seniorities": [
+      "junior"
+    ],
+    "default_skills": [
+      {
+        "name": "Atendimento ao Cliente",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Comunicação Verbal",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Pacote Office",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Controle de Acesso",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "PABX / Central Telefônica",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Inglês Básico",
+        "category": "language",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Cordialidade",
+        "weight": 1.0,
+        "justification": "Primeiro contato com visitantes e clientes"
+      },
+      {
+        "name": "Boa Apresentação",
+        "weight": 0.9,
+        "justification": "Representa a imagem da empresa"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.8,
+        "justification": "Gestão de múltiplas tarefas simultâneas"
+      },
+      {
+        "name": "Paciência",
+        "weight": 0.8,
+        "justification": "Lidar com diferentes perfis de público"
+      }
+    ],
+    "default_responsibilities": [
+      "Recepcionar e direcionar visitantes com cordialidade",
+      "Atender e transferir ligações telefônicas",
+      "Controlar entrada e saída de visitantes e prestadores",
+      "Receber e distribuir correspondências e encomendas",
+      "Agendar salas de reunião",
+      "Manter a recepção organizada e apresentável",
+      "Prestar informações gerais sobre a empresa"
+    ],
+    "salary_range": {
+      "junior": {
+        "min": 1800,
+        "max": 2800
+      }
+    },
+    "work_model": "onsite",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "secretariado",
+    "title": "Assistente de Diretoria",
+    "title_alternatives": [
+      "Board Assistant",
+      "Executive Board Assistant",
+      "Assistente Executivo de Diretoria",
+      "Assessor de Diretoria"
+    ],
+    "seniorities": [
+      "pleno",
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Agenda",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Redação Empresarial",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Pacote Office Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Organização de Viagens",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Inglês",
+        "category": "language",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Gestão de Despesas",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "PowerPoint / Apresentações",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Discrição",
+        "weight": 1.0,
+        "justification": "Acesso a informações confidenciais"
+      },
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Múltiplas demandas simultâneas"
+      },
+      {
+        "name": "Proatividade",
+        "weight": 0.9,
+        "justification": "Antecipação de necessidades"
+      },
+      {
+        "name": "Flexibilidade",
+        "weight": 0.8,
+        "justification": "Adaptação a mudanças de última hora"
+      }
+    ],
+    "default_responsibilities": [
+      "Gerenciar agenda de diretores e executivos",
+      "Organizar viagens e eventos corporativos",
+      "Elaborar apresentações e documentos executivos",
+      "Coordenar reuniões e preparar pautas",
+      "Controlar despesas e prestação de contas",
+      "Atuar como ponto focal para demandas da diretoria",
+      "Manter arquivo de documentos estratégicos"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 4500,
+        "max": 6000
+      },
+      "senior": {
+        "min": 7000,
+        "max": 11000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "geral",
+    "title": "Analista de Processos Administrativos",
+    "title_alternatives": [
+      "Administrative Process Analyst",
+      "Analista de Processos",
+      "Process Improvement Analyst",
+      "Analista de Melhoria Contínua"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Mapeamento de Processos (BPMN)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Excel Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Metodologias de Melhoria (Lean, Six Sigma)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Ferramentas de BPM (Bizagi, Visio)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Análise de Indicadores",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Gestão de Projetos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Power BI",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Pensamento Analítico",
+        "weight": 1.0,
+        "justification": "Análise crítica de processos e identificação de melhorias"
+      },
+      {
+        "name": "Visão Sistêmica",
+        "weight": 0.9,
+        "justification": "Compreensão do impacto dos processos na organização"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Engajamento de stakeholders em projetos de melhoria"
+      },
+      {
+        "name": "Orientação para Resultados",
+        "weight": 0.8,
+        "justification": "Foco em eficiência e redução de custos"
+      }
+    ],
+    "default_responsibilities": [
+      "Mapear e documentar processos administrativos atuais (AS-IS)",
+      "Identificar gargalos, redundâncias e oportunidades de melhoria",
+      "Desenhar processos otimizados (TO-BE) e planos de implementação",
+      "Desenvolver indicadores de performance (KPIs) dos processos",
+      "Conduzir projetos de melhoria contínua com metodologias Lean/Six Sigma",
+      "Elaborar procedimentos operacionais padrão (POPs)",
+      "Treinar equipes nos novos processos implementados"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 4500,
+        "max": 6000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "facilities",
+    "title": "Assistente de Facilities",
+    "title_alternatives": [
+      "Facilities Assistant",
+      "Auxiliar de Facilities",
+      "Assistente de Infraestrutura",
+      "Workplace Assistant"
+    ],
+    "seniorities": [
+      "junior",
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Manutenção Predial",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Controle de Fornecedores e Prestadores",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de Serviços Gerais",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Pacote Office",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Controle de Materiais e Suprimentos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Gestão de Contratos",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Gestão de múltiplas demandas de infraestrutura"
+      },
+      {
+        "name": "Proatividade",
+        "weight": 0.9,
+        "justification": "Antecipação de problemas e manutenções preventivas"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Interface com prestadores e colaboradores"
+      },
+      {
+        "name": "Resolução de Problemas",
+        "weight": 0.8,
+        "justification": "Soluções rápidas para demandas do prédio"
+      }
+    ],
+    "default_responsibilities": [
+      "Acompanhar serviços de manutenção predial (elétrica, hidráulica, ar-condicionado)",
+      "Controlar e solicitar materiais de limpeza, copa e escritório",
+      "Gerenciar prestadores de serviços (limpeza, segurança, jardinagem)",
+      "Realizar rondas e inspeções nas instalações",
+      "Apoiar na organização de espaços e layout do escritório",
+      "Acompanhar pequenas obras e reformas"
+    ],
+    "salary_range": {
+      "junior": {
+        "min": 2000,
+        "max": 3000
+      },
+      "pleno": {
+        "min": 3500,
+        "max": 5000
+      }
+    },
+    "work_model": "onsite",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "facilities",
+    "title": "Analista de Facilities",
+    "title_alternatives": [
+      "Facilities Analyst",
+      "Analista de Infraestrutura Predial",
+      "Facilities Management Analyst",
+      "Analista de Serviços Gerais"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Contratos de Serviços",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Manutenção Predial",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de Fornecedores",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Normas de Segurança (NRs)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Controle de Custos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "AutoCAD / Leitura de Plantas",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "PMOC / Climatização",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Sustentabilidade Corporativa",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.6,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Gestão de múltiplos contratos e serviços"
+      },
+      {
+        "name": "Negociação",
+        "weight": 0.9,
+        "justification": "Negociação com fornecedores e prestadores"
+      },
+      {
+        "name": "Resolução de Problemas",
+        "weight": 0.9,
+        "justification": "Situações emergenciais e manutenções corretivas"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.8,
+        "justification": "Interface com áreas internas e fornecedores"
+      }
+    ],
+    "default_responsibilities": [
+      "Gerenciar contratos de limpeza, segurança, manutenção e serviços terceirizados",
+      "Acompanhar manutenções preventivas e corretivas das instalações",
+      "Controlar orçamento de facilities e serviços prediais",
+      "Garantir conformidade com normas de segurança e AVCB",
+      "Gerir consumo de utilities (água, energia, gás)",
+      "Coordenar projetos de reforma e adequação de espaços",
+      "Supervisionar equipes terceirizadas no site",
+      "Implementar práticas de sustentabilidade no ambiente corporativo"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 5000,
+        "max": 8500
+      }
+    },
+    "work_model": "onsite",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "facilities",
+    "title": "Office Manager",
+    "title_alternatives": [
+      "Gerente de Escritório",
+      "Workplace Manager",
+      "Gestor de Facilities",
+      "Gerente de Operações do Escritório"
+    ],
+    "seniorities": [
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Operações de Escritório",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de Equipes",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Planejamento Orçamentário",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Gestão de Fornecedores",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Workplace Experience",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Inglês",
+        "category": "language",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Space Planning",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "ESG / Sustentabilidade",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Liderança",
+        "weight": 1.0,
+        "justification": "Gestão de equipes de suporte e facilities"
+      },
+      {
+        "name": "Visão Estratégica",
+        "weight": 0.9,
+        "justification": "Planejamento e otimização de recursos"
+      },
+      {
+        "name": "Resolução de Problemas",
+        "weight": 0.9,
+        "justification": "Gestão de crises e situações imprevistas"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.8,
+        "justification": "Interface com liderança e colaboradores"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.8,
+        "justification": "Múltiplas demandas e projetos simultâneos"
+      }
+    ],
+    "default_responsibilities": [
+      "Gerenciar todas as operações do escritório e experiência do workplace",
+      "Liderar equipe de recepção, serviços gerais e facilities",
+      "Planejar e controlar orçamento de operações do escritório",
+      "Negociar e gerenciar contratos com fornecedores estratégicos",
+      "Implementar iniciativas de bem-estar e experiência do colaborador",
+      "Coordenar projetos de expansão, mudanças e reformas",
+      "Garantir conformidade com normas regulatórias e de segurança",
+      "Desenvolver políticas e procedimentos operacionais"
+    ],
+    "salary_range": {
+      "senior": {
+        "min": 9000,
+        "max": 12000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "compras",
+    "title": "Assistente de Compras",
+    "title_alternatives": [
+      "Purchasing Assistant",
+      "Auxiliar de Compras",
+      "Procurement Assistant",
+      "Assistente de Suprimentos"
+    ],
+    "seniorities": [
+      "junior",
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Cotação de Preços",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Excel",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Sistemas ERP",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Cadastro de Fornecedores",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Follow-up de Pedidos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Negociação Básica",
+        "category": "soft",
+        "level": "basic",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Controle de múltiplas cotações e pedidos"
+      },
+      {
+        "name": "Atenção aos Detalhes",
+        "weight": 0.9,
+        "justification": "Conferência de especificações e valores"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.8,
+        "justification": "Contato com fornecedores e áreas requisitantes"
+      },
+      {
+        "name": "Agilidade",
+        "weight": 0.8,
+        "justification": "Atendimento de demandas urgentes"
+      }
+    ],
+    "default_responsibilities": [
+      "Realizar cotações de materiais e serviços",
+      "Emitir pedidos de compra no sistema ERP",
+      "Acompanhar entregas e prazos de fornecedores",
+      "Manter cadastro de fornecedores atualizado",
+      "Apoiar em negociações de preços e condições",
+      "Arquivar documentos de compras e contratos",
+      "Elaborar relatórios de acompanhamento de compras"
+    ],
+    "salary_range": {
+      "junior": {
+        "min": 2000,
+        "max": 3200
+      },
+      "pleno": {
+        "min": 3500,
+        "max": 5500
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "compras",
+    "title": "Analista de Compras",
+    "title_alternatives": [
+      "Purchasing Analyst",
+      "Procurement Analyst",
+      "Buyer",
+      "Analista de Suprimentos"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Negociação",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Strategic Sourcing",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de Fornecedores",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Excel Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Sistemas ERP (SAP, Oracle, TOTVS)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "TCO (Total Cost of Ownership)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Contratos de Fornecimento",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Category Management",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Negociação",
+        "weight": 1.0,
+        "justification": "Core skill para obtenção de melhores condições"
+      },
+      {
+        "name": "Pensamento Analítico",
+        "weight": 0.9,
+        "justification": "Análise de propostas e custo-benefício"
+      },
+      {
+        "name": "Relacionamento Interpessoal",
+        "weight": 0.9,
+        "justification": "Gestão de relacionamento com fornecedores"
+      },
+      {
+        "name": "Ética",
+        "weight": 0.8,
+        "justification": "Integridade em processos de compras"
+      },
+      {
+        "name": "Orientação para Resultados",
+        "weight": 0.8,
+        "justification": "Foco em savings e eficiência"
+      }
+    ],
+    "default_responsibilities": [
+      "Conduzir negociações com fornecedores estratégicos",
+      "Desenvolver e qualificar base de fornecedores",
+      "Realizar análise de mercado e benchmark de preços",
+      "Gerenciar categorias de compras sob sua responsabilidade",
+      "Elaborar contratos de fornecimento e SLAs",
+      "Acompanhar indicadores de performance de compras (savings, leadtime)",
+      "Garantir compliance em processos de procurement",
+      "Implementar projetos de redução de custos"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 5000,
+        "max": 8500
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "compras",
+    "title": "Analista de Contratos",
+    "title_alternatives": [
+      "Contract Analyst",
+      "Analista de Gestão de Contratos",
+      "Contract Management Analyst",
+      "Analista de Contratos Administrativos"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Análise e Elaboração de Contratos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Legislação Contratual",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de Contratos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Negociação",
+        "category": "soft",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Excel",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Sistemas de CLM",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Compliance",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Atenção aos Detalhes",
+        "weight": 1.0,
+        "justification": "Análise minuciosa de cláusulas contratuais"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.9,
+        "justification": "Gestão de múltiplos contratos e prazos"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Interface entre jurídico, áreas e fornecedores"
+      },
+      {
+        "name": "Pensamento Crítico",
+        "weight": 0.8,
+        "justification": "Identificação de riscos contratuais"
+      }
+    ],
+    "default_responsibilities": [
+      "Elaborar e analisar contratos comerciais e de serviços",
+      "Gerenciar ciclo de vida dos contratos (elaboração, vigência, renovação)",
+      "Acompanhar cumprimento de obrigações contratuais",
+      "Negociar termos e condições com fornecedores",
+      "Manter base de contratos organizada e atualizada",
+      "Apoiar áreas internas em questões contratuais",
+      "Controlar vencimentos e alertas de renovação",
+      "Garantir conformidade com políticas de compliance"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 5500,
+        "max": 9000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "geral",
+    "title": "Analista de Viagens Corporativas",
+    "title_alternatives": [
+      "Corporate Travel Analyst",
+      "Analista de Travel",
+      "Travel Coordinator",
+      "Coordenador de Viagens"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Viagens Corporativas",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Sistemas de Reservas (GDS, Sabre, Amadeus)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Negociação com Fornecedores de Viagens",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Excel Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Gestão de Despesas de Viagem",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Inglês Intermediário",
+        "category": "language",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Políticas de Viagens Corporativas",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Gestão de múltiplas viagens e demandas simultâneas"
+      },
+      {
+        "name": "Negociação",
+        "weight": 0.9,
+        "justification": "Melhores tarifas e condições com fornecedores"
+      },
+      {
+        "name": "Atenção aos Detalhes",
+        "weight": 0.9,
+        "justification": "Precisão em roteiros e reservas"
+      },
+      {
+        "name": "Resolução de Problemas",
+        "weight": 0.8,
+        "justification": "Soluções para imprevistos durante viagens"
+      }
+    ],
+    "default_responsibilities": [
+      "Planejar e organizar viagens nacionais e internacionais",
+      "Negociar tarifas com companhias aéreas, hotéis e locadoras",
+      "Gerenciar reservas de passagens, hospedagem e transfers",
+      "Monitorar políticas de viagens e garantir compliance",
+      "Controlar orçamento e despesas de viagens corporativas",
+      "Elaborar relatórios de custos e indicadores de viagens",
+      "Prestar suporte aos viajantes antes, durante e após viagens"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 4000,
+        "max": 6000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "patrimonio",
+    "title": "Analista de Frotas",
+    "title_alternatives": [
+      "Fleet Analyst",
+      "Analista de Gestão de Frotas",
+      "Fleet Management Analyst",
+      "Analista de Veículos"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Frotas",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Controle de Manutenção de Veículos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Legislação de Trânsito",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Sistemas de Telemetria",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Excel Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Gestão de Seguros",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Controle de Combustível",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Controle de múltiplos veículos e documentações"
+      },
+      {
+        "name": "Atenção aos Detalhes",
+        "weight": 0.9,
+        "justification": "Acompanhamento de manutenções e prazos"
+      },
+      {
+        "name": "Negociação",
+        "weight": 0.8,
+        "justification": "Negociação com fornecedores e seguradoras"
+      },
+      {
+        "name": "Resolução de Problemas",
+        "weight": 0.8,
+        "justification": "Gestão de sinistros e emergências"
+      }
+    ],
+    "default_responsibilities": [
+      "Gerenciar frota de veículos corporativos",
+      "Controlar documentação e licenciamento de veículos",
+      "Programar e acompanhar manutenções preventivas e corretivas",
+      "Gerenciar contratos de locação e seguros de veículos",
+      "Analisar indicadores de consumo e eficiência da frota",
+      "Controlar multas e infrações de trânsito",
+      "Coordenar sinistros com seguradoras",
+      "Elaborar relatórios gerenciais de gestão de frotas"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 4500,
+        "max": 7500
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "patrimonio",
+    "title": "Analista de Patrimônio",
+    "title_alternatives": [
+      "Asset Analyst",
+      "Fixed Assets Analyst",
+      "Analista de Ativos Fixos",
+      "Analista de Bens Patrimoniais"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Controle Patrimonial",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Inventário de Ativos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Sistemas ERP (Módulo Ativos)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Depreciação e Amortização",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Excel Avançado",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Normas Contábeis (CPC)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "RFID / Etiquetagem",
+        "category": "technical",
+        "level": "basic",
+        "weight": 0.6,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Controle preciso de inventário de ativos"
+      },
+      {
+        "name": "Atenção aos Detalhes",
+        "weight": 0.9,
+        "justification": "Precisão em registros e identificação de bens"
+      },
+      {
+        "name": "Pensamento Analítico",
+        "weight": 0.8,
+        "justification": "Análise de movimentações e variações patrimoniais"
+      },
+      {
+        "name": "Integridade",
+        "weight": 0.8,
+        "justification": "Responsabilidade sobre bens da empresa"
+      }
+    ],
+    "default_responsibilities": [
+      "Realizar inventários físicos de ativos imobilizados",
+      "Controlar movimentação e transferência de bens patrimoniais",
+      "Manter cadastro atualizado de ativos no sistema",
+      "Calcular e controlar depreciação de ativos",
+      "Emitir relatórios de posição patrimonial",
+      "Identificar e etiquetar bens patrimoniais",
+      "Apoiar em processos de baixa e alienação de ativos",
+      "Conciliar saldos contábeis com físico"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 4000,
+        "max": 6500
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "documentacao",
+    "title": "Analista de Documentação",
+    "title_alternatives": [
+      "Document Control Analyst",
+      "Analista de Controle de Documentos",
+      "Documentation Specialist",
+      "Analista de GED"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão Eletrônica de Documentos (GED)",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Controle de Versão de Documentos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Taxonomia e Classificação",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "ISO 9001 (Gestão de Documentos)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Sistemas ECM/DMS",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Digitalização e OCR",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "LGPD / Retenção de Documentos",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Gestão sistemática de grandes volumes documentais"
+      },
+      {
+        "name": "Atenção aos Detalhes",
+        "weight": 0.9,
+        "justification": "Precisão na classificação e controle de versões"
+      },
+      {
+        "name": "Metodologia",
+        "weight": 0.9,
+        "justification": "Seguir processos e padrões estabelecidos"
+      },
+      {
+        "name": "Confidencialidade",
+        "weight": 0.8,
+        "justification": "Sigilo de documentos sensíveis"
+      }
+    ],
+    "default_responsibilities": [
+      "Gerenciar sistema de gestão eletrônica de documentos",
+      "Estabelecer e manter taxonomia de classificação documental",
+      "Controlar versões e obsolescência de documentos",
+      "Garantir conformidade com políticas de retenção",
+      "Coordenar digitalização de documentos físicos",
+      "Treinar usuários no uso do sistema documental",
+      "Elaborar procedimentos de controle de documentos",
+      "Apoiar auditorias internas e externas"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 4000,
+        "max": 6500
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "documentacao",
+    "title": "Arquivista",
+    "title_alternatives": [
+      "Archivist",
+      "Records Manager",
+      "Analista de Arquivo",
+      "Gestor de Arquivos"
+    ],
+    "seniorities": [
+      "pleno"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Arquivos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Arquivística e Protocolo",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Tabela de Temporalidade",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Sistemas de Arquivo (físico e digital)",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Legislação Arquivística",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.8,
+        "required": true
+      },
+      {
+        "name": "Preservação Documental",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "LGPD / Privacidade",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Organização",
+        "weight": 1.0,
+        "justification": "Gestão sistemática de acervos documentais"
+      },
+      {
+        "name": "Metodologia",
+        "weight": 0.9,
+        "justification": "Aplicação de técnicas arquivísticas"
+      },
+      {
+        "name": "Atenção aos Detalhes",
+        "weight": 0.9,
+        "justification": "Classificação precisa de documentos"
+      },
+      {
+        "name": "Confidencialidade",
+        "weight": 0.8,
+        "justification": "Sigilo de informações arquivadas"
+      }
+    ],
+    "default_responsibilities": [
+      "Organizar e manter acervos documentais físicos e digitais",
+      "Aplicar tabela de temporalidade e destinação de documentos",
+      "Coordenar transferência e eliminação de documentos",
+      "Garantir preservação e conservação do acervo",
+      "Atender solicitações de consulta e empréstimo de documentos",
+      "Elaborar instrumentos de pesquisa e catalogação",
+      "Manter conformidade com legislação arquivística",
+      "Orientar áreas sobre boas práticas de gestão documental"
+    ],
+    "salary_range": {
+      "pleno": {
+        "min": 4000,
+        "max": 6500
+      }
+    },
+    "work_model": "onsite",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "gestao",
+    "title": "Gerente Administrativo",
+    "title_alternatives": [
+      "Administrative Manager",
+      "Gerente de Administração",
+      "Operations Manager",
+      "Gerente de Operações Administrativas"
+    ],
+    "seniorities": [
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Equipes",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Planejamento Estratégico",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão Orçamentária",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Gestão de Processos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Gestão de Contratos e Fornecedores",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "KPIs e Indicadores",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "Lean / Six Sigma",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      },
+      {
+        "name": "Inglês",
+        "category": "language",
+        "level": "advanced",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Liderança",
+        "weight": 1.0,
+        "justification": "Gestão de times e influência organizacional"
+      },
+      {
+        "name": "Visão Estratégica",
+        "weight": 1.0,
+        "justification": "Alinhamento com objetivos da empresa"
+      },
+      {
+        "name": "Tomada de Decisão",
+        "weight": 0.9,
+        "justification": "Decisões de alto impacto operacional"
+      },
+      {
+        "name": "Comunicação",
+        "weight": 0.9,
+        "justification": "Interface com alta direção e stakeholders"
+      },
+      {
+        "name": "Gestão de Conflitos",
+        "weight": 0.8,
+        "justification": "Mediação e resolução de problemas"
+      }
+    ],
+    "default_responsibilities": [
+      "Liderar todas as operações administrativas da empresa",
+      "Gerenciar equipes de facilities, compras, patrimônio e serviços gerais",
+      "Desenvolver e executar planejamento estratégico da área",
+      "Controlar orçamento e garantir eficiência de custos",
+      "Negociar contratos estratégicos com fornecedores",
+      "Implementar projetos de melhoria contínua e otimização",
+      "Garantir conformidade com políticas e regulamentos",
+      "Reportar resultados e indicadores à diretoria"
+    ],
+    "salary_range": {
+      "senior": {
+        "min": 10000,
+        "max": 12000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  },
+  {
+    "category": "administrativo",
+    "subcategory": "gestao",
+    "title": "Chief of Staff",
+    "title_alternatives": [
+      "Chefe de Gabinete",
+      "CoS",
+      "Chief of Staff to CEO",
+      "Assessor Executivo"
+    ],
+    "seniorities": [
+      "senior"
+    ],
+    "default_skills": [
+      {
+        "name": "Gestão de Projetos Estratégicos",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Planejamento Estratégico",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 1.0,
+        "required": true
+      },
+      {
+        "name": "Análise de Dados e KPIs",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Gestão de Stakeholders",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Comunicação Executiva",
+        "category": "soft",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Inglês Fluente",
+        "category": "language",
+        "level": "advanced",
+        "weight": 0.9,
+        "required": true
+      },
+      {
+        "name": "Governança Corporativa",
+        "category": "technical",
+        "level": "advanced",
+        "weight": 0.8,
+        "required": false
+      },
+      {
+        "name": "OKRs / Metodologias Ágeis",
+        "category": "technical",
+        "level": "intermediate",
+        "weight": 0.7,
+        "required": false
+      }
+    ],
+    "default_behavioral": [
+      {
+        "name": "Visão Estratégica",
+        "weight": 1.0,
+        "justification": "Visão 360° do negócio e prioridades"
+      },
+      {
+        "name": "Influência sem Autoridade",
+        "weight": 1.0,
+        "justification": "Articulação entre áreas e liderança"
+      },
+      {
+        "name": "Discrição",
+        "weight": 0.9,
+        "justification": "Acesso a informações confidenciais do C-Level"
+      },
+      {
+        "name": "Organização",
+        "weight": 0.9,
+        "justification": "Gestão de múltiplas iniciativas prioritárias"
+      },
+      {
+        "name": "Resiliência",
+        "weight": 0.8,
+        "justification": "Ambiente de alta pressão e dinamismo"
+      }
+    ],
+    "default_responsibilities": [
+      "Atuar como braço direito do CEO/C-Level em iniciativas estratégicas",
+      "Coordenar projetos cross-funcionais de alta prioridade",
+      "Preparar materiais para reuniões de board e comitês executivos",
+      "Acompanhar OKRs e métricas-chave do negócio",
+      "Facilitar comunicação e alinhamento entre áreas",
+      "Liderar iniciativas de transformação organizacional",
+      "Representar o executivo em reuniões e fóruns estratégicos",
+      "Identificar gargalos e propor soluções para a alta liderança"
+    ],
+    "salary_range": {
+      "senior": {
+        "min": 10000,
+        "max": 12000
+      }
+    },
+    "work_model": "hybrid",
+    "employment_type": "clt"
+  }
+]

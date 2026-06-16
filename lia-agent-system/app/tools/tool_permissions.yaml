@@ -1,0 +1,249 @@
+version: '1.0'
+global:
+  scopes:
+    talent_funnel:
+      query:
+      - search_candidates
+      - get_candidate_details
+      - get_candidate_stats
+      - compare_candidates
+      - get_talent_quality
+      - get_talent_engagement
+      - get_talent_availability
+      - get_diversity_metrics
+      - get_candidate_history
+      - get_ml_predictions
+      - get_conversion_patterns
+      - analyze_skill_gaps
+      - map_candidate_skills_to_ontology
+      - match_internal_candidates
+      - get_engagement_metrics
+      action:
+      - add_candidate_to_vacancy
+      - reject_candidate
+      - shortlist_candidate
+      - add_to_list
+      - hide_candidate
+      - send_email
+      - send_whatsapp
+      - send_bulk_email
+      - export_candidates
+      - create_nurture_sequence
+      - suggest_reengagement
+    job_table:
+      query:
+      - search_jobs
+      - get_job_details
+      - get_pipeline_stats
+      - get_recruiter_metrics
+      - get_velocity_metrics
+      - get_efficiency_metrics
+      - get_comparative_metrics
+      - get_workload_distribution
+      - get_hiring_quality
+      - get_cost_metrics
+      - get_trends
+      - get_market_benchmarks
+      action:
+      - create_job
+      - update_job
+      - pause_job
+      - close_job
+      - publish_job
+      - export_job_analytics
+      - generate_report
+    in_job:
+      query:
+      - get_job_details
+      - get_vacancy_funnel
+      - get_candidate_details
+      - get_activity_summary
+      - get_pending_actions
+      - compare_candidates
+      - get_candidate_stats
+      - get_bottleneck_analysis
+      - get_job_velocity
+      - get_job_quality_metrics
+      - get_stakeholder_metrics
+      - get_prediction_metrics
+      - get_job_benchmark
+      - get_smart_alerts
+      - analyze_interview_recording
+      action:
+      - update_candidate_stage
+      - bulk_update_candidates_stage
+      - reject_candidate
+      - shortlist_candidate
+      - add_to_list
+      - hide_candidate
+      - wsi_screening
+      - send_email
+      - send_whatsapp
+      - schedule_interview
+      - send_feedback
+    global:
+      query:
+      - infer_related_skills
+      - get_skill_adjacencies
+      - forecast_hiring_needs
+      - get_market_intelligence
+      action:
+      - generate_report
+      - schedule_report
+      - analyze_cv_match
+      - create_and_screen_candidate
+      - parse_and_create_candidate
+      - add_to_vacancy
+    universal:
+      query:
+      - search_candidates
+      - get_candidate_details
+      - get_candidate_stats
+      - compare_candidates
+      - get_talent_quality
+      - get_talent_engagement
+      - get_talent_availability
+      - get_diversity_metrics
+      - get_candidate_history
+      - get_ml_predictions
+      - get_conversion_patterns
+      - search_jobs
+      - get_job_details
+      - get_pipeline_stats
+      - get_recruiter_metrics
+      - get_velocity_metrics
+      - get_efficiency_metrics
+      - get_comparative_metrics
+      - get_workload_distribution
+      - get_hiring_quality
+      - get_cost_metrics
+      - get_trends
+      - get_market_benchmarks
+      - get_vacancy_funnel
+      - get_activity_summary
+      - get_pending_actions
+      - get_bottleneck_analysis
+      - get_job_velocity
+      - get_job_quality_metrics
+      - get_stakeholder_metrics
+      - get_prediction_metrics
+      - get_job_benchmark
+      - get_smart_alerts
+      - infer_related_skills
+      - get_skill_adjacencies
+      - analyze_skill_gaps
+      - map_candidate_skills_to_ontology
+      - match_internal_candidates
+      - forecast_hiring_needs
+      - analyze_interview_recording
+      - get_engagement_metrics
+      - get_market_intelligence
+      - suggest_reengagement
+      action:
+      - add_candidate_to_vacancy
+      - add_to_list
+      - add_to_vacancy
+      - analyze_cv_match
+      - bulk_update_candidates_stage
+      - close_job
+      - create_and_screen_candidate
+      - create_job
+      - create_sourcing_agent
+      - export_candidates
+      - export_job_analytics
+      - generate_report
+      - hide_candidate
+      - parse_and_create_candidate
+      - pause_job
+      - publish_job
+      - reject_candidate
+      - schedule_interview
+      - schedule_report
+      - send_bulk_email
+      - send_email
+      - send_feedback
+      - send_whatsapp
+      - shortlist_candidate
+      - update_candidate_stage
+      - update_job
+      - wsi_screening
+      - create_nurture_sequence
+      - suggest_reengagement
+      - get_offer_status
+      - get_negotiation_context
+      - get_benefit_details
+      - suggest_next_start_date
+      - escalate_to_recruiter
+      - log_negotiation_event
+      - draft_response_to_candidate
+    offer_concierge:
+      query:
+      - get_offer_status
+      - get_negotiation_context
+      - get_benefit_details
+      - get_learning_context
+      action:
+      - suggest_next_start_date
+      - escalate_to_recruiter
+      - log_negotiation_event
+      - draft_response_to_candidate
+  llm_provider: claude
+  llm_fallback_order:
+  - claude
+  - gemini
+  - openai
+
+# ── RESTRICTED TOOLS ─────────────────────────────────────────────────────────
+# Tools that require explicit user confirmation before execution (OWASP LLM06).
+# Any tool matching dangerous keywords (delete/remove/purge/bulk/export/config/
+# permission/close/cancel/reject/hide) MUST be listed here.
+# The ActionExecutor and orchestrator check this list to enforce HITL guardrails.
+
+# ── RESTRICTED TOOLS ─────────────────────────────────────────────────────────
+# Tools that require explicit user confirmation before execution (OWASP LLM06).
+# Any tool matching dangerous keywords (delete/remove/purge/bulk/export/config/
+# permission/close/cancel/reject/hide) MUST be listed here.
+# The ActionExecutor and orchestrator check this list to enforce HITL guardrails.
+restricted_tools:
+  # Destructive / removal actions
+  - reject_candidate          # permanently reject from pipeline
+  - hide_candidate            # soft-delete from view
+  - close_job                 # close/cancel job permanently (cobre cancel_vacancy)
+  - pause_job                 # pause job (reversible but impactful; cobre pause_vacancy)
+  # Bulk / batch operations
+  - bulk_update_candidates_stage  # move many candidates at once
+  - send_bulk_email           # mass email to candidates
+  # Export / data extraction
+  - export_candidates         # export candidate PII data
+  - export_job_analytics      # export analytics data
+  # Configuration / settings
+  - get_company_config        # read company configuration
+  # Communication (irreversible sends)
+  - send_email                # send individual email
+  - send_whatsapp             # send WhatsApp message
+  - send_feedback             # send feedback to candidate
+  # Pipeline stage changes
+  - update_candidate_stage    # move candidate between stages
+  # Job publishing (external visibility)
+  - publish_job               # make job publicly visible (cobre publish_to_job_board)
+  # Hiring decisions (offer + placement = alta consequência → agora gated)
+  - generate_offer            # gerar carta-proposta (renomeado de create_offer_letter)
+  - finalize_hiring           # registrar contratação (renomeado de record_hiring_outcome)
+  # Job creation/modification (structural changes)
+  - create_job                # create new job vacancy
+  - update_job                # modify existing job
+  # Report scheduling
+  - schedule_report           # schedule automated report delivery
+  # Offer management (alta consequência — proposta de contratação)
+  - escalate_to_recruiter     # escalar proposta para recrutador (HITL)
+  - draft_response_to_candidate  # N3: rascunho de contra-proposta
+  - log_negotiation_event     # registrar evento de negociação
+  # Pool operations
+  - move_pool_to_job          # move talent pool candidates to job
+  # Agent management (DomainActions — gated no Studio runtime, não tool de LLM)
+  - create_sourcing_agent     # create AI sourcing agent (DomainAction)
+  - calibrate_sourcing_agent  # recalibrate agent parameters (DomainAction)
+  # Campaign operations
+  - advance_campaign_stage    # advance recruitment campaign stage (DomainAction)
+
+tenants: {}

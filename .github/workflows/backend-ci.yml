@@ -1,0 +1,138 @@
+name: Backend CI — PII + Data-Toggle Sensors
+
+# Registrado 2026-05-22 (Wave 4 audit, R1-canonical-fix follow-up).
+# Modelado em .github/workflows/pydantic-conventions-sensors.yml.
+#
+# Sensores:
+#   - check_no_plaintext_pii.py (AST checker, BLOCKING, baseline 0)
+#     Detecta writes plaintext em PaymentMethod.billing_document (CPF/CNPJ).
+#     LGPD Art. 5 II + Art. 46.
+#   - check_data_toggle_matches_persisted_key.py (regex+ratchet, WARN, baseline 0)
+#     Detecta data-toggle="X" sem backend field correspondente. UI<->backend
+#     ghost-toggle class. Vide CLAUDE.md "lia_field_toggles canonical pattern".
+#
+# Histórico de baseline:
+#   2026-05-22 (Wave 4 close): PII=0 (BLOCKING ✅), data-toggle=0 (warn ratchet)
+#
+# Localização: root .github/workflows/ (NÃO em lia-agent-system/.github/),
+# per audit J 2026-05-06 — workflow vive no root para CI alcançar todos os
+# subdirs (lia-agent-system + plataforma-lia + scripts).
+
+on:
+  push:
+    branches: [main, develop, "feat/**", "fix/**"]
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "lia-agent-system/**"
+      - "plataforma-lia/**"
+      - ".github/workflows/backend-ci.yml"
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pii-and-data-toggle:
+    name: PII + Data-Toggle Sensors (PII blocking, data-toggle warn-ratchet)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check no plaintext PII (BLOCKING)
+        # Baseline 0 — qualquer write plaintext de CPF/CNPJ em
+        # PaymentMethod.billing_document bloqueia o CI.
+        # LGPD Art. 5 II + Art. 46. Escape hatch documentada:
+        # # PII-PLAINTEXT-OK: <reason> com audit anchor.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_no_plaintext_pii.py
+      - name: Check dispatch_* has audit dim 5 (BLOCKING — Sprint 7C Part 1.5c)
+        # Sensor #10: toda funcao dispatch_* em app/services/ + app/jobs/tasks/
+        # deve emitir audit log_decision canonical (dim 5 feature-audit).
+        # Baseline 0 post Sprint 7C Part 1.5b/c.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_dispatch_has_audit.py
+
+
+      - name: Check data-toggle naming consistency (WARN, baseline ratchet)
+        # Baseline file: scripts/baselines/data_toggle_naming.txt (atual: 0).
+        # Sensor falha quando NEW violation > baseline (ratchet-up gate).
+        # continue-on-error: warn-only enquanto não-zero; ainda assim, gate
+        # de aumento dispara red mark visível no PR check.
+        continue-on-error: true
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_data_toggle_matches_persisted_key.py \
+            --baseline-file scripts/baselines/data_toggle_naming.txt
+
+      - name: Backend Studio contract + API tests (BLOCKING)
+        # Wave A saneamento Studio audit 2026-05-27: CI estava cego pra Studio.
+        # test_studio_voice_plugin.py em red por 5 testes (checkpointer APP_ENV
+        # gate) — caso clássico de feedback control faltando. Wire canonical:
+        # contract + custom_agent + studio + sector_templates + digital_twins.
+        working-directory: lia-agent-system
+        env:
+          APP_ENV: development   # checkpointer fallback (libs/agents-core)
+        run: |
+          python3 -m pytest \
+            tests/contract/test_studio_voice_plugin.py \
+            tests/contract/test_custom_agent_repository.py \
+            tests/contract/test_custom_agent_runtime_voice_channel.py \
+            tests/api/test_custom_agents_canonical_endpoints.py \
+            tests/api/test_custom_agents_filter.py \
+            tests/api/test_custom_agents_timeline.py \
+            --no-cov --tb=short
+
+      - name: WS event contract + activity-stream tests (sensor warn, tests BLOCKING)
+        # Epico atividade da IA (2026-06-03). Sensor cross-stack BE serialize_* <->
+        # FE StreamingEventType (warn-only, baseline 0). Contract tests BLOCKING.
+        working-directory: lia-agent-system
+        env:
+          APP_ENV: development
+        run: |
+          python3 scripts/check_ws_event_contract.py || true
+          python3 -m pytest \
+            tests/contract/test_plan_progress_contract.py \
+            tests/contract/test_streaming_callback_tool_events.py \
+            tests/contract/test_reasoning_streaming.py \
+            tests/contract/test_run_graph_streaming.py \
+            --no-cov --tb=short -q
+
+
+      - name: Sub-status canonical + HITL gate sensors (BLOCKING)
+        # Auditoria 2026-06-10 (modal Mover-para-Reprovado):
+        #   - test_substatus_message_focus_canonical: SUBSTATUS_MESSAGE_FOCUS +
+        #     SubStatusPredictor falam o vocabulario CANONICAL_SUB_STATUSES (sem drift)
+        #     -> feedback de reprovacao com foco curado por motivo; substatus inferido
+        #     persistido com codigo canonico (FE exibe label/cor).
+        #   - test_rest_hitl_gate: gate HITL dormente no transition/execute
+        #     (LIA_HITL_GATE off => zero regressao; ON segura dispatch sem confirmacao).
+        working-directory: lia-agent-system
+        env:
+          APP_ENV: development
+        run: |
+          python3 -m pytest \
+            tests/test_substatus_message_focus_canonical.py \
+            tests/test_rest_hitl_gate.py \
+            tests/test_feedback_safety.py \
+            tests/test_feedback_fairness_guard.py \
+            tests/test_preview_feedback.py \
+            tests/test_send_email_fairness.py \
+            tests/test_feedback_guard.py \
+            --no-cov --tb=short -q
+
+      - name: JSON operator syntax sensor (BLOCKING)
+        # Sensor check_json_operator_syntax.py (2026-06-14).
+        # Detecta operadores JSON PostgreSQL sem aspas na chave:
+        #   BUGADO:  ->column_name   (trata como referência de coluna)
+        #   CORRETO: ->column_name (string key)
+        # Baseline 0 — qualquer regressão bloqueia CI.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_json_operator_syntax.py

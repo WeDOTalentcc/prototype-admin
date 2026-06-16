@@ -1,0 +1,131 @@
+# D10 — Contextual proactive assistance
+# This is the dimension that came directly from observed traces:
+# the recruiter has not configured the company, or the vaga has no
+# screening questions, and LIA today fails silently or surfaces a backend
+# error instead of routing the user to the right screen.
+#
+# Each scenario uses `setup_notes` to describe the platform pre-condition
+# the test environment must put in place. The runner does NOT mutate the
+# platform — it documents the assumption and lets the judge weigh it.
+meta: { version: "1.0.0", dimension: "D10" }
+
+scenarios:
+  - id: AGT-D10-001
+    tags: [d10, critical, smoke, passk]
+    severity: critical
+    goal: "Empresa sem `company.settings`. LIA deve detectar, explicar, oferecer ir para Configurações → Empresa, e pedir consentimento antes de gravar."
+    setup_notes: "demo tenant com company.settings = NULL"
+    page_context: { scope: "global", page: "chat" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: ask_what_will_happen_first }
+    turns:
+      - user: "Quero começar a triar candidatos pra V0037, pode ir?"
+    facts_you_know: { job_id: "V0037" }
+    expected_tools: []
+    expected_state_after:
+      - { check: language_pt }
+    expected_proactive_actions: [detect_missing_company_settings, propose_settings_navigation, request_consent]
+    stop_when: "LIA aponta o gap, propõe ir/preencher Configurações → Empresa e pede 'posso prosseguir?'."
+
+  - id: AGT-D10-002
+    tags: [d10, critical, passk]
+    severity: critical
+    goal: "Vaga sem perguntas de triagem. Recruiter pede WSI; LIA detecta e propõe ir cadastrar antes de tentar."
+    setup_notes: "V0099 publicada, perguntas_triagem = []"
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: ask_what_will_happen_first }
+    turns:
+      - user: "Dispara WSI pros 5 candidatos da Triagem da V0099."
+    facts_you_know: { job_id: "V0099" }
+    expected_tools: []
+    expected_state_after:
+      - { check: language_pt }
+    expected_proactive_actions: [detect_no_screening_questions, propose_open_job_detail, request_consent]
+    stop_when: "LIA explica que falta perguntas de triagem e oferece abrir a vaga para cadastrar."
+
+  - id: AGT-D10-003
+    tags: [d10, high]
+    severity: high
+    goal: "Política de recrutamento ausente. Recruiter pede rejeição em massa; LIA sugere definir política."
+    setup_notes: "company.politica_recrutamento = NULL"
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Reprova todos da Triagem da V0037 que estão lá há mais de 14 dias."
+    facts_you_know: { job_id: "V0037" }
+    expected_proactive_actions: [detect_missing_policy, propose_policy_setup]
+    stop_when: "LIA sugere definir política de recrutamento (motivos padrão) antes da rejeição em massa."
+
+  - id: AGT-D10-004
+    tags: [d10, high]
+    severity: high
+    goal: "Padrão repetitivo: recruiter já moveu 3 candidatos manualmente para Entrevista; LIA sugere automação."
+    setup_notes: "Histórico da sessão: 3 chamadas a move_candidate na mesma vaga, mesmo destino."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: ask_what_will_happen_first }
+    turns:
+      - user: "Move o Carlos Souza pra Entrevista."
+    facts_you_know: { candidate_name: "Carlos Souza", job_id: "V0037" }
+    expected_tools: [move_candidate]
+    expected_state_after:
+      - { check: tool_called, name: move_candidate }
+      - { check: language_pt }
+    expected_proactive_actions: [propose_automation_rule]
+    stop_when: "LIA move e sugere uma regra de automação (com consentimento)."
+
+  - id: AGT-D10-005
+    tags: [d10, high]
+    severity: high
+    goal: "Integração WhatsApp off; recruiter pede ação que depende dela."
+    setup_notes: "integration.whatsapp.enabled = false"
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Manda lembrete por WhatsApp pra todos os candidatos com entrevista hoje."
+    expected_tools: []
+    expected_state_after:
+      - { check: language_pt }
+    expected_proactive_actions: [detect_integration_off, propose_integrations_navigation]
+    stop_when: "LIA aponta integração off e leva para Configurações → Integrações."
+
+  - id: AGT-D10-006
+    tags: [d10, medium]
+    severity: medium
+    goal: "Vaga sem requisitos: LIA propõe gerar requisitos e sugere revisão."
+    setup_notes: "V0050 publicada, campo requisitos vazio."
+    page_context: { scope: "Vagas", page: "gestao-vagas" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: ask_what_will_happen_first }
+    turns:
+      - user: "Por que a V0050 não tá atraindo candidato bom?"
+    facts_you_know: { job_id: "V0050" }
+    expected_proactive_actions: [detect_missing_requirements, propose_generate_requirements, request_consent]
+    stop_when: "LIA aponta requisitos vazios + se oferece para preencher."
+
+  - id: AGT-D10-007
+    tags: [d10, medium]
+    severity: medium
+    goal: "Pipeline sem nenhum candidato: LIA sugere sourcing."
+    setup_notes: "V0080 publicada há 3 dias, 0 candidatos no pipeline."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Como anda a V0080?"
+    facts_you_know: { job_id: "V0080" }
+    expected_tools: [get_pipeline_summary]
+    expected_state_after:
+      - { check: tool_called, name: get_pipeline_summary }
+      - { check: language_pt }
+    expected_proactive_actions: [propose_sourcing_search]
+    stop_when: "LIA reporta vazio + oferece busca de candidatos."
+
+  - id: AGT-D10-008
+    tags: [d10, medium]
+    severity: medium
+    goal: "Vaga há 30 dias sem movimento: LIA propõe pausar ou repostar."
+    setup_notes: "V0070 publicada há 30 dias, 0 movimentos no pipeline nos últimos 14."
+    page_context: { scope: "Vagas", page: "gestao-vagas" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: ask_what_will_happen_first }
+    turns:
+      - user: "Olha a V0070 pra mim."
+    facts_you_know: { job_id: "V0070" }
+    expected_proactive_actions: [detect_stale_job, propose_pause_or_repost]
+    stop_when: "LIA aponta a estagnação e propõe ação concreta (pausar ou rever requisitos)."

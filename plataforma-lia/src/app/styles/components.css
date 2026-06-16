@@ -1,0 +1,634 @@
+/* =============================================
+   WeDo DS — Custom Components
+   Extracted from globals.css — Sprint 7
+   ============================================= */
+
+/* ===== COMPONENTES ORIGINAIS WEDO ===== */
+
+/* Modern Tech Palette Components */
+.bg-ai-aqua {
+  background-color: hsl(var(--ai-aqua));
+}
+
+.bg-ai-aqua-light {
+  background-color: hsl(var(--ai-aqua-light));
+}
+
+.text-ai-aqua {
+  color: hsl(var(--ai-aqua));
+}
+
+.bg-electric-red {
+  background-color: hsl(var(--electric-red));
+}
+
+.bg-electric-red-light {
+  background-color: hsl(var(--electric-red-light));
+}
+
+.text-electric-red {
+  color: hsl(var(--electric-red));
+}
+
+.bg-ethereal-green {
+  background-color: hsl(var(--ethereal-green));
+}
+
+.bg-ethereal-green-light {
+  background-color: hsl(var(--ethereal-green-light));
+}
+
+.text-ethereal-green {
+  color: hsl(var(--ethereal-green));
+}
+
+.bg-warm-energy {
+  background-color: hsl(var(--warm-energy));
+}
+
+.bg-warm-energy-light {
+  background-color: hsl(var(--warm-energy-light));
+}
+
+.text-warm-energy {
+  color: hsl(var(--warm-energy));
+}
+
+.bg-peach-fuzz {
+  background-color: hsl(var(--peach-fuzz));
+}
+
+.bg-peach-fuzz-light {
+  background-color: hsl(var(--peach-fuzz-light));
+}
+
+.text-peach-fuzz {
+  color: hsl(var(--peach-fuzz));
+}
+
+.bg-deep-tech {
+  background-color: hsl(var(--deep-tech));
+}
+
+.text-deep-tech {
+  color: hsl(var(--deep-tech));
+}
+
+/* Refined Components with animations */
+.wedo-card {
+  @apply bg-lia-bg-primary dark:bg-lia-bg-secondary;
+  border: 1px solid hsl(var(--wedo-gray-200));
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wedo-card:hover {
+  border-color: hsl(var(--ai-aqua) / 0.3);
+  box-shadow: 0 4px 12px 0 hsl(var(--ai-aqua) / 0.08);
+}
+
+.wedo-card-elevated {
+  @apply bg-lia-bg-primary dark:bg-lia-bg-secondary;
+  border: 1px solid hsl(var(--wedo-gray-200));
+  border-radius: 12px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
+}
+
+.wedo-card-elevated:hover {
+  box-shadow: 0 4px 16px 0 hsl(var(--ai-aqua) / 0.12);
+}
+
+/* Modern Buttons with animations */
+.wedo-button-primary {
+  background-color: hsl(var(--ai-aqua));
+  color: white;
+  @apply font-medium px-4 py-2.5 rounded-lg;
+  @apply focus:ring-2 focus:ring-offset-2;
+  focus-ring-color: hsl(var(--ai-aqua) / 0.5);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wedo-button-primary:hover {
+  background-color: hsl(var(--ai-aqua) / 0.9);
+  transform: translateY(-1px);
+}
+
+.wedo-button-secondary {
+  @apply bg-lia-bg-secondary hover:bg-lia-bg-tertiary text-lia-text-secondary font-medium;
+  @apply px-4 py-2.5 rounded-lg;
+  @apply border border-lia-border-subtle hover:border-lia-border-default;
+  @apply focus:ring-2 focus:ring-lia-border-default focus:ring-offset-2;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wedo-button-ghost {
+  @apply hover:bg-lia-bg-secondary text-lia-text-secondary hover:text-lia-text-primary font-medium;
+  @apply px-4 py-2.5 rounded-lg;
+  @apply focus:ring-2 focus:ring-lia-border-default focus:ring-offset-2;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Surfaces */
+.wedo-surface {
+  background-color: hsl(var(--wedo-surface));
+  border: 1px solid hsl(var(--wedo-gray-200));
+}
+
+.wedo-surface-elevated {
+  background-color: hsl(var(--wedo-bg, 0 0% 100%));
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Subtle dividers */
+.wedo-divider {
+  border-bottom: 1px solid hsl(var(--wedo-gray-200));
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.02);
+}
+
+/* Sidebar */
+.wedo-sidebar {
+  background-color: hsl(var(--wedo-surface, 0 0% 100%));
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-right: 1px solid hsl(var(--wedo-gray-200));
+  box-shadow: 1px 0 0 0 rgba(0, 0, 0, 0.02);
+}
+
+/* Top bar */
+.wedo-topbar {
+  background-color: hsl(var(--wedo-bg, 0 0% 100%));
+  border-bottom: 1px solid hsl(var(--wedo-gray-200));
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.02);
+}
+
+/* Navigation items with animations */
+.wedo-nav-item {
+  @apply flex items-center gap-3 px-3 py-2.5 font-medium rounded-lg;
+  @apply text-lia-text-secondary hover:bg-lia-bg-secondary;
+  @apply cursor-pointer;
+  font-family: var(--font-open-sans);
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.25rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wedo-nav-item.active {
+  background-color: hsl(var(--ai-aqua-light));
+  color: hsl(var(--ai-aqua));
+  border-right: 2px solid hsl(var(--ai-aqua));
+  transform: translateX(2px);
+}
+
+.wedo-nav-item:hover {
+  transform: translateX(1px);
+}
+
+/* Modern Status badges with animations */
+.wedo-badge-success {
+  background-color: hsl(var(--ethereal-green-light));
+  color: hsl(var(--ethereal-green));
+  border-color: hsl(var(--ethereal-green) / 0.3);
+  animation: scaleIn 0.3s ease-out;
+}
+
+.wedo-badge-warning {
+  background-color: hsl(var(--warm-energy-light));
+  color: hsl(var(--warm-energy));
+  border-color: hsl(var(--warm-energy) / 0.3);
+  animation: scaleIn 0.3s ease-out;
+}
+
+.wedo-badge-error {
+  background-color: hsl(var(--electric-red-light));
+  color: hsl(var(--electric-red));
+  border-color: hsl(var(--electric-red) / 0.3);
+  animation: scaleIn 0.3s ease-out;
+}
+
+.wedo-badge-info {
+  background-color: hsl(var(--ai-aqua-light));
+  color: hsl(var(--ai-aqua));
+  border-color: hsl(var(--ai-aqua) / 0.3);
+  animation: scaleIn 0.3s ease-out;
+}
+
+.wedo-badge-neutral {
+  background-color: hsl(var(--peach-fuzz-light));
+  color: hsl(var(--peach-fuzz));
+  border-color: hsl(var(--peach-fuzz) / 0.3);
+  animation: scaleIn 0.3s ease-out;
+}
+
+/* Focus styles */
+.wedo-focus {
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  focus-ring-color: hsl(var(--ai-aqua) / 0.5);
+}
+
+/* Enhanced animations */
+.wedo-animate-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Utility classes */
+.backdrop-blur-wedo {
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.8);
+  transition: backdrop-filter 0.2s ease;
+}
+
+.dark .backdrop-blur-wedo {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.dark .wedo-card,
+.dark .wedo-card-elevated {
+  background-color: var(--lia-bg-secondary);
+  border-color: var(--lia-border-subtle);
+}
+
+.dark .wedo-card:hover {
+  border-color: hsl(var(--ai-aqua) / 0.3);
+  box-shadow: 0 4px 12px 0 hsl(var(--ai-aqua) / 0.08);
+}
+
+.dark .wedo-card-elevated:hover {
+  box-shadow: 0 4px 16px 0 hsl(var(--ai-aqua) / 0.12);
+}
+
+.dark .wedo-surface {
+  background-color: var(--lia-bg-secondary);
+  border-color: var(--lia-border-subtle);
+}
+
+.dark .wedo-surface-elevated {
+  background-color: var(--lia-bg-secondary);
+}
+
+.dark .wedo-sidebar {
+  background-color: var(--lia-bg-primary);
+  border-color: var(--lia-border-subtle);
+}
+
+.dark .wedo-topbar {
+  background-color: var(--lia-bg-primary);
+  border-color: var(--lia-border-subtle);
+}
+
+.dark .wedo-divider {
+  border-color: var(--lia-border-subtle);
+}
+
+.dark .wedo-button-secondary {
+  background-color: var(--lia-bg-tertiary);
+  color: var(--lia-text-primary);
+  border-color: var(--lia-border-default);
+}
+
+.dark .wedo-button-secondary:hover {
+  background-color: var(--lia-interactive-active);
+  border-color: var(--lia-border-medium);
+}
+
+.dark .wedo-button-secondary:focus {
+  --tw-ring-color: var(--lia-border-medium);
+}
+
+.dark .wedo-button-ghost {
+  color: var(--lia-text-secondary);
+}
+
+.dark .wedo-button-ghost:hover {
+  background-color: var(--lia-bg-tertiary);
+  color: var(--lia-text-primary);
+}
+
+.dark .wedo-button-ghost:focus {
+  --tw-ring-color: var(--lia-border-medium);
+}
+
+.dark .wedo-badge-success {
+  background-color: rgba(139, 185, 35, 0.20);
+  color: #A3D134;
+}
+
+.dark .wedo-badge-warning {
+  background-color: rgba(240, 179, 35, 0.20);
+  color: #F0B323;
+}
+
+.dark .wedo-badge-error {
+  background-color: rgba(222, 28, 49, 0.20);
+  color: #F05565;
+}
+
+.dark .wedo-badge-info {
+  background-color: rgba(0, 148, 198, 0.20);
+  color: #60BED1;
+}
+
+.dark .wedo-badge-neutral {
+  background-color: rgba(246, 168, 140, 0.20);
+  color: #F6A88C;
+}
+
+.dark .wedo-nav-item.active {
+  background-color: var(--lia-bg-tertiary);
+  color: #60BED1;
+}
+
+
+/* Fonte Open Sans para elementos específicos (DS v4.1 - Source Serif 4 removido) */
+
+
+.font-open-sans {
+  font-family: var(--font-open-sans);
+}
+
+/* Nome da LIA - Open Sans bold (DS v4.1) */
+.lia-name {
+  font-family: var(--font-open-sans), 'Open Sans', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 20px;
+}
+
+/* Conversas da LIA - Open Sans (DS v4.1) */
+.lia-conversation {
+  font-family: var(--font-open-sans), 'Open Sans', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Formatação de mensagens do chat */
+.lia-conversation strong {
+  font-weight: 600;
+  color: var(--lia-text-primary); /* migrado de --eleven-text-primary 2026-03-29 */
+}
+
+.lia-conversation br {
+  display: block;
+  content: "";
+  margin-top: 0.5em;
+}
+
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--lia-bg-tertiary);
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--lia-text-tertiary);
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--lia-text-secondary);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--lia-bg-primary);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--lia-text-secondary);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--lia-text-secondary);
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Search Processing Animation - Sonar Effect */
+@keyframes searchPulse { 
+  0%, 100% { transform: scale(1); } 
+
+}
+
+/* ==============================================
+   ELEVENLABS INSPIRED STYLES — REMOVIDO 2026-03-29
+   Classes .eleven-* eliminadas: zero uso em .tsx,
+   tokens referenciados não definidos (--eleven-blue/gray/coral/yellow/peach).
+   Tokens temáticos migrados para --lia-voice-* em design-tokens.css.
+   ============================================== */
+
+/* ==============================================
+   LIA PROMPT - Design System Unificado
+   Padrão WeDo DS Clean
+   ============================================== */
+
+/* LIA Prompt - Design Tokens → migrados para design-tokens.css em 2026-03-29
+   Tokens definidos em: plataforma-lia/src/styles/design-tokens.css
+   Seção: "LIA PROMPT COMPONENT" */
+
+/* Container principal expandido */
+.lia-prompt-expanded {
+  background-color: var(--lia-bg-main);
+  border-top: 1px solid var(--lia-border);
+}
+
+/* Títulos de seção - Open Sans (DS v4.1) */
+.lia-heading {
+  font-family: var(--font-open-sans), 'Open Sans', sans-serif;
+  font-weight: 600;
+  color: var(--lia-text-primary);
+}
+
+/* Texto UI - Open Sans */
+.lia-body {
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  color: var(--lia-text-secondary);
+}
+
+/* Botão primário (accent) */
+.lia-btn-primary {
+  background-color: var(--lia-accent);
+  color: white;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.lia-btn-primary:hover {
+  background-color: var(--lia-accent-hover);
+}
+
+/* Botão secundário (neutro) */
+.lia-btn-secondary {
+  background-color: var(--lia-btn-neutral);
+  color: var(--lia-text-primary);
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.lia-btn-secondary:hover {
+  background-color: var(--lia-btn-neutral-hover);
+}
+
+/* Cards internos */
+.lia-card {
+  background-color: var(--lia-bg-card);
+  border: 1px solid var(--lia-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Pills/Tags inativas */
+.lia-pill {
+  background-color: var(--lia-bg-primary);
+  color: var(--lia-text-secondary);
+  border-radius: 0.5rem;
+  border: 1px solid var(--lia-border-subtle);
+  font-family: var(--font-open-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.lia-pill:hover {
+  background-color: var(--lia-bg-tertiary);
+  color: var(--lia-text-primary);
+}
+
+/* Pills/Tags ativas */
+.lia-pill-active {
+  background-color: var(--lia-text-primary);
+  color: white;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  font-family: var(--font-open-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+}
+
+/* Tabs container */
+.lia-tabs-container {
+  background-color: var(--lia-border);
+  border-radius: 0.5rem;
+  padding: 0.125rem;
+}
+
+/* Tab inativa */
+.lia-tab {
+  background-color: transparent;
+  color: var(--lia-text-secondary);
+  border-radius: 0.375rem;
+  font-family: var(--font-open-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.lia-tab:hover {
+  background-color: var(--lia-btn-neutral-hover);
+}
+
+/* Tab ativa */
+.lia-tab-active {
+  background-color: var(--lia-accent);
+  color: white;
+  border-radius: 0.375rem;
+  font-family: var(--font-open-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Input fields */
+.lia-input {
+  background-color: var(--lia-bg-card);
+  border: 1px solid var(--lia-border);
+  border-radius: 0.5rem;
+  color: var(--lia-text-primary);
+  font-family: var(--font-open-sans);
+}
+
+.lia-input:focus {
+  outline: none;
+  border-color: var(--lia-accent);
+  box-shadow: 0 0 0 3px var(--lia-accent-ring);
+}
+
+.lia-input::placeholder {
+  color: var(--lia-text-tertiary);
+}
+
+/* Seção de dica/info */
+.lia-info-box {
+  background-color: var(--lia-accent-light);
+  border-radius: 0.5rem;
+  padding: 0.625rem;
+}
+
+/* Tooltip dark */
+.lia-tooltip {
+  background-color: var(--lia-text-primary);
+  color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* =================================================== */
+
+.metric, .kpi, .data-value {
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  font-feature-settings: 'tnum' 1;
+}
+
+.sidebar-item, .nav-sidebar {
+  font-family: var(--font-open-sans), 'Open Sans', sans-serif;
+}
+
+.focus-ring:focus {
+  @apply outline-none ring-2 ring-lia-border-default;
+}
+
+.card {
+  @apply bg-lia-bg-primary border border-lia-border-subtle rounded-md shadow-sm;
+  @apply dark:bg-lia-bg-secondary dark:border-lia-border-default;
+}
+
+.card-interactive {
+  @apply bg-lia-bg-primary border border-lia-border-subtle rounded-md shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 cursor-pointer;
+  @apply dark:bg-lia-bg-secondary dark:border-lia-border-default;
+}
+
+.glass-card {
+  background-color: color-mix(in srgb, var(--lia-bg-primary) 70%, transparent);
+  @apply backdrop-blur-lg border rounded-md shadow-sm;
+  border-color: color-mix(in srgb, var(--lia-border-subtle) 50%, transparent);
+}
+
+.dark .glass-card {
+  background-color: color-mix(in srgb, var(--lia-bg-secondary) 70%, transparent);
+  border-color: color-mix(in srgb, var(--lia-border-default) 50%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

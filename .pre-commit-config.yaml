@@ -1,0 +1,100 @@
+# Pre-commit hooks — WeDOTalent / lia-agent-system
+#
+# Instalação (1x por dev):
+#   pip install pre-commit
+#   pre-commit install --hook-type commit-msg
+#
+# Documentação completa: scripts/README_HOOKS.md
+
+repos:
+  - repo: local
+    hooks:
+      - id: branch-map-theme-check
+        name: Branch Map Theme Check
+        description: |
+          Bloqueia commits em branches genéricas (sprint accumulators) que tocam
+          temas não mapeados em docs/BRANCH_MAP.md. Veja CLAUDE.md (Guide 1+2).
+        entry: python3 scripts/check_branch_map.py
+        language: system
+        stages: [commit-msg]
+        pass_filenames: false
+        verbose: true
+      - id: lia-field-toggles-sync-warn
+        name: LIA Field Toggles — TS↔Python sync
+        description: |
+          Schema-sync entre DEFAULT_FIELD_TOGGLES (Python) e LIA_FIELD_DEFINITIONS
+          (TypeScript). Audit 2026-05-21 P2-10. Baseline 34/34 in sync — drift
+          aqui é silent + devastating (recruiter configura toggle, backend nao
+          tem row, persistencia vira no-op).
+        entry: python3 lia-agent-system/scripts/check_lia_field_definitions_sync.py
+        language: system
+        pass_filenames: false
+        verbose: true
+      - id: canonical-imports-warn
+        name: Canonical Import Paths (lia_models short path)
+        description: |
+          Auditoria 2026-05-24: bloqueia `from libs.models.lia_models.X` (drift)
+          vs canonical `from lia_models.X` (727:13 majority). Mistura causa
+          re-import duplo (vide bug proactive_actions 2026-05-24).
+        entry: python3 lia-agent-system/scripts/check_canonical_import_paths.py
+        args: [--blocking, --root, lia-agent-system/app]
+        language: system
+        pass_filenames: false
+        verbose: true
+      - id: lia-agent-respects-toggles
+        name: Agent respeita lia_field_toggles
+        description: |
+          Anti-regressao P0-1: agentes que injetam company fields em system
+          prompts DEVEM passar pelo helper build_company_agent_context.
+          Baseline=0 — qualquer offender novo eh flag P1 imediato.
+        entry: python3 lia-agent-system/scripts/check_agent_respects_lia_toggles.py
+        language: system
+        pass_filenames: false
+        verbose: true
+      - id: check-no-plaintext-pii
+        name: No plaintext PII writes (LGPD Art. 5 II + 46)
+        description: |
+          BLOCKING. Detecta writes plaintext em PaymentMethod.billing_document
+          (CPF/CNPJ) — único campo PII canonical mapeado em 2026-05-22.
+          Pattern de check_no_plaintext_credentials.py. Escape hatch:
+          # PII-PLAINTEXT-OK: <reason> com audit anchor.
+        entry: python3 lia-agent-system/scripts/check_no_plaintext_pii.py
+        language: system
+        pass_filenames: false
+        verbose: true
+      - id: data-toggle-naming-consistency-warn
+        name: data-toggle UI<->backend field consistency (ratchet)
+        description: |
+          WARN (ratchet baseline 0). Detecta UI data-toggle="X" que NAO
+          tem field correspondente no backend. Wave 4 audit 2026-05-22
+          fechou class de ghost-toggle. Baseline file:
+          lia-agent-system/scripts/baselines/data_toggle_naming.txt.
+          Vide CLAUDE.md "lia_field_toggles canonical pattern".
+        entry: python3 lia-agent-system/scripts/check_data_toggle_matches_persisted_key.py --baseline-file lia-agent-system/scripts/baselines/data_toggle_naming.txt
+        language: system
+        pass_filenames: false
+        verbose: true
+      - id: no-conflict-markers
+        name: No merge conflict markers (BLOCKING)
+        description: |
+          BLOCKING. Sensor canonical (2026-05-26): nenhum merge conflict
+          marker (<<<<<<<, =======, >>>>>>>) pode atravessar para commit.
+          Histórico: 5 arquivos com markers vivos quebraram tsc/build em
+          feat/benefits-prv-canonical. Fix: resolver conflict (escolher
+          um lado) antes de git add + commit.
+        entry: python3 plataforma-lia/scripts/check_no_conflict_markers.py
+        language: system
+        pass_filenames: false
+        verbose: true
+      - id: migration-merge-safety
+        name: REGRA 5 — no merge commits in migrations
+        description: |
+          BLOCKING on merge state (MERGE_HEAD + migration staged).
+          WARN on Alembic branch forks and migration numbering collisions.
+          Multi-agent parallel sessions create branch forks; this sensor
+          catches them before they corrupt the migration chain.
+          Fix: git merge --abort + rebase, or renumber migration.
+        entry: python3 lia-agent-system/scripts/check_migration_merge_safety.py
+        language: system
+        pass_filenames: false
+        verbose: true

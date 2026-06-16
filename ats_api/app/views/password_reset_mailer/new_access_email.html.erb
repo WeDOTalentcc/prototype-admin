@@ -1,0 +1,52 @@
+<% content_for :title, "Novo Acesso - WeDO Talent" %>
+
+<%= render layout: 'shared/mailer/email_layout' do %>
+
+  <%= render 'shared/mailer/email_header' %>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 32px 32px 0;">
+        <p style="margin: 0 0 4px 0; font-size: 11px; font-weight: 700; color: #60BED1; text-transform: uppercase; letter-spacing: 0.1em;">
+          Novo acesso criado
+        </p>
+        <h1 style="margin: 0 0 24px 0; font-size: 22px; font-weight: 700; color: #111827; line-height: 1.3;">
+          Olá, <%= @user.name || @user.email %>!
+        </h1>
+      </td>
+    </tr>
+  </table>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 0 32px 24px;">
+        <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.7; color: #374151;">
+          Um novo acesso foi criado para você no WeDO Talent.
+        </p>
+        <p style="margin: 0; font-size: 15px; line-height: 1.7; color: #374151;">
+          Para definir sua senha e acessar o sistema, clique no botão abaixo:
+        </p>
+      </td>
+    </tr>
+  </table>
+
+  <%= render 'shared/mailer/email_button', url: @reset_url, text: 'Definir Senha' %>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 0 32px 24px;">
+        <p style="margin: 0 0 8px 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">
+          Ou copie e cole este link no seu navegador:
+        </p>
+        <p style="margin: 0; font-size: 12px; word-break: break-all;">
+          <a href="<%= @reset_url %>" style="color: #60BED1; text-decoration: underline;"><%= @reset_url %></a>
+        </p>
+      </td>
+    </tr>
+  </table>
+
+  <%= render 'shared/mailer/email_section',
+    title: 'Importante',
+    body: 'Este link expira em 7 dias. Por segurança, este link só pode ser usado uma vez.' %>
+
+<% end %>

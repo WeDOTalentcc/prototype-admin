@@ -1,0 +1,68 @@
+# W4-038 · Schema canonical para `few_shot_examples` em app/prompts/domains/*.yaml
+#
+# Este arquivo é DOCUMENTAÇÃO de contrato — referência única do schema que TODOS os
+# YAMLs de domain (automation.yaml, communication.yaml, cv_screening.yaml, etc) DEVEM
+# seguir na section `few_shot_examples`.
+#
+# Sensor anti-drift: scripts/check_few_shot_yaml_schema.py valida todos os YAMLs de
+# domain contra este schema. CLI scripts/manage_few_shots.py ajuda recrutador / dev
+# inserir/listar/validar exemplos manualmente.
+#
+# Auto-evolution: app/services/fewshot_evolution_service.py escreve exemplos com
+# `category: auto_evolved` automaticamente a partir de audit_logs (daily job em
+# app/jobs/tasks/ml.py).
+
+metadata:
+  domain: "_template_canonical"
+  version: "1.0"
+  updated_at: "2026-05-23"
+  description: "W4-038 canonical schema for few_shot_examples (reference only — NOT loaded as prompt)"
+
+# Schema canonical para cada entrada em few_shot_examples:
+few_shot_examples:
+  - id: "<domain>-ex-NN"
+    # ID slug:
+    # - Manual: <domain>-ex-NN (ex: automation-ex-01, communication-ex-02)
+    # - Auto-evolved: auto-<audit_log_id[:8]> (ex: auto-a1b2c3d4)
+    # MUST be unique within the file.
+
+    category: "<snake_case_category>"
+    # Categories são DOMAIN-SPECIFIC (40+ em uso ativo): happy_path, pausa,
+    # conflito_horario, candidato_perfeito, bias_check, etc. Sensor valida
+    # pattern (lowercase + underscore + digits — ^[a-z][a-z0-9_]*$), NÃO enum
+    # fechado. Manter naming consistente entre exemplos do mesmo domain.
+    #
+    # Reservado: "auto_evolved" — usado por FewShotAutoInserter para marcar
+    # exemplos inseridos automaticamente (sujeitos a FIFO rotation).
+
+    scenario: "Short descritivo do contexto (1 linha, < 80 chars)"
+    # Human-readable label do scenario que o exemplo demonstra.
+
+    user_input: "verbatim ou anonimizado — o que o user disse pra IA"
+    # PII removida via AnonymizationPipeline antes de gravar (auto-evolved path).
+    # Para manual entries, recrutador é responsável.
+
+    expected_response: |
+      Multi-line response que o agente DEVE produzir.
+      Inclui formatting, emojis se aplicável, tone canonical.
+      Quebra de linha preservada via `|` literal YAML.
+
+    demonstrates:
+      - "tag1"
+      - "tag2"
+    # Tags semânticas (opcional, mas recomendado).
+    # Útil pra evolution service deduplicate por demonstrates similarity.
+
+  # Cap: MAX_FEW_SHOT_PER_AGENT = 15 (definido em fewshot_evolution_service.py)
+  # Ao atingir cap, FIFO rotation: oldest auto_evolved é removido primeiro.
+
+# REGRAS HARNESS:
+#
+# 1. `id` MUST be unique within the file (sensor enforces).
+# 2. `category` MUST be in enum canonical (sensor enforces).
+# 3. `scenario`, `user_input`, `expected_response` são REQUIRED string non-empty.
+# 4. `demonstrates` é list[str], opcional.
+# 5. Limit: max 15 examples per domain file (sensor warns at 12+).
+# 6. PII em `user_input` é responsabilidade do inserter (manual ou auto). Sensor não detecta
+#    PII automaticamente — confiar em AnonymizationPipeline (auto path) ou review humana
+#    (manual path).

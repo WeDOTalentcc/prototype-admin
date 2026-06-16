@@ -1,0 +1,108 @@
+id,agent,name,endpoint,http_status,elapsed_ms,quality_score,passed,issues,description,response_snippet
+wsi_001,wsi,WSI — Resposta STAR completa (deve score >= 7),http://localhost:8000/api/v1/wsi/analyze-response,200,12973.8,60,False,"Score 3.8 fora do intervalo esperado [7.0, 10.0]",Resposta STAR completa deve receber score alto (>=7) com star_completeness >= 0.8,"{""question_id"": ""q-benchmark-001"", ""bloom_score"": 4, ""bloom_level_name"": ""Analyze"", ""dreyfus_level"": 3, ""dreyfus_level_name"": ""Competent"", ""big_five_indicators"": {""openness"": 60, ""conscientiousness"": 85, ""extraversion"": 50, ""agreeableness"": 45, ""neuroticism"": 25}, ""score"": 3.8, ""score_max"": 5.0, ""sc"
+wsi_002,wsi,WSI — Resposta vaga (deve score <= 4),http://localhost:8000/api/v1/wsi/analyze-response,200,8763.8,85,True,,Resposta vaga deve receber score baixo (<=4) sem elementos STAR claros,"{""question_id"": ""q-benchmark-001"", ""bloom_score"": 1, ""bloom_level_name"": ""Remember"", ""dreyfus_level"": 1, ""dreyfus_level_name"": ""Novice"", ""big_five_indicators"": {""openness"": 30, ""conscientiousness"": 20, ""extraversion"": 40, ""agreeableness"": 50, ""neuroticism"": 55}, ""score"": 0.5, ""score_max"": 5.0, ""scor"
+wsi_003,wsi,WSI — Resposta parcial STAR (deve score 4-7),http://localhost:8000/api/v1/wsi/analyze-response,200,8503.0,45,False,"Score 1.5 fora do intervalo esperado [4.0, 7.0]",Resposta parcial deve receber score médio (4-7) com alguns elementos STAR,"{""question_id"": ""q-benchmark-001"", ""bloom_score"": 3, ""bloom_level_name"": ""Apply"", ""dreyfus_level"": 2, ""dreyfus_level_name"": ""Advanced Beginner"", ""big_five_indicators"": {""openness"": 40, ""conscientiousness"": 45, ""extraversion"": 35, ""agreeableness"": 40, ""neuroticism"": 50}, ""score"": 1.5, ""score_max"": 5."
+wsi_004,wsi,WSI — Resposta irrelevante/off-topic (deve score <= 3),http://localhost:8000/api/v1/wsi/analyze-response,200,8351.5,85,True,,Resposta off-topic deve receber score muito baixo (<=3),"{""question_id"": ""q-benchmark-001"", ""bloom_score"": 1, ""bloom_level_name"": ""Remember"", ""dreyfus_level"": 1, ""dreyfus_level_name"": ""Novice"", ""big_five_indicators"": {""openness"": 30, ""conscientiousness"": 35, ""extraversion"": 50, ""agreeableness"": 60, ""neuroticism"": 50}, ""score"": 0.5, ""score_max"": 5.0, ""scor"
+cv_001,cv_match,CV Match — Match forte (deve match_score > 80),/api/backend-proxy/orchestrator/process/,200,19969.4,70,False,Lista 'matched_skills' ausente ou vazia,CV sênior Python/Spark vs vaga Python/Spark deve ter match alto (>80),"# 🎯 Análise de Match — Engenheiro de Dados Sênior
+
+---
+
+## 📊 Score Geral de Compatibilidade
+
+```
+████████████████████░░  92% Match
+```
+**Classificação: ✅ CANDIDATO ALTAMENTE RECOMENDADO**
+
+---
+
+## 🔍 Análise Detalhada por Critério
+
+| Critério | Requisito | Candidato | Status |
+|---|---|---|---|
+| **E"
+cv_002,cv_match,CV Match — Match fraco (deve match_score < 30),/api/backend-proxy/orchestrator/process/,200,17218.7,30,False,"match_score 40.0 fora do intervalo esperado [0.0, 30.0] | Lista 'missing_skills' ausente ou vazia",CV de designer vs vaga de dados deve ter match baixo (<30),"# Análise de Match: Engenheiro de Dados Sênior vs. UX Designer
+
+---
+
+## 📊 Resultado Geral
+
+# ❌ Match Incompatível — Score: **8/100**
+
+---
+
+## 🔍 Análise Detalhada por Dimensão
+
+| Dimensão | Peso | Score | Status |
+|---|---|---|---|
+| Stack Técnica | 40% | 0/40 | ❌ Ausente |
+| Experiência na Função | "
+cv_003,cv_match,CV Match — Match parcial (deve match_score 40-70),/api/backend-proxy/orchestrator/process/,200,25788.5,30,False,"match_score 25.0 fora do intervalo esperado [40.0, 70.0]",CV júnior Python vs vaga sênior deve ter match médio (40-70),"# Análise de Match: Engenheiro de Dados Sênior 📊
+
+## Resultado Geral
+
+# ❌ Match Baixo — ~25%
+
+---
+
+## Análise Detalhada por Critério
+
+| Critério | Requisito da Vaga | CV do Candidato | Status |
+|---|---|---|---|
+| **Python** | Sênior (5+ anos) | 2 anos | ⚠️ Parcial |
+| **Apache Spark** | Exigido | N"
+salary_001,salary,Salary — Engenheiro de Dados Sênior SP (R$ 12k-25k),/api/backend-proxy/lia/conversational/,200,834.3,20,False,"Esperado >= 1 valor(es) BRL na resposta, encontrado 0",Consulta de salário senior deve retornar faixa BRL plausível (R$ 12.000-25.000),"Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:
+
+• **Criar uma nova vaga** do zero com toda inteligência da plataforma
+• **Reutilizar uma vaga anterior** para publicar rapidamente
+
+Como gostaria de começar?"
+salary_002,salary,Salary — Analista de Dados Júnior BH (R$ 3k-6k),/api/backend-proxy/lia/conversational/,200,28012.0,20,False,"Esperado >= 1 valor(es) BRL na resposta, encontrado 0",Consulta júnior deve retornar faixa menor que sênior (R$ 3.000-6.000),"Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:
+
+• **Criar uma nova vaga** do zero com toda inteligência da plataforma
+• **Reutilizar uma vaga anterior** para publicar rapidamente
+
+Como gostaria de começar?"
+pipeline_001,pipeline,Pipeline — Saúde geral do funil,/api/backend-proxy/orchestrator/process/,200,9840.4,100,True,,Análise de saúde deve mencionar etapas do pipeline e identificar gargalos,"# 📊 Análise de Saúde do Funil de Recrutamento
+
+Olá! Vou ajudá-lo a analisar a saúde do seu funil. Para gerar uma análise completa e precisa, preciso de algumas informações:
+
+---
+
+## 🔍 Para uma análise completa, me informe:
+
+### 1️⃣ Escopo da análise
+- Período desejado? *(ex: últimos 30, 60, 90 dias)"
+pipeline_002,pipeline,Pipeline — Tempo médio de contratação tech,/api/backend-proxy/orchestrator/process/,200,13808.8,100,True,,Consulta de time-to-hire deve mencionar métricas de tempo e sugestões,"# 📊 Análise de Tempo Médio de Contratação — Tecnologia
+
+Ótima pergunta! Para te dar os dados precisos, preciso de algumas informações:
+
+---
+
+## 🔍 Para gerar este relatório, me informe:
+
+| Parâmetro | Opções |
+|-----------|--------|
+| **Período de análise** | Último mês / Trimestre / Semestre / Ano |"
+search_001,candidate_search,Candidate Search — Engenheiro Python Sênior,/api/backend-proxy/orchestrator/process/,200,13049.9,100,True,,Busca de candidatos deve retornar lista ou indicação de candidatos relevantes,"# 🔍 Buscando Candidatos — Engenheiro Python Sênior + AWS
+
+Iniciando a busca na base de talentos da WeDOTalent! Vou estruturar os critérios para garantir os melhores resultados.
+
+---
+
+## 📋 Parâmetros de Busca Identificados
+
+| Critério | Detalhe |
+|---|---|
+| **Cargo** | Engenheiro de Software Sênior "
+search_002,candidate_search,Candidate Search — Product Manager,/api/backend-proxy/orchestrator/process/,200,9405.2,100,True,,Busca PM deve retornar candidatos ou diagnóstico útil,"# 🔍 Buscando Candidatos para Product Manager
+
+Vou iniciar a busca na nossa base de talentos! Antes de rodar a pesquisa completa, deixa eu confirmar alguns critérios para otimizar os resultados:
+
+---
+
+## 📋 Critérios Identificados
+
+| Critério | Detalhe |
+|----------|---------|
+| **Cargo** | Product Ma"

@@ -1,0 +1,138 @@
+{
+  "title": "Multi-tenant Ownership (T-1129)",
+  "uid": "lia-multi-tenant-ownership",
+  "schemaVersion": 39,
+  "tags": ["multi-tenant", "ownership", "t-1129", "security"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "tenant",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(lia_endpoint_require_company_id_total, tenant)",
+        "includeAll": true,
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "S2 — _require_company_id gate (rate by outcome)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(lia_endpoint_require_company_id_total[5m])) by (outcome, endpoint)",
+          "legendFormat": "{{outcome}} {{endpoint}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "S3 — Redis tenant namespace violations",
+      "description": "Should be flat at 0 in prod. Any spike = CACHE_TENANT_NAMESPACE_VIOLATION.",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(lia_redis_tenant_namespace_violation_total[5m])) by (module)",
+          "legendFormat": "{{module}}"
+        }
+      ],
+      "alert": {
+        "name": "CACHE_TENANT_NAMESPACE_VIOLATION",
+        "conditions": [
+          {
+            "evaluator": { "type": "gt", "params": [0] },
+            "query": { "params": ["A", "5m", "now"] },
+            "reducer": { "type": "max", "params": [] },
+            "type": "query"
+          }
+        ],
+        "noDataState": "ok",
+        "executionErrorState": "alerting"
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "S4 — Celery tenant outcome (ok | missing | invalid)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(lia_celery_task_tenant_outcome_total[5m])) by (outcome, task)",
+          "legendFormat": "{{outcome}} {{task}}"
+        }
+      ],
+      "alert": {
+        "name": "CELERY_MISSING_TENANT",
+        "conditions": [
+          {
+            "evaluator": { "type": "gt", "params": [0] },
+            "query": {
+              "expr": "sum(rate(lia_celery_task_tenant_outcome_total{outcome=\"missing\"}[5m]))",
+              "params": ["A", "5m", "now"]
+            },
+            "reducer": { "type": "max", "params": [] },
+            "type": "query"
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "S5 — Webhook ownership outcome (per provider)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(lia_webhook_ownership_outcome_total[5m])) by (provider, outcome)",
+          "legendFormat": "{{provider}} {{outcome}}"
+        }
+      ],
+      "alert": {
+        "name": "WEBHOOK_OWNERSHIP_MISMATCH",
+        "conditions": [
+          {
+            "evaluator": { "type": "gt", "params": [0] },
+            "query": {
+              "expr": "sum(rate(lia_webhook_ownership_outcome_total{outcome=\"mismatch\"}[5m]))",
+              "params": ["A", "5m", "now"]
+            },
+            "reducer": { "type": "max", "params": [] },
+            "type": "query"
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "S6 — ES tenant filter outcome (per service)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(lia_es_search_tenant_filter_outcome_total[5m])) by (service, outcome)",
+          "legendFormat": "{{service}} {{outcome}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "S7 — Cross-tenant session bypass (per reason)",
+      "description": "Legitimate admin batch bypasses. Spike trigger: baseline + 3σ over 15 min (see CROSS_TENANT_BYPASS_SPIKE in runbook).",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(lia_cross_tenant_session_bypass_total[5m])) by (reason)",
+          "legendFormat": "{{reason}}"
+        }
+      ]
+    }
+  ]
+}

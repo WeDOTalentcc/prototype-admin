@@ -1,0 +1,265 @@
+{
+  "timestamp": "2026-02-07T16:56:41.242Z",
+  "batchArgs": {
+    "start": 20,
+    "count": 50,
+    "skipCreate": true,
+    "skipRemoved": true
+  },
+  "totalCardsParsed": 173,
+  "rangeProcessed": "[20, 70)",
+  "created": 0,
+  "updated": 49,
+  "removed": 0,
+  "skipped": 1,
+  "errors": 0,
+  "successCount": 49,
+  "errorCount": 0,
+  "results": [
+    {
+      "cardCode": "MAP-001",
+      "jiraKey": "WT-905",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-002",
+      "jiraKey": "WT-906",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-003",
+      "jiraKey": "WT-907",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-004",
+      "jiraKey": "WT-908",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-005",
+      "jiraKey": "WT-909",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-006",
+      "jiraKey": "WT-910",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-007",
+      "jiraKey": "WT-1280",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-008",
+      "jiraKey": "WT-1281",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-009",
+      "jiraKey": "WT-1282",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-010",
+      "jiraKey": "WT-1283",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-011",
+      "jiraKey": "WT-1284",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-012",
+      "jiraKey": "WT-1285",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-013",
+      "jiraKey": "WT-1286",
+      "action": "updated"
+    },
+    {
+      "cardCode": "MAP-014",
+      "jiraKey": "WT-1294",
+      "action": "updated"
+    },
+    {
+      "cardCode": "WSI-001",
+      "jiraKey": "WT-911",
+      "action": "updated"
+    },
+    {
+      "cardCode": "WSI-002",
+      "jiraKey": "WT-912",
+      "action": "updated"
+    },
+    {
+      "cardCode": "WSI-003",
+      "jiraKey": "WT-913",
+      "action": "updated"
+    },
+    {
+      "cardCode": "WSI-005",
+      "jiraKey": "WT-915",
+      "action": "updated"
+    },
+    {
+      "cardCode": "WSI-006",
+      "jiraKey": "WT-1295",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-001",
+      "jiraKey": "WT-916",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-002",
+      "jiraKey": "WT-917",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-003",
+      "jiraKey": "WT-918",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-004",
+      "jiraKey": "WT-919",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-005",
+      "jiraKey": "WT-920",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-006",
+      "jiraKey": "WT-921",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-007",
+      "jiraKey": "WT-922",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-008",
+      "jiraKey": "WT-923",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-009",
+      "jiraKey": "WT-924",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-010",
+      "jiraKey": "WT-925",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-011",
+      "jiraKey": "WT-926",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-013",
+      "jiraKey": "WT-1296",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TRI-014",
+      "jiraKey": "WT-1297",
+      "action": "updated"
+    },
+    {
+      "cardCode": "SCO-001",
+      "jiraKey": "WT-927",
+      "action": "updated"
+    },
+    {
+      "cardCode": "SCO-002",
+      "jiraKey": "WT-928",
+      "action": "updated"
+    },
+    {
+      "cardCode": "SCO-003",
+      "jiraKey": "WT-929",
+      "action": "updated"
+    },
+    {
+      "cardCode": "SCO-004",
+      "jiraKey": "WT-930",
+      "action": "updated"
+    },
+    {
+      "cardCode": "SCO-005",
+      "jiraKey": "WT-931",
+      "action": "updated"
+    },
+    {
+      "cardCode": "SCO-006",
+      "jiraKey": "WT-932",
+      "action": "updated"
+    },
+    {
+      "cardCode": "SCO-007",
+      "jiraKey": "WT-933",
+      "action": "updated"
+    },
+    {
+      "cardCode": "SCO-008",
+      "jiraKey": "WT-934",
+      "action": "updated"
+    },
+    {
+      "cardCode": "GAT-001",
+      "jiraKey": "WT-935",
+      "action": "updated"
+    },
+    {
+      "cardCode": "GAT-002",
+      "jiraKey": "WT-936",
+      "action": "updated"
+    },
+    {
+      "cardCode": "GAT-003",
+      "jiraKey": "WT-937",
+      "action": "updated"
+    },
+    {
+      "cardCode": "GAT-004",
+      "jiraKey": "WT-938",
+      "action": "updated"
+    },
+    {
+      "cardCode": "GAT-005",
+      "jiraKey": "WT-939",
+      "action": "updated"
+    },
+    {
+      "cardCode": "GAT-006",
+      "jiraKey": "WT-940",
+      "action": "updated"
+    },
+    {
+      "cardCode": "GAT-007",
+      "jiraKey": "WT-941",
+      "action": "updated"
+    },
+    {
+      "cardCode": "GAT-008",
+      "jiraKey": "WT-1298",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TPL-001",
+      "jiraKey": "WT-942",
+      "action": "updated"
+    }
+  ]
+}

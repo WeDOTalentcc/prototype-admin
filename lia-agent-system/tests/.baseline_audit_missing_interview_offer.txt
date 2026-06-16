@@ -1,0 +1,16 @@
+# T-1157 — baseline ratchet de débito legado: services com mutation que
+# AINDA não chamam AuditService. Regressão (entrada NOVA) quebra a build;
+# remover linhas é encorajado (segue para `log_decision_in_session` →
+# remove da baseline em PR).
+#
+# Sentinela: tests/integration/security/test_audit_required_interview_offer_t_1157.py
+# Runbook:   docs/runbooks/audit-interview-offer.md
+#
+# Formato: app/.../arquivo.py:linha:nome_do_metodo
+app/domains/interview_scheduling/services/calendar_service.py:599:create_generic_event
+app/domains/interview_scheduling/services/scheduling_service.py:297:create_interview_with_teams
+app/domains/interview_scheduling/services/scheduling_service.py:569:update_interview
+app/domains/interview_scheduling/services/scheduling_service.py:621:cancel_interview
+app/domains/interview_scheduling/services/scheduling_service.py:657:complete_interview
+app/domains/offer/services/offer_service.py:176:create_or_get_draft
+app/domains/offer/services/offer_service.py:210:update_draft

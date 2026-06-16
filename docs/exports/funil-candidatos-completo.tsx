@@ -1,0 +1,20313 @@
+/**
+ * ============================================================================
+ * PLATAFORMA LIA - FUNIL DE CANDIDATOS (CANDIDATES FUNNEL)
+ * Arquivos consolidados para análise
+ * ============================================================================
+ * 
+ * Este arquivo contém todos os componentes que compõem a tela de 
+ * "Funil de Candidatos" da Plataforma LIA, incluindo o sistema de prompts
+ * de IA para busca e interação com candidatos.
+ * 
+ * ARQUIVOS INCLUÍDOS:
+ * 1. app/funil/page.tsx - Rota principal (7 linhas)
+ * 2. components/pages/candidates-page.tsx - Página principal (11,043 linhas)
+ * 3. components/expandable-ai-prompt.tsx - Prompt de IA expansível (3,680 linhas)
+ * 4. hooks/use-talent-funnel.ts - Hook do funil (436 linhas)
+ * 5. components/ui/prompt-suggestions-popover.tsx - Sugestões de prompt (352 linhas)
+ * 6. components/ui/lia-queries-guide.tsx - Guia de consultas LIA (299 linhas)
+ * 7. components/ui/candidate-queries-guide.tsx - Guia de consultas de candidatos (296 linhas)
+ * 8. components/search/smart-search-input.tsx - Input de busca inteligente (2,675 linhas)
+ * 9. components/search/advanced-filters-modal.tsx - Modal de filtros avançados (1,446 linhas)
+ * 
+ * TOTAL: ~20,234 linhas
+ * ============================================================================
+ */
+
+
+
+// ============================================================================
+// ARQUIVO 1: app/funil/page.tsx (Rota principal)
+// ============================================================================
+
+"use client"
+
+import { CandidatesPage } from "@/components/pages/candidates-page"
+
+export default function FunilPage() {
+  return <CandidatesPage />
+}
+
+
+// ============================================================================
+// ARQUIVO 2: components/pages/candidates-page.tsx (Página principal - 11,043 linhas)
+// ============================================================================
+
+"use client"
+
+import { useState, useEffect, useRef } from "react"
+import { useSearchParams } from "next/navigation"
+import { flushSync } from "react-dom"
+import { liaApi, CandidateLocal } from "@/services/lia-api"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { LIAIcon } from "@/components/ui/lia-icon"
+import {
+  Users, Plus, Search, X, Eye, EyeOff, Star, Check,
+  Pin, MapPin, Linkedin, CheckCircle, Filter, ArrowUpDown,
+  ArrowUp, ArrowDown, ChevronsLeftRight, Sparkles, Target, User,
+  Bookmark, Play, Edit, BarChart3, PieChart, Zap, Brain,
+  Calendar, Clock, TrendingUp, Building, AlertCircle, DollarSign,
+  Briefcase, ArrowLeft, Mail, Phone, MessageSquare, Github, Code, Layers, FileText, Globe, Home, Send, Lightbulb, Mic, Paperclip, Download, FileUp, GripVertical,
+  Settings, GraduationCap, HelpCircle, Loader2, Crown, Rocket, Copy, List, Scale, ChevronRight
+} from "lucide-react"
+
+import { ExpandableAIPrompt } from "@/components/expandable-ai-prompt"
+import { ContextualActionsBanner } from "@/components/contextual-actions-banner"
+import { CandidatePreview } from "@/components/candidate-preview"
+import { CandidatePage } from "@/components/candidate-page"
+import { BatchApprovalModal } from "@/components/batch-approval-modal"
+import { NewCandidateUnifiedModal } from "@/components/modals/new-candidate-unified-modal"
+import { LIABatchAnalysis } from "@/components/lia-batch-analysis"
+import { ContextPill } from "@/components/ui/context-pill"
+import { QuickActionChips, type QuickAction } from "@/components/ui/quick-action-chips"
+
+// Quick Actions Modals
+import { ContactModal, ScheduleModal } from "@/components/quick-actions-modals"
+import { QuickViewModal } from "@/components/quick-view-modal"
+import { UnifiedCommunicationModal, type CommunicationType } from "@/components/modals/unified-communication-modal"
+import { CandidateComparison } from "@/components/candidate-comparison"
+
+// Imports das abas do talent funnel
+import { FavoritesTab } from "@/components/talent-funnel-tabs/favorites-tab"
+import { HistoryTab } from "@/components/talent-funnel-tabs/history-tab"
+import { SavedSearchesTab } from "@/components/talent-funnel-tabs/saved-searches-tab"
+import { ListsTab } from "@/components/talent-funnel-tabs/lists-tab"
+import { AddToListModal } from "@/components/modals/add-to-list-modal"
+import { AddCandidatesToVacancyModal } from "@/components/modals/add-candidates-to-vacancy-modal"
+import { AddListToVacanciesModal } from "@/components/modals/add-list-to-vacancies-modal"
+import { UnsavedPearchWarningModal } from "@/components/modals/unsaved-pearch-warning-modal"
+import { useTalentFunnel, type SearchHistoryItem, type SavedSearch } from "@/hooks/use-talent-funnel"
+
+// Smart Search AI-First
+import { SmartSearchInput, type ParsedEntities, type SearchMode, type SearchMetadata } from "@/components/search/smart-search-input"
+
+// Advanced Filters Modal
+import { AdvancedFiltersModal, type SearchFilters } from "@/components/search/advanced-filters-modal"
+import { FilterAutocomplete } from "@/components/search/filter-autocomplete"
+
+// WSI Components
+import { WSITextScreeningModal, WSIVoiceScreeningStatus, WSIScorecard } from "@/components/wsi"
+// Email Templates
+import { SendEmailModal } from "@/components/email-templates"
+// CV Parser
+import { CVPreview, type ParsedCVResponse } from "@/components/cv"
+// Calibration
+import { LIAFeedbackWidget } from "@/components/calibration"
+// Proactive Insights
+import { ProactiveInsightCard, type SearchAnalytics } from "@/components/proactive-insight-card"
+// Search Loading Animation
+import { SearchLoadingAnimation } from "@/components/ui/search-loading-animation"
+import { CalibrationCard, type CalibrationCandidate } from "@/components/calibration-card"
+// Candidate Review Modal
+import { CandidateReviewModal, type ReviewCandidate, type Criterion } from "@/components/pages/candidate-review-modal"
+// Bulk Actions
+// BulkActionsBar removido - ações agora aparecem no chat da LIA
+import { JobVacancy, EmailTemplate } from "@/services/lia-api"
+
+// Credit Confirmation Dialog for Global Search
+import { CreditConfirmationDialog } from "@/components/search/credit-confirmation-dialog"
+
+// Reveal Credits Modal
+import { RevealCreditsModal } from "@/components/reveal-credits-modal"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+// Pearch AI Search Integration
+import {
+  searchCandidates as searchCandidatesHybrid,
+  searchLocalCandidates,
+  estimateCredits,
+  calculateCreditsLocally,
+  type SearchRequest,
+  type SearchResponse,
+  type CreditEstimate
+} from "@/lib/api/candidate-search"
+
+// Source Detection Utility
+import { getSourceDetails, isGlobalSource, isLocalSource } from "@/lib/utils/source-detection"
+// Toast notifications
+import { useToast } from "@/hooks/use-toast"
+// Global Search Settings
+import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
+// Interface completa com todos os campos do banco de dados
+interface Candidate {
+  id: string
+  candidateId: string
+  name: string
+  email: string
+  secondary_email?: string
+  phone: string
+  mobile_phone?: string
+  secondary_phone?: string
+  linkedin_url?: string
+  github_url?: string
+  portfolio_url?: string
+  avatar_url?: string
+  
+  date_of_birth?: string
+  gender?: string
+  nationality?: string
+  marital_status?: string
+  cpf?: string
+  
+  current_title?: string
+  current_company?: string
+  seniority_level?: string
+  years_of_experience?: number
+  self_introduction?: string
+  
+  technical_skills?: string[]
+  soft_skills?: string[]
+  languages?: Record<string, string>
+  certifications?: string[]
+  interests?: string[]
+  
+  location_city?: string
+  location_state?: string
+  location_country?: string
+  address_street?: string
+  address_number?: string
+  address_district?: string
+  address_zip?: string
+  address_complement?: string
+  
+  is_remote?: boolean
+  willing_to_relocate?: boolean
+  mobility?: boolean
+  work_model_preference?: string
+  contract_type_preference?: string
+  
+  current_salary?: number
+  salary_currency?: string
+  desired_salary_min?: number
+  desired_salary_max?: number
+  salary_expectation_clt?: number
+  salary_expectation_pj?: number
+  salary_expectation_freelance?: number
+  
+  resume_url?: string
+  resume_text?: string
+  cover_letter?: string
+  
+  source?: string
+  ats_source_name?: string
+  ats_candidate_id?: string
+  pearch_profile_id?: string
+  
+  lia_score?: number
+  lia_insights?: {
+    strengths?: string[]
+    concerns?: string[]
+    recommendation?: string
+    overall_summary?: string
+  }
+  skills_match_percentage?: number
+  
+  status?: string
+  is_active?: boolean
+  is_blacklisted?: boolean
+  blacklist_reason?: string
+  
+  preferred_contact_method?: string
+  best_time_to_contact?: string
+  communication_consent?: boolean
+  
+  completed_register?: boolean
+  accept_terms?: boolean
+  
+  tags?: string[]
+  notes?: string
+  additional_data?: Record<string, unknown>
+  
+  created_at?: string
+  updated_at?: string
+  last_contacted_at?: string
+  last_activity_at?: string
+  
+  position: string
+  monthlySalary: number
+  location: string
+  workModel: 'remoto' | 'híbrido' | 'presencial'
+  score: number
+  currentSalary?: string
+  expectedSalary?: string
+  contractType: 'CLT' | 'PJ' | 'Freelancer'
+  benefits?: string[]
+  linkedin: string
+  skills: string[]
+  experience: number
+  education: string | Array<{
+    school?: string
+    degree?: string
+    field_of_study?: string
+    fieldOfStudy?: string
+    startDate?: string
+    endDate?: string
+  }>
+  experiences?: any[]
+  workHistory?: Array<{
+    company: string
+    title?: string
+    position?: string
+    period?: string
+    startDate?: string
+    endDate?: string
+    duration?: string
+    location?: string
+    description?: string
+  }>
+  salary?: {
+    current: number
+    expected: number
+  }
+  lastUpdated?: Date
+  liaAnalysis?: {
+    score: number
+    strengths: string[]
+    concerns: string[]
+    recommendation: string
+  }
+  bigFive?: {
+    openness: number
+    conscientiousness: number
+    extraversion: number
+    agreeableness: number
+    neuroticism: number
+  }
+  avatar?: string
+  
+  // Campos para sistema de reveal de contato (Pearch)
+  has_email?: boolean
+  has_phone?: boolean
+  
+  // Campos de indicadores gratuitos Pearch
+  is_opentowork?: boolean
+  is_decision_maker?: boolean
+  is_top_universities?: boolean
+  is_startup?: boolean
+  expertise?: string[]
+  outreach_message?: string
+}
+
+// Interface para filtros da tabela de resultados (separado dos filtros de busca)
+interface TableFilters {
+  // Status e Tags
+  statuses: string[]
+  tags: string[]
+  
+  // Perfil profissional
+  seniorityLevels: string[]
+  workModels: string[]
+  contractTypes: string[]
+  
+  // Experiência e Score
+  minExperience?: number
+  maxExperience?: number
+  minScore?: number
+  maxScore?: number
+  
+  // Salário
+  minSalary?: number
+  maxSalary?: number
+  
+  // Localização
+  locations: string[]
+  remoteOnly: boolean
+  
+  // Contato
+  hasEmail: boolean
+  hasPhone: boolean
+  hasLinkedin: boolean
+  
+  // Fonte
+  sources: string[]
+  
+  // Campos adicionais do modal de filtros avançados
+  jobTitles: string[]
+  skills: string[]
+  companies: string[]
+  industries: string[]
+  companySizes: string[]
+  universities: string[]
+  degrees: string[]
+  fieldsOfStudy: string[]
+  languages: string[]
+  
+  // Indicadores de perfil
+  isOpenToWork: boolean
+  isDecisionMaker: boolean
+  isTopUniversities: boolean
+  isStartup: boolean
+  
+  // Novos filtros
+  hasGithub: boolean
+  hasPortfolio: boolean
+  softSkills: string[]
+  certifications: string[]
+  willingToRelocate: boolean | null
+  mobility: boolean | null
+  updatedAtFrom?: string
+  updatedAtTo?: string
+  lastContactedFrom?: string
+  lastContactedTo?: string
+}
+
+const getDefaultTableFilters = (): TableFilters => ({
+  statuses: [],
+  tags: [],
+  seniorityLevels: [],
+  workModels: [],
+  contractTypes: [],
+  minExperience: undefined,
+  maxExperience: undefined,
+  minScore: undefined,
+  maxScore: undefined,
+  minSalary: undefined,
+  maxSalary: undefined,
+  locations: [],
+  remoteOnly: false,
+  hasEmail: false,
+  hasPhone: false,
+  hasLinkedin: false,
+  sources: [],
+  jobTitles: [],
+  skills: [],
+  companies: [],
+  industries: [],
+  companySizes: [],
+  universities: [],
+  degrees: [],
+  fieldsOfStudy: [],
+  languages: [],
+  isOpenToWork: false,
+  isDecisionMaker: false,
+  isTopUniversities: false,
+  isStartup: false,
+  hasGithub: false,
+  hasPortfolio: false,
+  softSkills: [],
+  certifications: [],
+  willingToRelocate: null,
+  mobility: null,
+  updatedAtFrom: undefined,
+  updatedAtTo: undefined,
+  lastContactedFrom: undefined,
+  lastContactedTo: undefined
+})
+
+const SALARY_RANGES = {
+  junior: { min: 4000, max: 7000 },
+  pleno: { min: 8000, max: 14000 },
+  senior: { min: 15000, max: 25000 },
+  specialist: { min: 20000, max: 35000 },
+  lead: { min: 25000, max: 40000 }
+}
+
+const getSalaryByExperience = (experience: number, index: number): number => {
+  let range = SALARY_RANGES.junior
+  if (experience >= 10) range = SALARY_RANGES.lead
+  else if (experience >= 7) range = SALARY_RANGES.specialist
+  else if (experience >= 4) range = SALARY_RANGES.senior
+  else if (experience >= 2) range = SALARY_RANGES.pleno
+  
+  const variation = (index * 1234) % (range.max - range.min + 1)
+  return range.min + variation
+}
+
+// Tipo para controle de origem de busca (local, global ou híbrido)
+type SearchSource = 'local' | 'global' | 'hybrid'
+
+// Configurações das abas - Simplificado (Busca mostra resultados inline, como Google/LinkedIn)
+const tabs = [
+  { id: 'search', label: 'Busca', description: 'Encontre talentos com busca inteligente' },
+  { id: 'favorites', label: 'Favoritos', description: 'Candidatos marcados como favoritos' },
+  { id: 'lists', label: 'Listas', description: 'Organize candidatos em listas personalizadas' },
+  { id: 'saved-searches', label: 'Buscas Salvas', description: 'Suas buscas favoritas salvas' },
+  { id: 'history', label: 'Histórico', description: 'Buscas anteriores - clique para re-executar' },
+  { id: 'agents', label: 'Agentes de Recrutamento', description: 'Automatize triagem e pipelines com agentes inteligentes', comingSoon: true }
+]
+
+export function CandidatesPage() {
+  const searchParams = useSearchParams()
+  const expandedSearchParam = searchParams.get('expandedSearch')
+  const { settings: globalSettings, loading: globalSettingsLoading } = useGlobalSearchSettings()
+  
+  // Only show global/hybrid options after settings are loaded AND global search is enabled
+  const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
+  
+  // Estados simples usando useState
+  const [candidates, setCandidates] = useState<Candidate[]>([])
+  const [totalCandidatesInBase, setTotalCandidatesInBase] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSearchActive, setIsSearchActive] = useState(false)
+
+  // Carregar candidatos do backend (dados reais) - apenas uma vez na montagem
+  useEffect(() => {
+    setIsLoading(true)
+    liaApi.listCandidates(undefined, undefined, 0, 100)
+      .then(response => {
+        if (response.items && response.items.length > 0) {
+          const backendCandidates: Candidate[] = response.items.map((c: CandidateLocal, index: number) => {
+            const experience = c.years_of_experience || ((index % 12) + 1)
+            const monthlySalary = c.current_salary || getSalaryByExperience(experience, index)
+            return {
+              id: c.id,
+              candidateId: c.id.substring(0, 5).toUpperCase(),
+              name: c.name,
+              email: c.email || '',
+              secondary_email: c.secondary_email,
+              phone: c.phone || '',
+              mobile_phone: c.mobile_phone,
+              secondary_phone: c.secondary_phone,
+              linkedin_url: c.linkedin_url,
+              github_url: c.github_url,
+              portfolio_url: c.portfolio_url,
+              avatar_url: c.avatar_url,
+              
+              date_of_birth: c.date_of_birth,
+              gender: c.gender,
+              nationality: c.nationality,
+              marital_status: c.marital_status,
+              cpf: c.cpf,
+              
+              current_title: c.current_title,
+              current_company: c.current_company || '',
+              seniority_level: c.seniority_level,
+              years_of_experience: experience,
+              self_introduction: c.self_introduction,
+              
+              technical_skills: c.technical_skills || [],
+              soft_skills: c.soft_skills || [],
+              languages: c.languages || {},
+              certifications: c.certifications || [],
+              interests: c.interests || [],
+              
+              location_city: c.location_city,
+              location_state: c.location_state,
+              location_country: c.location_country,
+              address_street: c.address_street,
+              address_number: c.address_number,
+              address_district: c.address_district,
+              address_zip: c.address_zip,
+              address_complement: c.address_complement,
+              
+              is_remote: c.is_remote,
+              willing_to_relocate: c.willing_to_relocate,
+              mobility: c.mobility,
+              work_model_preference: c.work_model_preference,
+              contract_type_preference: c.contract_type_preference,
+              
+              current_salary: monthlySalary,
+              salary_currency: c.salary_currency || 'BRL',
+              desired_salary_min: c.desired_salary_min,
+              desired_salary_max: c.desired_salary_max,
+              salary_expectation_clt: c.salary_expectation_clt,
+              salary_expectation_pj: c.salary_expectation_pj,
+              salary_expectation_freelance: c.salary_expectation_freelance,
+              
+              resume_url: c.resume_url,
+              resume_text: c.resume_text,
+              cover_letter: c.cover_letter,
+              
+              source: c.source,
+              ats_source_name: c.ats_source_name,
+              ats_candidate_id: c.ats_candidate_id,
+              pearch_profile_id: c.pearch_profile_id,
+              
+              lia_score: c.lia_score,
+              lia_insights: c.lia_insights || {},
+              skills_match_percentage: c.skills_match_percentage,
+              
+              status: c.status,
+              is_active: c.is_active,
+              is_blacklisted: c.is_blacklisted,
+              blacklist_reason: c.blacklist_reason,
+              
+              preferred_contact_method: c.preferred_contact_method,
+              best_time_to_contact: c.best_time_to_contact,
+              communication_consent: c.communication_consent,
+              
+              completed_register: c.completed_register,
+              accept_terms: c.accept_terms,
+              
+              tags: c.tags || [],
+              notes: c.notes,
+              additional_data: c.additional_data || {},
+              
+              created_at: c.created_at,
+              updated_at: c.updated_at,
+              last_contacted_at: c.last_contacted_at,
+              last_activity_at: c.last_activity_at,
+              
+              position: c.current_title || 'Não especificado',
+              monthlySalary: monthlySalary,
+              location: c.location_city || 'Não especificado',
+              workModel: (c.work_model_preference as 'remoto' | 'híbrido' | 'presencial') || 'remoto',
+              score: c.lia_score || 75,
+              currentSalary: `R$ ${monthlySalary.toLocaleString('pt-BR')}`,
+              expectedSalary: c.desired_salary_max ? `R$ ${c.desired_salary_max.toLocaleString('pt-BR')}` : `R$ ${Math.floor(monthlySalary * 1.2).toLocaleString('pt-BR')}`,
+              contractType: (c.contract_type_preference?.toUpperCase() || 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
+              linkedin: c.linkedin_url || '',
+              skills: c.technical_skills || [],
+              experience: experience,
+              education: c.seniority_level ? `${c.seniority_level.charAt(0).toUpperCase()}${c.seniority_level.slice(1)}` : 'Não informado',
+              avatar: c.avatar_url || c.picture_url,
+              liaAnalysis: {
+                score: c.lia_score || 75,
+                strengths: c.lia_insights?.strengths || ['Perfil técnico sólido'],
+                concerns: c.lia_insights?.concerns || [],
+                recommendation: c.lia_insights?.recommendation || 'Avaliar com atenção'
+              },
+              has_email: Boolean(c.email),
+              has_phone: Boolean(c.phone),
+              is_opentowork: c.is_opentowork,
+              is_decision_maker: c.is_decision_maker,
+              is_top_universities: c.is_top_universities,
+              is_startup: c.is_startup || c.company_info?.is_startup,
+              expertise: c.expertise,
+              outreach_message: c.outreach_message
+            }
+          })
+          setCandidates(backendCandidates)
+          setTotalCandidatesInBase(response.total || backendCandidates.length)
+        } else {
+          setCandidates([])
+          setTotalCandidatesInBase(0)
+        }
+        setIsLoading(false)
+      })
+      .catch(error => {
+        console.error('❌ CandidatesPage: Erro ao carregar candidatos:', error)
+        setIsLoading(false)
+        setCandidates([])
+        setTotalCandidatesInBase(null)
+      })
+  }, [])
+
+  // Log de estado para debug
+  const [searchTerm, setSearchTerm] = useState("")
+  const [quickFilters, setQuickFilters] = useState<Set<string>>(new Set())
+  const [selectedCandidatesForBatch, setSelectedCandidatesForBatch] = useState<Set<string>>(new Set())
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
+  const [activeTab, setActiveTab] = useState<'search' | 'favorites' | 'lists' | 'history' | 'saved-searches' | 'agents'>('search')
+  const [lastSearchQuery, setLastSearchQuery] = useState<string>("")
+  const [lastSearchEntities, setLastSearchEntities] = useState<ParsedEntities | null>(null)
+  const [lastSearchMode, setLastSearchMode] = useState<string>("")
+  const [lastSearchMetadata, setLastSearchMetadata] = useState<SearchMetadata | undefined>(undefined)
+  const [lastSearchUsedPearch, setLastSearchUsedPearch] = useState<boolean>(false)
+  const [hasSearchResults, setHasSearchResults] = useState(false)
+  const [searchResultsCount, setSearchResultsCount] = useState<number>(0)
+  const [localResultsCount, setLocalResultsCount] = useState<number>(0)
+  const [pearchResultsCount, setPearchResultsCount] = useState<number>(0)
+  const [creditsUsedInSearch, setCreditsUsedInSearch] = useState<number>(0)
+  const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null) // Saldo atual de créditos Pearch
+  const [showExpandGlobalOption, setShowExpandGlobalOption] = useState(false)
+  
+  // Toast notifications
+  const { toast } = useToast()
+  const [showSearchResults, setShowSearchResults] = useState(false) // Controla se mostra resultados inline na tab Busca
+  const [searchSource, setSearchSource] = useState<'local' | 'global' | 'hybrid'>('hybrid') // Toggle local vs Global
+  
+  // Reset search source to local if global search is disabled
+  useEffect(() => {
+    if (!showGlobalSearchOptions && (searchSource === 'hybrid' || searchSource === 'global')) {
+      setSearchSource('local')
+    }
+  }, [showGlobalSearchOptions, searchSource])
+  
+  // Handle expandedSearch URL parameter - open results view with expanded prompt
+  useEffect(() => {
+    if (expandedSearchParam === 'true') {
+      setShowSearchResults(true)
+      setActiveTab('search')
+    }
+  }, [expandedSearchParam])
+  
+  // ========== SEARCH SOURCE CONTROLS ==========
+  const [currentSearchSource, setCurrentSearchSource] = useState<SearchSource>('local') // Fonte atual da busca exibida
+  const [showGlobalExpansionConfirm, setShowGlobalExpansionConfirm] = useState(false) // Modal de confirmação de créditos para expansão global
+  const [hasSearched, setHasSearched] = useState(false) // Flag para saber se já executou uma busca
+  const [isExpandingToGlobal, setIsExpandingToGlobal] = useState(false) // Loading state para expansão global
+  
+  
+  // ========== VIEWED CANDIDATES STATE ==========
+  const [viewedCandidateIds, setViewedCandidateIds] = useState<Set<string>>(new Set())
+  const [showOnlyNew, setShowOnlyNew] = useState(false)
+  const [isDroppingCV, setIsDroppingCV] = useState(false)
+  const [cvUploadLoading, setCvUploadLoading] = useState(false)
+  
+  // Counter to track each unique search execution
+  const [searchExecutionId, setSearchExecutionId] = useState<number>(0)
+  
+  // ========== CANDIDATE LISTS STATE (for unified modal) ==========
+  const [candidateListsForModal, setCandidateListsForModal] = useState<Array<{ id: string; name: string; color?: string }>>([])
+  
+  // Load candidate lists for modal
+  useEffect(() => {
+    const loadCandidateLists = async () => {
+      try {
+        const response = await liaApi.getCandidateLists({ limit: 50 })
+        if (response.items) {
+          setCandidateListsForModal(response.items.map(list => ({
+            id: list.id,
+            name: list.name,
+            color: list.color
+          })))
+        }
+      } catch (error) {
+        console.error('Error loading candidate lists:', error)
+      }
+    }
+    loadCandidateLists()
+  }, [])
+  
+  
+  // Load viewed candidates on mount
+  useEffect(() => {
+    const loadViewedCandidates = async () => {
+      try {
+        const response = await fetch('/api/backend-proxy/candidates/viewed')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.candidate_ids) {
+            setViewedCandidateIds(new Set(data.candidate_ids))
+          }
+        }
+      } catch (error) {
+        console.error('Error loading viewed candidates:', error)
+      }
+    }
+    loadViewedCandidates()
+  }, [])
+  
+  // Auto-populate tableFilters from search entities when a search is performed
+  // Uses searchExecutionId to trigger on each new search execution
+  // Clears fields explicitly when not present in the new search to always reflect current search criteria
+  useEffect(() => {
+    if (searchExecutionId > 0) {
+      if (lastSearchEntities) {
+        const yearsExp = lastSearchEntities.years_experience
+        const parsedYears = typeof yearsExp === 'string' ? parseInt(yearsExp, 10) : yearsExp
+        setTableFilters(prev => ({
+          ...prev,
+          locations: lastSearchEntities.location ? [lastSearchEntities.location] : [],
+          jobTitles: lastSearchEntities.job_title ? [lastSearchEntities.job_title] : [],
+          skills: lastSearchEntities.skills?.length ? lastSearchEntities.skills : [],
+          industries: lastSearchEntities.industry ? [lastSearchEntities.industry] : [],
+          seniorityLevels: lastSearchEntities.seniority ? [lastSearchEntities.seniority] : [],
+          minExperience: (parsedYears !== undefined && !isNaN(parsedYears)) ? parsedYears : undefined,
+          companies: lastSearchEntities.company ? [lastSearchEntities.company] : []
+        }))
+      } else {
+        // No entities parsed - clear all auto-populated fields
+        setTableFilters(prev => ({
+          ...prev,
+          locations: [],
+          jobTitles: [],
+          skills: [],
+          industries: [],
+          seniorityLevels: [],
+          minExperience: undefined,
+          companies: []
+        }))
+      }
+    }
+  }, [searchExecutionId])
+  
+  // Mark candidate as viewed when clicked
+  const markCandidateAsViewed = async (candidateId: string, source: string = 'profile') => {
+    try {
+      await fetch(`/api/backend-proxy/candidates/${candidateId}/viewed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source })
+      })
+      setViewedCandidateIds(prev => new Set([...prev, candidateId]))
+    } catch (error) {
+      console.error('Error marking candidate as viewed:', error)
+    }
+  }
+  
+  // CV Dropzone handlers
+  const handleCVDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDroppingCV(false)
+    
+    const files = e.dataTransfer.files
+    if (files.length === 0) return
+    
+    const file = files[0]
+    const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain']
+    
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|txt)$/i)) {
+      toast({
+        title: "Formato inválido",
+        description: "Por favor, envie um arquivo PDF, DOC, DOCX ou TXT",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    setCvUploadLoading(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await fetch('/api/backend-proxy/search/candidates/from-cv?limit=20&search_pearch=false', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (!response.ok) {
+        throw new Error('Erro ao processar CV')
+      }
+      
+      const data = await response.json()
+      
+      // Add LIA message with results (only show local results - user can opt-in to global)
+      const liaMessage: ChatMessage = {
+        id: `lia-cv-${Date.now()}`,
+        type: 'lia',
+        content: `📄 Analisei o CV **${file.name}** e encontrei:\n\n` +
+          `**Perfil extraído:**\n` +
+          `• Título: ${data.extracted_title || 'Não identificado'}\n` +
+          `• Skills: ${data.extracted_skills?.slice(0, 5).join(', ') || 'Não identificadas'}\n\n` +
+          `**Busca na base local:**\n` +
+          `• Query gerada: "${data.query_generated}"\n` +
+          `• ${data.local_count || data.total_count} candidato${(data.local_count || data.total_count) > 1 ? 's' : ''} encontrado${(data.local_count || data.total_count) > 1 ? 's' : ''}`,
+        timestamp: new Date()
+      }
+      setChatMessages(prev => [...prev, liaMessage])
+      
+      // Update candidates with results if available
+      if (data.candidates && data.candidates.length > 0) {
+        const mappedCandidates: Candidate[] = data.candidates.map((c: any) => ({
+          id: c.id || `cv-${Date.now()}-${Math.random()}`,
+          candidateId: c.id || '',
+          name: c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim(),
+          email: '',
+          phone: '',
+          current_title: c.current_title || c.headline,
+          current_company: c.current_company,
+          linkedin_url: c.linkedin_url,
+          technical_skills: c.skills || [],
+          location_city: c.location?.split(',')[0]?.trim(),
+          avatar_url: c.picture_url,
+          years_of_experience: c.total_experience_years,
+          status: 'new',
+          source: c.source || 'local',
+          position: c.current_title || 'Não especificado',
+          location: c.location || 'Não especificado',
+          workModel: 'remoto' as 'remoto' | 'híbrido' | 'presencial',
+          score: c.score || 75,
+          skills: c.skills || [],
+          experience: c.total_experience_years || 0,
+          education: 'Não informado',
+          contractType: 'CLT' as 'CLT' | 'PJ' | 'Freelancer',
+          linkedin: c.linkedin_url || '',
+          monthlySalary: 0,
+          avatar: c.picture_url
+        }))
+        
+        setCandidates(mappedCandidates)
+        setHasSearchResults(true)
+        setSearchResultsCount(mappedCandidates.length)
+        setShowSearchResults(true)
+        
+        toast({
+          title: "CV analisado",
+          description: `Encontrados ${mappedCandidates.length} candidatos similares`,
+        })
+      }
+    } catch (error) {
+      console.error('CV upload error:', error)
+      toast({
+        title: "Erro ao processar CV",
+        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        variant: "destructive"
+      })
+    } finally {
+      setCvUploadLoading(false)
+    }
+  }
+  
+  const handleCVDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDroppingCV(true)
+  }
+  
+  const handleCVDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDroppingCV(false)
+  }
+  
+  // Hook centralizado para gerenciar favoritos, histórico e buscas salvas
+  const talentFunnel = useTalentFunnel()
+  
+  // Estados derivados do hook para compatibilidade com componentes existentes
+  const favorites = talentFunnel.getFavoriteIds()
+  const pinnedCandidates = talentFunnel.getPinnedIds()
+  const favoriteNotes = talentFunnel.getFavoriteNotes()
+  
+  // Estado para candidatos ocultos (persistido via API)
+  const [hiddenCandidates, setHiddenCandidates] = useState<Set<string>>(new Set())
+  
+  // Carregar candidatos ocultos da API ao montar o componente
+  useEffect(() => {
+    const loadHiddenCandidates = async () => {
+      try {
+        const response = await fetch('/api/backend-proxy/candidates/hidden')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.candidate_ids && Array.isArray(data.candidate_ids)) {
+            setHiddenCandidates(new Set(data.candidate_ids))
+          }
+        }
+      } catch (error) {
+        console.error('Error loading hidden candidates:', error)
+      }
+    }
+    loadHiddenCandidates()
+  }, [])
+
+  // Estados para scroll virtual/infinito
+  const [visibleCandidatesLimit, setVisibleCandidatesLimit] = useState(50)
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+
+  // ✨ Estados para integração cross-tab
+  const [crossTabFilter, setCrossTabFilter] = useState<any>(null)
+  const [showCrossTabBanner, setShowCrossTabBanner] = useState(false)
+  
+  // ✨ Estado para visualização de lista
+  const [viewingList, setViewingList] = useState<{ id: string; name: string; color?: string } | null>(null)
+
+  // Estados existentes...
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
+  const [isPreviewMaximized, setIsPreviewMaximized] = useState(false)
+  const [showCandidatePage, setShowCandidatePage] = useState(false)
+  const [showCandidatePreview, setShowCandidatePreview] = useState(false)
+  const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(null)
+  const [sortBy, setSortBy] = useState<string>('score')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [showSidePreview, setShowSidePreview] = useState(false)
+  const [sidePreviewCandidate, setSidePreviewCandidate] = useState<Candidate | null>(null)
+  const [selectedCandidateForLIA, setSelectedCandidateForLIA] = useState<Candidate | null>(null)
+  const [showLIAPromptForCandidate, setShowLIAPromptForCandidate] = useState(false)
+  const [showExpandedLIA, setShowExpandedLIA] = useState(false)
+  const [liaPromptValue, setLiaPromptValue] = useState("")
+  const [userCollapsedLIA, setUserCollapsedLIA] = useState(false)
+  
+  // Estados para critérios de busca, sugestões e assistente no modal expandido da LIA
+  const [liaPromptEntities, setLiaPromptEntities] = useState<ParsedEntities>({
+    job_title: undefined,
+    location: undefined,
+    skills: [],
+    years_experience: undefined,
+    industry: undefined,
+    seniority: undefined,
+    company: undefined
+  })
+  const [showLiaSuggestions, setShowLiaSuggestions] = useState(true)
+  const [showLiaAssistant, setShowLiaAssistant] = useState(false)
+  const [liaIsParsingEntities, setLiaIsParsingEntities] = useState(false)
+  const [liaSuggestions, setLiaSuggestions] = useState<string[]>([])
+  const [liaAssistantTips, setLiaAssistantTips] = useState<string[]>([
+    "Seja específico sobre habilidades técnicas necessárias",
+    "Indique a senioridade desejada (júnior, pleno, sênior)",
+    "Mencione localização se for relevante para a vaga",
+    "Inclua soft skills importantes para o time"
+  ])
+  
+  // 🎯 Auto-expandir LIA sidebar quando há candidatos selecionados
+  // Respeita intent manual do usuário (userCollapsedLIA)
+  // IMPORTANTE: Não fecha o LIA automaticamente - usuário controla manualmente
+  // Também adiciona mensagem ao chat quando candidatos são selecionados
+  const prevSelectedCountRef = useRef(0)
+  useEffect(() => {
+    const currentCount = selectedCandidatesForBatch.size
+    const prevCount = prevSelectedCountRef.current
+    
+    if (currentCount > 0 && !userCollapsedLIA) {
+      setShowExpandedLIA(true)
+      // REMOVIDO: setShowAdvancedSearch(true) - modal só abre via botão Filtro ou prompt expandido
+      
+      // Adicionar mensagem ao chat quando seleção muda
+      if (currentCount !== prevCount && currentCount > 0) {
+        const selectedCandidateNames = candidates
+          .filter(c => selectedCandidatesForBatch.has(c.id))
+          .slice(0, 3)
+          .map(c => c.name)
+        
+        const namesPreview = selectedCandidateNames.join(', ') + (currentCount > 3 ? ` e mais ${currentCount - 3}` : '')
+        
+        const liaMessage: ChatMessage = {
+          id: `lia-selection-${Date.now()}`,
+          type: 'lia',
+          content: `Você selecionou **${currentCount} candidato${currentCount > 1 ? 's' : ''}**: ${namesPreview}.\n\nPosso analisar ${currentCount > 1 ? 'estes candidatos' : 'este candidato'} para você:\n\n• **Analisar potencial de crescimento**\n• **Definir tipo de perfil** (executor, estratégico, etc)\n• **Resumo executivo do perfil**\n• **Pontos a serem desenvolvidos**\n• **Tipos de vagas ideais para ${currentCount > 1 ? 'estes perfis' : 'este perfil'}**`,
+          timestamp: new Date()
+        }
+        setChatMessages(prev => [...prev, liaMessage])
+      }
+    }
+    // REMOVIDO: Não fecha mais o LIA automaticamente quando currentCount === 0
+    // O LIA permanece aberto após busca - usuário fecha manualmente se quiser
+    
+    prevSelectedCountRef.current = currentCount
+  }, [selectedCandidatesForBatch.size, userCollapsedLIA, candidates, selectedCandidatesForBatch])
+  
+  // Parsing de entidades do liaPromptValue com debounce
+  useEffect(() => {
+    if (!liaPromptValue.trim()) {
+      setLiaPromptEntities({
+        job_title: undefined,
+        location: undefined,
+        skills: [],
+        years_experience: undefined,
+        industry: undefined,
+        seniority: undefined,
+        company: undefined
+      })
+      setLiaSuggestions([])
+      return
+    }
+    
+    const debounceTimer = setTimeout(async () => {
+      setLiaIsParsingEntities(true)
+      try {
+        const response = await fetch('/api/backend-proxy/search/parse-query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: liaPromptValue })
+        })
+        if (response.ok) {
+          const data = await response.json()
+          const entities = data.entities || data
+          setLiaPromptEntities({
+            job_title: entities.job_title || undefined,
+            location: entities.location || undefined,
+            skills: entities.skills || [],
+            years_experience: entities.years_experience || undefined,
+            industry: entities.industry || undefined,
+            seniority: entities.seniority || undefined,
+            company: entities.company || undefined
+          })
+          // Store suggestions from backend response
+          if (data.suggestions && Array.isArray(data.suggestions)) {
+            setLiaSuggestions(data.suggestions)
+          } else {
+            setLiaSuggestions([])
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing entities:', error)
+      } finally {
+        setLiaIsParsingEntities(false)
+      }
+    }, 500)
+    
+    return () => clearTimeout(debounceTimer)
+  }, [liaPromptValue])
+  
+  // Estados para o novo sistema de pesquisa avançada da LIA - 6 abas
+  type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
+  const [activeSearchTab, setActiveSearchTab] = useState<SearchTab>('ia-natural')
+  const [jobDescriptionText, setJobDescriptionText] = useState("")
+  const [liaWidth, setLiaWidth] = useState(400) // Largura padrão 400px - ElevenLabs pattern
+  const [isResizingLIA, setIsResizingLIA] = useState(false)
+  
+  // Estados adicionais para as novas abas
+  const [similarProfileUrl, setSimilarProfileUrl] = useState("")
+  const [booleanSearchValue, setBooleanSearchValue] = useState("")
+  const [filterLocation, setFilterLocation] = useState("")
+  const [filterExperience, setFilterExperience] = useState("any")
+  const [filterSeniority, setFilterSeniority] = useState("any")
+  const [filterWorkModel, setFilterWorkModel] = useState("any")
+  
+  // Estados para busca Similar e Job Description
+  const [isSearchingSimilar, setIsSearchingSimilar] = useState(false)
+  const [isSearchingJD, setIsSearchingJD] = useState(false)
+  const [extractedJDCriteria, setExtractedJDCriteria] = useState<{
+    job_title?: string
+    seniority?: string
+    skills: string[]
+    experience_years?: number
+    location?: string
+    languages: string[]
+  } | null>(null)
+  
+  // Estado para modal de filtros avançados removido - agora usa painel lateral
+  
+  // 🏷️ Estados para sistema de Arquétipos
+  type Archetype = {
+    id: string
+    name: string
+    description: string
+    emoji: string
+    query: string
+    filters: {
+      job_title?: string
+      seniority?: string
+      skills?: string[]
+      location?: string
+      experience_years?: number
+    }
+    tags?: string[]
+    industry?: string
+    createdAt: Date
+    isDefault?: boolean
+    usage_count?: number
+  }
+  
+  // Backend archetypes loaded from API
+  type BackendArchetype = {
+    id: string
+    name: string
+    description?: string
+    emoji: string
+    query: string
+    filters: Record<string, any>
+    tags: string[]
+    industry?: string
+    seniority?: string
+    is_default: boolean
+    is_active: boolean
+    usage_count: number
+    created_at?: string
+  }
+  const [backendArchetypes, setBackendArchetypes] = useState<BackendArchetype[]>([])
+  const [isLoadingArchetypes, setIsLoadingArchetypes] = useState(false)
+  const [archetypesLoadError, setArchetypesLoadError] = useState<string | null>(null)
+  const [isSearchingByArchetype, setIsSearchingByArchetype] = useState(false)
+  
+  const [userArchetypes, setUserArchetypes] = useState<Archetype[]>([])
+  const [isCreatingArchetype, setIsCreatingArchetype] = useState(false)
+  const [archetypeCreationStep, setArchetypeCreationStep] = useState<'initial' | 'input' | 'extracting' | 'review' | 'saving'>('initial')
+  const [newArchetypeData, setNewArchetypeData] = useState<Partial<Archetype>>({})
+  const [archetypeJobDescription, setArchetypeJobDescription] = useState("")
+  const [archetypeLibraryTab, setArchetypeLibraryTab] = useState<'meus' | 'sugestoes' | 'templates'>('meus')
+  const [showSaveAsArchetypeModal, setShowSaveAsArchetypeModal] = useState(false)
+  const [archetypeNameInput, setArchetypeNameInput] = useState("")
+  const [archetypeEmojiInput, setArchetypeEmojiInput] = useState("🎯")
+  const [lastSuccessfulQuery, setLastSuccessfulQuery] = useState("") // Armazena a última query bem-sucedida para o modal de arquétipo
+  const [activeSearchFilters, setActiveSearchFilters] = useState<SearchFilters>({
+    ppiOptions: {},
+    general: {},
+    locations: {},
+    job: {},
+    company: {},
+    skills: {},
+    education: {},
+    languages: {}
+  })
+  
+  // Estados para resultado de busca com separação local/global
+  const [searchResults, setSearchResults] = useState<{
+    local: Candidate[]
+    global: Candidate[]
+    localCount: number
+    globalCount: number
+    query: string
+    isLoading: boolean
+    showGlobalResults: boolean
+    globalDismissed: boolean
+  }>({
+    local: [],
+    global: [],
+    localCount: 0,
+    globalCount: 0,
+    query: "",
+    isLoading: false,
+    showGlobalResults: false,
+    globalDismissed: false
+  })
+  
+  // Estado para histórico de chat da LIA
+  type ChatMessage = {
+    id: string
+    type: 'user' | 'lia' | 'proactive_insight' | 'calibration'
+    content: string
+    timestamp: Date
+    searchResults?: {
+      localCount: number
+      globalCount: number
+      query: string
+    }
+    analytics?: SearchAnalytics
+    candidates?: CalibrationCandidate[]
+  }
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const chatScrollRef = useRef<HTMLDivElement>(null)
+  
+  // Abrir o painel LIA automaticamente ao carregar a página
+  useEffect(() => {
+    setShowExpandedLIA(true)
+  }, [])
+
+  const [previewWidth, setPreviewWidth] = useState(320) // 320px padrão (w-80)
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const tabParam = urlParams.get('tab')
+    const filterParam = urlParams.get('filter')
+    const companyParam = urlParams.get('name') || urlParams.get('companies')
+
+    const filterData = sessionStorage.getItem('candidates-filter-data')
+
+    if (filterData) {
+      try {
+        const data = JSON.parse(filterData)
+        setCrossTabFilter(data)
+        setShowCrossTabBanner(true)
+
+        if (data.type === 'company' && data.company) {
+          const companyName = data.company
+          setSearchTerm(`empresa:"${companyName}"`)
+          setQuickFilters(new Set(['company_filter']))
+        }
+
+        sessionStorage.removeItem('candidates-filter-data')
+      } catch (error) {
+        console.error('Erro ao processar filtro cross-tab:', error)
+      }
+    } else if (tabParam === 'candidates' && filterParam === 'company' && companyParam) {
+      const companies = companyParam.split(',')
+      setCrossTabFilter({
+        type: 'company',
+        companies: companies,
+        source: 'url'
+      })
+      setShowCrossTabBanner(true)
+      setSearchTerm(`empresas:${companies.join(',')}`)
+    }
+  }, [])
+  
+  // 🎯 Load archetypes from backend
+  const loadArchetypesFromBackend = async () => {
+    setIsLoadingArchetypes(true)
+    setArchetypesLoadError(null)
+    try {
+      const response = await fetch('/api/backend-proxy/search/archetypes')
+      if (!response.ok) {
+        throw new Error(`Erro ao carregar arquétipos: ${response.status}`)
+      }
+      const data = await response.json()
+      setBackendArchetypes(data.archetypes || [])
+    } catch (error) {
+      console.error('Erro ao carregar arquétipos:', error)
+      setArchetypesLoadError(error instanceof Error ? error.message : 'Erro ao carregar arquétipos')
+    } finally {
+      setIsLoadingArchetypes(false)
+    }
+  }
+  
+  // Load archetypes when arquetipos tab is active
+  useEffect(() => {
+    if (activeSearchTab === 'arquetipos' && backendArchetypes.length === 0 && !isLoadingArchetypes) {
+      loadArchetypesFromBackend()
+    }
+  }, [activeSearchTab])
+  
+  // Function to execute search by archetype
+  const executeArchetypeSearch = async (archetype: BackendArchetype) => {
+    setIsSearchingByArchetype(true)
+    try {
+      const response = await fetch(`/api/backend-proxy/search/archetypes/${archetype.id}/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          search_local: true,
+          search_pearch: searchSource === 'global' || searchSource === 'hybrid',
+          pearch_type: pearchSearchOptions.searchType,
+          local_limit: 50,
+          pearch_limit: pearchSearchOptions.limit,
+          calculate_lia_score: true
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Erro na busca: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      // Update UI with search results
+      setLiaPromptValue(archetype.query)
+      setActiveSearchTab('ia-natural')
+      
+      // Map candidates to expected format
+      if (data.candidates && data.candidates.length > 0) {
+        const mappedCandidates: Candidate[] = data.candidates.map((c: any) => ({
+          id: c.id || `arch-${Date.now()}-${Math.random()}`,
+          candidateId: c.id || '',
+          name: c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim(),
+          email: '',
+          phone: '',
+          current_title: c.current_title || c.headline,
+          current_company: c.current_company,
+          linkedin_url: c.linkedin_url,
+          seniority_level: archetype.seniority,
+          technical_skills: c.skills || [],
+          location_city: c.location?.split(',')[0]?.trim(),
+          location_state: c.location?.split(',')[1]?.trim(),
+          avatar_url: c.picture_url,
+          years_of_experience: c.total_experience_years,
+          status: 'new',
+          source: c.source || 'pearch',
+          matching_score: c.lia_score || c.score || 0,
+          match_summary: c.lia_reasoning || c.match_summary,
+          is_opentowork: c.is_open_to_work,
+          lia_score: c.lia_score,
+          lia_breakdown: c.lia_breakdown,
+          lia_strengths: c.lia_strengths || [],
+          lia_concerns: c.lia_concerns || []
+        }))
+        
+        setCandidates(mappedCandidates)
+        setHasSearchResults(true)
+        setSearchResultsCount(mappedCandidates.length)
+        setLocalResultsCount(data.local_count || 0)
+        setPearchResultsCount(data.pearch_count || 0)
+        setLastSearchQuery(archetype.query)
+        setLastSearchMode('archetype')
+        
+        // Add chat message for LIA (only show local count - user can opt-in to global)
+        const localCount = data.local_count || mappedCandidates.length
+        const liaMessage: ChatMessage = {
+          id: `lia-arch-${Date.now()}`,
+          type: 'lia',
+          content: `🎯 Busca por arquétipo "${archetype.name}" concluída!\n\nEncontrei **${localCount} candidato${localCount > 1 ? 's' : ''}** na sua base local.${data.credits_remaining !== undefined ? `\n\n💳 Créditos restantes: ${data.credits_remaining}` : ''}`,
+          timestamp: new Date(),
+          searchResults: {
+            localCount: localCount,
+            globalCount: 0,
+            query: archetype.query
+          }
+        }
+        setChatMessages(prev => [...prev, liaMessage])
+        
+        toast({
+          title: "Busca por arquétipo concluída",
+          description: `${mappedCandidates.length} candidato(s) encontrado(s) para "${archetype.name}"`,
+        })
+      } else {
+        toast({
+          title: "Nenhum candidato encontrado",
+          description: `A busca por "${archetype.name}" não retornou resultados`,
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      console.error('Erro na busca por arquétipo:', error)
+      toast({
+        title: "Erro na busca",
+        description: error instanceof Error ? error.message : 'Erro ao buscar por arquétipo',
+        variant: "destructive"
+      })
+    } finally {
+      setIsSearchingByArchetype(false)
+    }
+  }
+
+  // ✨ Função para limpar filtro cross-tab
+  const clearCrossTabFilter = () => {
+    setCrossTabFilter(null)
+    setShowCrossTabBanner(false)
+    setSearchTerm("")
+    setQuickFilters(new Set())
+    // Limpar URL params
+    window.history.replaceState({}, '', window.location.pathname)
+  }
+
+  // Estados dos modais
+  const [showBatchApproval, setShowBatchApproval] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [contactModalAction, setContactModalAction] = useState<'general' | 'wsi_screening' | 'interview_invite'>('general')
+  const [contactModalCandidate, setContactModalCandidate] = useState<any>(null)
+  const [showScheduleModal, setShowScheduleModal] = useState(false)
+  
+  // Unified Communication Modal State
+  const [unifiedModalOpen, setUnifiedModalOpen] = useState(false)
+  const [unifiedModalType, setUnifiedModalType] = useState<CommunicationType>('email')
+  const [unifiedModalCandidate, setUnifiedModalCandidate] = useState<Candidate | null>(null)
+  const [showQuickViewModal, setShowQuickViewModal] = useState(false)
+  const [showComparisonModal, setShowComparisonModal] = useState(false)
+  const [selectedCandidateForAction, setSelectedCandidateForAction] = useState<Candidate | null>(null)
+  const [showAddCandidateModal, setShowAddCandidateModal] = useState(false)
+  const [preSelectedListForModal, setPreSelectedListForModal] = useState<{ id: string; name: string } | null>(null)
+  const [showLIAAnalysis, setShowLIAAnalysis] = useState(false)
+
+  // WSI Screening States
+  const [showWSITextModal, setShowWSITextModal] = useState(false)
+  const [showWSIVoiceModal, setShowWSIVoiceModal] = useState(false)
+  const [wsiCandidateForScreening, setWsiCandidateForScreening] = useState<Candidate | null>(null)
+
+  // Email Modal States
+  const [showSendEmailModal, setShowSendEmailModal] = useState(false)
+  const [emailCandidateSelected, setEmailCandidateSelected] = useState<Candidate | null>(null)
+
+  // CV Parser Modal States (mantido para CVPreview legado)
+  const [showCVPreviewModal, setShowCVPreviewModal] = useState(false)
+  const [parsedCVData, setParsedCVData] = useState<ParsedCVResponse | null>(null)
+
+  // Bulk Actions States
+  const [bulkJobVacancies, setBulkJobVacancies] = useState<JobVacancy[]>([])
+  const [bulkEmailTemplates, setBulkEmailTemplates] = useState<EmailTemplate[]>([])
+
+  // Candidate Lists Modal States
+  const [showAddToListModal, setShowAddToListModal] = useState(false)
+  const [addToListCandidateIds, setAddToListCandidateIds] = useState<string[]>([])
+  const [addToListCandidateNames, setAddToListCandidateNames] = useState<string[]>([])
+  const [showAddListToVacanciesModal, setShowAddListToVacanciesModal] = useState(false)
+  const [selectedListForVacancies, setSelectedListForVacancies] = useState<{ id: string; name: string; candidateCount: number } | null>(null)
+  
+  // Add to Vacancy Modal State
+  const [showAddToVacancyModal, setShowAddToVacancyModal] = useState(false)
+
+  // Pearch AI Credit System States
+  const [showCreditConfirmation, setShowCreditConfirmation] = useState(false)
+  const [pendingSearchRequest, setPendingSearchRequest] = useState<{
+    query: string
+    entities?: ParsedEntities
+    mode?: SearchMode
+    metadata?: SearchMetadata
+  } | null>(null)
+  const [creditEstimate, setCreditEstimate] = useState<CreditEstimate | null>(null)
+  const [searchThreadId, setSearchThreadId] = useState<string | undefined>(undefined)
+  const [pearchSearchOptions, setPearchSearchOptions] = useState({
+    searchType: 'fast' as 'fast' | 'pro',
+    limit: 50, // Aumentado de 15 para 50 - limite máximo é 100
+    showEmails: false,
+    showPhoneNumbers: false,
+    highFreshness: false,
+    requireEmails: false, // Filtrar apenas candidatos com email disponível (+1 crédito)
+    requirePhoneNumbers: false // Filtrar apenas candidatos com telefone disponível (+1 crédito)
+  })
+  
+  // Source Change & Contact Filter Credit Confirmation Modals
+  const [showSourceChangeModal, setShowSourceChangeModal] = useState(false)
+  const [pendingSourceChange, setPendingSourceChange] = useState<'hybrid' | 'global' | null>(null)
+  const [showContactFilterModal, setShowContactFilterModal] = useState(false)
+  const [pendingContactFilter, setPendingContactFilter] = useState<'email' | 'phone' | null>(null)
+
+  // Reveal Contact System States
+  const [showRevealModal, setShowRevealModal] = useState(false)
+  const [revealCandidate, setRevealCandidate] = useState<Candidate | null>(null)
+  const [revealType, setRevealType] = useState<"email" | "phone">("email")
+  const [revealedContacts, setRevealedContacts] = useState<Record<string, { email?: string; phone?: string }>>({})
+  const [isRevealing, setIsRevealing] = useState(false)
+  
+  // Estado para linhas expandidas (quebra de linha do cargo)
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  
+  // Estado para salvar candidatos Pearch na base local
+  const [isSavingToBase, setIsSavingToBase] = useState(false)
+  
+  // Estado para importar candidatos Pearch ao adicionar à lista
+  const [isAddingToList, setIsAddingToList] = useState(false)
+  
+  // Estado para modal de aviso de candidatos Pearch não salvos
+  const [showUnsavedWarningModal, setShowUnsavedWarningModal] = useState(false)
+  const [pendingTabChange, setPendingTabChange] = useState<string | null>(null)
+  
+  // Calcular candidatos Pearch não salvos nos resultados atuais
+  const unsavedPearchCandidates = candidates.filter(c => c.source === 'pearch')
+  const hasUnsavedPearchCandidates = unsavedPearchCandidates.length > 0 && showSearchResults
+
+  // Load job vacancies and email templates for bulk actions
+  useEffect(() => {
+    liaApi.listJobVacancies()
+      .then(response => {
+        if (response.items) {
+          setBulkJobVacancies(response.items.filter((j: JobVacancy) => j.status === 'open' || j.status === 'draft'))
+        }
+      })
+      .catch(error => console.error('Error loading job vacancies:', error))
+
+    liaApi.listEmailTemplates(undefined, true)
+      .then(response => {
+        if (response.items) {
+          setBulkEmailTemplates(response.items)
+        }
+      })
+      .catch(error => console.error('Error loading email templates:', error))
+  }, [])
+
+  // Handler para abrir modal de reveal
+  const openRevealModal = (candidate: Candidate, type: "email" | "phone") => {
+    setRevealCandidate(candidate)
+    setRevealType(type)
+    setShowRevealModal(true)
+  }
+
+  // Handler para executar reveal de contato
+  const handleRevealContact = async () => {
+    if (!revealCandidate) return
+
+    setIsRevealing(true)
+    try {
+      const response = await fetch('/api/backend-proxy/search/reveal/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          candidate_id: revealCandidate.id,
+          candidate_name: revealCandidate.name,
+          reveal_type: revealType,
+          linkedin_slug: revealCandidate.linkedin_url?.split('/in/')?.[1]?.replace('/', '') || null
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setRevealedContacts(prev => ({
+          ...prev,
+          [revealCandidate.id]: {
+            ...prev[revealCandidate.id],
+            [revealType]: revealType === 'email' ? data.email : data.phone
+          }
+        }))
+        setShowRevealModal(false)
+        
+        // Atualiza o saldo de créditos se retornado pelo backend
+        if (data.credits_remaining !== undefined && data.credits_remaining !== null) {
+          setCreditsRemaining(data.credits_remaining)
+        }
+        
+        // Toast de sucesso com info sobre persistência
+        const revealedValue = revealType === 'email' ? data.email : data.phone
+        toast({
+          title: revealType === 'email' ? "Email revelado" : "Telefone revelado",
+          description: (
+            <div className="flex flex-col gap-1">
+              <span className="font-medium">{revealedValue}</span>
+              {data.credits_used > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  -{data.credits_used} créditos
+                  {data.credits_remaining !== undefined && ` (saldo: ${data.credits_remaining})`}
+                </span>
+              )}
+            </div>
+          ),
+          duration: 5000
+        })
+        
+        // Persistir dados revelados no banco automaticamente (candidato Pearch)
+        if (revealCandidate.source === 'pearch') {
+          try {
+            // Usar pearch_profile_id se disponível, senão usar id como fallback
+            const pearchId = revealCandidate.pearch_profile_id || revealCandidate.id
+            
+            const persistResponse = await fetch('/api/backend-proxy/search/candidates/persist-revealed', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                pearch_id: pearchId,
+                candidate_name: revealCandidate.name,
+                email: revealType === 'email' ? data.email : null,
+                phone: revealType === 'phone' ? data.phone : null,
+                linkedin_url: revealCandidate.linkedin_url || null,
+                current_title: revealCandidate.current_title || null,
+                current_company: revealCandidate.current_company || null,
+                avatar_url: revealCandidate.avatar_url || null
+              })
+            })
+            
+            const persistData = await persistResponse.json()
+            
+            if (persistData.success) {
+              // Toast sutil informando que LIA salvou o dado
+              toast({
+                title: "LIA salvou o contato",
+                description: persistData.is_new 
+                  ? "Candidato adicionado à sua base local" 
+                  : "Dados atualizados no cadastro existente",
+                duration: 3000
+              })
+            } else {
+              // Toast de aviso se não conseguiu persistir
+              toast({
+                title: "Aviso",
+                description: "Contato revelado mas não foi salvo na base. Use 'Salvar na Base' para persistir.",
+                duration: 4000
+              })
+            }
+          } catch (persistError) {
+            console.error('Error persisting revealed contact:', persistError)
+            // Toast de aviso sobre falha na persistência
+            toast({
+              title: "Aviso",
+              description: "Contato revelado mas não foi salvo automaticamente. Use 'Salvar na Base' para persistir.",
+              duration: 4000
+            })
+          }
+        }
+      } else {
+        // Toast de erro quando não encontra contato
+        toast({
+          variant: "destructive",
+          title: "Contato não disponível",
+          description: data.message || 'Não foi possível revelar o contato',
+          duration: 5000
+        })
+      }
+    } catch (error) {
+      console.error('Error revealing contact:', error)
+      // Toast de erro genérico
+      toast({
+        variant: "destructive",
+        title: "Erro ao revelar contato",
+        description: "Ocorreu um erro. Tente novamente.",
+        duration: 5000
+      })
+    } finally {
+      setIsRevealing(false)
+    }
+  }
+
+  // Callback for refreshing candidates after bulk actions
+  const handleBulkActionComplete = () => {
+    setIsLoading(true)
+    liaApi.listCandidates(undefined, undefined, 0, 100)
+      .then(response => {
+        if (response.items && response.items.length > 0) {
+          const backendCandidates: Candidate[] = response.items.map((c: CandidateLocal) => ({
+            id: c.id,
+            candidateId: c.id.substring(0, 5).toUpperCase(),
+            name: c.name || 'Sem nome',
+            email: c.email || '',
+            phone: c.phone || '',
+            position: c.current_title || 'Não informado',
+            location: [c.location_city, c.location_state].filter(Boolean).join(', ') || 'Não informado',
+            workModel: (c.work_model_preference || 'remoto') as 'remoto' | 'híbrido' | 'presencial',
+            score: c.lia_score || 75,
+            status: (c.status || 'active') as 'active' | 'prospect' | 'interview' | 'hired',
+            currentSalary: c.desired_salary_min ? `R$ ${c.desired_salary_min.toLocaleString('pt-BR')}` : undefined,
+            expectedSalary: c.desired_salary_max ? `R$ ${c.desired_salary_max.toLocaleString('pt-BR')}` : undefined,
+            contractType: (c.contract_type_preference?.toUpperCase() || 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
+            tags: c.tags || [],
+            linkedin: c.linkedin_url || '',
+            skills: c.technical_skills || [],
+            experience: c.years_of_experience || 0,
+            education: c.seniority_level ? `${c.seniority_level.charAt(0).toUpperCase()}${c.seniority_level.slice(1)}` : 'Não informado',
+            notes: c.notes,
+            avatar: c.avatar_url || c.picture_url,
+            liaAnalysis: {
+              score: c.lia_score || 75,
+              strengths: c.lia_insights?.strengths || ['Perfil técnico sólido'],
+              concerns: c.lia_insights?.concerns || [],
+              recommendation: c.lia_insights?.recommendation || 'Avaliar com atenção'
+            },
+            source: 'local',
+            has_email: true,
+            has_phone: true
+          }))
+          setCandidates(backendCandidates)
+        }
+        setIsLoading(false)
+      })
+      .catch(error => {
+        console.error('Error refreshing candidates:', error)
+        setIsLoading(false)
+      })
+  }
+
+  // CV Parser handlers (legado - mantido para compatibilidade)
+  const handleCVParsed = (data: ParsedCVResponse) => {
+    setParsedCVData(data)
+    setShowCVPreviewModal(true)
+  }
+
+  const handleCVConfirmed = (candidateId: string) => {
+    setShowCVPreviewModal(false)
+    setParsedCVData(null)
+    handleBulkActionComplete()
+  }
+
+  // Helper para mapear candidato do backend para formato interno
+  const mapCandidateToInternal = (c: any): Candidate => {
+    const candidateSource = c.source || 'pearch'
+    return {
+      id: c.id || `search-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      candidateId: c.id?.substring(0, 8).toUpperCase() || 'CAND',
+      name: c.name || 'Nome não disponível',
+      email: c.email || '',
+      phone: c.phone || '',
+      mobile_phone: c.phone,
+      current_title: c.headline || c.current_title || '',
+      current_company: c.current_company || '',
+      current_salary: undefined,
+      desired_salary_min: undefined,
+      desired_salary_max: undefined,
+      location: c.location || '',
+      location_city: c.location?.split(',')[0]?.trim(),
+      location_state: c.location?.split(',')[1]?.trim(),
+      linkedin_url: c.linkedin_url,
+      avatar_url: c.avatar_url || c.picture_url,
+      technical_skills: c.skills || [],
+      skills: c.skills || [],
+      seniority_level: c.seniority_level,
+      years_of_experience: c.years_experience || c.total_experience_years,
+      experience: c.years_experience || c.total_experience_years || 0,
+      position: c.headline || c.current_title || '',
+      monthlySalary: 0,
+      workModel: 'remoto' as const,
+      score: c.match_score ? Math.round(c.match_score * 25) : (c.score || 75),
+      contractType: 'CLT' as const,
+      linkedin: c.linkedin_url || '',
+      avatar: c.avatar_url || c.picture_url,
+      experiences: c.experiences || c.work_history || [],
+      workHistory: (c.experiences || c.work_history || []).map((exp: any) => ({
+        company: exp.company_info?.name || exp.company || '',
+        title: exp.company_roles?.[0]?.title || exp.title || '',
+        startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
+        endDate: exp.company_roles?.[0]?.end_date || exp.end_date || '',
+        duration: exp.duration || '',
+        location: exp.company_info?.location || exp.location || '',
+        description: exp.company_roles?.[0]?.description || exp.description || ''
+      })),
+      education: (c.education || c.educations || []).map((edu: any) => ({
+        school: edu.school || '',
+        degree: edu.degree || '',
+        field_of_study: edu.field_of_study || '',
+        fieldOfStudy: edu.field_of_study || '',
+        startDate: edu.start_date || '',
+        endDate: edu.end_date || ''
+      })),
+      liaAnalysis: {
+        score: c.match_score ? Math.round(c.match_score * 25) : (c.score || 75),
+        strengths: c.match_reasoning ? [c.match_reasoning] : [],
+        concerns: [],
+        recommendation: c.match_reasoning || c.match_summary || ''
+      },
+      source: candidateSource,
+      pearch_profile_id: c.pearch_profile_id,
+      has_email: c.has_email ?? true,
+      has_phone: c.has_phone ?? true,
+      is_opentowork: c.is_opentowork,
+      is_decision_maker: c.is_decision_maker,
+      is_top_universities: c.is_top_universities,
+      is_startup: c.is_startup || c.company_info?.is_startup,
+      expertise: c.expertise,
+      outreach_message: c.outreach_message
+    }
+  }
+
+  // Função principal de busca - Integra Local + Pearch AI
+  const executeSearch = async (
+    query: string,
+    entities?: ParsedEntities,
+    mode?: SearchMode,
+    metadata?: SearchMetadata,
+    usePearch: boolean = false
+  ) => {
+    setIsLoading(true)
+    setIsSearchActive(true)
+    
+    // Reset searchResults com estado de carregamento
+    setSearchResults(prev => ({ 
+      ...prev, 
+      isLoading: true, 
+      query: query 
+    }))
+    
+    try {
+      let mappedCandidates: Candidate[] = []
+      let totalCount = 0
+      let creditsUsed: number | undefined
+      
+      const shouldUsePearch = usePearch || searchSource === 'global'
+      const shouldUseHybrid = searchSource === 'hybrid'
+      
+      let localCount = 0
+      let pearchCount = 0
+      
+      // ============== MODO SIMILAR - Busca por perfil similar ==============
+      if (mode === 'similar' && metadata) {
+        const similarUrl = metadata.similarProfileUrl || (metadata.similarProfileUrls?.[0])
+        
+        if (similarUrl) {
+          const response = await fetch('/api/backend-proxy/search/candidates/similar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              linkedin_url: similarUrl,
+              limit: 20,
+              search_pearch: shouldUsePearch || shouldUseHybrid,
+              pearch_type: pearchSearchOptions.searchType
+            })
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            totalCount = data.total_count || 0
+            localCount = data.local_count || 0
+            pearchCount = data.pearch_count || 0
+            creditsUsed = data.credits_used
+            
+            if (data.credits_remaining !== undefined) {
+              setCreditsRemaining(data.credits_remaining)
+            }
+            
+            if (data.candidates && data.candidates.length > 0) {
+              mappedCandidates = data.candidates.map((c: any) => mapCandidateToInternal(c))
+            }
+          } else {
+            console.error('Erro na busca similar:', await response.text())
+          }
+        }
+      }
+      // ============== MODO JD - Busca por Job Description ==============
+      else if (mode === 'jd' && metadata?.jobDescription) {
+        const response = await fetch('/api/backend-proxy/search/candidates/by-job-description', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            job_description: metadata.jobDescription,
+            limit: 20,
+            search_pearch: shouldUsePearch || shouldUseHybrid,
+            pearch_type: pearchSearchOptions.searchType
+          })
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          totalCount = data.total_count || 0
+          localCount = data.local_count || 0
+          pearchCount = data.pearch_count || 0
+          creditsUsed = data.credits_used
+          
+          if (data.credits_remaining !== undefined) {
+            setCreditsRemaining(data.credits_remaining)
+          }
+          
+          if (data.candidates && data.candidates.length > 0) {
+            mappedCandidates = data.candidates.map((c: any) => mapCandidateToInternal(c))
+          }
+        } else {
+          console.error('Erro na busca por JD:', await response.text())
+        }
+      }
+      // ============== MODO ARCHETYPES - Busca por arquétipo ==============
+      else if (mode === 'archetypes' && metadata?.archetypeVacancyId) {
+        const archetypeId = metadata.archetypeVacancyId
+        const response = await fetch(`/api/backend-proxy/search/archetypes/${archetypeId}/search`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            limit: 20,
+            search_pearch: shouldUsePearch || shouldUseHybrid,
+            pearch_type: pearchSearchOptions.searchType
+          })
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          totalCount = data.total_count || 0
+          localCount = data.local_count || 0
+          pearchCount = data.pearch_count || 0
+          creditsUsed = data.credits_used
+          
+          if (data.credits_remaining !== undefined) {
+            setCreditsRemaining(data.credits_remaining)
+          }
+          
+          if (data.candidates && data.candidates.length > 0) {
+            mappedCandidates = data.candidates.map((c: any) => mapCandidateToInternal(c))
+          }
+        } else {
+          console.error('Erro na busca por arquétipo:', await response.text())
+        }
+      }
+      // ============== MODO NATURAL/BOOLEAN/FILTROS - Busca padrão ==============
+      else if (shouldUsePearch || shouldUseHybrid) {
+        // Converter entities para SearchSpec para filtros avançados da Pearch
+        const searchSpec = entities ? {
+          location: entities.location,
+          job_title: entities.job_title,
+          seniority: entities.seniority,
+          years_experience: entities.years_experience,
+          skills: entities.skills || [],
+          industry: entities.industry,
+          company: entities.company
+        } : undefined
+        
+        // Busca via Pearch AI (apenas Pearch ou híbrida)
+        const searchResponse = await searchCandidatesHybrid({
+          query,
+          thread_id: searchThreadId,
+          search_spec: searchSpec,
+          search_local: shouldUseHybrid,
+          search_pearch: true,
+          pearch_type: pearchSearchOptions.searchType,
+          local_limit: shouldUseHybrid ? 20 : 1,
+          pearch_limit: pearchSearchOptions.limit,
+          show_emails: pearchSearchOptions.showEmails,
+          show_phone_numbers: pearchSearchOptions.showPhoneNumbers,
+          high_freshness: pearchSearchOptions.highFreshness,
+          require_emails: pearchSearchOptions.requireEmails,
+          require_phone_numbers: pearchSearchOptions.requirePhoneNumbers
+        })
+        
+        // Salvar thread_id para refinamentos futuros
+        if (searchResponse.thread_id) {
+          setSearchThreadId(searchResponse.thread_id)
+        }
+        
+        creditsUsed = searchResponse.credits_used
+        totalCount = searchResponse.total_count || 0
+        localCount = searchResponse.local_count || 0
+        pearchCount = searchResponse.pearch_count || 0
+        
+        // Atualiza saldo de créditos se retornado na resposta
+        if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {
+          setCreditsRemaining(searchResponse.credits_remaining)
+        }
+        
+        // Mapear candidatos do formato Pearch/SearchResponse para formato interno
+        // A API já define source='local' ou source='pearch' em CandidateSearchResultDTO
+        if (searchResponse.candidates && searchResponse.candidates.length > 0) {
+          mappedCandidates = searchResponse.candidates.map((c) => {
+            // A API define source corretamente como 'local' ou 'pearch'
+            // Usamos o source da API diretamente, com fallback para 'pearch' se indefinido
+            const candidateSource = c.source || 'pearch'
+            
+            return {
+              id: c.id || `pearch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              candidateId: c.id?.substring(0, 8).toUpperCase() || 'PEARCH',
+              name: c.name || 'Nome não disponível',
+              email: c.email || '',
+              phone: c.phone || '',
+              mobile_phone: c.phone,
+              current_title: c.headline || c.current_title || '',
+              current_company: c.current_company || '',
+              current_salary: undefined,
+              desired_salary_min: undefined,
+              desired_salary_max: undefined,
+              location: c.location || '',
+              location_city: c.location?.split(',')[0]?.trim(),
+              location_state: c.location?.split(',')[1]?.trim(),
+              linkedin_url: c.linkedin_url,
+              avatar_url: c.avatar_url || c.picture_url,
+              technical_skills: c.skills || [],
+              skills: c.skills || [],
+              seniority_level: c.seniority_level,
+              years_of_experience: c.years_experience || c.total_experience_years,
+              experience: c.years_experience || c.total_experience_years || 0,
+              position: c.headline || c.current_title || '',
+              monthlySalary: 0,
+              workModel: 'remoto' as const,
+              score: c.match_score ? Math.round(c.match_score * 25) : 75,
+              contractType: 'CLT' as const,
+              linkedin: c.linkedin_url || '',
+              avatar: c.avatar_url || c.picture_url,
+              // Mapeamento de experiências profissionais da Pearch
+              experiences: c.experiences || c.work_history || [],
+              workHistory: (c.experiences || c.work_history || []).map((exp: any) => ({
+                company: exp.company_info?.name || exp.company || '',
+                title: exp.company_roles?.[0]?.title || exp.title || '',
+                startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
+                endDate: exp.company_roles?.[0]?.end_date || exp.end_date || '',
+                duration: exp.duration || '',
+                location: exp.company_info?.location || exp.location || '',
+                description: exp.company_roles?.[0]?.description || exp.description || ''
+              })),
+              // Mapeamento de formação acadêmica da Pearch
+              education: (c.education || c.educations || []).map((edu: any) => ({
+                school: edu.school || '',
+                degree: edu.degree || '',
+                field_of_study: edu.field_of_study || '',
+                fieldOfStudy: edu.field_of_study || '',
+                startDate: edu.start_date || '',
+                endDate: edu.end_date || ''
+              })),
+              liaAnalysis: {
+                score: c.match_score ? Math.round(c.match_score * 25) : 75,
+                strengths: c.match_reasoning ? [c.match_reasoning] : [],
+                concerns: [],
+                recommendation: c.match_reasoning || ''
+              },
+              source: candidateSource,
+              pearch_profile_id: c.pearch_profile_id,
+              has_email: c.has_email ?? true,
+              has_phone: c.has_phone ?? true,
+              is_opentowork: c.is_opentowork,
+              is_decision_maker: c.is_decision_maker,
+              is_top_universities: c.is_top_universities,
+              is_startup: c.is_startup || c.company_info?.is_startup,
+              expertise: c.expertise,
+              outreach_message: c.outreach_message
+            }
+          })
+        }
+      } else {
+        // Busca apenas local via liaApi (gratuita)
+        const response = await liaApi.listCandidates(query, undefined, 0, 50)
+        
+        if (response.items && response.items.length > 0) {
+          // Filtrar baseado na query para busca local
+          const searchLower = query.toLowerCase()
+          const filtered = response.items.filter((c: CandidateLocal) => {
+            return (
+              c.name?.toLowerCase().includes(searchLower) ||
+              c.current_title?.toLowerCase().includes(searchLower) ||
+              c.current_company?.toLowerCase().includes(searchLower) ||
+              c.location_city?.toLowerCase().includes(searchLower) ||
+              c.location_state?.toLowerCase().includes(searchLower) ||
+              c.technical_skills?.some((s: string) => s.toLowerCase().includes(searchLower))
+            )
+          })
+          
+          totalCount = filtered.length
+          localCount = filtered.length
+          pearchCount = 0
+          
+          // Mapear candidatos locais para formato interno
+          mappedCandidates = filtered.map((c: CandidateLocal) => ({
+            id: c.id,
+            candidateId: c.id.substring(0, 8).toUpperCase(),
+            name: c.name || 'Sem nome',
+            email: c.email || '',
+            phone: c.phone || '',
+            mobile_phone: c.mobile_phone,
+            current_title: c.current_title || '',
+            current_company: c.current_company || '',
+            current_salary: c.current_salary,
+            desired_salary_min: c.desired_salary_min,
+            desired_salary_max: c.desired_salary_max,
+            location: [c.location_city, c.location_state].filter(Boolean).join(', '),
+            location_city: c.location_city,
+            location_state: c.location_state,
+            linkedin_url: c.linkedin_url,
+            avatar_url: c.avatar_url || c.picture_url,
+            technical_skills: c.technical_skills || [],
+            skills: c.technical_skills || [],
+            seniority_level: c.seniority_level,
+            years_of_experience: c.years_of_experience,
+            experience: c.years_of_experience || 0,
+            position: c.current_title || '',
+            monthlySalary: c.current_salary || 0,
+            workModel: (c.work_model_preference || 'remoto') as 'remoto' | 'híbrido' | 'presencial',
+            score: c.lia_score || 75,
+            contractType: (c.contract_type_preference?.toUpperCase() || 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
+            linkedin: c.linkedin_url || '',
+            education: c.seniority_level ? `${c.seniority_level.charAt(0).toUpperCase()}${c.seniority_level.slice(1)}` : '',
+            avatar: c.avatar_url || c.picture_url,
+            liaAnalysis: {
+              score: c.lia_score || 75,
+              strengths: c.lia_insights?.strengths || [],
+              concerns: c.lia_insights?.concerns || [],
+              recommendation: c.lia_insights?.recommendation || ''
+            },
+            source: 'local',
+            tags: c.tags || [],
+            notes: c.notes,
+            has_email: true,
+            has_phone: true,
+            is_opentowork: c.is_opentowork,
+            is_decision_maker: c.is_decision_maker,
+            is_top_universities: c.is_top_universities,
+            is_startup: c.is_startup || c.company_info?.is_startup,
+            expertise: c.expertise,
+            outreach_message: c.outreach_message
+          }))
+        }
+      }
+      
+      // Marcar que a busca foi realizada
+      setHasSearched(true)
+      
+      // Salvar entities, metadata e usePearch para uso na expansão global e re-execução de busca
+      // Sempre incrementa searchExecutionId para resetar filtros, mesmo quando entities é null
+      setLastSearchEntities(entities || null)
+      setLastSearchMetadata(metadata)
+      setLastSearchUsedPearch(usePearch || searchSource === 'global' || searchSource === 'hybrid')
+      setSearchExecutionId(prev => prev + 1)
+      
+      // Determinar e atualizar a fonte de busca atual
+      const shouldUsePearchForSource = usePearch || searchSource === 'global'
+      const shouldUseHybridForSource = searchSource === 'hybrid'
+      if (shouldUsePearchForSource) {
+        setCurrentSearchSource('global')
+      } else if (shouldUseHybridForSource) {
+        setCurrentSearchSource('hybrid')
+      } else {
+        setCurrentSearchSource('local')
+      }
+      
+      // Salvar no histórico
+      talentFunnel.addToHistory({
+        query,
+        mode: (mode || 'natural') as any,
+        source: searchSource,
+        entities,
+        metadata,
+        resultsCount: mappedCandidates.length
+      })
+      
+      // Separar candidatos locais e globais
+      const localCandidates = mappedCandidates.filter(c => {
+        const hasPearchId = Boolean(c.pearch_profile_id)
+        return !isGlobalSource(c.source, hasPearchId)
+      })
+      const globalCandidates = mappedCandidates.filter(c => {
+        const hasPearchId = Boolean(c.pearch_profile_id)
+        return isGlobalSource(c.source, hasPearchId)
+      })
+      
+      // Determinar se devemos mostrar candidatos globais automaticamente
+      // Quando busca é global ou híbrida, mostrar automaticamente
+      // Quando busca é local, manter pendente para usuário ativar
+      const shouldAutoShowGlobal = shouldUsePearch || shouldUseHybrid
+      
+      // IMPORTANTE: Se busca é global/híbrida, todos os candidatos vão para a tabela
+      // Se busca é apenas local, só os locais vão automaticamente
+      const candidatesForTable = shouldAutoShowGlobal 
+        ? mappedCandidates // Todos (locais + globais)
+        : localCandidates  // Apenas locais
+      
+      setCandidates(candidatesForTable)
+      setHasSearchResults(true)
+      setSearchResultsCount(totalCount || mappedCandidates.length)
+      setLocalResultsCount(localCount > 0 ? localCount : localCandidates.length)
+      setPearchResultsCount(pearchCount > 0 ? pearchCount : globalCandidates.length)
+      setCreditsUsedInSearch(creditsUsed || 0)
+      setShowSearchResults(true)
+      
+      // Popular o searchResults para exibir resumo no painel LIA
+      // IMPORTANTE: Preservar globalDismissed entre buscas
+      setSearchResults(prev => ({
+        local: localCandidates,
+        global: globalCandidates,
+        localCount: localCount > 0 ? localCount : localCandidates.length,
+        globalCount: pearchCount > 0 ? pearchCount : globalCandidates.length,
+        query: query,
+        isLoading: false,
+        showGlobalResults: shouldAutoShowGlobal, // Auto-mostrar quando busca global/híbrida
+        globalDismissed: prev.globalDismissed // Preservar estado de dismiss entre buscas
+      }))
+      
+      // IMPORTANTE: Expandir prompt LIA automaticamente após busca concluída
+      setShowExpandedLIA(true)
+      setUserCollapsedLIA(false) // Reset para permitir auto-expansão
+      
+      // Detectar candidatos internacionais e sugerir filtro de localização
+      // APENAS se: busca foi puramente local (não híbrida nem Pearch) e há resultados globais pendentes
+      // Não mostrar se o usuário optou por busca global ou híbrida
+      const shouldShowLocationTip = !usePearch && !shouldUsePearch && !shouldUseHybrid && globalCandidates.length > 0
+      
+      if (shouldShowLocationTip) {
+        // Verificar se a busca não especificou localização brasileira
+        const hasLocationInQuery = /brasil|brazil|são paulo|sp\b|rio|rj\b|minas|mg\b|curitiba|porto alegre|belo horizonte|recife|salvador|fortaleza|brasília/i.test(query)
+        
+        // Detectar se há candidatos claramente internacionais (países fora do Brasil)
+        const internationalCountries = [
+          'india', 'united states', 'usa', 'uk', 'united kingdom', 'canada', 'germany',
+          'france', 'spain', 'portugal', 'australia', 'netherlands', 'italy', 'mexico',
+          'argentina', 'colombia', 'chile', 'peru', 'philippines', 'pakistan', 'nigeria'
+        ]
+        
+        const internationalCandidates = globalCandidates.filter(c => {
+          const location = (c.location || c.location_city || '').toLowerCase()
+          return internationalCountries.some(country => location.includes(country))
+        })
+        
+        // Só mostrar dica se há candidatos claramente internacionais e query não especificou Brasil
+        if (internationalCandidates.length >= 3 && !hasLocationInQuery) {
+          const liaMessage: ChatMessage = {
+            id: `lia-location-tip-${Date.now()}`,
+            type: 'lia',
+            content: `💡 **Dica de Localização**\n\nEncontrei candidatos de outros países nos resultados globais.\n\nSe você busca apenas profissionais no **Brasil**, pode refinar a busca adicionando a localização, por exemplo:\n\n• "*${query} em São Paulo*"\n• "*${query} Brasil*"\n\nOu use os **filtros de localização** no painel de busca avançada.`,
+            timestamp: new Date()
+          }
+          setChatMessages(prev => [...prev, liaMessage])
+        }
+      }
+      
+      // Salvar a query bem-sucedida para uso no modal de arquétipo
+      setLastSuccessfulQuery(query)
+      
+      // Mostrar opção de expandir busca global se só buscou local
+      if (!shouldUsePearch && !shouldUseHybrid) {
+        setShowExpandGlobalOption(true)
+      } else {
+        setShowExpandGlobalOption(false)
+      }
+      
+      // Log de créditos se usou Pearch
+      if (creditsUsed) {
+        console.log(`Créditos utilizados: ${creditsUsed}`)
+      }
+      
+      // 🎯 Chamar análise proativa após busca com resultados
+      if (mappedCandidates.length > 0) {
+        try {
+          const analyzeResponse = await fetch('/api/backend-proxy/search/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query,
+              candidates: mappedCandidates.slice(0, 50).map(c => ({
+                id: c.id,
+                name: c.name,
+                current_title: c.current_title || c.position,
+                current_company: c.current_company,
+                location: c.location || c.location_city,
+                skills: c.skills || c.technical_skills,
+                years_experience: c.experience || c.years_of_experience,
+                lia_score: c.liaAnalysis?.score || c.score,
+                seniority_level: c.seniority_level,
+                work_model: c.workModel || c.work_model_preference,
+                email: c.email,
+                phone: c.phone || c.mobile_phone,
+                linkedin_url: c.linkedin_url,
+                source: c.source
+              })),
+              local_count: localCount,
+              global_count: pearchCount
+            })
+          })
+          
+          if (analyzeResponse.ok) {
+            const analyticsData: SearchAnalytics = await analyzeResponse.json()
+            
+            // Inserir card de insights proativos no chat
+            const insightMessage: ChatMessage = {
+              id: `proactive-insight-${Date.now()}`,
+              type: 'proactive_insight',
+              content: '',
+              timestamp: new Date(),
+              analytics: analyticsData
+            }
+            setChatMessages(prev => [...prev, insightMessage])
+          }
+        } catch (analyzeError) {
+          console.warn('Erro ao analisar resultados:', analyzeError)
+        }
+      }
+    } catch (error) {
+      console.error('Erro na busca:', error)
+      // IMPORTANTE: Reset searchResults.isLoading em caso de erro
+      setSearchResults(prev => ({
+        ...prev,
+        isLoading: false,
+        query: '' // Limpar query para não mostrar o card de loading sem resultado
+      }))
+    } finally {
+      setIsLoading(false)
+      setIsSearchActive(false)
+    }
+  }
+
+  // Handler para confirmar busca com Pearch (após modal de créditos)
+  const handleConfirmPearchSearch = async () => {
+    setShowCreditConfirmation(false)
+    
+    if (pendingSearchRequest) {
+      await executeSearch(
+        pendingSearchRequest.query,
+        pendingSearchRequest.entities,
+        pendingSearchRequest.mode,
+        pendingSearchRequest.metadata,
+        true // usePearch = true
+      )
+      setPendingSearchRequest(null)
+    }
+  }
+  
+  // Handler para mudança de fonte de busca com confirmação de créditos
+  const handleSourceChange = (newSource: 'local' | 'hybrid' | 'global') => {
+    if (newSource === 'local') {
+      // Local é gratuito - muda direto
+      setSearchSource('local')
+    } else {
+      // Híbrido ou Global consome créditos - mostrar modal de confirmação
+      setPendingSourceChange(newSource)
+      setShowSourceChangeModal(true)
+    }
+  }
+  
+  // Confirmar mudança de fonte após aceitar modal
+  const confirmSourceChange = () => {
+    if (pendingSourceChange) {
+      const newSource = pendingSourceChange
+      
+      // Use flushSync to ensure state is committed before executing search
+      flushSync(() => {
+        setSearchSource(newSource)
+        setPendingSourceChange(null)
+        setShowSourceChangeModal(false)
+      })
+      
+      // Now execute search with updated state
+      if (lastSearchQuery && hasSearched) {
+        // Use the new source to determine Pearch usage, but also respect previous search context
+        const shouldUsePearch = newSource === 'global' || newSource === 'hybrid' || lastSearchUsedPearch
+        executeSearch(
+          lastSearchQuery,
+          lastSearchEntities,
+          lastSearchMode as SearchMode,
+          lastSearchMetadata,
+          shouldUsePearch
+        )
+      }
+      
+      toast({
+        title: newSource === 'hybrid' ? 'Busca Híbrida ativada' : 'Busca Global ativada',
+        description: 'Atualizando resultados com a nova configuração...',
+      })
+    } else {
+      setShowSourceChangeModal(false)
+    }
+  }
+  
+  // Handler para mudança de filtro de contato com confirmação de créditos
+  const handleContactFilterChange = (filterType: 'email' | 'phone') => {
+    const isCurrentlyActive = filterType === 'email' 
+      ? pearchSearchOptions.requireEmails 
+      : pearchSearchOptions.requirePhoneNumbers
+    
+    if (isCurrentlyActive) {
+      // Desativar filtro - não precisa confirmação
+      if (filterType === 'email') {
+        setPearchSearchOptions(prev => ({ ...prev, requireEmails: false }))
+      } else {
+        setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: false }))
+      }
+    } else {
+      // Ativar filtro - mostrar modal de confirmação (consome créditos extras)
+      setPendingContactFilter(filterType)
+      setShowContactFilterModal(true)
+    }
+  }
+  
+  // Confirmar ativação de filtro de contato após aceitar modal
+  const confirmContactFilterChange = () => {
+    const filterType = pendingContactFilter
+    
+    // Use flushSync to ensure state is committed before executing search
+    flushSync(() => {
+      if (filterType === 'email') {
+        setPearchSearchOptions(prev => ({ ...prev, requireEmails: true }))
+      } else if (filterType === 'phone') {
+        setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: true }))
+      }
+      setPendingContactFilter(null)
+      setShowContactFilterModal(false)
+    })
+    
+    // Now execute search with updated state - respect previous Pearch usage
+    if (lastSearchQuery && hasSearched) {
+      const shouldUsePearch = searchSource === 'global' || searchSource === 'hybrid' || lastSearchUsedPearch
+      executeSearch(
+        lastSearchQuery,
+        lastSearchEntities,
+        lastSearchMode as SearchMode,
+        lastSearchMetadata,
+        shouldUsePearch
+      )
+    }
+    
+    toast({
+      title: filterType === 'email' ? 'Filtro de Email ativado' : 'Filtro de Telefone ativado',
+      description: 'Atualizando resultados com o novo filtro...',
+    })
+  }
+
+  // Handler para expandir busca para global (Pearch AI)
+  const handleExpandToGlobal = async () => {
+    setShowGlobalExpansionConfirm(false)
+    setIsExpandingToGlobal(true)
+    
+    try {
+      // Reusar a última query bem-sucedida
+      const queryToUse = lastSuccessfulQuery || lastSearchQuery
+      
+      if (!queryToUse) {
+        toast({
+          title: "Nenhuma busca ativa",
+          description: "Execute uma busca local primeiro para poder expandir para busca global.",
+          variant: "destructive"
+        })
+        return
+      }
+      
+      // Construir SearchSpec a partir das entities salvas
+      const searchSpec = lastSearchEntities ? {
+        location: lastSearchEntities.location,
+        job_title: lastSearchEntities.job_title,
+        seniority: lastSearchEntities.seniority,
+        years_experience: lastSearchEntities.years_experience,
+        skills: lastSearchEntities.skills || [],
+        industry: lastSearchEntities.industry,
+        company: lastSearchEntities.company
+      } : undefined
+      
+      // Executar busca global (Pearch AI)
+      const searchResponse = await searchCandidatesHybrid({
+        query: queryToUse,
+        thread_id: searchThreadId,
+        search_spec: searchSpec,
+        search_local: true, // Manter local para híbrido
+        search_pearch: true, // Adicionar busca global
+        pearch_type: pearchSearchOptions.searchType,
+        local_limit: 20,
+        pearch_limit: pearchSearchOptions.limit,
+        show_emails: pearchSearchOptions.showEmails,
+        show_phone_numbers: pearchSearchOptions.showPhoneNumbers,
+        high_freshness: pearchSearchOptions.highFreshness,
+        require_emails: pearchSearchOptions.requireEmails,
+        require_phone_numbers: pearchSearchOptions.requirePhoneNumbers
+      })
+      
+      // Atualizar thread_id
+      if (searchResponse.thread_id) {
+        setSearchThreadId(searchResponse.thread_id)
+      }
+      
+      // Atualizar saldo de créditos
+      if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {
+        setCreditsRemaining(searchResponse.credits_remaining)
+      }
+      
+      // Mapear candidatos do Pearch para formato interno
+      if (searchResponse.candidates && searchResponse.candidates.length > 0) {
+        const mappedCandidates = searchResponse.candidates.map((c) => {
+          const candidateSource = c.source || 'pearch'
+          return {
+            id: c.id || `pearch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            candidateId: c.id?.substring(0, 8).toUpperCase() || 'PEARCH',
+            name: c.name || 'Nome não disponível',
+            email: c.email || '',
+            phone: c.phone || '',
+            mobile_phone: c.phone,
+            current_title: c.headline || c.current_title || '',
+            current_company: c.current_company || '',
+            current_salary: undefined,
+            desired_salary_min: undefined,
+            desired_salary_max: undefined,
+            location: c.location || '',
+            location_city: c.location?.split(',')[0]?.trim(),
+            location_state: c.location?.split(',')[1]?.trim(),
+            linkedin_url: c.linkedin_url,
+            avatar_url: c.avatar_url || c.picture_url,
+            technical_skills: c.skills || [],
+            skills: c.skills || [],
+            seniority_level: c.seniority_level,
+            years_of_experience: c.years_experience || c.total_experience_years,
+            experience: c.years_experience || c.total_experience_years || 0,
+            position: c.headline || c.current_title || '',
+            monthlySalary: 0,
+            workModel: 'remoto' as const,
+            score: c.match_score ? Math.round(c.match_score * 25) : 75,
+            contractType: 'CLT' as const,
+            linkedin: c.linkedin_url || '',
+            avatar: c.avatar_url || c.picture_url,
+            // Mapeamento de experiências profissionais da Pearch
+            experiences: c.experiences || [],
+            workHistory: (c.experiences || []).map((exp: any) => ({
+              company: exp.company_info?.name || exp.company || '',
+              title: exp.company_roles?.[0]?.title || exp.title || '',
+              startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
+              endDate: exp.company_roles?.[0]?.end_date || exp.end_date || '',
+              duration: exp.duration || '',
+              location: exp.company_info?.location || exp.location || '',
+              description: exp.company_roles?.[0]?.description || exp.description || ''
+            })),
+            // Mapeamento de formação acadêmica da Pearch
+            education: (c.education || []).map((edu: any) => ({
+              school: edu.school || '',
+              degree: edu.degree || '',
+              field_of_study: edu.field_of_study || '',
+              fieldOfStudy: edu.field_of_study || '',
+              startDate: edu.start_date || '',
+              endDate: edu.end_date || ''
+            })),
+            liaAnalysis: {
+              score: c.match_score ? Math.round(c.match_score * 25) : 75,
+              strengths: c.match_reasoning ? [c.match_reasoning] : [],
+              concerns: [],
+              recommendation: c.match_reasoning || ''
+            },
+            source: candidateSource,
+            pearch_profile_id: c.pearch_profile_id,
+            has_email: c.has_email ?? true,
+            has_phone: c.has_phone ?? true,
+            is_opentowork: c.is_opentowork,
+            is_decision_maker: c.is_decision_maker,
+            is_top_universities: c.is_top_universities,
+            is_startup: c.is_startup || c.company_info?.is_startup,
+            expertise: c.expertise,
+            outreach_message: c.outreach_message
+          }
+        })
+        
+        // Separar candidatos locais e globais
+        const localCandidates = mappedCandidates.filter(c => !isGlobalSource(c.source, Boolean(c.pearch_profile_id)))
+        const globalCandidates = mappedCandidates.filter(c => isGlobalSource(c.source, Boolean(c.pearch_profile_id)))
+        
+        // Atualizar estados
+        setCandidates(mappedCandidates)
+        setCurrentSearchSource('hybrid')
+        setSearchResultsCount(searchResponse.total_count || mappedCandidates.length)
+        setLocalResultsCount(searchResponse.local_count || localCandidates.length)
+        setPearchResultsCount(searchResponse.pearch_count || globalCandidates.length)
+        setCreditsUsedInSearch(searchResponse.credits_used || 0)
+        
+        // Atualizar searchResults para exibição no painel LIA
+        setSearchResults(prev => ({
+          ...prev,
+          local: localCandidates,
+          global: globalCandidates,
+          localCount: searchResponse.local_count || localCandidates.length,
+          globalCount: searchResponse.pearch_count || globalCandidates.length,
+          showGlobalResults: true
+        }))
+        
+        // Notificar usuário
+        toast({
+          title: "Busca expandida com sucesso!",
+          description: `Encontrados ${globalCandidates.length} candidatos adicionais na base global.`
+        })
+        
+        // Adicionar mensagem no chat
+        const liaMessage: ChatMessage = {
+          id: `lia-expand-global-${Date.now()}`,
+          type: 'lia',
+          content: `🌐 **Busca expandida para base global**\n\nEncontrei mais **${globalCandidates.length} candidatos** na Busca Global!\n\nAgora você tem acesso a um pool ampliado de talentos para sua vaga.`,
+          timestamp: new Date()
+        }
+        setChatMessages(prev => [...prev, liaMessage])
+        
+        // 🎯 Chamar análise proativa após expansão para busca global
+        if (mappedCandidates.length > 0) {
+          try {
+            const analyzeResponse = await fetch('/api/backend-proxy/search/analyze', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                query: queryToUse,
+                candidates: mappedCandidates.slice(0, 50).map(c => ({
+                  id: c.id,
+                  name: c.name,
+                  current_title: c.current_title || c.position,
+                  current_company: c.current_company,
+                  location: c.location || c.location_city,
+                  skills: c.skills || c.technical_skills,
+                  years_experience: c.experience || c.years_of_experience,
+                  lia_score: c.liaAnalysis?.score || c.score,
+                  seniority_level: c.seniority_level,
+                  work_model: c.workModel || 'remoto',
+                  email: c.email,
+                  phone: c.phone || c.mobile_phone,
+                  linkedin_url: c.linkedin_url,
+                  source: c.source
+                })),
+                local_count: localCandidates.length,
+                global_count: globalCandidates.length
+              })
+            })
+            
+            if (analyzeResponse.ok) {
+              const analyticsData: SearchAnalytics = await analyzeResponse.json()
+              
+              // Inserir card de insights proativos no chat
+              const insightMessage: ChatMessage = {
+                id: `proactive-insight-global-${Date.now()}`,
+                type: 'proactive_insight',
+                content: '',
+                timestamp: new Date(),
+                analytics: analyticsData
+              }
+              setChatMessages(prev => [...prev, insightMessage])
+            }
+          } catch (analyzeError) {
+            console.warn('Erro ao analisar resultados da busca global:', analyzeError)
+          }
+        }
+      }
+      
+      setShowExpandGlobalOption(false)
+      
+    } catch (error) {
+      console.error('Erro ao expandir busca para global:', error)
+      toast({
+        title: "Erro ao expandir busca",
+        description: "Não foi possível expandir para busca global. Tente novamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsExpandingToGlobal(false)
+    }
+  }
+
+  // Estados para LIA micro-interação
+  const [isLIAThinking, setIsLIAThinking] = useState(false)
+
+  // 🎯 Handler para quick actions do ProactiveInsightCard
+  const handleQuickAction = async (actionId: string, actionType: string) => {
+    const liaMessage: ChatMessage = {
+      id: `lia-action-${Date.now()}`,
+      type: 'lia',
+      content: '',
+      timestamp: new Date()
+    }
+    
+    switch (actionType) {
+      case 'screening':
+        liaMessage.content = '🎯 **Iniciando triagem em lote**\n\nPreparando triagem WSI para os candidatos selecionados...'
+        setChatMessages(prev => [...prev, liaMessage])
+        toast({
+          title: "Triagem WSI",
+          description: "Funcionalidade de triagem em lote será implementada em breve."
+        })
+        break
+        
+      case 'assign':
+        liaMessage.content = '📋 **Atribuir candidatos a vaga**\n\nSelecione os candidatos e escolha a vaga para atribuição.'
+        setChatMessages(prev => [...prev, liaMessage])
+        if (candidates.length > 0) {
+          setSelectedCandidatesForBatch(new Set(candidates.slice(0, 10).map(c => c.id)))
+        }
+        break
+        
+      case 'favorite':
+        const candidateIds = candidates.slice(0, 10).map(c => c.id)
+        candidateIds.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
+        liaMessage.content = `⭐ **${candidateIds.length} candidatos adicionados aos favoritos**\n\nVocê pode acessá-los na aba "Favoritos".`
+        setChatMessages(prev => [...prev, liaMessage])
+        toast({
+          title: "Favoritos atualizados",
+          description: `${candidateIds.length} candidatos adicionados aos favoritos`,
+        })
+        break
+        
+      case 'whatsapp':
+        liaMessage.content = '📱 **Contato via WhatsApp**\n\nPreparando mensagens personalizadas para contato...'
+        setChatMessages(prev => [...prev, liaMessage])
+        break
+        
+      case 'schedule':
+        liaMessage.content = '📅 **Agendamento de entrevistas**\n\nAbrindo modal de agendamento em lote...'
+        setChatMessages(prev => [...prev, liaMessage])
+        setShowScheduleModal(true)
+        break
+        
+      case 'refine':
+        liaMessage.content = '🔍 **Refinar busca**\n\nDigite novos critérios para refinar sua busca.'
+        setChatMessages(prev => [...prev, liaMessage])
+        setLiaPromptValue('')
+        break
+        
+      case 'export':
+        liaMessage.content = '📊 **Exportando candidatos**\n\nPreparando arquivo para download...'
+        setChatMessages(prev => [...prev, liaMessage])
+        try {
+          const exportData = candidates.map(c => ({
+            nome: c.name,
+            cargo: c.current_title || c.position,
+            empresa: c.current_company,
+            email: c.email,
+            telefone: c.phone || c.mobile_phone,
+            linkedin: c.linkedin_url,
+            cidade: c.location_city || c.location,
+            score: c.liaAnalysis?.score || c.score
+          }))
+          const csvContent = [
+            Object.keys(exportData[0]).join(','),
+            ...exportData.map(row => Object.values(row).map(v => `"${v || ''}"`).join(','))
+          ].join('\n')
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `candidatos_${new Date().toISOString().split('T')[0]}.csv`
+          link.click()
+          
+          const successMessage: ChatMessage = {
+            id: `lia-export-success-${Date.now()}`,
+            type: 'lia',
+            content: `✅ **Exportação concluída!**\n\n${exportData.length} candidatos exportados para CSV.`,
+            timestamp: new Date()
+          }
+          setChatMessages(prev => [...prev, successMessage])
+        } catch (error) {
+          console.error('Erro ao exportar:', error)
+        }
+        break
+        
+      default:
+        liaMessage.content = `Ação "${actionId}" será implementada em breve.`
+        setChatMessages(prev => [...prev, liaMessage])
+    }
+  }
+
+  // 🎯 Handlers para CalibrationCard
+  const handleCalibrationLike = async (candidateId: string) => {
+    try {
+      await fetch('/api/backend-proxy/search/calibration/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          candidate_id: candidateId,
+          feedback: 'like',
+          context: { source: 'chat_calibration' }
+        })
+      })
+      
+      toast({
+        title: "Feedback registrado",
+        description: "Candidato marcado como interessante",
+      })
+    } catch (error) {
+      console.error('Erro ao enviar feedback:', error)
+    }
+  }
+
+  const handleCalibrationDislike = async (candidateId: string, reason?: string) => {
+    try {
+      await fetch('/api/backend-proxy/search/calibration/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          candidate_id: candidateId,
+          feedback: 'dislike',
+          reason,
+          context: { source: 'chat_calibration' }
+        })
+      })
+      
+      toast({
+        title: "Feedback registrado",
+        description: "Preferência salva para calibração",
+      })
+    } catch (error) {
+      console.error('Erro ao enviar feedback:', error)
+    }
+  }
+
+  // Estados para configuração de colunas
+  const [showColumnConfig, setShowColumnConfig] = useState(false)
+  const [tableColumns, setTableColumns] = useState([
+    // ============================================
+    // CAMPOS VISÍVEIS POR PADRÃO (11 colunas)
+    // Match Score visível durante buscas para mostrar aderência
+    // ============================================
+    { id: 'source', label: 'Fonte', visible: true, order: -1, category: 'basico' },
+    { id: 'match_score', label: 'Match', visible: true, order: -0.5, category: 'ia' },
+    { id: 'name', label: 'Candidato', visible: true, order: 0, category: 'basico' },
+    { id: 'current_title', label: 'Cargo atual', visible: true, order: 1, category: 'profissional' },
+    { id: 'current_company', label: 'Empresa atual', visible: true, order: 2, category: 'profissional' },
+    { id: 'current_salary', label: 'Salário atual', visible: true, order: 3, category: 'salario' },
+    { id: 'desired_salary_max', label: 'Expectativa salarial', visible: true, order: 4, category: 'salario' },
+    { id: 'mobile_phone', label: 'Celular', visible: true, order: 5, category: 'contato' },
+    { id: 'email', label: 'E-mail', visible: true, order: 6, category: 'contato' },
+    { id: 'location_city', label: 'Cidade', visible: true, order: 7, category: 'localizacao' },
+    { id: 'linkedin_url', label: 'LinkedIn', visible: true, order: 8, category: 'contato' },
+
+    // ============================================
+    // IDENTIFICAÇÃO E CONTATO (campos do banco)
+    // ============================================
+    { id: 'id', label: 'ID do candidato', visible: false, order: 9, category: 'basico' },
+    { id: 'secondary_email', label: 'E-mail secundário', visible: false, order: 10, category: 'contato' },
+    { id: 'phone', label: 'Telefone fixo', visible: false, order: 11, category: 'contato' },
+    { id: 'secondary_phone', label: 'Telefone adicional', visible: false, order: 12, category: 'contato' },
+    { id: 'github_url', label: 'GitHub', visible: false, order: 13, category: 'contato' },
+    { id: 'portfolio_url', label: 'Portfólio', visible: false, order: 14, category: 'contato' },
+
+    // ============================================
+    // INFORMAÇÕES PESSOAIS (campos do banco)
+    // ============================================
+    { id: 'date_of_birth', label: 'Data de nascimento', visible: false, order: 15, category: 'pessoal' },
+    { id: 'gender', label: 'Gênero', visible: false, order: 17, category: 'pessoal' },
+    { id: 'nationality', label: 'Nacionalidade', visible: false, order: 18, category: 'pessoal' },
+    { id: 'marital_status', label: 'Estado civil', visible: false, order: 19, category: 'pessoal' },
+    { id: 'cpf', label: 'CPF', visible: false, order: 20, category: 'pessoal' },
+
+    // ============================================
+    // PERFIL PROFISSIONAL (campos do banco)
+    // ============================================
+    { id: 'seniority_level', label: 'Nível de senioridade', visible: false, order: 21, category: 'profissional' },
+    { id: 'years_of_experience', label: 'Anos de experiência', visible: false, order: 22, category: 'profissional' },
+    { id: 'self_introduction', label: 'Autoapresentação', visible: false, order: 23, category: 'profissional' },
+
+    // ============================================
+    // COMPETÊNCIAS E HABILIDADES (campos do banco)
+    // ============================================
+    { id: 'technical_skills', label: 'Habilidades técnicas', visible: false, order: 24, category: 'competencias' },
+    { id: 'soft_skills', label: 'Soft skills', visible: false, order: 25, category: 'competencias' },
+    { id: 'languages', label: 'Idiomas', visible: false, order: 26, category: 'competencias' },
+    { id: 'certifications', label: 'Certificações', visible: false, order: 27, category: 'competencias' },
+    { id: 'interests', label: 'Interesses', visible: false, order: 28, category: 'competencias' },
+
+    // ============================================
+    // LOCALIZAÇÃO - CIDADE/ESTADO/PAÍS (campos do banco)
+    // ============================================
+    { id: 'location_state', label: 'Estado', visible: false, order: 29, category: 'localizacao' },
+    { id: 'location_country', label: 'País', visible: false, order: 30, category: 'localizacao' },
+
+    // ============================================
+    // ENDEREÇO COMPLETO (campos do banco)
+    // ============================================
+    { id: 'address_street', label: 'Endereço – Rua', visible: false, order: 31, category: 'endereco' },
+    { id: 'address_number', label: 'Endereço – Número', visible: false, order: 32, category: 'endereco' },
+    { id: 'address_district', label: 'Endereço – Bairro', visible: false, order: 33, category: 'endereco' },
+    { id: 'address_zip', label: 'Endereço – CEP', visible: false, order: 34, category: 'endereco' },
+    { id: 'address_complement', label: 'Endereço – Complemento', visible: false, order: 35, category: 'endereco' },
+
+    // ============================================
+    // PREFERÊNCIAS DE TRABALHO (campos do banco)
+    // ============================================
+    { id: 'is_remote', label: 'Aceita remoto', visible: false, order: 36, category: 'preferencias' },
+    { id: 'willing_to_relocate', label: 'Aceita mudança', visible: false, order: 37, category: 'preferencias' },
+    { id: 'mobility', label: 'Disponibilidade para viagens', visible: false, order: 38, category: 'preferencias' },
+    { id: 'work_model_preference', label: 'Modelo de trabalho preferido', visible: false, order: 39, category: 'preferencias' },
+    { id: 'contract_type_preference', label: 'Tipo de contrato preferido', visible: false, order: 40, category: 'preferencias' },
+
+    // ============================================
+    // SALÁRIO E EXPECTATIVAS (campos do banco)
+    // ============================================
+    { id: 'salary_currency', label: 'Moeda do salário', visible: false, order: 41, category: 'salario' },
+    { id: 'desired_salary_min', label: 'Salário mínimo desejado', visible: false, order: 42, category: 'salario' },
+    { id: 'desired_salary_max', label: 'Salário máximo desejado', visible: false, order: 43, category: 'salario' },
+    { id: 'salary_expectation_clt', label: 'Expectativa salarial CLT', visible: false, order: 44, category: 'salario' },
+    { id: 'salary_expectation_pj', label: 'Expectativa salarial PJ', visible: false, order: 45, category: 'salario' },
+    { id: 'salary_expectation_freelance', label: 'Expectativa salarial Freelance', visible: false, order: 46, category: 'salario' },
+
+    // ============================================
+    // CURRÍCULO E DOCUMENTOS (campos do banco)
+    // ============================================
+    { id: 'resume_url', label: 'Currículo (URL)', visible: false, order: 47, category: 'documentos' },
+    { id: 'resume_text', label: 'Currículo (texto)', visible: false, order: 48, category: 'documentos' },
+    { id: 'cover_letter', label: 'Carta de apresentação', visible: false, order: 49, category: 'documentos' },
+
+    // ============================================
+    // ORIGEM E INTEGRAÇÃO (campos do banco)
+    // ============================================
+    { id: 'source', label: 'Fonte de cadastro', visible: false, order: 50, category: 'origem' },
+    { id: 'ats_source_name', label: 'Nome do ATS', visible: false, order: 51, category: 'origem' },
+    { id: 'ats_candidate_id', label: 'ID no ATS', visible: false, order: 52, category: 'origem' },
+    { id: 'pearch_profile_id', label: 'ID na Base Global', visible: false, order: 53, category: 'origem' },
+
+    // ============================================
+    // INSIGHTS LIA / IA (campos do banco)
+    // Score LIA só aparece para candidatos que participaram de processo
+    // ============================================
+    { id: 'lia_score', label: 'Score LIA', visible: false, order: 54, category: 'ia' },
+    { id: 'lia_insights', label: 'Insights LIA', visible: false, order: 55, category: 'ia' },
+    { id: 'skills_match_percentage', label: '% Match de habilidades', visible: false, order: 56, category: 'ia' },
+
+    // ============================================
+    // STATUS E WORKFLOW (campos do banco)
+    // ============================================
+    { id: 'status', label: 'Status no pipeline', visible: false, order: 56, category: 'status' },
+    { id: 'is_active', label: 'Ativo no sistema', visible: false, order: 57, category: 'status' },
+    { id: 'is_blacklisted', label: 'Na lista negra', visible: false, order: 58, category: 'status' },
+    { id: 'blacklist_reason', label: 'Motivo lista negra', visible: false, order: 59, category: 'status' },
+
+    // ============================================
+    // COMUNICAÇÃO (campos do banco)
+    // ============================================
+    { id: 'preferred_contact_method', label: 'Método de contato preferido', visible: false, order: 60, category: 'comunicacao' },
+    { id: 'best_time_to_contact', label: 'Melhor horário para contato', visible: false, order: 61, category: 'comunicacao' },
+    { id: 'communication_consent', label: 'Consentimento LGPD', visible: false, order: 62, category: 'comunicacao' },
+
+    // ============================================
+    // STATUS DE CADASTRO (campos do banco)
+    // ============================================
+    { id: 'completed_register', label: 'Cadastro completo', visible: false, order: 63, category: 'cadastro' },
+    { id: 'accept_terms', label: 'Aceite dos termos', visible: false, order: 64, category: 'cadastro' },
+
+    // ============================================
+    // INFORMAÇÕES ADICIONAIS (campos do banco)
+    // ============================================
+    { id: 'tags', label: 'Tags', visible: false, order: 65, category: 'adicional' },
+    { id: 'notes', label: 'Notas internas', visible: false, order: 66, category: 'adicional' },
+    { id: 'additional_data', label: 'Dados adicionais', visible: false, order: 67, category: 'adicional' },
+
+    // ============================================
+    // TIMESTAMPS (campos do banco)
+    // ============================================
+    { id: 'created_at', label: 'Data de cadastro', visible: false, order: 68, category: 'datas' },
+    { id: 'updated_at', label: 'Última atualização', visible: false, order: 69, category: 'datas' },
+    { id: 'last_contacted_at', label: 'Último contato', visible: false, order: 70, category: 'datas' },
+    { id: 'last_activity_at', label: 'Última atividade', visible: false, order: 71, category: 'datas' }
+  ])
+  const [savedColumnViews, setSavedColumnViews] = useState([
+    {
+      id: '1',
+      name: 'Visualização Padrão',
+      columns: [
+        { id: 'name', label: 'Nome completo', visible: true, order: 0 },
+        { id: 'score_lia', label: 'Score LIA', visible: true, order: 1 },
+        { id: 'role_name', label: 'Cargo atual', visible: true, order: 2 },
+        { id: 'current_company', label: 'Empresa atual', visible: true, order: 3 },
+        { id: 'city', label: 'Cidade', visible: true, order: 4 },
+      ],
+      createdAt: '2025-01-01T00:00:00.000Z'
+    }
+  ])
+
+  // Estados de busca avançada
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false) // Modal de filtros na busca inicial
+  const [showTableFiltersPanel, setShowTableFiltersPanel] = useState(false) // Coluna de filtros inline na tabela de resultados
+  const [tableFilters, setTableFilters] = useState<TableFilters>(getDefaultTableFilters()) // Filtros locais da tabela (separado dos filtros de busca)
+  const [newSoftSkillFilter, setNewSoftSkillFilter] = useState("") // Input controlado para filtro de soft skills
+  const [newCertificationFilter, setNewCertificationFilter] = useState("") // Input controlado para filtro de certificações
+  const [booleanSearch, setBooleanSearch] = useState("")
+  const [selectedTemplate, setSelectedTemplate] = useState("")
+  const [showSearchHistory, setShowSearchHistory] = useState(false)
+  const [searchHistory, setSearchHistory] = useState<string[]>([])
+  const [savedSearches, setSavedSearches] = useState<any[]>([])
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['tech_positions']))
+  const [columnSearchTerm, setColumnSearchTerm] = useState("")
+
+  // Estados de filtros avançados
+  const [advancedFilters, setAdvancedFilters] = useState<{[key: string]: string[]}>({
+    first_names: [],
+    job_titles: [],
+    years_experience: [],
+    degrees: [],
+    schools: [],
+    companies: [],
+    industries: [],
+    skills: [],
+    spoken_languages: [],
+    locations: [],
+    salary_ranges: [],
+    contract_types: [],
+    work_models: [],
+    availability: [],
+    certifications: [],
+    soft_skills: []
+  })
+
+  // Estados para filtros de coluna
+  const [columnFilters, setColumnFilters] = useState<{[key: string]: string[] | any}>({
+    position: [],
+    company: [],
+    location: [],
+    scoreRange: [],
+    bigFive: {
+      openness: '',
+      conscientiousness: '',
+      extraversion: '',
+      agreeableness: '',
+      neuroticism: ''
+    }
+  })
+  const [openFilterDropdown, setOpenFilterDropdown] = useState<string | null>(null)
+
+  // Estados de redimensionamento de colunas - todas as 72 colunas
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
+    // Colunas fixas
+    checkbox: 50,
+    acoes: 120,
+    
+    // Básico
+    source: 60,
+    name: 220,
+    id: 100,
+    
+    // Contato
+    email: 200,
+    secondary_email: 200,
+    phone: 130,
+    mobile_phone: 130,
+    secondary_phone: 130,
+    linkedin_url: 60,
+    github_url: 150,
+    portfolio_url: 150,
+    
+    // Pessoal
+    date_of_birth: 120,
+    gender: 100,
+    nationality: 130,
+    marital_status: 120,
+    cpf: 130,
+    
+    // Match / Aderência
+    match_score: 50,
+    
+    // Profissional
+    current_title: 250,
+    current_company: 150,
+    seniority_level: 130,
+    years_of_experience: 100,
+    self_introduction: 200,
+    
+    // IA
+    lia_score: 100,
+    lia_insights: 200,
+    skills_match_percentage: 100,
+    
+    // Competências
+    technical_skills: 200,
+    soft_skills: 180,
+    languages: 150,
+    certifications: 180,
+    interests: 150,
+    
+    // Localização
+    location_city: 120,
+    location_state: 100,
+    location_country: 100,
+    
+    // Endereço
+    address_street: 180,
+    address_number: 80,
+    address_district: 120,
+    address_zip: 100,
+    address_complement: 150,
+    
+    // Preferências
+    is_remote: 100,
+    willing_to_relocate: 100,
+    mobility: 100,
+    work_model_preference: 130,
+    contract_type_preference: 130,
+    
+    // Salário
+    current_salary: 130,
+    salary_currency: 80,
+    desired_salary_min: 130,
+    desired_salary_max: 130,
+    salary_expectation_clt: 130,
+    salary_expectation_pj: 130,
+    salary_expectation_freelance: 130,
+    
+    // Documentos
+    resume_url: 150,
+    resume_text: 200,
+    cover_letter: 200,
+    
+    // Origem
+    source: 120,
+    ats_source_name: 120,
+    ats_candidate_id: 120,
+    pearch_profile_id: 120,
+    
+    // Status
+    status: 120,
+    is_active: 80,
+    is_blacklisted: 100,
+    blacklist_reason: 150,
+    
+    // Comunicação
+    preferred_contact_method: 130,
+    best_time_to_contact: 130,
+    communication_consent: 100,
+    
+    // Cadastro
+    completed_register: 100,
+    accept_terms: 100,
+    
+    // Adicional
+    tags: 150,
+    notes: 200,
+    additional_data: 150,
+    
+    // Datas
+    created_at: 130,
+    updated_at: 130,
+    last_contacted_at: 130,
+    last_activity_at: 130
+  })
+
+  // Estados para drag & drop de colunas
+  const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null)
+  const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null)
+  
+  // Ordem das colunas da tabela
+  const [columnOrder, setColumnOrder] = useState<string[]>([
+    'checkbox', 'id', 'candidato', 'cargo', 'empresa', 'salario_mensal', 'localizacao', 'modelo_trabalho', 'acoes'
+  ])
+
+  // Helper para verificar se uma coluna está visível
+  const isColumnVisible = (columnId: string) => {
+    const column = tableColumns.find(col => col.id === columnId)
+    return column ? column.visible : false
+  }
+
+  // Derivar colunas visíveis ordenadas
+  const visibleTableColumns = tableColumns
+    .filter(col => col.visible)
+    .sort((a, b) => a.order - b.order)
+
+  // Helper para renderizar valor de célula genérica
+  const renderCellValue = (candidate: Candidate, columnId: string) => {
+    const formatDate = (date: string | undefined) => {
+      if (!date) return 'N/A'
+      return new Date(date).toLocaleDateString('pt-BR')
+    }
+    
+    const formatCurrency = (value: number | undefined, currency?: string) => {
+      if (!value) return 'N/A'
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: currency || 'BRL'
+      }).format(value)
+    }
+
+    const formatBoolean = (value: boolean | undefined) => {
+      if (value === undefined) return 'N/A'
+      return value ? 'Sim' : 'Não'
+    }
+
+    const formatArray = (arr: string[] | undefined) => {
+      if (!arr || arr.length === 0) return 'N/A'
+      return arr.slice(0, 3).join(', ') + (arr.length > 3 ? ` (+${arr.length - 3})` : '')
+    }
+
+    const formatLanguages = (langs: Record<string, string> | undefined) => {
+      if (!langs) return 'N/A'
+      const entries = Object.entries(langs)
+      if (entries.length === 0) return 'N/A'
+      return entries.slice(0, 2).map(([lang, level]) => `${lang}: ${level}`).join(', ')
+    }
+
+    switch (columnId) {
+      // Fonte (Local vs Global) - Com tooltips dinâmicos usando utilitário centralizado
+      case 'source':
+        const hasPearchId = !!candidate.pearch_profile_id
+        const sourceInfo = getSourceDetails(candidate.source, hasPearchId)
+        const isLocal = sourceInfo.isLocal
+        
+        return (
+          <div className="relative group flex items-center justify-center cursor-help">
+            {isLocal ? (
+              <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center transition-all hover:scale-110">
+                <Home className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center transition-all hover:scale-110">
+                <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              </div>
+            )}
+            {/* Tooltip dinâmico com informações de créditos */}
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
+              <div className={`px-3 py-2 rounded-lg shadow-xl text-xs min-w-[180px] ${
+                isLocal 
+                  ? 'bg-emerald-900 dark:bg-emerald-800' 
+                  : 'bg-blue-900 dark:bg-blue-800'
+              } text-white`}>
+                <div className="font-semibold mb-1 flex items-center gap-1.5">
+                  {isLocal ? (
+                    <Home className="w-3.5 h-3.5 text-emerald-300" />
+                  ) : (
+                    <Globe className="w-3.5 h-3.5 text-blue-300" />
+                  )}
+                  {sourceInfo.label}
+                </div>
+                <div className="text-[11px] text-gray-200 mb-1">
+                  {sourceInfo.subtext}
+                </div>
+                {isLocal ? (
+                  <div className="text-[11px] text-emerald-300 font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-emerald-700">
+                    <CheckCircle className="w-3 h-3" />
+                    Sem consumo de créditos
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-amber-300 font-medium flex items-center gap-1 mt-1.5 pt-1.5 border-t border-blue-700">
+                    <DollarSign className="w-3 h-3" />
+                    {sourceInfo.credits || '5-7 créditos/candidato'}
+                  </div>
+                )}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent" style={{
+                  borderTopColor: isLocal ? 'rgb(6 78 59)' : 'rgb(30 58 138)'
+                }}></div>
+              </div>
+            </div>
+          </div>
+        )
+      
+      // Match Score - Aderência à busca (Ring Progress)
+      case 'match_score':
+        const matchScore = candidate.score || 0
+        const hasActiveSearch = searchResults.query && searchResults.query.length > 0
+        
+        // Se não há busca ativa, não mostrar score
+        if (!hasActiveSearch || matchScore === 0) {
+          return (
+            <div className="flex items-center justify-center">
+              <span className="text-[11px] text-gray-700">—</span>
+            </div>
+          )
+        }
+        
+        // Cores baseadas no score
+        const getMatchRingColor = (score: number) => {
+          if (score >= 85) return '#10B981' // emerald-500
+          if (score >= 70) return '#3B82F6' // blue-500
+          if (score >= 50) return '#F59E0B' // amber-500
+          return '#9CA3AF' // gray-400
+        }
+        
+        const ringColor = getMatchRingColor(matchScore)
+        const ringSize = 32
+        const strokeWidth = 3
+        const radius = (ringSize - strokeWidth) / 2
+        const circumference = radius * 2 * Math.PI
+        const strokeDashoffset = circumference - (matchScore / 100) * circumference
+        
+        return (
+          <div className="flex items-center justify-center">
+            <div className="relative" style={{ width: ringSize, height: ringSize }}>
+              {/* Background ring */}
+              <svg className="absolute" width={ringSize} height={ringSize}>
+                <circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={radius}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={strokeWidth}
+                  className="text-gray-200 dark:text-gray-700"
+                />
+              </svg>
+              {/* Progress ring */}
+              <svg 
+                className="absolute -rotate-90" 
+                width={ringSize} 
+                height={ringSize}
+              >
+                <circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={radius}
+                  fill="none"
+                  stroke={ringColor}
+                  strokeWidth={strokeWidth}
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  className="transition-all duration-300"
+                />
+              </svg>
+              {/* Percentage text */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">
+                  {matchScore}
+                </span>
+              </div>
+            </div>
+          </div>
+        )
+        
+      // Básico
+      case 'name':
+        const hasPearchBadges = candidate.is_opentowork || candidate.is_decision_maker || candidate.is_top_universities || candidate.is_startup
+        const isCandidateHidden = hiddenCandidates.has(candidate.id)
+        return (
+          <div className={`flex items-center gap-2.5 ${isCandidateHidden ? 'opacity-50' : ''}`}>
+            <div className="relative">
+              <Avatar className="w-9 h-9">
+                <AvatarImage
+                  src={candidate.avatar_url || candidate.avatar}
+                  alt={candidate.name}
+                />
+                <AvatarFallback className="text-sm font-medium" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#60BED1' }}>
+                  {candidate.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {isCandidateHidden && (
+                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-gray-500 rounded-full flex items-center justify-center border border-white">
+                  <EyeOff className="w-2.5 h-2.5 text-white" />
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className={`font-medium text-gray-900 dark:text-gray-300 truncate text-xs ${isCandidateHidden ? 'line-through' : ''}`}>{candidate.name}</span>
+                {isCandidateHidden && (
+                  <Badge className="text-[10px] px-1 py-0 bg-gray-200 text-gray-700 border-none">
+                    Oculto
+                  </Badge>
+                )}
+              </div>
+              {/* Badges de Indicadores Pearch */}
+              {hasPearchBadges && (
+                <div className="flex flex-wrap gap-1 mt-0.5">
+                  {candidate.is_opentowork && (
+                    <Badge className="text-[11px] px-1.5 py-0.5 gap-1 flex items-center" style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", color: "#16a34a", border: "none" }}>
+                      <Briefcase className="w-2.5 h-2.5" />
+                      Aberto
+                    </Badge>
+                  )}
+                  {candidate.is_decision_maker && (
+                    <Badge className="text-[11px] px-1.5 py-0.5 gap-1 flex items-center" style={{ backgroundColor: "rgba(245, 158, 11, 0.15)", color: "#d97706", border: "none" }}>
+                      <Crown className="w-2.5 h-2.5" />
+                      Líder
+                    </Badge>
+                  )}
+                  {candidate.is_top_universities && (
+                    <Badge className="text-[11px] px-1.5 py-0.5 gap-1 flex items-center" style={{ backgroundColor: "rgba(59, 130, 246, 0.15)", color: "#2563eb", border: "none" }}>
+                      <GraduationCap className="w-2.5 h-2.5" />
+                      Top Univ.
+                    </Badge>
+                  )}
+                  {candidate.is_startup && (
+                    <Badge className="text-[11px] px-1.5 py-0.5 gap-1 flex items-center" style={{ backgroundColor: "rgba(147, 51, 234, 0.15)", color: "#7c3aed", border: "none" }}>
+                      <Rocket className="w-2.5 h-2.5" />
+                      Ex-Startup
+                    </Badge>
+                  )}
+                </div>
+              )}
+              {/* Botão Copiar Abordagem */}
+              {candidate.outreach_message && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 px-1.5 text-[11px] gap-1 mt-0.5 w-fit text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigator.clipboard.writeText(candidate.outreach_message!)
+                    toast({ title: "Mensagem copiada!", description: "A mensagem de abordagem foi copiada para a área de transferência." })
+                  }}
+                >
+                  <Copy className="w-2.5 h-2.5" />
+                  Copiar Abordagem
+                </Button>
+              )}
+            </div>
+          </div>
+        )
+      case 'id':
+        return <span className="font-mono text-xs text-gray-700">{candidate.candidateId || candidate.id}</span>
+      // IA
+      case 'lia_score':
+        const score = candidate.lia_score || 0
+        const hasBeenEvaluated = candidate.lia_score && candidate.lia_score > 0
+        const evaluatedJob = candidate.lia_insights?.evaluated_job_title || candidate.lia_insights?.job_context
+        
+        if (!hasBeenEvaluated) {
+          return (
+            <div className="relative group cursor-help">
+              <span className="text-xs text-gray-700">—</span>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-lg shadow-xl text-xs min-w-[180px]">
+                  <div className="font-semibold mb-1.5 flex items-center gap-1.5">
+                    <Brain className="w-3.5 h-3.5 text-gray-700" />
+                    Sem avaliação
+                  </div>
+                  <div className="text-[11px] text-gray-300">
+                    Este candidato ainda não participou de nenhum processo seletivo.
+                  </div>
+                  <div className="text-[11px] text-gray-700 mt-1.5">
+                    O Score LIA é calculado quando o candidato é avaliado para uma vaga específica.
+                  </div>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                </div>
+              </div>
+            </div>
+          )
+        }
+        
+        return (
+          <div className="relative group cursor-help">
+            <Badge className={`text-xs font-semibold ${score >= 80 ? 'bg-green-100 text-green-800' : score >= 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
+              {score}%
+            </Badge>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+              <div className="bg-gray-900 dark:bg-gray-700 text-white px-3 py-2.5 rounded-lg shadow-xl text-xs min-w-[220px]">
+                <div className="font-semibold mb-2 flex items-center gap-1.5">
+                  <Brain className="w-3.5 h-3.5 text-cyan-400" />
+                  Score LIA
+                </div>
+                {evaluatedJob && (
+                  <div className="text-[11px] text-cyan-300 mb-2 flex items-center gap-1">
+                    <Briefcase className="w-3 h-3" />
+                    Avaliado para: {evaluatedJob}
+                  </div>
+                )}
+                <div className="text-[11px] text-gray-300 mb-2">
+                  Avaliação baseada em:
+                </div>
+                <div className="space-y-1 text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Match com a vaga</span>
+                    <span className="text-gray-200 font-medium">35%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Triagem WSI</span>
+                    <span className="text-gray-200 font-medium">30%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Experiência</span>
+                    <span className="text-gray-200 font-medium">20%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Fit Cultural</span>
+                    <span className="text-gray-200 font-medium">15%</span>
+                  </div>
+                </div>
+                <div className="mt-2 pt-2 border-t border-gray-700">
+                  <div className="flex items-center gap-1.5 text-[11px]">
+                    <span className={`w-2 h-2 rounded-full ${score >= 80 ? 'bg-green-400' : score >= 60 ? 'bg-yellow-400' : 'bg-gray-400'}`}></span>
+                    <span className="text-gray-300">
+                      {score >= 80 ? 'Excelente fit para a posição' : score >= 60 ? 'Fit moderado, avaliar' : 'Fit baixo, revisar perfil'}
+                    </span>
+                  </div>
+                </div>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+              </div>
+            </div>
+          </div>
+        )
+      case 'lia_insights':
+        const insights = candidate.lia_insights
+        return <span className="text-xs text-gray-700 truncate">{insights?.overall_summary?.slice(0, 50) || ''}{insights?.overall_summary && insights.overall_summary.length > 50 ? '...' : ''}</span>
+      case 'skills_match_percentage':
+        return <span className="text-xs">{candidate.skills_match_percentage ? `${candidate.skills_match_percentage}%` : ''}</span>
+
+      // Contato - Com sistema de reveal para candidatos Pearch
+      case 'email':
+        const candidateEmail = revealedContacts[candidate.id]?.email || candidate.email
+        // IMPORTANTE: Usar isGlobalSource para determinar se é candidato Pearch elegível para reveal
+        const canRevealEmail = isGlobalSource(candidate.source, Boolean(candidate.pearch_profile_id)) && candidate.has_email !== false
+        
+        if (candidateEmail) {
+          return <span className="text-xs text-gray-700 truncate">{candidateEmail}</span>
+        }
+        
+        if (canRevealEmail) {
+          return (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                openRevealModal(candidate, 'email')
+              }}
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+              title="Clique para revelar email (2 créditos)"
+            >
+              <Mail className="w-3 h-3" />
+              <span>Revelar</span>
+              <span className="opacity-60">(2 cr)</span>
+            </button>
+          )
+        }
+        
+        return <span className="text-xs text-gray-700">-</span>
+      case 'secondary_email':
+        return <span className="text-xs text-gray-700 truncate">{candidate.secondary_email || ''}</span>
+      case 'phone':
+        const candidatePhone = revealedContacts[candidate.id]?.phone || candidate.phone
+        // IMPORTANTE: Usar isGlobalSource para determinar se é candidato Pearch elegível para reveal
+        const canRevealPhone = isGlobalSource(candidate.source, Boolean(candidate.pearch_profile_id)) && candidate.has_phone !== false
+        
+        if (candidatePhone) {
+          return <span className="text-xs text-gray-700">{candidatePhone}</span>
+        }
+        
+        if (canRevealPhone) {
+          return (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                openRevealModal(candidate, 'phone')
+              }}
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+              title="Clique para revelar telefone (14 créditos)"
+            >
+              <Phone className="w-3 h-3" />
+              <span>Revelar</span>
+              <span className="opacity-60">(14 cr)</span>
+            </button>
+          )
+        }
+        
+        return <span className="text-xs text-gray-700">-</span>
+      case 'mobile_phone':
+        const candidateMobile = revealedContacts[candidate.id]?.phone || candidate.mobile_phone || candidate.phone
+        // IMPORTANTE: Usar isGlobalSource para determinar se é candidato Pearch elegível para reveal
+        const canRevealMobile = isGlobalSource(candidate.source, Boolean(candidate.pearch_profile_id)) && candidate.has_phone !== false
+        
+        if (candidateMobile) {
+          return <span className="text-xs text-gray-700">{candidateMobile}</span>
+        }
+        
+        if (canRevealMobile) {
+          return (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                openRevealModal(candidate, 'phone')
+              }}
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+              title="Clique para revelar celular (14 créditos)"
+            >
+              <Phone className="w-3 h-3" />
+              <span>Revelar</span>
+              <span className="opacity-60">(14 cr)</span>
+            </button>
+          )
+        }
+        
+        return <span className="text-xs text-gray-700">-</span>
+      case 'secondary_phone':
+        return <span className="text-xs text-gray-700">{candidate.secondary_phone || ''}</span>
+      case 'linkedin_url':
+        return candidate.linkedin_url ? (
+          <a 
+            href={candidate.linkedin_url} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="inline-flex items-center justify-center w-6 h-6 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title="Ver perfil no LinkedIn"
+          >
+            <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+          </a>
+        ) : (
+          <span className="inline-flex items-center justify-center w-6 h-6" title="LinkedIn não informado">
+            <Linkedin className="w-4 h-4 text-gray-400 dark:text-gray-600" />
+          </span>
+        )
+      case 'github_url':
+        return candidate.github_url ? (
+          <a href={candidate.github_url} target="_blank" rel="noopener" className="text-gray-700 hover:underline text-xs flex items-center gap-1">
+            <Github className="w-3 h-3" /> GitHub
+          </a>
+        ) : <span className="text-xs text-gray-700">N/A</span>
+      case 'portfolio_url':
+        return candidate.portfolio_url ? (
+          <a href={candidate.portfolio_url} target="_blank" rel="noopener" className="text-purple-600 hover:underline text-xs flex items-center gap-1">
+            <Globe className="w-3 h-3" /> Portfólio
+          </a>
+        ) : <span className="text-xs text-gray-700">N/A</span>
+
+      // Pessoal
+      case 'date_of_birth':
+        return <span className="text-xs text-gray-700">{formatDate(candidate.date_of_birth)}</span>
+      case 'gender':
+        return <span className="text-xs text-gray-700">{candidate.gender || ''}</span>
+      case 'nationality':
+        return <span className="text-xs text-gray-700">{candidate.nationality || ''}</span>
+      case 'marital_status':
+        return <span className="text-xs text-gray-700">{candidate.marital_status || ''}</span>
+      case 'cpf':
+        return <span className="text-xs text-gray-700 font-mono">{candidate.cpf || ''}</span>
+
+      // Profissional
+      case 'current_title':
+        const titleText = candidate.current_title || candidate.position || ''
+        const isRowExpanded = expandedRows.has(candidate.id)
+        const titleNeedsTruncation = titleText.length > 40
+        
+        return (
+          <div className="flex items-start gap-1 max-w-[250px]">
+            <span 
+              className={`text-xs text-gray-800 font-medium ${isRowExpanded ? 'whitespace-normal break-words' : 'truncate'}`}
+              title={titleText}
+            >
+              {titleText}
+            </span>
+            {titleNeedsTruncation && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setExpandedRows(prev => {
+                    const newSet = new Set(prev)
+                    if (newSet.has(candidate.id)) {
+                      newSet.delete(candidate.id)
+                    } else {
+                      newSet.add(candidate.id)
+                    }
+                    return newSet
+                  })
+                }}
+                className="flex-shrink-0 p-0.5 rounded hover:bg-gray-100 transition-colors"
+                title={isRowExpanded ? "Recolher texto" : "Expandir texto"}
+              >
+                <ChevronsLeftRight className={`w-3 h-3 text-gray-700 hover:text-gray-700 transition-transform ${isRowExpanded ? 'rotate-90' : ''}`} />
+              </button>
+            )}
+          </div>
+        )
+      case 'current_company':
+        return <span className="text-xs text-gray-700 truncate">{candidate.current_company || candidate.workHistory?.[0]?.company || ''}</span>
+      case 'seniority_level':
+        return <Badge variant="outline" className="text-xs">{candidate.seniority_level || ''}</Badge>
+      case 'years_of_experience':
+        return <span className="text-xs text-gray-700">{candidate.years_of_experience !== undefined ? `${candidate.years_of_experience} anos` : ''}</span>
+      case 'self_introduction':
+        return <span className="text-xs text-gray-700 truncate">{candidate.self_introduction?.slice(0, 50) || ''}{candidate.self_introduction && candidate.self_introduction.length > 50 ? '...' : ''}</span>
+
+      // Competências
+      case 'technical_skills':
+        return <span className="text-xs text-gray-700 truncate">{formatArray(candidate.technical_skills || candidate.skills)}</span>
+      case 'soft_skills':
+        return <span className="text-xs text-gray-700 truncate">{formatArray(candidate.soft_skills)}</span>
+      case 'languages':
+        return <span className="text-xs text-gray-700 truncate">{formatLanguages(candidate.languages)}</span>
+      case 'certifications':
+        return <span className="text-xs text-gray-700 truncate">{formatArray(candidate.certifications)}</span>
+      case 'interests':
+        return <span className="text-xs text-gray-700 truncate">{formatArray(candidate.interests)}</span>
+
+      // Localização
+      case 'location_city':
+        return (
+          <div className="flex items-center gap-1">
+            <MapPin className="w-3 h-3 text-gray-700" />
+            <span className="text-xs text-gray-700 truncate">{candidate.location_city || candidate.location?.split(',')[0] || ''}</span>
+          </div>
+        )
+      case 'location_state':
+        return <span className="text-xs text-gray-700">{candidate.location_state || ''}</span>
+      case 'location_country':
+        return <span className="text-xs text-gray-700">{candidate.location_country || ''}</span>
+
+      // Endereço
+      case 'address_street':
+        return <span className="text-xs text-gray-700 truncate">{candidate.address_street || ''}</span>
+      case 'address_number':
+        return <span className="text-xs text-gray-700">{candidate.address_number || ''}</span>
+      case 'address_district':
+        return <span className="text-xs text-gray-700 truncate">{candidate.address_district || ''}</span>
+      case 'address_zip':
+        return <span className="text-xs text-gray-700 font-mono">{candidate.address_zip || ''}</span>
+      case 'address_complement':
+        return <span className="text-xs text-gray-700 truncate">{candidate.address_complement || ''}</span>
+
+      // Preferências
+      case 'is_remote':
+        return (
+          <Badge variant="outline" className={`text-xs ${candidate.is_remote ? 'bg-green-50 text-green-700 border-green-200' : ''}`}>
+            {formatBoolean(candidate.is_remote)}
+          </Badge>
+        )
+      case 'willing_to_relocate':
+        return <span className="text-xs text-gray-700">{formatBoolean(candidate.willing_to_relocate)}</span>
+      case 'mobility':
+        return <span className="text-xs text-gray-700">{formatBoolean(candidate.mobility)}</span>
+      case 'work_model_preference':
+        const workModel = candidate.work_model_preference || candidate.workModel
+        return (
+          <Badge
+            className="text-xs"
+            style={{
+              backgroundColor: workModel === 'remoto' ? '#60BED1' : workModel === 'híbrido' ? '#60D186' : '#D19960',
+              color: workModel === 'remoto' ? '#0F3640' : workModel === 'híbrido' ? '#1A3D20' : '#3A2510'
+            }}
+          >
+            {workModel === 'remoto' ? 'Remoto' : workModel === 'híbrido' ? 'Híbrido' : workModel === 'presencial' ? 'Presencial' : workModel || ''}
+          </Badge>
+        )
+      case 'contract_type_preference':
+        return <span className="text-xs text-gray-700">{candidate.contract_type_preference || ''}</span>
+
+      // Salário
+      case 'current_salary':
+        return <span className="text-xs text-gray-700 font-medium">{formatCurrency(candidate.current_salary || candidate.monthlySalary, candidate.salary_currency)}</span>
+      case 'salary_currency':
+        return <span className="text-xs text-gray-700">{candidate.salary_currency || 'BRL'}</span>
+      case 'desired_salary_min':
+        return <span className="text-xs text-gray-700">{formatCurrency(candidate.desired_salary_min, candidate.salary_currency)}</span>
+      case 'desired_salary_max':
+        return <span className="text-xs text-gray-700">{formatCurrency(candidate.desired_salary_max, candidate.salary_currency)}</span>
+      case 'salary_expectation_clt':
+        return <span className="text-xs text-gray-700">{formatCurrency(candidate.salary_expectation_clt)}</span>
+      case 'salary_expectation_pj':
+        return <span className="text-xs text-gray-700">{formatCurrency(candidate.salary_expectation_pj)}</span>
+      case 'salary_expectation_freelance':
+        return <span className="text-xs text-gray-700">{formatCurrency(candidate.salary_expectation_freelance)}</span>
+
+      // Documentos
+      case 'resume_url':
+        return candidate.resume_url ? (
+          <a href={candidate.resume_url} target="_blank" rel="noopener" className="text-blue-600 hover:underline text-xs flex items-center gap-1">
+            <FileText className="w-3 h-3" /> Currículo
+          </a>
+        ) : <span className="text-xs text-gray-700">N/A</span>
+      case 'resume_text':
+        return <span className="text-xs text-gray-700 truncate">{candidate.resume_text?.slice(0, 40) || ''}{candidate.resume_text && candidate.resume_text.length > 40 ? '...' : ''}</span>
+      case 'cover_letter':
+        return <span className="text-xs text-gray-700 truncate">{candidate.cover_letter?.slice(0, 40) || ''}{candidate.cover_letter && candidate.cover_letter.length > 40 ? '...' : ''}</span>
+
+      // Match Score - fallback simples
+      case 'match_score':
+        const matchScoreFallback = candidate.score || 0
+        if (matchScoreFallback === 0) {
+          return <span className="text-xs text-gray-700">—</span>
+        }
+        return <span className="text-xs text-gray-700 font-medium">{matchScoreFallback}%</span>
+        
+      // Origem
+      case 'source':
+        return <Badge variant="outline" className="text-xs">{candidate.source || ''}</Badge>
+      case 'ats_source_name':
+        return <span className="text-xs text-gray-700">{candidate.ats_source_name || ''}</span>
+      case 'ats_candidate_id':
+        return <span className="text-xs text-gray-700 font-mono">{candidate.ats_candidate_id || ''}</span>
+      case 'pearch_profile_id':
+        return <span className="text-xs text-gray-700 font-mono">{candidate.pearch_profile_id || ''}</span>
+
+      // Status
+      case 'status':
+        const statusColors: Record<string, string> = {
+          'novo': 'bg-blue-100 text-blue-800',
+          'triagem': 'bg-yellow-100 text-yellow-800',
+          'entrevista': 'bg-purple-100 text-purple-800',
+          'aprovado': 'bg-green-100 text-green-800',
+          'reprovado': 'bg-red-100 text-red-800'
+        }
+        return <Badge className={`text-xs ${statusColors[candidate.status || ''] || 'bg-gray-100 text-gray-800'}`}>{candidate.status || ''}</Badge>
+      case 'is_active':
+        return (
+          <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+            {formatBoolean(candidate.is_active)}
+          </Badge>
+        )
+      case 'is_blacklisted':
+        return candidate.is_blacklisted ? (
+          <Badge className="text-xs bg-red-100 text-red-800">Sim</Badge>
+        ) : <span className="text-xs text-gray-700">Não</span>
+      case 'blacklist_reason':
+        return <span className="text-xs text-gray-700 truncate">{candidate.blacklist_reason || ''}</span>
+
+      // Comunicação
+      case 'preferred_contact_method':
+        return <span className="text-xs text-gray-700">{candidate.preferred_contact_method || ''}</span>
+      case 'best_time_to_contact':
+        return <span className="text-xs text-gray-700">{candidate.best_time_to_contact || ''}</span>
+      case 'communication_consent':
+        return <Badge variant="outline" className={`text-xs ${candidate.communication_consent ? 'bg-green-50 text-green-700' : ''}`}>{formatBoolean(candidate.communication_consent)}</Badge>
+
+      // Cadastro
+      case 'completed_register':
+        return <span className="text-xs text-gray-700">{formatBoolean(candidate.completed_register)}</span>
+      case 'accept_terms':
+        return <span className="text-xs text-gray-700">{formatBoolean(candidate.accept_terms)}</span>
+
+      // Adicional
+      case 'tags':
+        return <span className="text-xs text-gray-700 truncate">{formatArray(candidate.tags)}</span>
+      case 'notes':
+        return <span className="text-xs text-gray-700 truncate">{candidate.notes?.slice(0, 40) || ''}{candidate.notes && candidate.notes.length > 40 ? '...' : ''}</span>
+      case 'additional_data':
+        return <span className="text-xs text-gray-700">JSON</span>
+
+      // Datas
+      case 'created_at':
+        return <span className="text-xs text-gray-700">{formatDate(candidate.created_at)}</span>
+      case 'updated_at':
+        return <span className="text-xs text-gray-700">{formatDate(candidate.updated_at)}</span>
+      case 'last_contacted_at':
+        return <span className="text-xs text-gray-700">{formatDate(candidate.last_contacted_at)}</span>
+      case 'last_activity_at':
+        return <span className="text-xs text-gray-700">{formatDate(candidate.last_activity_at)}</span>
+
+      default:
+        return <span className="text-xs text-gray-700">N/A</span>
+    }
+  }
+
+  // Estados para templates de busca (cobrindo: Location, Job Title, Experience, Industry, Skills)
+  const searchTemplates = [
+    "Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python",
+    "Frontend Pleno remoto, 3+ anos em startups, React e TypeScript",
+    "Product Manager Sênior em Campinas, experiência em B2B SaaS, metodologias ágeis",
+    "Data Scientist Pleno híbrido, 4+ anos em e-commerce, Python e machine learning",
+    "Tech Lead em São Paulo, 7+ anos em healthtech, liderança de times ágeis"
+  ]
+
+  // Funções utilitárias
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return "bg-green-100 text-green-800 border-green-200"
+    if (score >= 80) return "bg-blue-100 text-blue-800 border-blue-200"
+    if (score >= 70) return "bg-yellow-100 text-yellow-800 border-yellow-200"
+    return "bg-red-100 text-red-800 border-red-200"
+  }
+
+  const saveCurrentSearch = () => {
+    const searchData = {
+      name: `Busca ${new Date().toLocaleDateString()}`,
+      searchTerm,
+      quickFilters: Array.from(quickFilters),
+      advancedFilters,
+      timestamp: new Date().toISOString()
+    }
+
+    // Armazenar busca
+    sessionStorage.setItem('current-search-data', JSON.stringify(searchData))
+
+    // Navegar para aba saved-searches
+    setActiveTab('saved-searches')
+
+    toast({
+      title: "Busca salva",
+      description: `${sortedCandidates.length} candidatos encontrados`,
+      duration: 4000
+    })
+  }
+
+  // Filtros e ordenação
+  const filteredCandidates = candidates.filter(candidate => {
+    // ✨ Filtro cross-tab (empresa específica)
+    if (crossTabFilter?.type === 'company') {
+      const targetCompany = crossTabFilter.company || crossTabFilter.companies?.[0]
+      if (targetCompany) {
+        const candidateCompany = candidate.workHistory?.[0]?.company || ''
+        if (!candidateCompany.toLowerCase().includes(targetCompany.toLowerCase())) {
+          return false
+        }
+      }
+    }
+
+    // Filtro de busca textual - NÃO aplica se já temos resultados de busca IA
+    // (os candidatos já foram filtrados pelo backend)
+    if (searchTerm && !hasSearchResults && !searchTerm.startsWith('empresa:') && !searchTerm.startsWith('empresas:')) {
+      const search = searchTerm.toLowerCase()
+      const matches =
+        candidate.name.toLowerCase().includes(search) ||
+        candidate.position.toLowerCase().includes(search) ||
+        (candidate.candidateId && candidate.candidateId.toLowerCase().includes(search)) ||
+        candidate.skills.some(skill => skill.toLowerCase().includes(search))
+      if (!matches) return false
+    }
+
+    // Filtro de busca por empresa (formato: empresa:"Nome")
+    if (searchTerm.startsWith('empresa:"') || searchTerm.startsWith('empresas:')) {
+      const companyMatch = searchTerm.match(/empresa:"([^"]+)"/) || searchTerm.match(/empresas:(.+)/)
+      if (companyMatch) {
+        const searchCompanies = companyMatch[1].split(',').map(c => c.trim())
+        const candidateCompany = candidate.workHistory?.[0]?.company || ''
+        if (!searchCompanies.some(company =>
+          candidateCompany.toLowerCase().includes(company.toLowerCase())
+        )) {
+          return false
+        }
+      }
+    }
+
+    if (quickFilters.size > 0) {
+      const hasQuickFilter = Array.from(quickFilters).some(filter => {
+        switch (filter) {
+          case 'frontend':
+            return candidate.skills.some(skill => ['React', 'Vue', 'Angular', 'JavaScript'].includes(skill))
+          case 'backend':
+            return candidate.skills.some(skill => ['Node.js', 'Python', 'Java', 'PHP'].includes(skill))
+          case 'design':
+            return candidate.skills.some(skill => ['Figma', 'Sketch', 'Adobe', 'Design'].includes(skill))
+          case 'senior':
+            return candidate.experience >= 5
+          case 'remoto':
+            return candidate.location.includes('Remoto') || candidate.location.includes('Remote')
+          default:
+            return true
+        }
+      })
+      if (!hasQuickFilter) return false
+    }
+
+    // Filtros de coluna
+    if (columnFilters.position.length > 0 && !columnFilters.position.includes(candidate.position)) {
+      return false
+    }
+
+    if (columnFilters.company.length > 0) {
+      const company = candidate.workHistory?.[0]?.company || ''
+      if (!columnFilters.company.includes(company)) {
+        return false
+      }
+    }
+
+    if (columnFilters.location.length > 0 && !columnFilters.location.includes(candidate.location)) {
+      return false
+    }
+
+    if (columnFilters.scoreRange.length > 0) {
+      const score = candidate.liaAnalysis?.score || candidate.score
+      let scoreRange: string
+      if (score >= 90) scoreRange = '90-100%'
+      else if (score >= 80) scoreRange = '80-89%'
+      else if (score >= 70) scoreRange = '70-79%'
+      else scoreRange = '60-69%'
+
+      if (!columnFilters.scoreRange.includes(scoreRange)) {
+        return false
+      }
+    }
+
+    // Filtros de Big Five - só aplica se houver filtros ativos
+    if (columnFilters.bigFive) {
+      const hasActiveBigFiveFilters = Object.values(columnFilters.bigFive).some(v => v && v !== '')
+      
+      if (hasActiveBigFiveFilters) {
+        const bigFive = candidate.bigFive
+        if (!bigFive) return false // Se não tem dados de Big Five e há filtro ativo, não passa
+        
+        // Função para classificar score em nível
+        const getLevel = (score: number) => {
+          if (score >= 80) return 'alto'
+          if (score >= 60) return 'medio'
+          return 'baixo'
+        }
+
+        // Verificar cada dimensão filtrada
+        for (const [dimension, filterLevel] of Object.entries(columnFilters.bigFive)) {
+          if (filterLevel && filterLevel !== '') {
+            const score = bigFive[dimension as keyof typeof bigFive]
+            if (!score || getLevel(score) !== filterLevel) {
+              return false
+            }
+          }
+        }
+      }
+    }
+
+    // Filtros avançados
+
+    // Filtro por modelo de trabalho
+    if (advancedFilters.work_models.length > 0) {
+      const workModelFilters = advancedFilters.work_models.filter(filter =>
+        ['remoto', 'híbrido', 'presencial'].includes(filter)
+      )
+      if (workModelFilters.length > 0 && !workModelFilters.includes(candidate.workModel)) {
+        return false
+      }
+    }
+
+    // Filtro por skills
+    if (advancedFilters.skills.length > 0) {
+      const hasSkill = advancedFilters.skills.some(skill =>
+        candidate.skills.some(candidateSkill =>
+          candidateSkill.toLowerCase().includes(skill.toLowerCase())
+        )
+      )
+      if (!hasSkill) return false
+    }
+
+    // Filtro por empresa
+    if (advancedFilters.companies.length > 0) {
+      const candidateCompany = candidate.workHistory?.[0]?.company || ''
+      const hasCompany = advancedFilters.companies.some(company =>
+        candidateCompany.toLowerCase().includes(company.toLowerCase())
+      )
+      if (!hasCompany) return false
+    }
+
+    // Filtro por localização
+    if (advancedFilters.locations.length > 0) {
+      const hasLocation = advancedFilters.locations.some(location =>
+        candidate.location.toLowerCase().includes(location.toLowerCase())
+      )
+      if (!hasLocation) return false
+    }
+
+    // Filtro por cargos
+    if (advancedFilters.job_titles.length > 0) {
+      const hasJobTitle = advancedFilters.job_titles.some(title =>
+        candidate.position.toLowerCase().includes(title.toLowerCase())
+      )
+      if (!hasJobTitle) return false
+    }
+
+    // 🎯 Filtros da Tabela de Resultados (tableFilters) - Separado dos filtros de busca
+    // Filtro por contato - Email
+    if (tableFilters.hasEmail) {
+      const hasEmail = !!(candidate.email || candidate.has_email)
+      if (!hasEmail) return false
+    }
+
+    // Filtro por contato - Telefone
+    if (tableFilters.hasPhone) {
+      const hasPhone = !!(candidate.phone || candidate.mobile_phone || candidate.has_phone)
+      if (!hasPhone) return false
+    }
+
+    // Filtro por contato - LinkedIn
+    if (tableFilters.hasLinkedin) {
+      const hasLinkedin = !!(candidate.linkedin_url || candidate.linkedin)
+      if (!hasLinkedin) return false
+    }
+
+    // Filtro por modelo remoto
+    if (tableFilters.remoteOnly) {
+      const isRemote = candidate.workModel === 'remoto' || 
+                       candidate.is_remote || 
+                       candidate.location?.toLowerCase().includes('remoto')
+      if (!isRemote) return false
+    }
+
+    // Filtro por experiência mínima
+    if (tableFilters.minExperience !== undefined) {
+      const experience = candidate.experience || candidate.years_of_experience || 0
+      if (experience < tableFilters.minExperience) return false
+    }
+
+    // Filtro por experiência máxima
+    if (tableFilters.maxExperience !== undefined) {
+      const experience = candidate.experience || candidate.years_of_experience || 0
+      if (experience > tableFilters.maxExperience) return false
+    }
+
+    // Filtro por score mínimo
+    if (tableFilters.minScore !== undefined) {
+      const score = candidate.liaAnalysis?.score || candidate.score || candidate.lia_score || 0
+      if (score < tableFilters.minScore) return false
+    }
+
+    // Filtro por score máximo
+    if (tableFilters.maxScore !== undefined) {
+      const score = candidate.liaAnalysis?.score || candidate.score || candidate.lia_score || 0
+      if (score > tableFilters.maxScore) return false
+    }
+
+    // Filtro por senioridade
+    if (tableFilters.seniorityLevels.length > 0) {
+      const level = candidate.seniority_level || ''
+      const position = candidate.position || ''
+      const matchesSeniority = tableFilters.seniorityLevels.some(filterLevel => 
+        level.toLowerCase().includes(filterLevel.toLowerCase()) ||
+        position.toLowerCase().includes(filterLevel.toLowerCase())
+      )
+      if (!matchesSeniority) return false
+    }
+
+    // Filtro por modelo de trabalho (tableFilters)
+    if (tableFilters.workModels.length > 0) {
+      if (!tableFilters.workModels.includes(candidate.workModel)) return false
+    }
+
+    // Filtro por tipo de contrato
+    if (tableFilters.contractTypes.length > 0) {
+      if (!tableFilters.contractTypes.includes(candidate.contractType)) return false
+    }
+
+    // Filtro por fonte
+    if (tableFilters.sources.length > 0) {
+      const source = candidate.source || ''
+      const matchesSource = tableFilters.sources.some(filterSource =>
+        source.toLowerCase().includes(filterSource.toLowerCase())
+      )
+      if (!matchesSource) return false
+    }
+
+    // Filtro por Github
+    if (tableFilters.hasGithub) {
+      const hasGithub = !!(candidate.github_url)
+      if (!hasGithub) return false
+    }
+
+    // Filtro por Portfólio
+    if (tableFilters.hasPortfolio) {
+      const hasPortfolio = !!(candidate.portfolio_url)
+      if (!hasPortfolio) return false
+    }
+
+    // Filtro por Soft Skills
+    if (tableFilters.softSkills.length > 0) {
+      const candidateSoftSkills = candidate.soft_skills || []
+      const hasMatchingSoftSkill = tableFilters.softSkills.some(skill =>
+        candidateSoftSkills.some(cs => cs.toLowerCase().includes(skill.toLowerCase()))
+      )
+      if (!hasMatchingSoftSkill) return false
+    }
+
+    // Filtro por Certificações
+    if (tableFilters.certifications.length > 0) {
+      const candidateCertifications = candidate.certifications || []
+      const hasMatchingCertification = tableFilters.certifications.some(cert =>
+        candidateCertifications.some(cc => cc.toLowerCase().includes(cert.toLowerCase()))
+      )
+      if (!hasMatchingCertification) return false
+    }
+
+    // Filtro por Aberto a mudar (willing_to_relocate)
+    if (tableFilters.willingToRelocate !== null) {
+      if (candidate.willing_to_relocate !== tableFilters.willingToRelocate) return false
+    }
+
+    // Filtro por Mobilidade
+    if (tableFilters.mobility !== null) {
+      if (candidate.mobility !== tableFilters.mobility) return false
+    }
+
+    // Filtro por Última Atualização (de)
+    if (tableFilters.updatedAtFrom) {
+      const updatedAt = candidate.updated_at ? new Date(candidate.updated_at) : null
+      const fromDate = new Date(tableFilters.updatedAtFrom)
+      if (!updatedAt || updatedAt < fromDate) return false
+    }
+
+    // Filtro por Última Atualização (até)
+    if (tableFilters.updatedAtTo) {
+      const updatedAt = candidate.updated_at ? new Date(candidate.updated_at) : null
+      const toDate = new Date(tableFilters.updatedAtTo)
+      if (!updatedAt || updatedAt > toDate) return false
+    }
+
+    // Filtro por Último Contato (de)
+    if (tableFilters.lastContactedFrom) {
+      const lastContacted = candidate.last_contacted_at ? new Date(candidate.last_contacted_at) : null
+      const fromDate = new Date(tableFilters.lastContactedFrom)
+      if (!lastContacted || lastContacted < fromDate) return false
+    }
+
+    // Filtro por Último Contato (até)
+    if (tableFilters.lastContactedTo) {
+      const lastContacted = candidate.last_contacted_at ? new Date(candidate.last_contacted_at) : null
+      const toDate = new Date(tableFilters.lastContactedTo)
+      if (!lastContacted || lastContacted > toDate) return false
+    }
+
+    return true
+  })
+
+  const sortedCandidates = [...filteredCandidates].sort((a, b) => {
+    let aValue: any = a[sortBy as keyof Candidate]
+    let bValue: any = b[sortBy as keyof Candidate]
+
+    if (sortBy === 'score_lia') {
+      aValue = a.liaAnalysis?.score || a.score
+      bValue = b.liaAnalysis?.score || b.score
+    }
+
+    if (typeof aValue === 'string') {
+      aValue = aValue.toLowerCase()
+      bValue = bValue.toLowerCase()
+    }
+
+    if (sortOrder === 'asc') {
+      return aValue > bValue ? 1 : -1
+    } else {
+      return aValue < bValue ? 1 : -1
+    }
+  })
+
+  // 🚀 Candidatos virtualizados - apenas os visíveis
+  const visibleCandidates = sortedCandidates.slice(0, visibleCandidatesLimit)
+
+  // 🔄 Resetar limite quando filtros mudarem
+  useEffect(() => {
+    setVisibleCandidatesLimit(50)
+  }, [searchTerm, quickFilters, advancedFilters, columnFilters, tableFilters])
+
+  // 🚀 Scroll Infinito - Carregar mais candidatos ao scrollar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!tableContainerRef.current) return
+
+      const { scrollTop, scrollHeight, clientHeight } = tableContainerRef.current
+      const scrollPercentage = (scrollTop + clientHeight) / scrollHeight
+
+      // Carregar mais quando chegar a 80% do scroll
+      if (scrollPercentage > 0.8 && visibleCandidatesLimit < sortedCandidates.length) {
+        setVisibleCandidatesLimit(prev => Math.min(prev + 50, sortedCandidates.length))
+      }
+    }
+
+    const container = tableContainerRef.current
+    if (container) {
+      container.addEventListener('scroll', handleScroll)
+      return () => container.removeEventListener('scroll', handleScroll)
+    }
+  }, [visibleCandidatesLimit, sortedCandidates.length])
+
+  // Handlers para ações
+  const handleCandidateClick = (candidate: Candidate) => {
+    setPreviewCandidate(candidate)
+    setShowCandidatePreview(true)
+    // Track viewed candidate
+    markCandidateAsViewed(candidate.id, 'profile')
+  }
+
+  const handleCloseCandidatePreview = () => {
+    setShowCandidatePreview(false)
+    setPreviewCandidate(null)
+  }
+
+  const handleTogglePreviewMaximize = () => {
+    setIsPreviewMaximized(!isPreviewMaximized)
+  }
+
+  const handleCandidatePageOpen = (candidate: Candidate) => {
+    setSelectedCandidate(candidate)
+    setShowCandidatePreview(false) // Close preview when opening full page
+    setShowCandidatePage(true)
+  }
+
+  const handleCloseSidePreview = () => {
+    setShowSidePreview(false)
+    setSidePreviewCandidate(null)
+  }
+
+  // Componente de Preview Lateral do Candidato
+  const CandidatePreviewPanel = ({ candidate, onClose }: { candidate: Candidate; onClose: () => void }) => {
+    const [activeTab, setActiveTab] = useState('overview')
+
+    const tabs = [
+      { id: 'overview', label: 'Visão Geral', icon: User },
+      { id: 'experience', label: 'Experiência', icon: Briefcase },
+      { id: 'skills', label: 'Habilidades', icon: Star },
+      { id: 'contact', label: 'Contato', icon: MessageSquare }
+    ]
+
+    const renderTabContent = () => {
+      switch (activeTab) {
+        case 'overview':
+          return (
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-2">Informações Básicas</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <span className="text-[11px] text-gray-600 dark:text-gray-600">Cargo:</span>
+                    <span className="text-[11px] font-medium text-gray-900 dark:text-gray-100">{candidate.position}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <span className="text-[11px] text-gray-600 dark:text-gray-600">Localização:</span>
+                    <span className="text-[11px] font-medium text-gray-900 dark:text-gray-100">{candidate.location}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <span className="text-[11px] text-gray-600 dark:text-gray-600">Status:</span>
+                    <Badge className={`text-[11px] px-2 py-0.5 border-0 ${
+                      candidate.status === 'active' ? 'bg-green-100 text-green-800' :
+                      candidate.status === 'prospect' ? 'bg-blue-100 text-blue-800' :
+                      candidate.status === 'interview' ? 'bg-orange-100 text-orange-800' :
+                      'bg-purple-100 text-purple-800'
+                    }`}>
+                      {candidate.status === 'active' ? 'Ativo' :
+                       candidate.status === 'prospect' ? 'Prospect' :
+                       candidate.status === 'interview' ? 'Entrevista' : 'Contratado'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-2">Score LIA</h4>
+                <div className="bg-[#60BED1]/10 dark:bg-[#60BED1]/20 p-3 rounded-lg shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-medium text-gray-700 dark:text-gray-300">Compatibilidade</span>
+                    <span className="text-base font-bold text-wedo-cyan">{candidate.score}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div
+                      className="bg-[#60BED1] h-1.5 rounded-full"
+                      style={{ width: `${candidate.score}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-[11px] text-gray-700 dark:text-gray-400 mt-1">
+                    Score baseado em habilidades, experiência e fit cultural
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <LIAFeedbackWidget
+                      candidateId={candidate.id}
+                      liaScore={candidate.score}
+                      liaRecommendation={candidate.liaAnalysis?.recommendation}
+                      compact={false}
+                      showLabel={true}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+
+        case 'experience':
+          return (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-2">Experiência Profissional</h4>
+                <div className="space-y-3">
+                  <div className="border-l-4 border-[#5DA47A] pl-3 py-2 bg-[#5DA47A]/10 dark:bg-[#5DA47A]/20 rounded-r-lg">
+                    <div className="text-[11px] font-medium text-gray-900 dark:text-gray-100">
+                      Senior Developer
+                    </div>
+                    <div className="text-[11px] text-[#5DA47A] dark:text-[#5DA47A]">
+                      Tech Corp • 2021 - Atual
+                    </div>
+                    <div className="text-[11px] text-gray-600 dark:text-gray-400 mt-1">
+                      Desenvolvimento de aplicações web com React, Node.js e PostgreSQL
+                    </div>
+                  </div>
+                  <div className="border-l-4 border-gray-300 pl-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-r-lg">
+                    <div className="text-[11px] font-medium text-gray-900 dark:text-gray-100">
+                      Full Stack Developer
+                    </div>
+                    <div className="text-[11px] text-gray-600 dark:text-gray-600">
+                      Startup XYZ • 2019 - 2021
+                    </div>
+                    <div className="text-[11px] text-gray-600 dark:text-gray-400 mt-1">
+                      Desenvolvimento fullstack e arquitetura de sistemas
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+
+        case 'skills':
+          return (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-2">Habilidades Técnicas</h4>
+                <div className="space-y-3">
+                  <div>
+                    <h5 className="text-[11px] font-medium text-gray-700 dark:text-gray-300 mb-1">Frontend</h5>
+                    <div className="flex flex-wrap gap-1">
+                      {['React', 'TypeScript', 'Next.js', 'Tailwind CSS'].map((skill, index) => (
+                        <Badge key={index} className="text-xs bg-blue-100 text-blue-700 border-0">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Backend</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {['Node.js', 'Python', 'PostgreSQL', 'MongoDB'].map((skill, index) => (
+                        <Badge key={index} className="text-xs bg-green-100 text-green-700 border-0">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Soft Skills</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {['Liderança', 'Comunicação', 'Trabalho em equipe', 'Resolução de problemas'].map((skill, index) => (
+                        <Badge key={index} className="text-xs bg-purple-100 text-purple-700 border-0">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+
+        case 'contact':
+          return (
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Informações de Contato</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Mail className="w-4 h-4 text-gray-700" />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{candidate.email}</div>
+                      <div className="text-xs text-gray-700">Email principal</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Phone className="w-4 h-4 text-gray-700" />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{candidate.phone}</div>
+                      <div className="text-xs text-gray-700">Telefone/WhatsApp</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Linkedin className="w-4 h-4 text-blue-600" />
+                    <div>
+                      <div className="text-sm font-medium text-blue-600">Ver perfil LinkedIn</div>
+                      <div className="text-xs text-gray-700">Perfil profissional</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Histórico de Interações</h4>
+                <div className="space-y-2">
+                  <div className="text-xs text-gray-700 dark:text-gray-400 p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                    📧 Email enviado há 2 dias
+                  </div>
+                  <div className="text-xs text-gray-700 dark:text-gray-400 p-2 bg-green-50 dark:bg-green-900/20 rounded">
+                    📞 Ligação agendada para amanhã às 14h
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+
+        default:
+          return null
+      }
+    }
+
+    return (
+      <div className="w-96 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col h-full">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <Avatar className="w-10 h-10">
+                <AvatarImage
+                  src={candidate.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(candidate.name)}&background=3B82F6&color=fff&size=150`}
+                  alt={candidate.name}
+                />
+                <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold">
+                  {candidate.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">{candidate.name}</h3>
+                <p className="text-sm text-gray-700 dark:text-gray-600">{candidate.position}</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+              <div className="font-semibold text-gray-900 dark:text-gray-100">{candidate.score}%</div>
+              <div className="text-gray-700">Score LIA</div>
+            </div>
+            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+              <div className="font-semibold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-1">
+                <Star className="w-3 h-3 text-yellow-500" />
+                4.8
+              </div>
+              <div className="text-gray-700">Avaliação</div>
+            </div>
+            <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+              <Badge className={`text-xs ${
+                candidate.status === 'active' ? 'bg-green-100 text-green-800' :
+                candidate.status === 'prospect' ? 'bg-blue-100 text-blue-800' :
+                candidate.status === 'interview' ? 'bg-orange-100 text-orange-800' :
+                'bg-purple-100 text-purple-800'
+              }`}>
+                {candidate.status === 'active' ? 'Ativo' :
+                 candidate.status === 'prospect' ? 'Prospect' :
+                 candidate.status === 'interview' ? 'Entrevista' : 'Contratado'}
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex space-x-0" aria-label="Tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChangeWithWarning(tab.id)}
+                className={`flex-1 py-2 px-3 text-xs font-medium text-center border-b-2 ${
+                  activeTab === tab.id
+                    ? 'border-gray-900 text-gray-900 dark:border-gray-100 dark:text-gray-100'
+                    : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                <tab.icon className="w-3 h-3 mx-auto mb-1" />
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4">
+          {renderTabContent()}
+        </div>
+
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+          <Button
+            className="w-full gap-2 bg-gray-900 hover:bg-gray-800"
+            onClick={() => console.log('Agendar entrevista')}
+          >
+            <Calendar className="w-4 h-4" />
+            Agendar Entrevista
+          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => console.log('Enviar email')}
+            >
+              <Mail className="w-4 h-4" />
+              Email
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => console.log('Perguntar à LIA')}
+            >
+              <LIAIcon size="sm" />
+              LIA
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const handleClosePreview = () => {
+    setShowPreview(false)
+    setSelectedCandidate(null)
+    setIsPreviewMaximized(false)
+  }
+
+  const handleToggleMaximize = () => {
+    setIsPreviewMaximized(!isPreviewMaximized)
+  }
+
+  const handleCloseCandidatePage = () => {
+    setShowCandidatePage(false)
+    setSelectedCandidate(null)
+  }
+
+  const handleCandidateSelection = (candidateId: string, index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    event.stopPropagation()
+
+    const newSelected = new Set(selectedCandidatesForBatch)
+
+    if (event.target.checked) {
+      newSelected.add(candidateId)
+    } else {
+      newSelected.delete(candidateId)
+    }
+
+    setSelectedCandidatesForBatch(newSelected)
+  }
+
+  const selectAllCandidates = () => {
+    const allIds = new Set(sortedCandidates.map(c => c.id))
+    setSelectedCandidatesForBatch(allIds)
+  }
+
+  const deselectAllCandidates = () => {
+    setSelectedCandidatesForBatch(new Set())
+  }
+
+  // Salvar candidatos Pearch selecionados na base local
+  const handleSaveToLocalBase = async () => {
+    const selectedPearchCandidates = candidates.filter(
+      c => selectedCandidatesForBatch.has(c.id) && c.source === 'pearch'
+    )
+    
+    if (selectedPearchCandidates.length === 0) {
+      toast({
+        title: "Nenhum candidato Pearch selecionado",
+        description: "Selecione candidatos de busca global para salvar na base.",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    setIsSavingToBase(true)
+    
+    try {
+      const importPayload = {
+        candidates: selectedPearchCandidates.map(c => ({
+          pearch_id: c.id,
+          name: c.name,
+          first_name: c.name?.split(' ')[0] || null,
+          last_name: c.name?.split(' ').slice(1).join(' ') || null,
+          email: c.email || null,
+          phone: c.phone || null,
+          linkedin_url: c.linkedin_url || null,
+          avatar_url: c.avatar_url || null,
+          current_title: c.current_title || null,
+          current_company: c.current_company || null,
+          headline: c.headline || null,
+          summary: c.summary || null,
+          location: c.location || null,
+          years_of_experience: c.years_of_experience || null,
+          skills: c.skills || [],
+          languages: c.languages || [],
+          education: c.education || [],
+          experiences: (c.experiences || []).map((exp: any) => ({
+            company_name: exp.company || exp.company_name || 'Empresa não informada',
+            company_linkedin_url: exp.company_linkedin_url || null,
+            company_domain: exp.company_domain || null,
+            title: exp.title || null,
+            start_date: exp.start_date || null,
+            end_date: exp.end_date || null,
+            duration_years: exp.duration_years || null,
+            is_current: exp.current || false,
+            description: exp.description || null,
+            location: exp.location || null,
+            industries: exp.industries || [],
+            company_size: exp.company_size || null,
+            company_size_range: exp.company_size_range || null,
+            technologies: exp.technologies || [],
+            is_startup: exp.is_startup || null,
+            company_founded_year: null,
+            company_annual_revenue: null
+          })),
+          is_open_to_work: c.is_open_to_work || null
+        })),
+        source_search_query: lastSearchQuery || undefined
+      }
+      
+      const response = await fetch('/api/backend-proxy/search/candidates/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(importPayload)
+      })
+      
+      if (!response.ok) {
+        throw new Error('Falha ao importar candidatos')
+      }
+      
+      const result = await response.json()
+      
+      toast({
+        title: "Candidatos salvos na base!",
+        description: result.message,
+      })
+      
+      // Limpar seleção após salvar
+      deselectAllCandidates()
+      
+    } catch (error) {
+      console.error('Error saving candidates to local base:', error)
+      toast({
+        title: "Erro ao salvar candidatos",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSavingToBase(false)
+    }
+  }
+
+  // Handler para adicionar candidatos à lista (importando Pearch candidates primeiro)
+  const handleAddToList = async () => {
+    const selectedIds = Array.from(selectedCandidatesForBatch)
+    const selectedCandidates = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
+    const selectedNames = selectedCandidates.map(c => c.name)
+    
+    // Separar candidatos locais e Pearch
+    const localCandidates = selectedCandidates.filter(c => c.source !== 'pearch')
+    const pearchCandidates = selectedCandidates.filter(c => c.source === 'pearch')
+    
+    // Se não há candidatos Pearch, abrir modal diretamente
+    if (pearchCandidates.length === 0) {
+      setAddToListCandidateIds(selectedIds)
+      setAddToListCandidateNames(selectedNames)
+      setShowAddToListModal(true)
+      return
+    }
+    
+    // Importar candidatos Pearch primeiro
+    setIsAddingToList(true)
+    
+    try {
+      const importPayload = {
+        candidates: pearchCandidates.map(c => ({
+          pearch_id: c.pearch_profile_id || c.id,
+          name: c.name,
+          first_name: c.name?.split(' ')[0] || null,
+          last_name: c.name?.split(' ').slice(1).join(' ') || null,
+          email: c.email || null,
+          phone: c.phone || null,
+          linkedin_url: c.linkedin_url || null,
+          avatar_url: c.avatar_url || null,
+          current_title: c.current_title || null,
+          current_company: c.current_company || null,
+          headline: c.headline || null,
+          summary: c.summary || null,
+          location: c.location || null,
+          years_of_experience: c.years_of_experience || null,
+          skills: c.skills || [],
+          languages: c.languages || [],
+          education: c.education || [],
+          experiences: (c.experiences || []).map((exp: any) => ({
+            company_name: exp.company || exp.company_name || 'Empresa não informada',
+            company_linkedin_url: exp.company_linkedin_url || null,
+            company_domain: exp.company_domain || null,
+            title: exp.title || null,
+            start_date: exp.start_date || null,
+            end_date: exp.end_date || null,
+            duration_years: exp.duration_years || null,
+            is_current: exp.current || false,
+            description: exp.description || null,
+            location: exp.location || null,
+            industries: exp.industries || [],
+            company_size: exp.company_size || null,
+            company_size_range: exp.company_size_range || null,
+            technologies: exp.technologies || [],
+            is_startup: exp.is_startup || null,
+            company_founded_year: null,
+            company_annual_revenue: null
+          })),
+          is_open_to_work: c.is_open_to_work || null
+        })),
+        source_search_query: lastSearchQuery || undefined
+      }
+      
+      const response = await fetch('/api/backend-proxy/search/candidates/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(importPayload)
+      })
+      
+      if (!response.ok) {
+        throw new Error('Falha ao importar candidatos Pearch')
+      }
+      
+      const result = await response.json()
+      
+      // Criar mapeamento de pearch_id → local_id
+      const idMapping = new Map<string, string>()
+      if (result.mapping && Array.isArray(result.mapping)) {
+        result.mapping.forEach((m: { pearch_id: string; local_id: string }) => {
+          idMapping.set(m.pearch_id, m.local_id)
+        })
+      }
+      
+      // Substituir IDs Pearch pelos IDs locais
+      const localIds: string[] = []
+      
+      // Adicionar IDs dos candidatos locais
+      localCandidates.forEach(c => {
+        localIds.push(c.id)
+      })
+      
+      // Adicionar IDs mapeados dos candidatos Pearch
+      pearchCandidates.forEach(c => {
+        const pearchId = c.pearch_profile_id || c.id
+        const localId = idMapping.get(pearchId)
+        if (localId) {
+          localIds.push(localId)
+        } else {
+          // Fallback: usar ID original se não encontrar mapeamento
+          console.warn(`No mapping found for Pearch candidate: ${pearchId}`)
+          localIds.push(c.id)
+        }
+      })
+      
+      // Abrir modal com IDs locais
+      setAddToListCandidateIds(localIds)
+      setAddToListCandidateNames(selectedNames)
+      setShowAddToListModal(true)
+      
+      // Mostrar toast informativo
+      if (result.imported_count > 0 || result.updated_count > 0) {
+        toast({
+          title: "Candidatos importados",
+          description: `${result.imported_count || 0} novo(s), ${result.updated_count || 0} atualizado(s)`,
+        })
+      }
+      
+    } catch (error) {
+      console.error('Error importing Pearch candidates:', error)
+      toast({
+        title: "Erro ao importar candidatos",
+        description: "Não foi possível salvar candidatos Pearch na base. Tente novamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsAddingToList(false)
+    }
+  }
+  
+  // Contar candidatos Pearch selecionados
+  const selectedPearchCount = candidates.filter(
+    c => selectedCandidatesForBatch.has(c.id) && c.source === 'pearch'
+  ).length
+
+  // Handler para mudança de aba com verificação de candidatos não salvos
+  const handleTabChangeWithWarning = (newTab: string) => {
+    // Se está na aba de busca com resultados Pearch e quer mudar para outra aba
+    if (activeTab === 'search' && hasUnsavedPearchCandidates && newTab !== 'search') {
+      setPendingTabChange(newTab)
+      setShowUnsavedWarningModal(true)
+    } else {
+      setActiveTab(newTab as any)
+    }
+  }
+
+  // Handler para salvar todos os candidatos Pearch e sair
+  const handleSaveAllAndExit = async () => {
+    setIsSavingToBase(true)
+    
+    try {
+      const importPayload = {
+        candidates: unsavedPearchCandidates.map(c => ({
+          pearch_id: c.pearch_profile_id || c.id,
+          name: c.name,
+          first_name: c.name?.split(' ')[0] || null,
+          last_name: c.name?.split(' ').slice(1).join(' ') || null,
+          email: c.email || null,
+          phone: c.phone || null,
+          linkedin_url: c.linkedin_url || null,
+          avatar_url: c.avatar_url || null,
+          current_title: c.current_title || null,
+          current_company: c.current_company || null,
+          headline: c.headline || null,
+          summary: c.summary || null,
+          location: c.location || null,
+          years_of_experience: c.years_of_experience || null,
+          skills: c.skills || [],
+          languages: c.languages || [],
+          education: c.education || [],
+          experiences: (c.experiences || []).map((exp: any) => ({
+            company_name: exp.company || exp.company_name || 'Empresa não informada',
+            company_linkedin_url: exp.company_linkedin_url || null,
+            company_domain: exp.company_domain || null,
+            title: exp.title || null,
+            start_date: exp.start_date || null,
+            end_date: exp.end_date || null,
+            duration_years: exp.duration_years || null,
+            is_current: exp.current || false,
+            description: exp.description || null,
+            location: exp.location || null,
+            industries: exp.industries || [],
+            company_size: exp.company_size || null,
+            company_size_range: exp.company_size_range || null,
+            technologies: exp.technologies || [],
+            is_startup: exp.is_startup || null,
+            company_founded_year: null,
+            company_annual_revenue: null
+          })),
+          is_open_to_work: c.is_open_to_work || null
+        })),
+        source_search_query: lastSearchQuery || undefined
+      }
+      
+      const response = await fetch('/api/backend-proxy/search/candidates/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(importPayload)
+      })
+      
+      if (!response.ok) {
+        throw new Error('Falha ao importar candidatos')
+      }
+      
+      const result = await response.json()
+      
+      toast({
+        title: "Candidatos salvos!",
+        description: result.message,
+      })
+      
+      // Limpar resultados de busca e mudar para a aba pendente
+      setCandidates([])
+      setShowSearchResults(false)
+      setShowUnsavedWarningModal(false)
+      if (pendingTabChange) {
+        setActiveTab(pendingTabChange as any)
+        setPendingTabChange(null)
+      }
+      
+    } catch (error) {
+      console.error('Error saving candidates:', error)
+      toast({
+        title: "Erro ao salvar",
+        description: "Tente novamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSavingToBase(false)
+    }
+  }
+
+  // Handler para sair sem salvar
+  const handleExitWithoutSaving = () => {
+    setCandidates([])
+    setShowSearchResults(false)
+    setShowUnsavedWarningModal(false)
+    if (pendingTabChange) {
+      setActiveTab(pendingTabChange as any)
+      setPendingTabChange(null)
+    }
+  }
+
+  const handleToggleFavorite = (candidateId: string, note?: string) => {
+    talentFunnel.toggleFavoriteCandidate(candidateId, note)
+  }
+
+  const handleUpdateFavoriteNote = (candidateId: string, note: string) => {
+    talentFunnel.updateFavoriteNote(candidateId, note)
+  }
+
+  const handleTogglePin = (candidateId: string) => {
+    talentFunnel.togglePinnedCandidate(candidateId)
+  }
+  
+  // Handler para ocultar/mostrar candidatos
+  const handleToggleHideCandidate = (candidateId: string) => {
+    setHiddenCandidates(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(candidateId)) {
+        newSet.delete(candidateId)
+      } else {
+        newSet.add(candidateId)
+      }
+      return newSet
+    })
+    
+    fetch(`/api/backend-proxy/candidates/${candidateId}/hide`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    }).catch(err => {
+      console.error('Failed to persist hidden status:', err)
+    })
+  }
+
+  // WSI Screening Handlers
+  const handleStartWSITextScreening = (candidate: Candidate) => {
+    // Novo fluxo: abrir modal de contato com template WSI pré-selecionado
+    // O recrutador escolhe entre Email ou WhatsApp e envia o convite
+    setContactModalCandidate(candidate as any)
+    setContactModalAction('wsi_screening')
+    setShowContactModal(true)
+  }
+  
+  // Handler para abrir o modal WSI diretamente (quando precisa preencher manualmente)
+  const handleOpenWSIModal = (candidate: Candidate) => {
+    setWsiCandidateForScreening(candidate)
+    setShowWSITextModal(true)
+  }
+
+  const handleStartWSIVoiceScreening = (candidate: Candidate) => {
+    setWsiCandidateForScreening(candidate)
+    setShowWSIVoiceModal(true)
+  }
+
+  const handleWSIScreeningComplete = (result: any) => {
+    console.log('WSI Screening completed:', result)
+  }
+
+  // Handler para resize do preview
+  const handlePreviewResize = (e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = previewWidth
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = startX - moveEvent.clientX
+      const newWidth = Math.min(Math.max(280, startWidth + deltaX), 600) // Min: 280px, Max: 600px
+      setPreviewWidth(newWidth)
+    }
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'default'
+      document.body.style.userSelect = 'auto'
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+  }
+
+  const handleLIAClick = (candidate: Candidate) => {
+    setSelectedCandidateForLIA(candidate)
+    setShowLIAPromptForCandidate(true)
+  }
+
+  // Funções de ordenação
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortOrder('desc')
+    }
+  }
+
+  const getSortIcon = (field: string) => {
+    if (sortBy !== field) return <ArrowUpDown className="w-3 h-3 ml-1" />
+    return sortOrder === 'asc' ? <ArrowUp className="w-3 h-3 ml-1" /> : <ArrowDown className="w-3 h-3 ml-1" />
+  }
+
+  // Handlers para filtros avançados
+  const toggleAdvancedFilter = (category: string, value: string) => {
+    setAdvancedFilters(prev => ({
+      ...prev,
+      [category]: prev[category].includes(value)
+        ? prev[category].filter(v => v !== value)
+        : [...prev[category], value]
+    }))
+  }
+
+  const removeAdvancedFilter = (category: string, value: string) => {
+    setAdvancedFilters(prev => ({
+      ...prev,
+      [category]: prev[category].filter(v => v !== value)
+    }))
+  }
+
+  const getActiveAdvancedFiltersCount = () => {
+    return Object.values(advancedFilters).reduce((sum, filters) => sum + filters.length, 0)
+  }
+
+  // Funções para filtros da tabela de resultados (tableFilters - separado dos filtros de busca)
+  const getActiveTableFiltersCount = (): number => {
+    let count = 0
+    count += tableFilters.statuses.length
+    count += tableFilters.tags.length
+    count += tableFilters.seniorityLevels.length
+    count += tableFilters.workModels.length
+    count += tableFilters.contractTypes.length
+    count += tableFilters.locations.length
+    count += tableFilters.sources.length
+    if (tableFilters.minExperience !== undefined) count++
+    if (tableFilters.maxExperience !== undefined) count++
+    if (tableFilters.minScore !== undefined) count++
+    if (tableFilters.maxScore !== undefined) count++
+    if (tableFilters.minSalary !== undefined) count++
+    if (tableFilters.maxSalary !== undefined) count++
+    if (tableFilters.remoteOnly) count++
+    if (tableFilters.hasEmail) count++
+    if (tableFilters.hasPhone) count++
+    if (tableFilters.hasLinkedin) count++
+    if (tableFilters.hasGithub) count++
+    if (tableFilters.hasPortfolio) count++
+    count += tableFilters.softSkills.length
+    count += tableFilters.certifications.length
+    if (tableFilters.willingToRelocate !== null) count++
+    if (tableFilters.mobility !== null) count++
+    if (tableFilters.updatedAtFrom) count++
+    if (tableFilters.updatedAtTo) count++
+    if (tableFilters.lastContactedFrom) count++
+    if (tableFilters.lastContactedTo) count++
+    return count
+  }
+
+  const toggleTableFilter = (category: keyof TableFilters, value: string) => {
+    setTableFilters(prev => {
+      const current = prev[category]
+      if (Array.isArray(current)) {
+        return {
+          ...prev,
+          [category]: current.includes(value)
+            ? current.filter(v => v !== value)
+            : [...current, value]
+        }
+      }
+      return prev
+    })
+  }
+
+  const clearAllTableFilters = () => {
+    setTableFilters(getDefaultTableFilters())
+  }
+
+  const clearAllFilters = () => {
+    setSearchTerm("")
+    setQuickFilters(new Set())
+    setBooleanSearch("")
+    setSelectedTemplate("")
+    setAdvancedFilters({
+      first_names: [],
+      job_titles: [],
+      years_experience: [],
+      degrees: [],
+      schools: [],
+      companies: [],
+      industries: [],
+      skills: [],
+      spoken_languages: [],
+      locations: [],
+      salary_ranges: [],
+      contract_types: [],
+      work_models: [],
+      availability: [],
+      certifications: [],
+      soft_skills: []
+    })
+    setColumnFilters({
+      position: [],
+      company: [],
+      location: [],
+      scoreRange: [],
+      bigFive: {
+        openness: '',
+        conscientiousness: '',
+        extraversion: '',
+        agreeableness: '',
+        neuroticism: ''
+      }
+    })
+  }
+
+  // Handler para aplicar filtros avançados (agora usado pelo painel lateral)
+  const handleApplyAdvancedFilters = (filters: SearchFilters) => {
+    setActiveSearchFilters(filters)
+    
+    // Aplicar filtros na busca
+    const query = buildQueryFromFilters(filters)
+    if (query) {
+      executeSearch(query, {}, 'natural', undefined, false)
+    }
+  }
+
+  // Função auxiliar para construir query a partir de filtros
+  const buildQueryFromFilters = (filters: SearchFilters): string => {
+    const parts: string[] = []
+    
+    if (filters.skills?.skills && filters.skills.skills.length > 0) {
+      parts.push(`skills: ${filters.skills.skills.join(', ')}`)
+    }
+    if (filters.locations?.locations && filters.locations.locations.length > 0) {
+      parts.push(`localização: ${filters.locations.locations.join(', ')}`)
+    }
+    if (filters.general?.minExperience || filters.general?.maxExperience) {
+      const min = filters.general.minExperience || 0
+      const max = filters.general.maxExperience || 10
+      parts.push(`experiência: ${min}-${max} anos`)
+    }
+    if (filters.job?.levels && filters.job.levels.length > 0) {
+      parts.push(`senioridade: ${filters.job.levels.join(', ')}`)
+    }
+    if (filters.job?.titles && filters.job.titles.length > 0) {
+      parts.push(`cargo: ${filters.job.titles.join(', ')}`)
+    }
+    if (filters.languages?.languages && filters.languages.languages.length > 0) {
+      parts.push(`idiomas: ${filters.languages.languages.join(', ')}`)
+    }
+    if (filters.company?.industries && filters.company.industries.length > 0) {
+      parts.push(`indústrias: ${filters.company.industries.join(', ')}`)
+    }
+    if (filters.education?.degrees && filters.education.degrees.length > 0) {
+      parts.push(`formação: ${filters.education.degrees.join(', ')}`)
+    }
+    
+    return parts.join(', ')
+  }
+
+  // Funções para filtros de coluna
+  const getColumnStats = (column: string) => {
+    const stats: {[key: string]: number} = {}
+
+    candidates.forEach(candidate => {
+      let value: string
+
+      switch (column) {
+        case 'position':
+          value = candidate.position
+          break
+        case 'company':
+          value = candidate.workHistory?.[0]?.company || ''
+          break
+        case 'location':
+          value = candidate.location
+          break
+        case 'scoreRange':
+          const score = candidate.liaAnalysis?.score || candidate.score
+          if (score >= 90) value = '90-100%'
+          else if (score >= 80) value = '80-89%'
+          else if (score >= 70) value = '70-79%'
+          else value = '60-69%'
+          break
+        default:
+          value = 'N/A'
+      }
+
+      stats[value] = (stats[value] || 0) + 1
+    })
+
+    return Object.entries(stats)
+      .sort(([,a], [,b]) => b - a) // Ordenar por quantidade (desc)
+      .map(([value, count]) => ({ value, count }))
+  }
+
+  const toggleColumnFilter = (column: string, value: string) => {
+    setColumnFilters(prev => ({
+      ...prev,
+      [column]: prev[column].includes(value)
+        ? prev[column].filter((v: string) => v !== value)
+        : [...prev[column], value]
+    }))
+  }
+
+  const getActiveColumnFiltersCount = () => {
+    let count = 0
+
+    // Contar filtros regulares (arrays)
+    Object.entries(columnFilters).forEach(([key, value]) => {
+      if (key !== 'bigFive' && Array.isArray(value)) {
+        count += value.length
+      }
+    })
+
+    // Contar filtros de Big Five (valores não vazios)
+    if (columnFilters.bigFive) {
+      count += Object.values(columnFilters.bigFive).filter(v => v !== '').length
+    }
+
+    return count
+  }
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newExpanded = new Set(prev)
+      if (newExpanded.has(sectionId)) {
+        newExpanded.delete(sectionId)
+      } else {
+        newExpanded.add(sectionId)
+      }
+      return newExpanded
+    })
+  }
+
+  // Handlers para templates e busca
+  const handleTemplateSelection = (template: string) => {
+    setSelectedTemplate(template)
+    // Implementar lógica de aplicação do template
+  }
+
+  const saveSearch = () => {
+    if (searchTerm || booleanSearch) {
+      const searchQuery = `${searchTerm} ${booleanSearch}`.trim()
+      setSearchHistory(prev => [searchQuery, ...prev.slice(0, 9)])
+    }
+  }
+
+  const saveSearchAsTemplate = () => {
+    const searchQuery = `${searchTerm} ${booleanSearch}`.trim()
+    if (searchQuery) {
+      const searchData = {
+        name: selectedTemplate || `Busca ${new Date().toLocaleDateString()}`,
+        query: searchQuery,
+        filters: { ...advancedFilters, booleanSearch },
+        timestamp: new Date().toISOString()
+      }
+      setSavedSearches(prev => [searchData, ...prev])
+      toast({
+        title: "Busca salva",
+        description: "Sua busca foi salva como template",
+        duration: 4000
+      })
+    }
+  }
+
+  const applySavedSearch = (search: any) => {
+    setSearchTerm(search.query.replace(search.filters.booleanSearch || '', '').trim())
+    setBooleanSearch(search.filters.booleanSearch || '')
+    setAdvancedFilters(search.filters)
+  }
+
+  const deleteSavedSearch = (index: number) => {
+    setSavedSearches(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // Detecta se o texto é uma pergunta genérica (não uma busca de candidatos)
+  const isGenericQuestion = (text: string): boolean => {
+    const normalizedText = text.toLowerCase().trim()
+    
+    // Padrões de perguntas genéricas
+    const questionPatterns = [
+      /^(o que|que tipo|qual|quais|como|por que|quando|onde|quem|quanto|quantos)\s/,
+      /^(me explica|explique|pode explicar|poderia explicar)/,
+      /^(me ajuda|ajuda|help|pode ajudar|poderia ajudar)/,
+      /^(o que você|voce pode|você consegue|vc pode)/,
+      /\?$/  // Termina com interrogação
+    ]
+    
+    // Palavras-chave que indicam busca de candidatos
+    const searchKeywords = [
+      'desenvolvedor', 'developer', 'programador', 'engenheiro', 'analista',
+      'gerente', 'manager', 'coordenador', 'diretor', 'especialista',
+      'junior', 'pleno', 'sênior', 'senior', 'trainee', 'estagiário',
+      'python', 'java', 'javascript', 'react', 'node', 'angular', 'vue',
+      'backend', 'frontend', 'fullstack', 'devops', 'data', 'machine learning',
+      'são paulo', 'rio de janeiro', 'belo horizonte', 'remoto', 'híbrido',
+      'anos de experiência', 'experiência em', 'conhecimento em',
+      'product manager', 'product owner', 'scrum master', 'ux', 'ui',
+      'designer', 'marketing', 'vendas', 'sales', 'rh', 'recursos humanos',
+      'b2b', 'saas', 'fintech', 'startup'
+    ]
+    
+    // Se contém palavras-chave de busca, provavelmente é uma busca
+    const hasSearchKeywords = searchKeywords.some(keyword => 
+      normalizedText.includes(keyword.toLowerCase())
+    )
+    
+    // Se é uma pergunta genérica e não tem palavras-chave de busca
+    const isQuestion = questionPatterns.some(pattern => pattern.test(normalizedText))
+    
+    return isQuestion && !hasSearchKeywords
+  }
+
+  // Handler para mensagens no chat da LIA (perguntas ou buscas)
+  const handleLIAChatMessage = (message: string) => {
+    const trimmedMessage = message.trim()
+    
+    // Adicionar mensagem do usuário ao chat
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      type: 'user',
+      content: trimmedMessage,
+      timestamp: new Date()
+    }
+    setChatMessages(prev => [...prev, userMessage])
+    
+    // Se é uma pergunta genérica, responder sem limpar os resultados
+    if (isGenericQuestion(trimmedMessage)) {
+      setTimeout(() => {
+        const liaResponse: ChatMessage = {
+          id: `lia-response-${Date.now()}`,
+          type: 'lia',
+          content: `🤔 Entendi sua pergunta, mas **ainda não consigo responder a esse tipo de pergunta**.\n\nEm breve estarei preparada para ajudar com análises mais detalhadas!\n\nPor enquanto, posso ajudar você a:\n• **Buscar candidatos** - Digite um perfil como "Product Manager Pleno"\n• **Analisar potencial de crescimento** - Selecione candidatos\n• **Definir tipo de perfil** - Executor, estratégico, etc\n• **Resumo executivo** - Visão geral do candidato\n• **Pontos a desenvolver** - Gaps e oportunidades\n\n💡 **Dica:** Para buscar, descreva o perfil desejado como "*Desenvolvedor Python sênior em São Paulo*"`,
+          timestamp: new Date()
+        }
+        setChatMessages(prev => [...prev, liaResponse])
+      }, 800)
+      
+      setLiaPromptValue('')
+      return
+    }
+    
+    // Se é uma busca de candidatos, executar normalmente
+    executeSearch(trimmedMessage)
+    setLiaPromptValue('')
+  }
+
+  // Handlers para modais
+  const handleQuickView = (candidate: Candidate) => {
+    setSidePreviewCandidate(candidate)
+    setShowSidePreview(true)
+  }
+
+  const handleAICommand = (command: string) => {
+    console.log('AI Command:', command)
+
+    // Ativar estado de "pensando"
+    setIsLIAThinking(true)
+
+    // Simular processamento (2-3 segundos)
+    setTimeout(() => {
+      setIsLIAThinking(false)
+      // Aqui viria a resposta real da LIA
+      console.log('LIA processou:', command)
+    }, 2500)
+
+    // Implementar lógica de comandos da LIA aqui
+  }
+
+  // AI-First Quick Action Handlers
+  const handleQuickSchedule = () => {
+    if (selectedCandidatesForBatch.size > 0) {
+      const firstSelectedId = Array.from(selectedCandidatesForBatch)[0]
+      const candidate = candidates.find((c: Candidate) => c.id === firstSelectedId)
+      if (candidate) {
+        handleScheduleInterview(candidate)
+      }
+    } else {
+      handleAICommand("agendar entrevista com candidatos")
+    }
+  }
+
+  const handleQuickEvaluate = () => {
+    if (selectedCandidatesForBatch.size > 0) {
+      handleAICommand(`avaliar fit dos ${selectedCandidatesForBatch.size} candidatos selecionados`)
+    } else {
+      handleAICommand("avaliar fit técnico dos candidatos")
+    }
+  }
+
+  const handleQuickEmail = () => {
+    if (selectedCandidatesForBatch.size > 0) {
+      const firstSelectedId = Array.from(selectedCandidatesForBatch)[0]
+      const candidate = candidates.find((c: Candidate) => c.id === firstSelectedId)
+      if (candidate) {
+        handleContactCandidate(candidate)
+      }
+    } else {
+      handleAICommand("gerar email de follow-up para candidatos")
+    }
+  }
+
+  const handleQuickWhatsApp = () => {
+    handleAICommand("enviar mensagem whatsapp para candidatos")
+  }
+
+  const handleQuickCompare = () => {
+    if (selectedCandidatesForBatch.size >= 2) {
+      setShowComparisonModal(true)
+    } else {
+      handleAICommand("comparar perfis de candidatos")
+    }
+  }
+
+  const handleQuickTimeline = () => {
+    if (selectedCandidatesForBatch.size > 0) {
+      const firstSelectedId = Array.from(selectedCandidatesForBatch)[0]
+      const candidate = candidates.find((c: Candidate) => c.id === firstSelectedId)
+      if (candidate) {
+        handleCandidatePageOpen(candidate)
+      }
+    } else {
+      handleAICommand("mostrar timeline de interações com candidatos")
+    }
+  }
+
+  // Get contextual quick actions based on selection
+  const getCandidateQuickActions = (): QuickAction[] => {
+    const selectedCount = selectedCandidatesForBatch.size
+    
+    return [
+      {
+        id: 'lia-analysis',
+        label: 'Análise LIA',
+        icon: Brain,
+        variant: 'primary' as const,
+        onClick: () => setShowLIAAnalysis(!showLIAAnalysis)
+      },
+      {
+        id: 'schedule',
+        label: selectedCount > 0 ? `Agendar (${selectedCount})` : 'Agendar',
+        icon: Calendar,
+        variant: 'default' as const,
+        onClick: handleQuickSchedule
+      },
+      {
+        id: 'evaluate',
+        label: selectedCount > 0 ? `Avaliar Fit (${selectedCount})` : 'Avaliar Fit',
+        icon: Target,
+        variant: 'default' as const,
+        onClick: handleQuickEvaluate
+      },
+      {
+        id: 'compare',
+        label: selectedCount >= 2 ? `Comparar (${selectedCount})` : 'Comparar',
+        icon: ChevronsLeftRight,
+        variant: 'default' as const,
+        onClick: handleQuickCompare
+      },
+      {
+        id: 'email',
+        label: selectedCount > 0 ? `Email (${selectedCount})` : 'Email',
+        icon: Mail,
+        variant: 'success' as const,
+        onClick: handleQuickEmail
+      },
+      {
+        id: 'whatsapp',
+        label: 'WhatsApp',
+        icon: MessageSquare,
+        variant: 'success' as const,
+        onClick: handleQuickWhatsApp
+      },
+      {
+        id: 'approve',
+        label: selectedCount > 0 ? `Aprovar (${selectedCount})` : 'Aprovar',
+        icon: CheckCircle,
+        variant: 'success' as const,
+        onClick: () => setShowBatchApproval(true)
+      }
+    ]
+  }
+
+  // Handlers para ações dos modais
+  const handleSendMessage = (data: any) => {
+    console.log('Send message:', data)
+    setShowContactModal(false)
+  }
+
+  const handleScheduleComplete = (data: any) => {
+    console.log('Schedule complete:', data)
+    setShowScheduleModal(false)
+  }
+
+  const handleNavigateToFullProfile = (candidate: Candidate) => {
+    setSelectedCandidate(candidate)
+    setShowQuickViewModal(false)
+    setShowComparisonModal(false)
+    setShowCandidatePage(true)
+  }
+
+  const handleScheduleInterview = (candidate: Candidate) => {
+    setSelectedCandidateForAction(candidate)
+    setShowComparisonModal(false)
+    setShowScheduleModal(true)
+  }
+
+  const handleContactCandidate = (candidate: Candidate) => {
+    setSelectedCandidateForAction(candidate)
+    setShowComparisonModal(false)
+    setShowContactModal(true)
+  }
+
+  // Handler for opening the Unified Communication Modal with specific type
+  const openUnifiedModal = (candidate: Candidate, type: CommunicationType) => {
+    setUnifiedModalCandidate(candidate)
+    setUnifiedModalType(type)
+    setUnifiedModalOpen(true)
+  }
+
+  // Handlers for specific unified modal types
+  const handleSendEmail = (candidate: Candidate) => openUnifiedModal(candidate, 'email')
+  const handleSendWhatsApp = (candidate: Candidate) => openUnifiedModal(candidate, 'whatsapp')
+  const handleSendTriagem = (candidate: Candidate) => openUnifiedModal(candidate, 'triagem')
+  const handleSendAgendamento = (candidate: Candidate) => openUnifiedModal(candidate, 'agendamento')
+  const handleSendFeedback = (candidate: Candidate) => openUnifiedModal(candidate, 'feedback')
+
+  const handleUnifiedModalClose = () => {
+    setUnifiedModalOpen(false)
+    setUnifiedModalCandidate(null)
+  }
+
+  const handleUnifiedModalSend = (data: any) => {
+    console.log('Unified modal send:', data)
+    toast({
+      title: "Mensagem enviada!",
+      description: `${data.type === 'email' ? 'Email' : data.type === 'whatsapp' ? 'WhatsApp' : data.type === 'triagem' ? 'Convite de triagem' : data.type === 'agendamento' ? 'Convite de entrevista' : 'Feedback'} enviado com sucesso.`,
+    })
+    handleUnifiedModalClose()
+  }
+
+  const handleBatchApprovalComplete = (data: any) => {
+    console.log('Batch approval complete:', data)
+    setShowBatchApproval(false)
+    setSelectedCandidatesForBatch(new Set())
+  }
+
+  const handleAddCandidate = (newCandidate: any) => {
+    const candidateWithDefaults = {
+      ...newCandidate,
+      candidateId: newCandidate.id,
+      tags: newCandidate.skills.slice(0, 3),
+      status: 'active' as const,
+      score: newCandidate.liaAnalysis?.score || 75,
+      workModel: newCandidate.workModel as 'remoto' | 'híbrido' | 'presencial',
+      contractType: newCandidate.contractType as 'CLT' | 'PJ' | 'Freelancer',
+      linkedin: newCandidate.linkedin || '',
+      skills: newCandidate.skills || [],
+      experience: parseInt(newCandidate.experience) || 1,
+      education: newCandidate.education || 'Superior Completo'
+    }
+
+    setCandidates([candidateWithDefaults, ...candidates])
+    setShowAddCandidateModal(false)
+  }
+
+  const handleLIAAnalysisComplete = (results: any) => {
+    console.log('LIA Analysis Complete:', results)
+    // Aqui você pode atualizar os candidatos com os scores da análise
+  }
+
+  const getComparisonCandidates = () => {
+    return sortedCandidates.filter(candidate => selectedCandidatesForBatch.has(candidate.id))
+  }
+
+  const convertCandidatesForBatch = (candidates: Candidate[]) => {
+    return candidates.map(candidate => ({
+      id: candidate.id,
+      name: candidate.name,
+      email: candidate.email,
+      phone: candidate.phone,
+      position: candidate.position,
+      location: candidate.location,
+      experience: candidate.experience.toString(),
+      skills: candidate.skills,
+      education: candidate.education,
+      score: candidate.score,
+      status: 'pending' as const,
+      workModel: candidate.workModel,
+      contractType: candidate.contractType,
+      currentSalary: candidate.salary?.current?.toString() || '',
+      expectedSalary: candidate.salary?.expected?.toString() || '',
+      linkedin: candidate.linkedin,
+      languages: candidate.languages || [],
+      benefits: candidate.benefits || [],
+      // Campos adicionais requeridos pelo BatchApprovalCandidate
+      liaScore: candidate.liaAnalysis?.score || candidate.score,
+      skillsMatch: candidate.skills.length,
+      currentStage: 'Triagem',
+      appliedDate: candidate.lastUpdated?.toISOString() || new Date().toISOString(),
+      lastInteraction: candidate.lastUpdated?.toISOString() || new Date().toISOString(),
+      notes: candidate.notes || '',
+      github: '',
+      portfolio: '',
+      certifications: [],
+      availability: 'Imediata',
+      noticePeriod: '30 dias',
+      priority: 'média' as const,
+      source: 'linkedin',
+      tags: candidate.tags || [],
+      jobTitle: candidate.position,
+      department: 'Tecnologia'
+    }))
+  }
+
+  // Handlers para configuração de colunas
+  const handleToggleColumnConfig = () => {
+    setShowColumnConfig(!showColumnConfig)
+  }
+
+  const handleSaveColumns = () => {
+    // Salvar no localStorage
+    localStorage.setItem('candidate-table-columns', JSON.stringify(tableColumns))
+    console.log('Columns saved:', tableColumns)
+    setShowColumnConfig(false)
+  }
+
+  const handleSaveColumnView = (view: any) => {
+    const newView = {
+      ...view,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    }
+    const updatedViews = [...savedColumnViews, newView]
+    setSavedColumnViews(updatedViews)
+    localStorage.setItem('candidate-column-views', JSON.stringify(updatedViews))
+  }
+
+  const handleLoadColumnView = (view: any) => {
+    setTableColumns(view.columns)
+  }
+
+  const handleDeleteColumnView = (viewId: string) => {
+    const updatedViews = savedColumnViews.filter(view => view.id !== viewId)
+    setSavedColumnViews(updatedViews)
+    localStorage.setItem('candidate-column-views', JSON.stringify(updatedViews))
+  }
+
+  // REMOVIDO: função renderExpandedRow para simplificação da tabela
+
+  // Handlers para redimensionamento de colunas
+  const startResize = (column: string, event: React.MouseEvent) => {
+    event.preventDefault()
+
+    const startX = event.clientX
+    const startWidth = columnWidths[column as keyof typeof columnWidths]
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = Math.max(80, startWidth + (e.clientX - startX))
+      setColumnWidths(prev => ({
+        ...prev,
+        [column]: newWidth
+      }))
+    }
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  // Handlers para drag & drop de colunas
+  const handleColumnDragStart = (columnId: string, e: React.DragEvent) => {
+    setDraggedColumnId(columnId)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', columnId)
+    
+    // Criar imagem de drag invisível
+    const dragImage = document.createElement('div')
+    dragImage.style.opacity = '0'
+    document.body.appendChild(dragImage)
+    e.dataTransfer.setDragImage(dragImage, 0, 0)
+    setTimeout(() => document.body.removeChild(dragImage), 0)
+  }
+
+  const handleColumnDragOver = (columnId: string, e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (draggedColumnId && draggedColumnId !== columnId && columnId !== 'checkbox' && columnId !== 'acoes') {
+      setDragOverColumnId(columnId)
+    }
+  }
+
+  const handleColumnDragLeave = () => {
+    setDragOverColumnId(null)
+  }
+
+  const handleColumnDrop = (targetColumnId: string, e: React.DragEvent) => {
+    e.preventDefault()
+    if (!draggedColumnId || draggedColumnId === targetColumnId) {
+      setDraggedColumnId(null)
+      setDragOverColumnId(null)
+      return
+    }
+
+    // Não permitir mover para checkbox ou ações
+    if (targetColumnId === 'checkbox' || targetColumnId === 'acoes') {
+      setDraggedColumnId(null)
+      setDragOverColumnId(null)
+      return
+    }
+
+    setColumnOrder(prev => {
+      const newOrder = [...prev]
+      const draggedIndex = newOrder.indexOf(draggedColumnId)
+      const targetIndex = newOrder.indexOf(targetColumnId)
+      
+      if (draggedIndex === -1 || targetIndex === -1) return prev
+      
+      // Remove da posição atual e insere na nova posição
+      newOrder.splice(draggedIndex, 1)
+      newOrder.splice(targetIndex, 0, draggedColumnId)
+      
+      // Salvar no localStorage
+      localStorage.setItem('candidate-table-column-order', JSON.stringify(newOrder))
+      
+      return newOrder
+    })
+
+    setDraggedColumnId(null)
+    setDragOverColumnId(null)
+  }
+
+  const handleColumnDragEnd = () => {
+    setDraggedColumnId(null)
+    setDragOverColumnId(null)
+  }
+
+  // Carregar ordem salva ao inicializar com validação
+  useEffect(() => {
+    const defaultOrder = ['checkbox', 'id', 'candidato', 'cargo', 'empresa', 'salario_mensal', 'localizacao', 'modelo_trabalho', 'acoes']
+    const savedOrder = localStorage.getItem('candidate-table-column-order')
+    
+    if (savedOrder) {
+      try {
+        const parsed = JSON.parse(savedOrder) as string[]
+        
+        // Validar e mesclar com a ordem padrão para evitar inconsistências
+        const validOrder = defaultOrder.filter(id => parsed.includes(id))
+        const newIds = defaultOrder.filter(id => !parsed.includes(id))
+        
+        // Se a ordem salva está válida e contém todas as colunas
+        if (validOrder.length === defaultOrder.length) {
+          // Manter colunas fixas (checkbox e acoes) nas posições corretas
+          const orderedCols = parsed.filter((id: string) => defaultOrder.includes(id))
+          const finalOrder = ['checkbox', ...orderedCols.filter((id: string) => id !== 'checkbox' && id !== 'acoes'), 'acoes']
+          setColumnOrder(finalOrder)
+        } else {
+          // Ordem corrompida, usar padrão
+          setColumnOrder(defaultOrder)
+        }
+      } catch (e) {
+        console.error('Erro ao carregar ordem das colunas:', e)
+        setColumnOrder(defaultOrder)
+      }
+    }
+  }, [])
+
+  return (
+    <div className="min-h-full flex flex-col bg-gray-50 dark:bg-gray-950">
+      <div className="flex-1 min-h-0 overflow-auto px-2.5 pt-1.5 pb-2 max-w-full">
+
+        {/* Header Principal */}
+        <div className="flex items-center justify-between mb-1">
+          <div>
+            <h1 className="text-xl font-source-serif-4 font-semibold wedo-text-black mb-1 flex items-center gap-2">
+              <Users className="w-5 h-5" style={{ color: 'var(--wedo-blue)' }} />
+              Funil de Talentos
+            </h1>
+            <p className="text-sm font-open-sans wedo-text-gray">
+              Centro completo de gestão de talentos e recrutamento inteligente
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {/* Botão Novo Candidato - visível em todas as abas */}
+            <Button
+              className="gap-2 h-8 px-3 font-medium"
+              style={{ fontFamily: 'Open Sans, sans-serif' }}
+              onClick={() => setShowAddCandidateModal(true)}
+            >
+              <Plus className="w-4 h-4" />
+              Novo Candidato
+            </Button>
+
+            {/* Botões específicos por aba */}
+            {activeTab === 'search' && showSearchResults && (
+              <>
+                <Button
+                  variant="outline"
+                  className="gap-2 h-8 px-3"
+                  onClick={() => {
+                    setShowSearchResults(false)
+                    setSearchTerm('')
+                    setLastSearchQuery('')
+                  }}
+                >
+                  <Search className="w-4 h-4" />
+                  Nova Busca
+                </Button>
+
+                {/* Botão para salvar busca atual */}
+                {(searchTerm || quickFilters.size > 0 || getActiveAdvancedFiltersCount() > 0) && (
+                  <Button
+                    variant="outline"
+                    className="gap-2 h-8 px-3"
+                    onClick={saveCurrentSearch}
+                    title="Salvar esta busca para reutilizar"
+                  >
+                    <Bookmark className="w-4 h-4" />
+                    Salvar Busca
+                  </Button>
+                )}
+              </>
+            )}
+
+            {activeTab === 'favorites' && (
+              <Button
+                variant="outline"
+                className="gap-2 h-8 px-3"
+                onClick={() => setActiveTab('search')}
+              >
+                <Search className="w-4 h-4" />
+                Nova Busca
+              </Button>
+            )}
+
+            {activeTab === 'history' && (
+              <Button
+                variant="outline"
+                className="gap-2 h-8 px-3"
+                onClick={() => setActiveTab('search')}
+              >
+                <Search className="w-4 h-4" />
+                Nova Busca
+              </Button>
+            )}
+
+            {activeTab === 'saved-searches' && (
+              <Button
+                variant="outline"
+                className="gap-2 h-8 px-3"
+                onClick={() => setActiveTab('search')}
+              >
+                <Search className="w-4 h-4" />
+                Nova Busca
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Sistema de Abas */}
+        <div className="mb-1">
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <nav className="-mb-px flex space-x-8 nav-tabs" aria-label="Tabs" role="tablist">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabChangeWithWarning(tab.id)}
+                  role="tab"
+                  className={`group inline-flex items-center gap-2 py-2 px-1 border-b-2 tab-button ${
+                    activeTab === tab.id
+                      ? 'border-gray-900 text-gray-900 dark:border-gray-100 dark:text-gray-100'
+                      : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  {'comingSoon' in tab && tab.comingSoon && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#0369A1' }}>
+                      Em Breve
+                    </span>
+                  )}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Descrição da aba ativa */}
+          <div className="mt-0.5">
+            <p className="text-xs text-gray-700 dark:text-gray-600">
+              {tabs.find(tab => tab.id === activeTab)?.description}
+            </p>
+          </div>
+        </div>
+
+        {/* Conteúdo das Abas */}
+        
+        {/* ========== TAB BUSCA (AI-First) - Com Resultados Inline ========== */}
+        {activeTab === 'search' && !showSearchResults && (
+          <div>
+            {/* Header - Padrão igual às outras abas */}
+            <div className="mb-4">
+              <h2 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 font-source-serif-4 flex items-center gap-2 ${isSearchActive ? 'animate-pulse' : ''}`}>
+                <Brain className="w-5 h-5" style={{ color: '#60BED1' }} strokeWidth={2} />
+                {isSearchActive ? 'LIA está buscando...' : 'Busca Inteligente'}
+              </h2>
+              <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+                {isSearchActive 
+                  ? 'Analisando perfis compatíveis com sua busca'
+                  : 'IA Natural • Similaridade • Descrição da Vaga • Boolean • Arquétipos • Busca Local/Global'
+                }
+              </p>
+            </div>
+
+            {/* Conteúdo centralizado */}
+            <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
+
+              {/* Loading Animation - aparece quando está buscando */}
+              <SearchLoadingAnimation isActive={isSearchActive} />
+
+
+              {/* Smart Search Input with CV Dropzone */}
+              <div 
+                className="w-full relative"
+                onDrop={handleCVDrop}
+                onDragOver={handleCVDragOver}
+                onDragLeave={handleCVDragLeave}
+              >
+                {/* CV Drop Overlay */}
+                {isDroppingCV && (
+                  <div className="absolute inset-0 z-50 bg-wedo-cyan/10 border-2 border-dashed border-wedo-cyan rounded-xl flex items-center justify-center">
+                    <div className="text-center">
+                      <FileUp className="w-12 h-12 text-wedo-cyan mx-auto mb-2" />
+                      <p className="text-sm font-medium text-wedo-cyan">Solte o CV aqui</p>
+                      <p className="text-xs text-gray-700">PDF, DOC, DOCX ou TXT</p>
+                    </div>
+                  </div>
+                )}
+                
+                {/* CV Upload Loading */}
+                {cvUploadLoading && (
+                  <div className="absolute inset-0 z-50 bg-white/90 dark:bg-gray-900/90 rounded-xl flex items-center justify-center">
+                    <div className="text-center">
+                      <Loader2 className="w-8 h-8 text-wedo-cyan mx-auto mb-2 animate-spin" />
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Analisando CV...</p>
+                    </div>
+                  </div>
+                )}
+                
+                <SmartSearchInput
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  onSubmit={async (query, entities, mode, metadata) => {
+                    setLastSearchQuery(query)
+                    setLastSearchMode(mode || 'natural')
+                    
+                    // Sempre inicia com busca local
+                    // Depois de mostrar resultados, sistema oferece expansão para Pearch se poucos resultados
+                    await executeSearch(query, entities, mode, metadata, false)
+                  }}
+                  onCancel={() => setSearchTerm('')}
+                  onOpenFilters={() => setShowAdvancedSearch(true)}
+                  onGoToResults={() => setShowSearchResults(true)}
+                  isLoading={isLoading}
+                  placeholder="Ex: Desenvolvedores Python com 5+ anos em São Paulo..."
+                  activeFiltersCount={getActiveAdvancedFiltersCount()}
+                  searchSource={searchSource}
+                  onSearchSourceChange={setSearchSource}
+                  requireEmails={pearchSearchOptions.requireEmails}
+                  onRequireEmailsChange={(value) => setPearchSearchOptions(prev => ({ ...prev, requireEmails: value }))}
+                  requirePhoneNumbers={pearchSearchOptions.requirePhoneNumbers}
+                  onRequirePhoneNumbersChange={(value) => setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: value }))}
+                />
+              </div>
+
+              {/* Modal de Filtros Avançados - renderizado no final do componente */}
+            </div>
+          </div>
+        )}
+
+        {/* ========== TAB BUSCA - RESULTADOS INLINE ========== */}
+        {activeTab === 'search' && showSearchResults && (
+          <div className="space-y-2">
+            {/* Botão de voltar para busca inteligente - posicionado à direita, alinhado com menu */}
+            <div className="flex items-center justify-end gap-2 -mt-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setShowSearchResults(false)}
+                      className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-all"
+                      style={{ color: "#60BED1" }}
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                    <p className="text-xs font-medium">Voltar para Busca Inteligente</p>
+                    <p className="text-[11px] text-gray-300">Usar painel de busca expandido</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <span className="text-sm font-medium text-gray-600">Resultados de Busca</span>
+              {candidates.length > 0 && (
+                <Badge variant="secondary" className="text-[11px]">
+                  {candidates.length} candidato{candidates.length !== 1 ? 's' : ''}
+                </Badge>
+              )}
+            </div>
+
+            {/* Contextual Actions Banner - Ações para candidatos selecionados */}
+            <ContextualActionsBanner
+              selectedCount={selectedCandidatesForBatch.size}
+              pearchCount={selectedPearchCount}
+              onDeselectAll={deselectAllCandidates}
+              onAddToVacancy={() => setShowAddToVacancyModal(true)}
+              onAddToList={handleAddToList}
+              isAddingToList={isAddingToList}
+              onSendEmail={() => setShowSendEmailModal(true)}
+              onAnalyze={() => setShowLIAAnalysis(true)}
+              onWSIScreening={() => {
+                toast({
+                  title: "Triagem WSI",
+                  description: "Iniciando triagem para candidatos selecionados..."
+                })
+              }}
+              onToggleFavorite={() => {
+                selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
+                toast({
+                  title: "Favoritos atualizados",
+                  description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos`
+                })
+              }}
+              onScheduleInterview={() => setShowScheduleModal(true)}
+              onHide={() => {
+                toast({
+                  title: "Candidatos ocultos",
+                  description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa`
+                })
+                deselectAllCandidates()
+              }}
+              onSaveToLocalBase={handleSaveToLocalBase}
+              isSavingToBase={isSavingToBase}
+            />
+
+            {/* ✨ Banner Cross-Tab Filter */}
+            {showCrossTabBanner && crossTabFilter && (
+              <Card className="bg-[#60BED1]/5 dark:bg-[#60BED1]/10 shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#60BED1] rounded-lg flex items-center justify-center">
+                      {crossTabFilter.type === 'company' ? (
+                        <Building className="w-5 h-5 text-white" />
+                      ) : (
+                        <Target className="w-5 h-5 text-white" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                        🎯 Filtro Aplicado: {crossTabFilter.type === 'company' ? 'Empresa' : 'Inteligência Competitiva'}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        {crossTabFilter.type === 'company' && crossTabFilter.company && (
+                          `Mostrando candidatos da empresa "${crossTabFilter.company}" mapeada`
+                        )}
+                        {crossTabFilter.type === 'company' && crossTabFilter.companies && (
+                          `Mostrando candidatos das empresas: ${crossTabFilter.companies.join(', ')}`
+                        )}
+                        {crossTabFilter.filter === 'discontented_talents' && (
+                          `Talentos com indicações de descontentamento detectadas pela LIA`
+                        )}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={clearCrossTabFilter}
+                        >
+                          <X className="w-3 h-3 mr-1" />
+                          Limpar Filtro
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* ✨ Banner Visualizando Lista */}
+            {viewingList && (
+              <Card className="bg-[#60BED1]/5 dark:bg-[#60BED1]/10 shadow-sm border-l-4" style={{ borderLeftColor: viewingList.color || '#60BED1' }}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: viewingList.color || '#60BED1' }}
+                    >
+                      <List className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                        📋 Visualizando Lista: {viewingList.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {candidates.length} {candidates.length === 1 ? 'candidato' : 'candidatos'} nesta lista
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setViewingList(null)
+                          setShowSearchResults(false)
+                          setSearchTerm('')
+                          setLastSearchQuery('')
+                        }}
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Fechar Lista
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setActiveTab('lists')}
+                      >
+                        <ArrowLeft className="w-3 h-3 mr-1" />
+                        Voltar às Listas
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+
+            {/* Toolbar Compacto - Prompt LIA + Controles */}
+            {/* Esconde o prompt compacto quando o expandido estiver aberto */}
+            {!showExpandedLIA && (
+              <div className="flex items-center justify-between gap-4 mb-1 mt-1">
+                {/* Prompt LIA - Compacto (max 300px) com destaque */}
+                <div className="flex-1 max-w-[300px]">
+                  <div className="relative">
+                    <div className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 transition-all ${
+                      isLIAThinking ? 'animate-pulse' : ''
+                    }`}>
+                      <LIAIcon size="sm" className="opacity-80" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder={isLIAThinking ? "LIA está pensando..." : "Peça à LIA..."}
+                      value={liaPromptValue}
+                      onChange={(e) => setLiaPromptValue(e.target.value)}
+                      disabled={isLIAThinking}
+                      className={`w-full h-10 pl-10 pr-10 text-sm border-0 bg-[#60BED1]/20 dark:bg-[#60BED1]/15 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none placeholder:text-gray-600 dark:placeholder:text-gray-600 font-medium shadow-sm hover:shadow-md transition-all lia-prompt-focus ${
+                        isLIAThinking
+                          ? 'cursor-wait lia-prompt-thinking'
+                          : ''
+                      }`}
+                      onFocus={() => {
+                        // Expandir LIA sidebar ao focar
+                        if (!isLIAThinking) {
+                          setShowExpandedLIA(true)
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && liaPromptValue.trim() && !isLIAThinking) {
+                          handleAICommand(liaPromptValue)
+                          setLiaPromptValue('')
+                        }
+                      }}
+                    />
+                    <button
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors ${
+                        isLIAThinking
+                          ? 'cursor-wait opacity-50'
+                          : 'hover:bg-gray-900/10 dark:hover:bg-gray-100/10'
+                      }`}
+                      onClick={() => {
+                        if (liaPromptValue.trim() && !isLIAThinking) {
+                          handleAICommand(liaPromptValue)
+                          setLiaPromptValue('')
+                        }
+                      }}
+                      disabled={isLIAThinking}
+                    >
+                      {isLIAThinking ? (
+                        <div className="w-4 h-4 border-2 border-gray-900 dark:border-gray-100 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4 text-gray-900 dark:text-gray-100" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Indicador de Thinking - Aparece quando LIA está processando */}
+                  {isLIAThinking && (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 bg-[#60BED1]/15 dark:bg-[#60BED1]/10 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 animate-fade-in">
+                      <LIAIcon size="sm" className="animate-pulse" />
+                      <span className="font-medium">LIA está pensando</span>
+                      <div className="flex gap-0.5">
+                        <span className="w-1 h-1 bg-gray-900 dark:bg-gray-100 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                        <span className="w-1 h-1 bg-gray-900 dark:bg-gray-100 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                        <span className="w-1 h-1 bg-gray-900 dark:bg-gray-100 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sugestões contextuais removidas - agora aparecem no chat da LIA */}
+              </div>
+
+              {/* Controles e Info - Sempre visíveis à direita */}
+              <div className="flex items-center gap-3">
+                {/* Search Source & Contact Filter Icons - Barra de controle compacta com label */}
+                <TooltipProvider>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 border border-gray-100">
+                    {/* Ícones de Fonte */}
+                    <div className="flex items-center gap-0.5">
+                      {/* Local */}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => handleSourceChange('local')}
+                            className={`p-1.5 rounded-md transition-all ${
+                              searchSource === 'local'
+                                ? 'bg-[#60BED1]/20 text-[#60BED1]'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            <Home className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs">
+                          <p className="font-medium">Base Local</p>
+                          <p className="text-gray-400">Gratuito - seus candidatos</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      {/* Híbrido */}
+                      {showGlobalSearchOptions && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => handleSourceChange('hybrid')}
+                              className={`p-1.5 rounded-md transition-all ${
+                                searchSource === 'hybrid'
+                                  ? 'bg-[#60BED1]/20 text-[#60BED1]'
+                                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                              }`}
+                            >
+                              <Zap className="w-4 h-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs">
+                            <p className="font-medium">Híbrido</p>
+                            <p className="text-gray-400">Local + Global (1 créd/cand)</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+
+                      {/* Global */}
+                      {showGlobalSearchOptions && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => handleSourceChange('global')}
+                              className={`p-1.5 rounded-md transition-all ${
+                                searchSource === 'global'
+                                  ? 'bg-[#60BED1]/20 text-[#60BED1]'
+                                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                              }`}
+                            >
+                              <Globe className="w-4 h-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs">
+                            <p className="font-medium">Busca Global</p>
+                            <p className="text-gray-400">1 crédito por candidato</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
+
+                    {/* Label da fonte ativa - sempre visível com prefixo */}
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-gray-500">Fonte:</span>
+                      <span className={`text-xs font-medium ${
+                        searchSource === 'local' ? 'text-emerald-600' : 
+                        searchSource === 'global' ? 'text-amber-600' : 'text-blue-600'
+                      }`}>
+                        {searchSource === 'local' && 'Local'}
+                        {searchSource === 'hybrid' && 'Híbrido'}
+                        {searchSource === 'global' && 'Global'}
+                      </span>
+                    </div>
+
+                    {/* Separador */}
+                    <div className="w-px h-4 bg-gray-200 mx-0.5" />
+
+                    {/* Ícones de Contato */}
+                    <div className="flex items-center gap-0.5">
+                      {/* Email */}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => handleContactFilterChange('email')}
+                            className={`p-1.5 rounded-md transition-all ${
+                              pearchSearchOptions.requireEmails
+                                ? 'bg-[#5DA47A]/20 text-[#5DA47A]'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            <Mail className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs">
+                          <p className="font-medium">Requer Email</p>
+                          <p className="text-gray-400">{pearchSearchOptions.requireEmails ? 'Ativo' : 'Inativo'} - +1 créd</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      {/* Telefone */}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => handleContactFilterChange('phone')}
+                            className={`p-1.5 rounded-md transition-all ${
+                              pearchSearchOptions.requirePhoneNumbers
+                                ? 'bg-[#5DA47A]/20 text-[#5DA47A]'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            <Phone className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs">
+                          <p className="font-medium">Requer Telefone</p>
+                          <p className="text-gray-400">{pearchSearchOptions.requirePhoneNumbers ? 'Ativo' : 'Inativo'} - +1 créd</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+
+                    {/* Custo inline - sempre visível */}
+                    <span className={`text-[10px] font-medium ml-0.5 ${
+                      searchSource === 'local' ? 'text-gray-400' : 'text-amber-600'
+                    }`}>
+                      {searchSource === 'local' 
+                        ? '(grátis)' 
+                        : `(${1 + (pearchSearchOptions.requireEmails ? 1 : 0) + (pearchSearchOptions.requirePhoneNumbers ? 1 : 0)} créd/cand)`
+                      }
+                    </span>
+                  </div>
+                </TooltipProvider>
+
+                {/* Badge de seleção */}
+                {selectedCandidatesForBatch.size > 0 && (
+                  <Badge className="bg-blue-100 text-blue-800 border-0 text-xs font-medium">
+                    🎯 {selectedCandidatesForBatch.size}
+                  </Badge>
+                )}
+
+                {/* Botão Selecionar Todos - Movido para cá */}
+                {selectedCandidatesForBatch.size === 0 && sortedCandidates.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={selectAllCandidates}
+                    className="gap-2 text-xs h-8 px-3"
+                  >
+                    <CheckCircle className="w-3 h-3" />
+                    Selecionar Todos
+                  </Button>
+                )}
+
+                {/* Botões de controle - Filtros da Tabela (tableFilters) */}
+                <Button
+                  variant={showTableFiltersPanel ? "default" : "outline"}
+                  size="sm"
+                  className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ? 'bg-gray-900 hover:bg-gray-800 text-white' : ''}`}
+                  onClick={() => {
+                    setShowTableFiltersPanel(!showTableFiltersPanel)
+                  }}
+                >
+                  <Filter className="w-3 h-3" />
+                  Refinar
+                  {getActiveTableFiltersCount() > 0 && (
+                    <Badge className="bg-gray-700 text-white ml-1 text-xs border-0">
+                      {getActiveTableFiltersCount()}
+                    </Badge>
+                  )}
+                </Button>
+
+                <Button
+                  variant={showColumnConfig ? "default" : "outline"}
+                  size="sm"
+                  className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ? 'bg-gray-900 hover:bg-gray-800 text-white' : ''}`}
+                  onClick={handleToggleColumnConfig}
+                  title="Configurar colunas da tabela"
+                >
+                  <ChevronsLeftRight className="w-3 h-3" />
+                  Colunas
+                  <Badge
+                    className={`ml-1 text-xs border-0 ${
+                      showColumnConfig
+                        ? 'bg-gray-700 text-white'
+                        : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    {tableColumns.filter(col => col.visible).length}
+                  </Badge>
+                </Button>
+              </div>
+            </div>
+            )}
+
+            {/* Badge de Filtros Ativos - Simplificado */}
+            {(quickFilters.size > 0 || searchTerm || getActiveAdvancedFiltersCount() > 0) && (
+              <div className="mb-1.5 flex items-center gap-2">
+                <Badge className="text-xs bg-blue-100 text-blue-700 border-0 dark:bg-blue-900/20 dark:text-blue-300">
+                  filtros ativos
+                </Badge>
+                {selectedCandidatesForBatch.size > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={deselectAllCandidates}
+                    className="h-6 px-2 text-xs text-gray-700 hover:text-gray-900"
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Limpar seleção
+                  </Button>
+                )}
+              </div>
+            )}
+
+
+            {/* Results Layout with Sidebars - Layout flex responsivo */}
+            {/* ORDEM: LIA à esquerda, Filtros à direita, Tabela ao centro */}
+            <div className="flex gap-4 overflow-hidden transition-all duration-300 h-full w-full">
+              {/* LIA Sidebar Expandida - Sistema de Pesquisa Avançada */}
+              {showExpandedLIA && (
+                <div 
+                  className="flex-shrink-0 transition-all duration-300 relative group"
+                  style={{ width: `${liaWidth}px` }}
+                >
+                  <Card className="h-[calc(100vh-9rem)] flex flex-col overflow-hidden bg-white dark:bg-gray-900" style={{ border: '1px solid #E4EBEF' }}>
+                    {/* Mensagem de Apresentação da LIA */}
+                    <div className="flex-shrink-0 p-4" style={{ borderBottom: '1px solid #E4EBEF' }}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <Brain className="w-7 h-7 mb-3" style={{ color: '#60BED1' }} strokeWidth={2} />
+                          <h3 className="text-sm font-semibold mb-0.5" style={{ fontFamily: 'Source Serif 4, serif', color: '#1F2937' }}>
+                            Oi, eu sou a <span style={{ color: '#60BED1' }}>LIA</span>.
+                          </h3>
+                          <p className="text-[11px]" style={{ fontFamily: 'Open Sans, sans-serif', color: '#6B7280' }}>
+                            Posso criar vagas, buscar candidatos, analisar métricas e muito mais!
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setShowExpandedLIA(false)
+                            setUserCollapsedLIA(true)
+                          }}
+                          className="h-7 w-7 p-0 rounded-full hover:opacity-70 transition-opacity flex-shrink-0"
+                        >
+                          <X className="w-4 h-4" style={{ color: '#1F2937' }} />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Ações movidas para banner acima da tabela */}
+
+                    {/* LIA Batch Analysis - Aparece quando ativado via Quick Action */}
+                    {selectedCandidatesForBatch.size > 0 && showLIAAnalysis && (
+                      <div className="flex-shrink-0" style={{ borderBottom: '1px solid #E4EBEF' }}>
+                        {/* Header com botão para fechar análise */}
+                        <div className="flex items-center justify-between px-4 py-2 bg-purple-50 dark:bg-purple-900/10">
+                          <div className="flex items-center gap-2">
+                            <Brain className="w-4 h-4 text-purple-600" />
+                            <span className="text-xs font-semibold text-purple-900 dark:text-purple-100">
+                              Análise LIA em andamento
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowLIAAnalysis(false)}
+                            className="h-6 px-2 text-xs hover:bg-purple-100 dark:hover:bg-purple-900/20"
+                          >
+                            <X className="w-3 h-3 mr-1" />
+                            Fechar
+                          </Button>
+                        </div>
+                        
+                        <div className="p-4">
+                          <LIABatchAnalysis
+                            candidates={candidates.filter(c => selectedCandidatesForBatch.has(c.id))}
+                            onAnalysisComplete={handleLIAAnalysisComplete}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Pesquisa Avançada - TODO conteúdo escondido quando showLIAAnalysis === true */}
+                    {!showLIAAnalysis && (
+                      <>
+                        {/* Título: Pesquisa Avançada */}
+                        <div className="flex-shrink-0 px-4 py-2" style={{ borderBottom: '1px solid #E4EBEF' }}>
+                          <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100" style={{ fontFamily: 'Source Serif 4, serif' }}>
+                            Pesquisa Avançada
+                          </h3>
+                        </div>
+
+                        {/* Sistema de 6 Abas - Estilo Pill */}
+                        <div className="flex-shrink-0 px-3 py-2" style={{ borderBottom: '1px solid #E4EBEF', backgroundColor: 'var(--eleven-bg-main)' }}>
+                          <div className="flex gap-1.5 overflow-x-auto">
+                            {/* Aba IA Natural */}
+                            <button
+                              onClick={() => setActiveSearchTab('ia-natural')}
+                              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                                activeSearchTab === 'ia-natural' ? 'text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                              }`}
+                              style={activeSearchTab === 'ia-natural' 
+                                ? { backgroundColor: '#60BED1', fontFamily: 'Open Sans, sans-serif' } 
+                                : { fontFamily: 'Open Sans, sans-serif', color: '#4B5563' }
+                              }
+                            >
+                              <div className="flex items-center gap-1">
+                                <Sparkles className="w-3 h-3" />
+                                <span>IA Natural</span>
+                              </div>
+                            </button>
+
+                            {/* Aba Similar */}
+                            <button
+                              onClick={() => setActiveSearchTab('similar')}
+                              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                                activeSearchTab === 'similar' ? 'text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                              }`}
+                              style={activeSearchTab === 'similar' 
+                                ? { backgroundColor: '#60BED1', fontFamily: 'Open Sans, sans-serif' } 
+                                : { fontFamily: 'Open Sans, sans-serif', color: '#4B5563' }
+                              }
+                            >
+                              <div className="flex items-center gap-1">
+                                <Users className="w-3 h-3" />
+                                <span>Similar</span>
+                              </div>
+                            </button>
+
+                            {/* Aba Job Description */}
+                            <button
+                              onClick={() => setActiveSearchTab('job-description')}
+                              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                                activeSearchTab === 'job-description' ? 'text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                              }`}
+                              style={activeSearchTab === 'job-description' 
+                                ? { backgroundColor: '#60BED1', fontFamily: 'Open Sans, sans-serif' } 
+                                : { fontFamily: 'Open Sans, sans-serif', color: '#4B5563' }
+                              }
+                            >
+                              <div className="flex items-center gap-1">
+                                <FileText className="w-3 h-3" />
+                                <span>JD</span>
+                              </div>
+                            </button>
+
+                            {/* Aba Boolean */}
+                            <button
+                              onClick={() => setActiveSearchTab('boolean')}
+                              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                                activeSearchTab === 'boolean' ? 'text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                              }`}
+                              style={activeSearchTab === 'boolean' 
+                                ? { backgroundColor: '#60BED1', fontFamily: 'Open Sans, sans-serif' } 
+                                : { fontFamily: 'Open Sans, sans-serif', color: '#4B5563' }
+                              }
+                            >
+                              <div className="flex items-center gap-1">
+                                <Code className="w-3 h-3" />
+                                <span>Boolean</span>
+                              </div>
+                            </button>
+
+                            {/* Aba Arquétipos */}
+                            <button
+                              onClick={() => setActiveSearchTab('arquetipos')}
+                              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                                activeSearchTab === 'arquetipos' ? 'text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                              }`}
+                              style={activeSearchTab === 'arquetipos' 
+                                ? { backgroundColor: '#60BED1', fontFamily: 'Open Sans, sans-serif' } 
+                                : { fontFamily: 'Open Sans, sans-serif', color: '#4B5563' }
+                              }
+                            >
+                              <div className="flex items-center gap-1">
+                                <Target className="w-3 h-3" />
+                                <span>Arquétipos</span>
+                              </div>
+                            </button>
+
+                            {/* Aba Filtros */}
+                            <button
+                              onClick={() => setActiveSearchTab('filtros')}
+                              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                                activeSearchTab === 'filtros' ? 'text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                              }`}
+                              style={activeSearchTab === 'filtros' 
+                                ? { backgroundColor: '#60BED1', fontFamily: 'Open Sans, sans-serif' } 
+                                : { fontFamily: 'Open Sans, sans-serif', color: '#4B5563' }
+                              }
+                            >
+                              <div className="flex items-center gap-1">
+                                <Filter className="w-3 h-3" />
+                                <span>Filtros</span>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+
+                    {/* Conteúdo das Abas */}
+                    <div className="flex-1 overflow-y-auto p-4" style={{ backgroundColor: 'rgba(96, 190, 209, 0.04)' }}>
+                      
+                      {/* ABA 1: IA NATURAL - Chat Format */}
+                      {activeSearchTab === 'ia-natural' && (
+                        <div className="flex flex-col h-full" style={{ minHeight: '400px' }}>
+                          {/* Área de Chat - Histórico de Mensagens */}
+                          <div 
+                            ref={chatScrollRef}
+                            className="flex-1 overflow-y-auto space-y-3 mb-4"
+                            style={{ maxHeight: 'calc(100% - 80px)' }}
+                          >
+                            {/* Mensagem inicial da LIA */}
+                            {chatMessages.length === 0 && !searchResults.query && (
+                              <div className="space-y-4">
+                                {/* Dica inicial */}
+                                <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
+                                  <div className="flex items-start gap-2">
+                                    <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                                    <p className="text-[11px] text-gray-600 dark:text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                      <strong>Dica:</strong> Para melhores resultados, seja específico sobre skills, senioridade e localização
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                {/* Sugestões rápidas */}
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-1.5 text-[11px] text-gray-700" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                    <Sparkles className="w-3 h-3" style={{ color: '#60BED1' }} />
+                                    <span>Sugestões:</span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-2">
+                                    {[
+                                      'Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python',
+                                      'Product Manager Pleno remoto, experiência em B2B SaaS, metodologias ágeis',
+                                      'Data Scientist Sênior, ML e Python, setor financeiro'
+                                    ].map((suggestion) => (
+                                      <button
+                                        key={suggestion}
+                                        onClick={() => setLiaPromptValue(suggestion)}
+                                        className="h-auto px-2.5 py-1.5 text-[11px] rounded-lg border border-gray-200 hover:border-[#60BED1] hover:bg-[#60BED1]/5 transition-all text-left"
+                                        style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                      >
+                                        {suggestion}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Resultado da Busca (como resposta da LIA) - PRIMEIRO cronologicamente */}
+                            {searchResults.query && (
+                              <div className="space-y-3">
+                                {/* Mensagem do usuário */}
+                                <div className="flex justify-end">
+                                  <div className="max-w-[85%] p-3 rounded-lg bg-[#60BED1] text-white">
+                                    <p className="text-xs" style={{ fontFamily: 'Open Sans, sans-serif' }}>{searchResults.query}</p>
+                                  </div>
+                                </div>
+                                
+                                {/* Resposta da LIA */}
+                                <div className="flex items-start gap-2">
+                                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                                    <LIAIcon size="xs" />
+                                  </div>
+                                  <div className="flex-1 space-y-3">
+                                    {/* Resumo dos resultados */}
+                                    <div className="p-3 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                                      <p className="text-xs font-medium text-gray-900 dark:text-gray-100 mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                        Encontrei <span className="text-[#60BED1]">{searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)} candidato{(searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)) > 1 ? 's' : ''}</span> para sua busca:
+                                      </p>
+                                      <div className="flex items-center gap-3 text-[11px] mb-2">
+                                        {searchResults.localCount > 0 && (
+                                          <div className="flex items-center gap-1 text-emerald-600">
+                                            <Home className="w-3 h-3" />
+                                            <span className="font-medium">{searchResults.localCount} base local</span>
+                                          </div>
+                                        )}
+                                        {searchResults.showGlobalResults && searchResults.globalCount > 0 && (
+                                          <div className="flex items-center gap-1 text-blue-600">
+                                            <Globe className="w-3 h-3" />
+                                            <span className="font-medium">{searchResults.globalCount} busca global</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center justify-between mt-2">
+                                        <p className="text-[11px] text-gray-700 dark:text-gray-400 flex items-center gap-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                          <TrendingUp className="w-3 h-3" />
+                                          Ordenados por aderência ao perfil
+                                        </p>
+                                        <button
+                                          onClick={() => {
+                                            setShowSaveAsArchetypeModal(true)
+                                            setArchetypeNameInput('')
+                                            setArchetypeEmojiInput('🎯')
+                                          }}
+                                          className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-full border border-[#60BED1] text-[#60BED1] hover:bg-[#60BED1]/10 transition-all"
+                                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                        >
+                                          <Bookmark className="w-3 h-3" />
+                                          Salvar Arquétipo
+                                        </button>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Candidatos locais na tabela */}
+                                    {searchResults.localCount > 0 && (
+                                      <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
+                                        <div className="flex items-center gap-2">
+                                          <Home className="w-3.5 h-3.5 text-emerald-600" />
+                                          <p className="text-[11px] text-emerald-800 dark:text-emerald-300" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                            <span className="font-semibold">{searchResults.localCount} candidatos</span> da base local exibidos na tabela
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Botão para expandir busca para global - OPT-IN: só mostra após busca local */}
+                                    {currentSearchSource === 'local' && !searchResults.showGlobalResults && !searchResults.globalDismissed && searchResults.query && (
+                                      <div className="p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <Globe className="w-4 h-4 text-blue-600" />
+                                            <div>
+                                              <p className="text-[11px] font-medium text-blue-900 dark:text-blue-300">
+                                                Expandir para Busca Global?
+                                              </p>
+                                              <p className="text-[11px] text-blue-600 dark:text-blue-400">
+                                                Acesse +800M de perfis (1 crédito/candidato)
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              className="!text-[11px] !px-2.5 !py-1.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                              style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                              onClick={() => {
+                                                setSearchResults(prev => ({ ...prev, globalDismissed: true }))
+                                              }}
+                                            >
+                                              <X className="w-3 h-3 mr-1" />
+                                              Manter local
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              className="!text-[11px] !px-3 !py-1.5"
+                                              style={{
+                                                backgroundColor: '#60BED1',
+                                                color: '#FFFFFF',
+                                                fontFamily: 'Open Sans, sans-serif'
+                                              }}
+                                              onClick={() => setShowGlobalExpansionConfirm(true)}
+                                            >
+                                              <Globe className="w-3 h-3 mr-1" />
+                                              Expandir Busca
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Mensagem quando usuário descartou busca global */}
+                                    {currentSearchSource === 'local' && searchResults.globalDismissed && !searchResults.showGlobalResults && searchResults.query && (
+                                      <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 shadow-sm">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <Globe className="w-3.5 h-3.5 text-gray-600" />
+                                            <p className="text-[11px] text-gray-700 dark:text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                              Busca global disponível
+                                            </p>
+                                          </div>
+                                          <button
+                                            onClick={() => setSearchResults(prev => ({ ...prev, globalDismissed: false }))}
+                                            className="text-[11px] text-[#60BED1] hover:text-[#4DA8BB] hover:underline"
+                                            style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                          >
+                                            Expandir busca
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Confirmação de candidatos globais adicionados */}
+                                    {searchResults.showGlobalResults && searchResults.globalCount > 0 && (
+                                      <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
+                                        <div className="flex items-center gap-2">
+                                          <Globe className="w-3.5 h-3.5 text-blue-600" />
+                                          <p className="text-[11px] text-blue-800 dark:text-blue-300" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                            <span className="font-semibold">{searchResults.globalCount} candidatos</span> globais adicionados à tabela
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Loading - LIA Buscando */}
+                            {searchResults.isLoading && (
+                              <div className="space-y-3">
+                                {/* Mensagem do usuário (query atual) */}
+                                {searchResults.query && (
+                                  <div className="flex justify-end">
+                                    <div className="max-w-[85%] p-3 rounded-lg bg-[#60BED1] text-white">
+                                      <p className="text-xs" style={{ fontFamily: 'Open Sans, sans-serif' }}>{searchResults.query}</p>
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* LIA Pensando */}
+                                <div className="flex items-start gap-2">
+                                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)' }}>
+                                    <LIAIcon size="xs" />
+                                  </div>
+                                  <div className="flex-1 space-y-2">
+                                    {/* Card de status */}
+                                    <div className="p-4 rounded-lg bg-[#60BED1]/5 shadow-sm">
+                                      <div className="flex items-center gap-3 mb-3">
+                                        <div className="relative">
+                                          <div className="w-8 h-8 rounded-full bg-[#60BED1]/20 flex items-center justify-center">
+                                            <Search className="w-4 h-4 text-[#60BED1] animate-pulse" />
+                                          </div>
+                                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#60BED1] rounded-full animate-ping" />
+                                        </div>
+                                        <div>
+                                          <p className="text-xs font-medium text-gray-900 dark:text-gray-100" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                            LIA está buscando...
+                                          </p>
+                                          <p className="text-[11px] text-gray-700 dark:text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                            Analisando perfis compatíveis
+                                          </p>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Progress steps */}
+                                      <div className="space-y-2">
+                                        <div className="flex items-center gap-2 text-[11px] text-gray-600 dark:text-gray-600">
+                                          <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
+                                            <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                          </div>
+                                          <span style={{ fontFamily: 'Open Sans, sans-serif' }}>Interpretando critérios</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-[11px] text-gray-600 dark:text-gray-600">
+                                          <div className="w-4 h-4 rounded-full bg-[#60BED1] flex items-center justify-center animate-spin">
+                                            <div className="w-2 h-2 border border-white border-t-transparent rounded-full" />
+                                          </div>
+                                          <span style={{ fontFamily: 'Open Sans, sans-serif' }}>Buscando na base de candidatos</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-[11px] text-gray-600">
+                                          <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-700" />
+                                          <span style={{ fontFamily: 'Open Sans, sans-serif' }}>Rankeando por compatibilidade</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Typing indicator */}
+                                    <div className="flex items-center gap-1.5 px-3 py-2">
+                                      <div className="flex gap-1">
+                                        <div className="w-2 h-2 bg-[#60BED1] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                        <div className="w-2 h-2 bg-[#60BED1] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                        <div className="w-2 h-2 bg-[#60BED1] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Mensagens do Chat - DEPOIS dos resultados da busca (ordem cronológica) */}
+                            {chatMessages.map((msg) => (
+                              <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                {msg.type === 'user' ? (
+                                  <div className="max-w-[85%] p-3 rounded-lg bg-[#60BED1] text-white">
+                                    <p className="text-xs" style={{ fontFamily: 'Open Sans, sans-serif' }}>{msg.content}</p>
+                                  </div>
+                                ) : msg.type === 'proactive_insight' && msg.analytics ? (
+                                  <div className="w-full">
+                                    <ProactiveInsightCard
+                                      analytics={msg.analytics}
+                                      onAction={handleQuickAction}
+                                      isExpanded={false}
+                                    />
+                                  </div>
+                                ) : msg.type === 'calibration' && msg.candidates ? (
+                                  <div className="w-full space-y-3">
+                                    <div className="flex items-start gap-2">
+                                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                                        <LIAIcon size="xs" />
+                                      </div>
+                                      <p className="text-xs text-gray-600 dark:text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                        Vou mostrar alguns candidatos para entender melhor o perfil que você busca:
+                                      </p>
+                                    </div>
+                                    <div className="space-y-2 pl-8">
+                                      {msg.candidates.map(candidate => (
+                                        <CalibrationCard
+                                          key={candidate.id}
+                                          candidate={candidate}
+                                          onLike={handleCalibrationLike}
+                                          onDislike={handleCalibrationDislike}
+                                        />
+                                      ))}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="max-w-[95%] space-y-2">
+                                    <div className="flex items-start gap-2">
+                                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                                        <LIAIcon size="xs" />
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                          {msg.content.split(/(\*\*[^*]+\*\*)/).map((part, i) => 
+                                            part.startsWith('**') && part.endsWith('**') 
+                                              ? <strong key={i}>{part.slice(2, -2)}</strong>
+                                              : part
+                                          )}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Input de Chat - Fixo na parte inferior */}
+                          <div className="mt-auto pt-3" style={{ borderTop: '1px solid #E4EBEF' }}>
+                            {/* Banner de criação de arquétipo */}
+                            {isCreatingArchetype && (
+                              <div className="mb-2 p-2 rounded-lg bg-[#60BED1]/10 border border-[#60BED1]/30 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Target className="w-4 h-4 text-[#60BED1]" />
+                                  <span className="text-[11px] font-medium text-[#60BED1]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                    Criando novo arquétipo...
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    setIsCreatingArchetype(false)
+                                    setArchetypeCreationStep('initial')
+                                  }}
+                                  className="p-1 hover:bg-[#60BED1]/20 rounded"
+                                >
+                                  <X className="w-3 h-3 text-[#60BED1]" />
+                                </button>
+                              </div>
+                            )}
+                            <div className="relative">
+                              <input
+                                type="text"
+                                placeholder={isCreatingArchetype 
+                                  ? "Cole a descrição da vaga ou descreva o perfil ideal..." 
+                                  : "Buscar candidatos... Ex: Backend sênior Node.js"
+                                }
+                                value={liaPromptValue}
+                                onChange={(e) => setLiaPromptValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && liaPromptValue.trim()) {
+                                    if (isCreatingArchetype) {
+                                      const userMessage: ChatMessage = {
+                                        id: `user-${Date.now()}`,
+                                        type: 'user',
+                                        content: liaPromptValue.trim(),
+                                        timestamp: new Date()
+                                      }
+                                      setChatMessages(prev => [...prev, userMessage])
+                                      
+                                      setTimeout(() => {
+                                        const extractedName = liaPromptValue.length > 50 
+                                          ? liaPromptValue.substring(0, 50).split(' ').slice(0, 5).join(' ')
+                                          : liaPromptValue.trim()
+                                        
+                                        const liaResponse: ChatMessage = {
+                                          id: `lia-extraction-${Date.now()}`,
+                                          type: 'lia',
+                                          content: `✅ Analisei sua descrição e identifiquei os critérios principais.\n\n**Arquétipo sugerido:** ${extractedName}\n\nClique em "Salvar Arquétipo" abaixo para confirmar, ou continue descrevendo para refinar.`,
+                                          timestamp: new Date()
+                                        }
+                                        setChatMessages(prev => [...prev, liaResponse])
+                                        
+                                        setNewArchetypeData({
+                                          name: extractedName,
+                                          description: liaPromptValue.trim(),
+                                          query: liaPromptValue.trim(),
+                                          emoji: '🎯'
+                                        })
+                                        setArchetypeCreationStep('review')
+                                        setShowSaveAsArchetypeModal(true)
+                                        setArchetypeNameInput(extractedName)
+                                      }, 1000)
+                                      
+                                      setLiaPromptValue('')
+                                    } else {
+                                      handleLIAChatMessage(liaPromptValue.trim())
+                                    }
+                                  }
+                                }}
+                                className="w-full py-3 pl-4 pr-[180px] text-xs rounded-md border focus:outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                style={{ 
+                                  border: isCreatingArchetype ? '1px solid #60BED1' : '1px solid #E4EBEF',
+                                  fontFamily: 'Open Sans, sans-serif'
+                                }}
+                              />
+                              
+                              {/* Ícones de Fonte e Contato dentro do input */}
+                              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                                {/* Fonte de busca: Local / Híbrido / Global */}
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); handleSourceChange('local'); }}
+                                        className={`p-1.5 rounded-md transition-all ${
+                                          searchSource === 'local' 
+                                            ? 'bg-[rgba(96,190,209,0.15)]' 
+                                            : 'hover:bg-gray-100'
+                                        }`}
+                                      >
+                                        <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-[#60BED1]' : 'text-gray-500'}`} />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">
+                                      <p className="text-xs font-medium">Base Local</p>
+                                      <p className="text-[10px] text-gray-400">Gratuito</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                
+                                {showGlobalSearchOptions && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => { e.stopPropagation(); handleSourceChange('hybrid'); }}
+                                          className={`p-1.5 rounded-md transition-all ${
+                                            searchSource === 'hybrid' 
+                                              ? 'bg-[rgba(96,190,209,0.15)]' 
+                                              : 'hover:bg-gray-100'
+                                          }`}
+                                        >
+                                          <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-[#60BED1]' : 'text-gray-500'}`} />
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">
+                                        <p className="text-xs font-medium">Híbrido (Local + Global)</p>
+                                        <p className="text-[10px] text-gray-400">1 crédito/candidato</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                                
+                                {showGlobalSearchOptions && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => { e.stopPropagation(); handleSourceChange('global'); }}
+                                          className={`p-1.5 rounded-md transition-all ${
+                                            searchSource === 'global' 
+                                              ? 'bg-[rgba(96,190,209,0.15)]' 
+                                              : 'hover:bg-gray-100'
+                                          }`}
+                                        >
+                                          <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-[#60BED1]' : 'text-gray-500'}`} />
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">
+                                        <p className="text-xs font-medium">Base Global</p>
+                                        <p className="text-[10px] text-gray-400">1 crédito/candidato</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                                
+                                {/* Separador */}
+                                <div className="w-px h-4 bg-gray-200 mx-0.5" />
+                                
+                                {/* Contato: Email / Telefone */}
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); handleContactFilterChange('email'); }}
+                                        className={`p-1.5 rounded-md transition-all ${
+                                          pearchSearchOptions.requireEmails 
+                                            ? 'bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]' 
+                                            : 'hover:bg-gray-100'
+                                        }`}
+                                      >
+                                        <Mail className={`w-3.5 h-3.5 ${pearchSearchOptions.requireEmails ? 'text-[#5DA47A]' : 'text-gray-400'}`} />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">
+                                      <p className="text-xs font-medium">Apenas com Email</p>
+                                      <p className="text-[10px] text-gray-400">{pearchSearchOptions.requireEmails ? 'Ativo' : '+1 crédito se ativo'}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); handleContactFilterChange('phone'); }}
+                                        className={`p-1.5 rounded-md transition-all ${
+                                          pearchSearchOptions.requirePhoneNumbers 
+                                            ? 'bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]' 
+                                            : 'hover:bg-gray-100'
+                                        }`}
+                                      >
+                                        <Phone className={`w-3.5 h-3.5 ${pearchSearchOptions.requirePhoneNumbers ? 'text-[#5DA47A]' : 'text-gray-400'}`} />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">
+                                      <p className="text-xs font-medium">Apenas com Telefone</p>
+                                      <p className="text-[10px] text-gray-400">{pearchSearchOptions.requirePhoneNumbers ? 'Ativo' : '+1 crédito se ativo'}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                
+                                {/* Separador */}
+                                <div className="w-px h-4 bg-gray-200 mx-0.5" />
+                                
+                                {/* Botão de buscar */}
+                                <button
+                                  onClick={() => {
+                                    if (liaPromptValue.trim()) {
+                                      if (isCreatingArchetype) {
+                                        const userMessage: ChatMessage = {
+                                          id: `user-${Date.now()}`,
+                                          type: 'user',
+                                          content: liaPromptValue.trim(),
+                                          timestamp: new Date()
+                                        }
+                                        setChatMessages(prev => [...prev, userMessage])
+                                        
+                                        setTimeout(() => {
+                                          const extractedName = liaPromptValue.length > 50 
+                                            ? liaPromptValue.substring(0, 50).split(' ').slice(0, 5).join(' ')
+                                            : liaPromptValue.trim()
+                                          
+                                          const liaResponse: ChatMessage = {
+                                            id: `lia-extraction-${Date.now()}`,
+                                            type: 'lia',
+                                            content: `✅ Analisei sua descrição e identifiquei os critérios principais.\n\n**Arquétipo sugerido:** ${extractedName}\n\nClique em "Salvar Arquétipo" abaixo para confirmar, ou continue descrevendo para refinar.`,
+                                            timestamp: new Date()
+                                          }
+                                          setChatMessages(prev => [...prev, liaResponse])
+                                          
+                                          setNewArchetypeData({
+                                            name: extractedName,
+                                            description: liaPromptValue.trim(),
+                                            query: liaPromptValue.trim(),
+                                            emoji: '🎯'
+                                          })
+                                          setArchetypeCreationStep('review')
+                                          setShowSaveAsArchetypeModal(true)
+                                          setArchetypeNameInput(extractedName)
+                                        }, 1000)
+                                        
+                                        setLiaPromptValue('')
+                                      } else {
+                                        handleLIAChatMessage(liaPromptValue.trim())
+                                      }
+                                    }
+                                  }}
+                                  disabled={!liaPromptValue.trim() || searchResults.isLoading}
+                                  className="p-2 rounded-full transition-all disabled:opacity-50"
+                                  style={{ backgroundColor: liaPromptValue.trim() ? '#60BED1' : 'transparent' }}
+                                >
+                                  {isCreatingArchetype ? (
+                                    <Target className={`w-4 h-4 ${liaPromptValue.trim() ? 'text-white' : 'text-gray-600'}`} />
+                                  ) : (
+                                    <Search className={`w-4 h-4 ${liaPromptValue.trim() ? 'text-white' : 'text-gray-600'}`} />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                            
+                            {/* Criteria Tags + Sugestões Toggle + Assistente Button */}
+                            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                              {/* 5 Tags: Localização, Cargo, Experiência, Setor, Habilidades */}
+                              {[
+                                { key: "location", label: "Localização", icon: MapPin, filled: !!liaPromptEntities.location, value: liaPromptEntities.location },
+                                { key: "job_title", label: "Cargo", icon: Briefcase, filled: !!liaPromptEntities.job_title, value: liaPromptEntities.job_title },
+                                { key: "years_experience", label: "Experiência", icon: Clock, filled: !!liaPromptEntities.years_experience, value: liaPromptEntities.years_experience },
+                                { key: "industry", label: "Setor", icon: Building, filled: !!liaPromptEntities.industry, value: liaPromptEntities.industry },
+                                { key: "skills", label: "Habilidades", icon: Code, filled: !!(liaPromptEntities.skills && liaPromptEntities.skills.length > 0), value: liaPromptEntities.skills?.join(", ") }
+                              ].map((tag) => {
+                                const getTagColors = (key: string, filled: boolean) => {
+                                  if (!filled) return { bg: '#F3F4F6', text: '#1F2937', iconBg: '#6B7280' }
+                                  switch (key) {
+                                    case 'job_title': return { bg: '#E0F5FA', text: '#2D8A9E', iconBg: '#60BED1' }
+                                    case 'location': return { bg: '#F3EAFF', text: '#7C3AED', iconBg: '#8B5CF6' }
+                                    case 'skills': return { bg: '#E5F5EB', text: '#2D6A4F', iconBg: '#5DA47A' }
+                                    case 'years_experience': return { bg: '#FDF4E8', text: '#B8860B', iconBg: '#E5A853' }
+                                    case 'industry': return { bg: '#E8F1FD', text: '#2563EB', iconBg: '#3B82F6' }
+                                    default: return { bg: '#E0F5FA', text: '#60BED1', iconBg: '#60BED1' }
+                                  }
+                                }
+                                const colors = getTagColors(tag.key, tag.filled)
+                                return (
+                                  <div key={tag.key} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                                    style={{ backgroundColor: colors.bg, color: colors.text, fontFamily: '"Open Sans", sans-serif' }}
+                                    title={tag.value || undefined}
+                                  >
+                                    <tag.icon className="w-3 h-3" style={{ color: tag.filled ? colors.iconBg : colors.text }} />
+                                    <span className="font-medium">{tag.label}</span>
+                                    {tag.filled && tag.value && (
+                                      <>
+                                        <span style={{ opacity: 0.5 }}>·</span>
+                                        <span className="max-w-[80px] truncate font-normal" style={{ opacity: 0.85 }}>{tag.value}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                )
+                              })}
+                              
+                              {/* Sugestões Toggle */}
+                              <button onClick={() => setShowLiaSuggestions(!showLiaSuggestions)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all ${showLiaSuggestions ? 'bg-[#60BED1]/10 text-[#60BED1]' : 'bg-gray-100 text-gray-600'}`}
+                                style={{ fontFamily: '"Open Sans", sans-serif' }}
+                              >
+                                <Sparkles className="w-3 h-3" />
+                                <span className="font-medium">Sugestões</span>
+                              </button>
+                              
+                              {/* Assistente Button */}
+                              <button onClick={() => setShowLiaAssistant(!showLiaAssistant)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all ${showLiaAssistant ? 'bg-[#60BED1]/10 text-[#60BED1]' : 'bg-gray-100 text-gray-600'}`}
+                                style={{ fontFamily: '"Open Sans", sans-serif' }}
+                              >
+                                <Brain className="w-3 h-3" />
+                                <span className="font-medium">Assistente</span>
+                              </button>
+                            </div>
+                            
+                            {/* Sugestões Panel - appears when toggle is active */}
+                            {showLiaSuggestions && (
+                              <div className="mt-3 p-3 rounded-lg border border-gray-100 bg-gradient-to-br from-[#60BED1]/5 to-transparent">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Sparkles className="w-3.5 h-3.5 text-[#60BED1]" />
+                                  <span className="text-[11px] font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                    Sugestões para refinar sua busca
+                                  </span>
+                                  {liaIsParsingEntities && (
+                                    <Loader2 className="w-3 h-3 animate-spin text-[#60BED1]" />
+                                  )}
+                                </div>
+                                
+                                {liaSuggestions.length > 0 ? (
+                                  <div className="space-y-1.5">
+                                    {liaSuggestions.map((suggestion, idx) => {
+                                      const isTip = suggestion.toLowerCase().includes('adicione') || 
+                                                    suggestion.toLowerCase().includes('liste') ||
+                                                    suggestion.toLowerCase().includes('especifique') ||
+                                                    suggestion.toLowerCase().includes('inclua')
+                                      return isTip ? (
+                                        <div
+                                          key={idx}
+                                          className="w-full text-left px-2.5 py-2 rounded-md text-[11px] text-gray-600 bg-amber-50 border border-amber-100 flex items-start gap-2"
+                                          style={{ fontFamily: '"Open Sans", sans-serif' }}
+                                        >
+                                          <Lightbulb className="w-3 h-3 mt-0.5 text-amber-500 flex-shrink-0" />
+                                          <span>{suggestion}</span>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          key={idx}
+                                          onClick={() => {
+                                            const currentValue = liaPromptValue.trim()
+                                            setLiaPromptValue(currentValue ? `${currentValue}, ${suggestion}` : suggestion)
+                                          }}
+                                          className="w-full text-left px-2.5 py-2 rounded-md text-[11px] text-gray-600 bg-white border border-gray-100 hover:border-[#60BED1] hover:bg-[#60BED1]/5 transition-all flex items-start gap-2"
+                                          style={{ fontFamily: '"Open Sans", sans-serif' }}
+                                        >
+                                          <Plus className="w-3 h-3 mt-0.5 text-[#60BED1] flex-shrink-0" />
+                                          <span>{suggestion}</span>
+                                        </button>
+                                      )
+                                    })}
+                                  </div>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {!liaPromptValue.trim() ? (
+                                      <p className="text-[11px] text-gray-500" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                        Comece a digitar para receber sugestões inteligentes da LIA...
+                                      </p>
+                                    ) : (
+                                      <>
+                                        <p className="text-[10px] text-gray-500 mb-1" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                          Adicione habilidades populares:
+                                        </p>
+                                        <div className="flex flex-wrap gap-1.5">
+                                          {['Python', 'React', 'Node.js', 'TypeScript', 'AWS', 'SQL', 'Docker', 'Java', 'Kubernetes'].map((term) => (
+                                            <button
+                                              key={term}
+                                              onClick={() => setLiaPromptValue(liaPromptValue.trim() ? `${liaPromptValue.trim()}, ${term}` : term)}
+                                              className="px-2 py-1 text-[10px] rounded-full bg-gray-50 text-gray-600 hover:bg-[#60BED1]/10 hover:text-[#60BED1] border border-gray-100 hover:border-[#60BED1]/30 transition-all"
+                                              style={{ fontFamily: '"Open Sans", sans-serif' }}
+                                            >
+                                              + {term}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* Assistente Panel - appears when toggle is active */}
+                            {showLiaAssistant && (
+                              <div className="mt-3 p-3 rounded-lg border border-[#60BED1]/20 bg-gradient-to-br from-[#60BED1]/8 to-[#60BED1]/3">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Brain className="w-3.5 h-3.5 text-[#60BED1]" />
+                                  <span className="text-[11px] font-semibold text-gray-800" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                    Dicas da LIA
+                                  </span>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  {liaAssistantTips.map((tip, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex items-start gap-2 px-2.5 py-2 rounded-full text-[11px] text-gray-600 bg-white/80 border border-[#60BED1]/10"
+                                      style={{ fontFamily: '"Open Sans", sans-serif' }}
+                                    >
+                                      <span className="text-[#60BED1] font-medium">{idx + 1}.</span>
+                                      <span>{tip}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                                <div className="mt-3 pt-2 border-t border-[#60BED1]/10">
+                                  <p className="text-[10px] text-gray-500 flex items-center gap-1.5" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                                    <HelpCircle className="w-3 h-3" />
+                                    Quanto mais específico, melhores os resultados da busca
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ABA 2: JOB DESCRIPTION */}
+                      {activeSearchTab === 'job-description' && (
+                        <div className="space-y-4">
+                          {/* Descrição */}
+                          <p className="text-[11px]" style={{ fontFamily: 'Open Sans, sans-serif', color: '#6B7280' }}>
+                            Cole sua descrição de vaga e a IA extrairá os critérios automaticamente
+                          </p>
+
+                          {/* Textarea Grande */}
+                          <div className="relative">
+                            <textarea
+                              placeholder="Cole aqui a descrição da vaga completa..."
+                              value={jobDescriptionText}
+                              onChange={(e) => setJobDescriptionText(e.target.value)}
+                              className="w-full h-48 p-4 pb-12 text-xs rounded-lg border focus:outline-none transition-all resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                              style={{ 
+                                border: '1px solid #E4EBEF',
+                                fontFamily: 'Open Sans, sans-serif'
+                              }}
+                              onFocus={(e) => e.target.style.borderColor = '#60BED1'}
+                              onBlur={(e) => e.target.style.borderColor = '#E4EBEF'}
+                            />
+                            {/* Botões de Anexo e Áudio */}
+                            <div className="absolute bottom-3 right-3 flex gap-2">
+                              <button
+                                type="button"
+                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                                title="Anexar documento"
+                                onClick={() => {
+                                  // TODO: Implementar upload de arquivo
+                                  console.log('Anexar documento')
+                                }}
+                              >
+                                <Paperclip className="w-4 h-4 text-gray-700" />
+                              </button>
+                              <button
+                                type="button"
+                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                                title="Gravar áudio"
+                                onClick={() => {
+                                  // TODO: Implementar gravação de áudio
+                                  console.log('Gravar áudio')
+                                }}
+                              >
+                                <Mic className="w-4 h-4 text-gray-700" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Critérios Extraídos */}
+                          {extractedJDCriteria && (
+                            <div className="p-3 rounded-lg border" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)', borderColor: 'rgba(96, 190, 209, 0.3)' }}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Sparkles className="w-4 h-4" style={{ color: '#60BED1' }} />
+                                <span className="text-xs font-medium" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                  Critérios Extraídos
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {extractedJDCriteria.job_title && (
+                                  <span className="px-2 py-1 text-[11px] rounded-full" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)', color: '#4DA8BB' }}>
+                                    {extractedJDCriteria.job_title}
+                                  </span>
+                                )}
+                                {extractedJDCriteria.seniority && (
+                                  <span className="px-2 py-1 text-[11px] rounded-full" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)', color: '#4DA8BB' }}>
+                                    {extractedJDCriteria.seniority}
+                                  </span>
+                                )}
+                                {extractedJDCriteria.skills.map((skill, idx) => (
+                                  <span key={idx} className="px-2 py-1 text-[11px] rounded-full" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)', color: '#4DA8BB' }}>
+                                    {skill}
+                                  </span>
+                                ))}
+                                {extractedJDCriteria.experience_years && (
+                                  <span className="px-2 py-1 text-[11px] rounded-full" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)', color: '#4DA8BB' }}>
+                                    {extractedJDCriteria.experience_years}+ anos
+                                  </span>
+                                )}
+                                {extractedJDCriteria.location && (
+                                  <span className="px-2 py-1 text-[11px] rounded-full" style={{ backgroundColor: 'rgba(96, 190, 209, 0.2)', color: '#4DA8BB' }}>
+                                    {extractedJDCriteria.location}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Botão Extrair e Buscar */}
+                          <Button
+                            className="w-full h-11 !text-sm font-semibold gap-2"
+                            style={{
+                              backgroundColor: isSearchingJD ? '#9CA3AF' : '#1a1a1a',
+                              color: '#FFFFFF',
+                              fontFamily: 'Open Sans, sans-serif'
+                            }}
+                            onClick={async () => {
+                              if (jobDescriptionText.trim() && !isSearchingJD) {
+                                setIsSearchingJD(true)
+                                setExtractedJDCriteria(null)
+                                
+                                const userMessage: ChatMessage = {
+                                  id: `user-jd-${Date.now()}`,
+                                  type: 'user',
+                                  content: `Buscar candidatos pela descrição da vaga:\n\n"${jobDescriptionText.substring(0, 200)}${jobDescriptionText.length > 200 ? '...' : ''}"`,
+                                  timestamp: new Date()
+                                }
+                                setChatMessages(prev => [...prev, userMessage])
+                                
+                                try {
+                                  const response = await fetch('/api/backend-proxy/search/candidates/by-job-description', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      job_description: jobDescriptionText.trim(),
+                                      limit: 20,
+                                      search_pearch: searchSource !== 'local',
+                                      pearch_type: pearchSearchOptions.searchType
+                                    })
+                                  })
+                                  
+                                  if (!response.ok) throw new Error('Erro na busca')
+                                  
+                                  const data = await response.json()
+                                  
+                                  if (data.extracted_criteria) {
+                                    setExtractedJDCriteria({
+                                      job_title: data.extracted_criteria.job_title,
+                                      seniority: data.extracted_criteria.seniority,
+                                      skills: data.extracted_criteria.skills || [],
+                                      experience_years: data.extracted_criteria.experience_years,
+                                      location: data.extracted_criteria.location,
+                                      languages: data.extracted_criteria.languages || []
+                                    })
+                                  }
+                                  
+                                  if (data.candidates && data.candidates.length > 0) {
+                                    const mappedCandidates = data.candidates.map((c: any) => ({
+                                      id: c.id || `jd-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                                      candidateId: c.id?.substring(0, 8).toUpperCase() || 'JD',
+                                      name: c.name || 'Nome não disponível',
+                                      email: c.email || '',
+                                      phone: c.phone || '',
+                                      current_title: c.headline || c.current_title || '',
+                                      current_company: c.current_company || '',
+                                      location: c.location || '',
+                                      linkedin_url: c.linkedin_url,
+                                      avatar_url: c.avatar_url || c.picture_url,
+                                      avatar: c.avatar_url || c.picture_url,
+                                      technical_skills: c.skills || [],
+                                      skills: c.skills || [],
+                                      seniority_level: c.seniority_level,
+                                      years_of_experience: c.years_experience || c.total_experience_years,
+                                      experience: c.years_experience || c.total_experience_years || 0,
+                                      score: c.match_score ? Math.round(c.match_score * 25) : 75,
+                                      source: c.source || 'pearch',
+                                      has_email: c.has_email ?? true,
+                                      has_phone: c.has_phone ?? true,
+                                      is_opentowork: c.is_opentowork,
+                                      is_decision_maker: c.is_decision_maker,
+                                      is_top_universities: c.is_top_universities,
+                                      is_startup: c.is_startup || c.company_info?.is_startup,
+                                      expertise: c.expertise,
+                                      outreach_message: c.outreach_message,
+                                      experiences: c.experiences || [],
+                                      workHistory: (c.experiences || []).map((exp: any) => ({
+                                        company: exp.company_info?.name || exp.company || '',
+                                        title: exp.company_roles?.[0]?.title || exp.title || '',
+                                        startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
+                                        endDate: exp.company_roles?.[0]?.end_date || exp.end_date || '',
+                                        duration: exp.duration || '',
+                                        location: exp.company_info?.location || exp.location || '',
+                                        description: exp.company_roles?.[0]?.description || exp.description || ''
+                                      })),
+                                      education: (c.education || []).map((edu: any) => ({
+                                        school: edu.school || '',
+                                        degree: edu.degree || '',
+                                        field_of_study: edu.field_of_study || '',
+                                        fieldOfStudy: edu.field_of_study || '',
+                                        startDate: edu.start_date || '',
+                                        endDate: edu.end_date || ''
+                                      }))
+                                    }))
+                                    
+                                    const localCandidates = mappedCandidates.filter((c: any) => c.source === 'local')
+                                    const globalCandidates = mappedCandidates.filter((c: any) => c.source === 'pearch')
+                                    
+                                    // Respeitar searchSource selecionado pelo usuário
+                                    const shouldAutoShowGlobal = searchSource === 'global' || searchSource === 'hybrid'
+                                    const candidatesForTable = shouldAutoShowGlobal ? mappedCandidates : localCandidates
+                                    
+                                    setCandidates(candidatesForTable)
+                                    setHasSearchResults(true)
+                                    setSearchResultsCount(data.total_count || mappedCandidates.length)
+                                    setLocalResultsCount(data.local_count || localCandidates.length)
+                                    setPearchResultsCount(data.pearch_count || globalCandidates.length)
+                                    setShowSearchResults(true)
+                                    
+                                    setSearchResults(prev => ({
+                                      local: localCandidates,
+                                      global: globalCandidates,
+                                      localCount: data.local_count || localCandidates.length,
+                                      globalCount: data.pearch_count || globalCandidates.length,
+                                      query: data.query_generated || jobDescriptionText.substring(0, 50),
+                                      isLoading: false,
+                                      showGlobalResults: shouldAutoShowGlobal,
+                                      globalDismissed: prev.globalDismissed
+                                    }))
+                                    
+                                    const localCount = data.local_count || localCandidates.length
+                                    const liaMessage: ChatMessage = {
+                                      id: `lia-jd-result-${Date.now()}`,
+                                      type: 'lia',
+                                      content: `**Busca por Job Description concluída!**\n\nQuery gerada: "${data.query_generated}"\n\nEncontrei **${localCount} candidato${localCount > 1 ? 's' : ''}** na sua base local.`,
+                                      timestamp: new Date(),
+                                      searchResults: {
+                                        localCount: localCount,
+                                        globalCount: 0,
+                                        query: data.query_generated || ''
+                                      }
+                                    }
+                                    setChatMessages(prev => [...prev, liaMessage])
+                                  } else {
+                                    const liaMessage: ChatMessage = {
+                                      id: `lia-jd-noresult-${Date.now()}`,
+                                      type: 'lia',
+                                      content: `Não encontrei candidatos com os critérios extraídos da descrição da vaga.\n\nTente ajustar a descrição ou usar a busca por IA Natural com termos mais específicos.`,
+                                      timestamp: new Date()
+                                    }
+                                    setChatMessages(prev => [...prev, liaMessage])
+                                  }
+                                } catch (error) {
+                                  console.error('Erro na busca por JD:', error)
+                                  const liaMessage: ChatMessage = {
+                                    id: `lia-jd-error-${Date.now()}`,
+                                    type: 'lia',
+                                    content: `Erro ao buscar candidatos pela descrição da vaga. Por favor, tente novamente.`,
+                                    timestamp: new Date()
+                                  }
+                                  setChatMessages(prev => [...prev, liaMessage])
+                                } finally {
+                                  setIsSearchingJD(false)
+                                }
+                              }
+                            }}
+                            disabled={!jobDescriptionText.trim() || jobDescriptionText.length < 50 || isSearchingJD}
+                          >
+                            {isSearchingJD ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Analisando...
+                              </>
+                            ) : (
+                              <>
+                                <span 
+                                  className="flex items-center justify-center w-5 h-5 rounded"
+                                  style={{ backgroundColor: '#60BED1' }}
+                                >
+                                  <Brain className="w-3 h-3 text-white" />
+                                </span>
+                                Extrair e Buscar
+                              </>
+                            )}
+                          </Button>
+                          
+                          {jobDescriptionText.length > 0 && jobDescriptionText.length < 50 && (
+                            <p className="text-[11px] text-amber-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              A descrição precisa ter pelo menos 50 caracteres para análise adequada.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* ABA 3: ARQUÉTIPOS */}
+                      {activeSearchTab === 'arquetipos' && (
+                        <div className="space-y-4">
+                          {/* SEÇÃO 1: Buscar por Vaga */}
+                          <div className="p-3 rounded-lg border" style={{ backgroundColor: 'rgba(96, 190, 209, 0.05)', borderColor: 'rgba(96, 190, 209, 0.3)' }}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Briefcase className="w-4 h-4" style={{ color: '#60BED1' }} />
+                              <h4 className="text-xs font-semibold" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                Buscar por Vaga
+                              </h4>
+                            </div>
+                            <p className="text-[11px] mb-3" style={{ fontFamily: 'Open Sans, sans-serif', color: '#6B7280' }}>
+                              Encontre candidatos baseado nos requisitos de uma vaga aberta
+                            </p>
+                            
+                            {bulkJobVacancies.length > 0 ? (
+                              <div className="space-y-2">
+                                <select
+                                  className="w-full h-9 px-3 text-xs rounded-md border border-gray-200 bg-white focus:border-[#60BED1] focus:ring-1 focus:ring-[#60BED1] outline-none"
+                                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                  onChange={async (e) => {
+                                    const selectedJobId = e.target.value
+                                    if (!selectedJobId) return
+                                    
+                                    const selectedJob = bulkJobVacancies.find(j => j.id === selectedJobId)
+                                    if (!selectedJob) return
+                                    
+                                    // Construir query baseada nos requisitos da vaga
+                                    const requirements = selectedJob.requirements || ''
+                                    const technicalReqs = selectedJob.technical_requirements?.join(', ') || ''
+                                    const skills = selectedJob.technical_requirements || []
+                                    
+                                    const jobQuery = `${selectedJob.title} ${selectedJob.seniority_level || ''} ${selectedJob.location || ''} ${technicalReqs}`.trim()
+                                    
+                                    setLiaPromptValue(jobQuery)
+                                    setActiveSearchTab('ia-natural')
+                                    
+                                    // Executar busca com filtros da vaga
+                                    await executeSearch(
+                                      jobQuery,
+                                      { 
+                                        job_title: selectedJob.title,
+                                        seniority: selectedJob.seniority_level,
+                                        location: selectedJob.location,
+                                        skills: skills
+                                      },
+                                      'natural',
+                                      { mode: 'natural' as any },
+                                      false
+                                    )
+                                    
+                                    // Reset o select
+                                    e.target.value = ''
+                                  }}
+                                  defaultValue=""
+                                >
+                                  <option value="" disabled>Selecione uma vaga...</option>
+                                  {bulkJobVacancies.map(job => (
+                                    <option key={job.id} value={job.id}>
+                                      {job.title} {job.department ? `(${job.department})` : ''} - {job.status === 'open' ? '🟢' : '📝'}
+                                    </option>
+                                  ))}
+                                </select>
+                                <p className="text-[11px] text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  {bulkJobVacancies.length} vaga{bulkJobVacancies.length > 1 ? 's' : ''} disponíve{bulkJobVacancies.length > 1 ? 'is' : 'l'}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="text-center py-3">
+                                <p className="text-[11px] text-gray-700" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  Nenhuma vaga disponível
+                                </p>
+                                <p className="text-[11px] text-gray-600 mt-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  Crie uma vaga para buscar candidatos automaticamente
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Divider */}
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-px bg-gray-200"></div>
+                            <span className="text-[11px] text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>ou escolha um arquétipo</span>
+                            <div className="flex-1 h-px bg-gray-200"></div>
+                          </div>
+
+                          {/* SEÇÃO 2: Arquétipos Pré-Cadastrados do Backend */}
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="text-xs font-semibold" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                Arquétipos Pré-Cadastrados
+                              </h4>
+                              {!isLoadingArchetypes && (
+                                <button
+                                  onClick={loadArchetypesFromBackend}
+                                  className="text-[11px] text-[#60BED1] hover:text-[#4FA8BA] flex items-center gap-1"
+                                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                  </svg>
+                                  Atualizar
+                                </button>
+                              )}
+                            </div>
+                            <p className="text-[11px] mb-3" style={{ fontFamily: 'Open Sans, sans-serif', color: '#6B7280' }}>
+                              Perfis prontos para uso - clique para aplicar busca com Score LIA
+                            </p>
+
+                            {/* Loading State */}
+                            {isLoadingArchetypes && (
+                              <div className="flex items-center justify-center py-6">
+                                <Loader2 className="w-5 h-5 animate-spin text-[#60BED1]" />
+                                <span className="ml-2 text-xs text-gray-700" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  Carregando arquétipos...
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Error State */}
+                            {archetypesLoadError && !isLoadingArchetypes && (
+                              <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                                <p className="text-xs text-red-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  {archetypesLoadError}
+                                </p>
+                                <button
+                                  onClick={loadArchetypesFromBackend}
+                                  className="mt-2 text-xs text-red-700 underline"
+                                >
+                                  Tentar novamente
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Grid de Arquétipos do Backend */}
+                            {!isLoadingArchetypes && !archetypesLoadError && backendArchetypes.length > 0 && (
+                              <div className="grid grid-cols-2 gap-3">
+                                {backendArchetypes.map((archetype) => (
+                                  <Card 
+                                    key={archetype.id}
+                                    className={`cursor-pointer hover:shadow-md transition-all border hover:border-[#60BED1] ${isSearchingByArchetype ? 'opacity-50 pointer-events-none' : ''}`}
+                                    onClick={() => executeArchetypeSearch(archetype)}
+                                  >
+                                    <CardContent className="p-3">
+                                      <div className="flex items-start gap-2 mb-2">
+                                        <div className="text-xl">{archetype.emoji}</div>
+                                        <div className="flex-1 min-w-0">
+                                          <h5 className="text-xs font-semibold truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                            {archetype.name}
+                                          </h5>
+                                          <p className="text-[11px] mt-0.5 line-clamp-2" style={{ fontFamily: 'Open Sans, sans-serif', color: '#9CA3AF' }}>
+                                            {archetype.description || archetype.query.substring(0, 80)}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {archetype.tags.slice(0, 3).map((tag, idx) => (
+                                          <Badge key={idx} className="!text-[11px] !px-1.5 !py-0.5 bg-gray-100 text-gray-700">{tag}</Badge>
+                                        ))}
+                                        {archetype.seniority && (
+                                          <Badge className="!text-[11px] !px-1.5 !py-0.5 bg-[#60BED1]/10 text-[#60BED1]">{archetype.seniority}</Badge>
+                                        )}
+                                      </div>
+                                      {archetype.usage_count > 0 && (
+                                        <p className="text-[11px] text-gray-600 mt-1.5" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                          Usado {archetype.usage_count}x
+                                        </p>
+                                      )}
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Empty State */}
+                            {!isLoadingArchetypes && !archetypesLoadError && backendArchetypes.length === 0 && (
+                              <div className="text-center py-6 px-4 rounded-lg bg-gray-50">
+                                <div className="text-3xl mb-2">🎯</div>
+                                <p className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  Nenhum arquétipo disponível
+                                </p>
+                                <p className="text-[11px] text-gray-600 mt-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  Os arquétipos serão carregados automaticamente
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Searching indicator */}
+                            {isSearchingByArchetype && (
+                              <div className="mt-3 p-2 rounded-lg bg-[#60BED1]/10 flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin text-[#60BED1]" />
+                                <span className="text-xs text-[#60BED1]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  Buscando candidatos com Score LIA...
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Biblioteca de Arquétipos */}
+                          <div className="mt-6 pt-4" style={{ borderTop: '1px solid #E4EBEF' }}>
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <h4 className="text-xs font-semibold" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                  Biblioteca de Arquétipos
+                                </h4>
+                                <p className="text-[11px]" style={{ fontFamily: 'Open Sans, sans-serif', color: '#6B7280' }}>
+                                  Perfis de candidatos salvos para busca rápida
+                                </p>
+                              </div>
+                              <Button
+                                size="sm"
+                                className="!text-[11px] !px-2.5 !py-1.5"
+                                style={{
+                                  backgroundColor: '#60BED1',
+                                  color: '#FFFFFF',
+                                  fontFamily: 'Open Sans, sans-serif'
+                                }}
+                                onClick={() => {
+                                  setIsCreatingArchetype(true)
+                                  setArchetypeCreationStep('input')
+                                  setActiveSearchTab('ia-natural')
+                                  setArchetypeJobDescription("")
+                                  setNewArchetypeData({})
+                                  // Adicionar mensagem da LIA no chat
+                                  const liaMessage: ChatMessage = {
+                                    id: `lia-archetype-${Date.now()}`,
+                                    type: 'lia',
+                                    content: '✨ **Vamos criar um novo arquétipo!**\n\nCole uma descrição de vaga (Job Description) ou descreva o perfil ideal que você busca. Eu vou extrair automaticamente os critérios para criar seu arquétipo personalizado.',
+                                    timestamp: new Date()
+                                  }
+                                  setChatMessages(prev => [...prev, liaMessage])
+                                }}
+                              >
+                                <Plus className="w-3 h-3 mr-1" />
+                                Criar Arquétipo
+                              </Button>
+                            </div>
+
+                            {/* Sub-abas da Biblioteca */}
+                            <div className="flex gap-2 mb-3" style={{ borderBottom: '1px solid #E4EBEF' }}>
+                              <button 
+                                className={`pb-2 px-3 text-[11px] font-medium border-b-2 transition-all ${archetypeLibraryTab === 'meus' ? 'border-[#60BED1]' : 'border-transparent hover:border-gray-300'}`} 
+                                style={{ fontFamily: 'Open Sans, sans-serif', color: archetypeLibraryTab === 'meus' ? '#1F2937' : '#6B7280' }}
+                                onClick={() => setArchetypeLibraryTab('meus')}
+                              >
+                                Meus Arquétipos ({userArchetypes.length})
+                              </button>
+                              <button 
+                                className={`pb-2 px-3 text-[11px] font-medium border-b-2 transition-all ${archetypeLibraryTab === 'sugestoes' ? 'border-[#60BED1]' : 'border-transparent hover:border-gray-300'}`} 
+                                style={{ fontFamily: 'Open Sans, sans-serif', color: archetypeLibraryTab === 'sugestoes' ? '#1F2937' : '#6B7280' }}
+                                onClick={() => setArchetypeLibraryTab('sugestoes')}
+                              >
+                                ✨ Sugestões IA
+                              </button>
+                              <button 
+                                className={`pb-2 px-3 text-[11px] font-medium border-b-2 transition-all ${archetypeLibraryTab === 'templates' ? 'border-[#60BED1]' : 'border-transparent hover:border-gray-300'}`} 
+                                style={{ fontFamily: 'Open Sans, sans-serif', color: archetypeLibraryTab === 'templates' ? '#1F2937' : '#6B7280' }}
+                                onClick={() => setArchetypeLibraryTab('templates')}
+                              >
+                                Templates
+                              </button>
+                            </div>
+
+                            {/* Conteúdo: Meus Arquétipos */}
+                            {archetypeLibraryTab === 'meus' && (
+                              <>
+                                {userArchetypes.length > 0 ? (
+                                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                                    {userArchetypes.map((archetype) => (
+                                      <Card 
+                                        key={archetype.id}
+                                        className="cursor-pointer hover:shadow-md transition-all border hover:border-gray-400"
+                                        onClick={async () => {
+                                          setLiaPromptValue(archetype.query)
+                                          setActiveSearchTab('ia-natural')
+                                          await executeSearch(archetype.query, archetype.filters, 'natural', { mode: 'natural' as any }, false)
+                                        }}
+                                      >
+                                        <CardContent className="p-2.5">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-lg">{archetype.emoji}</span>
+                                            <div className="flex-1 min-w-0">
+                                              <h5 className="text-xs font-semibold truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                                {archetype.name}
+                                              </h5>
+                                              <p className="text-[11px] truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#9CA3AF' }}>
+                                                {archetype.description}
+                                              </p>
+                                            </div>
+                                            <button
+                                              className="p-1 hover:bg-gray-100 rounded"
+                                              onClick={(e) => {
+                                                e.stopPropagation()
+                                                setUserArchetypes(prev => prev.filter(a => a.id !== archetype.id))
+                                              }}
+                                            >
+                                              <X className="w-3 h-3 text-gray-600" />
+                                            </button>
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-6">
+                                    <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gray-100 flex items-center justify-center">
+                                      <Bookmark className="w-5 h-5 text-gray-600" />
+                                    </div>
+                                    <p className="text-xs text-gray-700 mb-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                      Nenhum arquétipo salvo
+                                    </p>
+                                    <p className="text-[11px] text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                      Use o botão acima para criar seu primeiro arquétipo
+                                    </p>
+                                  </div>
+                                )}
+                              </>
+                            )}
+
+                            {/* Conteúdo: Sugestões IA */}
+                            {archetypeLibraryTab === 'sugestoes' && (
+                              <div className="space-y-2">
+                                <p className="text-[11px] text-gray-700 mb-3" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  Baseado nas suas buscas recentes, a LIA sugere:
+                                </p>
+                                {/* Sugestões baseadas em histórico */}
+                                <Card 
+                                  className="cursor-pointer hover:shadow-md transition-all border hover:border-[#60BED1]"
+                                  style={{ backgroundColor: 'rgba(96, 190, 209, 0.03)' }}
+                                  onClick={async () => {
+                                    const query = 'Desenvolvedor Python Sênior com experiência em Django, FastAPI e machine learning'
+                                    setLiaPromptValue(query)
+                                    setActiveSearchTab('ia-natural')
+                                    await executeSearch(query, { skills: ['Python', 'Django', 'FastAPI', 'ML'] }, 'natural', { mode: 'natural' as any }, false)
+                                  }}
+                                >
+                                  <CardContent className="p-2.5">
+                                    <div className="flex items-center gap-2">
+                                      <Sparkles className="w-4 h-4 text-[#60BED1]" />
+                                      <div className="flex-1 min-w-0">
+                                        <h5 className="text-xs font-semibold truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                          Python Sênior + ML
+                                        </h5>
+                                        <p className="text-[11px] truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#9CA3AF' }}>
+                                          Django, FastAPI, machine learning
+                                        </p>
+                                      </div>
+                                      <Badge className="!text-[11px] !px-1.5 !py-0.5" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#60BED1' }}>
+                                        Sugerido
+                                      </Badge>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                                <Card 
+                                  className="cursor-pointer hover:shadow-md transition-all border hover:border-[#60BED1]"
+                                  style={{ backgroundColor: 'rgba(96, 190, 209, 0.03)' }}
+                                  onClick={async () => {
+                                    const query = 'Product Manager com experiência em B2B SaaS, metodologias ágeis e discovery'
+                                    setLiaPromptValue(query)
+                                    setActiveSearchTab('ia-natural')
+                                    await executeSearch(query, { job_title: 'Product Manager', skills: ['B2B SaaS', 'Agile', 'Discovery'] }, 'natural', { mode: 'natural' as any }, false)
+                                  }}
+                                >
+                                  <CardContent className="p-2.5">
+                                    <div className="flex items-center gap-2">
+                                      <Sparkles className="w-4 h-4 text-[#60BED1]" />
+                                      <div className="flex-1 min-w-0">
+                                        <h5 className="text-xs font-semibold truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                          Product Manager B2B
+                                        </h5>
+                                        <p className="text-[11px] truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#9CA3AF' }}>
+                                          SaaS, metodologias ágeis, discovery
+                                        </p>
+                                      </div>
+                                      <Badge className="!text-[11px] !px-1.5 !py-0.5" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#60BED1' }}>
+                                        Sugerido
+                                      </Badge>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                                <p className="text-[11px] text-center text-gray-600 mt-3" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  Sugestões melhoram conforme você usa a plataforma
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Conteúdo: Templates */}
+                            {archetypeLibraryTab === 'templates' && (
+                              <div className="space-y-2">
+                                <p className="text-[11px] text-gray-700 mb-3" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                  Templates prontos baseados em perfis comuns do mercado:
+                                </p>
+                                {/* Templates do mercado */}
+                                <Card 
+                                  className="cursor-pointer hover:shadow-md transition-all border hover:border-gray-400"
+                                  onClick={async () => {
+                                    const query = 'Analista de Dados Pleno com SQL, Python, Power BI e experiência em análise de negócios'
+                                    setLiaPromptValue(query)
+                                    setActiveSearchTab('ia-natural')
+                                    await executeSearch(query, { job_title: 'Data Analyst', seniority: 'Pleno', skills: ['SQL', 'Python', 'Power BI'] }, 'natural', { mode: 'natural' as any }, false)
+                                  }}
+                                >
+                                  <CardContent className="p-2.5">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg">📊</span>
+                                      <div className="flex-1 min-w-0">
+                                        <h5 className="text-xs font-semibold truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                          Analista de Dados
+                                        </h5>
+                                        <p className="text-[11px] truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#9CA3AF' }}>
+                                          SQL, Python, Power BI, análise de negócios
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                                <Card 
+                                  className="cursor-pointer hover:shadow-md transition-all border hover:border-gray-400"
+                                  onClick={async () => {
+                                    const query = 'QA Engineer Pleno com automação de testes, Cypress, Selenium e metodologias ágeis'
+                                    setLiaPromptValue(query)
+                                    setActiveSearchTab('ia-natural')
+                                    await executeSearch(query, { job_title: 'QA Engineer', seniority: 'Pleno', skills: ['Automação', 'Cypress', 'Selenium'] }, 'natural', { mode: 'natural' as any }, false)
+                                  }}
+                                >
+                                  <CardContent className="p-2.5">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg">🧪</span>
+                                      <div className="flex-1 min-w-0">
+                                        <h5 className="text-xs font-semibold truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                          QA Engineer
+                                        </h5>
+                                        <p className="text-[11px] truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#9CA3AF' }}>
+                                          Automação, Cypress, Selenium, testes
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                                <Card 
+                                  className="cursor-pointer hover:shadow-md transition-all border hover:border-gray-400"
+                                  onClick={async () => {
+                                    const query = 'UX/UI Designer Pleno com Figma, prototipagem, design system e pesquisa com usuários'
+                                    setLiaPromptValue(query)
+                                    setActiveSearchTab('ia-natural')
+                                    await executeSearch(query, { job_title: 'UX Designer', seniority: 'Pleno', skills: ['Figma', 'UI Design', 'UX Research'] }, 'natural', { mode: 'natural' as any }, false)
+                                  }}
+                                >
+                                  <CardContent className="p-2.5">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg">🎨</span>
+                                      <div className="flex-1 min-w-0">
+                                        <h5 className="text-xs font-semibold truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                          UX/UI Designer
+                                        </h5>
+                                        <p className="text-[11px] truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#9CA3AF' }}>
+                                          Figma, prototipagem, design system
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                                <Card 
+                                  className="cursor-pointer hover:shadow-md transition-all border hover:border-gray-400"
+                                  onClick={async () => {
+                                    const query = 'Scrum Master com certificação CSM, experiência em transformação ágil e gestão de times'
+                                    setLiaPromptValue(query)
+                                    setActiveSearchTab('ia-natural')
+                                    await executeSearch(query, { job_title: 'Scrum Master', skills: ['CSM', 'Agile', 'Kanban'] }, 'natural', { mode: 'natural' as any }, false)
+                                  }}
+                                >
+                                  <CardContent className="p-2.5">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg">🏃</span>
+                                      <div className="flex-1 min-w-0">
+                                        <h5 className="text-xs font-semibold truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}>
+                                          Scrum Master
+                                        </h5>
+                                        <p className="text-[11px] truncate" style={{ fontFamily: 'Open Sans, sans-serif', color: '#9CA3AF' }}>
+                                          CSM, transformação ágil, gestão de times
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ABA 4: SIMILAR */}
+                      {activeSearchTab === 'similar' && (
+                        <div className="space-y-4">
+                          <p className="text-[11px]" style={{ fontFamily: 'Open Sans, sans-serif', color: '#6B7280' }}>
+                            Encontre candidatos similares a um perfil específico
+                          </p>
+                          
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={similarProfileUrl}
+                              onChange={(e) => setSimilarProfileUrl(e.target.value)}
+                              placeholder="Cole o link do LinkedIn ou nome do candidato..."
+                              className="w-full p-3 text-xs rounded-lg border focus:outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                              style={{ 
+                                border: '1px solid #E4EBEF',
+                                fontFamily: 'Open Sans, sans-serif'
+                              }}
+                            />
+                          </div>
+                          
+                          <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
+                            <div className="flex items-start gap-2">
+                              <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                              <p className="text-[11px] text-gray-600 dark:text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                <strong>Dica:</strong> Cole o link do LinkedIn de um candidato que você considera ideal para encontrar perfis similares.
+                              </p>
+                            </div>
+                          </div>
+
+                          <Button
+                            className="w-full h-11 !text-sm font-semibold"
+                            style={{
+                              backgroundColor: isSearchingSimilar ? '#9CA3AF' : '#4DA8BB',
+                              color: '#FFFFFF',
+                              fontFamily: 'Open Sans, sans-serif'
+                            }}
+                            onClick={async () => {
+                              if (similarProfileUrl.trim() && !isSearchingSimilar) {
+                                setIsSearchingSimilar(true)
+                                
+                                const isLinkedInUrl = similarProfileUrl.includes('linkedin.com/in/')
+                                
+                                const userMessage: ChatMessage = {
+                                  id: `user-similar-${Date.now()}`,
+                                  type: 'user',
+                                  content: isLinkedInUrl 
+                                    ? `Buscar candidatos similares ao perfil: ${similarProfileUrl}` 
+                                    : `Buscar candidatos similares: ${similarProfileUrl}`,
+                                  timestamp: new Date()
+                                }
+                                setChatMessages(prev => [...prev, userMessage])
+                                
+                                try {
+                                  const requestBody: { linkedin_url?: string; candidate_id?: string; limit: number; search_pearch: boolean; pearch_type: string } = {
+                                    limit: 20,
+                                    search_pearch: searchSource !== 'local',
+                                    pearch_type: pearchSearchOptions.searchType
+                                  }
+                                  
+                                  if (isLinkedInUrl) {
+                                    requestBody.linkedin_url = similarProfileUrl.trim()
+                                  } else {
+                                    requestBody.candidate_id = similarProfileUrl.trim()
+                                  }
+                                  
+                                  const response = await fetch('/api/backend-proxy/search/candidates/similar', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(requestBody)
+                                  })
+                                  
+                                  if (!response.ok) {
+                                    const errorData = await response.json().catch(() => ({}))
+                                    throw new Error(errorData.detail || 'Erro na busca')
+                                  }
+                                  
+                                  const data = await response.json()
+                                  
+                                  if (data.candidates && data.candidates.length > 0) {
+                                    const mappedCandidates = data.candidates.map((c: any) => ({
+                                      id: c.id || `similar-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                                      candidateId: c.id?.substring(0, 8).toUpperCase() || 'SIM',
+                                      name: c.name || 'Nome não disponível',
+                                      email: c.email || '',
+                                      phone: c.phone || '',
+                                      current_title: c.headline || c.current_title || '',
+                                      current_company: c.current_company || '',
+                                      location: c.location || '',
+                                      linkedin_url: c.linkedin_url,
+                                      avatar_url: c.avatar_url || c.picture_url,
+                                      avatar: c.avatar_url || c.picture_url,
+                                      technical_skills: c.skills || [],
+                                      skills: c.skills || [],
+                                      seniority_level: c.seniority_level,
+                                      years_of_experience: c.years_experience || c.total_experience_years,
+                                      experience: c.years_experience || c.total_experience_years || 0,
+                                      score: c.match_score ? Math.round(c.match_score * 25) : 75,
+                                      source: c.source || 'pearch',
+                                      has_email: c.has_email ?? true,
+                                      has_phone: c.has_phone ?? true,
+                                      is_opentowork: c.is_opentowork,
+                                      is_decision_maker: c.is_decision_maker,
+                                      is_top_universities: c.is_top_universities,
+                                      is_startup: c.is_startup || c.company_info?.is_startup,
+                                      expertise: c.expertise,
+                                      outreach_message: c.outreach_message,
+                                      experiences: c.experiences || [],
+                                      workHistory: (c.experiences || []).map((exp: any) => ({
+                                        company: exp.company_info?.name || exp.company || '',
+                                        title: exp.company_roles?.[0]?.title || exp.title || '',
+                                        startDate: exp.company_roles?.[0]?.start_date || exp.start_date || '',
+                                        endDate: exp.company_roles?.[0]?.end_date || exp.end_date || '',
+                                        duration: exp.duration || '',
+                                        location: exp.company_info?.location || exp.location || '',
+                                        description: exp.company_roles?.[0]?.description || exp.description || ''
+                                      })),
+                                      education: (c.education || []).map((edu: any) => ({
+                                        school: edu.school || '',
+                                        degree: edu.degree || '',
+                                        field_of_study: edu.field_of_study || '',
+                                        fieldOfStudy: edu.field_of_study || '',
+                                        startDate: edu.start_date || '',
+                                        endDate: edu.end_date || ''
+                                      }))
+                                    }))
+                                    
+                                    const localCandidates = mappedCandidates.filter((c: any) => c.source === 'local')
+                                    const globalCandidates = mappedCandidates.filter((c: any) => c.source === 'pearch')
+                                    
+                                    // Respeitar searchSource selecionado pelo usuário
+                                    const shouldAutoShowGlobal = searchSource === 'global' || searchSource === 'hybrid'
+                                    const candidatesForTable = shouldAutoShowGlobal ? mappedCandidates : localCandidates
+                                    
+                                    setCandidates(candidatesForTable)
+                                    setHasSearchResults(true)
+                                    setSearchResultsCount(data.total_count || mappedCandidates.length)
+                                    setLocalResultsCount(data.local_count || localCandidates.length)
+                                    setPearchResultsCount(data.pearch_count || globalCandidates.length)
+                                    setShowSearchResults(true)
+                                    
+                                    setSearchResults(prev => ({
+                                      local: localCandidates,
+                                      global: globalCandidates,
+                                      localCount: data.local_count || localCandidates.length,
+                                      globalCount: data.pearch_count || globalCandidates.length,
+                                      query: data.query_generated || 'Similar Search',
+                                      isLoading: false,
+                                      showGlobalResults: shouldAutoShowGlobal,
+                                      globalDismissed: prev.globalDismissed
+                                    }))
+                                    
+                                    const refProfileInfo = data.reference_profile 
+                                      ? `\n\n**Perfil de referência:** ${data.reference_profile.name || data.reference_profile.linkedin_url || 'ID: ' + data.reference_profile.id}`
+                                      : ''
+                                    
+                                    const localCount = data.local_count || localCandidates.length
+                                    const liaMessage: ChatMessage = {
+                                      id: `lia-similar-result-${Date.now()}`,
+                                      type: 'lia',
+                                      content: `**Busca de perfis similares concluída!**${refProfileInfo}\n\nQuery gerada: "${data.query_generated}"\n\nEncontrei **${localCount} candidato${localCount > 1 ? 's' : ''} similar${localCount > 1 ? 'es' : ''}** na sua base local.`,
+                                      timestamp: new Date(),
+                                      searchResults: {
+                                        localCount: localCount,
+                                        globalCount: 0,
+                                        query: data.query_generated || ''
+                                      }
+                                    }
+                                    setChatMessages(prev => [...prev, liaMessage])
+                                  } else {
+                                    const liaMessage: ChatMessage = {
+                                      id: `lia-similar-noresult-${Date.now()}`,
+                                      type: 'lia',
+                                      content: `Não encontrei candidatos similares ao perfil informado.\n\nVerifique se o link do LinkedIn está correto ou tente com outro perfil de referência.`,
+                                      timestamp: new Date()
+                                    }
+                                    setChatMessages(prev => [...prev, liaMessage])
+                                  }
+                                } catch (error: any) {
+                                  console.error('Erro na busca similar:', error)
+                                  const liaMessage: ChatMessage = {
+                                    id: `lia-similar-error-${Date.now()}`,
+                                    type: 'lia',
+                                    content: `Erro ao buscar candidatos similares: ${error.message || 'Por favor, tente novamente.'}`,
+                                    timestamp: new Date()
+                                  }
+                                  setChatMessages(prev => [...prev, liaMessage])
+                                } finally {
+                                  setIsSearchingSimilar(false)
+                                }
+                              }
+                            }}
+                            disabled={!similarProfileUrl.trim() || isSearchingSimilar}
+                          >
+                            {isSearchingSimilar ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Buscando...
+                              </>
+                            ) : (
+                              <>
+                                <Users className="w-4 h-4 mr-2" />
+                                Encontrar Similares
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* ABA 5: BOOLEAN */}
+                      {activeSearchTab === 'boolean' && (
+                        <div className="space-y-4">
+                          <p className="text-[11px]" style={{ fontFamily: 'Open Sans, sans-serif', color: '#6B7280' }}>
+                            Use operadores booleanos para buscas avançadas
+                          </p>
+                          
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {['AND', 'OR', 'NOT', '"..."', '(...)'].map((op) => (
+                              <button
+                                key={op}
+                                onClick={() => setBooleanSearchValue(prev => prev + ' ' + op)}
+                                className="px-2 py-1 text-[11px] rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-mono transition-colors"
+                              >
+                                {op}
+                              </button>
+                            ))}
+                          </div>
+                          
+                          <textarea
+                            value={booleanSearchValue}
+                            onChange={(e) => setBooleanSearchValue(e.target.value)}
+                            placeholder='Ex: ("Node.js" OR "Python") AND "sênior" NOT "júnior"'
+                            className="w-full h-32 p-3 text-xs rounded-lg border focus:outline-none transition-all resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono"
+                            style={{ 
+                              border: '1px solid #E4EBEF',
+                              fontFamily: 'monospace'
+                            }}
+                          />
+                          
+                          <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
+                            <div className="flex items-start gap-2">
+                              <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                              <p className="text-[11px] text-gray-600 dark:text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições.
+                              </p>
+                            </div>
+                          </div>
+
+                          <Button
+                            className="w-full h-11 !text-sm font-semibold"
+                            style={{
+                              backgroundColor: '#4DA8BB',
+                              color: '#FFFFFF',
+                              fontFamily: 'Open Sans, sans-serif'
+                            }}
+                            onClick={() => {
+                              if (booleanSearchValue.trim()) {
+                                console.log('Buscar boolean:', booleanSearchValue)
+                              }
+                            }}
+                            disabled={!booleanSearchValue.trim()}
+                          >
+                            <Code className="w-4 h-4 mr-2" />
+                            Buscar com Boolean
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* ABA 6: FILTROS - Padronizado com Modal */}
+                      {activeSearchTab === 'filtros' && (
+                        <div className="space-y-4">
+                          {/* Dica contextual */}
+                          <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
+                            <div className="flex items-start gap-2">
+                              <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                              <p className="text-[11px] text-gray-600 dark:text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                <strong>Dica:</strong> Use os filtros avançados para refinar sua busca por localização, experiência, skills, idiomas e muito mais.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Resumo dos filtros ativos */}
+                          {Object.values(activeSearchFilters).some(category => 
+                            Object.values(category as Record<string, any>).some(v => v === true || (typeof v === 'string' && v.length > 0))
+                          ) && (
+                            <div className="p-3 rounded-lg border" style={{ backgroundColor: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Check className="w-4 h-4 text-emerald-500" />
+                                  <span className="text-xs font-medium text-emerald-700" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                                    Filtros ativos
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={() => setActiveSearchFilters({
+                                    ppiOptions: {},
+                                    general: {},
+                                    locations: {},
+                                    job: {},
+                                    company: {},
+                                    skills: {},
+                                    education: {},
+                                    languages: {}
+                                  })}
+                                  className="text-[11px] text-gray-700 hover:text-red-500 transition-colors"
+                                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                >
+                                  Limpar todos
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Botão para abrir painel lateral de filtros da tabela */}
+                          <Button
+                            className="w-full h-12 !text-sm font-semibold"
+                            style={{
+                              backgroundColor: showTableFiltersPanel ? '#4FA8BA' : '#60BED1',
+                              color: '#FFFFFF',
+                              fontFamily: 'Open Sans, sans-serif'
+                            }}
+                            onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
+                          >
+                            <Filter className="w-4 h-4 mr-2" />
+                            {showTableFiltersPanel ? 'Fechar Filtros' : 'Abrir Filtros Avançados'}
+                          </Button>
+
+                          {/* Info sobre filtros laterais */}
+                          {!showTableFiltersPanel && (
+                            <p className="text-[11px] text-gray-700 text-center mt-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                              Os filtros aparecerão ao lado da tabela de candidatos
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                    </div>
+                      </>
+                    )}
+                  </Card>
+
+                  {/* Resize Handle - Sempre visível */}
+                  <div
+                    className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-12 cursor-ew-resize hover:scale-125 transition-all z-10 flex items-center justify-center"
+                    title="Arraste para ajustar a largura"
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      setIsResizingLIA(true)
+                      const startX = e.clientX
+                      const startWidth = liaWidth
+
+                      const handleMouseMove = (e: MouseEvent) => {
+                        const deltaX = e.clientX - startX
+                        const newWidth = Math.max(400, Math.min(800, startWidth + deltaX))
+                        setLiaWidth(newWidth)
+                      }
+
+                      const handleMouseUp = () => {
+                        setIsResizingLIA(false)
+                        document.removeEventListener('mousemove', handleMouseMove)
+                        document.removeEventListener('mouseup', handleMouseUp)
+                      }
+
+                      document.addEventListener('mousemove', handleMouseMove)
+                      document.addEventListener('mouseup', handleMouseUp)
+                    }}
+                  >
+                    <div className="w-1 h-8 rounded-full bg-gray-300 dark:bg-gray-600 hover:bg-[#60BED1] transition-colors" />
+                  </div>
+                </div>
+              )}
+
+              {/* Filtros da Tabela de Resultados - Coluna inline entre LIA e tabela */}
+              {/* SEPARADO dos filtros de busca (activeSearchFilters) - usa tableFilters para filtrar resultados localmente */}
+              {showTableFiltersPanel && (
+                <div className="flex-shrink-0 w-80 transition-all duration-300">
+                  <div className="bg-white rounded-xl h-[calc(100vh-9rem)] overflow-hidden shadow-lg">
+                    {/* Header */}
+                    <div className="p-4 flex items-center justify-between border-b border-gray-100">
+                      <div>
+                        <h3 
+                          className="text-sm font-semibold text-gray-900"
+                          style={{ fontFamily: 'Source Serif 4, Georgia, serif' }}
+                        >
+                          Refinar Resultados
+                        </h3>
+                        <p 
+                          className="text-xs mt-0.5 text-gray-700"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          {getActiveTableFiltersCount() > 0 ?
+                            `${getActiveTableFiltersCount()} filtro${getActiveTableFiltersCount() > 1 ? 's' : ''} ativo${getActiveTableFiltersCount() > 1 ? 's' : ''}` :
+                            'Filtre os resultados exibidos'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowTableFiltersPanel(false)}
+                        className="h-8 w-8 rounded-lg flex items-center justify-center transition-all text-gray-600 hover:text-gray-600 hover:bg-gray-100"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="p-4 overflow-y-auto max-h-[calc(100vh-14rem)]">
+                      {/* Filtros Rápidos */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Zap className="w-3 h-3" />
+                          Filtros Rápidos
+                        </h4>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between py-1.5">
+                            <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Apenas com E-mail</span>
+                            <Switch 
+                              checked={tableFilters.hasEmail}
+                              onCheckedChange={(checked: boolean) => setTableFilters(prev => ({ ...prev, hasEmail: checked }))}
+                              className="scale-75"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between py-1.5">
+                            <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Apenas com Telefone</span>
+                            <Switch 
+                              checked={tableFilters.hasPhone}
+                              onCheckedChange={(checked: boolean) => setTableFilters(prev => ({ ...prev, hasPhone: checked }))}
+                              className="scale-75"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between py-1.5">
+                            <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Apenas com LinkedIn</span>
+                            <Switch 
+                              checked={tableFilters.hasLinkedin}
+                              onCheckedChange={(checked: boolean) => setTableFilters(prev => ({ ...prev, hasLinkedin: checked }))}
+                              className="scale-75"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between py-1.5">
+                            <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Apenas Remoto</span>
+                            <Switch 
+                              checked={tableFilters.remoteOnly}
+                              onCheckedChange={(checked: boolean) => setTableFilters(prev => ({ ...prev, remoteOnly: checked }))}
+                              className="scale-75"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Experiência */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Briefcase className="w-3 h-3" />
+                          Experiência
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[11px] text-gray-700 mb-1 block">Mín. Anos</label>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={30}
+                              value={tableFilters.minExperience ?? ''}
+                              onChange={(e) => setTableFilters(prev => ({
+                                ...prev,
+                                minExperience: e.target.value ? Number(e.target.value) : undefined
+                              }))}
+                              className="h-8 text-xs"
+                              placeholder="0"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-700 mb-1 block">Máx. Anos</label>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={30}
+                              value={tableFilters.maxExperience ?? ''}
+                              onChange={(e) => setTableFilters(prev => ({
+                                ...prev,
+                                maxExperience: e.target.value ? Number(e.target.value) : undefined
+                              }))}
+                              className="h-8 text-xs"
+                              placeholder="30"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Score LIA */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Star className="w-3 h-3" />
+                          Score LIA
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[11px] text-gray-700 mb-1 block">Mín. Score</label>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={tableFilters.minScore ?? ''}
+                              onChange={(e) => setTableFilters(prev => ({
+                                ...prev,
+                                minScore: e.target.value ? Number(e.target.value) : undefined
+                              }))}
+                              className="h-8 text-xs"
+                              placeholder="0"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-700 mb-1 block">Máx. Score</label>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={tableFilters.maxScore ?? ''}
+                              onChange={(e) => setTableFilters(prev => ({
+                                ...prev,
+                                maxScore: e.target.value ? Number(e.target.value) : undefined
+                              }))}
+                              className="h-8 text-xs"
+                              placeholder="100"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Senioridade */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Target className="w-3 h-3" />
+                          Senioridade
+                        </h4>
+                        <div className="space-y-1.5">
+                          {[
+                            { value: 'Estagiário', label: 'Estagiário' },
+                            { value: 'Júnior', label: 'Júnior' },
+                            { value: 'Pleno', label: 'Pleno' },
+                            { value: 'Sênior', label: 'Sênior' },
+                            { value: 'Especialista', label: 'Especialista' },
+                            { value: 'Coordenador', label: 'Coordenador' },
+                            { value: 'Gerente', label: 'Gerente' },
+                            { value: 'Diretor', label: 'Diretor' }
+                          ].map(level => {
+                            const isChecked = tableFilters.seniorityLevels.includes(level.value)
+                            return (
+                              <div
+                                key={level.value}
+                                onClick={() => toggleTableFilter('seniorityLevels', level.value)}
+                                className="flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
+                                style={{ 
+                                  backgroundColor: isChecked ? 'rgba(96,190,209,0.08)' : 'transparent',
+                                  border: isChecked ? '1px solid rgba(96,190,209,0.2)' : '1px solid transparent'
+                                }}
+                              >
+                                <div 
+                                  className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                                  style={{ 
+                                    backgroundColor: isChecked ? '#60BED1' : 'transparent',
+                                    border: isChecked ? 'none' : '2px solid #d1d5db'
+                                  }}
+                                >
+                                  {isChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                                </div>
+                                <span className="text-xs" style={{ color: isChecked ? '#1f2937' : '#6b7280', fontFamily: 'Open Sans, sans-serif' }}>
+                                  {level.label}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Modelo de Trabalho */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Home className="w-3 h-3" />
+                          Modelo de Trabalho
+                        </h4>
+                        <div className="space-y-1.5">
+                          {[
+                            { value: 'remoto', label: 'Remoto' },
+                            { value: 'híbrido', label: 'Híbrido' },
+                            { value: 'presencial', label: 'Presencial' }
+                          ].map(model => {
+                            const isChecked = tableFilters.workModels.includes(model.value)
+                            return (
+                              <div
+                                key={model.value}
+                                onClick={() => toggleTableFilter('workModels', model.value)}
+                                className="flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
+                                style={{ 
+                                  backgroundColor: isChecked ? 'rgba(96,190,209,0.08)' : 'transparent',
+                                  border: isChecked ? '1px solid rgba(96,190,209,0.2)' : '1px solid transparent'
+                                }}
+                              >
+                                <div 
+                                  className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                                  style={{ 
+                                    backgroundColor: isChecked ? '#60BED1' : 'transparent',
+                                    border: isChecked ? 'none' : '2px solid #d1d5db'
+                                  }}
+                                >
+                                  {isChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                                </div>
+                                <span className="text-xs" style={{ color: isChecked ? '#1f2937' : '#6b7280', fontFamily: 'Open Sans, sans-serif' }}>
+                                  {model.label}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Tipo de Contrato */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <FileText className="w-3 h-3" />
+                          Tipo de Contrato
+                        </h4>
+                        <div className="space-y-1.5">
+                          {[
+                            { value: 'CLT', label: 'CLT' },
+                            { value: 'PJ', label: 'PJ' },
+                            { value: 'Freelancer', label: 'Freelancer' }
+                          ].map(contract => {
+                            const isChecked = tableFilters.contractTypes.includes(contract.value)
+                            return (
+                              <div
+                                key={contract.value}
+                                onClick={() => toggleTableFilter('contractTypes', contract.value)}
+                                className="flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
+                                style={{ 
+                                  backgroundColor: isChecked ? 'rgba(96,190,209,0.08)' : 'transparent',
+                                  border: isChecked ? '1px solid rgba(96,190,209,0.2)' : '1px solid transparent'
+                                }}
+                              >
+                                <div 
+                                  className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                                  style={{ 
+                                    backgroundColor: isChecked ? '#60BED1' : 'transparent',
+                                    border: isChecked ? 'none' : '2px solid #d1d5db'
+                                  }}
+                                >
+                                  {isChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                                </div>
+                                <span className="text-xs" style={{ color: isChecked ? '#1f2937' : '#6b7280', fontFamily: 'Open Sans, sans-serif' }}>
+                                  {contract.label}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Localização */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <MapPin className="w-3 h-3" />
+                          Localização
+                        </h4>
+                        <div className="space-y-2">
+                          <div className="relative">
+                            <Input
+                              placeholder="Digite cidade ou estado..."
+                              className="h-8 text-xs pr-8"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                                  const value = (e.target as HTMLInputElement).value.trim()
+                                  if (!tableFilters.locations.includes(value)) {
+                                    setTableFilters(prev => ({ ...prev, locations: [...prev.locations, value] }))
+                                  }
+                                  ;(e.target as HTMLInputElement).value = ''
+                                }
+                              }}
+                            />
+                          </div>
+                          {tableFilters.locations.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tableFilters.locations.map((loc) => (
+                                <Badge key={loc} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+                                  {loc}
+                                  <button onClick={() => setTableFilters(prev => ({ ...prev, locations: prev.locations.filter(l => l !== loc) }))}>
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Cargo / Título */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Briefcase className="w-3 h-3" />
+                          Cargo
+                        </h4>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Digite o cargo desejado..."
+                            className="h-8 text-xs"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                                const value = (e.target as HTMLInputElement).value.trim()
+                                if (!tableFilters.jobTitles.includes(value)) {
+                                  setTableFilters(prev => ({ ...prev, jobTitles: [...prev.jobTitles, value] }))
+                                }
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }}
+                          />
+                          {tableFilters.jobTitles.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tableFilters.jobTitles.map((title) => (
+                                <Badge key={title} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+                                  {title}
+                                  <button onClick={() => setTableFilters(prev => ({ ...prev, jobTitles: prev.jobTitles.filter(t => t !== title) }))}>
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Habilidades */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Code className="w-3 h-3" />
+                          Habilidades
+                        </h4>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Digite uma habilidade..."
+                            className="h-8 text-xs"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                                const value = (e.target as HTMLInputElement).value.trim()
+                                if (!tableFilters.skills.includes(value)) {
+                                  setTableFilters(prev => ({ ...prev, skills: [...prev.skills, value] }))
+                                }
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }}
+                          />
+                          {tableFilters.skills.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tableFilters.skills.map((skill) => (
+                                <Badge key={skill} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+                                  {skill}
+                                  <button onClick={() => setTableFilters(prev => ({ ...prev, skills: prev.skills.filter(s => s !== skill) }))}>
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Empresa */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Building className="w-3 h-3" />
+                          Empresa
+                        </h4>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Digite nome da empresa..."
+                            className="h-8 text-xs"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                                const value = (e.target as HTMLInputElement).value.trim()
+                                if (!tableFilters.companies.includes(value)) {
+                                  setTableFilters(prev => ({ ...prev, companies: [...prev.companies, value] }))
+                                }
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }}
+                          />
+                          {tableFilters.companies.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tableFilters.companies.map((company) => (
+                                <Badge key={company} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+                                  {company}
+                                  <button onClick={() => setTableFilters(prev => ({ ...prev, companies: prev.companies.filter(c => c !== company) }))}>
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Setor/Indústria */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Layers className="w-3 h-3" />
+                          Setor/Indústria
+                        </h4>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Digite o setor..."
+                            className="h-8 text-xs"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                                const value = (e.target as HTMLInputElement).value.trim()
+                                if (!tableFilters.industries.includes(value)) {
+                                  setTableFilters(prev => ({ ...prev, industries: [...prev.industries, value] }))
+                                }
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }}
+                          />
+                          {tableFilters.industries.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tableFilters.industries.map((ind) => (
+                                <Badge key={ind} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+                                  {ind}
+                                  <button onClick={() => setTableFilters(prev => ({ ...prev, industries: prev.industries.filter(i => i !== ind) }))}>
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Formação */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <GraduationCap className="w-3 h-3" />
+                          Formação
+                        </h4>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Universidade ou curso..."
+                            className="h-8 text-xs"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                                const value = (e.target as HTMLInputElement).value.trim()
+                                if (!tableFilters.universities.includes(value)) {
+                                  setTableFilters(prev => ({ ...prev, universities: [...prev.universities, value] }))
+                                }
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }}
+                          />
+                          {tableFilters.universities.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tableFilters.universities.map((uni) => (
+                                <Badge key={uni} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+                                  {uni}
+                                  <button onClick={() => setTableFilters(prev => ({ ...prev, universities: prev.universities.filter(u => u !== uni) }))}>
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Idiomas */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Globe className="w-3 h-3" />
+                          Idiomas
+                        </h4>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Digite um idioma..."
+                            className="h-8 text-xs"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                                const value = (e.target as HTMLInputElement).value.trim()
+                                if (!tableFilters.languages.includes(value)) {
+                                  setTableFilters(prev => ({ ...prev, languages: [...prev.languages, value] }))
+                                }
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }}
+                          />
+                          {tableFilters.languages.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tableFilters.languages.map((lang) => (
+                                <Badge key={lang} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+                                  {lang}
+                                  <button onClick={() => setTableFilters(prev => ({ ...prev, languages: prev.languages.filter(l => l !== lang) }))}>
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Salário */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <DollarSign className="w-3 h-3" />
+                          Faixa Salarial
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[11px] text-gray-700 mb-1 block">Mín. (R$)</label>
+                            <Input
+                              type="number"
+                              min={0}
+                              value={tableFilters.minSalary ?? ''}
+                              onChange={(e) => setTableFilters(prev => ({
+                                ...prev,
+                                minSalary: e.target.value ? Number(e.target.value) : undefined
+                              }))}
+                              className="h-8 text-xs"
+                              placeholder="0"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-700 mb-1 block">Máx. (R$)</label>
+                            <Input
+                              type="number"
+                              min={0}
+                              value={tableFilters.maxSalary ?? ''}
+                              onChange={(e) => setTableFilters(prev => ({
+                                ...prev,
+                                maxSalary: e.target.value ? Number(e.target.value) : undefined
+                              }))}
+                              className="h-8 text-xs"
+                              placeholder="50000"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Indicadores de Perfil */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Crown className="w-3 h-3" />
+                          Indicadores de Perfil
+                        </h4>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between py-1.5">
+                            <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Open to Work</span>
+                            <Switch 
+                              checked={tableFilters.isOpenToWork}
+                              onCheckedChange={(checked: boolean) => setTableFilters(prev => ({ ...prev, isOpenToWork: checked }))}
+                              className="scale-75"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between py-1.5">
+                            <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Decision Maker</span>
+                            <Switch 
+                              checked={tableFilters.isDecisionMaker}
+                              onCheckedChange={(checked: boolean) => setTableFilters(prev => ({ ...prev, isDecisionMaker: checked }))}
+                              className="scale-75"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between py-1.5">
+                            <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Top Universidades</span>
+                            <Switch 
+                              checked={tableFilters.isTopUniversities}
+                              onCheckedChange={(checked: boolean) => setTableFilters(prev => ({ ...prev, isTopUniversities: checked }))}
+                              className="scale-75"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between py-1.5">
+                            <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Trabalha em Startup</span>
+                            <Switch 
+                              checked={tableFilters.isStartup}
+                              onCheckedChange={(checked: boolean) => setTableFilters(prev => ({ ...prev, isStartup: checked }))}
+                              className="scale-75"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Fonte */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Globe className="w-3 h-3" />
+                          Fonte do Candidato
+                        </h4>
+                        <div className="space-y-1.5">
+                          {[
+                            { value: 'Base Global', label: 'Base Global' },
+                            { value: 'Base Local', label: 'Base Local' },
+                            { value: 'LinkedIn', label: 'LinkedIn' },
+                            { value: 'Indicação', label: 'Indicação' },
+                            { value: 'Site Carreiras', label: 'Site Carreiras' }
+                          ].map(source => {
+                            const isChecked = tableFilters.sources.includes(source.value)
+                            return (
+                              <div
+                                key={source.value}
+                                onClick={() => toggleTableFilter('sources', source.value)}
+                                className="flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
+                                style={{ 
+                                  backgroundColor: isChecked ? 'rgba(96,190,209,0.08)' : 'transparent',
+                                  border: isChecked ? '1px solid rgba(96,190,209,0.2)' : '1px solid transparent'
+                                }}
+                              >
+                                <div 
+                                  className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                                  style={{ 
+                                    backgroundColor: isChecked ? '#60BED1' : 'transparent',
+                                    border: isChecked ? 'none' : '2px solid #d1d5db'
+                                  }}
+                                >
+                                  {isChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                                </div>
+                                <span className="text-xs" style={{ color: isChecked ? '#1f2937' : '#6b7280', fontFamily: 'Open Sans, sans-serif' }}>
+                                  {source.label}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Tags */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Bookmark className="w-3 h-3" />
+                          Tags
+                        </h4>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Digite uma tag..."
+                            className="h-8 text-xs"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                                const value = (e.target as HTMLInputElement).value.trim()
+                                if (!tableFilters.tags.includes(value)) {
+                                  setTableFilters(prev => ({ ...prev, tags: [...prev.tags, value] }))
+                                }
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }}
+                          />
+                          {tableFilters.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tableFilters.tags.map((tag) => (
+                                <Badge key={tag} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+                                  {tag}
+                                  <button onClick={() => setTableFilters(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))}>
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Status */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <CheckCircle className="w-3 h-3" />
+                          Status
+                        </h4>
+                        <div className="space-y-1.5">
+                          {[
+                            { value: 'novo', label: 'Novo' },
+                            { value: 'em_analise', label: 'Em Análise' },
+                            { value: 'entrevista', label: 'Entrevista' },
+                            { value: 'aprovado', label: 'Aprovado' },
+                            { value: 'reprovado', label: 'Reprovado' },
+                            { value: 'contratado', label: 'Contratado' }
+                          ].map(status => {
+                            const isChecked = tableFilters.statuses.includes(status.value)
+                            return (
+                              <div
+                                key={status.value}
+                                onClick={() => toggleTableFilter('statuses', status.value)}
+                                className="flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
+                                style={{ 
+                                  backgroundColor: isChecked ? 'rgba(96,190,209,0.08)' : 'transparent',
+                                  border: isChecked ? '1px solid rgba(96,190,209,0.2)' : '1px solid transparent'
+                                }}
+                              >
+                                <div 
+                                  className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                                  style={{ 
+                                    backgroundColor: isChecked ? '#60BED1' : 'transparent',
+                                    border: isChecked ? 'none' : '2px solid #d1d5db'
+                                  }}
+                                >
+                                  {isChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                                </div>
+                                <span className="text-xs" style={{ color: isChecked ? '#1f2937' : '#6b7280', fontFamily: 'Open Sans, sans-serif' }}>
+                                  {status.label}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Presença Online */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Github className="w-3 h-3" />
+                          Presença Online
+                        </h4>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between py-1.5">
+                            <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Com Github</span>
+                            <Switch 
+                              checked={tableFilters.hasGithub}
+                              onCheckedChange={(checked: boolean) => setTableFilters(prev => ({ ...prev, hasGithub: checked }))}
+                              className="scale-75"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between py-1.5">
+                            <span className="text-xs text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>Com Portfólio</span>
+                            <Switch 
+                              checked={tableFilters.hasPortfolio}
+                              onCheckedChange={(checked: boolean) => setTableFilters(prev => ({ ...prev, hasPortfolio: checked }))}
+                              className="scale-75"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Soft Skills */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Brain className="w-3 h-3" />
+                          Soft Skills
+                        </h4>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Digite uma soft skill..."
+                            className="h-8 text-xs"
+                            value={newSoftSkillFilter}
+                            onChange={(e) => setNewSoftSkillFilter(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && newSoftSkillFilter.trim()) {
+                                const value = newSoftSkillFilter.trim()
+                                if (!tableFilters.softSkills.includes(value)) {
+                                  setTableFilters(prev => ({ ...prev, softSkills: [...prev.softSkills, value] }))
+                                }
+                                setNewSoftSkillFilter('')
+                              }
+                            }}
+                          />
+                          {tableFilters.softSkills.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tableFilters.softSkills.map((skill) => (
+                                <Badge key={skill} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+                                  {skill}
+                                  <button onClick={() => setTableFilters(prev => ({ ...prev, softSkills: prev.softSkills.filter(s => s !== skill) }))}>
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Certificações */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <GraduationCap className="w-3 h-3" />
+                          Certificações
+                        </h4>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Digite uma certificação..."
+                            className="h-8 text-xs"
+                            value={newCertificationFilter}
+                            onChange={(e) => setNewCertificationFilter(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && newCertificationFilter.trim()) {
+                                const value = newCertificationFilter.trim()
+                                if (!tableFilters.certifications.includes(value)) {
+                                  setTableFilters(prev => ({ ...prev, certifications: [...prev.certifications, value] }))
+                                }
+                                setNewCertificationFilter('')
+                              }
+                            }}
+                          />
+                          {tableFilters.certifications.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {tableFilters.certifications.map((cert) => (
+                                <Badge key={cert} variant="secondary" className="text-[10px] px-2 py-0.5 flex items-center gap-1">
+                                  {cert}
+                                  <button onClick={() => setTableFilters(prev => ({ ...prev, certifications: prev.certifications.filter(c => c !== cert) }))}>
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Disponibilidade */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <MapPin className="w-3 h-3" />
+                          Disponibilidade
+                        </h4>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-[11px] text-gray-700 mb-1.5 block">Aberto a mudar</label>
+                            <div className="flex gap-1.5">
+                              {[
+                                { value: null, label: 'Todos' },
+                                { value: true, label: 'Sim' },
+                                { value: false, label: 'Não' }
+                              ].map(opt => (
+                                <button
+                                  key={String(opt.value)}
+                                  onClick={() => setTableFilters(prev => ({ ...prev, willingToRelocate: opt.value }))}
+                                  className="flex-1 px-2 py-1.5 text-[10px] rounded-md transition-all"
+                                  style={{
+                                    backgroundColor: tableFilters.willingToRelocate === opt.value ? '#60BED1' : '#f9fafb',
+                                    color: tableFilters.willingToRelocate === opt.value ? 'white' : '#6b7280',
+                                    border: tableFilters.willingToRelocate === opt.value ? 'none' : '1px solid #e5e7eb',
+                                    fontFamily: 'Open Sans, sans-serif'
+                                  }}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-700 mb-1.5 block">Mobilidade</label>
+                            <div className="flex gap-1.5">
+                              {[
+                                { value: null, label: 'Todos' },
+                                { value: true, label: 'Sim' },
+                                { value: false, label: 'Não' }
+                              ].map(opt => (
+                                <button
+                                  key={String(opt.value)}
+                                  onClick={() => setTableFilters(prev => ({ ...prev, mobility: opt.value }))}
+                                  className="flex-1 px-2 py-1.5 text-[10px] rounded-md transition-all"
+                                  style={{
+                                    backgroundColor: tableFilters.mobility === opt.value ? '#60BED1' : '#f9fafb',
+                                    color: tableFilters.mobility === opt.value ? 'white' : '#6b7280',
+                                    border: tableFilters.mobility === opt.value ? 'none' : '1px solid #e5e7eb',
+                                    fontFamily: 'Open Sans, sans-serif'
+                                  }}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Datas */}
+                      <div className="mb-5">
+                        <h4 
+                          className="text-[11px] font-semibold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          <Calendar className="w-3 h-3" />
+                          Datas
+                        </h4>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-[11px] text-gray-700 mb-1.5 block">Última Atualização</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="date"
+                                value={tableFilters.updatedAtFrom ?? ''}
+                                onChange={(e) => setTableFilters(prev => ({
+                                  ...prev,
+                                  updatedAtFrom: e.target.value || undefined
+                                }))}
+                                className="h-8 text-xs"
+                                placeholder="De"
+                              />
+                              <Input
+                                type="date"
+                                value={tableFilters.updatedAtTo ?? ''}
+                                onChange={(e) => setTableFilters(prev => ({
+                                  ...prev,
+                                  updatedAtTo: e.target.value || undefined
+                                }))}
+                                className="h-8 text-xs"
+                                placeholder="Até"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-gray-700 mb-1.5 block">Último Contato</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="date"
+                                value={tableFilters.lastContactedFrom ?? ''}
+                                onChange={(e) => setTableFilters(prev => ({
+                                  ...prev,
+                                  lastContactedFrom: e.target.value || undefined
+                                }))}
+                                className="h-8 text-xs"
+                                placeholder="De"
+                              />
+                              <Input
+                                type="date"
+                                value={tableFilters.lastContactedTo ?? ''}
+                                onChange={(e) => setTableFilters(prev => ({
+                                  ...prev,
+                                  lastContactedTo: e.target.value || undefined
+                                }))}
+                                className="h-8 text-xs"
+                                placeholder="Até"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Botões de ação */}
+                      <div className="pt-4 border-t border-gray-100 space-y-2">
+                        <button
+                          className="w-full h-9 text-xs rounded-lg transition-all"
+                          style={{ 
+                            backgroundColor: '#f9fafb',
+                            border: '1px solid #e5e7eb',
+                            color: '#6b7280',
+                            fontFamily: 'Open Sans, sans-serif'
+                          }}
+                          onClick={clearAllTableFilters}
+                        >
+                          Limpar Todos os Filtros
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Main Content Area */}
+              <div className="flex-1 min-w-0 transition-all duration-300 overflow-hidden">
+                {/* Table Container - Altura alinhada com LIA Panel (9rem offset) */}
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-hidden h-[calc(100vh-9rem)] relative">
+              {/* Loading Overlay */}
+              {isLoading && (
+                <div className="flex items-center justify-center h-full absolute inset-0 z-20 bg-white dark:bg-gray-900">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-700 text-sm">Carregando candidatos...</p>
+                  </div>
+                </div>
+              )}
+              {/* Table Content */}
+              <div
+                ref={tableContainerRef}
+                className={`overflow-x-auto overflow-y-auto max-w-full h-full ${isLoading ? 'hidden' : ''}`}
+              >
+                <table className="w-full" style={{ minWidth: '900px' }}>
+                  <thead className="sticky top-0 z-10 bg-white dark:bg-gray-900">
+                    <tr className="shadow-sm">
+                      {/* Coluna Checkbox - Fixa */}
+                      <th className="py-1.5 px-4 text-center relative" style={{ width: '50px' }}>
+                        <div className="flex flex-col items-center justify-center gap-0.5">
+                          <input
+                            type="checkbox"
+                            checked={selectedCandidatesForBatch.size === sortedCandidates.length && sortedCandidates.length > 0}
+                            ref={(input) => {
+                              if (input) {
+                                input.indeterminate = selectedCandidatesForBatch.size > 0 && selectedCandidatesForBatch.size < sortedCandidates.length
+                              }
+                            }}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                selectAllCandidates()
+                              } else {
+                                deselectAllCandidates()
+                              }
+                            }}
+                            className="w-4 h-4 rounded border-2 border-gray-400 hover:border-blue-500 transition-colors"
+                            title="Selecionar todos os candidatos"
+                          />
+                          <span className={`text-[11px] font-medium ${
+                            selectedCandidatesForBatch.size > 0
+                              ? 'text-blue-600 dark:text-blue-400'
+                              : 'text-gray-700 dark:text-gray-400'
+                          }`}>
+                            {selectedCandidatesForBatch.size > 0
+                              ? `${selectedCandidatesForBatch.size}/${sortedCandidates.length}`
+                              : sortedCandidates.length
+                            }
+                          </span>
+                        </div>
+                      </th>
+
+                      {/* Colunas Dinâmicas baseadas em tableColumns */}
+                      {visibleTableColumns.map((column) => {
+                        const colId = column.id
+                        const isDragging = draggedColumnId === colId
+                        const isDragOver = dragOverColumnId === colId
+                        const colWidth = columnWidths[colId] || 120
+                        const isNameCol = colId === 'name'
+
+                        return (
+                          <th
+                            key={colId}
+                            className={`py-1.5 px-3 font-medium text-gray-800 dark:text-gray-300 text-xs relative select-none transition-all ${
+                              isNameCol ? 'text-left' : 'text-center'
+                            } ${isDragging ? 'opacity-50 bg-gray-100 dark:bg-gray-800' : ''} ${
+                              isDragOver ? 'bg-blue-50 dark:bg-blue-900/30 border-l-2 border-blue-500' : ''
+                            }`}
+                            style={{ width: `${colWidth}px`, fontFamily: 'Open Sans, sans-serif' }}
+                            draggable
+                            onDragStart={(e) => handleColumnDragStart(colId, e)}
+                            onDragOver={(e) => handleColumnDragOver(colId, e)}
+                            onDragLeave={handleColumnDragLeave}
+                            onDrop={(e) => handleColumnDrop(colId, e)}
+                            onDragEnd={handleColumnDragEnd}
+                          >
+                            <div className="flex items-center gap-1 group">
+                              <GripVertical className="w-3 h-3 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing flex-shrink-0" />
+                              <button
+                                onClick={() => handleSort(colId)}
+                                className={`flex items-center gap-1 hover:wedo-text-blue transition-colors cursor-pointer text-xs flex-1 ${
+                                  isNameCol ? '' : 'justify-center'
+                                }`}
+                                title={`Ordenar por ${column.label.toLowerCase()}`}
+                              >
+                                {column.label}
+                                {getSortIcon(colId)}
+                              </button>
+                            </div>
+                            {/* Resize Handle */}
+                            <div
+                              className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-blue-500 transition-colors group/resize"
+                              onMouseDown={(e) => {
+                                e.stopPropagation()
+                                startResize(colId, e)
+                              }}
+                              title="Arrastar para redimensionar"
+                            >
+                              <div className="w-0.5 h-full mx-auto bg-gray-300 group-hover/resize:bg-blue-500 opacity-0 group-hover/resize:opacity-100 transition-opacity"></div>
+                            </div>
+                          </th>
+                        )
+                      })}
+
+                      {/* Coluna Ações - Fixa */}
+                      <th
+                        className="text-center py-1.5 px-3 font-medium text-gray-800 dark:text-gray-300 text-xs"
+                        style={{ width: `${columnWidths.acoes}px`, fontFamily: 'Open Sans, sans-serif' }}
+                      >
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleCandidates.map((candidate, index) => [
+                      <tr
+                        key={candidate.id}
+                        className={`bg-white border-b border-gray-100 dark:border-gray-800 transition-colors cursor-pointer relative ${
+                          selectedCandidatesForBatch.has(candidate.id)
+                            ? 'bg-gray-100 dark:bg-gray-800'
+                            : viewedCandidateIds.has(candidate.id)
+                              ? 'bg-gray-50/50 dark:bg-gray-800/30'
+                              : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                        }`}
+                        onClick={(e) => {
+                          handleCandidateClick(candidate)
+                        }}
+                      >
+                        {/* Coluna Checkbox - Fixa */}
+                        <td
+                          className="py-1.5 px-4"
+                          style={{ width: '50px' }}
+                        >
+                          <div className="flex items-center justify-center gap-1">
+                            <input
+                              type="checkbox"
+                              checked={selectedCandidatesForBatch.has(candidate.id)}
+                              onChange={(e) => handleCandidateSelection(candidate.id, index, e)}
+                              className={`w-4 h-4 rounded border-2 transition-all duration-200 ${
+                                selectedCandidatesForBatch.has(candidate.id)
+                                  ? 'bg-blue-600 border-blue-600 text-white'
+                                  : 'border-gray-300 hover:border-blue-400'
+                              }`}
+                              title={`Selecionar ${candidate.name}`}
+                            />
+                            {viewedCandidateIds.has(candidate.id) && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Eye className="w-3 h-3 text-gray-600" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">Perfil visualizado</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Células Dinâmicas baseadas em tableColumns */}
+                        {visibleTableColumns.map((column) => {
+                          const colId = column.id
+                          const colWidth = columnWidths[colId] || 120
+                          const isNameCol = colId === 'name'
+
+                          return (
+                            <td
+                              key={colId}
+                              className={`py-1.5 px-3 ${isNameCol ? 'text-left' : 'text-center'}`}
+                              style={{ width: `${colWidth}px` }}
+                            >
+                              {renderCellValue(candidate, colId)}
+                            </td>
+                          )
+                        })}
+
+                        {/* Coluna Ações - Fixa */}
+                        <td
+                          className="py-1.5 px-3"
+                          style={{ width: `${columnWidths.acoes}px` }}
+                        >
+                          <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-6 w-6 p-0 hover:bg-orange-100 dark:hover:bg-orange-900/20 ${
+                                favorites.has(candidate.id) ? 'text-orange-500' : ''
+                              }`}
+                              title="Salvar candidato"
+                              onClick={() => handleToggleFavorite(candidate.id)}
+                            >
+                              <Star className={`w-3 h-3 ${favorites.has(candidate.id) ? 'fill-current' : ''}`} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-6 w-6 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/20 ${
+                                pinnedCandidates.has(candidate.id) ? 'text-blue-600' : 'text-gray-600'
+                              }`}
+                              title="Fixar candidato nos favoritos"
+                              onClick={() => handleTogglePin(candidate.id)}
+                            >
+                              <Pin className={`w-3 h-3 ${pinnedCandidates.has(candidate.id) ? 'fill-current' : ''}`} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 hover:bg-green-100 dark:hover:bg-green-900/20 text-gray-600 hover:text-green-600"
+                              title="Enviar Email"
+                              onClick={() => {
+                                setEmailCandidateSelected(candidate)
+                                setShowSendEmailModal(true)
+                              }}
+                            >
+                              <Mail className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ])}
+
+                    {/* Indicador de Loading - Scroll Infinito */}
+                    {visibleCandidatesLimit < sortedCandidates.length && (
+                      <tr>
+                        <td colSpan={9} className="py-4 text-center">
+                          <div className="flex items-center justify-center gap-2 text-sm text-gray-700">
+                            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                            <span>Carregando mais candidatos... ({visibleCandidatesLimit} de {sortedCandidates.length})</span>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Empty State */}
+              {sortedCandidates.length === 0 && (
+                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-8 text-center">
+                  <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    Nenhum candidato encontrado
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Tente ajustar os filtros ou termos de busca
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={clearAllFilters}
+                  >
+                    Limpar filtros
+                  </Button>
+                </div>
+              )}
+            </div>
+              </div>
+
+              {/* Column Configuration Sidebar - Right - WeDOTalent Light Design */}
+              {showColumnConfig && (
+                <div className="flex-shrink-0 w-80 transition-all duration-300">
+                  <div className="bg-white rounded-xl h-[calc(100vh-6rem)] overflow-hidden shadow-lg">
+                    {/* Header */}
+                    <div className="p-4 flex items-center justify-between border-b border-gray-100">
+                      <div>
+                        <h3 
+                          className="text-sm font-semibold text-gray-900"
+                          style={{ fontFamily: 'Source Serif 4, Georgia, serif' }}
+                        >
+                          Configurar Colunas
+                        </h3>
+                        <p 
+                          className="text-xs mt-0.5 text-gray-700"
+                          style={{ fontFamily: 'Open Sans, sans-serif' }}
+                        >
+                          {tableColumns.filter(c => c.visible).length} de {tableColumns.length} colunas ativas
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowColumnConfig(false)}
+                        className="h-8 w-8 rounded-lg flex items-center justify-center transition-all text-gray-600 hover:text-gray-600 hover:bg-gray-100"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    {/* Search and Actions */}
+                    <div className="p-3 space-y-3 border-b border-gray-100">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" />
+                        <input
+                          type="text"
+                          placeholder="Buscar coluna..."
+                          value={columnSearchTerm}
+                          onChange={(e) => setColumnSearchTerm(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#60BED1]/30"
+                          style={{ fontFamily: 'Open Sans, sans-serif', color: '#1F2937' }}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          className="flex-1 text-xs h-8 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all"
+                          style={{ fontFamily: 'Open Sans, sans-serif', color: '#4B5563' }}
+                          onClick={() => {
+                            setTableColumns(prev => prev.map((col, idx) => ({
+                              ...col,
+                              visible: idx < 7,
+                              order: idx
+                            })))
+                          }}
+                        >
+                          Restaurar Padrão
+                        </button>
+                        <button
+                          className="text-xs h-8 px-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all"
+                          style={{ fontFamily: 'Open Sans, sans-serif', color: '#4B5563' }}
+                          onClick={() => {
+                            setTableColumns(prev => prev.map(col => ({ ...col, visible: true })))
+                          }}
+                        >
+                          Todas
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Column List */}
+                    <div className="overflow-y-auto h-[calc(100%-160px)] p-3">
+                      {(() => {
+                        const categoryLabels: Record<string, string> = {
+                          basico: 'Identificação Básica',
+                          contato: 'Contato',
+                          pessoal: 'Informações Pessoais',
+                          profissional: 'Perfil Profissional',
+                          competencias: 'Competências',
+                          localizacao: 'Localização',
+                          endereco: 'Endereço Completo',
+                          preferencias: 'Preferências de Trabalho',
+                          salario: 'Salário e Expectativas',
+                          documentos: 'Currículo e Documentos',
+                          origem: 'Origem e Integração',
+                          ia: 'Insights LIA / IA',
+                          status: 'Status e Workflow',
+                          comunicacao: 'Comunicação',
+                          cadastro: 'Status de Cadastro',
+                          adicional: 'Informações Adicionais',
+                          datas: 'Datas e Timestamps'
+                        }
+                        
+                        const filteredColumns = tableColumns.filter(col => 
+                          col.label.toLowerCase().includes(columnSearchTerm.toLowerCase()) ||
+                          col.id.toLowerCase().includes(columnSearchTerm.toLowerCase())
+                        )
+                        
+                        const groupedColumns = filteredColumns.reduce((acc, col) => {
+                          const category = col.category || 'adicional'
+                          if (!acc[category]) acc[category] = []
+                          acc[category].push(col)
+                          return acc
+                        }, {} as Record<string, typeof tableColumns>)
+                        
+                        const categoryOrder = ['basico', 'contato', 'pessoal', 'profissional', 'competencias', 'localizacao', 'endereco', 'preferencias', 'salario', 'documentos', 'origem', 'ia', 'status', 'comunicacao', 'cadastro', 'adicional', 'datas']
+                        
+                        return categoryOrder.map(category => {
+                          const columns = groupedColumns[category]
+                          if (!columns || columns.length === 0) return null
+                          
+                          const visibleCount = columns.filter(c => c.visible).length
+                          
+                          return (
+                            <div key={category} className="mb-5">
+                              <div className="flex items-center justify-between mb-2 px-1">
+                                <h4 
+                                  className="text-[11px] font-semibold uppercase tracking-wider text-gray-600"
+                                  style={{ fontFamily: 'Open Sans, sans-serif' }}
+                                >
+                                  {categoryLabels[category] || category}
+                                </h4>
+                                <span 
+                                  className="text-[11px] px-2 py-0.5 rounded-full"
+                                  style={{ 
+                                    backgroundColor: visibleCount > 0 ? 'rgba(96,190,209,0.15)' : '#f3f4f6',
+                                    color: visibleCount > 0 ? '#60BED1' : '#9ca3af',
+                                    fontFamily: 'Open Sans, sans-serif'
+                                  }}
+                                >
+                                  {visibleCount}/{columns.length}
+                                </span>
+                              </div>
+                              <div className="space-y-1">
+                                {columns.map((col) => (
+                                  <div
+                                    key={col.id}
+                                    onClick={() => {
+                                      setTableColumns(prev => prev.map(c => 
+                                        c.id === col.id ? { ...c, visible: !c.visible } : c
+                                      ))
+                                    }}
+                                    className="flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all"
+                                    style={{ 
+                                      backgroundColor: col.visible ? 'rgba(96,190,209,0.08)' : '#fafafa',
+                                      border: col.visible ? '1px solid rgba(96,190,209,0.25)' : '1px solid #e5e7eb'
+                                    }}
+                                  >
+                                    {/* Custom Checkbox - Ciano WeDOTalent */}
+                                    <div 
+                                      className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                                      style={{ 
+                                        backgroundColor: col.visible ? '#60BED1' : 'transparent',
+                                        border: col.visible ? 'none' : '2px solid #d1d5db'
+                                      }}
+                                    >
+                                      {col.visible && (
+                                        <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                                      )}
+                                    </div>
+                                    <span 
+                                      className="text-xs flex-1"
+                                      style={{ 
+                                        color: col.visible ? '#1f2937' : '#6b7280',
+                                        fontFamily: 'Open Sans, sans-serif',
+                                        fontWeight: col.visible ? 500 : 400
+                                      }}
+                                    >
+                                      {col.label}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        })
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Candidate Preview - Painel lateral direito */}
+              {showCandidatePreview && previewCandidate && (
+                <div className="flex-shrink-0 relative" style={{ width: `${previewWidth}px` }}>
+                  {/* Resize Handle */}
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 transition-colors z-10 group"
+                    onMouseDown={handlePreviewResize}
+                    title="Arraste para redimensionar"
+                  >
+                    <div className="absolute inset-0 -left-1 -right-1"></div>
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-500 rounded-full transition-colors"></div>
+                  </div>
+                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 h-[calc(100vh-6rem)] overflow-hidden shadow-lg">
+                    <CandidatePreview
+                      candidate={previewCandidate}
+                      isOpen={showCandidatePreview}
+                      onClose={handleCloseCandidatePreview}
+                      isMaximized={isPreviewMaximized}
+                      onToggleMaximize={handleTogglePreviewMaximize}
+                      candidates={sortedCandidates}
+                      currentIndex={sortedCandidates.findIndex(c => c.id === previewCandidate.id)}
+                      onNavigateCandidate={(index) => {
+                        if (sortedCandidates[index]) {
+                          setPreviewCandidate(sortedCandidates[index])
+                        }
+                      }}
+                      onOpenFullPage={handleCandidatePageOpen}
+                      onScheduleInterview={(candidate) => {
+                        setSelectedCandidateForAction(candidate)
+                        setShowScheduleModal(true)
+                      }}
+                      onAddToVacancy={(candidate) => {
+                        setSelectedCandidatesForBatch(new Set([candidate.id]))
+                        setShowAddToVacancyModal(true)
+                      }}
+                      onToggleFavorite={(candidateId) => handleToggleFavorite(candidateId)}
+                      onHideCandidate={handleToggleHideCandidate}
+                      onWSIScreening={(candidate) => handleStartWSITextScreening(candidate)}
+                      isFavorite={favorites.has(previewCandidate.id)}
+                      isHidden={hiddenCandidates.has(previewCandidate.id)}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Aba Favoritos */}
+        {activeTab === 'favorites' && (
+          <FavoritesTab
+            candidates={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id))}
+            pinnedCandidates={pinnedCandidates}
+            favoriteCandidates={favorites}
+            favoriteNotes={favoriteNotes}
+            onTogglePin={handleTogglePin}
+            onToggleFavorite={handleToggleFavorite}
+            onCandidateClick={handleCandidateClick}
+            onLIAClick={handleLIAClick}
+            onUpdateFavoriteNote={handleUpdateFavoriteNote}
+          />
+        )}
+
+        {/* Aba Listas */}
+        {activeTab === 'lists' && (
+          <ListsTab
+            onListSelect={async (listId) => {
+              try {
+                setIsLoading(true)
+                const listDetails = await liaApi.getCandidateList(listId, { limit: 100 })
+                
+                const mappedCandidates: Candidate[] = listDetails.candidates.items.map((member) => {
+                  const c = member.candidate
+                  const location = [c.location_city, c.location_state, c.location_country].filter(Boolean).join(', ') || 'Não informado'
+                  const workModel = c.work_model_preference === 'remote' ? 'remoto' : 
+                                   c.work_model_preference === 'hybrid' ? 'híbrido' : 'presencial'
+                  
+                  return {
+                    id: c.id,
+                    candidateId: c.id,
+                    name: c.name || 'Sem nome',
+                    email: c.email || '',
+                    phone: c.phone || c.mobile_phone || '',
+                    linkedin_url: c.linkedin_url,
+                    github_url: c.github_url,
+                    portfolio_url: c.portfolio_url,
+                    avatar_url: c.avatar_url,
+                    current_title: c.current_title,
+                    current_company: c.current_company,
+                    seniority_level: c.seniority_level,
+                    years_of_experience: c.years_of_experience,
+                    technical_skills: c.technical_skills || [],
+                    soft_skills: c.soft_skills || [],
+                    languages: c.languages || {},
+                    certifications: c.certifications || [],
+                    location_city: c.location_city,
+                    location_state: c.location_state,
+                    location_country: c.location_country,
+                    is_remote: c.is_remote,
+                    willing_to_relocate: c.willing_to_relocate,
+                    work_model_preference: c.work_model_preference,
+                    contract_type_preference: c.contract_type_preference,
+                    current_salary: c.current_salary,
+                    desired_salary_min: c.desired_salary_min,
+                    desired_salary_max: c.desired_salary_max,
+                    resume_url: c.resume_url,
+                    source: c.source || 'local',
+                    lia_score: c.lia_score,
+                    lia_insights: c.lia_insights,
+                    status: c.status,
+                    tags: c.tags || [],
+                    created_at: c.created_at,
+                    updated_at: c.updated_at,
+                    position: c.current_title || 'Profissional',
+                    monthlySalary: c.current_salary || 0,
+                    location: location,
+                    workModel: workModel as 'remoto' | 'híbrido' | 'presencial',
+                    score: c.lia_score || 0,
+                    contractType: (c.contract_type_preference === 'PJ' ? 'PJ' : 
+                                   c.contract_type_preference === 'Freelancer' ? 'Freelancer' : 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
+                    linkedin: c.linkedin_url || '',
+                    skills: c.technical_skills || [],
+                    experience: c.years_of_experience || 0,
+                    education: '',
+                    workHistory: [],
+                  }
+                })
+                
+                setCandidates(mappedCandidates)
+                setViewingList({ 
+                  id: listDetails.id, 
+                  name: listDetails.name, 
+                  color: listDetails.color 
+                })
+                setActiveTab('search')
+                setShowSearchResults(true)
+                setLastSearchQuery(`Lista: ${listDetails.name}`)
+                
+                toast({
+                  title: "Lista carregada",
+                  description: `Exibindo ${mappedCandidates.length} candidatos da lista "${listDetails.name}"`,
+                })
+              } catch (error) {
+                console.error('Failed to load list:', error)
+                toast({
+                  title: "Erro ao carregar lista",
+                  description: error instanceof Error ? error.message : "Não foi possível carregar os candidatos da lista.",
+                  variant: "destructive"
+                })
+              } finally {
+                setIsLoading(false)
+              }
+            }}
+            onAddToJobs={(listId) => {
+              liaApi.getCandidateList(listId).then(list => {
+                setSelectedListForVacancies({
+                  id: listId,
+                  name: list.name,
+                  candidateCount: list.candidate_count
+                })
+                setShowAddListToVacanciesModal(true)
+              }).catch(err => {
+                toast({
+                  title: "Erro ao carregar lista",
+                  description: err.message,
+                  variant: "destructive"
+                })
+              })
+            }}
+            onAddCandidateToList={(listId, listName) => {
+              setPreSelectedListForModal({ id: listId, name: listName })
+              setShowAddCandidateModal(true)
+            }}
+          />
+        )}
+
+        {/* Aba Histórico */}
+        {activeTab === 'history' && (
+          <HistoryTab
+            history={talentFunnel.history}
+            onReExecuteSearch={(historyItem) => {
+              // Re-executar a busca do histórico
+              setSearchTerm(historyItem.query)
+              setLastSearchQuery(historyItem.query)
+              setLastSearchMode(historyItem.mode || 'natural')
+              if (historyItem.source) {
+                setSearchSource(historyItem.source)
+              }
+              setActiveTab('search')
+              // Trigger busca automática após um pequeno delay
+              setTimeout(() => {
+                setShowSearchResults(false) // Reset para mostrar a tela de busca
+              }, 100)
+            }}
+            onSaveAsSearch={(historyItem, name, description) => {
+              // Salvar busca usando o hook centralizado
+              talentFunnel.saveHistoryAsSearch(historyItem, name, description)
+            }}
+            onDeleteItem={(id) => {
+              talentFunnel.removeFromHistory(id)
+            }}
+            onClearAll={() => {
+              talentFunnel.clearHistory()
+            }}
+          />
+        )}
+
+        {/* Aba Buscas Salvas */}
+        {activeTab === 'saved-searches' && (
+          <SavedSearchesTab
+            savedSearches={talentFunnel.savedSearches}
+            onExecuteSearch={(search) => {
+              // Executar busca salva
+              setSearchTerm(search.query)
+              setLastSearchQuery(search.query)
+              setLastSearchMode(search.mode)
+              setSearchSource(search.source)
+              setActiveTab('search')
+              talentFunnel.incrementSavedSearchUsage(search.id)
+              setTimeout(() => {
+                setShowSearchResults(false)
+              }, 100)
+            }}
+            onAddSearch={(search) => {
+              talentFunnel.addSavedSearch(search)
+            }}
+            onUpdateSearch={(id, updates) => {
+              talentFunnel.updateSavedSearch(id, updates)
+            }}
+            onDeleteSearch={(id) => {
+              talentFunnel.removeSavedSearch(id)
+            }}
+            onToggleFavorite={(id) => {
+              talentFunnel.toggleSavedSearchFavorite(id)
+            }}
+            onNavigateToSearch={() => {
+              setActiveTab('search')
+              setShowSearchResults(false)
+            }}
+          />
+        )}
+
+        {/* Aba Agentes de Recrutamento (Coming Soon) */}
+        {activeTab === 'agents' && (
+          <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] px-4">
+            <div className="w-full max-w-2xl mx-auto text-center">
+              <div className="mb-8">
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3" style={{ fontFamily: '"Source Serif 4", serif' }}>
+                  Agentes de Recrutamento
+                </h2>
+                <div className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium mb-6" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)', color: '#0369A1', fontFamily: '"Open Sans", sans-serif' }}>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Em Breve
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 text-base max-w-lg mx-auto leading-relaxed" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                  Crie seus próprios agentes de recrutamento para montar pipelines e triar candidatos automaticamente.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                <div className="p-5 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
+                  <div className="w-10 h-10 rounded-lg bg-[#60BED1]/10 flex items-center justify-center mb-3 mx-auto">
+                    <Target className="w-5 h-5 text-[#60BED1]" />
+                  </div>
+                  <h3 className="font-semibold text-sm mb-1" style={{ fontFamily: '"Source Serif 4", serif', color: '#1F2937' }}>Triagem Automática</h3>
+                  <p className="text-xs" style={{ fontFamily: '"Open Sans", sans-serif', color: '#4B5563' }}>Filtre candidatos com critérios personalizados</p>
+                </div>
+                <div className="p-5 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
+                  <div className="w-10 h-10 rounded-lg bg-[#60BED1]/10 flex items-center justify-center mb-3 mx-auto">
+                    <Layers className="w-5 h-5 text-[#60BED1]" />
+                  </div>
+                  <h3 className="font-semibold text-sm mb-1" style={{ fontFamily: '"Source Serif 4", serif', color: '#1F2937' }}>Pipelines Inteligentes</h3>
+                  <p className="text-xs" style={{ fontFamily: '"Open Sans", sans-serif', color: '#4B5563' }}>Monte fluxos de recrutamento automatizados</p>
+                </div>
+                <div className="p-5 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
+                  <div className="w-10 h-10 rounded-lg bg-[#60BED1]/10 flex items-center justify-center mb-3 mx-auto">
+                    <Brain className="w-5 h-5 text-[#60BED1]" />
+                  </div>
+                  <h3 className="font-semibold text-sm mb-1" style={{ fontFamily: '"Source Serif 4", serif', color: '#1F2937' }}>IA Personalizada</h3>
+                  <p className="text-xs" style={{ fontFamily: '"Open Sans", sans-serif', color: '#4B5563' }}>Agentes que aprendem com suas decisões</p>
+                </div>
+              </div>
+
+              <div className="mt-10">
+                <button
+                  onClick={() => setActiveTab('lists')}
+                  className="inline-flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
+                  style={{ 
+                    fontFamily: '"Open Sans", sans-serif',
+                    backgroundColor: '#60BED1',
+                    color: 'white'
+                  }}
+                >
+                  <Bookmark className="w-4 h-4" />
+                  Ir para Listas de Candidatos
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      
+      {/* Contact Modal */}
+      {(selectedCandidateForAction || contactModalCandidate) && (
+        <ContactModal
+          isOpen={showContactModal}
+          onClose={() => {
+            setShowContactModal(false)
+            setSelectedCandidateForAction(null)
+            setContactModalCandidate(null)
+            setContactModalAction('general')
+          }}
+          candidate={(() => {
+            const c = contactModalCandidate || selectedCandidateForAction
+            if (!c) return null
+            return {
+              id: c.id,
+              name: c.name,
+              role: c.position || c.role,
+              email: c.email,
+              phone: c.phone,
+              location: c.location,
+              avatar: c.avatar,
+              score: c.score || 0,
+              status: c.status || 'Novo',
+              matchPercentage: c.liaAnalysis?.score || c.matchPercentage || c.score || 0,
+              riskLevel: 'low',
+              culturalFit: 85,
+              technicalMatch: 90,
+              experience: String(c.experience || ''),
+              seniority: c.seniority || 'Pleno',
+              availability: 'Imediata',
+              expectedSalary: c.salary?.expected?.toString() || '',
+              preferredLocation: c.location,
+              linkedin: c.linkedin,
+              skills: c.skills || [],
+              lastActivity: new Date().toISOString(),
+              source: 'internal'
+            }
+          })()}
+          onSend={handleSendMessage}
+          initialAction={contactModalAction}
+        />
+      )}
+
+      {/* Schedule Modal */}
+      {selectedCandidateForAction && (
+        <ScheduleModal
+          isOpen={showScheduleModal}
+          onClose={() => {
+            setShowScheduleModal(false)
+            setSelectedCandidateForAction(null)
+          }}
+          candidate={{
+            id: selectedCandidateForAction.id,
+            name: selectedCandidateForAction.name,
+            role: selectedCandidateForAction.position,
+            email: selectedCandidateForAction.email,
+            phone: selectedCandidateForAction.phone,
+            location: selectedCandidateForAction.location,
+            avatar: selectedCandidateForAction.avatar,
+            score: selectedCandidateForAction.score,
+            status: selectedCandidateForAction.status,
+            matchPercentage: selectedCandidateForAction.liaAnalysis?.score || selectedCandidateForAction.score,
+            riskLevel: 'low',
+            culturalFit: 85,
+            technicalMatch: 90,
+            experience: String(selectedCandidateForAction.experience),
+            seniority: selectedCandidateForAction.seniority || 'Pleno',
+            availability: 'Imediata',
+            expectedSalary: selectedCandidateForAction.salary?.expected?.toString() || '',
+            preferredLocation: selectedCandidateForAction.location,
+            linkedin: selectedCandidateForAction.linkedin,
+            skills: selectedCandidateForAction.skills,
+            lastActivity: new Date().toISOString(),
+            source: 'internal'
+          }}
+          onSchedule={handleScheduleComplete}
+        />
+      )}
+
+      {/* Unified Communication Modal - New standardized modal for all communication types */}
+      <UnifiedCommunicationModal
+        isOpen={unifiedModalOpen}
+        onClose={handleUnifiedModalClose}
+        candidate={unifiedModalCandidate ? {
+          id: unifiedModalCandidate.id,
+          name: unifiedModalCandidate.name,
+          role: unifiedModalCandidate.position || unifiedModalCandidate.current_title || '',
+          email: unifiedModalCandidate.email,
+          phone: unifiedModalCandidate.phone,
+          location: unifiedModalCandidate.location,
+          avatar: unifiedModalCandidate.avatar,
+          score: unifiedModalCandidate.score,
+          matchPercentage: unifiedModalCandidate.liaAnalysis?.score || unifiedModalCandidate.score,
+          skills: unifiedModalCandidate.skills
+        } : null}
+        type={unifiedModalType}
+        jobTitle={lastSearchQuery || undefined}
+        onSend={handleUnifiedModalSend}
+        // TODO: Replace 'demo' with actual company_id from auth context when authentication is implemented.
+        // This is required for proper multi-tenancy support.
+        companyId="demo"
+      />
+
+      {/* Candidate Comparison Modal */}
+      {showComparisonModal && selectedCandidatesForBatch.size >= 2 && (
+        <CandidateComparison
+          isOpen={showComparisonModal}
+          onClose={() => setShowComparisonModal(false)}
+          candidates={sortedCandidates
+            .filter(c => selectedCandidatesForBatch.has(c.id))
+            .map(c => ({
+              id: c.id,
+              name: c.name,
+              role: c.position,
+              email: c.email,
+              phone: c.phone,
+              location: c.location,
+              avatar: c.avatar,
+              score: c.score,
+              status: c.status,
+              matchPercentage: c.liaAnalysis?.score || c.score,
+              riskLevel: 'low',
+              culturalFit: 85,
+              technicalMatch: 90,
+              experience: String(c.experience),
+              seniority: c.seniority || 'Pleno',
+              availability: 'Imediata',
+              expectedSalary: c.salary?.expected?.toString() || '',
+              skills: c.skills,
+              lastActivity: new Date().toISOString(),
+              source: 'internal'
+            }))}
+          onSelectCandidate={(candidateId) => {
+            const candidate = candidates.find(c => c.id === candidateId)
+            if (candidate) handleNavigateToFullProfile(candidate)
+          }}
+          onScheduleInterview={(candidateId) => {
+            const candidate = candidates.find(c => c.id === candidateId)
+            if (candidate) handleScheduleInterview(candidate)
+          }}
+          onContactCandidate={(candidateId) => {
+            const candidate = candidates.find(c => c.id === candidateId)
+            if (candidate) handleContactCandidate(candidate)
+          }}
+        />
+      )}
+
+      {/* Candidate Page Modal */}
+      {showCandidatePage && selectedCandidate && (
+        <CandidatePage
+          candidate={selectedCandidate}
+          isOpen={showCandidatePage}
+          onClose={handleCloseCandidatePage}
+          onBackToKanban={() => {}}
+        />
+      )}
+
+      {/* New Candidate Unified Modal - AI-first experience */}
+      <NewCandidateUnifiedModal
+        key={`modal-${preSelectedListForModal?.id || 'default'}`}
+        isOpen={showAddCandidateModal}
+        onClose={() => {
+          setShowAddCandidateModal(false)
+          setPreSelectedListForModal(null)
+        }}
+        onCandidateAdded={(candidate) => {
+          handleAddCandidate(candidate)
+          // Reload lists if a list was pre-selected
+          if (preSelectedListForModal) {
+            liaApi.getCandidateLists({ limit: 50 }).then(response => {
+              if (response.items) {
+                setCandidateListsForModal(response.items.map(list => ({
+                  id: list.id,
+                  name: list.name,
+                  color: list.color
+                })))
+              }
+            }).catch(() => {})
+          }
+        }}
+        jobVacancies={bulkJobVacancies.map(j => ({ id: j.id, title: j.title, department: j.department, location: j.location }))}
+        candidateLists={candidateListsForModal}
+        preSelectedListId={preSelectedListForModal?.id}
+        preSelectedListName={preSelectedListForModal?.name}
+        onGoToSearch={() => {
+          setShowAddCandidateModal(false)
+          setPreSelectedListForModal(null)
+          setActiveTab('search')
+        }}
+      />
+
+      {/* Batch Approval Modal */}
+      {showBatchApproval && (
+        <BatchApprovalModal
+          candidates={convertCandidatesForBatch(candidates.filter(c => selectedCandidatesForBatch.has(c.id)))}
+          isOpen={showBatchApproval}
+          onClose={() => setShowBatchApproval(false)}
+          onApprovalComplete={handleBatchApprovalComplete}
+        />
+      )}
+
+      {/* WSI Text Screening Modal */}
+      {wsiCandidateForScreening && (
+        <WSITextScreeningModal
+          isOpen={showWSITextModal}
+          onClose={() => {
+            setShowWSITextModal(false)
+            setWsiCandidateForScreening(null)
+          }}
+          candidate={{
+            id: wsiCandidateForScreening.id,
+            name: wsiCandidateForScreening.name,
+            avatar: wsiCandidateForScreening.avatar,
+            position: wsiCandidateForScreening.position
+          }}
+          jobVacancy={{
+            id: 'default-vacancy',
+            title: wsiCandidateForScreening.position || 'Vaga atual'
+          }}
+          onComplete={handleWSIScreeningComplete}
+        />
+      )}
+
+      {/* WSI Voice Screening Modal */}
+      {wsiCandidateForScreening && (
+        <WSIVoiceScreeningStatus
+          isOpen={showWSIVoiceModal}
+          onClose={() => {
+            setShowWSIVoiceModal(false)
+            setWsiCandidateForScreening(null)
+          }}
+          candidate={{
+            id: wsiCandidateForScreening.id,
+            name: wsiCandidateForScreening.name,
+            phone: wsiCandidateForScreening.phone
+          }}
+          jobVacancy={{
+            id: 'default-vacancy',
+            title: wsiCandidateForScreening.position || 'Vaga atual'
+          }}
+          onComplete={handleWSIScreeningComplete}
+          autoStart={true}
+        />
+      )}
+
+      {/* Send Email Modal */}
+      <SendEmailModal
+        isOpen={showSendEmailModal}
+        onClose={() => {
+          setShowSendEmailModal(false)
+          setEmailCandidateSelected(null)
+        }}
+        candidate={emailCandidateSelected ? {
+          id: emailCandidateSelected.id,
+          name: emailCandidateSelected.name,
+          email: emailCandidateSelected.email,
+          phone: emailCandidateSelected.phone,
+          current_title: emailCandidateSelected.position,
+          technical_skills: emailCandidateSelected.skills,
+          source: 'internal',
+          is_active: true,
+          is_remote: emailCandidateSelected.workModel === 'remoto',
+          willing_to_relocate: false,
+          tags: emailCandidateSelected.tags,
+          status: emailCandidateSelected.status,
+          lia_insights: {},
+          soft_skills: [],
+          languages: {},
+          certifications: []
+        } : null}
+        onSuccess={() => {
+          setShowSendEmailModal(false)
+          setEmailCandidateSelected(null)
+        }}
+      />
+
+      {/* Reveal Contact Modal */}
+      {revealCandidate && (
+        <RevealCreditsModal
+          isOpen={showRevealModal}
+          onClose={() => {
+            setShowRevealModal(false)
+            setRevealCandidate(null)
+          }}
+          onConfirm={handleRevealContact}
+          revealType={revealType}
+          candidateName={revealCandidate.name}
+          creditsRequired={revealType === 'email' ? 2 : 14}
+        />
+      )}
+
+      {/* CV Preview Modal (legado - mantido para compatibilidade) */}
+      {parsedCVData && (
+        <CVPreview
+          isOpen={showCVPreviewModal}
+          onClose={() => {
+            setShowCVPreviewModal(false)
+            setParsedCVData(null)
+          }}
+          parsedData={parsedCVData}
+          onConfirm={handleCVConfirmed}
+          jobVacancies={bulkJobVacancies.map(j => ({ id: j.id, title: j.title }))}
+        />
+      )}
+
+      {/* Bulk Actions Bar removido - ações agora aparecem no chat da LIA */}
+
+      {/* Modal de Confirmação de Créditos Base Global */}
+      <AlertDialog open={showCreditConfirmation} onOpenChange={setShowCreditConfirmation}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                <Zap className="w-4 h-4" style={{ color: '#60BED1' }} />
+              </div>
+              Confirmar Busca na Base Global
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-600">
+                Esta busca utilizará créditos da sua conta.
+              </p>
+              
+              {creditEstimate && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-700">Tipo de busca:</span>
+                    <span className="font-medium capitalize">{pearchSearchOptions.searchType}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-700">Limite de resultados:</span>
+                    <span className="font-medium">{pearchSearchOptions.limit}</span>
+                  </div>
+                  
+                  {/* Filtros de Otimização de Créditos */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-3 space-y-2">
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Filtros de Contato</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm text-gray-700">Apenas com Email</span>
+                        <span className="text-xs text-gray-400">(+1 cr)</span>
+                      </div>
+                      <Switch
+                        checked={pearchSearchOptions.requireEmails}
+                        onCheckedChange={(checked) => setPearchSearchOptions(prev => ({ ...prev, requireEmails: checked }))}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-green-500" />
+                        <span className="text-sm text-gray-700">Apenas com Telefone</span>
+                        <span className="text-xs text-gray-400">(+1 cr)</span>
+                      </div>
+                      <Switch
+                        checked={pearchSearchOptions.requirePhoneNumbers}
+                        onCheckedChange={(checked) => setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: checked }))}
+                      />
+                    </div>
+                    {(pearchSearchOptions.requireEmails || pearchSearchOptions.requirePhoneNumbers) && (
+                      <p className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded">
+                        Filtrando candidatos com contato disponível - você não gastará créditos com perfis sem dados de contato.
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-700">Custo base:</span>
+                    <span className="font-medium">{creditEstimate.breakdown.base} créditos</span>
+                  </div>
+                  {creditEstimate.breakdown.emails > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-700">E-mails (+):</span>
+                      <span className="font-medium">{creditEstimate.breakdown.emails} créditos</span>
+                    </div>
+                  )}
+                  {creditEstimate.breakdown.phone_numbers > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-700">Telefones (+):</span>
+                      <span className="font-medium">{creditEstimate.breakdown.phone_numbers} créditos</span>
+                    </div>
+                  )}
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Total estimado:</span>
+                      <span className="font-bold text-lg" style={{ color: '#60BED1' }}>
+                        {creditEstimate.total_estimated} créditos
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>O custo final pode variar dependendo dos resultados encontrados.</span>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowCreditConfirmation(false)
+              setPendingSearchRequest(null)
+            }}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmPearchSearch}
+              className="text-white"
+              style={{ backgroundColor: '#60BED1' }}
+            >
+              Confirmar Busca
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal de Confirmação para Expansão Global */}
+      <AlertDialog open={showGlobalExpansionConfirm} onOpenChange={setShowGlobalExpansionConfirm}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                <Globe className="w-4 h-4" style={{ color: '#60BED1' }} />
+              </div>
+              Expandir para Busca Global
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-600">
+                A Busca Global encontra candidatos além da sua base local em um pool de mais de 800 milhões de perfis profissionais.
+              </p>
+              
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-700">Busca atual:</span>
+                  <span className="font-medium text-xs max-w-[200px] truncate">{lastSuccessfulQuery || lastSearchQuery || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-700">Resultados locais:</span>
+                  <span className="font-medium">{localResultsCount} candidatos</span>
+                </div>
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Custo por candidato:</span>
+                    <span className="font-bold text-lg" style={{ color: '#60BED1' }}>
+                      1 crédito
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>Você será cobrado apenas pelos candidatos que visualizar/revelar contatos.</span>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowGlobalExpansionConfirm(false)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleExpandToGlobal}
+              disabled={isExpandingToGlobal}
+              className="text-white gap-2"
+              style={{ backgroundColor: '#60BED1' }}
+            >
+              {isExpandingToGlobal ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Expandindo...
+                </>
+              ) : (
+                <>
+                  <Globe className="w-4 h-4" />
+                  Expandir Busca
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal de Confirmação para Mudança de Fonte (Híbrido/Global) */}
+      <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
+        <AlertDialogContent className="max-w-md border border-gray-100 shadow-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(96, 190, 209, 0.15)' }}>
+                {pendingSourceChange === 'hybrid' ? (
+                  <Zap className="w-4 h-4" style={{ color: '#60BED1' }} />
+                ) : (
+                  <Globe className="w-4 h-4" style={{ color: '#60BED1' }} />
+                )}
+              </div>
+              {pendingSourceChange === 'hybrid' ? 'Ativar Busca Híbrida' : 'Ativar Busca Global'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p className="text-sm text-gray-600">
+                {pendingSourceChange === 'hybrid' 
+                  ? 'A busca híbrida combina sua base local com a base global de 800M+ perfis profissionais.'
+                  : 'A busca global acessa uma base de 800M+ perfis profissionais para encontrar candidatos além da sua base local.'}
+              </p>
+              
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-700">Tipo de busca:</span>
+                  <span className="font-medium">{pendingSourceChange === 'hybrid' ? 'Híbrido (Local + Global)' : 'Apenas Global'}</span>
+                </div>
+                <div className="border-t border-gray-200 pt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Custo por candidato:</span>
+                    <span className="font-bold text-lg" style={{ color: '#60BED1' }}>
+                      1 crédito
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 p-2 rounded-lg">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>Cada candidato encontrado na base global consumirá 1 crédito da sua conta.</span>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowSourceChangeModal(false)
+              setPendingSourceChange(null)
+            }}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmSourceChange}
+              className="text-white gap-2"
+              style={{ backgroundColor: '#60BED1' }}
+            >
+              {pendingSourceChange === 'hybrid' ? (
+                <>
+                  <Zap className="w-4 h-4" />
+                  Ativar Híbrido
+                </>
+              ) : (
+                <>
+                  <Globe className="w-4 h-4" />
+                  Ativar Global
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal de Confirmação para Filtro de Contato (Email/Telefone) */}
+      <AlertDialog open={showContactFilterModal} onOpenChange={setShowContactFilterModal}>
+        <AlertDialogContent className="max-w-md border border-gray-100 shadow-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(93, 164, 122, 0.15)' }}>
+                {pendingContactFilter === 'email' ? (
+                  <Mail className="w-4 h-4" style={{ color: '#5DA47A' }} />
+                ) : (
+                  <Phone className="w-4 h-4" style={{ color: '#5DA47A' }} />
+                )}
+              </div>
+              {pendingContactFilter === 'email' ? 'Filtrar por Email' : 'Filtrar por Telefone'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p className="text-sm text-gray-600">
+                {pendingContactFilter === 'email'
+                  ? 'Ao ativar este filtro, a busca retornará apenas candidatos com email disponível.'
+                  : 'Ao ativar este filtro, a busca retornará apenas candidatos com telefone disponível.'}
+              </p>
+              
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-700">Filtro:</span>
+                  <span className="font-medium">{pendingContactFilter === 'email' ? 'Apenas com Email' : 'Apenas com Telefone'}</span>
+                </div>
+                <div className="border-t border-gray-200 pt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Custo adicional:</span>
+                    <span className="font-bold text-lg" style={{ color: '#5DA47A' }}>
+                      +1 crédito/cand
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 p-2 rounded-lg">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                <span>Você não gastará créditos com perfis sem dados de contato disponíveis.</span>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowContactFilterModal(false)
+              setPendingContactFilter(null)
+            }}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmContactFilterChange}
+              className="text-white gap-2"
+              style={{ backgroundColor: '#5DA47A' }}
+            >
+              {pendingContactFilter === 'email' ? (
+                <>
+                  <Mail className="w-4 h-4" />
+                  Ativar Filtro Email
+                </>
+              ) : (
+                <>
+                  <Phone className="w-4 h-4" />
+                  Ativar Filtro Telefone
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Advanced Filters Modal */}
+      {/* Modal de Filtros Avançados removido - agora usa painel lateral */}
+
+      {/* Modal Salvar como Arquétipo */}
+      <AlertDialog 
+        open={showSaveAsArchetypeModal} 
+        onOpenChange={(open) => {
+          setShowSaveAsArchetypeModal(open)
+          // Se fechando, resetar modo de criação
+          if (!open && isCreatingArchetype) {
+            setIsCreatingArchetype(false)
+            setArchetypeCreationStep('initial')
+            setNewArchetypeData({})
+          }
+        }}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-base" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+              <Bookmark className="w-5 h-5" style={{ color: '#60BED1' }} />
+              Salvar como Arquétipo
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4 pt-2">
+                <p className="text-xs text-gray-600 dark:text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  Transforme esta busca em um arquétipo reutilizável para encontrar candidatos similares rapidamente.
+                </p>
+                
+                {/* Query atual */}
+                <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+                  <p className="text-[11px] font-medium text-gray-700 mb-1" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                    {isCreatingArchetype ? 'Descrição do perfil:' : 'Busca atual:'}
+                  </p>
+                  <p className="text-xs text-gray-800 dark:text-gray-200 line-clamp-3" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                    {isCreatingArchetype && newArchetypeData.query 
+                      ? newArchetypeData.query 
+                      : (lastSuccessfulQuery || searchResults.query || 'Nenhuma busca realizada')}
+                  </p>
+                </div>
+                
+                {/* Seletor de Emoji */}
+                <div>
+                  <label className="text-xs font-medium mb-1.5 block" style={{ fontFamily: 'Open Sans, sans-serif' }}>Ícone</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {['🎯', '🚀', '⚛️', '🛠️', '📱', '☁️', '👨‍💼', '💼', '🔧', '📊', '🧠', '🔐'].map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={() => setArchetypeEmojiInput(emoji)}
+                        className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center transition-all ${
+                          archetypeEmojiInput === emoji 
+                            ? 'bg-[#60BED1]/20 border-2 border-[#60BED1]' 
+                            : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Nome do Arquétipo */}
+                <div>
+                  <label className="text-xs font-medium mb-1.5 block" style={{ fontFamily: 'Open Sans, sans-serif' }}>Nome do Arquétipo</label>
+                  <Input
+                    value={archetypeNameInput}
+                    onChange={(e) => setArchetypeNameInput(e.target.value)}
+                    placeholder="Ex: DevOps Sênior Cloud"
+                    className="text-sm"
+                    style={{ fontFamily: 'Open Sans, sans-serif' }}
+                  />
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel onClick={() => {
+              setShowSaveAsArchetypeModal(false)
+              // Resetar modo de criação ao cancelar
+              if (isCreatingArchetype) {
+                setIsCreatingArchetype(false)
+                setArchetypeCreationStep('initial')
+                setNewArchetypeData({})
+              }
+            }}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                const queryToSave = isCreatingArchetype && newArchetypeData.query 
+                  ? newArchetypeData.query 
+                  : (lastSuccessfulQuery || searchResults.query)
+                
+                if (archetypeNameInput.trim() && queryToSave) {
+                  const newArchetype: Archetype = {
+                    id: `archetype-${Date.now()}`,
+                    name: archetypeNameInput.trim(),
+                    description: queryToSave,
+                    emoji: archetypeEmojiInput,
+                    query: queryToSave,
+                    filters: {},
+                    createdAt: new Date(),
+                    isDefault: false
+                  }
+                  setUserArchetypes(prev => [...prev, newArchetype])
+                  setShowSaveAsArchetypeModal(false)
+                  setArchetypeNameInput('')
+                  
+                  // Resetar modo de criação
+                  setIsCreatingArchetype(false)
+                  setArchetypeCreationStep('initial')
+                  setNewArchetypeData({})
+                  
+                  // Feedback via chat
+                  const liaMessage: ChatMessage = {
+                    id: `lia-archetype-saved-${Date.now()}`,
+                    type: 'lia',
+                    content: `✅ Arquétipo "${archetypeNameInput.trim()}" salvo com sucesso! Você pode encontrá-lo na aba Arquétipos.`,
+                    timestamp: new Date()
+                  }
+                  setChatMessages(prev => [...prev, liaMessage])
+                }
+              }}
+              disabled={!archetypeNameInput.trim()}
+              className="text-white"
+              style={{ backgroundColor: '#60BED1' }}
+            >
+              <Bookmark className="w-4 h-4 mr-1" />
+              Salvar Arquétipo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Advanced Filters Modal */}
+      <AdvancedFiltersModal
+        isOpen={showAdvancedSearch}
+        onClose={() => setShowAdvancedSearch(false)}
+        onApply={(filters) => {
+          setActiveSearchFilters(filters)
+          setShowAdvancedSearch(false)
+        }}
+        initialFilters={activeSearchFilters}
+        estimatedMatches={1000000}
+      />
+
+      {/* Add to List Modal */}
+      <AddToListModal
+        isOpen={showAddToListModal}
+        onClose={() => {
+          setShowAddToListModal(false)
+          setAddToListCandidateIds([])
+          setAddToListCandidateNames([])
+        }}
+        candidateIds={addToListCandidateIds}
+        candidateNames={addToListCandidateNames}
+        onSuccess={() => {
+          toast({
+            title: "Sucesso",
+            description: "Candidatos adicionados à lista"
+          })
+        }}
+      />
+
+      {/* Add List to Vacancies Modal */}
+      {selectedListForVacancies && (
+        <AddListToVacanciesModal
+          isOpen={showAddListToVacanciesModal}
+          onClose={() => {
+            setShowAddListToVacanciesModal(false)
+            setSelectedListForVacancies(null)
+          }}
+          listId={selectedListForVacancies.id}
+          listName={selectedListForVacancies.name}
+          candidateCount={selectedListForVacancies.candidateCount}
+          onSuccess={() => {
+            toast({
+              title: "Sucesso",
+              description: "Candidatos adicionados às vagas selecionadas"
+            })
+          }}
+        />
+      )}
+
+      {/* Add Candidates to Vacancy Modal */}
+      <AddCandidatesToVacancyModal
+        isOpen={showAddToVacancyModal}
+        onClose={() => setShowAddToVacancyModal(false)}
+        candidateIds={Array.from(selectedCandidatesForBatch)}
+        candidateNames={candidates.filter(c => selectedCandidatesForBatch.has(c.id)).map(c => c.name)}
+        onSuccess={() => {
+          setSelectedCandidatesForBatch(new Set())
+          toast({
+            title: "Sucesso",
+            description: "Candidatos adicionados à vaga"
+          })
+        }}
+      />
+
+      {/* Modal de aviso de candidatos Pearch não salvos */}
+      <UnsavedPearchWarningModal
+        isOpen={showUnsavedWarningModal}
+        onClose={() => {
+          // Cancelar a navegação pendente ao fechar o modal
+          setShowUnsavedWarningModal(false)
+          setPendingTabChange(null)
+        }}
+        onSaveAndExit={handleSaveAllAndExit}
+        onExitWithoutSaving={handleExitWithoutSaving}
+        unsavedCount={unsavedPearchCandidates.length}
+      />
+
+    </div>
+  )
+}
+
+
+// ============================================================================
+// ARQUIVO 3: components/expandable-ai-prompt.tsx (Prompt IA expansível - 3,680 linhas)
+// ============================================================================
+
+"use client"
+
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
+import { useTemplateSuggestions } from "@/hooks/use-template-suggestions"
+import { TemplateSuggestionToast, useTemplateSuggestionQueue } from "@/components/template-suggestion-toast"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { LIAIcon } from "@/components/ui/lia-icon"
+import { ContextPill } from "@/components/ui/context-pill"
+import { QuickActionChips, type QuickAction } from "@/components/ui/quick-action-chips"
+import { Card, CardContent } from "@/components/ui/card"
+import { useCreditEstimator, formatCreditCost, getCostLevel, getCostColor, CREDIT_COSTS } from "@/hooks/useCreditEstimator"
+import { AdvancedFiltersModal, type SearchFilters } from "@/components/search/advanced-filters-modal"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Brain, Mic, Send, ChevronDown, ChevronUp, X,
+  Users, Mail, MessageSquare, Calendar, Target, Phone,
+  Search, Filter, Star, Plus, Zap, Sparkles,
+  FileText, Code, Check, Lightbulb, Globe, Home, Coins, AlertCircle,
+  Briefcase, Linkedin, TrendingUp, AlertTriangle, Info, Wand2, 
+  CheckCircle2, Upload, MapPin, Clock, Building2,
+  Pencil, Trash2, Loader2, Table2
+} from "lucide-react"
+import { PromptSuggestionsPopover } from "@/components/ui/prompt-suggestions-popover"
+import { LiaQueriesGuide } from "@/components/ui/lia-queries-guide"
+import { CandidateQueriesGuide } from "@/components/ui/candidate-queries-guide"
+import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
+
+interface SearchAnalysis {
+  completeness_score: number
+  criteria_found: { type: string; value: string; label: string }[]
+  criteria_missing: { type: string; label: string; importance: string }[]
+  alerts: { severity: string; message: string; suggestion?: string; action_value?: string }[]
+  suggestions: string[]
+  enrichment_suggestions?: Record<string, string[]>
+  next_recommended_action?: string
+}
+
+interface BackendEntities {
+  location?: string
+  job_title?: string
+  years_experience?: string
+  industry?: string
+  skills?: string[]
+  seniority?: string
+  company?: string
+}
+
+const ENTITY_LABELS: Record<string, string> = {
+  job_title: 'Cargo',
+  location: 'Localização',
+  years_experience: 'Experiência',
+  industry: 'Setor',
+  skills: 'Habilidades',
+  seniority: 'Senioridade',
+  company: 'Empresa'
+}
+
+const CRITERIA_TYPE_MAP: Record<string, string> = {
+  'Cargo': 'job_title',
+  'Localização': 'location',
+  'Experiência': 'years_experience',
+  'Setor': 'industry',
+  'Habilidades': 'skills',
+  'Habilidade': 'skills',
+  'Senioridade': 'seniority',
+  'Empresa': 'company'
+}
+
+// Cores padronizadas por contexto
+const CONTEXT_COLORS: Record<string, {
+  border: string
+  bg: string
+  headerText: string
+  headerBg: string
+}> = {
+  candidates: {
+    border: '#5DA47A',
+    bg: '#F0FDF4',
+    headerText: '#166534',
+    headerBg: '#DCFCE7'
+  },
+  jobs: {
+    border: '#60BED1',
+    bg: '#F0F9FC',
+    headerText: '#0369A1',
+    headerBg: '#E0F2FE'
+  }
+}
+
+interface AutocompleteSuggestion {
+  text: string
+  category: string
+  icon?: string
+  description?: string
+  insert_text?: string
+}
+
+interface ArchetypeData {
+  id: string
+  name: string
+  description?: string
+  department?: string
+  hired_candidate?: { name: string }
+  criteria?: any
+}
+
+interface SimilarProfile {
+  url: string
+  type: 'linkedin' | 'cv'
+  filename?: string
+}
+
+interface ContextPillData {
+  icon: React.ReactNode
+  primaryText: string
+  secondaryText: string
+  onDismiss?: () => void
+}
+
+interface JobContext {
+  id?: string
+  title?: string
+  status?: string
+}
+
+interface ExpandableAIPromptProps {
+  selectedCandidates: any[]
+  onCommand: (command: string, action: string) => void
+  filteredCount: number
+  totalCount: number
+  forceExpanded?: boolean
+  candidateContext?: any
+  onClose?: () => void
+  // AI-First props
+  contextPill?: ContextPillData
+  quickActions?: QuickAction[]
+  // Job context for suggestions
+  jobContext?: JobContext
+  // Page context for showing appropriate queries guide
+  pageContext?: 'candidates' | 'jobs'
+}
+
+export function ExpandableAIPrompt({
+  selectedCandidates,
+  onCommand,
+  filteredCount,
+  totalCount,
+  forceExpanded = false,
+  candidateContext = null,
+  onClose,
+  contextPill,
+  quickActions = [],
+  jobContext,
+  pageContext = 'candidates'
+}: ExpandableAIPromptProps) {
+  const { settings: globalSettings, loading: globalSettingsLoading } = useGlobalSearchSettings()
+  
+  // Only show global/hybrid options after settings are loaded AND global search is enabled
+  const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
+  const [isExpanded, setIsExpanded] = useState(forceExpanded)
+  const [inputValue, setInputValue] = useState("")
+  const [isListening, setIsListening] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [lastCommand, setLastCommand] = useState<string>("")
+  const [commandHistory, setCommandHistory] = useState<string[]>([])
+  const [showHistory, setShowHistory] = useState(false)
+  const [showBooleanMode, setShowBooleanMode] = useState(false)
+  const [naturalSearchValue, setNaturalSearchValue] = useState("")
+  const [booleanSearchValue, setBooleanSearchValue] = useState("")
+  
+  // Sistema de 6 abas de busca avançada
+  type SearchTab = 'natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
+  type SearchSource = 'local' | 'global' | 'hybrid'
+  const [activeSearchTab, setActiveSearchTab] = useState<SearchTab>('natural')
+  const [jobDescriptionText, setJobDescriptionText] = useState("")
+  const [selectedArquetipo, setSelectedArquetipo] = useState<string | null>(null)
+  const [similarProfileUrl, setSimilarProfileUrl] = useState("")
+  
+  // Controle de fonte de busca e créditos
+  const [searchSource, setSearchSource] = useState<SearchSource>('local')
+  const [pearchSearchType, setPearchSearchType] = useState<'fast' | 'pro'>('fast')
+  const [candidateLimit, setCandidateLimit] = useState(15)
+  
+  // Filtros de contato (Email/Telefone)
+  const [requireEmails, setRequireEmails] = useState(false)
+  const [requirePhoneNumbers, setRequirePhoneNumbers] = useState(false)
+  
+  // Reset search source to local if global search is disabled
+  useEffect(() => {
+    if (!showGlobalSearchOptions && (searchSource === 'hybrid' || searchSource === 'global')) {
+      setSearchSource('local')
+    }
+  }, [showGlobalSearchOptions, searchSource])
+  
+  // Prompt Enhancement (sugestões de IA para melhorar a busca)
+  const [promptEnhancement, setPromptEnhancement] = useState<{
+    enhanced_query: string
+    explanation: string
+    confidence: number
+    suggestions?: Array<{ label: string; value: string; category: string }>
+  } | null>(null)
+  const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
+  const [promptEnhancementDismissed, setPromptEnhancementDismissed] = useState(false)
+  const dismissedQueryRef = useRef<string>("")
+  const enhanceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Filtros avançados (aba Filtros)
+  const [filterLocation, setFilterLocation] = useState("")
+  const [filterExperience, setFilterExperience] = useState("any")
+  const [filterSeniority, setFilterSeniority] = useState("any")
+  const [filterWorkModel, setFilterWorkModel] = useState("any")
+  
+  // Modal de filtros avançados
+  const [showAdvancedFiltersModal, setShowAdvancedFiltersModal] = useState(false)
+  const [advancedFilters, setAdvancedFilters] = useState<SearchFilters>({
+    ppiOptions: {},
+    general: {},
+    locations: {},
+    job: {},
+    company: {},
+    skills: {},
+    education: {},
+    languages: {}
+  })
+  
+  // API-based entity parsing and analysis
+  const [isParsingEntities, setIsParsingEntities] = useState(false)
+  const [searchAnalysis, setSearchAnalysis] = useState<SearchAnalysis | null>(null)
+  
+  // Autocomplete via API
+  const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<AutocompleteSuggestion[]>([])
+  const [showAutocomplete, setShowAutocomplete] = useState(false)
+  const [selectedAutocompleteIndex, setSelectedAutocompleteIndex] = useState(0)
+  const autocompleteCache = useRef<Map<string, AutocompleteSuggestion[]>>(new Map())
+  const [autocompleteEnabled, setAutocompleteEnabled] = useState(true)
+  
+  // Parsed entities from API (for always-visible tags)
+  const [parsedEntities, setParsedEntities] = useState<BackendEntities>({})
+  
+  // Similar mode with multiple profiles (new pattern like SmartSearchInput)
+  const [similarUrls, setSimilarUrls] = useState<string[]>([""])
+  const [similarCvFiles, setSimilarCvFiles] = useState<File[]>([])
+  const [isAnalyzingProfiles, setIsAnalyzingProfiles] = useState(false)
+  const [combinedSuggestions, setCombinedSuggestions] = useState<string[]>([])
+  const [showCombinedSuggestions, setShowCombinedSuggestions] = useState(false)
+  const cvFileInputRef = useRef<HTMLInputElement>(null)
+  const MAX_SIMILAR_URLS = 2
+  const MAX_CV_FILES = 2
+  
+  // Legacy similar profiles state (for backwards compatibility)
+  const [similarProfiles, setSimilarProfiles] = useState<SimilarProfile[]>([])
+  const [combinedProfileKeywords, setCombinedProfileKeywords] = useState<string[]>([])
+  
+  // Archetypes from API
+  const [archetypes, setArchetypes] = useState<ArchetypeData[]>([])
+  const [closedJobsForArchetype, setClosedJobsForArchetype] = useState<any[]>([])
+  const [archetypeSearchFilter, setArchetypeSearchFilter] = useState("")
+  const [isCreatingArchetype, setIsCreatingArchetype] = useState(false)
+  const [newArchetypeDescription, setNewArchetypeDescription] = useState("")
+  const [selectedJobForArchetype, setSelectedJobForArchetype] = useState<string | null>(null)
+  
+  // Archetype edit/delete states
+  const [editingArchetype, setEditingArchetype] = useState<ArchetypeData | null>(null)
+  const [editArchetypeName, setEditArchetypeName] = useState("")
+  const [editArchetypeQuery, setEditArchetypeQuery] = useState("")
+  const [editArchetypeDescription, setEditArchetypeDescription] = useState("")
+  const [editArchetypeEmoji, setEditArchetypeEmoji] = useState("")
+  const [isSavingArchetype, setIsSavingArchetype] = useState(false)
+  const [isDeletingArchetype, setIsDeletingArchetype] = useState<string | null>(null)
+  
+  // Hook de estimativa de créditos 
+  const creditEstimator = useCreditEstimator()
+  
+  // Carregar saldo ao montar e quando mudar a fonte
+  useEffect(() => {
+    if (searchSource !== 'local') {
+      creditEstimator.fetchBalance().catch(console.error)
+    }
+  }, [searchSource])
+  
+  // Carregar arquétipos e vagas fechadas ao montar
+  useEffect(() => {
+    const loadArchetypesAndJobs = async () => {
+      try {
+        const [archetypesRes, jobsRes] = await Promise.all([
+          fetch('/api/backend-proxy/search/archetypes/'),
+          fetch('/api/backend-proxy/search/archetypes/suggestions/closed-jobs/?limit=5')
+        ])
+        
+        if (archetypesRes.ok) {
+          const data = await archetypesRes.json()
+          setArchetypes(data.archetypes || data || [])
+        }
+        
+        if (jobsRes.ok) {
+          const data = await jobsRes.json()
+          setClosedJobsForArchetype(data.jobs || data || [])
+        }
+      } catch (error) {
+        console.error('Error loading archetypes:', error)
+      }
+    }
+    
+    loadArchetypesAndJobs()
+  }, [])
+  
+  // API-based entity parsing with debounce
+  const parseEntitiesFromQuery = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 5) {
+      setSearchAnalysis(null)
+      setExtractedCriteria([])
+      setParsedEntities({})
+      return
+    }
+    
+    setIsParsingEntities(true)
+    
+    try {
+      const [parseRes, analysisRes] = await Promise.all([
+        fetch('/api/backend-proxy/search/parse-query/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        }),
+        fetch('/api/backend-proxy/search-assistant/analyze/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        })
+      ])
+      
+      if (parseRes.ok) {
+        const parseData = await parseRes.json()
+        const entities = parseData.entities as BackendEntities
+        
+        // Store raw entities for always-visible tags
+        setParsedEntities(entities || {})
+        
+        if (entities) {
+          const newCriteria: SearchCriterion[] = []
+          let idx = 0
+          
+          if (entities.job_title) {
+            newCriteria.push({
+              id: `entity-job_title-${idx++}`,
+              type: 'job_title',
+              label: ENTITY_LABELS.job_title,
+              value: entities.job_title,
+              active: true
+            })
+          }
+          
+          if (entities.location) {
+            newCriteria.push({
+              id: `entity-location-${idx++}`,
+              type: 'location',
+              label: ENTITY_LABELS.location,
+              value: entities.location,
+              active: true
+            })
+          }
+          
+          if (entities.years_experience) {
+            newCriteria.push({
+              id: `entity-years_experience-${idx++}`,
+              type: 'years_experience',
+              label: ENTITY_LABELS.years_experience,
+              value: entities.years_experience,
+              active: true
+            })
+          }
+          
+          if (entities.industry) {
+            newCriteria.push({
+              id: `entity-industry-${idx++}`,
+              type: 'industry',
+              label: ENTITY_LABELS.industry,
+              value: entities.industry,
+              active: true
+            })
+          }
+          
+          if (entities.skills && entities.skills.length > 0) {
+            entities.skills.forEach((skill, skillIdx) => {
+              newCriteria.push({
+                id: `entity-skills-${idx++}-${skillIdx}`,
+                type: 'skills',
+                label: 'Habilidade',
+                value: skill,
+                active: true
+              })
+            })
+          }
+          
+          if (entities.seniority) {
+            newCriteria.push({
+              id: `entity-seniority-${idx++}`,
+              type: 'seniority',
+              label: ENTITY_LABELS.seniority,
+              value: entities.seniority,
+              active: true
+            })
+          }
+          
+          if (entities.company) {
+            newCriteria.push({
+              id: `entity-company-${idx++}`,
+              type: 'company',
+              label: ENTITY_LABELS.company,
+              value: entities.company,
+              active: true
+            })
+          }
+          
+          setExtractedCriteria(newCriteria)
+        }
+      }
+      
+      if (analysisRes.ok) {
+        const backendAnalysis = await analysisRes.json()
+        
+        const criteriaFound = (backendAnalysis.filled_criteria || []).map((label: string) => ({
+          type: CRITERIA_TYPE_MAP[label] || label.toLowerCase(),
+          label,
+          value: label
+        }))
+        
+        const criteriaMissing = (backendAnalysis.missing_criteria || []).map((label: string) => ({
+          type: CRITERIA_TYPE_MAP[label] || label.toLowerCase(),
+          label,
+          importance: label === 'Cargo' || label === 'Localização' ? 'high' : 'medium'
+        }))
+        
+        const adaptedAnalysis: SearchAnalysis = {
+          completeness_score: backendAnalysis.completeness_score || 0,
+          criteria_found: criteriaFound,
+          criteria_missing: criteriaMissing,
+          alerts: backendAnalysis.alerts || [],
+          suggestions: [],
+          enrichment_suggestions: backendAnalysis.enrichment_suggestions || {},
+          next_recommended_action: backendAnalysis.next_recommended_action
+        }
+        
+        setSearchAnalysis(adaptedAnalysis)
+      }
+    } catch (error) {
+      console.error('Error parsing entities:', error)
+    } finally {
+      setIsParsingEntities(false)
+    }
+  }, [])
+  
+  // Prompt Enhancement via API
+  const fetchPromptEnhancement = useCallback(async (query: string) => {
+    if (!query || query.length < 10 || promptEnhancementDismissed) {
+      setPromptEnhancement(null)
+      return
+    }
+
+    setIsEnhancingPrompt(true)
+    try {
+      const response = await fetch('/api/backend-proxy/enhance-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.enhanced_query && data.enhanced_query !== query) {
+          setPromptEnhancement(data)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching prompt enhancement:', error)
+    } finally {
+      setIsEnhancingPrompt(false)
+    }
+  }, [promptEnhancementDismissed])
+
+  const handleAcceptEnhancement = useCallback(() => {
+    if (promptEnhancement) {
+      setNaturalSearchValue(promptEnhancement.enhanced_query)
+      setPromptEnhancement(null)
+    }
+  }, [promptEnhancement])
+
+  const handleDismissEnhancement = useCallback(() => {
+    dismissedQueryRef.current = naturalSearchValue
+    setPromptEnhancementDismissed(true)
+    setPromptEnhancement(null)
+  }, [naturalSearchValue])
+  
+  // Prompt Enhancement com debounce - dispara quando o usuário digita na aba natural
+  useEffect(() => {
+    if (activeSearchTab !== 'natural' || !naturalSearchValue || naturalSearchValue.length < 10) {
+      setPromptEnhancement(null)
+      return
+    }
+    
+    // Reset dismissed state se a query mudou significativamente
+    if (promptEnhancementDismissed && dismissedQueryRef.current) {
+      const dismissedPrefix = dismissedQueryRef.current.toLowerCase().slice(0, 15)
+      const currentPrefix = naturalSearchValue.toLowerCase().slice(0, 15)
+      if (dismissedPrefix !== currentPrefix) {
+        setPromptEnhancementDismissed(false)
+        dismissedQueryRef.current = ""
+      }
+    }
+    
+    if (enhanceTimeoutRef.current) {
+      clearTimeout(enhanceTimeoutRef.current)
+    }
+    
+    enhanceTimeoutRef.current = setTimeout(() => {
+      if (!promptEnhancementDismissed) {
+        fetchPromptEnhancement(naturalSearchValue)
+      }
+    }, 1500)
+    
+    return () => {
+      if (enhanceTimeoutRef.current) {
+        clearTimeout(enhanceTimeoutRef.current)
+      }
+    }
+  }, [naturalSearchValue, activeSearchTab, promptEnhancementDismissed, fetchPromptEnhancement])
+  
+  // Autocomplete via API with cache
+  const fetchAutocomplete = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setAutocompleteSuggestions([])
+      setShowAutocomplete(false)
+      return
+    }
+    
+    const cacheKey = query.toLowerCase().trim()
+    if (autocompleteCache.current.has(cacheKey)) {
+      setAutocompleteSuggestions(autocompleteCache.current.get(cacheKey) || [])
+      setShowAutocomplete(true)
+      return
+    }
+    
+    try {
+      const res = await fetch(`/api/backend-proxy/search-assistant/autocomplete/?query=${encodeURIComponent(query)}`)
+      if (res.ok) {
+        const data = await res.json()
+        const items = data.items || []
+        const suggestions: AutocompleteSuggestion[] = items.map((item: any) => ({
+          text: item.text,
+          category: item.category,
+          icon: item.icon,
+          description: item.description,
+          insert_text: item.insert_text || item.text
+        }))
+        autocompleteCache.current.set(cacheKey, suggestions)
+        setAutocompleteSuggestions(suggestions)
+        setShowAutocomplete(suggestions.length > 0)
+      }
+    } catch (error) {
+      console.error('Error fetching autocomplete:', error)
+    }
+  }, [])
+  
+  // Combined profile analysis
+  const analyzeCombinedProfiles = useCallback(async () => {
+    if (similarProfiles.length === 0) return
+    
+    setIsAnalyzingProfiles(true)
+    
+    try {
+      const formData = new FormData()
+      similarProfiles.forEach(profile => {
+        if (profile.type === 'linkedin') {
+          formData.append('urls', profile.url)
+        }
+      })
+      
+      const res = await fetch('/api/backend-proxy/search/similar/combine-profiles', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setCombinedProfileKeywords(data.keywords || [])
+      }
+    } catch (error) {
+      console.error('Error analyzing combined profiles:', error)
+    } finally {
+      setIsAnalyzingProfiles(false)
+    }
+  }, [similarProfiles])
+  
+  // Create archetype from job
+  const createArchetypeFromJob = useCallback(async (jobId: string) => {
+    setIsCreatingArchetype(true)
+    try {
+      const res = await fetch(`/api/backend-proxy/search/archetypes/from-job/${jobId}/`, {
+        method: 'POST'
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setArchetypes(prev => [...prev, data])
+        setSelectedJobForArchetype(null)
+      }
+    } catch (error) {
+      console.error('Error creating archetype from job:', error)
+    } finally {
+      setIsCreatingArchetype(false)
+    }
+  }, [])
+  
+  // Create archetype from description
+  const createArchetypeFromDescription = useCallback(async (description: string) => {
+    if (!description.trim()) return
+    
+    setIsCreatingArchetype(true)
+    try {
+      const res = await fetch('/api/backend-proxy/search/archetypes/from-description/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description })
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setArchetypes(prev => [...prev, data])
+        setNewArchetypeDescription("")
+      }
+    } catch (error) {
+      console.error('Error creating archetype from description:', error)
+    } finally {
+      setIsCreatingArchetype(false)
+    }
+  }, [])
+  
+  // Open archetype edit modal
+  const openEditArchetype = useCallback((arch: ArchetypeData, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditingArchetype(arch)
+    setEditArchetypeName(arch.name || "")
+    // Backend returns query at top level in ArchetypeDTO, not in criteria
+    const query = (arch as any).query || arch.criteria?.query || ""
+    setEditArchetypeQuery(query)
+    setEditArchetypeDescription(arch.description || "")
+    const emoji = (arch as any).emoji || arch.criteria?.emoji || "🎯"
+    setEditArchetypeEmoji(emoji)
+  }, [])
+
+  // Close archetype edit modal
+  const closeEditArchetype = useCallback(() => {
+    setEditingArchetype(null)
+    setEditArchetypeName("")
+    setEditArchetypeQuery("")
+    setEditArchetypeDescription("")
+    setEditArchetypeEmoji("")
+  }, [])
+
+  // Save archetype changes
+  const saveArchetype = useCallback(async () => {
+    if (!editingArchetype || !editArchetypeName.trim() || !editArchetypeQuery.trim()) return
+    
+    setIsSavingArchetype(true)
+    try {
+      const res = await fetch(`/api/backend-proxy/search/archetypes/${editingArchetype.id}/`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editArchetypeName.trim(),
+          query: editArchetypeQuery.trim(),
+          description: editArchetypeDescription.trim() || null,
+          emoji: editArchetypeEmoji || "🎯"
+        })
+      })
+      
+      if (res.ok) {
+        const updated = await res.json()
+        setArchetypes(prev => prev.map(a => a.id === editingArchetype.id ? { ...a, ...updated } : a))
+        closeEditArchetype()
+      } else {
+        const error = await res.json()
+        console.error('Error updating archetype:', error)
+      }
+    } catch (error) {
+      console.error('Error saving archetype:', error)
+    } finally {
+      setIsSavingArchetype(false)
+    }
+  }, [editingArchetype, editArchetypeName, editArchetypeQuery, editArchetypeDescription, editArchetypeEmoji, closeEditArchetype])
+
+  // Delete archetype
+  const deleteArchetype = useCallback(async (archId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!confirm("Tem certeza que deseja excluir este arquétipo?")) return
+    
+    setIsDeletingArchetype(archId)
+    try {
+      const res = await fetch(`/api/backend-proxy/search/archetypes/${archId}/`, {
+        method: 'DELETE'
+      })
+      
+      if (res.ok) {
+        setArchetypes(prev => prev.filter(a => a.id !== archId))
+      } else {
+        const error = await res.json()
+        console.error('Error deleting archetype:', error)
+        alert(error.detail || "Erro ao excluir arquétipo")
+      }
+    } catch (error) {
+      console.error('Error deleting archetype:', error)
+    } finally {
+      setIsDeletingArchetype(null)
+    }
+  }, [])
+  
+  // Add similar profile (LinkedIn URL or CV)
+  const addSimilarProfile = useCallback((url: string, type: 'linkedin' | 'cv' = 'linkedin', filename?: string) => {
+    if (similarProfiles.length >= 3) return
+    if (similarProfiles.some(p => p.url === url)) return
+    
+    setSimilarProfiles(prev => [...prev, { url, type, filename }])
+  }, [similarProfiles])
+  
+  // Remove similar profile
+  const removeSimilarProfile = useCallback((url: string) => {
+    setSimilarProfiles(prev => prev.filter(p => p.url !== url))
+  }, [])
+  
+  // Similar tab helper functions (new pattern like SmartSearchInput)
+  const addSimilarUrl = useCallback(() => {
+    if (similarUrls.length < MAX_SIMILAR_URLS) {
+      setSimilarUrls(prev => [...prev, ""])
+    }
+  }, [similarUrls.length])
+
+  const removeSimilarUrl = useCallback((index: number) => {
+    setSimilarUrls(prev => prev.filter((_, i) => i !== index))
+    setCombinedSuggestions([])
+    setShowCombinedSuggestions(false)
+  }, [])
+
+  const updateSimilarUrl = useCallback((index: number, value: string) => {
+    setSimilarUrls(prev => {
+      const newUrls = [...prev]
+      newUrls[index] = value
+      return newUrls
+    })
+  }, [])
+
+  const handleCvUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+
+    const newFiles = Array.from(files).slice(0, MAX_CV_FILES - similarCvFiles.length)
+    setSimilarCvFiles(prev => [...prev, ...newFiles].slice(0, MAX_CV_FILES))
+  }, [similarCvFiles.length])
+
+  const removeCvFile = useCallback((index: number) => {
+    setSimilarCvFiles(prev => prev.filter((_, i) => i !== index))
+    setCombinedSuggestions([])
+    setShowCombinedSuggestions(false)
+  }, [])
+
+  const removeSuggestion = useCallback((keyword: string) => {
+    setCombinedSuggestions(prev => prev.filter(k => k !== keyword))
+  }, [])
+
+  const hasMultipleSources = useCallback(() => {
+    const validUrls = similarUrls.filter(url => url.trim().length > 0)
+    return validUrls.length + similarCvFiles.length >= 2
+  }, [similarUrls, similarCvFiles])
+
+  const analyzeProfiles = useCallback(async () => {
+    const validUrls = similarUrls.filter(url => url.trim().length > 0)
+    if (validUrls.length === 0 && similarCvFiles.length === 0) return
+
+    setIsAnalyzingProfiles(true)
+    try {
+      const formData = new FormData()
+      validUrls.forEach(url => formData.append('urls', url))
+      similarCvFiles.forEach(file => formData.append('cvs', file))
+
+      const response = await fetch('/api/backend-proxy/search/similar/combine-profiles', {
+        method: "POST",
+        body: formData
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setCombinedSuggestions(data.keywords || [])
+        setShowCombinedSuggestions(true)
+      } else {
+        console.error("Error analyzing profiles:", response.status)
+      }
+    } catch (error) {
+      console.error("Error analyzing profiles:", error)
+    } finally {
+      setIsAnalyzingProfiles(false)
+    }
+  }, [similarUrls, similarCvFiles])
+  
+  // Handle autocomplete keyboard navigation
+  const handleAutocompleteKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showAutocomplete || autocompleteSuggestions.length === 0) return
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setSelectedAutocompleteIndex(prev => 
+        prev < autocompleteSuggestions.length - 1 ? prev + 1 : 0
+      )
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setSelectedAutocompleteIndex(prev => 
+        prev > 0 ? prev - 1 : autocompleteSuggestions.length - 1
+      )
+    } else if (e.key === 'Tab' || e.key === 'Enter') {
+      if (autocompleteSuggestions[selectedAutocompleteIndex]) {
+        e.preventDefault()
+        const selected = autocompleteSuggestions[selectedAutocompleteIndex]
+        const insertValue = selected.insert_text || selected.text
+        setNaturalSearchValue(prev => {
+          const words = prev.split(' ')
+          words.pop()
+          return [...words, insertValue].join(' ') + ' '
+        })
+        setShowAutocomplete(false)
+      }
+    } else if (e.key === 'Escape') {
+      setShowAutocomplete(false)
+    }
+  }, [showAutocomplete, autocompleteSuggestions, selectedAutocompleteIndex])
+  
+  // Filter archetypes
+  const filteredArchetypes = useMemo(() => {
+    if (!archetypeSearchFilter.trim()) return archetypes
+    const filter = archetypeSearchFilter.toLowerCase()
+    return archetypes.filter(a => 
+      (a.name || '').toLowerCase().includes(filter) ||
+      (a.department || '').toLowerCase().includes(filter) ||
+      (a.hired_candidate?.name || '').toLowerCase().includes(filter)
+    )
+  }, [archetypes, archetypeSearchFilter])
+  
+  // Estimativa de créditos em tempo real usando o hook
+  const creditEstimate = useMemo(() => {
+    if (searchSource === 'local') {
+      return { total: 0, perCandidate: 0, isLocal: true, canAfford: true }
+    }
+    
+    // Usar estimativa local como base (atualizada quando API responder)
+    const estimate = creditEstimator.calculateLocal({
+      searchType: pearchSearchType,
+      limit: candidateLimit,
+      highFreshness: false,
+      requireEmails: false,
+      showEmails: false,
+      requirePhoneNumbers: false,
+      showPhoneNumbers: false,
+      requirePhonesOrEmails: false
+    })
+    
+    // Verificar se pode pagar com base no saldo disponível
+    const availableCredits = creditEstimator.balance?.available_credits ?? Infinity
+    const canAfford = availableCredits >= estimate.total_estimated
+    
+    return {
+      total: estimate.total_estimated,
+      perCandidate: estimate.cost_per_candidate,
+      isLocal: false,
+      breakdown: estimate.breakdown,
+      canAfford,
+      availableCredits: creditEstimator.balance?.available_credits,
+      isLoading: creditEstimator.isLoading
+    }
+  }, [searchSource, pearchSearchType, candidateLimit, creditEstimator])
+  
+  // Always-visible search tags (5 criteria like SmartSearchInput)
+  interface SearchTag {
+    key: keyof BackendEntities
+    label: string
+    icon: typeof MapPin
+    filled: boolean
+    value?: string
+  }
+  
+  const searchTags: SearchTag[] = useMemo(() => [
+    { key: "location", label: "Localização", icon: MapPin, filled: !!parsedEntities.location, value: parsedEntities.location },
+    { key: "job_title", label: "Cargo", icon: Briefcase, filled: !!parsedEntities.job_title, value: parsedEntities.job_title },
+    { key: "years_experience", label: "Experiência", icon: Clock, filled: !!parsedEntities.years_experience, value: parsedEntities.years_experience },
+    { key: "industry", label: "Setor", icon: Building2, filled: !!parsedEntities.industry, value: parsedEntities.industry },
+    { key: "skills", label: "Habilidades", icon: Code, filled: !!(parsedEntities.skills && parsedEntities.skills.length > 0), value: parsedEntities.skills?.join(", ") }
+  ], [parsedEntities])
+  
+  const filledTagsCount = useMemo(() => searchTags.filter(t => t.filled).length, [searchTags])
+  
+  // Helper function for tag colors (ElevenLabs/WedoTalent pattern)
+  const getTagColors = useCallback((key: string, filled: boolean) => {
+    if (!filled) return { bg: '#F3F4F6', text: '#6B7280', iconBg: '#9CA3AF' }
+    switch (key) {
+      case 'job_title':
+        return { bg: '#E0F5FA', text: '#2D8A9E', iconBg: '#60BED1' }
+      case 'location':
+        return { bg: '#F3EAFF', text: '#7C3AED', iconBg: '#8B5CF6' }
+      case 'skills':
+        return { bg: '#E5F5EB', text: '#2D6A4F', iconBg: '#5DA47A' }
+      case 'years_experience':
+        return { bg: '#FDF4E8', text: '#B8860B', iconBg: '#E5A853' }
+      case 'industry':
+        return { bg: '#E8F1FD', text: '#2563EB', iconBg: '#3B82F6' }
+      default:
+        return { bg: '#E0F5FA', text: '#60BED1', iconBg: '#60BED1' }
+    }
+  }, [])
+  
+  // Critérios extraídos (pills)
+  interface SearchCriterion {
+    id: string
+    type: 'location' | 'job_title' | 'experience' | 'years_experience' | 'industry' | 'skills' | 'seniority' | 'company' | 'education' | 'language'
+    label: string
+    value: string
+    active: boolean
+  }
+  const [extractedCriteria, setExtractedCriteria] = useState<SearchCriterion[]>([])
+  
+  // Handler para remover critério
+  const removeCriterion = (id: string) => {
+    setExtractedCriteria(prev => prev.filter(c => c.id !== id))
+  }
+  
+  // Handler para toggle critério
+  const toggleCriterion = (id: string) => {
+    setExtractedCriteria(prev => prev.map(c => 
+      c.id === id ? { ...c, active: !c.active } : c
+    ))
+  }
+  
+  // Referência para debounce da extração
+  const extractionTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+  const lastQueryRef = React.useRef<string>('')
+  
+  // Extração incremental de critérios com debounce - mescla com estado anterior
+  const extractCriteriaFromQuery = React.useCallback((query: string) => {
+    // Debounce de 300ms para evitar race conditions
+    if (extractionTimeoutRef.current) {
+      clearTimeout(extractionTimeoutRef.current)
+    }
+    
+    extractionTimeoutRef.current = setTimeout(() => {
+      const queryLower = query.toLowerCase().trim()
+      
+      // Evitar re-execução para mesma query
+      if (queryLower === lastQueryRef.current) return
+      lastQueryRef.current = queryLower
+      
+      setExtractedCriteria(prev => {
+        // Manter critérios existentes que foram modificados manualmente
+        const manuallyModified = prev.filter(c => !c.active)
+        const newlyExtracted: SearchCriterion[] = []
+        
+        // Extrair localização
+        const locations = ['são paulo', 'rio de janeiro', 'belo horizonte', 'curitiba', 'porto alegre', 'brasília', 'sp', 'rj']
+        for (const loc of locations) {
+          if (queryLower.includes(loc)) {
+            const id = `loc-${loc.replace(/\s/g, '-')}`
+            const existing = prev.find(c => c.id === id)
+            if (!existing) {
+              newlyExtracted.push({
+                id,
+                type: 'location',
+                label: 'Localização',
+                value: loc.charAt(0).toUpperCase() + loc.slice(1),
+                active: true
+              })
+            }
+            break
+          }
+        }
+        
+        // Extrair experiência
+        const expMatch = queryLower.match(/(\d+)\+?\s*anos?|(\d+)\+?\s*years?/)
+        if (expMatch) {
+          const years = expMatch[1] || expMatch[2]
+          const id = `exp-${years}`
+          const existing = prev.find(c => c.id === id)
+          if (!existing) {
+            newlyExtracted.push({
+              id,
+              type: 'experience',
+              label: 'Experiência',
+              value: `${years}+ anos`,
+              active: true
+            })
+          }
+        }
+        
+        // Extrair skills
+        const skills = ['python', 'react', 'node', 'java', 'typescript', 'javascript', 'aws', 'docker', 'kubernetes', 'sql', 'figma', 'ux', 'ui', 'angular', 'vue', 'spring', 'django', 'flask', 'fastapi']
+        for (const skill of skills) {
+          if (queryLower.includes(skill)) {
+            const id = `skill-${skill}`
+            const existing = prev.find(c => c.id === id)
+            if (!existing) {
+              newlyExtracted.push({
+                id,
+                type: 'skills',
+                label: 'Skills',
+                value: skill.charAt(0).toUpperCase() + skill.slice(1),
+                active: true
+              })
+            }
+          }
+        }
+        
+        // Extrair idioma
+        const languages = ['inglês', 'espanhol', 'francês', 'alemão', 'english', 'spanish', 'fluente', 'avançado']
+        for (const lang of languages) {
+          if (queryLower.includes(lang)) {
+            const id = `lang-${lang}`
+            const existing = prev.find(c => c.id === id)
+            if (!existing) {
+              newlyExtracted.push({
+                id,
+                type: 'language',
+                label: 'Idioma',
+                value: lang.charAt(0).toUpperCase() + lang.slice(1),
+                active: true
+              })
+            }
+            break
+          }
+        }
+        
+        // Extrair senioridade
+        const seniorities: Record<string, string> = { 
+          'sênior': 'Sênior', 'senior': 'Sênior', 
+          'pleno': 'Pleno', 
+          'júnior': 'Júnior', 'junior': 'Júnior', 
+          'lead': 'Tech Lead', 'tech lead': 'Tech Lead',
+          'especialista': 'Especialista', 'staff': 'Staff'
+        }
+        for (const [key, value] of Object.entries(seniorities)) {
+          if (queryLower.includes(key)) {
+            const id = `seniority-${key.replace(/\s/g, '-')}`
+            const existing = prev.find(c => c.id === id)
+            if (!existing) {
+              newlyExtracted.push({
+                id,
+                type: 'job_title',
+                label: 'Senioridade',
+                value,
+                active: true
+              })
+            }
+            break
+          }
+        }
+        
+        // Mesclar: manter existentes ativos + manter desativados manualmente + adicionar novos
+        const existingActive = prev.filter(c => c.active)
+        const merged = [...existingActive, ...manuallyModified]
+        
+        // Adicionar novos critérios que não existem
+        for (const newCrit of newlyExtracted) {
+          if (!merged.find(c => c.id === newCrit.id)) {
+            merged.push(newCrit)
+          }
+        }
+        
+        return merged
+      })
+    }, 300)
+  }, [])
+  
+  // Cleanup do timeout ao desmontar
+  React.useEffect(() => {
+    return () => {
+      if (extractionTimeoutRef.current) {
+        clearTimeout(extractionTimeoutRef.current)
+      }
+    }
+  }, [])
+  
+  // Construir query de busca a partir dos critérios ativos
+  const buildSearchQueryFromCriteria = React.useCallback(() => {
+    const activeCriteria = extractedCriteria.filter(c => c.active)
+    if (activeCriteria.length === 0) return naturalSearchValue
+    
+    const parts: string[] = []
+    activeCriteria.forEach(c => {
+      if (c.type === 'location') parts.push(`em ${c.value}`)
+      else if (c.type === 'experience') parts.push(`com ${c.value}`)
+      else if (c.type === 'years_experience') parts.push(`com ${c.value}`)
+      else if (c.type === 'skills') parts.push(c.value)
+      else if (c.type === 'language') parts.push(`com ${c.value}`)
+      else if (c.type === 'job_title') parts.push(c.value)
+      else if (c.type === 'seniority') parts.push(c.value)
+      else if (c.type === 'industry') parts.push(`em ${c.value}`)
+      else if (c.type === 'company') parts.push(`da ${c.value}`)
+    })
+    
+    return parts.join(' ')
+  }, [extractedCriteria, naturalSearchValue])
+  
+  // Executar busca com critérios ativos
+  const executeSearchWithCriteria = React.useCallback(() => {
+    const searchQuery = buildSearchQueryFromCriteria()
+    if (searchQuery.trim()) {
+      onCommand(searchQuery, 'natural_search')
+    }
+  }, [buildSearchQueryFromCriteria, onCommand])
+
+  // Sistema de templates inteligente
+  const templateSuggestions = useTemplateSuggestions()
+  const suggestionQueue = useTemplateSuggestionQueue()
+
+  // Controlar expansão forçada
+  useEffect(() => {
+    if (forceExpanded !== undefined) {
+      setIsExpanded(forceExpanded)
+    }
+  }, [forceExpanded])
+
+  // Verificar execução de template salvo
+  useEffect(() => {
+    const executeTemplate = sessionStorage.getItem('lia-execute-template')
+    if (executeTemplate) {
+      try {
+        const template = JSON.parse(executeTemplate)
+        setInputValue(template.command)
+        setIsExpanded(true)
+
+        // Executar automaticamente após delay
+        setTimeout(() => {
+          handleSubmit(new Event('submit') as any)
+        }, 1000)
+
+        sessionStorage.removeItem('lia-execute-template')
+      } catch (error) {
+        console.error('Erro ao executar template:', error)
+      }
+    }
+  }, [])
+
+  // 🔖 Carregar templates salvos
+  const [savedTemplates, setSavedTemplates] = useState<any[]>([])
+
+  useEffect(() => {
+    const templates = localStorage.getItem('lia-templates')
+    if (templates) {
+      try {
+        const parsed = JSON.parse(templates)
+        // Pegar apenas os 3 templates mais usados
+        const topTemplates = parsed
+          .sort((a: any, b: any) => b.usageCount - a.usageCount)
+          .slice(0, 3)
+        setSavedTemplates(topTemplates)
+      } catch (error) {
+        console.error('Erro ao carregar templates:', error)
+      }
+    }
+  }, [])
+
+  // 🧠 Sugestões inteligentes baseadas no contexto - EXPANDIDO
+  const getSmartSuggestions = () => {
+    // Sugestões específicas para candidato individual (quando clicou na LIA)
+    if (candidateContext) {
+      return [
+        {
+          id: 'analyze_profile',
+          icon: '🔍',
+          label: `Analisar perfil completo de ${candidateContext.name}`,
+          description: 'Análise detalhada de competências, fit cultural e potencial',
+          action: 'analyze_individual_profile'
+        },
+        {
+          id: 'generate_interview_questions',
+          icon: '❓',
+          label: 'Gerar roteiro de entrevista personalizado',
+          description: 'Perguntas técnicas e comportamentais baseadas no perfil',
+          action: 'generate_interview_questions'
+        },
+        {
+          id: 'draft_email',
+          icon: '📧',
+          label: 'Rascunhar convite personalizado',
+          description: 'Email de convite customizado para o candidato',
+          action: 'draft_personalized_email'
+        },
+        {
+          id: 'compare_with_role',
+          icon: '⚖️',
+          label: 'Comparar com requisitos da vaga',
+          description: 'Match detalhado com job description',
+          action: 'compare_with_job_requirements'
+        },
+        {
+          id: 'predict_success',
+          icon: '🎯',
+          label: 'Predizer sucesso na posição',
+          description: 'Análise preditiva baseada em dados históricos',
+          action: 'predict_candidate_success'
+        },
+        {
+          id: 'salary_benchmark',
+          icon: '💰',
+          label: 'Benchmark salarial personalizado',
+          description: 'Comparação com mercado baseada no perfil específico',
+          action: 'salary_benchmark'
+        }
+      ]
+    }
+
+    const selectedCount = selectedCandidates.length
+    const allSuggestions: any[] = []
+
+    // 🔖 Templates salvos (aparecem primeiro quando relevantes)
+    if (selectedCount === 0 && savedTemplates.length > 0) {
+      allSuggestions.push(...savedTemplates.map(template => ({
+        id: `template-${template.id}`,
+        icon: '🔖',
+        label: template.name,
+        description: `Template salvo • ${template.usageCount} usos`,
+        action: 'execute_template',
+        template: template,
+        isTemplate: true
+      })))
+    }
+
+    // EXPANDIDO: Sem candidatos selecionados - sugestões avançadas de busca e gestão
+    if (selectedCount === 0) {
+      const advancedSuggestions = [
+        // Buscas Inteligentes Avançadas
+        {
+          id: 'smart_search_ai',
+          icon: '🧠',
+          label: 'Busca inteligente com IA',
+          description: 'Descreva o perfil ideal e a LIA encontra candidatos similares',
+          action: 'ai_smart_search',
+          category: 'search'
+        },
+        {
+          id: 'boolean_search_expert',
+          icon: '🔧',
+          label: 'Busca booleana avançada',
+          description: 'Construtor visual de queries complexas para LinkedIn/Github',
+          action: 'boolean_search_builder',
+          category: 'search'
+        },
+        {
+          id: 'passive_candidates',
+          icon: '🕵️',
+          label: 'Identificar candidatos passivos',
+          description: 'Encontrar talentos que não estão procurando ativamente',
+          action: 'find_passive_candidates',
+          category: 'search'
+        },
+        {
+          id: 'competitor_analysis',
+          icon: '🏢',
+          label: 'Mapear concorrentes e talentos',
+          description: 'Análise de empresas similares e seus melhores profissionais',
+          action: 'competitor_talent_mapping',
+          category: 'search'
+        },
+
+        // Gestão e Organização Avançada
+        {
+          id: 'pipeline_automation',
+          icon: '⚙️',
+          label: 'Automatizar pipeline de talentos',
+          description: 'Configurar fluxos automáticos para diferentes perfis',
+          action: 'setup_pipeline_automation',
+          category: 'automation'
+        },
+        {
+          id: 'email_sequences',
+          icon: '📬',
+          label: 'Sequências de email inteligentes',
+          description: 'Campanhas de nurturing personalizadas por segmento',
+          action: 'create_email_sequences',
+          category: 'automation'
+        },
+        {
+          id: 'calendar_optimization',
+          icon: '📅',
+          label: 'Otimizar agenda de entrevistas',
+          description: 'Sugerir melhor organização e horários mais eficientes',
+          action: 'optimize_interview_calendar',
+          category: 'automation'
+        },
+
+        // Analytics e Insights
+        {
+          id: 'market_trends',
+          icon: '📈',
+          label: 'Análise de tendências do mercado',
+          description: 'Insights sobre salários, demanda e escassez de talentos',
+          action: 'analyze_market_trends',
+          category: 'analytics'
+        },
+        {
+          id: 'diversity_analysis',
+          icon: '🌈',
+          label: 'Análise de diversidade e inclusão',
+          description: 'Métricas D&I e sugestões para melhorar representatividade',
+          action: 'diversity_inclusion_analysis',
+          category: 'analytics'
+        },
+        {
+          id: 'conversion_funnels',
+          icon: '🎯',
+          label: 'Análise de funis de conversão',
+          description: 'Identificar gargalos e oportunidades de melhoria',
+          action: 'analyze_conversion_funnels',
+          category: 'analytics'
+        },
+        {
+          id: 'predictive_hiring',
+          icon: '🔮',
+          label: 'Previsões de contratação',
+          description: 'Predizer necessidades futuras baseado em crescimento',
+          action: 'predictive_hiring_analysis',
+          category: 'analytics'
+        },
+
+        // Ferramentas Especializadas
+        {
+          id: 'interview_scorecards',
+          icon: '📋',
+          label: 'Criar scorecards de entrevista',
+          description: 'Formulários estruturados para avaliação consistente',
+          action: 'create_interview_scorecards',
+          category: 'tools'
+        },
+        {
+          id: 'reference_automation',
+          icon: '📞',
+          label: 'Automatizar checagem de referências',
+          description: 'Templates e fluxos para verificação de background',
+          action: 'automate_reference_checks',
+          category: 'tools'
+        },
+        {
+          id: 'onboarding_preparation',
+          icon: '🎯',
+          label: 'Preparar onboarding personalizado',
+          description: 'Planos customizados baseados no perfil do novo hire',
+          action: 'prepare_custom_onboarding',
+          category: 'tools'
+        },
+
+        // Inteligência Competitiva
+        {
+          id: 'salary_intelligence',
+          icon: '💎',
+          label: 'Inteligência salarial avançada',
+          description: 'Benchmarks detalhados por região, experiência e skills',
+          action: 'advanced_salary_intelligence',
+          category: 'intelligence'
+        },
+        {
+          id: 'skill_gap_analysis',
+          icon: '🔍',
+          label: 'Análise de lacunas de habilidades',
+          description: 'Identificar skills em falta no time e no mercado',
+          action: 'skill_gap_analysis',
+          category: 'intelligence'
+        },
+        {
+          id: 'employer_branding',
+          icon: '✨',
+          label: 'Otimizar employer branding',
+          description: 'Sugestões para melhorar atratividade da empresa',
+          action: 'optimize_employer_branding',
+          category: 'intelligence'
+        }
+      ]
+
+      // Retornar sugestões variadas (8-10 por vez, rotacionando)
+      const shuffled = advancedSuggestions.sort(() => 0.5 - Math.random())
+      allSuggestions.push(...shuffled.slice(0, 10))
+      return allSuggestions
+    }
+
+    // 1 candidato selecionado - ações individuais expandidas
+    if (selectedCount === 1) {
+      const candidate = selectedCandidates[0]
+      const candidateName = candidate.name || 'Candidato'
+      const candidateScore = candidate.liaAnalysis?.score || candidate.score || 0
+
+      const individualSuggestions = [
+        {
+          id: 'send_personalized_email',
+          icon: '📧',
+          label: `Enviar convite personalizado para ${candidateName}`,
+          description: 'Email customizado baseado no perfil e interesses',
+          action: 'send_personalized_email'
+        },
+        {
+          id: 'schedule_interview',
+          icon: '📅',
+          label: 'Agendar entrevista estratégica',
+          description: 'Escolher melhor horário e formato baseado no perfil',
+          action: 'schedule_strategic_interview'
+        },
+        {
+          id: 'deep_profile_analysis',
+          icon: '🔬',
+          label: 'Análise profunda do perfil',
+          description: 'Investigação completa de competências e fit cultural',
+          action: 'deep_profile_analysis'
+        },
+        {
+          id: 'salary_negotiation_prep',
+          icon: '💰',
+          label: 'Preparar negociação salarial',
+          description: 'Estratégia e faixas baseadas no perfil específico',
+          action: 'prepare_salary_negotiation'
+        },
+        {
+          id: 'reference_check_strategy',
+          icon: '📋',
+          label: 'Estratégia de referências',
+          description: 'Plano para checagem de background e referências',
+          action: 'plan_reference_checks'
+        },
+        {
+          id: 'competitor_intel',
+          icon: '🕵️',
+          label: 'Intel sobre empresa atual',
+          description: 'Pesquisa sobre empresa e possíveis motivadores',
+          action: 'research_current_company'
+        }
+      ]
+
+      // Sugestões condicionais baseadas no score
+      if (candidateScore >= 85) {
+        individualSuggestions.push({
+          id: 'fast_track_vip',
+          icon: '⚡',
+          label: 'Fast-track VIP',
+          description: 'Processo acelerado para candidato excepcional',
+          action: 'vip_fast_track'
+        })
+      }
+
+      if (candidateScore < 70) {
+        individualSuggestions.push({
+          id: 'improvement_coaching',
+          icon: '📚',
+          label: 'Coaching para candidato',
+          description: 'Sugestões de desenvolvimento para melhorar fit',
+          action: 'candidate_coaching_suggestions'
+        })
+      }
+
+      return individualSuggestions
+    }
+
+    // Múltiplos candidatos - ações em lote expandidas
+    const batchSuggestions = [
+      {
+        id: 'bulk_email_campaign',
+        icon: '📧',
+        label: `Campanha de email para ${selectedCount} candidatos`,
+        description: 'Emails personalizados em massa com A/B testing',
+        action: 'bulk_email_campaign'
+      },
+      {
+        id: 'comparative_analysis',
+        icon: '📊',
+        label: `Análise comparativa detalhada`,
+        description: 'Relatório completo comparando perfis selecionados',
+        action: 'detailed_comparative_analysis'
+      },
+      {
+        id: 'interview_coordination',
+        icon: '🗓️',
+        label: 'Coordenar entrevistas em lote',
+        description: 'Otimizar agenda para múltiplas entrevistas',
+        action: 'coordinate_batch_interviews'
+      },
+      {
+        id: 'shortlist_creation',
+        icon: '⭐',
+        label: 'Criar shortlist inteligente',
+        description: 'Ranking automático baseado em critérios específicos',
+        action: 'create_intelligent_shortlist'
+      },
+      {
+        id: 'diversity_check',
+        icon: '🌈',
+        label: 'Verificar diversidade do grupo',
+        description: 'Análise D&I do conjunto de candidatos selecionados',
+        action: 'check_group_diversity'
+      },
+      {
+        id: 'salary_range_analysis',
+        icon: '💰',
+        label: 'Análise de faixas salariais',
+        description: 'Comparar expectativas e definir estratégia de ofertas',
+        action: 'analyze_salary_ranges'
+      },
+      {
+        id: 'rejection_management',
+        icon: '💔',
+        label: 'Gestão inteligente de rejeições',
+        description: 'Feedback personalizado e manutenção de relacionamento',
+        action: 'manage_intelligent_rejections'
+      }
+    ]
+
+    return batchSuggestions
+  }
+
+  const suggestions = getSmartSuggestions()
+
+  // 🎯 Placeholder dinâmico baseado no contexto
+  const getPlaceholder = () => {
+    // Contexto específico do candidato (quando clicou na LIA de um candidato)
+    if (candidateContext) {
+      return `O que gostaria de fazer com ${candidateContext.name}? Ex: analisar perfil, enviar email, agendar entrevista, comparar com outros...`
+    }
+
+    const selectedCount = selectedCandidates.length
+
+    if (selectedCount === 0) {
+      return "Peça à LIA para filtrar candidatos, fazer buscas específicas, analisar perfis, enviar emails, agendar entrevistas, comparar candidatos..."
+    }
+
+    if (selectedCount === 1) {
+      return `O que fazer com ${selectedCandidates[0].name}?`
+    }
+
+    return `${selectedCount} candidatos selecionados. Como proceder?`
+  }
+
+  // 🎙️ Voice input simulation
+  const handleVoiceToggle = () => {
+    setIsListening(!isListening)
+    if (!isListening) {
+      setTimeout(() => {
+        setInputValue("Enviar convite para desenvolvedores selecionados")
+        setIsListening(false)
+      }, 2000)
+    }
+  }
+
+  // ⌨️ Atalhos de teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape para fechar
+      if (e.key === 'Escape' && isExpanded) {
+        setIsExpanded(false)
+        setShowHistory(false)
+      }
+
+      // Ctrl+K para focar no prompt
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault()
+        setIsExpanded(true)
+        // Focar no input após um tick
+        setTimeout(() => {
+          const input = document.querySelector('input[placeholder*="LIA"]') as HTMLInputElement
+          input?.focus()
+        }, 100)
+      }
+
+      // Ctrl+H para mostrar histórico
+      if (e.ctrlKey && e.key === 'h' && isExpanded && commandHistory.length > 0) {
+        e.preventDefault()
+        setShowHistory(!showHistory)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isExpanded, showHistory, commandHistory.length])
+
+  // 📝 Submit do prompt
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (inputValue.trim() && !isProcessing) {
+      setIsProcessing(true)
+      setLastCommand(inputValue)
+
+      // Registrar comando no sistema de templates
+      templateSuggestions.addCommand(inputValue, getAdvancedFilters(), ['text_command'])
+
+      // Adicionar ao histórico local
+      setCommandHistory(prev => [inputValue, ...prev.slice(0, 4)])
+
+      // Simular processamento
+      setTimeout(() => {
+        onCommand(inputValue, 'text_command')
+        setInputValue("")
+        setIsExpanded(false)
+        setIsProcessing(false)
+
+        // Verificar se deve sugerir template
+        checkForTemplateSuggestions()
+      }, 1500)
+    }
+  }
+
+  // ✨ Clique em sugestão
+  const handleSuggestionClick = (suggestion: any) => {
+    if (!isProcessing) {
+      setIsProcessing(true)
+      setLastCommand(suggestion.label)
+
+      // Tratamento especial para templates salvos
+      if (suggestion.isTemplate) {
+        executeTemplate(suggestion.template)
+        return
+      }
+
+      // Registrar comando no sistema de templates
+      templateSuggestions.addCommand(suggestion.label, getAdvancedFilters(), [suggestion.action])
+
+      // Adicionar ao histórico local
+      setCommandHistory(prev => [suggestion.label, ...prev.slice(0, 4)])
+
+      // Simular processamento
+      setTimeout(() => {
+        onCommand(suggestion.label, suggestion.action)
+        setIsExpanded(false)
+        setIsProcessing(false)
+
+        // Verificar se deve sugerir template
+        checkForTemplateSuggestions()
+      }, 1200)
+    }
+  }
+
+  // 🔖 Executar template salvo
+  const executeTemplate = (template: any) => {
+    // Incrementar contador de uso
+    const templates = JSON.parse(localStorage.getItem('lia-templates') || '[]')
+    const updatedTemplates = templates.map((t: any) =>
+      t.id === template.id
+        ? { ...t, usageCount: t.usageCount + 1, updatedAt: new Date() }
+        : t
+    )
+    localStorage.setItem('lia-templates', JSON.stringify(updatedTemplates))
+
+    // Executar ações do template
+    setTimeout(() => {
+      onCommand(template.command, template.actions[0] || 'execute_template')
+      setIsExpanded(false)
+      setIsProcessing(false)
+    }, 1000)
+  }
+
+  // Helper para obter filtros avançados (mock)
+  const getAdvancedFilters = () => {
+    // Em uma implementação real, isso viria do contexto da página
+    return {
+      selectedCandidates: selectedCandidates.length,
+      contextType: 'candidates',
+      filteredCount,
+      totalCount
+    }
+  }
+
+  // Verificar e mostrar sugestões de template
+  const checkForTemplateSuggestions = () => {
+    const pendingSuggestions = templateSuggestions.getPendingSuggestions()
+
+    pendingSuggestions.forEach(suggestion => {
+      if (templateSuggestions.shouldShowSuggestion(suggestion)) {
+        suggestionQueue.addSuggestion(suggestion)
+        templateSuggestions.markSuggestionAsShown(suggestion.id)
+      }
+    })
+  }
+
+  // 📜 Usar comando do histórico
+  const handleHistoryCommand = (command: string) => {
+    setInputValue(command)
+    setShowHistory(false)
+  }
+
+  // 📊 Status info
+  const getStatusInfo = () => {
+    const selectedCount = selectedCandidates.length
+
+    if (selectedCount > 0) {
+      return {
+        text: `${selectedCount} selecionado${selectedCount > 1 ? 's' : ''}`,
+        color: 'text-[#60BED1]',
+        bgColor: 'bg-gray-50 border-gray-100'
+      }
+    }
+
+    if (filteredCount < totalCount) {
+      return {
+        text: `${filteredCount} de ${totalCount} candidatos`,
+        color: 'text-amber-600',
+        bgColor: 'bg-amber-50 border-amber-200'
+      }
+    }
+
+    return {
+      text: `${totalCount} candidatos`,
+      color: 'text-gray-600',
+      bgColor: 'bg-white border-gray-100'
+    }
+  }
+
+  const statusInfo = getStatusInfo()
+
+  return (
+    <div className="space-y-3" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+
+      {/* Candidato Específico Preview */}
+      {candidateContext && (
+        <div className="bg-[#5DA47A]/5 rounded-lg p-3 border border-[#5DA47A]/20">
+          <div className="flex items-center gap-2 mb-2">
+            <LIAIcon size="sm" />
+            <span className="text-[13px] font-semibold text-gray-800">
+              Análise LIA para candidato específico
+            </span>
+          </div>
+          <div className="flex items-center gap-3 bg-white rounded-lg px-3 py-2 border border-gray-100">
+            <Avatar className="w-8 h-8">
+              <AvatarFallback className="bg-[#5DA47A]/10 text-[#5DA47A] text-sm">
+                {candidateContext.name?.split(' ').map((n: string) => n[0]).join('') || 'C'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <div className="font-medium text-gray-800 text-[13px]">
+                {candidateContext.name}
+              </div>
+              <div className="text-[11px] text-gray-700">
+                {candidateContext.position} • Score: {candidateContext.liaAnalysis?.score || candidateContext.score}%
+              </div>
+            </div>
+            <Badge className="bg-[#5DA47A]/10 text-[#5DA47A] border-0 text-[10px]">
+              Foco Individual
+            </Badge>
+          </div>
+        </div>
+      )}
+
+      {/* Candidatos Selecionados Preview */}
+      {!candidateContext && selectedCandidates.length > 0 && (
+        <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="w-4 h-4 text-[#60BED1]" />
+            <span className="text-[13px] font-semibold text-gray-800">
+              {selectedCandidates.length} candidato{selectedCandidates.length > 1 ? 's' : ''} selecionado{selectedCandidates.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {selectedCandidates.slice(0, 3).map((candidate, index) => (
+              <div key={index} className="flex items-center gap-1 bg-white rounded-lg px-2 py-1 border border-gray-100">
+                <Avatar className="w-4 h-4">
+                  <AvatarFallback className="bg-[#60BED1]/10 text-[#60BED1] text-xs">
+                    {candidate.name?.charAt(0) || 'C'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-[11px] text-gray-700">
+                  {candidate.name || `Candidato ${index + 1}`}
+                </span>
+              </div>
+            ))}
+            {selectedCandidates.length > 3 && (
+              <div className="px-2 py-1 bg-gray-100 rounded-lg text-[11px] text-gray-700">
+                +{selectedCandidates.length - 3} mais
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Prompt Principal */}
+      <div className={`transition-all duration-300 ${statusInfo.bgColor} rounded-lg border ${statusInfo.bgColor.includes('border') ? '' : 'border-gray-100'} overflow-hidden shadow-sm`}>
+
+        {/* Campo de input compacto */}
+        <div className="p-3">
+          <form onSubmit={handleSubmit} className="flex items-center gap-3">
+
+            {/* LIA Icon */}
+            <LIAIcon
+              size="lg"
+              animate={isProcessing}
+              className={`flex-shrink-0 transition-all duration-300 ${isProcessing ? 'scale-110' : ''}`}
+            />
+
+            {/* Input Field */}
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onFocus={() => !isProcessing && setIsExpanded(true)}
+              placeholder={isProcessing ? "LIA processando..." : getPlaceholder()}
+              disabled={isProcessing}
+              className={`flex-1 bg-transparent text-gray-900 placeholder-gray-500 text-xs focus:outline-none ${
+                isProcessing ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
+            />
+
+            {/* Seletor de Origem de Busca - Sempre Visível (Compacto) */}
+            <div className="flex items-center gap-0.5 mr-1.5">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setSearchSource('local'); }}
+                      className={`p-1.5 rounded-md transition-all ${
+                        searchSource === 'local' 
+                          ? 'bg-[rgba(96,190,209,0.15)]' 
+                          : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-[#60BED1]' : 'text-gray-600'}`} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p className="text-xs">Base Local (Gratuito)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              {showGlobalSearchOptions && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setSearchSource('hybrid'); }}
+                        className={`p-1.5 rounded-md transition-all ${
+                          searchSource === 'hybrid' 
+                            ? 'bg-[rgba(96,190,209,0.15)]' 
+                            : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-[#60BED1]' : 'text-gray-600'}`} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p className="text-xs">Local + Global (1 créd/cand)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              
+              {showGlobalSearchOptions && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setSearchSource('global'); }}
+                        className={`p-1.5 rounded-md transition-all ${
+                          searchSource === 'global' 
+                            ? 'bg-[rgba(96,190,209,0.15)]' 
+                            : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-[#60BED1]' : 'text-gray-600'}`} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p className="text-xs">Busca Global (1 créd/cand)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              
+              {/* Separador visual */}
+              <div className="w-px h-4 bg-gray-200 mx-1" />
+              
+              {/* Toggle Email */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setRequireEmails(!requireEmails); }}
+                      className={`p-1.5 rounded-md transition-all ${
+                        requireEmails 
+                          ? 'bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]' 
+                          : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-[#5DA47A]' : 'text-gray-400'}`} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p className="text-xs font-medium">Apenas com Email</p>
+                    <p className="text-[10px] text-gray-400">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              {/* Toggle Telefone */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setRequirePhoneNumbers(!requirePhoneNumbers); }}
+                      className={`p-1.5 rounded-md transition-all ${
+                        requirePhoneNumbers 
+                          ? 'bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]' 
+                          : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-[#5DA47A]' : 'text-gray-400'}`} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p className="text-xs font-medium">Apenas com Telefone</p>
+                    <p className="text-[10px] text-gray-400">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {/* Status Info */}
+            <div className={`text-[11px] ${statusInfo.color} flex items-center gap-1`}>
+              <span>●</span>
+              {statusInfo.text}
+            </div>
+
+            {/* Suggestions & Queries Guide Buttons */}
+            <div className="flex items-center gap-0.5">
+              <PromptSuggestionsPopover
+                onSelect={(command) => {
+                  setInputValue(command)
+                  setIsExpanded(true)
+                }}
+                context={{
+                  hasJob: !!jobContext?.id,
+                  jobTitle: jobContext?.title,
+                  selectedCandidatesCount: selectedCandidates.length,
+                  currentPage: pageContext
+                }}
+              />
+              
+              {pageContext === 'candidates' ? (
+                <CandidateQueriesGuide
+                  onSelectQuery={(query) => {
+                    setInputValue(query)
+                    setIsExpanded(true)
+                  }}
+                />
+              ) : (
+                <LiaQueriesGuide
+                  onSelectQuery={(query) => {
+                    setInputValue(query)
+                    setIsExpanded(true)
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Voice Button */}
+            <button
+              type="button"
+              onClick={handleVoiceToggle}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                isListening
+                  ? 'bg-red-100 text-red-600'
+                  : 'lia-btn-secondary'
+              }`}
+              style={!isListening ? { color: '#2D2D2D' } : undefined}
+            >
+              <Mic className="w-4 h-4" />
+            </button>
+
+            {/* Close/Expand/Send Button */}
+            {candidateContext && onClose ? (
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-8 h-8 lia-btn-secondary rounded-lg flex items-center justify-center transition-colors"
+                style={{ backgroundColor: '#2D2D2D', color: 'white' }}
+                title="Fechar análise do candidato"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type={inputValue.trim() ? "submit" : "button"}
+                onClick={inputValue.trim() ? undefined : () => setIsExpanded(!isExpanded)}
+                className="w-8 h-8 lia-btn-primary flex items-center justify-center"
+              >
+                {inputValue.trim() ? <Send className="w-4 h-4" /> :
+                 isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+            )}
+          </form>
+        </div>
+
+        {/* Área Expandida - REORGANIZADA SEM DUPLICAÇÃO */}
+        {isExpanded && (
+          <div className="lia-prompt-expanded space-y-4" style={{ backgroundColor: '#F8F8F8' }}>
+
+            {/* AI-First Context Pills + Quick Actions */}
+            {(contextPill || quickActions.length > 0) && (
+              <div className="p-4 pb-0" style={{ borderBottom: '1px solid #E8E8E8' }}>
+                {contextPill && (
+                  <div className="mb-3">
+                    <ContextPill
+                      icon={contextPill.icon}
+                      primaryText={contextPill.primaryText}
+                      secondaryText={contextPill.secondaryText}
+                      onDismiss={contextPill.onDismiss}
+                    />
+                  </div>
+                )}
+                
+                {quickActions.length > 0 && (
+                  <div>
+                    <div className="text-xs mb-2 lia-body">
+                      Ações rápidas:
+                    </div>
+                    <QuickActionChips actions={quickActions} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 🧠 PESQUISA AVANÇADA - Sistema de 6 Abas */}
+            <div className="p-4 pb-0">
+              {/* Header com LIA Icon e Controles de Fonte/Créditos */}
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <LIAIcon size="sm" />
+                  <span className="text-sm lia-heading">Pesquisa Avançada</span>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  {/* Seletor de Fonte de Busca */}
+                  <div className="lia-tabs-container flex items-center gap-1">
+                    <button
+                      onClick={() => setSearchSource('local')}
+                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
+                        searchSource === 'local' 
+                          ? 'lia-tab-active' 
+                          : 'lia-tab'
+                      }`}
+                      title="Buscar apenas na base local (sem consumo de créditos)"
+                    >
+                      <Home className="w-3 h-3" />
+                      <span className="hidden sm:inline">Local</span>
+                    </button>
+                    <button
+                      onClick={() => setSearchSource('hybrid')}
+                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
+                        searchSource === 'hybrid' 
+                          ? 'lia-tab-active' 
+                          : 'lia-tab'
+                      }`}
+                      title="Buscar na base local + Base Global (consome créditos para resultados externos)"
+                    >
+                      <Zap className="w-3 h-3" />
+                      <span className="hidden sm:inline">Híbrido</span>
+                    </button>
+                    <button
+                      onClick={() => setSearchSource('global')}
+                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all ${
+                        searchSource === 'global' 
+                          ? 'lia-tab-active' 
+                          : 'lia-tab'
+                      }`}
+                      title="Buscar apenas na Base Global (800M+ perfis, consome créditos)"
+                    >
+                      <Globe className="w-3 h-3" />
+                      <span className="hidden sm:inline">Global</span>
+                    </button>
+                  </div>
+                  
+                  {/* Estimativa de Créditos em Tempo Real */}
+                  <div className="relative group">
+                    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs ${
+                      creditEstimate.isLocal 
+                        ? 'bg-emerald-50 text-emerald-700' 
+                        : !creditEstimate.canAfford
+                          ? 'bg-red-50 text-red-700'
+                          : getCostLevel(creditEstimate.total) === 'low' 
+                            ? 'bg-green-50 text-green-700'
+                            : getCostLevel(creditEstimate.total) === 'medium'
+                              ? 'bg-yellow-50 text-yellow-700'
+                              : 'bg-orange-50 text-orange-700'
+                    }`}>
+                      <Coins className="w-3 h-3" />
+                      <span className="font-medium">
+                        {creditEstimate.isLoading ? (
+                          '...'
+                        ) : creditEstimate.isLocal ? (
+                          'Gratuito'
+                        ) : (
+                          `~${creditEstimate.total} créditos`
+                        )}
+                      </span>
+                      {!creditEstimate.isLocal && !creditEstimate.canAfford && (
+                        <AlertCircle className="w-3 h-3 text-red-500" />
+                      )}
+                    </div>
+                    
+                    {/* Tooltip de Detalhes de Créditos */}
+                    <div className="absolute right-0 top-full mt-1.5 hidden group-hover:block z-50">
+                      <div className="bg-gray-900 text-white px-3 py-2 rounded-lg shadow-xl text-xs min-w-[220px]">
+                        <div className="font-semibold mb-2 flex items-center gap-1.5">
+                          <Coins className="w-3.5 h-3.5 text-amber-400" />
+                          Estimativa de Custo
+                        </div>
+                        {creditEstimate.isLocal ? (
+                          <div className="text-emerald-300">
+                            Busca local gratuita - sem consumo de créditos
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {/* Saldo disponível */}
+                            {creditEstimate.availableCredits !== undefined && (
+                              <div className="flex justify-between pb-1.5 border-b border-gray-700">
+                                <span className="text-gray-300">Saldo disponível:</span>
+                                <span className={`font-medium ${
+                                  creditEstimate.canAfford ? 'text-emerald-400' : 'text-red-400'
+                                }`}>
+                                  {creditEstimate.availableCredits} créditos
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Tipo de busca:</span>
+                              <span className="font-medium">{pearchSearchType === 'fast' ? 'Rápida' : 'Profissional'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-300">Por candidato:</span>
+                              <span className="font-medium">{creditEstimate.perCandidate} créditos</span>
+                            </div>
+                            <div className="flex justify-between pt-1.5 border-t border-gray-700">
+                              <span className="text-gray-300">Total ({candidateLimit} cand.):</span>
+                              <span className={`font-bold ${getCostColor(getCostLevel(creditEstimate.total))}`}>
+                                {creditEstimate.total} créditos
+                              </span>
+                            </div>
+                            {!creditEstimate.canAfford && (
+                              <div className="text-[11px] text-red-400 mt-1.5 pt-1.5 border-t border-gray-700 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                Saldo insuficiente para esta busca
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <div className="absolute bottom-full right-4 border-4 border-transparent border-b-gray-900"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Contador de critérios */}
+                  <span className="text-xs text-gray-600 hidden md:inline">
+                    {filledTagsCount}/5 critérios
+                  </span>
+                </div>
+              </div>
+              
+              {/* 6 Abas de Pesquisa */}
+              <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
+                <button
+                  onClick={() => setActiveSearchTab('natural')}
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                    activeSearchTab === 'natural'
+                      ? 'lia-pill-active'
+                      : 'lia-pill'
+                  }`}
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Linguagem Natural
+                </button>
+                <button
+                  onClick={() => setActiveSearchTab('similar')}
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                    activeSearchTab === 'similar'
+                      ? 'lia-pill-active'
+                      : 'lia-pill'
+                  }`}
+                >
+                  <Users className="w-3 h-3" />
+                  Similar
+                </button>
+                <button
+                  onClick={() => setActiveSearchTab('job-description')}
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                    activeSearchTab === 'job-description'
+                      ? 'lia-pill-active'
+                      : 'lia-pill'
+                  }`}
+                >
+                  <FileText className="w-3 h-3" />
+                  D. Cargo
+                </button>
+                <button
+                  onClick={() => setActiveSearchTab('boolean')}
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                    activeSearchTab === 'boolean'
+                      ? 'lia-pill-active'
+                      : 'lia-pill'
+                  }`}
+                >
+                  <Code className="w-3 h-3" />
+                  Boleana
+                </button>
+                <button
+                  onClick={() => setActiveSearchTab('arquetipos')}
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                    activeSearchTab === 'arquetipos'
+                      ? 'lia-pill-active'
+                      : 'lia-pill'
+                  }`}
+                >
+                  <Target className="w-3 h-3" />
+                  Arquétipos
+                </button>
+                <button
+                  onClick={() => setActiveSearchTab('filtros')}
+                  className={`flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                    activeSearchTab === 'filtros'
+                      ? 'lia-pill-active'
+                      : 'lia-pill'
+                  }`}
+                >
+                  <Filter className="w-3 h-3" />
+                  Filtros
+                </button>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href="/funil?expandedSearch=true"
+                        className="ml-1 p-1.5 rounded-md hover:bg-gray-100 transition-all border border-gray-200"
+                      >
+                        <Table2 className="w-3.5 h-3.5 text-gray-500" />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p className="text-xs font-medium">Abrir em Tabela</p>
+                      <p className="text-[10px] text-gray-400">Ir para resultados de busca</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              {/* Conteúdo da Aba Ativa */}
+              <div className="mb-3">
+                {/* Aba: Quem você procura? (IA Natural) */}
+                {activeSearchTab === 'natural' && (
+                  <div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={naturalSearchValue}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          setNaturalSearchValue(value)
+                          
+                          if (extractionTimeoutRef.current) {
+                            clearTimeout(extractionTimeoutRef.current)
+                          }
+                          
+                          extractionTimeoutRef.current = setTimeout(() => {
+                            parseEntitiesFromQuery(value)
+                            if (autocompleteEnabled) {
+                              fetchAutocomplete(value)
+                            }
+                          }, 400)
+                        }}
+                        onKeyDown={handleAutocompleteKeyDown}
+                        onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
+                        placeholder="Descreva o candidato ideal em linguagem natural..."
+                        className="lia-input w-full px-4 py-2.5 text-sm pr-[180px]"
+                      />
+                      
+                      {/* Ícones de Fonte e Contato dentro do input */}
+                      <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                        {/* Fonte de busca: Local / Híbrido / Global */}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setSearchSource('local'); }}
+                                className={`p-1.5 rounded-md transition-all ${
+                                  searchSource === 'local' 
+                                    ? 'bg-[rgba(96,190,209,0.15)]' 
+                                    : 'hover:bg-gray-100'
+                                }`}
+                              >
+                                <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-[#60BED1]' : 'text-gray-500'}`} />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                              <p className="text-xs font-medium">Base Local</p>
+                              <p className="text-[10px] text-gray-400">Gratuito</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        {showGlobalSearchOptions && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setSearchSource('hybrid'); }}
+                                  className={`p-1.5 rounded-md transition-all ${
+                                    searchSource === 'hybrid' 
+                                      ? 'bg-[rgba(96,190,209,0.15)]' 
+                                      : 'hover:bg-gray-100'
+                                  }`}
+                                >
+                                  <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-[#60BED1]' : 'text-gray-500'}`} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                <p className="text-xs font-medium">Híbrido (Local + Global)</p>
+                                <p className="text-[10px] text-gray-400">1 crédito/candidato</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        
+                        {showGlobalSearchOptions && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setSearchSource('global'); }}
+                                  className={`p-1.5 rounded-md transition-all ${
+                                    searchSource === 'global' 
+                                      ? 'bg-[rgba(96,190,209,0.15)]' 
+                                      : 'hover:bg-gray-100'
+                                  }`}
+                                >
+                                  <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-[#60BED1]' : 'text-gray-500'}`} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                <p className="text-xs font-medium">Base Global</p>
+                                <p className="text-[10px] text-gray-400">1 crédito/candidato</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        
+                        {/* Separador */}
+                        <div className="w-px h-4 bg-gray-200 mx-0.5" />
+                        
+                        {/* Contato: Email / Telefone */}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setRequireEmails(!requireEmails); }}
+                                className={`p-1.5 rounded-md transition-all ${
+                                  requireEmails 
+                                    ? 'bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]' 
+                                    : 'hover:bg-gray-100'
+                                }`}
+                              >
+                                <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-[#5DA47A]' : 'text-gray-400'}`} />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                              <p className="text-xs font-medium">Apenas com Email</p>
+                              <p className="text-[10px] text-gray-400">{requireEmails ? 'Ativo' : '+1 crédito se ativo'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setRequirePhoneNumbers(!requirePhoneNumbers); }}
+                                className={`p-1.5 rounded-md transition-all ${
+                                  requirePhoneNumbers 
+                                    ? 'bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]' 
+                                    : 'hover:bg-gray-100'
+                                }`}
+                              >
+                                <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-[#5DA47A]' : 'text-gray-400'}`} />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                              <p className="text-xs font-medium">Apenas com Telefone</p>
+                              <p className="text-[10px] text-gray-400">{requirePhoneNumbers ? 'Ativo' : '+1 crédito se ativo'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        {/* Separador */}
+                        <div className="w-px h-4 bg-gray-200 mx-0.5" />
+                        
+                        {/* Botão de Buscar */}
+                        <button 
+                          className="w-7 h-7 lia-btn-primary flex items-center justify-center"
+                          onClick={() => executeSearchWithCriteria()}
+                        >
+                          <Search className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      
+                      {/* Autocomplete Dropdown */}
+                      {showAutocomplete && autocompleteSuggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-100 rounded-lg shadow-sm z-50 max-h-48 overflow-y-auto">
+                          {autocompleteSuggestions.map((suggestion, index) => (
+                            <button
+                              key={index}
+                              onClick={() => {
+                                setNaturalSearchValue(prev => {
+                                  const words = prev.split(' ')
+                                  words.pop()
+                                  const insertValue = suggestion.insert_text || suggestion.text
+                                  return [...words, insertValue].join(' ') + ' '
+                                })
+                                setShowAutocomplete(false)
+                              }}
+                              className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${
+                                selectedAutocompleteIndex === index 
+                                  ? 'bg-gray-100' 
+                                  : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <span style={{ color: '#1a1a1a' }}>{suggestion.text}</span>
+                              <span className="text-xs" style={{ color: '#999999' }}>{suggestion.category}</span>
+                            </button>
+                          ))}
+                          <div className="px-3 py-1.5 text-xs flex items-center justify-between" style={{ backgroundColor: '#FAFAFA', borderTop: '1px solid rgba(0,0,0,0.05)', color: '#999999' }}>
+                            <span>Use ↑↓ para navegar, Tab para selecionar</span>
+                            <span>Esc para fechar</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Prompt Enhancement Card */}
+                    {promptEnhancement && !showAutocomplete && (
+                      <div 
+                        className="mt-2 p-3 rounded-lg border transition-all"
+                        style={{ 
+                          backgroundColor: 'rgba(96, 190, 209, 0.05)',
+                          borderColor: 'rgba(96, 190, 209, 0.3)'
+                        }}
+                      >
+                        <div className="flex items-start gap-2">
+                          <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className="text-xs font-medium" style={{ color: '#60BED1' }}>Sugestão da LIA</span>
+                              {isEnhancingPrompt && (
+                                <div className="w-3 h-3 border-2 border-[#60BED1] border-t-transparent rounded-full animate-spin" />
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-700 mb-2">{promptEnhancement.enhanced_query}</p>
+                            {promptEnhancement.explanation && (
+                              <p className="text-xs text-gray-500 mb-2">{promptEnhancement.explanation}</p>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={handleAcceptEnhancement}
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors"
+                                style={{ backgroundColor: '#60BED1', color: 'white' }}
+                              >
+                                <Check className="w-3 h-3" />
+                                Usar sugestão
+                              </button>
+                              <button
+                                onClick={handleDismissEnhancement}
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
+                                <X className="w-3 h-3" />
+                                Ignorar
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Indicador de Fonte de Busca */}
+                    {searchSource === 'local' && (
+                      <div className="flex items-center gap-1.5 mt-2 mb-1">
+                        <div 
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
+                          style={{ 
+                            backgroundColor: 'rgba(96, 190, 209, 0.08)', 
+                            color: '#60BED1',
+                            border: '1px solid rgba(96, 190, 209, 0.2)'
+                          }}
+                        >
+                          <Home className="w-3 h-3" />
+                          <span>Base Local</span>
+                        </div>
+                        <span className="text-[11px]" style={{ color: '#999999' }}>
+                          Busca apenas na sua base de dados
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Tags de Critérios - Sempre Visíveis (5 critérios como SmartSearchInput) */}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      {searchTags.map((tag) => {
+                        const colors = getTagColors(tag.key, tag.filled)
+                        const TagIcon = tag.icon
+                        
+                        return (
+                          <div
+                            key={tag.key}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                            style={{ 
+                              backgroundColor: colors.bg,
+                              color: colors.text,
+                              fontFamily: '"Open Sans", sans-serif'
+                            }}
+                            title={tag.value}
+                          >
+                            <div 
+                              className="flex items-center justify-center w-4 h-4 rounded"
+                              style={{ backgroundColor: tag.filled ? `${colors.iconBg}30` : 'transparent' }}
+                            >
+                              <TagIcon className="w-3 h-3" style={{ color: tag.filled ? colors.iconBg : colors.text }} />
+                            </div>
+                            <span className="font-medium">{tag.label}</span>
+                            {tag.filled && tag.value && (
+                              <>
+                                <span style={{ opacity: 0.5 }}>·</span>
+                                <span className="max-w-[80px] truncate font-normal" style={{ opacity: 0.85 }}>{tag.value}</span>
+                              </>
+                            )}
+                          </div>
+                        )
+                      })}
+                      
+                      {isParsingEntities && (
+                        <div className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-[#999999]">
+                          <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          Analisando...
+                        </div>
+                      )}
+                      
+                      {/* Toggle de sugestões automáticas */}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => setAutocompleteEnabled(!autocompleteEnabled)}
+                              className={cn(
+                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all",
+                                autocompleteEnabled 
+                                  ? "bg-gray-100" 
+                                  : "bg-gray-100"
+                              )}
+                              style={{ fontFamily: '"Open Sans", sans-serif' }}
+                            >
+                              <Sparkles className="w-3 h-3" style={{ color: autocompleteEnabled ? '#60BED1' : '#9CA3AF' }} />
+                              <span className="font-medium text-[11px]" style={{ color: autocompleteEnabled ? '#374151' : '#9CA3AF' }}>
+                                {autocompleteEnabled ? 'Sugestões' : 'Sugestões off'}
+                              </span>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <p className="text-xs font-medium">
+                              {autocompleteEnabled ? 'Desativar sugestões durante digitação' : 'Ativar sugestões durante digitação'}
+                            </p>
+                            <p className="text-[11px] text-gray-300">
+                              {autocompleteEnabled ? 'Clique para desativar' : 'Clique para ativar'}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      
+                      {/* Botão Assistente */}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all hover:opacity-90"
+                              style={{ backgroundColor: '#1a1a1a', color: 'white', fontFamily: '"Open Sans", sans-serif' }}
+                            >
+                              <Wand2 className="w-3 h-3" />
+                              <span className="font-medium">Assistente</span>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="max-w-[280px] p-3" style={{ backgroundColor: 'white', border: '1px solid var(--eleven-border)' }}>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Wand2 className="w-4 h-4" style={{ color: '#60BED1' }} />
+                                <span className="font-medium text-sm" style={{ color: 'var(--eleven-text-primary)' }}>
+                                  Assistente de Busca Inteligente
+                                </span>
+                              </div>
+                              <p className="text-xs" style={{ color: 'var(--eleven-text-secondary)' }}>
+                                Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
+                              </p>
+                              <ul className="text-xs space-y-1" style={{ color: 'var(--eleven-text-secondary)' }}>
+                                <li className="flex items-start gap-1.5">
+                                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                                  <span>Indica critérios faltantes</span>
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                                  <span>Sugere sinônimos e termos relacionados</span>
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                  <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                                  <span>Alerta sobre buscas muito amplas ou restritivas</span>
+                                </li>
+                              </ul>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    
+                    {/* Análise de Qualidade da Busca */}
+                    {naturalSearchValue && searchAnalysis && (
+                      <div className="space-y-2 pt-2 mt-2 border-t" style={{ borderColor: 'var(--eleven-border)' }}>
+                        {/* Barra de completude */}
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[11px] font-medium" style={{ color: 'var(--eleven-text-secondary)' }}>
+                                Qualidade da busca
+                              </span>
+                              <span 
+                                className="text-[11px] font-bold"
+                                style={{ 
+                                  color: searchAnalysis.completeness_score >= 60 
+                                    ? '#22c55e' 
+                                    : searchAnalysis.completeness_score >= 40 
+                                      ? '#f59e0b' 
+                                      : '#ef4444' 
+                                }}
+                              >
+                                {searchAnalysis.completeness_score}%
+                              </span>
+                            </div>
+                            <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--eleven-bg-tertiary)' }}>
+                              <div 
+                                className="h-full rounded-full transition-all duration-500"
+                                style={{ 
+                                  width: `${searchAnalysis.completeness_score}%`,
+                                  backgroundColor: searchAnalysis.completeness_score >= 60 
+                                    ? '#22c55e' 
+                                    : searchAnalysis.completeness_score >= 40 
+                                      ? '#f59e0b' 
+                                      : '#ef4444'
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {searchAnalysis.next_recommended_action && (
+                            <div 
+                              className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px]"
+                              style={{ backgroundColor: 'rgba(96, 190, 209, 0.08)', color: '#60BED1' }}
+                            >
+                              <TrendingUp className="w-3 h-3" />
+                              <span>{searchAnalysis.next_recommended_action}</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Alertas inteligentes */}
+                        {searchAnalysis.alerts.length > 0 && (
+                          <div className="space-y-1.5">
+                            {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
+                              <div 
+                                key={index}
+                                className="flex items-start gap-2 px-2.5 py-2 rounded-lg text-[11px]"
+                                style={{ 
+                                  backgroundColor: alert.severity === 'warning' 
+                                    ? 'rgba(245, 158, 11, 0.08)' 
+                                    : 'rgba(96, 190, 209, 0.08)',
+                                  color: 'var(--eleven-text-secondary)'
+                                }}
+                              >
+                                {alert.severity === 'warning' ? (
+                                  <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500" />
+                                ) : (
+                                  <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <span>{alert.message}</span>
+                                  {alert.suggestion && (
+                                    <button
+                                      onClick={() => {
+                                        if (alert.action_value) {
+                                          setNaturalSearchValue(naturalSearchValue + ', ' + alert.action_value)
+                                        }
+                                      }}
+                                      className="ml-1 font-medium hover:underline"
+                                      style={{ color: '#60BED1' }}
+                                    >
+                                      {alert.suggestion}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Sugestões (cobrindo: Location, Job Title, Experience, Industry, Skills) */}
+                    <div className="mt-3">
+                      <p className="text-[11px] text-gray-800 mb-1.5">Sugestões:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          'Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python',
+                          'Product Manager Pleno remoto, experiência em B2B SaaS, metodologias ágeis',
+                          'Data Scientist Sênior híbrido, 4+ anos em e-commerce, Python e ML',
+                          'Tech Lead em Campinas, 7+ anos em startups, React e liderança de times'
+                        ].map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            onClick={() => {
+                              setNaturalSearchValue(suggestion)
+                              parseEntitiesFromQuery(suggestion)
+                            }}
+                            className="px-2.5 py-1.5 text-[11px] rounded-lg border border-gray-100 bg-white text-gray-600 hover:border-[#60BED1] hover:text-[#60BED1] hover:shadow-sm transition-all text-left"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Aba: Similar - Pattern like SmartSearchInput */}
+                {activeSearchTab === 'similar' && (
+                  <div className="space-y-3">
+                    {/* URL inputs - up to 2 URLs */}
+                    {similarUrls.map((url, index) => (
+                      <div key={index} className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                          <Linkedin className="w-4 h-4 text-[#0077B5]" />
+                        </div>
+                        <input
+                          type="text"
+                          value={url}
+                          onChange={(e) => updateSimilarUrl(index, e.target.value)}
+                          placeholder={index === 0 ? "Cole a URL do LinkedIn ou ID do candidato..." : "Cole outra URL para combinar perfis..."}
+                          className="lia-input w-full pl-10 pr-20 py-2.5 text-sm"
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                          {index > 0 && (
+                            <button
+                              onClick={() => removeSimilarUrl(index)}
+                              className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-red-50 transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5 text-red-400" />
+                            </button>
+                          )}
+                          {index === similarUrls.length - 1 && similarUrls.length < MAX_SIMILAR_URLS && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={addSimilarUrl}
+                                    className="h-8 px-3 rounded-lg text-sm font-bold hover:bg-[#60BED1] hover:text-white transition-colors shadow-sm"
+                                    style={{ color: "#60BED1", backgroundColor: "#F8FCFD" }}
+                                  >
+                                    + URL
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="text-xs max-w-[200px]">
+                                  Adicione até 2 perfis para a LIA criar um perfil ideal combinado
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* CV Upload section with separator */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-gray-200" />
+                      <span className="text-[11px] text-gray-600 px-2">ou</span>
+                      <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        ref={cvFileInputRef}
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        multiple
+                        onChange={handleCvUpload}
+                        className="hidden"
+                      />
+                      {similarCvFiles.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {similarCvFiles.map((file, index) => (
+                            <div 
+                              key={index}
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs"
+                              style={{ backgroundColor: "#F5F5F5" }}
+                            >
+                              <FileText className="w-3.5 h-3.5 text-gray-700" />
+                              <span className="max-w-[150px] truncate">{file.name}</span>
+                              <button onClick={() => removeCvFile(index)} className="hover:text-red-500">
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                          {similarCvFiles.length < MAX_CV_FILES && (
+                            <button
+                              onClick={() => cvFileInputRef.current?.click()}
+                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-100 transition-colors border border-gray-200"
+                              style={{ backgroundColor: "#F5F5F5" }}
+                            >
+                              <Upload className="w-3 h-3" />
+                              + CV
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => cvFileInputRef.current?.click()}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors border border-gray-200"
+                          style={{ backgroundColor: "#F5F5F5" }}
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          Arraste CVs aqui ou clique para upload (máx. 2)
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Analyze button - Shows when 2+ sources */}
+                    {hasMultipleSources() && !showCombinedSuggestions && (
+                      <button
+                        onClick={analyzeProfiles}
+                        disabled={isAnalyzingProfiles}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-medium text-white disabled:opacity-50"
+                        style={{ backgroundColor: "#60BED1" }}
+                      >
+                        {isAnalyzingProfiles ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Analisando perfis...
+                          </>
+                        ) : (
+                          <>
+                            <Wand2 className="w-3.5 h-3.5" />
+                            Analisar e combinar perfis com LIA
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {/* Combined Suggestions Box */}
+                    {showCombinedSuggestions && combinedSuggestions.length > 0 && (
+                      <div className="p-3 rounded-lg space-y-2 border border-gray-200" style={{ backgroundColor: "#F8FCFD" }}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-3.5 h-3.5" style={{ color: "#60BED1" }} />
+                            <span className="text-xs font-medium text-gray-800">
+                              Perfil Ideal sugerido pela LIA
+                            </span>
+                          </div>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Info className="w-3.5 h-3.5 text-gray-600" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs max-w-[280px]">
+                                A LIA analisou os perfis e combinou skills, experiências e senioridade em comum. Edite ou remova tags antes de buscar.
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {combinedSuggestions.map((keyword) => (
+                            <div
+                              key={keyword}
+                              className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium group border border-gray-200 bg-white"
+                            >
+                              <span style={{ color: "#60BED1" }}>{keyword}</span>
+                              <button
+                                onClick={() => removeSuggestion(keyword)}
+                                className="opacity-50 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-gray-700">
+                          Baseado em {similarUrls.filter(u => u.trim()).length + similarCvFiles.length} perfis: skills em comum e pontos fortes combinados.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Search Button */}
+                    <button
+                      onClick={() => {
+                        const validUrls = similarUrls.filter(u => u.trim())
+                        if (validUrls.length > 0 || similarCvFiles.length > 0) {
+                          const query = validUrls.join(', ')
+                          onCommand(query, 'find_similar')
+                        }
+                      }}
+                      disabled={similarUrls.filter(u => u.trim()).length === 0 && similarCvFiles.length === 0}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ 
+                        backgroundColor: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "#60BED1" : "#E5E5E5",
+                        color: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "white" : "#999"
+                      }}
+                    >
+                      <Search className="w-4 h-4" />
+                      {hasMultipleSources() ? "Buscar com perfil combinado" : "Buscar candidatos similares"}
+                    </button>
+
+                    {/* Dica contextual padronizada */}
+                    <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+                      <div className="flex items-start gap-2">
+                        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                        <p className="text-[11px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                          <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Aba: Job Description */}
+                {activeSearchTab === 'job-description' && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-gray-700">Cole a descrição da vaga para extrair requisitos automaticamente</p>
+                    <textarea
+                      value={jobDescriptionText}
+                      onChange={(e) => setJobDescriptionText(e.target.value)}
+                      placeholder="Cole aqui a descrição completa da vaga..."
+                      className="lia-input w-full px-4 py-2.5 text-sm resize-none"
+                      rows={3}
+                    />
+                    <div className="flex justify-between items-center">
+                      {/* Dica contextual */}
+                      <div className="flex items-start gap-2 flex-1">
+                        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                        <p className="text-[11px] lia-body">
+                          <strong>Dica:</strong> Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.
+                        </p>
+                      </div>
+                      <button 
+                        className="ml-3 px-3 py-1.5 lia-btn-primary text-xs disabled:opacity-50"
+                        onClick={() => jobDescriptionText.trim() && onCommand(jobDescriptionText, 'extract_from_jd')}
+                        disabled={!jobDescriptionText.trim()}
+                      >
+                        <Sparkles className="w-3 h-3 inline mr-1" />
+                        Extrair Requisitos
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Aba: Boolean */}
+                {activeSearchTab === 'boolean' && (
+                  <div className="space-y-3">
+                    <p className="text-xs lia-body">Use operadores booleanos para buscas precisas</p>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                        <Code className="w-4 h-4" style={{ color: '#60BED1' }} />
+                      </div>
+                      <input
+                        type="text"
+                        value={booleanSearchValue}
+                        onChange={(e) => setBooleanSearchValue(e.target.value)}
+                        placeholder='(Python OR Java) AND "São Paulo" NOT junior'
+                        className="lia-input w-full pl-10 pr-[180px] py-2.5 text-sm font-mono"
+                      />
+                      
+                      {/* Ícones de Fonte e Contato dentro do input */}
+                      <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                        {/* Fonte de busca: Local / Híbrido / Global */}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setSearchSource('local'); }}
+                                className={`p-1.5 rounded-md transition-all ${
+                                  searchSource === 'local' 
+                                    ? 'bg-[rgba(96,190,209,0.15)]' 
+                                    : 'hover:bg-gray-100'
+                                }`}
+                              >
+                                <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-[#60BED1]' : 'text-gray-500'}`} />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                              <p className="text-xs font-medium">Base Local</p>
+                              <p className="text-[10px] text-gray-400">Gratuito</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        {showGlobalSearchOptions && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setSearchSource('hybrid'); }}
+                                  className={`p-1.5 rounded-md transition-all ${
+                                    searchSource === 'hybrid' 
+                                      ? 'bg-[rgba(96,190,209,0.15)]' 
+                                      : 'hover:bg-gray-100'
+                                  }`}
+                                >
+                                  <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-[#60BED1]' : 'text-gray-500'}`} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                <p className="text-xs font-medium">Híbrido (Local + Global)</p>
+                                <p className="text-[10px] text-gray-400">1 crédito/candidato</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        
+                        {showGlobalSearchOptions && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setSearchSource('global'); }}
+                                  className={`p-1.5 rounded-md transition-all ${
+                                    searchSource === 'global' 
+                                      ? 'bg-[rgba(96,190,209,0.15)]' 
+                                      : 'hover:bg-gray-100'
+                                  }`}
+                                >
+                                  <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-[#60BED1]' : 'text-gray-500'}`} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                <p className="text-xs font-medium">Base Global</p>
+                                <p className="text-[10px] text-gray-400">1 crédito/candidato</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        
+                        {/* Separador */}
+                        <div className="w-px h-4 bg-gray-200 mx-0.5" />
+                        
+                        {/* Contato: Email / Telefone */}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setRequireEmails(!requireEmails); }}
+                                className={`p-1.5 rounded-md transition-all ${
+                                  requireEmails 
+                                    ? 'bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]' 
+                                    : 'hover:bg-gray-100'
+                                }`}
+                              >
+                                <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-[#5DA47A]' : 'text-gray-400'}`} />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                              <p className="text-xs font-medium">Apenas com Email</p>
+                              <p className="text-[10px] text-gray-400">{requireEmails ? 'Ativo' : '+1 crédito se ativo'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setRequirePhoneNumbers(!requirePhoneNumbers); }}
+                                className={`p-1.5 rounded-md transition-all ${
+                                  requirePhoneNumbers 
+                                    ? 'bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]' 
+                                    : 'hover:bg-gray-100'
+                                }`}
+                              >
+                                <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-[#5DA47A]' : 'text-gray-400'}`} />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                              <p className="text-xs font-medium">Apenas com Telefone</p>
+                              <p className="text-[10px] text-gray-400">{requirePhoneNumbers ? 'Ativo' : '+1 crédito se ativo'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        {/* Separador */}
+                        <div className="w-px h-4 bg-gray-200 mx-0.5" />
+                        
+                        {/* Botão de Buscar */}
+                        <button 
+                          className="w-7 h-7 lia-btn-primary flex items-center justify-center disabled:opacity-50"
+                          onClick={() => booleanSearchValue.trim() && onCommand(booleanSearchValue, 'boolean_search')}
+                          disabled={!booleanSearchValue.trim()}
+                        >
+                          <Search className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className="text-[11px]" style={{ color: '#999' }}>Operadores:</span>
+                      {['AND', 'OR', 'NOT', '( )', '" "'].map((op) => (
+                        <button
+                          key={op}
+                          onClick={() => setBooleanSearchValue(prev => prev + ' ' + op + ' ')}
+                          className="lia-pill font-mono"
+                          style={{ padding: '2px 8px' }}
+                        >
+                          {op}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Dica contextual */}
+                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
+                      <div className="flex items-start gap-2">
+                        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                        <p className="text-[11px] text-gray-700">
+                          <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições. Ex: (Python OR Java) AND "São Paulo"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Aba: Arquétipos - Sistema Completo com API */}
+                {activeSearchTab === 'arquetipos' && (
+                  <div className="space-y-4">
+                    {/* Dica contextual */}
+                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(96, 190, 209, 0.06)' }}>
+                      <div className="flex items-start gap-2">
+                        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                        <p className="text-[11px] text-gray-700">
+                          <strong>Dica:</strong> Arquétipos são perfis pré-configurados baseados em padrões de mercado e vagas fechadas com sucesso.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Busca de arquétipos */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#999' }} />
+                      <input
+                        type="text"
+                        value={archetypeSearchFilter}
+                        onChange={(e) => setArchetypeSearchFilter(e.target.value)}
+                        placeholder="Buscar arquétipos..."
+                        className="lia-input w-full pl-10 pr-4 py-2 text-sm"
+                      />
+                    </div>
+                    
+                    {/* Arquétipos da API */}
+                    {filteredArchetypes.length > 0 && (
+                      <div>
+                        <h4 className="text-xs mb-2 lia-heading">
+                          Seus Arquétipos ({filteredArchetypes.length})
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                          {filteredArchetypes.map((archetype) => (
+                            <div 
+                              key={archetype.id}
+                              className="group lia-card cursor-pointer hover:shadow-md transition-all p-2.5 relative"
+                              style={{ borderColor: '#E8E8E8' }}
+                              onClick={() => {
+                                const criteria = archetype.criteria || {}
+                                const query = [
+                                  criteria.job_title,
+                                  criteria.seniority,
+                                  criteria.location,
+                                  ...(criteria.skills || []).slice(0, 3)
+                                ].filter(Boolean).join(', ')
+                                
+                                setNaturalSearchValue(query || archetype.name)
+                                setActiveSearchTab('natural')
+                                onCommand(query || archetype.name, 'search_candidates')
+                              }}
+                            >
+                              <div className="flex items-start gap-2">
+                                <div className="text-lg">🎯</div>
+                                <div className="flex-1 min-w-0">
+                                  <h5 className="text-xs font-semibold truncate" style={{ color: '#2D2D2D' }}>{archetype.name}</h5>
+                                  <p className="text-[11px] truncate" style={{ color: '#666' }}>
+                                    {archetype.department || archetype.hired_candidate?.name || 'Arquétipo personalizado'}
+                                  </p>
+                                </div>
+                                {/* Edit/Delete actions on hover - only for non-default archetypes */}
+                                {!(archetype as any).is_default && !(archetype.criteria?.is_default) && (
+                                  <div className="hidden group-hover:flex items-center gap-0.5 absolute right-1.5 top-1.5">
+                                    <TooltipProvider delayDuration={200}>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <button
+                                            onClick={(e) => openEditArchetype(archetype, e)}
+                                            className="p-1 rounded hover:bg-[#60BED1]/20 transition-colors"
+                                          >
+                                            <Pencil className="w-3 h-3" style={{ color: "#60BED1" }} />
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" className="text-xs">Editar</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                    <TooltipProvider delayDuration={200}>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <button
+                                            onClick={(e) => deleteArchetype(archetype.id, e)}
+                                            disabled={isDeletingArchetype === archetype.id}
+                                            className="p-1 rounded hover:bg-red-100 transition-colors"
+                                          >
+                                            {isDeletingArchetype === archetype.id ? (
+                                              <Loader2 className="w-3 h-3 animate-spin" style={{ color: "#ef4444" }} />
+                                            ) : (
+                                              <Trash2 className="w-3 h-3" style={{ color: "#ef4444" }} />
+                                            )}
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" className="text-xs">Excluir</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Criar novo arquétipo */}
+                    <div className="space-y-3 pt-3" style={{ borderTop: '1px solid #E8E8E8' }}>
+                      <h4 className="text-xs lia-heading">
+                        Criar Novo Arquétipo
+                      </h4>
+                      
+                      {/* A partir de vaga fechada */}
+                      {closedJobsForArchetype.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-[11px] text-gray-700">A partir de vaga fechada com sucesso:</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {closedJobsForArchetype.map((job) => (
+                              <button
+                                key={job.id}
+                                onClick={() => createArchetypeFromJob(job.id)}
+                                disabled={isCreatingArchetype}
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-100 bg-white text-[11px] hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm transition-all disabled:opacity-50"
+                              >
+                                <Target className="w-3 h-3 text-green-600" />
+                                <span className="text-gray-700 max-w-[120px] truncate">{job.title}</span>
+                                {job.hired_candidate && (
+                                  <span className="text-[11px] text-gray-600">({job.hired_candidate.name})</span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* A partir de descrição */}
+                      <div className="space-y-2">
+                        <p className="text-[11px]" style={{ color: '#666' }}>Ou descreva o perfil ideal:</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newArchetypeDescription}
+                            onChange={(e) => setNewArchetypeDescription(e.target.value)}
+                            placeholder="Ex: Desenvolvedor sênior com 5+ anos em React..."
+                            className="lia-input flex-1 px-3 py-2 text-sm"
+                          />
+                          <button
+                            onClick={() => createArchetypeFromDescription(newArchetypeDescription)}
+                            disabled={!newArchetypeDescription.trim() || isCreatingArchetype}
+                            className="lia-btn-primary px-3 py-2 text-xs font-medium disabled:opacity-50 flex items-center gap-1"
+                          >
+                            {isCreatingArchetype ? (
+                              <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <Plus className="w-3 h-3" />
+                            )}
+                            Criar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Arquétipos Pré-Cadastrados de TI */}
+                    <div className="pt-3" style={{ borderTop: '1px solid #E8E8E8' }}>
+                      <h4 className="text-xs mb-2 lia-heading">
+                        Arquétipos de TI
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { emoji: '🚀', name: 'Backend Node.js', desc: 'Sênior • APIs • Microserviços', query: 'Backend Sênior Node.js com experiência em APIs RESTful e microserviços' },
+                          { emoji: '⚛️', name: 'Frontend React', desc: 'Pleno • TypeScript • Testes', query: 'Frontend Pleno React com TypeScript e componentização' },
+                          { emoji: '🛠️', name: 'Fullstack Sênior', desc: 'End-to-end • Remoto', query: 'Fullstack Sênior com experiência em frontend e backend' },
+                          { emoji: '☁️', name: 'DevOps Engineer', desc: 'Sênior • Cloud • K8s', query: 'DevOps Engineer Sênior com AWS, Kubernetes e CI/CD' },
+                          { emoji: '📊', name: 'Data Scientist', desc: 'ML • Python • Analytics', query: 'Data Scientist com Python, Machine Learning e análise de dados' },
+                          { emoji: '👨‍💼', name: 'Tech Lead', desc: 'Liderança • Arquitetura', query: 'Tech Lead com liderança de times, arquitetura e mentoria' }
+                        ].map((archetype) => (
+                          <div 
+                            key={archetype.name}
+                            className="lia-card cursor-pointer hover:shadow-md transition-all p-2.5"
+                            onClick={() => {
+                              setNaturalSearchValue(archetype.query)
+                              setActiveSearchTab('natural')
+                              onCommand(archetype.query, 'search_candidates')
+                            }}
+                          >
+                            <div className="flex items-start gap-2">
+                              <div className="text-lg">{archetype.emoji}</div>
+                              <div className="flex-1">
+                                <h5 className="text-xs font-semibold" style={{ color: '#2D2D2D' }}>{archetype.name}</h5>
+                                <p className="text-[11px]" style={{ color: '#666' }}>{archetype.desc}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Aba: Filtros */}
+                {activeSearchTab === 'filtros' && (
+                  <div className="space-y-3">
+                    <p className="text-xs lia-body">Configure filtros avançados para refinar sua busca</p>
+                    
+                    {/* Resumo de filtros ativos */}
+                    {(() => {
+                      const activeCount = [
+                        advancedFilters.locations?.locations?.length || 0,
+                        advancedFilters.job?.titles?.length || 0,
+                        advancedFilters.job?.levels?.length || 0,
+                        advancedFilters.company?.companies?.length || 0,
+                        advancedFilters.skills?.skills?.length || 0,
+                        advancedFilters.education?.degrees?.length || 0,
+                        advancedFilters.languages?.languages?.length || 0,
+                        advancedFilters.general?.minExperience ? 1 : 0,
+                        advancedFilters.general?.maxExperience ? 1 : 0
+                      ].reduce((a, b) => a + b, 0)
+                      
+                      return activeCount > 0 ? (
+                        <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-[#60BED1]">
+                              {activeCount} filtro{activeCount > 1 ? 's' : ''} ativo{activeCount > 1 ? 's' : ''}
+                            </span>
+                            <button
+                              onClick={() => setAdvancedFilters({
+                                ppiOptions: {},
+                                general: {},
+                                locations: {},
+                                job: {},
+                                company: {},
+                                skills: {},
+                                education: {},
+                                languages: {}
+                              })}
+                              className="text-[11px] text-gray-700 hover:text-red-500"
+                            >
+                              Limpar
+                            </button>
+                          </div>
+                        </div>
+                      ) : null
+                    })()}
+                    
+                    {/* Botão para abrir modal completo */}
+                    <button 
+                      className="w-full px-4 py-3 bg-white border-2 border-dashed border-gray-100 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                      onClick={() => setShowAdvancedFiltersModal(true)}
+                    >
+                      <Filter className="w-4 h-4 text-gray-800" />
+                      <span className="text-[11px] text-gray-800">Abrir Filtros Avançados</span>
+                    </button>
+                    
+                    {/* Botão de aplicar filtros */}
+                    <button 
+                      className="w-full px-3 py-2 bg-[#60BED1] text-white text-xs rounded-md hover:bg-[#4EA8BA] transition-colors flex items-center justify-center gap-2"
+                      onClick={() => {
+                        onCommand(JSON.stringify(advancedFilters), 'apply_filters')
+                      }}
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                      Buscar com Filtros
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Dica contextual */}
+              <div className="flex items-start gap-2 p-2 bg-gray-50 rounded-lg mb-3 border border-gray-100">
+                <Lightbulb className="w-3.5 h-3.5 text-[#60BED1] mt-0.5 flex-shrink-0" />
+                <p className="text-[11px] text-gray-700">
+                  {activeSearchTab === 'natural' && 'Dica: Para melhores resultados, seja específico sobre skills, senioridade e localização.'}
+                  {activeSearchTab === 'similar' && 'Dica: Cole o link do LinkedIn de um candidato que você considera ideal.'}
+                  {activeSearchTab === 'job-description' && 'Dica: Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.'}
+                  {activeSearchTab === 'boolean' && 'Dica: Use aspas para termos exatos e parênteses para agrupar condições.'}
+                  {activeSearchTab === 'arquetipos' && 'Dica: Arquétipos são perfis pré-configurados baseados em padrões de mercado.'}
+                  {activeSearchTab === 'filtros' && 'Dica: Combine filtros para refinar sua busca de forma precisa.'}
+                </p>
+              </div>
+            </div>
+
+            {/* 💡 SUGESTÕES CONTEXTUAIS EXPANDIDAS - Seção Principal */}
+            <div className="px-4 pb-0">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <LIAIcon size="sm" />
+                  <span className="text-sm font-medium text-gray-900">💡 Sugestões Inteligentes</span>
+                  <Badge variant="outline" className="text-xs">
+                    {suggestions.length} disponíveis
+                  </Badge>
+                </div>
+
+                {commandHistory.length > 0 && (
+                  <button
+                    onClick={() => setShowHistory(!showHistory)}
+                    className="text-xs text-gray-600 hover:text-[#60BED1] flex items-center gap-1 transition-colors"
+                  >
+                    📜 Histórico ({commandHistory.length})
+                  </button>
+                )}
+              </div>
+
+              {/* Histórico de Comandos */}
+              {showHistory && commandHistory.length > 0 && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg border">
+                  <h4 className="text-xs font-medium text-gray-700 mb-2">Comandos Recentes</h4>
+                  <div className="space-y-1">
+                    {commandHistory.map((command, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleHistoryCommand(command)}
+                        disabled={isProcessing}
+                        className={`w-full text-left text-xs p-2 rounded hover:bg-white transition-colors ${
+                          isProcessing ? 'opacity-50' : 'text-gray-600 hover:text-gray-800'
+                        }`}
+                      >
+                        📝 {command}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Grid de Sugestões Inteligentes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.id}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    disabled={isProcessing}
+                    className={`flex items-start gap-3 p-3 text-left rounded-lg border border-gray-100 bg-white transition-all group ${
+                      isProcessing
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:border-[#60BED1] hover:shadow-sm'
+                    }`}
+                  >
+                    <span className="text-lg flex-shrink-0">{suggestion.icon}</span>
+                    <div className="flex-1">
+                      <div className="text-[13px] font-semibold text-gray-800 group-hover:text-[#60BED1]">
+                        {suggestion.label}
+                      </div>
+                      <div className="text-[11px] text-gray-600 mt-1">
+                        {suggestion.description}
+                      </div>
+                      {suggestion.category && (
+                        <Badge className="mt-2 text-[10px] bg-gray-100 text-gray-700 border-0">
+                          {suggestion.category}
+                        </Badge>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 💬 ENTRADA DE TEXTO - Seção Inferior */}
+            <div className="px-4 pb-4">
+              {/* Voice Listening Indicator */}
+              {isListening && (
+                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded mb-3">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  <span>🎙️ Ouvindo... Fale seu comando</span>
+                </div>
+              )}
+
+              {/* Processing Indicator */}
+              {isProcessing && (
+                <div className="flex items-center gap-2 text-[11px] text-[#60BED1] bg-gray-50 p-2 rounded-lg mb-3 border border-gray-100">
+                  <div className="w-2 h-2 bg-[#60BED1] rounded-full animate-pulse"></div>
+                  <span>🧠 LIA processando: "{lastCommand}"</span>
+                </div>
+              )}
+
+              <div className="text-[11px] text-gray-700 text-center pt-2 space-y-1">
+                <div>💡 LIA aprende com seus padrões para sugerir ações mais precisas</div>
+                <div className="flex justify-center gap-4">
+                  <span>⌨️ Esc para fechar</span>
+                  <span>Ctrl+K para focar</span>
+                  {commandHistory.length > 0 && <span>Ctrl+H para histórico</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Toast de Sugestão de Template */}
+      <TemplateSuggestionToast
+        suggestion={suggestionQueue.currentSuggestion}
+        onCreateTemplate={(suggestion) => {
+          // Abrir página de templates com dados pre-populados
+          const templateData = {
+            name: `Template: ${suggestion.command.substring(0, 30)}...`,
+            command: suggestion.command,
+            complexity: suggestion.complexity,
+            estimatedTime: suggestion.estimatedTime
+          }
+          sessionStorage.setItem('lia-create-template', JSON.stringify(templateData))
+          window.location.href = '/?page=templates'
+          suggestionQueue.clearCurrentSuggestion()
+        }}
+        onDismiss={(suggestionId) => {
+          templateSuggestions.dismissSuggestion(suggestionId)
+          suggestionQueue.clearCurrentSuggestion()
+        }}
+        onNotAskAgain={() => {
+          templateSuggestions.updateSettings({ enabled: false })
+          suggestionQueue.clearCurrentSuggestion()
+        }}
+      />
+
+      {/* Modal de Filtros Avançados */}
+      <AdvancedFiltersModal
+        isOpen={showAdvancedFiltersModal}
+        onClose={() => setShowAdvancedFiltersModal(false)}
+        initialFilters={advancedFilters}
+        onApply={(filters) => {
+          setAdvancedFilters(filters)
+          setShowAdvancedFiltersModal(false)
+          onCommand(JSON.stringify(filters), 'apply_filters')
+        }}
+      />
+
+      {/* Modal de Edição de Arquétipo */}
+      {editingArchetype && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={closeEditArchetype}
+        >
+          <div 
+            className="bg-white rounded-xl shadow-2xl p-5 w-full max-w-md mx-4"
+            onClick={(e) => e.stopPropagation()}
+            style={{ border: "1px solid #E8E8E8" }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold" style={{ color: "#1a1a1a", fontFamily: "'Source Serif 4', serif" }}>
+                Editar Arquétipo
+              </h3>
+              <button
+                onClick={closeEditArchetype}
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-4 h-4" style={{ color: "#666" }} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="w-16">
+                  <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Emoji</label>
+                  <input
+                    type="text"
+                    value={editArchetypeEmoji}
+                    onChange={(e) => setEditArchetypeEmoji(e.target.value)}
+                    maxLength={4}
+                    className="w-full rounded-lg px-2 py-2 text-center text-lg focus:outline-none focus:ring-2 focus:ring-[#60BED1]"
+                    style={{ border: "1px solid #E8E8E8", backgroundColor: "#FAFAFA" }}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Nome</label>
+                  <input
+                    type="text"
+                    value={editArchetypeName}
+                    onChange={(e) => setEditArchetypeName(e.target.value)}
+                    placeholder="Nome do arquétipo"
+                    className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#60BED1]"
+                    style={{ border: "1px solid #E8E8E8", backgroundColor: "#FAFAFA" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Query de Busca</label>
+                <textarea
+                  value={editArchetypeQuery}
+                  onChange={(e) => setEditArchetypeQuery(e.target.value)}
+                  placeholder="Ex: Desenvolvedor Python Sênior São Paulo"
+                  rows={2}
+                  className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#60BED1] resize-none"
+                  style={{ border: "1px solid #E8E8E8", backgroundColor: "#FAFAFA" }}
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Descrição (opcional)</label>
+                <textarea
+                  value={editArchetypeDescription}
+                  onChange={(e) => setEditArchetypeDescription(e.target.value)}
+                  placeholder="Breve descrição do perfil ideal..."
+                  rows={2}
+                  className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#60BED1] resize-none"
+                  style={{ border: "1px solid #E8E8E8", backgroundColor: "#FAFAFA" }}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-5">
+              <Button
+                onClick={closeEditArchetype}
+                variant="outline"
+                className="flex-1"
+                style={{ borderColor: "#E8E8E8", color: "#666" }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={saveArchetype}
+                disabled={isSavingArchetype || !editArchetypeName}
+                className="flex-1"
+                style={{ 
+                  backgroundColor: editArchetypeName ? "#1a1a1a" : "#E8E8E8",
+                  color: editArchetypeName ? "white" : "#999"
+                }}
+              >
+                {isSavingArchetype ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-1.5" />
+                    Salvar
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+
+// ============================================================================
+// ARQUIVO 4: hooks/use-talent-funnel.ts (Hook do funil - 436 linhas)
+// ============================================================================
+
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+
+export type SearchMode = 'natural' | 'similar' | 'jd' | 'boolean' | 'archetypes'
+export type SearchSource = 'local' | 'global' | 'hybrid'
+
+export interface SearchHistoryItem {
+  id: string
+  query: string
+  mode: SearchMode
+  source: SearchSource
+  timestamp: string
+  resultsCount?: number
+  entities?: Record<string, any>
+  metadata?: Record<string, any>
+}
+
+export interface SavedSearch {
+  id: string
+  name: string
+  description?: string
+  query: string
+  mode: SearchMode
+  source: SearchSource
+  filters?: Record<string, any>
+  entities?: Record<string, any>
+  metadata?: Record<string, any>
+  isFavorite: boolean
+  usageCount: number
+  lastUsed?: string
+  avgResults?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface FavoriteCandidate {
+  candidateId: string
+  note?: string
+  addedAt: string
+  isPinned: boolean
+}
+
+const STORAGE_KEYS = {
+  HISTORY: 'lia-search-history',
+  SAVED_SEARCHES: 'lia-saved-searches',
+  FAVORITES: 'lia-favorite-candidates',
+  PINNED: 'lia-pinned-candidates'
+}
+
+const MAX_HISTORY_ITEMS = 100
+const MAX_SAVED_SEARCHES = 100
+
+const normalizeSearchSource = (source: string): SearchSource => {
+  if (source === 'pearch') return 'global'
+  if (source === 'local' || source === 'global' || source === 'hybrid') return source
+  return 'local'
+}
+
+async function fetchFavoritesFromAPI(): Promise<Map<string, FavoriteCandidate>> {
+  try {
+    const response = await fetch('/api/backend-proxy/candidates/favorites')
+    if (!response.ok) {
+      console.warn('Failed to fetch favorites from API, using localStorage fallback')
+      return new Map()
+    }
+    const data = await response.json()
+    const favoritesMap = new Map<string, FavoriteCandidate>()
+    if (data.items) {
+      for (const item of data.items) {
+        favoritesMap.set(item.candidate_id, {
+          candidateId: item.candidate_id,
+          note: item.note,
+          addedAt: item.created_at,
+          isPinned: item.is_pinned || false
+        })
+      }
+    }
+    return favoritesMap
+  } catch (error) {
+    console.error('Error fetching favorites from API:', error)
+    return new Map()
+  }
+}
+
+async function toggleFavoriteAPI(candidateId: string, note?: string, isPinned?: boolean): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/backend-proxy/candidates/${candidateId}/favorite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note, is_pinned: isPinned || false })
+    })
+    return response.ok
+  } catch (error) {
+    console.error('Error toggling favorite via API:', error)
+    return false
+  }
+}
+
+async function updateFavoriteAPI(candidateId: string, note?: string, isPinned?: boolean): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/backend-proxy/candidates/${candidateId}/favorite`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note, is_pinned: isPinned })
+    })
+    return response.ok
+  } catch (error) {
+    console.error('Error updating favorite via API:', error)
+    return false
+  }
+}
+
+export function useTalentFunnel() {
+  const [history, setHistory] = useState<SearchHistoryItem[]>([])
+  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
+  const [favorites, setFavorites] = useState<Map<string, FavoriteCandidate>>(new Map())
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    loadFromStorage()
+  }, [])
+
+  const loadFromStorage = async () => {
+    try {
+      const historyData = localStorage.getItem(STORAGE_KEYS.HISTORY)
+      if (historyData) {
+        const parsed = JSON.parse(historyData) as SearchHistoryItem[]
+        const normalized = parsed.map(item => ({
+          ...item,
+          source: normalizeSearchSource(item.source)
+        }))
+        setHistory(normalized)
+      }
+
+      const savedSearchesData = localStorage.getItem(STORAGE_KEYS.SAVED_SEARCHES)
+      if (savedSearchesData) {
+        const parsed = JSON.parse(savedSearchesData) as SavedSearch[]
+        const normalized = parsed.map(search => ({
+          ...search,
+          source: normalizeSearchSource(search.source)
+        }))
+        setSavedSearches(normalized)
+      }
+
+      const apiFavorites = await fetchFavoritesFromAPI()
+      if (apiFavorites.size > 0) {
+        setFavorites(apiFavorites)
+        localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(apiFavorites)))
+      } else {
+        const favoritesData = localStorage.getItem(STORAGE_KEYS.FAVORITES)
+        if (favoritesData) {
+          const parsed = JSON.parse(favoritesData)
+          setFavorites(new Map(Object.entries(parsed)))
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados do Funnel:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const addToHistory = useCallback((item: Omit<SearchHistoryItem, 'id' | 'timestamp'>) => {
+    const newItem: SearchHistoryItem = {
+      ...item,
+      id: `history-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date().toISOString()
+    }
+
+    setHistory(prev => {
+      const updated = [newItem, ...prev].slice(0, MAX_HISTORY_ITEMS)
+      localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updated))
+      return updated
+    })
+
+    return newItem
+  }, [])
+
+  const removeFromHistory = useCallback((id: string) => {
+    setHistory(prev => {
+      const updated = prev.filter(item => item.id !== id)
+      localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
+  const clearHistory = useCallback(() => {
+    setHistory([])
+    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify([]))
+  }, [])
+
+  const addSavedSearch = useCallback((search: Omit<SavedSearch, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'isFavorite'>) => {
+    const now = new Date().toISOString()
+    const newSearch: SavedSearch = {
+      ...search,
+      id: `saved-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      isFavorite: false,
+      usageCount: 0,
+      createdAt: now,
+      updatedAt: now
+    }
+
+    setSavedSearches(prev => {
+      const updated = [newSearch, ...prev].slice(0, MAX_SAVED_SEARCHES)
+      localStorage.setItem(STORAGE_KEYS.SAVED_SEARCHES, JSON.stringify(updated))
+      return updated
+    })
+
+    return newSearch
+  }, [])
+
+  const updateSavedSearch = useCallback((id: string, updates: Partial<SavedSearch>) => {
+    setSavedSearches(prev => {
+      const updated = prev.map(search => 
+        search.id === id 
+          ? { ...search, ...updates, updatedAt: new Date().toISOString() }
+          : search
+      )
+      localStorage.setItem(STORAGE_KEYS.SAVED_SEARCHES, JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
+  const removeSavedSearch = useCallback((id: string) => {
+    setSavedSearches(prev => {
+      const updated = prev.filter(search => search.id !== id)
+      localStorage.setItem(STORAGE_KEYS.SAVED_SEARCHES, JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
+  const toggleSavedSearchFavorite = useCallback((id: string) => {
+    setSavedSearches(prev => {
+      const updated = prev.map(search =>
+        search.id === id
+          ? { ...search, isFavorite: !search.isFavorite, updatedAt: new Date().toISOString() }
+          : search
+      )
+      localStorage.setItem(STORAGE_KEYS.SAVED_SEARCHES, JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
+  const incrementSavedSearchUsage = useCallback((id: string, resultsCount?: number) => {
+    setSavedSearches(prev => {
+      const updated = prev.map(search => {
+        if (search.id === id) {
+          const newUsageCount = search.usageCount + 1
+          const newAvgResults = resultsCount !== undefined
+            ? Math.round(((search.avgResults || 0) * search.usageCount + resultsCount) / newUsageCount)
+            : search.avgResults
+          
+          return {
+            ...search,
+            usageCount: newUsageCount,
+            avgResults: newAvgResults,
+            lastUsed: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        }
+        return search
+      })
+      localStorage.setItem(STORAGE_KEYS.SAVED_SEARCHES, JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
+  const saveHistoryAsSearch = useCallback((historyItem: SearchHistoryItem, name: string, description?: string) => {
+    return addSavedSearch({
+      name,
+      description,
+      query: historyItem.query,
+      mode: historyItem.mode,
+      source: historyItem.source,
+      entities: historyItem.entities,
+      metadata: historyItem.metadata
+    })
+  }, [addSavedSearch])
+
+  const addFavoriteCandidate = useCallback((candidateId: string, note?: string) => {
+    const favorite: FavoriteCandidate = {
+      candidateId,
+      note,
+      addedAt: new Date().toISOString(),
+      isPinned: false
+    }
+
+    setFavorites(prev => {
+      const updated = new Map(prev)
+      updated.set(candidateId, favorite)
+      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
+      return updated
+    })
+
+    return favorite
+  }, [])
+
+  const removeFavoriteCandidate = useCallback((candidateId: string) => {
+    setFavorites(prev => {
+      const updated = new Map(prev)
+      updated.delete(candidateId)
+      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
+      return updated
+    })
+  }, [])
+
+  const toggleFavoriteCandidate = useCallback((candidateId: string, note?: string) => {
+    setFavorites(prev => {
+      const updated = new Map(prev)
+      if (updated.has(candidateId)) {
+        updated.delete(candidateId)
+      } else {
+        updated.set(candidateId, {
+          candidateId,
+          note,
+          addedAt: new Date().toISOString(),
+          isPinned: false
+        })
+      }
+      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
+      return updated
+    })
+    
+    toggleFavoriteAPI(candidateId, note).catch(err => {
+      console.error('Failed to persist favorite toggle:', err)
+    })
+  }, [])
+
+  const togglePinnedCandidate = useCallback((candidateId: string) => {
+    setFavorites(prev => {
+      const updated = new Map(prev)
+      const existing = updated.get(candidateId)
+      const newIsPinned = existing ? !existing.isPinned : true
+      if (existing) {
+        updated.set(candidateId, { ...existing, isPinned: newIsPinned })
+      } else {
+        updated.set(candidateId, {
+          candidateId,
+          addedAt: new Date().toISOString(),
+          isPinned: true
+        })
+      }
+      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
+      
+      if (existing) {
+        updateFavoriteAPI(candidateId, existing.note, newIsPinned).catch(err => {
+          console.error('Failed to persist pinned status:', err)
+        })
+      } else {
+        toggleFavoriteAPI(candidateId, undefined, true).catch(err => {
+          console.error('Failed to persist pinned status:', err)
+        })
+      }
+      
+      return updated
+    })
+  }, [])
+
+  const updateFavoriteNote = useCallback((candidateId: string, note: string) => {
+    setFavorites(prev => {
+      const updated = new Map(prev)
+      const existing = updated.get(candidateId)
+      if (existing) {
+        updated.set(candidateId, { ...existing, note })
+        localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
+        
+        updateFavoriteAPI(candidateId, note, existing.isPinned).catch(err => {
+          console.error('Failed to persist favorite note:', err)
+        })
+      }
+      return updated
+    })
+  }, [])
+
+  const isFavorite = useCallback((candidateId: string) => {
+    return favorites.has(candidateId)
+  }, [favorites])
+
+  const isPinned = useCallback((candidateId: string) => {
+    return favorites.get(candidateId)?.isPinned || false
+  }, [favorites])
+
+  const getFavoriteNote = useCallback((candidateId: string) => {
+    return favorites.get(candidateId)?.note
+  }, [favorites])
+
+  const getFavoriteIds = useCallback(() => {
+    return new Set(favorites.keys())
+  }, [favorites])
+
+  const getPinnedIds = useCallback(() => {
+    return new Set(
+      Array.from(favorites.entries())
+        .filter(([_, fav]) => fav.isPinned)
+        .map(([id]) => id)
+    )
+  }, [favorites])
+
+  const getFavoriteNotes = useCallback(() => {
+    const notes = new Map<string, string>()
+    favorites.forEach((fav, id) => {
+      if (fav.note) {
+        notes.set(id, fav.note)
+      }
+    })
+    return notes
+  }, [favorites])
+
+  return {
+    isLoading,
+    history,
+    savedSearches,
+    favorites,
+    addToHistory,
+    removeFromHistory,
+    clearHistory,
+    addSavedSearch,
+    updateSavedSearch,
+    removeSavedSearch,
+    toggleSavedSearchFavorite,
+    incrementSavedSearchUsage,
+    saveHistoryAsSearch,
+    addFavoriteCandidate,
+    removeFavoriteCandidate,
+    toggleFavoriteCandidate,
+    togglePinnedCandidate,
+    updateFavoriteNote,
+    isFavorite,
+    isPinned,
+    getFavoriteNote,
+    getFavoriteIds,
+    getPinnedIds,
+    getFavoriteNotes
+  }
+}
+
+
+// ============================================================================
+// ARQUIVO 5: components/ui/prompt-suggestions-popover.tsx (Sugestões de prompt - 352 linhas)
+// ============================================================================
+
+"use client"
+
+import React, { useState } from "react"
+import { 
+  Lightbulb, Brain, Search, Users, Mail, Calendar, 
+  FileText, Target, Zap, BarChart3, MessageSquare,
+  UserCheck, Send, Plus, RefreshCcw, Building,
+  Globe, Briefcase, X, ChevronRight
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+
+export interface PromptSuggestion {
+  id: string
+  icon: React.ElementType
+  title: string
+  description: string
+  command: string
+  category: 'vagas' | 'candidatos' | 'comunicacao' | 'analytics' | 'automacao'
+  contextRequired?: ('job' | 'candidates' | 'none')[]
+}
+
+interface PromptSuggestionsPopoverProps {
+  onSelect: (command: string) => void
+  context?: {
+    hasJob?: boolean
+    jobTitle?: string
+    selectedCandidatesCount?: number
+    currentPage?: string
+  }
+  className?: string
+}
+
+const CATEGORY_LABELS = {
+  vagas: { label: 'Vagas', color: 'bg-blue-100 text-blue-700' },
+  candidatos: { label: 'Candidatos', color: 'bg-green-100 text-green-700' },
+  comunicacao: { label: 'Comunicação', color: 'bg-purple-100 text-purple-700' },
+  analytics: { label: 'Analytics', color: 'bg-orange-100 text-orange-700' },
+  automacao: { label: 'Automação', color: 'bg-cyan-100 text-cyan-700' }
+}
+
+const BASE_SUGGESTIONS: PromptSuggestion[] = [
+  {
+    id: 'create-job',
+    icon: Plus,
+    title: 'Criar nova vaga',
+    description: 'Crie uma vaga com descrição detalhada e requisitos',
+    command: 'Criar uma nova vaga',
+    category: 'vagas',
+    contextRequired: ['none']
+  },
+  {
+    id: 'find-candidates',
+    icon: Search,
+    title: 'Buscar candidatos ideais',
+    description: 'Encontre candidatos que combinem com o perfil da vaga',
+    command: 'Buscar candidatos ideais para esta vaga',
+    category: 'candidatos',
+    contextRequired: ['job']
+  },
+  {
+    id: 'generate-jd',
+    icon: FileText,
+    title: 'Gerar descrição de vaga',
+    description: 'Crie uma JD profissional baseada nos requisitos',
+    command: 'Gerar descrição profissional para a vaga',
+    category: 'vagas',
+    contextRequired: ['job']
+  },
+  {
+    id: 'screening-questions',
+    icon: Target,
+    title: 'Criar roteiro de triagem',
+    description: 'Perguntas de triagem baseadas em WSI e competências',
+    command: 'Criar roteiro de triagem WSI para esta vaga',
+    category: 'vagas',
+    contextRequired: ['job']
+  },
+  {
+    id: 'send-invite',
+    icon: Mail,
+    title: 'Enviar convite aos candidatos',
+    description: 'Email personalizado para candidatos selecionados',
+    command: 'Enviar convite personalizado para os candidatos selecionados',
+    category: 'comunicacao',
+    contextRequired: ['candidates']
+  },
+  {
+    id: 'schedule-interview',
+    icon: Calendar,
+    title: 'Agendar entrevistas',
+    description: 'Organize entrevistas com disponibilidade automática',
+    command: 'Agendar entrevistas para os candidatos selecionados',
+    category: 'comunicacao',
+    contextRequired: ['candidates']
+  },
+  {
+    id: 'whatsapp-outreach',
+    icon: MessageSquare,
+    title: 'Enviar WhatsApp',
+    description: 'Mensagem de contato via WhatsApp',
+    command: 'Enviar mensagem WhatsApp para os candidatos',
+    category: 'comunicacao',
+    contextRequired: ['candidates']
+  },
+  {
+    id: 'analyze-pipeline',
+    icon: BarChart3,
+    title: 'Analisar funil da vaga',
+    description: 'Métricas e insights sobre o processo seletivo',
+    command: 'Analisar métricas do funil desta vaga',
+    category: 'analytics',
+    contextRequired: ['job']
+  },
+  {
+    id: 'compare-candidates',
+    icon: Users,
+    title: 'Comparar candidatos',
+    description: 'Análise comparativa dos candidatos selecionados',
+    command: 'Comparar perfis dos candidatos selecionados',
+    category: 'candidatos',
+    contextRequired: ['candidates']
+  },
+  {
+    id: 'update-status',
+    icon: RefreshCcw,
+    title: 'Atualizar status',
+    description: 'Mover candidatos para próxima etapa',
+    command: 'Atualizar status dos candidatos selecionados',
+    category: 'candidatos',
+    contextRequired: ['candidates']
+  },
+  {
+    id: 'share-manager',
+    icon: UserCheck,
+    title: 'Compartilhar com gestor',
+    description: 'Envie shortlist para aprovação do gestor',
+    command: 'Compartilhar candidatos selecionados com o gestor da vaga',
+    category: 'comunicacao',
+    contextRequired: ['job', 'candidates']
+  },
+  {
+    id: 'pearch-search',
+    icon: Globe,
+    title: 'Busca Global',
+    description: 'Encontre talentos no banco global de candidatos',
+    command: 'Buscar candidatos na Busca Global para esta vaga',
+    category: 'candidatos',
+    contextRequired: ['job']
+  },
+  {
+    id: 'suggest-salary',
+    icon: Briefcase,
+    title: 'Sugerir faixa salarial',
+    description: 'Benchmark de mercado para a posição',
+    command: 'Sugerir faixa salarial baseada no mercado',
+    category: 'analytics',
+    contextRequired: ['job']
+  },
+  {
+    id: 'interview-prep',
+    icon: Target,
+    title: 'Preparar roteiro de entrevista',
+    description: 'Perguntas personalizadas para os candidatos',
+    command: 'Preparar roteiro de entrevista para os candidatos selecionados',
+    category: 'automacao',
+    contextRequired: ['candidates']
+  },
+  {
+    id: 'automate-followup',
+    icon: Zap,
+    title: 'Automatizar follow-up',
+    description: 'Configure lembretes e acompanhamentos automáticos',
+    command: 'Configurar automação de follow-up para esta vaga',
+    category: 'automacao',
+    contextRequired: ['job']
+  }
+]
+
+export function PromptSuggestionsPopover({ 
+  onSelect, 
+  context = {},
+  className 
+}: PromptSuggestionsPopoverProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
+
+  const filteredSuggestions = BASE_SUGGESTIONS.filter(suggestion => {
+    if (!suggestion.contextRequired || suggestion.contextRequired.includes('none')) {
+      return true
+    }
+    if (suggestion.contextRequired.includes('job') && !context.hasJob) {
+      return false
+    }
+    if (suggestion.contextRequired.includes('candidates') && (!context.selectedCandidatesCount || context.selectedCandidatesCount === 0)) {
+      return false
+    }
+    return true
+  })
+
+  const groupedSuggestions = filteredSuggestions.reduce((acc, suggestion) => {
+    if (!acc[suggestion.category]) {
+      acc[suggestion.category] = []
+    }
+    acc[suggestion.category].push(suggestion)
+    return acc
+  }, {} as Record<string, PromptSuggestion[]>)
+
+  const handleSelect = (command: string) => {
+    let finalCommand = command
+    if (context.jobTitle) {
+      finalCommand = command.replace('esta vaga', `a vaga "${context.jobTitle}"`)
+    }
+    onSelect(finalCommand)
+    setIsOpen(false)
+  }
+
+  const displaySuggestions = activeCategory 
+    ? groupedSuggestions[activeCategory] || []
+    : filteredSuggestions.slice(0, 8)
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn(
+            "h-7 px-2 gap-1.5 text-[11px] font-medium transition-all",
+            "hover:bg-[#60BED1]/10 hover:text-[#60BED1]",
+            "border border-transparent hover:border-[#60BED1]/30",
+            isOpen && "bg-[#60BED1]/10 text-[#60BED1] border-[#60BED1]/30",
+            className
+          )}
+        >
+          <Lightbulb className="w-3.5 h-3.5" />
+          <span>Sugestões</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent 
+        className="w-80 p-0 shadow-lg border"
+        style={{ 
+          backgroundColor: 'var(--eleven-bg-card)',
+          borderColor: 'var(--eleven-border)'
+        }}
+        align="start"
+        sideOffset={8}
+      >
+        <div className="p-3 border-b" style={{ borderColor: 'var(--eleven-border)' }}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Brain className="w-4 h-4 text-wedo-cyan" />
+              <h3 className="text-[12px] font-semibold" style={{ color: 'var(--eleven-text-primary)', fontFamily: 'var(--font-source-serif)' }}>
+                Ações Sugeridas
+              </h3>
+            </div>
+            <Badge variant="secondary" className="text-[11px] px-1.5 py-0.5">
+              {filteredSuggestions.length} disponíveis
+            </Badge>
+          </div>
+          
+          <div className="flex flex-wrap gap-1">
+            <button
+              onClick={() => setActiveCategory(null)}
+              className={cn(
+                "px-2 py-0.5 rounded text-[11px] font-medium transition-all",
+                !activeCategory 
+                  ? "bg-[#60BED1] text-white" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+            >
+              Todas
+            </button>
+            {Object.entries(CATEGORY_LABELS).map(([key, { label }]) => (
+              <button
+                key={key}
+                onClick={() => setActiveCategory(activeCategory === key ? null : key)}
+                className={cn(
+                  "px-2 py-0.5 rounded text-[11px] font-medium transition-all",
+                  activeCategory === key 
+                    ? "bg-[#60BED1] text-white" 
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="max-h-[280px] overflow-y-auto p-2 space-y-1">
+          {displaySuggestions.length === 0 ? (
+            <div className="py-6 text-center">
+              <Lightbulb className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+              <p className="text-[11px] text-gray-700">
+                Selecione candidatos ou uma vaga para ver sugestões contextuais
+              </p>
+            </div>
+          ) : (
+            displaySuggestions.map((suggestion) => {
+              const Icon = suggestion.icon
+              const categoryInfo = CATEGORY_LABELS[suggestion.category]
+              
+              return (
+                <button
+                  key={suggestion.id}
+                  onClick={() => handleSelect(suggestion.command)}
+                  className="w-full p-2 rounded-lg text-left transition-all group hover:bg-[#60BED1]/5 border border-transparent hover:border-[#60BED1]/20"
+                >
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-[#60BED1]/10 transition-colors">
+                      <Icon className="w-3.5 h-3.5 text-gray-600 group-hover:text-[#60BED1]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <h4 className="text-[11px] font-medium truncate" style={{ color: 'var(--eleven-text-primary)' }}>
+                          {suggestion.title}
+                        </h4>
+                        <ChevronRight className="w-3 h-3 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <p className="text-[11px] text-gray-700 line-clamp-1">
+                        {suggestion.description}
+                      </p>
+                    </div>
+                    <Badge 
+                      variant="secondary" 
+                      className={cn("text-[11px] px-1 py-0 flex-shrink-0", categoryInfo.color)}
+                    >
+                      {categoryInfo.label}
+                    </Badge>
+                  </div>
+                </button>
+              )
+            })
+          )}
+        </div>
+
+        <div className="p-2 border-t" style={{ borderColor: 'var(--eleven-border)' }}>
+          <p className="text-[11px] text-gray-600 text-center">
+            Dica: Selecione candidatos ou abra uma vaga para mais ações
+          </p>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+
+// ============================================================================
+// ARQUIVO 6: components/ui/lia-queries-guide.tsx (Guia de consultas LIA - 299 linhas)
+// ============================================================================
+
+"use client"
+
+import React, { useState } from "react"
+import { 
+  Lightbulb, Search, Users, BarChart3, Calendar,
+  TrendingUp, Target, FileText, Briefcase, Building,
+  Clock, AlertCircle, CheckCircle, Star, Filter,
+  MessageSquare, Globe, Zap, X, Sparkles
+} from "lucide-react"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
+
+export interface QueryExample {
+  id: string
+  icon: React.ElementType
+  question: string
+  description?: string
+  category: 'metricas' | 'candidatos' | 'vagas' | 'pipeline' | 'analise' | 'previsao' | 'comparacao'
+}
+
+interface LiaQueriesGuideProps {
+  onSelectQuery?: (query: string) => void
+  className?: string
+}
+
+const CATEGORY_INFO = {
+  metricas: { 
+    label: 'Métricas', 
+    icon: BarChart3,
+  },
+  candidatos: { 
+    label: 'Candidatos', 
+    icon: Users,
+  },
+  vagas: { 
+    label: 'Vagas', 
+    icon: Briefcase,
+  },
+  pipeline: { 
+    label: 'Pipeline', 
+    icon: Filter,
+  },
+  analise: { 
+    label: 'Análise', 
+    icon: Sparkles,
+  },
+  previsao: { 
+    label: 'Previsões', 
+    icon: TrendingUp,
+  },
+  comparacao: { 
+    label: 'Comparar', 
+    icon: Target,
+  }
+}
+
+const QUERY_EXAMPLES: QueryExample[] = [
+  { id: 'q1', icon: BarChart3, question: 'Quantos candidatos estão ativos no pipeline?', category: 'metricas' },
+  { id: 'q2', icon: TrendingUp, question: 'Qual é a taxa de conversão do meu funil este mês?', category: 'metricas' },
+  { id: 'q3', icon: Clock, question: 'Qual o tempo médio para fechar uma vaga?', category: 'metricas' },
+  { id: 'q4', icon: BarChart3, question: 'Quantas contratações fizemos este trimestre?', category: 'metricas' },
+  { id: 'q5', icon: AlertCircle, question: 'Quantas vagas estão atrasadas no SLA?', category: 'metricas' },
+  { id: 'q6', icon: Star, question: 'Quem são os melhores candidatos para a vaga de Desenvolvedor?', category: 'candidatos' },
+  { id: 'q7', icon: Users, question: 'Quantos candidatos aguardam entrevista?', category: 'candidatos' },
+  { id: 'q8', icon: CheckCircle, question: 'Quais candidatos têm nota LIA acima de 80?', category: 'candidatos' },
+  { id: 'q9', icon: Search, question: 'Encontre candidatos com experiência em React e Node.js', category: 'candidatos' },
+  { id: 'q10', icon: Users, question: 'Quais candidatos têm perfil de liderança?', category: 'candidatos' },
+  { id: 'q11', icon: Globe, question: 'Buscar candidatos na Busca Global para a vaga de Data Analyst', category: 'candidatos' },
+  { id: 'q12', icon: Briefcase, question: 'Quais vagas estão abertas há mais de 30 dias?', category: 'vagas' },
+  { id: 'q13', icon: AlertCircle, question: 'Quais vagas estão sem candidatos?', category: 'vagas' },
+  { id: 'q14', icon: Building, question: 'Quantas vagas temos por departamento?', category: 'vagas' },
+  { id: 'q15', icon: Target, question: 'Qual vaga tem a melhor taxa de conversão?', category: 'vagas' },
+  { id: 'q16', icon: Clock, question: 'Quais vagas precisam de atenção urgente?', category: 'vagas' },
+  { id: 'q17', icon: Filter, question: 'Quantos candidatos temos em cada etapa do funil?', category: 'pipeline' },
+  { id: 'q18', icon: AlertCircle, question: 'Onde está o gargalo do meu processo seletivo?', category: 'pipeline' },
+  { id: 'q19', icon: TrendingUp, question: 'Como está a progressão dos candidatos esta semana?', category: 'pipeline' },
+  { id: 'q20', icon: Clock, question: 'Quais candidatos estão parados há mais de 5 dias?', category: 'pipeline' },
+  { id: 'q21', icon: Sparkles, question: 'Quais são as principais recomendações para hoje?', category: 'analise' },
+  { id: 'q22', icon: FileText, question: 'Analise o perfil de personalidade ideal para esta vaga', category: 'analise' },
+  { id: 'q23', icon: MessageSquare, question: 'Resuma os feedbacks das últimas entrevistas', category: 'analise' },
+  { id: 'q24', icon: FileText, question: 'Qual o perfil mais comum entre candidatos aprovados?', category: 'analise' },
+  { id: 'q25', icon: Zap, question: 'Sugira melhorias para o processo de triagem', category: 'analise' },
+  { id: 'q26', icon: TrendingUp, question: 'Quando devo fechar a vaga de Product Manager?', category: 'previsao' },
+  { id: 'q27', icon: Calendar, question: 'Quantas contratações vamos fazer este mês?', category: 'previsao' },
+  { id: 'q28', icon: Target, question: 'Qual a probabilidade de sucesso do candidato João Silva?', category: 'previsao' },
+  { id: 'q29', icon: Clock, question: 'Estimativa de tempo para preencher as vagas abertas', category: 'previsao' },
+  { id: 'q30', icon: Users, question: 'Compare os 3 finalistas da vaga de UX Designer', category: 'comparacao' },
+  { id: 'q31', icon: BarChart3, question: 'Compare o desempenho deste mês com o anterior', category: 'comparacao' },
+  { id: 'q32', icon: Building, question: 'Qual departamento contrata mais rápido?', category: 'comparacao' },
+  { id: 'q33', icon: Target, question: 'Compare a qualidade dos candidatos entre fontes', category: 'comparacao' }
+]
+
+export function LiaQueriesGuide({ 
+  onSelectQuery, 
+  className 
+}: LiaQueriesGuideProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredQueries = QUERY_EXAMPLES.filter(query => {
+    const matchesCategory = !activeCategory || query.category === activeCategory
+    const searchLower = searchTerm.toLowerCase()
+    const matchesSearch = !searchTerm || 
+      query.question.toLowerCase().includes(searchLower) ||
+      (query.description && query.description.toLowerCase().includes(searchLower))
+    return matchesCategory && matchesSearch
+  })
+
+  const handleSelectQuery = (query: string) => {
+    if (onSelectQuery) {
+      onSelectQuery(query)
+    }
+    setIsOpen(false)
+    setSearchTerm('')
+  }
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-all",
+            "hover:border-[#60BED1] hover:bg-[#60BED1]/5",
+            isOpen && "border-[#60BED1] bg-[#60BED1]/5",
+            className
+          )}
+          style={{ 
+            borderColor: isOpen ? '#60BED1' : '#E0E0E0', 
+            fontFamily: '"Open Sans", sans-serif', 
+            color: '#60BED1',
+            fontWeight: 500
+          }}
+        >
+          <Lightbulb className="w-3.5 h-3.5" />
+          <span>Mais ideias</span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent 
+        className="w-[420px] p-0 border-0" 
+        align="start" 
+        sideOffset={8}
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)',
+          border: '1px solid #E8E8E8'
+        }}
+      >
+        {/* Header com busca */}
+        <div className="px-5 py-4 border-b" style={{ borderColor: '#EEEEEE' }}>
+          <div 
+            className="flex items-center gap-3 px-4 py-3 rounded-xl"
+            style={{ 
+              backgroundColor: '#F8F8F8',
+              border: '1px solid #E8E8E8'
+            }}
+          >
+            <Search className="w-4 h-4 text-[#999999] flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Buscar consulta..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#AAAAAA]"
+              style={{ fontFamily: '"Open Sans", sans-serif', color: '#2D2D2D' }}
+              autoFocus
+            />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm('')} 
+                className="p-1 rounded-full hover:bg-[#EEEEEE] transition-colors"
+              >
+                <X className="w-3.5 h-3.5 text-[#999999]" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filtros de categoria */}
+        <div className="px-5 py-3 border-b flex gap-2 overflow-x-auto" style={{ borderColor: '#EEEEEE' }}>
+          <button
+            onClick={() => setActiveCategory(null)}
+            className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+              !activeCategory 
+                ? "bg-[#60BED1] text-white shadow-sm" 
+                : "bg-[#F5F5F5] text-[#666666] hover:bg-[#EEEEEE] border border-[#E8E8E8]"
+            )}
+            style={{ fontFamily: '"Open Sans", sans-serif' }}
+          >
+            Todas
+          </button>
+          {Object.entries(CATEGORY_INFO).map(([key, { label, icon: Icon }]) => (
+            <button
+              key={key}
+              onClick={() => setActiveCategory(activeCategory === key ? null : key)}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+                activeCategory === key 
+                  ? "bg-[#60BED1] text-white shadow-sm" 
+                  : "bg-[#F5F5F5] text-[#666666] hover:bg-[#EEEEEE] border border-[#E8E8E8]"
+              )}
+              style={{ fontFamily: '"Open Sans", sans-serif' }}
+            >
+              <Icon className="w-3 h-3" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Lista de consultas */}
+        <ScrollArea className="h-[280px]">
+          <div className="p-3 space-y-2">
+            {filteredQueries.map((query) => (
+              <button
+                key={query.id}
+                onClick={() => handleSelectQuery(query.question)}
+                className="w-full px-4 py-3 text-left transition-all rounded-xl group flex items-start gap-3"
+                style={{ 
+                  backgroundColor: '#FAFAFA',
+                  border: '1px solid #EEEEEE'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#F0FAFB'
+                  e.currentTarget.style.borderColor = '#60BED1'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#FAFAFA'
+                  e.currentTarget.style.borderColor = '#EEEEEE'
+                }}
+              >
+                <div 
+                  className="p-2 rounded-lg flex-shrink-0"
+                  style={{ backgroundColor: '#60BED1' + '15' }}
+                >
+                  <query.icon className="w-4 h-4 text-[#60BED1]" />
+                </div>
+                <span 
+                  className="text-sm leading-relaxed pt-1"
+                  style={{ 
+                    fontFamily: '"Open Sans", sans-serif',
+                    color: '#444444'
+                  }}
+                >
+                  {query.question}
+                </span>
+              </button>
+            ))}
+
+            {filteredQueries.length === 0 && (
+              <div className="py-12 text-center">
+                <div 
+                  className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: '#F5F5F5' }}
+                >
+                  <Search className="w-5 h-5 text-[#CCCCCC]" />
+                </div>
+                <p 
+                  className="text-sm"
+                  style={{ 
+                    fontFamily: '"Open Sans", sans-serif',
+                    color: '#999999'
+                  }}
+                >
+                  Nenhuma consulta encontrada
+                </p>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        {/* Footer */}
+        <div 
+          className="px-5 py-3 border-t rounded-b-2xl"
+          style={{ 
+            borderColor: '#EEEEEE',
+            backgroundColor: '#FAFAFA'
+          }}
+        >
+          <p 
+            className="text-xs text-center"
+            style={{ 
+              fontFamily: '"Open Sans", sans-serif',
+              color: '#999999'
+            }}
+          >
+            Clique para inserir no prompt
+          </p>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+
+// ============================================================================
+// ARQUIVO 7: components/ui/candidate-queries-guide.tsx (Guia de consultas candidatos - 296 linhas)
+// ============================================================================
+
+"use client"
+
+import React, { useState } from "react"
+import { 
+  Lightbulb, Search, Users, BarChart3, 
+  TrendingUp, Target, Sparkles, Globe,
+  Filter, MessageSquare, X, Star,
+  UserCheck, Zap, RefreshCw, Eye,
+  Send, Clock, Database
+} from "lucide-react"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
+
+export interface CandidateQueryExample {
+  id: string
+  icon: React.ElementType
+  question: string
+  description?: string
+  category: 'analise' | 'refinamento' | 'sourcing' | 'acoes' | 'insights' | 'comparacao'
+}
+
+interface CandidateQueriesGuideProps {
+  onSelectQuery?: (query: string) => void
+  className?: string
+  currentQuery?: string
+}
+
+const CATEGORY_INFO = {
+  analise: { 
+    label: 'Análise', 
+    icon: BarChart3,
+  },
+  refinamento: { 
+    label: 'Refinar', 
+    icon: Filter,
+  },
+  sourcing: { 
+    label: 'Sourcing', 
+    icon: Globe,
+  },
+  acoes: { 
+    label: 'Ações', 
+    icon: Zap,
+  },
+  insights: { 
+    label: 'Insights', 
+    icon: Sparkles,
+  },
+  comparacao: { 
+    label: 'Comparar', 
+    icon: Target,
+  }
+}
+
+const CANDIDATE_QUERY_EXAMPLES: CandidateQueryExample[] = [
+  { id: 'c1', icon: Star, question: 'Comparar os 5 melhores candidatos desta busca', category: 'analise' },
+  { id: 'c2', icon: Target, question: 'Qual candidato tem melhor fit para esta vaga?', category: 'analise' },
+  { id: 'c3', icon: BarChart3, question: 'Analisar pontos fortes e fracos dos candidatos selecionados', category: 'analise' },
+  { id: 'c4', icon: Eye, question: 'Resumir experiência dos candidatos com score > 80', category: 'analise' },
+  { id: 'c5', icon: UserCheck, question: 'Qual o perfil médio dos candidatos desta busca?', category: 'analise' },
+  
+  { id: 'c6', icon: Filter, question: 'Mostrar apenas candidatos sênior', category: 'refinamento' },
+  { id: 'c7', icon: TrendingUp, question: 'Filtrar por experiência em startup', category: 'refinamento' },
+  { id: 'c8', icon: Globe, question: 'Candidatos com inglês fluente', category: 'refinamento' },
+  { id: 'c9', icon: Star, question: 'Apenas candidatos abertos a novas oportunidades', category: 'refinamento' },
+  { id: 'c10', icon: Clock, question: 'Candidatos disponíveis para início imediato', category: 'refinamento' },
+  
+  { id: 'c11', icon: Users, question: 'Buscar perfis similares ao melhor candidato', category: 'sourcing' },
+  { id: 'c12', icon: Globe, question: 'Expandir busca para base global', category: 'sourcing' },
+  { id: 'c13', icon: Database, question: 'Buscar mais candidatos na base local', category: 'sourcing' },
+  { id: 'c14', icon: Target, question: 'Encontrar candidatos de empresas referência do setor', category: 'sourcing' },
+  { id: 'c15', icon: RefreshCw, question: 'Ampliar critérios de busca para mais resultados', category: 'sourcing' },
+  
+  { id: 'c16', icon: MessageSquare, question: 'Sugerir mensagem de abordagem para os selecionados', category: 'acoes' },
+  { id: 'c17', icon: Send, question: 'Agendar entrevistas com os 3 melhores', category: 'acoes' },
+  { id: 'c18', icon: Zap, question: 'Mover candidatos aprovados para próxima etapa', category: 'acoes' },
+  { id: 'c19', icon: Star, question: 'Adicionar candidatos selecionados aos favoritos', category: 'acoes' },
+  { id: 'c20', icon: Eye, question: 'Exportar lista de candidatos', category: 'acoes' },
+  
+  { id: 'c21', icon: BarChart3, question: 'Qual a média de experiência dos candidatos?', category: 'insights' },
+  { id: 'c22', icon: TrendingUp, question: 'Distribuição de senioridade nesta busca', category: 'insights' },
+  { id: 'c23', icon: Target, question: 'Candidatos mais difíceis de contratar (alta demanda)', category: 'insights' },
+  { id: 'c24', icon: Sparkles, question: 'O que os candidatos têm em comum?', category: 'insights' },
+  { id: 'c25', icon: Clock, question: 'Tempo médio de experiência na área', category: 'insights' },
+  
+  { id: 'c26', icon: Users, question: 'Comparar os 3 finalistas lado a lado', category: 'comparacao' },
+  { id: 'c27', icon: Target, question: 'Quem tem experiência mais relevante para a vaga?', category: 'comparacao' },
+  { id: 'c28', icon: Star, question: 'Comparar fit cultural dos candidatos', category: 'comparacao' },
+  { id: 'c29', icon: BarChart3, question: 'Comparar candidatos locais vs globais', category: 'comparacao' },
+  { id: 'c30', icon: TrendingUp, question: 'Ranking de candidatos por adequação', category: 'comparacao' }
+]
+
+export function CandidateQueriesGuide({ 
+  onSelectQuery, 
+  className,
+  currentQuery
+}: CandidateQueriesGuideProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredQueries = CANDIDATE_QUERY_EXAMPLES.filter(query => {
+    const matchesCategory = !activeCategory || query.category === activeCategory
+    const searchLower = searchTerm.toLowerCase()
+    const matchesSearch = !searchTerm || 
+      query.question.toLowerCase().includes(searchLower) ||
+      (query.description && query.description.toLowerCase().includes(searchLower))
+    return matchesCategory && matchesSearch
+  })
+
+  const handleSelectQuery = (query: string) => {
+    if (onSelectQuery) {
+      onSelectQuery(query)
+    }
+    setIsOpen(false)
+    setSearchTerm('')
+  }
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-all",
+            "hover:border-[#60BED1] hover:bg-[#60BED1]/5",
+            isOpen && "border-[#60BED1] bg-[#60BED1]/5",
+            className
+          )}
+          style={{ 
+            borderColor: isOpen ? '#60BED1' : '#E0E0E0', 
+            fontFamily: '"Open Sans", sans-serif', 
+            color: '#60BED1',
+            fontWeight: 500
+          }}
+        >
+          <Lightbulb className="w-3.5 h-3.5" />
+          <span>Mais ideias</span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent 
+        className="w-[420px] p-0 border-0" 
+        align="start" 
+        sideOffset={8}
+        style={{ 
+          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)',
+          border: '1px solid #E8E8E8'
+        }}
+      >
+        <div className="px-5 py-4 border-b" style={{ borderColor: '#EEEEEE' }}>
+          <div 
+            className="flex items-center gap-3 px-4 py-3 rounded-xl"
+            style={{ 
+              backgroundColor: '#F8F8F8',
+              border: '1px solid #E8E8E8'
+            }}
+          >
+            <Search className="w-4 h-4 text-[#999999] flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Buscar consulta..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#AAAAAA]"
+              style={{ fontFamily: '"Open Sans", sans-serif', color: '#2D2D2D' }}
+              autoFocus
+            />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm('')} 
+                className="p-1 rounded-full hover:bg-[#EEEEEE] transition-colors"
+              >
+                <X className="w-3.5 h-3.5 text-[#999999]" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="px-5 py-3 border-b flex gap-2 overflow-x-auto" style={{ borderColor: '#EEEEEE' }}>
+          <button
+            onClick={() => setActiveCategory(null)}
+            className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+              !activeCategory 
+                ? "bg-[#60BED1] text-white shadow-sm" 
+                : "bg-[#F5F5F5] text-[#666666] hover:bg-[#EEEEEE] border border-[#E8E8E8]"
+            )}
+            style={{ fontFamily: '"Open Sans", sans-serif' }}
+          >
+            Todas
+          </button>
+          {Object.entries(CATEGORY_INFO).map(([key, { label, icon: Icon }]) => (
+            <button
+              key={key}
+              onClick={() => setActiveCategory(activeCategory === key ? null : key)}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+                activeCategory === key 
+                  ? "bg-[#60BED1] text-white shadow-sm" 
+                  : "bg-[#F5F5F5] text-[#666666] hover:bg-[#EEEEEE] border border-[#E8E8E8]"
+              )}
+              style={{ fontFamily: '"Open Sans", sans-serif' }}
+            >
+              <Icon className="w-3 h-3" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <ScrollArea className="h-[280px]">
+          <div className="p-3 space-y-2">
+            {filteredQueries.map((query) => (
+              <button
+                key={query.id}
+                onClick={() => handleSelectQuery(query.question)}
+                className="w-full px-4 py-3 text-left transition-all rounded-xl group flex items-start gap-3"
+                style={{ 
+                  backgroundColor: '#FAFAFA',
+                  border: '1px solid #EEEEEE'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#F0FAFB'
+                  e.currentTarget.style.borderColor = '#60BED1'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#FAFAFA'
+                  e.currentTarget.style.borderColor = '#EEEEEE'
+                }}
+              >
+                <div 
+                  className="p-2 rounded-lg flex-shrink-0"
+                  style={{ backgroundColor: '#60BED1' + '15' }}
+                >
+                  <query.icon className="w-4 h-4 text-[#60BED1]" />
+                </div>
+                <span 
+                  className="text-sm leading-relaxed pt-1"
+                  style={{ 
+                    fontFamily: '"Open Sans", sans-serif',
+                    color: '#444444'
+                  }}
+                >
+                  {query.question}
+                </span>
+              </button>
+            ))}
+
+            {filteredQueries.length === 0 && (
+              <div className="py-12 text-center">
+                <div 
+                  className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: '#F5F5F5' }}
+                >
+                  <Search className="w-5 h-5 text-[#CCCCCC]" />
+                </div>
+                <p 
+                  className="text-sm"
+                  style={{ 
+                    fontFamily: '"Open Sans", sans-serif',
+                    color: '#999999'
+                  }}
+                >
+                  Nenhuma consulta encontrada
+                </p>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        <div 
+          className="px-5 py-3 border-t rounded-b-2xl"
+          style={{ 
+            borderColor: '#EEEEEE',
+            backgroundColor: '#FAFAFA'
+          }}
+        >
+          <p 
+            className="text-xs text-center"
+            style={{ 
+              fontFamily: '"Open Sans", sans-serif',
+              color: '#999999'
+            }}
+          >
+            Clique para inserir no prompt
+          </p>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+
+// ============================================================================
+// ARQUIVO 8: components/search/smart-search-input.tsx (Input de busca inteligente - 2,675 linhas)
+// ============================================================================
+
+"use client"
+
+import { useState, useEffect, useCallback, useRef } from "react"
+import { 
+  Check, MapPin, Briefcase, Clock, Building2, Code, X, Search, 
+  FileText, Binary, Users, Sparkles, Upload, Filter, AlertCircle,
+  Globe, GraduationCap, DollarSign, Star, Target, ChevronRight,
+  User, Award, Loader2, GripVertical, Lightbulb, Linkedin, Info,
+  AlertTriangle, CheckCircle2, HelpCircle, Wand2, TrendingUp, Plus, Brain,
+  Pencil, Trash2, MoreHorizontal, Home, Zap, Mail, Phone, Table2
+} from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
+
+export interface ParsedEntities {
+  location?: string
+  job_title?: string
+  years_experience?: string
+  industry?: string
+  skills?: string[]
+  seniority?: string
+  company?: string
+}
+
+export type SearchSource = "local" | "global" | "hybrid"
+
+export interface SmartSearchInputProps {
+  value: string
+  onChange: (value: string) => void
+  onSubmit: (query: string, entities: ParsedEntities, mode?: SearchMode, metadata?: SearchMetadata) => void
+  onCancel: () => void
+  onOpenFilters?: () => void
+  onGoToResults?: () => void
+  isLoading?: boolean
+  placeholder?: string
+  className?: string
+  activeFiltersCount?: number
+  searchSource?: SearchSource
+  onSearchSourceChange?: (source: SearchSource) => void
+  requireEmails?: boolean
+  onRequireEmailsChange?: (value: boolean) => void
+  requirePhoneNumbers?: boolean
+  onRequirePhoneNumbersChange?: (value: boolean) => void
+}
+
+export type SearchMode = "natural" | "similar" | "jd" | "boolean" | "archetypes"
+
+export interface ArchetypeCandidate {
+  id: string
+  name: string
+  current_title?: string
+  years_experience?: number
+  skills?: string[]
+  hired_at?: string
+}
+
+export interface ArchetypeVacancy {
+  id: string
+  title: string
+  department?: string
+  closed_at?: string
+  hired_candidate?: ArchetypeCandidate
+}
+
+export interface SearchMetadata {
+  mode: SearchMode
+  booleanQuery?: string
+  jobDescription?: string
+  similarProfileUrl?: string
+  similarProfileUrls?: string[]
+  combinedProfile?: CombinedProfileSuggestion
+  archetypeVacancyId?: string
+  archetypeCandidateId?: string
+  archetypeProfile?: ArchetypeCandidate
+  filters?: Record<string, any>
+}
+
+export interface CombinedProfileSuggestion {
+  keywords: string[]
+  title?: string
+  seniority?: string
+  skills_technical?: string[]
+  skills_soft?: string[]
+  industries?: string[]
+  location?: string
+  summary?: string
+}
+
+interface SearchTag {
+  key: keyof ParsedEntities
+  label: string
+  icon: React.ElementType
+  filled: boolean
+  value?: string
+}
+
+interface SearchAlert {
+  type: string
+  severity: "info" | "warning" | "error"
+  message: string
+  suggestion?: string
+  action_label?: string
+  action_value?: string
+}
+
+interface SearchAnalysis {
+  completeness_score: number
+  filled_criteria: string[]
+  missing_criteria: string[]
+  alerts: SearchAlert[]
+  enrichment_suggestions: Record<string, string[]>
+  next_recommended_action?: string
+}
+
+interface AutocompleteItem {
+  text: string
+  category: string
+  icon: string
+  description?: string
+  insert_text: string
+}
+
+interface AutocompleteResponse {
+  items: AutocompleteItem[]
+  context_hint?: string
+}
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
+
+// Sugestões cobrindo os 5 critérios: Location, Job Title, Experience, Industry, Skills
+const SEARCH_SUGGESTIONS = [
+  'Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python',
+  'Product Manager Pleno remoto, experiência em B2B SaaS, metodologias ágeis'
+]
+
+export function SmartSearchInput({
+  value,
+  onChange,
+  onSubmit,
+  onCancel,
+  onOpenFilters,
+  onGoToResults,
+  isLoading = false,
+  placeholder = "Desenvolvedores Python com 5+ anos em São Paulo...",
+  className,
+  activeFiltersCount = 0,
+  searchSource = "local",
+  onSearchSourceChange,
+  requireEmails = false,
+  onRequireEmailsChange,
+  requirePhoneNumbers = false,
+  onRequirePhoneNumbersChange
+}: SmartSearchInputProps) {
+  const { settings: globalSettings, loading: globalSettingsLoading } = useGlobalSearchSettings()
+  
+  // Only show global/hybrid options after settings are loaded AND global search is enabled
+  const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
+  const [mode, setMode] = useState<SearchMode>("natural")
+  const [entities, setEntities] = useState<ParsedEntities>({})
+  const [isParsingEntities, setIsParsingEntities] = useState(false)
+  const [booleanError, setBooleanError] = useState<string | null>(null)
+  const [jdContent, setJdContent] = useState("")
+  const [similarUrl, setSimilarUrl] = useState("")
+  const [similarUrls, setSimilarUrls] = useState<string[]>([""])
+  const [similarCvFiles, setSimilarCvFiles] = useState<File[]>([])
+  const [combinedSuggestions, setCombinedSuggestions] = useState<string[]>([])
+  const [isAnalyzingProfiles, setIsAnalyzingProfiles] = useState(false)
+  const [showCombinedSuggestions, setShowCombinedSuggestions] = useState(false)
+  const [archetypeVacancies, setArchetypeVacancies] = useState<ArchetypeVacancy[]>([])
+  const [selectedArchetype, setSelectedArchetype] = useState<ArchetypeVacancy | null>(null)
+  const [isLoadingArchetypes, setIsLoadingArchetypes] = useState(false)
+  const [archetypeSearch, setArchetypeSearch] = useState("")
+  const [archetypeTab, setArchetypeTab] = useState<"list" | "create">("list")
+  const [archetypeCreateMode, setArchetypeCreateMode] = useState<"job" | "description">("job")
+  const [closedJobSuggestions, setClosedJobSuggestions] = useState<any[]>([])
+  const [isLoadingClosedJobs, setIsLoadingClosedJobs] = useState(false)
+  const [archetypeDescription, setArchetypeDescription] = useState("")
+  const [isCreatingArchetype, setIsCreatingArchetype] = useState(false)
+  const [editingArchetype, setEditingArchetype] = useState<any | null>(null)
+  const [editArchetypeName, setEditArchetypeName] = useState("")
+  const [editArchetypeQuery, setEditArchetypeQuery] = useState("")
+  const [editArchetypeDescription, setEditArchetypeDescription] = useState("")
+  const [editArchetypeEmoji, setEditArchetypeEmoji] = useState("")
+  const [isSavingArchetype, setIsSavingArchetype] = useState(false)
+  const [isDeletingArchetype, setIsDeletingArchetype] = useState<string | null>(null)
+  const [showArchetypeActions, setShowArchetypeActions] = useState<string | null>(null)
+  const [searchAnalysis, setSearchAnalysis] = useState<SearchAnalysis | null>(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [showAssistantTip, setShowAssistantTip] = useState(true)
+  const [autocompleteItems, setAutocompleteItems] = useState<AutocompleteItem[]>([])
+  const [showAutocomplete, setShowAutocomplete] = useState(false)
+  const [selectedAutocompleteIndex, setSelectedAutocompleteIndex] = useState(-1)
+  const [usedAutocompleteTerms, setUsedAutocompleteTerms] = useState<Set<string>>(new Set())
+  const [autocompleteEnabled, setAutocompleteEnabled] = useState(true)
+  const [promptEnhancement, setPromptEnhancement] = useState<{
+    enhanced_query: string
+    explanation: string
+    confidence: number
+    suggestions?: Array<{ label: string; value: string; category: string }>
+  } | null>(null)
+  const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
+  const [promptEnhancementDismissed, setPromptEnhancementDismissed] = useState(false)
+  const dismissedQueryRef = useRef<string>("")
+  const enhanceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const panelWidth = "100%"
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const ghostOverlayRef = useRef<HTMLDivElement>(null)
+  const parseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const analyzeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const autocompleteTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const autocompleteAbortRef = useRef<AbortController | null>(null)
+  const autocompleteCache = useRef<Map<string, AutocompleteItem[]>>(new Map())
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const cvFileInputRef = useRef<HTMLInputElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const MAX_SIMILAR_URLS = 3
+  const MAX_CV_FILES = 2
+
+  // Reset search source to local if global search is disabled
+  useEffect(() => {
+    if (!showGlobalSearchOptions && (searchSource === 'hybrid' || searchSource === 'global') && onSearchSourceChange) {
+      onSearchSourceChange('local')
+    }
+  }, [showGlobalSearchOptions, searchSource, onSearchSourceChange])
+
+  const tags: SearchTag[] = [
+    { key: "location", label: "Localização", icon: MapPin, filled: !!entities.location, value: entities.location },
+    { key: "job_title", label: "Cargo", icon: Briefcase, filled: !!entities.job_title, value: entities.job_title },
+    { key: "years_experience", label: "Experiência", icon: Clock, filled: !!entities.years_experience, value: entities.years_experience },
+    { key: "industry", label: "Setor", icon: Building2, filled: !!entities.industry, value: entities.industry },
+    { key: "skills", label: "Habilidades", icon: Code, filled: !!(entities.skills && entities.skills.length > 0), value: entities.skills?.join(", ") }
+  ]
+
+  const filledCount = tags.filter(t => t.filled).length
+
+  const renderHighlightedText = useCallback(() => {
+    if (!value || filledCount === 0) {
+      return null
+    }
+
+    let segments: { text: string; type: 'normal' | 'job_title' | 'location' | 'skills' | 'experience' | 'industry' }[] = []
+    let remainingText = value
+    const usedRanges: { start: number; end: number }[] = []
+
+    const entityMatches: { value: string; type: 'job_title' | 'location' | 'skills' | 'experience' | 'industry'; start: number; end: number }[] = []
+
+    if (entities.job_title) {
+      const idx = value.toLowerCase().indexOf(entities.job_title.toLowerCase())
+      if (idx !== -1) {
+        entityMatches.push({ value: entities.job_title, type: 'job_title', start: idx, end: idx + entities.job_title.length })
+      }
+    }
+    if (entities.location) {
+      const idx = value.toLowerCase().indexOf(entities.location.toLowerCase())
+      if (idx !== -1) {
+        entityMatches.push({ value: entities.location, type: 'location', start: idx, end: idx + entities.location.length })
+      }
+    }
+    if (entities.years_experience) {
+      const idx = value.toLowerCase().indexOf(entities.years_experience.toLowerCase())
+      if (idx !== -1) {
+        entityMatches.push({ value: entities.years_experience, type: 'experience', start: idx, end: idx + entities.years_experience.length })
+      }
+    }
+    if (entities.industry) {
+      const idx = value.toLowerCase().indexOf(entities.industry.toLowerCase())
+      if (idx !== -1) {
+        entityMatches.push({ value: entities.industry, type: 'industry', start: idx, end: idx + entities.industry.length })
+      }
+    }
+    if (entities.skills && entities.skills.length > 0) {
+      entities.skills.forEach(skill => {
+        const idx = value.toLowerCase().indexOf(skill.toLowerCase())
+        if (idx !== -1) {
+          entityMatches.push({ value: skill, type: 'skills', start: idx, end: idx + skill.length })
+        }
+      })
+    }
+
+    entityMatches.sort((a, b) => a.start - b.start)
+
+    let lastEnd = 0
+    entityMatches.forEach(match => {
+      const overlaps = usedRanges.some(r => 
+        (match.start >= r.start && match.start < r.end) || 
+        (match.end > r.start && match.end <= r.end)
+      )
+      if (!overlaps) {
+        if (match.start > lastEnd) {
+          segments.push({ text: value.substring(lastEnd, match.start), type: 'normal' })
+        }
+        segments.push({ text: value.substring(match.start, match.end), type: match.type })
+        usedRanges.push({ start: match.start, end: match.end })
+        lastEnd = match.end
+      }
+    })
+
+    if (lastEnd < value.length) {
+      segments.push({ text: value.substring(lastEnd), type: 'normal' })
+    }
+
+    if (segments.length === 0) {
+      segments = [{ text: value, type: 'normal' }]
+    }
+
+    const getHighlightStyle = (type: string) => {
+      switch (type) {
+        case 'job_title':
+          return { backgroundColor: '#E0F5FA', color: '#2D8A9E', borderRadius: '3px', padding: '0 2px' }
+        case 'location':
+          return { backgroundColor: '#F3EAFF', color: '#7C3AED', borderRadius: '3px', padding: '0 2px' }
+        case 'skills':
+          return { backgroundColor: '#E5F5EB', color: '#2D6A4F', borderRadius: '3px', padding: '0 2px' }
+        case 'experience':
+          return { backgroundColor: '#FDF4E8', color: '#B8860B', borderRadius: '3px', padding: '0 2px' }
+        case 'industry':
+          return { backgroundColor: '#E8F1FD', color: '#2563EB', borderRadius: '3px', padding: '0 2px' }
+        default:
+          return {}
+      }
+    }
+
+    return (
+      <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+        {segments.map((seg, idx) => (
+          <span 
+            key={idx} 
+            style={seg.type !== 'normal' ? getHighlightStyle(seg.type) : {}}
+            className={seg.type !== 'normal' ? 'font-medium' : ''}
+          >
+            {seg.text}
+          </span>
+        ))}
+      </span>
+    )
+  }, [value, entities, filledCount])
+
+  const parseQuery = useCallback(async (query: string) => {
+    if (!query || query.length < 5) {
+      setEntities({})
+      setSearchAnalysis(null)
+      return
+    }
+
+    setIsParsingEntities(true)
+    try {
+      const response = await fetch(`${API_BASE}/api/backend-proxy/search/parse-query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setEntities(data.entities || {})
+      }
+    } catch (error) {
+      console.error("Error parsing query:", error)
+    } finally {
+      setIsParsingEntities(false)
+    }
+  }, [])
+
+  const analyzeSearch = useCallback(async (query: string, currentEntities: ParsedEntities) => {
+    if (!query || query.length < 5) {
+      setSearchAnalysis(null)
+      return
+    }
+
+    setIsAnalyzing(true)
+    try {
+      const response = await fetch(`${API_BASE}/api/backend-proxy/search-assistant/analyze/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, entities: currentEntities })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setSearchAnalysis(data)
+      }
+    } catch (error) {
+      console.error("Error analyzing search:", error)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }, [])
+
+  const fetchPromptEnhancement = useCallback(async (query: string) => {
+    if (!query || query.length < 10 || promptEnhancementDismissed) {
+      setPromptEnhancement(null)
+      return
+    }
+
+    setIsEnhancingPrompt(true)
+    try {
+      const response = await fetch(`${API_BASE}/api/backend-proxy/enhance-prompt`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.enhanced_query && data.enhanced_query !== query && data.confidence >= 0.6) {
+          setPromptEnhancement({
+            enhanced_query: data.enhanced_query,
+            explanation: data.explanation,
+            confidence: data.confidence,
+            suggestions: data.suggestions || []
+          })
+        } else {
+          setPromptEnhancement(null)
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching prompt enhancement:", error)
+      setPromptEnhancement(null)
+    } finally {
+      setIsEnhancingPrompt(false)
+    }
+  }, [promptEnhancementDismissed])
+
+  const handleAcceptEnhancement = useCallback(() => {
+    if (promptEnhancement) {
+      onChange(promptEnhancement.enhanced_query)
+      setPromptEnhancement(null)
+    }
+  }, [promptEnhancement, onChange])
+
+  const handleEditEnhancement = useCallback(() => {
+    if (promptEnhancement) {
+      onChange(promptEnhancement.enhanced_query)
+      setPromptEnhancement(null)
+      textareaRef.current?.focus()
+    }
+  }, [promptEnhancement, onChange])
+
+  const handleDismissEnhancement = useCallback(() => {
+    setPromptEnhancement(null)
+    setPromptEnhancementDismissed(true)
+    dismissedQueryRef.current = value
+  }, [value])
+
+  const handleApplySuggestion = useCallback((suggestionValue: string) => {
+    const currentValue = value.trim()
+    const newValue = currentValue ? `${currentValue}, ${suggestionValue}` : suggestionValue
+    onChange(newValue)
+    textareaRef.current?.focus()
+  }, [value, onChange])
+
+  const fetchAutocomplete = useCallback(async (query: string) => {
+    if (!query || query.length < 2) {
+      setAutocompleteItems([])
+      setShowAutocomplete(false)
+      return
+    }
+
+    const lastWord = query.split(" ").pop()?.toLowerCase() || ""
+    const cacheKey = lastWord.slice(0, 4)
+    
+    if (autocompleteCache.current.has(cacheKey)) {
+      const cached = autocompleteCache.current.get(cacheKey)!
+      const filtered = cached.filter(item => 
+        (item.text.toLowerCase().includes(lastWord) || 
+        item.insert_text.toLowerCase().includes(lastWord)) &&
+        !usedAutocompleteTerms.has(item.insert_text.toLowerCase())
+      )
+      if (filtered.length > 0) {
+        setAutocompleteItems(filtered.slice(0, 8))
+        setShowAutocomplete(true)
+        setSelectedAutocompleteIndex(-1)
+        return
+      }
+    }
+
+    if (autocompleteAbortRef.current) {
+      autocompleteAbortRef.current.abort()
+    }
+    autocompleteAbortRef.current = new AbortController()
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/backend-proxy/search-assistant/autocomplete?query=${encodeURIComponent(query)}`,
+        { signal: autocompleteAbortRef.current.signal }
+      )
+      if (response.ok) {
+        const data: AutocompleteResponse = await response.json()
+        const allItems = data.items || []
+        const items = allItems.filter(item => !usedAutocompleteTerms.has(item.insert_text.toLowerCase()))
+        setAutocompleteItems(items)
+        setShowAutocomplete(items.length > 0)
+        setSelectedAutocompleteIndex(-1)
+        
+        if (allItems.length > 0 && cacheKey.length >= 2) {
+          autocompleteCache.current.set(cacheKey, allItems)
+          if (autocompleteCache.current.size > 50) {
+            const firstKey = autocompleteCache.current.keys().next().value
+            if (firstKey) autocompleteCache.current.delete(firstKey)
+          }
+        }
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error("Error fetching autocomplete:", error)
+      }
+      setShowAutocomplete(false)
+    }
+  }, [usedAutocompleteTerms])
+
+  const handleAutocompleteSelect = useCallback((item: AutocompleteItem) => {
+    const trimmedValue = value.trimEnd()
+    const lastSpaceIndex = trimmedValue.lastIndexOf(" ")
+    const beforeLastWord = lastSpaceIndex >= 0 ? trimmedValue.substring(0, lastSpaceIndex + 1) : ""
+    const newValue = beforeLastWord + item.insert_text + " "
+    onChange(newValue)
+    setUsedAutocompleteTerms(prev => new Set(prev).add(item.insert_text.toLowerCase()))
+    setShowAutocomplete(false)
+    setAutocompleteItems([])
+    textareaRef.current?.focus()
+  }, [value, onChange])
+
+  const validateBoolean = useCallback((query: string) => {
+    if (!query.trim()) {
+      setBooleanError(null)
+      return true
+    }
+    
+    const openParens = (query.match(/\(/g) || []).length
+    const closeParens = (query.match(/\)/g) || []).length
+    
+    if (openParens !== closeParens) {
+      setBooleanError("Parênteses não balanceados")
+      return false
+    }
+    
+    const hasOperators = /\b(AND|OR|NOT)\b/i.test(query)
+    if (query.length > 10 && !hasOperators) {
+      setBooleanError("Use operadores AND, OR, NOT para combinar termos")
+      return false
+    }
+    
+    setBooleanError(null)
+    return true
+  }, [])
+
+  const loadArchetypes = useCallback(async () => {
+    setIsLoadingArchetypes(true)
+    try {
+      const response = await fetch(`${API_BASE}/api/backend-proxy/search/archetypes`)
+      if (response.ok) {
+        const data = await response.json()
+        setArchetypeVacancies(data.archetypes || [])
+      }
+    } catch (error) {
+      console.error("Error loading archetypes:", error)
+    } finally {
+      setIsLoadingArchetypes(false)
+    }
+  }, [])
+
+  const loadClosedJobSuggestions = useCallback(async () => {
+    setIsLoadingClosedJobs(true)
+    try {
+      const response = await fetch(`${API_BASE}/api/backend-proxy/search/archetypes/suggestions/closed-jobs?limit=5`)
+      if (response.ok) {
+        const data = await response.json()
+        setClosedJobSuggestions(data.suggestions || [])
+      }
+    } catch (error) {
+      console.error("Error loading closed job suggestions:", error)
+    } finally {
+      setIsLoadingClosedJobs(false)
+    }
+  }, [])
+
+  const createArchetypeFromJob = useCallback(async (jobId: string, customName?: string) => {
+    setIsCreatingArchetype(true)
+    try {
+      let url = `${API_BASE}/api/backend-proxy/search/archetypes/from-job/${jobId}`
+      if (customName) {
+        url += `?custom_name=${encodeURIComponent(customName)}`
+      }
+      const response = await fetch(url, { method: 'POST' })
+      if (response.ok) {
+        const newArchetype = await response.json()
+        await loadArchetypes()
+        setArchetypeTab("list")
+        setSelectedArchetype(newArchetype)
+        return newArchetype
+      }
+    } catch (error) {
+      console.error("Error creating archetype from job:", error)
+    } finally {
+      setIsCreatingArchetype(false)
+    }
+  }, [loadArchetypes])
+
+  const createArchetypeFromDescription = useCallback(async (description: string, name?: string) => {
+    setIsCreatingArchetype(true)
+    try {
+      const response = await fetch(`${API_BASE}/api/backend-proxy/search/archetypes/from-description`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description, name })
+      })
+      if (response.ok) {
+        const newArchetype = await response.json()
+        await loadArchetypes()
+        setArchetypeTab("list")
+        setArchetypeDescription("")
+        setSelectedArchetype(newArchetype)
+        return newArchetype
+      }
+    } catch (error) {
+      console.error("Error creating archetype from description:", error)
+    } finally {
+      setIsCreatingArchetype(false)
+    }
+  }, [loadArchetypes])
+
+  const openEditArchetype = useCallback((arch: any, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditingArchetype(arch)
+    setEditArchetypeName(arch.name || arch.title || "")
+    setEditArchetypeQuery(arch.query || "")
+    setEditArchetypeDescription(arch.description || "")
+    setEditArchetypeEmoji(arch.emoji || "🎯")
+    setShowArchetypeActions(null)
+  }, [])
+
+  const closeEditArchetype = useCallback(() => {
+    setEditingArchetype(null)
+    setEditArchetypeName("")
+    setEditArchetypeQuery("")
+    setEditArchetypeDescription("")
+    setEditArchetypeEmoji("")
+  }, [])
+
+  const saveArchetype = useCallback(async () => {
+    if (!editingArchetype || !editArchetypeName.trim() || !editArchetypeQuery.trim()) return
+    
+    setIsSavingArchetype(true)
+    try {
+      const response = await fetch(`${API_BASE}/api/backend-proxy/search/archetypes/${editingArchetype.id}/`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editArchetypeName.trim(),
+          query: editArchetypeQuery.trim(),
+          description: editArchetypeDescription.trim() || null,
+          emoji: editArchetypeEmoji || "🎯"
+        })
+      })
+      if (response.ok) {
+        await loadArchetypes()
+        closeEditArchetype()
+      } else {
+        const error = await response.json()
+        console.error("Error updating archetype:", error)
+      }
+    } catch (error) {
+      console.error("Error saving archetype:", error)
+    } finally {
+      setIsSavingArchetype(false)
+    }
+  }, [editingArchetype, editArchetypeName, editArchetypeQuery, editArchetypeDescription, editArchetypeEmoji, loadArchetypes, closeEditArchetype])
+
+  const deleteArchetype = useCallback(async (archId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!confirm("Tem certeza que deseja excluir este arquétipo?")) return
+    
+    setIsDeletingArchetype(archId)
+    try {
+      const response = await fetch(`${API_BASE}/api/backend-proxy/search/archetypes/${archId}/`, {
+        method: 'DELETE'
+      })
+      if (response.ok) {
+        await loadArchetypes()
+        if (selectedArchetype?.id === archId) {
+          setSelectedArchetype(null)
+        }
+      } else {
+        const error = await response.json()
+        console.error("Error deleting archetype:", error)
+        alert(error.detail || "Erro ao excluir arquétipo")
+      }
+    } catch (error) {
+      console.error("Error deleting archetype:", error)
+    } finally {
+      setIsDeletingArchetype(null)
+      setShowArchetypeActions(null)
+    }
+  }, [loadArchetypes, selectedArchetype])
+
+  const addSimilarUrl = useCallback(() => {
+    if (similarUrls.length < MAX_SIMILAR_URLS) {
+      setSimilarUrls(prev => [...prev, ""])
+    }
+  }, [similarUrls.length])
+
+  const removeSimilarUrl = useCallback((index: number) => {
+    setSimilarUrls(prev => prev.filter((_, i) => i !== index))
+    setCombinedSuggestions([])
+    setShowCombinedSuggestions(false)
+  }, [])
+
+  const updateSimilarUrl = useCallback((index: number, value: string) => {
+    setSimilarUrls(prev => {
+      const newUrls = [...prev]
+      newUrls[index] = value
+      return newUrls
+    })
+  }, [])
+
+  const handleCvUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+
+    const newFiles = Array.from(files).slice(0, MAX_CV_FILES - similarCvFiles.length)
+    setSimilarCvFiles(prev => [...prev, ...newFiles].slice(0, MAX_CV_FILES))
+  }, [similarCvFiles.length])
+
+  const removeCvFile = useCallback((index: number) => {
+    setSimilarCvFiles(prev => prev.filter((_, i) => i !== index))
+    setCombinedSuggestions([])
+    setShowCombinedSuggestions(false)
+  }, [])
+
+  const removeSuggestion = useCallback((keyword: string) => {
+    setCombinedSuggestions(prev => prev.filter(k => k !== keyword))
+  }, [])
+
+  const addSuggestion = useCallback((keyword: string) => {
+    if (!combinedSuggestions.includes(keyword)) {
+      setCombinedSuggestions(prev => [...prev, keyword])
+    }
+  }, [combinedSuggestions])
+
+  const analyzeProfiles = useCallback(async () => {
+    const validUrls = similarUrls.filter(url => url.trim().length > 0)
+    if (validUrls.length === 0 && similarCvFiles.length === 0) return
+
+    setIsAnalyzingProfiles(true)
+    try {
+      const formData = new FormData()
+      validUrls.forEach((url, i) => formData.append(`urls[${i}]`, url))
+      similarCvFiles.forEach((file, i) => formData.append(`cvs[${i}]`, file))
+
+      const response = await fetch(`${API_BASE}/api/backend-proxy/search/similar/combine-profiles`, {
+        method: "POST",
+        body: formData
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setCombinedSuggestions(data.keywords || [])
+        setShowCombinedSuggestions(true)
+      }
+    } catch (error) {
+      console.error("Error analyzing profiles:", error)
+      const mockKeywords = ["Sênior", "Python", "AWS", "Data Engineer", "Fintech", "SQL", "Spark"]
+      setCombinedSuggestions(mockKeywords)
+      setShowCombinedSuggestions(true)
+    } finally {
+      setIsAnalyzingProfiles(false)
+    }
+  }, [similarUrls, similarCvFiles])
+
+  const hasMultipleSources = useCallback(() => {
+    const validUrls = similarUrls.filter(url => url.trim().length > 0)
+    return validUrls.length + similarCvFiles.length >= 2
+  }, [similarUrls, similarCvFiles])
+
+  useEffect(() => {
+    if (mode === "natural") {
+      if (parseTimeoutRef.current) {
+        clearTimeout(parseTimeoutRef.current)
+      }
+
+      parseTimeoutRef.current = setTimeout(() => {
+        parseQuery(value)
+      }, 300)
+
+      return () => {
+        if (parseTimeoutRef.current) {
+          clearTimeout(parseTimeoutRef.current)
+        }
+      }
+    } else if (mode === "boolean") {
+      validateBoolean(value)
+    }
+  }, [value, mode, parseQuery, validateBoolean])
+
+  useEffect(() => {
+    if (mode === "natural" && value && Object.keys(entities).length > 0) {
+      if (analyzeTimeoutRef.current) {
+        clearTimeout(analyzeTimeoutRef.current)
+      }
+
+      analyzeTimeoutRef.current = setTimeout(() => {
+        analyzeSearch(value, entities)
+      }, 500)
+
+      return () => {
+        if (analyzeTimeoutRef.current) {
+          clearTimeout(analyzeTimeoutRef.current)
+        }
+      }
+    }
+  }, [entities, value, mode, analyzeSearch])
+
+  useEffect(() => {
+    if (mode === "natural" && value && autocompleteEnabled) {
+      if (autocompleteTimeoutRef.current) {
+        clearTimeout(autocompleteTimeoutRef.current)
+      }
+
+      autocompleteTimeoutRef.current = setTimeout(() => {
+        fetchAutocomplete(value)
+      }, 80)
+
+      return () => {
+        if (autocompleteTimeoutRef.current) {
+          clearTimeout(autocompleteTimeoutRef.current)
+        }
+      }
+    } else {
+      setShowAutocomplete(false)
+      setAutocompleteItems([])
+    }
+  }, [value, mode, fetchAutocomplete, autocompleteEnabled])
+
+  useEffect(() => {
+    if (!value || value.trim().length === 0) {
+      setUsedAutocompleteTerms(new Set())
+    }
+  }, [value])
+
+  useEffect(() => {
+    setUsedAutocompleteTerms(new Set())
+  }, [mode])
+
+  useEffect(() => {
+    if (promptEnhancementDismissed && dismissedQueryRef.current) {
+      const dismissedPrefix = dismissedQueryRef.current.toLowerCase().slice(0, 15)
+      const currentPrefix = value.toLowerCase().slice(0, 15)
+      const prefixChanged = currentPrefix !== dismissedPrefix
+      const lengthChanged = Math.abs(value.length - dismissedQueryRef.current.length) > 10
+      if (prefixChanged || lengthChanged) {
+        setPromptEnhancementDismissed(false)
+        dismissedQueryRef.current = ""
+      }
+    }
+    
+    if (mode === "natural" && value && value.length >= 10 && !promptEnhancementDismissed) {
+      if (enhanceTimeoutRef.current) {
+        clearTimeout(enhanceTimeoutRef.current)
+      }
+
+      enhanceTimeoutRef.current = setTimeout(() => {
+        fetchPromptEnhancement(value)
+      }, 1200)
+
+      return () => {
+        if (enhanceTimeoutRef.current) {
+          clearTimeout(enhanceTimeoutRef.current)
+        }
+      }
+    } else if (!promptEnhancementDismissed) {
+      setPromptEnhancement(null)
+    }
+  }, [value, mode, searchSource, fetchPromptEnhancement, promptEnhancementDismissed])
+
+  useEffect(() => {
+    textareaRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
+    setEntities({})
+    setBooleanError(null)
+    setSelectedArchetype(null)
+    if (mode === "jd") {
+      onChange("")
+    }
+    if (mode === "archetypes") {
+      loadArchetypes()
+      loadClosedJobSuggestions()
+    }
+  }, [mode, loadArchetypes, loadClosedJobSuggestions])
+
+  const handleSubmit = () => {
+    if (isLoading) return
+
+    const metadata: SearchMetadata = { mode }
+
+    if (mode === "natural" && value.trim()) {
+      onSubmit(value.trim(), entities, mode, metadata)
+    } else if (mode === "boolean" && value.trim() && !booleanError) {
+      metadata.booleanQuery = value.trim()
+      onSubmit(`Boolean: ${value.trim()}`, entities, mode, metadata)
+    } else if (mode === "jd" && jdContent.trim()) {
+      metadata.jobDescription = jdContent.trim()
+      onSubmit(`Job Description Analysis`, {}, mode, metadata)
+    } else if (mode === "similar") {
+      const validUrls = similarUrls.filter(url => url.trim().length > 0)
+      if (validUrls.length === 0 && similarCvFiles.length === 0) return
+      
+      metadata.similarProfileUrls = validUrls
+      metadata.similarProfileUrl = validUrls[0] || ""
+      
+      if (combinedSuggestions.length > 0) {
+        metadata.combinedProfile = {
+          keywords: combinedSuggestions
+        }
+      }
+      
+      const sourceCount = validUrls.length + similarCvFiles.length
+      const queryText = sourceCount > 1 
+        ? `Perfil combinado de ${sourceCount} fontes: ${combinedSuggestions.slice(0, 5).join(", ")}`
+        : `Similar to: ${validUrls[0] || "CV upload"}`
+      
+      onSubmit(queryText, {}, mode, metadata)
+    } else if (mode === "archetypes" && selectedArchetype) {
+      metadata.archetypeVacancyId = selectedArchetype.id
+      metadata.archetypeCandidateId = selectedArchetype.hired_candidate?.id
+      metadata.archetypeProfile = selectedArchetype.hired_candidate
+      const candidateName = selectedArchetype.hired_candidate?.name || "candidato"
+      const skills = selectedArchetype.hired_candidate?.skills?.slice(0, 3).join(", ") || ""
+      onSubmit(
+        `Arquétipo: ${selectedArchetype.title} - Similar a ${candidateName}${skills ? ` (${skills})` : ""}`,
+        {},
+        mode,
+        metadata
+      )
+    }
+  }
+
+  const getGhostTextInfo = useCallback((): { suffix: string | null; showFallbackCard: boolean; fullEnhancement: string | null } => {
+    if (!promptEnhancement || showAutocomplete || isEnhancingPrompt) {
+      return { suffix: null, showFallbackCard: false, fullEnhancement: null }
+    }
+    const enhanced = promptEnhancement.enhanced_query
+    const userText = value
+    if (enhanced.toLowerCase().startsWith(userText.toLowerCase())) {
+      return { suffix: enhanced.slice(userText.length), showFallbackCard: false, fullEnhancement: null }
+    }
+    return { suffix: null, showFallbackCard: true, fullEnhancement: enhanced }
+  }, [promptEnhancement, value, showAutocomplete, isEnhancingPrompt])
+
+  const ghostTextInfo = getGhostTextInfo()
+  const ghostTextSuffix = ghostTextInfo.suffix
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    const visibleItems = Math.min(autocompleteItems.length, 5)
+    if (showAutocomplete && visibleItems > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault()
+        setSelectedAutocompleteIndex(prev => 
+          prev < visibleItems - 1 ? prev + 1 : 0
+        )
+        return
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault()
+        setSelectedAutocompleteIndex(prev => 
+          prev > 0 ? prev - 1 : visibleItems - 1
+        )
+        return
+      }
+      if ((e.key === "Tab" || e.key === "Enter") && selectedAutocompleteIndex >= 0) {
+        e.preventDefault()
+        handleAutocompleteSelect(autocompleteItems[selectedAutocompleteIndex])
+        return
+      }
+      if (e.key === "Escape") {
+        e.preventDefault()
+        setShowAutocomplete(false)
+        return
+      }
+    }
+    
+    if (e.key === "Tab" && !e.shiftKey && (ghostTextSuffix || ghostTextInfo.showFallbackCard) && !showAutocomplete) {
+      e.preventDefault()
+      handleAcceptEnhancement()
+      return
+    }
+    
+    if (e.key === "Escape" && promptEnhancement) {
+      e.preventDefault()
+      handleDismissEnhancement()
+      return
+    }
+    
+    if (e.key === "Enter" && !e.shiftKey && mode !== "jd") {
+      e.preventDefault()
+      handleSubmit()
+    }
+    if (e.key === "Escape") {
+      onCancel()
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      setJdContent(text)
+    } catch (error) {
+      console.error("Error reading file:", error)
+    }
+  }
+
+  const modes: { key: SearchMode; label: string; icon: React.ElementType }[] = [
+    { key: "natural", label: "Linguagem Natural", icon: Sparkles },
+    { key: "similar", label: "Similar", icon: Users },
+    { key: "jd", label: "Descrição da Vaga", icon: FileText },
+    { key: "boolean", label: "Boolean", icon: Binary },
+    { key: "archetypes", label: "Arquétipos", icon: Target }
+  ]
+
+  const getPlaceholder = () => {
+    switch (mode) {
+      case "natural":
+        return placeholder
+      case "similar":
+        return "Cole a URL do LinkedIn ou ID do candidato..."
+      case "jd":
+        return "Cole a descrição da vaga aqui..."
+      case "boolean":
+        return "(software OR engineer) AND (python OR java) AND NOT junior"
+      case "archetypes":
+        return "Buscar vagas concluídas..."
+      default:
+        return placeholder
+    }
+  }
+
+  const canSubmit = () => {
+    if (isLoading) return false
+    switch (mode) {
+      case "natural":
+        return value.trim().length > 0
+      case "boolean":
+        return value.trim().length > 0 && !booleanError
+      case "jd":
+        return jdContent.trim().length > 0
+      case "similar":
+        const validUrls = similarUrls.filter(url => url.trim().length > 0)
+        return validUrls.length > 0 || similarCvFiles.length > 0
+      case "archetypes":
+        return selectedArchetype !== null
+      default:
+        return false
+    }
+  }
+
+  const filteredArchetypes = archetypeVacancies.filter(v => {
+    const searchLower = archetypeSearch.toLowerCase()
+    const title = v.title || ''
+    const hiredName = v.hired_candidate?.name || ''
+    const department = v.department || ''
+    return title.toLowerCase().includes(searchLower) ||
+      hiredName.toLowerCase().includes(searchLower) ||
+      department.toLowerCase().includes(searchLower)
+  })
+
+  return (
+    <div 
+      ref={containerRef}
+      className={cn("space-y-4 relative", className)}
+      style={{ width: panelWidth }}
+    >
+      <div 
+        className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700"
+        style={{ 
+          backgroundColor: "#FFFFFF"
+        }}
+      >
+        {/* Mode tabs - Estilo pill/tag elegante */}
+        <div 
+          className="flex items-center gap-2 px-4 py-3 overflow-x-auto border-b border-gray-200"
+          style={{ backgroundColor: "#FFFFFF" }}
+        >
+          {modes.map((m) => (
+            <button
+              key={m.key}
+              onClick={() => setMode(m.key)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all",
+                mode === m.key 
+                  ? "shadow-sm" 
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+              )}
+              style={mode === m.key 
+                ? { 
+                    backgroundColor: "#1f2937",
+                    color: "white",
+                    fontFamily: '"Open Sans", sans-serif'
+                  } 
+                : { color: "#4b5563", fontFamily: '"Open Sans", sans-serif' }
+              }
+            >
+              <m.icon className="w-3.5 h-3.5" />
+              {m.label}
+            </button>
+          ))}
+
+          {/* Filters button - ao lado de Arquétipos - shows dynamic count from parsed entities */}
+          {onOpenFilters && (
+            <button
+              onClick={onOpenFilters}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all hover:bg-gray-100 dark:hover:bg-gray-800",
+                (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-[#60BED1]"
+              )}
+              style={{ 
+                color: (activeFiltersCount > 0 || filledCount > 0) ? "#60BED1" : "#374151",
+                backgroundColor: (activeFiltersCount > 0 || filledCount > 0) ? "rgba(96, 190, 209, 0.1)" : "transparent"
+              }}
+            >
+              <Filter className="w-3.5 h-3.5" />
+              Filtros
+              {(activeFiltersCount > 0 || filledCount > 0) && (
+                <Badge 
+                  className="ml-1 h-4 min-w-4 px-1 flex items-center justify-center text-[11px]"
+                  style={{ backgroundColor: "#60BED1", color: "white" }}
+                >
+                  {Math.max(activeFiltersCount, filledCount)}
+                </Badge>
+              )}
+            </button>
+          )}
+
+          {/* Botão para ir direto para página de resultados */}
+          {onGoToResults && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={onGoToResults}
+                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-all"
+                    style={{ color: "#60BED1" }}
+                  >
+                    <Table2 className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                  <p className="text-xs font-medium">Ir para Resultados</p>
+                  <p className="text-[11px] text-gray-300">Buscar direto na tabela expandida</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+
+        {/* Content area - changes based on mode */}
+        <div className="p-4" style={{ backgroundColor: "#FFFFFF" }}>
+          {/* Natural search mode */}
+          {mode === "natural" && (
+            <div className="space-y-3">
+              <div className="relative">
+                {/* Ghost Text Overlay - positioned over textarea */}
+                {ghostTextSuffix && !showAutocomplete && (
+                  <div 
+                    ref={ghostOverlayRef}
+                    className="absolute inset-0 pointer-events-none rounded-xl px-4 py-3 pr-28 text-[13px] min-h-[56px] overflow-hidden"
+                    style={{ 
+                      fontFamily: '"Open Sans", sans-serif',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      zIndex: 1,
+                    }}
+                    aria-hidden="true"
+                  >
+                    <span style={{ color: 'transparent' }}>{value}</span>
+                    <span style={{ color: '#9CA3AF' }}>{ghostTextSuffix}</span>
+                  </div>
+                )}
+                {/* Actual textarea - fully functional for editing */}
+                <textarea
+                  ref={textareaRef}
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onScroll={(e) => {
+                    if (ghostOverlayRef.current) {
+                      ghostOverlayRef.current.scrollTop = e.currentTarget.scrollTop
+                    }
+                  }}
+                  placeholder={getPlaceholder()}
+                  className="w-full resize-none rounded-xl px-4 py-3 pr-28 text-[13px] focus:outline-none min-h-[56px] transition-all border relative"
+                  style={{ 
+                    borderColor: "#E5E7EB",
+                    backgroundColor: ghostTextSuffix && !showAutocomplete ? "transparent" : "#FFFFFF",
+                    color: "#1a1a1a",
+                    caretColor: "#1a1a1a",
+                    fontFamily: '"Open Sans", sans-serif',
+                    zIndex: 2,
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "#60BED1"
+                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(96, 190, 209, 0.12)"
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "#E5E7EB"
+                    e.currentTarget.style.boxShadow = "none"
+                    setTimeout(() => setShowAutocomplete(false), 200)
+                  }}
+                  rows={2}
+                  disabled={isLoading}
+                />
+                {/* Seletor de Origem de Busca + Filtros de Contato - Próximo ao search */}
+                {onSearchSourceChange && (
+                  <div className="absolute right-12 bottom-2.5 flex items-center gap-1 flex-shrink-0" style={{ zIndex: 10 }}>
+                    {/* Source selectors: Local, Hybrid, Global */}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange('local'); }}
+                            className={cn(
+                              "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                              searchSource === 'local' 
+                                ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]" 
+                                : "hover:bg-gray-100"
+                            )}
+                            style={{ color: searchSource === 'local' ? '#5DA47A' : '#6B7280' }}
+                          >
+                            <Home className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                          <p className="text-xs font-medium">Seu banco de talentos</p>
+                          <p className="text-[11px] text-gray-300">Gratuito • Local</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    
+                    {showGlobalSearchOptions && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange('hybrid'); }}
+                              className={cn(
+                                "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                                searchSource === 'hybrid' 
+                                  ? "bg-[rgba(209,153,96,0.15)] ring-1 ring-[#D19960]" 
+                                  : "hover:bg-gray-100"
+                              )}
+                              style={{ color: searchSource === 'hybrid' ? '#D19960' : '#6B7280' }}
+                            >
+                              <Zap className="w-4 h-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <p className="text-xs font-medium">Expanda sua busca</p>
+                            <p className="text-[11px] text-gray-300">Local + Global • 1 crédito/candidato</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                    
+                    {showGlobalSearchOptions && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange('global'); }}
+                              className={cn(
+                                "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                                searchSource === 'global' 
+                                  ? "bg-[rgba(96,190,209,0.15)] ring-1 ring-[#60BED1]" 
+                                  : "hover:bg-gray-100"
+                              )}
+                              style={{ color: searchSource === 'global' ? '#60BED1' : '#6B7280' }}
+                            >
+                              <Globe className="w-4 h-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                            <p className="text-xs font-medium">Alcance global</p>
+                            <p className="text-[11px] text-gray-300">800M+ candidatos • 1 crédito/candidato</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                    
+                    {/* Contact Filters: Email, Phone - Only show for global/hybrid searches */}
+                    {(searchSource === 'global' || searchSource === 'hybrid') && onRequireEmailsChange && onRequirePhoneNumbersChange && (
+                      <>
+                        <div className="w-px h-4 bg-gray-200 mx-0.5" />
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequireEmailsChange(!requireEmails); }}
+                                className={cn(
+                                  "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                                  requireEmails 
+                                    ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]" 
+                                    : "hover:bg-gray-100"
+                                )}
+                                style={{ color: requireEmails ? '#5DA47A' : '#9CA3AF' }}
+                              >
+                                <Mail className="w-3.5 h-3.5" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                              <p className="text-xs font-medium">Apenas com Email</p>
+                              <p className="text-[11px] text-gray-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRequirePhoneNumbersChange(!requirePhoneNumbers); }}
+                                className={cn(
+                                  "flex items-center justify-center p-1.5 rounded-md text-xs transition-all",
+                                  requirePhoneNumbers 
+                                    ? "bg-[rgba(93,164,122,0.15)] ring-1 ring-[#5DA47A]" 
+                                    : "hover:bg-gray-100"
+                                )}
+                                style={{ color: requirePhoneNumbers ? '#5DA47A' : '#9CA3AF' }}
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                              <p className="text-xs font-medium">Apenas com Telefone</p>
+                              <p className="text-[11px] text-gray-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!canSubmit()}
+                  size="sm"
+                  className="absolute right-2.5 bottom-2.5 h-8 w-8 p-0 rounded-lg transition-all hover:scale-105"
+                  style={{ 
+                    backgroundColor: canSubmit() ? "#60BED1" : "var(--eleven-bg-tertiary)",
+                    color: canSubmit() ? "white" : "var(--eleven-text-secondary)",
+                    zIndex: 10
+                  }}
+                >
+                  <Search className="w-4 h-4" />
+                </Button>
+
+                {/* Autocomplete inline - lista vertical compacta */}
+                {showAutocomplete && autocompleteItems.length > 0 && (
+                <div 
+                  className="absolute top-full left-0 right-0 mt-0.5 rounded-lg border border-gray-200 flex flex-col gap-0 z-10 max-h-52 overflow-hidden"
+                  style={{
+                    backgroundColor: "#FFFFFF",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.07)"
+                  }}
+                >
+                  {/* Header com toggle e botão fechar */}
+                  <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-3 h-3" style={{ color: '#60BED1' }} />
+                      <span className="text-[10px] font-medium text-gray-500">Sugestões</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setAutocompleteEnabled(false)}
+                        className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+                        title="Desativar sugestões"
+                      >
+                        Desativar
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowAutocomplete(false)
+                          setAutocompleteItems([])
+                        }}
+                        className="p-0.5 rounded hover:bg-gray-100 transition-colors"
+                        title="Fechar lista"
+                      >
+                        <X className="w-3 h-3 text-gray-400" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="py-1 overflow-y-auto max-h-40">
+                  {autocompleteItems.slice(0, 6).map((item, index) => {
+                    const IconComponent = 
+                      item.icon === "code" ? Code :
+                      item.icon === "briefcase" ? Briefcase :
+                      item.icon === "map-pin" ? MapPin :
+                      item.icon === "building" ? Building2 :
+                      item.icon === "award" ? Award :
+                      item.icon === "home" ? Building2 :
+                      item.icon === "globe" ? Globe :
+                      item.icon === "target" ? Target :
+                      item.icon === "users" ? Users :
+                      item.icon === "layers" ? Building2 :
+                      item.icon === "zap" ? TrendingUp :
+                      item.icon === "brain" ? Sparkles :
+                      item.icon === "database" ? Binary :
+                      item.icon === "bar-chart" ? TrendingUp :
+                      item.icon === "layout" ? FileText :
+                      item.icon === "smartphone" ? Binary :
+                      item.icon === "cloud" ? Globe :
+                      item.icon === "settings" ? Code :
+                      item.icon === "box" ? Binary :
+                      item.icon === "coffee" ? Code :
+                      item.icon === "file-code" ? Code :
+                      item.icon === "clipboard" ? FileText :
+                      item.icon === "pen-tool" ? Star :
+                      item.icon === "dollar-sign" ? DollarSign :
+                      item.icon === "credit-card" ? DollarSign :
+                      item.icon === "message-circle" ? Globe :
+                      item.icon === "book" ? GraduationCap :
+                      Sparkles
+
+                    const getCategoryColor = (category: string) => {
+                      const cat = category.toLowerCase()
+                      if (cat.includes('cargo') || cat.includes('título') || cat.includes('job')) 
+                        return { bg: '#E0F5FA', accent: '#60BED1' }
+                      if (cat.includes('local') || cat.includes('cidade') || cat.includes('região')) 
+                        return { bg: '#F3EAFF', accent: '#8B5CF6' }
+                      if (cat.includes('skill') || cat.includes('tecnologia') || cat.includes('ferramenta')) 
+                        return { bg: '#E5F5EB', accent: '#5DA47A' }
+                      if (cat.includes('experiência') || cat.includes('senioridade') || cat.includes('anos')) 
+                        return { bg: '#FDF4E8', accent: '#E5A853' }
+                      if (cat.includes('setor') || cat.includes('indústria') || cat.includes('área')) 
+                        return { bg: '#E8F1FD', accent: '#3B82F6' }
+                      return { bg: '#F5F8FA', accent: '#60BED1' }
+                    }
+                    const catColor = getCategoryColor(item.category)
+                    const isSelected = selectedAutocompleteIndex === index
+
+                    return (
+                      <button
+                        key={`${item.text}-${index}`}
+                        onClick={() => handleAutocompleteSelect(item)}
+                        onMouseEnter={() => setSelectedAutocompleteIndex(index)}
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-1.5 text-left transition-colors w-full",
+                          isSelected ? "bg-gray-50" : "hover:bg-gray-50"
+                        )}
+                      >
+                        <IconComponent 
+                          className="w-3.5 h-3.5 flex-shrink-0" 
+                          style={{ color: catColor.accent }}
+                        />
+                        <span 
+                          className="text-[12px] font-medium flex-1 truncate"
+                          style={{ color: '#1F2937' }}
+                        >
+                          {item.text}
+                        </span>
+                        <span 
+                          className="text-[10px] text-gray-500 flex-shrink-0"
+                        >
+                          {item.category}
+                        </span>
+                      </button>
+                    )
+                  })}
+                  </div>
+                </div>
+                )}
+
+                {/* Ghost Text Tab hint */}
+                {ghostTextSuffix && !showAutocomplete && (
+                  <div 
+                    className="absolute -bottom-5 right-3 flex items-center gap-1 text-[10px]"
+                    style={{ color: '#9CA3AF' }}
+                  >
+                    <kbd className="px-1 py-0.5 rounded-full bg-gray-100 text-[9px] font-mono">Tab</kbd>
+                    <span>para aceitar</span>
+                  </div>
+                )}
+
+              </div>
+
+              {/* Fallback Suggestion Card - shown BELOW the textarea container when enhanced query doesn't start with user text */}
+              {ghostTextInfo.showFallbackCard && ghostTextInfo.fullEnhancement && !showAutocomplete && (
+                <div 
+                  className="rounded-lg border px-3 py-2 flex items-center gap-2"
+                  style={{
+                    backgroundColor: 'rgba(96, 190, 209, 0.05)',
+                    borderColor: 'rgba(96, 190, 209, 0.3)',
+                  }}
+                >
+                  <Wand2 className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[11px] text-gray-500">Sugestão: </span>
+                    <span className="text-[12px] text-gray-800">{ghostTextInfo.fullEnhancement}</span>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button
+                      onClick={handleAcceptEnhancement}
+                      className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium hover:bg-[rgba(96,190,209,0.15)] transition-colors"
+                      style={{ color: '#60BED1' }}
+                    >
+                      <kbd className="px-1 py-0.5 rounded-full bg-gray-100 text-[9px] font-mono">Tab</kbd>
+                      <span>Aceitar</span>
+                    </button>
+                    <button
+                      onClick={handleDismissEnhancement}
+                      className="flex items-center justify-center w-5 h-5 rounded hover:bg-gray-100 transition-colors"
+                      style={{ color: '#9CA3AF' }}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Tags de critérios extraídos - Cores ElevenLabs/WedoTalent */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {tags.map((tag) => {
+                  const getTagColors = (key: string, filled: boolean) => {
+                    if (!filled) return { bg: '#F3F4F6', text: '#1F2937', iconBg: '#6B7280' }
+                    switch (key) {
+                      case 'job_title':
+                        return { bg: '#E0F5FA', text: '#2D8A9E', iconBg: '#60BED1' }
+                      case 'location':
+                        return { bg: '#F3EAFF', text: '#7C3AED', iconBg: '#8B5CF6' }
+                      case 'skills':
+                        return { bg: '#E5F5EB', text: '#2D6A4F', iconBg: '#5DA47A' }
+                      case 'years_experience':
+                        return { bg: '#FDF4E8', text: '#B8860B', iconBg: '#E5A853' }
+                      case 'industry':
+                        return { bg: '#E8F1FD', text: '#2563EB', iconBg: '#3B82F6' }
+                      default:
+                        return { bg: '#E0F5FA', text: '#60BED1', iconBg: '#60BED1' }
+                    }
+                  }
+                  const colors = getTagColors(tag.key, tag.filled)
+                  
+                  return (
+                    <div
+                      key={tag.key}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                      style={{ 
+                        backgroundColor: colors.bg,
+                        color: colors.text,
+                        fontFamily: '"Open Sans", sans-serif'
+                      }}
+                      title={tag.value}
+                    >
+                      <div 
+                        className="flex items-center justify-center w-4 h-4 rounded"
+                        style={{ backgroundColor: tag.filled ? `${colors.iconBg}30` : 'transparent' }}
+                      >
+                        <tag.icon className="w-3 h-3" style={{ color: tag.filled ? colors.iconBg : colors.text }} />
+                      </div>
+                      <span className="font-medium">{tag.label}</span>
+                      {tag.filled && tag.value && (
+                        <>
+                          <span style={{ opacity: 0.5 }}>·</span>
+                          <span className="max-w-[80px] truncate font-normal" style={{ opacity: 0.85 }}>{tag.value}</span>
+                        </>
+                      )}
+                    </div>
+                  )
+                })}
+
+                {/* Toggle de sugestões automáticas */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setAutocompleteEnabled(!autocompleteEnabled)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all",
+                          autocompleteEnabled 
+                            ? "bg-gray-100" 
+                            : "bg-gray-100"
+                        )}
+                        style={{ 
+                          fontFamily: '"Open Sans", sans-serif'
+                        }}
+                      >
+                        <Sparkles className="w-3 h-3" style={{ color: autocompleteEnabled ? '#60BED1' : '#9CA3AF' }} />
+                        <span className="font-medium text-[11px]" style={{ color: autocompleteEnabled ? '#374151' : '#9CA3AF' }}>
+                          {autocompleteEnabled ? 'Sugestões' : 'Sugestões off'}
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="!animate-none" style={{ animation: 'none', transitionDuration: '0ms' }}>
+                      <p className="text-xs font-medium">
+                        {autocompleteEnabled ? 'Desativar sugestões durante digitação' : 'Ativar sugestões durante digitação'}
+                      </p>
+                      <p className="text-[11px] text-gray-300">
+                        {autocompleteEnabled ? 'Clique para desativar' : 'Clique para ativar'}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* Tooltip do assistente */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all hover:opacity-90"
+                        style={{ 
+                          backgroundColor: "#1a1a1a",
+                          color: "white",
+                          fontFamily: '"Open Sans", sans-serif'
+                        }}
+                      >
+                        <Wand2 className="w-3 h-3" />
+                        <span className="font-medium">Assistente</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent 
+                      side="bottom" 
+                      className="max-w-[280px] p-3"
+                      style={{ backgroundColor: "white", border: "1px solid var(--eleven-border)" }}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Wand2 className="w-4 h-4" style={{ color: "#60BED1" }} />
+                          <span className="font-medium text-sm" style={{ color: "var(--eleven-text-primary)" }}>
+                            Assistente de Busca Inteligente
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-700">
+                          Enquanto você descreve o perfil, a LIA analisa e sugere melhorias para sua busca:
+                        </p>
+                        <ul className="text-xs space-y-1 text-gray-700">
+                          <li className="flex items-start gap-1.5">
+                            <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#60BED1" }} />
+                            <span>Indica critérios faltantes</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#60BED1" }} />
+                            <span>Sugere sinônimos e termos relacionados</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#60BED1" }} />
+                            <span>Alerta sobre buscas muito amplas ou restritivas</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* Indicador de análise - aparece depois do assistente */}
+                {isParsingEntities && (
+                  <div 
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                    style={{ 
+                      backgroundColor: "rgba(96, 190, 209, 0.1)",
+                      color: "#60BED1"
+                    }}
+                  >
+                    <div 
+                      className="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin" 
+                      style={{ borderColor: "#60BED1", borderTopColor: "transparent" }}
+                    />
+                    <span>Analisando...</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Assistente de Busca - Barra de completude e alertas */}
+              {value && searchAnalysis && (
+                <div className="space-y-2 pt-2 border-t" style={{ borderColor: "var(--eleven-border)" }}>
+                  {/* Barra de completude */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[11px] font-medium text-gray-700" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                          Qualidade da busca
+                        </span>
+                        <span 
+                          className="text-[11px] font-bold"
+                          style={{ 
+                            color: searchAnalysis.completeness_score >= 60 
+                              ? "#22c55e" 
+                              : searchAnalysis.completeness_score >= 40 
+                                ? "#f59e0b" 
+                                : "#ef4444" 
+                          }}
+                        >
+                          {searchAnalysis.completeness_score}%
+                        </span>
+                      </div>
+                      <div 
+                        className="h-1.5 rounded-full overflow-hidden"
+                        style={{ backgroundColor: "var(--eleven-bg-tertiary)" }}
+                      >
+                        <div 
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ 
+                            width: `${searchAnalysis.completeness_score}%`,
+                            backgroundColor: searchAnalysis.completeness_score >= 60 
+                              ? "#22c55e" 
+                              : searchAnalysis.completeness_score >= 40 
+                                ? "#f59e0b" 
+                                : "#ef4444"
+                          }}
+                        />
+                      </div>
+                    </div>
+                    {searchAnalysis.next_recommended_action && (
+                      <div 
+                        className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px]"
+                        style={{ 
+                          backgroundColor: "rgba(96, 190, 209, 0.08)",
+                          color: "#60BED1"
+                        }}
+                      >
+                        <TrendingUp className="w-3 h-3" />
+                        <span>{searchAnalysis.next_recommended_action}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Alertas inteligentes */}
+                  {searchAnalysis.alerts.length > 0 && (
+                    <div className="space-y-1.5">
+                      {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
+                        <div 
+                          key={index}
+                          className="flex items-start gap-2 px-2.5 py-2 rounded-lg text-[11px]"
+                          style={{ 
+                            backgroundColor: alert.severity === "warning" 
+                              ? "rgba(245, 158, 11, 0.08)" 
+                              : "rgba(96, 190, 209, 0.08)",
+                            color: "var(--eleven-text-secondary)"
+                          }}
+                        >
+                          {alert.severity === "warning" ? (
+                            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500" />
+                          ) : (
+                            <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: "#60BED1" }} />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <span>{alert.message}</span>
+                            {alert.suggestion && (
+                              <button
+                                onClick={() => {
+                                  if (alert.action_value) {
+                                    onChange(value + ", " + alert.action_value)
+                                  }
+                                }}
+                                className="ml-1 font-medium hover:underline"
+                                style={{ color: "#60BED1" }}
+                              >
+                                {alert.suggestion}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Sugestões de enriquecimento - Inline scroll se necessário */}
+                  {Object.keys(searchAnalysis.enrichment_suggestions).length > 0 && (
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                      <span className="text-[11px] text-gray-900 font-medium whitespace-nowrap" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                        Adicionar:
+                      </span>
+                      <div className="flex gap-1.5 flex-nowrap">
+                        {Object.entries(searchAnalysis.enrichment_suggestions).flatMap(([category, items]) =>
+                          items.slice(0, 5).map((item) => (
+                            <button
+                              key={`${category}-${item}`}
+                              onClick={() => onChange(value + ", " + item)}
+                              className="px-2 py-0.5 rounded-full text-[11px] font-medium transition-all hover:scale-105 border border-gray-200 whitespace-nowrap flex-shrink-0"
+                              style={{ 
+                                backgroundColor: "#FFFFFF",
+                                color: "#60BED1",
+                                fontFamily: '"Open Sans", sans-serif'
+                              }}
+                            >
+                              + {item}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Sugestões de busca - Horizontal lado a lado */}
+              {!value && (
+                <div className="pt-1 w-full flex items-center gap-2">
+                  <span className="text-[10px] text-gray-500 font-medium whitespace-nowrap" style={{ fontFamily: '"Open Sans", sans-serif' }}>
+                    Sugestões:
+                  </span>
+                  <div className="flex items-center gap-2 flex-nowrap overflow-x-auto">
+                    {SEARCH_SUGGESTIONS.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        onClick={() => onChange(suggestion)}
+                        className="px-2.5 py-0.5 text-[10px] text-gray-600 hover:text-[#60BED1] bg-gray-50 hover:bg-gray-100 rounded-full border border-gray-200 transition-all whitespace-nowrap flex-shrink-0"
+                        style={{ fontFamily: '"Open Sans", sans-serif' }}
+                        title={suggestion}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Similar profile mode - Combined Profile Feature */}
+          {mode === "similar" && (
+            <div className="space-y-3">
+              {/* URL inputs */}
+              {similarUrls.map((url, index) => (
+                <div key={index} className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    <Linkedin className="w-4 h-4 text-[#0077B5]" />
+                  </div>
+                  <input
+                    type="text"
+                    value={url}
+                    onChange={(e) => updateSimilarUrl(index, e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={index === 0 ? "Cole a URL do LinkedIn ou ID do candidato..." : "Cole outra URL para combinar perfis..."}
+                    className="w-full rounded-lg pl-10 pr-20 py-3 text-sm focus:outline-none focus:ring-2"
+                    style={{ 
+                      border: "1px solid var(--eleven-border)",
+                      backgroundColor: "var(--eleven-bg-main)",
+                      color: "var(--eleven-text-primary)"
+                    }}
+                    disabled={isLoading}
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    {index > 0 && (
+                      <Button
+                        onClick={() => removeSimilarUrl(index)}
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 rounded-lg hover:bg-red-50"
+                      >
+                        <X className="w-3.5 h-3.5 text-red-400" />
+                      </Button>
+                    )}
+                    {index === similarUrls.length - 1 && similarUrls.length < MAX_SIMILAR_URLS && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={addSimilarUrl}
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 px-3 rounded-lg text-sm font-bold hover:bg-[#60BED1] hover:text-white transition-colors shadow-sm"
+                              style={{ 
+                                color: "#60BED1", 
+                                backgroundColor: "#F8FCFD"
+                              }}
+                            >
+                              + URL
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs max-w-[200px]">
+                            Adicione até 3 perfis para a LIA criar um perfil ideal combinado
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* CV Upload section */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-[11px] text-gray-600 px-2">ou</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              <div className="relative">
+                <input
+                  ref={cvFileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  multiple
+                  onChange={handleCvUpload}
+                  className="hidden"
+                />
+                {similarCvFiles.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {similarCvFiles.map((file, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs"
+                        style={{ backgroundColor: "#F5F5F5" }}
+                      >
+                        <FileText className="w-3.5 h-3.5 text-gray-700" />
+                        <span className="max-w-[150px] truncate">{file.name}</span>
+                        <button onClick={() => removeCvFile(index)} className="hover:text-red-500">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    {similarCvFiles.length < MAX_CV_FILES && (
+                      <button
+                        onClick={() => cvFileInputRef.current?.click()}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-100 transition-colors border border-gray-200"
+                        style={{ backgroundColor: "#F5F5F5" }}
+                      >
+                        <Upload className="w-3 h-3" />
+                        + CV
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => cvFileInputRef.current?.click()}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors border border-gray-200"
+                    style={{ backgroundColor: "#F5F5F5" }}
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    Arraste CVs aqui ou clique para upload (máx. 2)
+                  </button>
+                )}
+              </div>
+
+              {/* Analyze button - Shows when 2+ sources */}
+              {hasMultipleSources() && !showCombinedSuggestions && (
+                <Button
+                  onClick={analyzeProfiles}
+                  disabled={isAnalyzingProfiles}
+                  className="w-full text-xs h-9"
+                  style={{ backgroundColor: "#60BED1" }}
+                >
+                  {isAnalyzingProfiles ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                      Analisando perfis...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="w-3.5 h-3.5 mr-2" />
+                      Analisar e combinar perfis com LIA
+                    </>
+                  )}
+                </Button>
+              )}
+
+              {/* Combined Suggestions Box */}
+              {showCombinedSuggestions && combinedSuggestions.length > 0 && (
+                <div className="p-3 rounded-lg space-y-2 border border-gray-200" style={{ backgroundColor: "#F8FCFD" }}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5" style={{ color: "#60BED1" }} />
+                      <span className="text-xs font-medium" style={{ color: "var(--eleven-text-primary)" }}>
+                        Perfil Ideal sugerido pela LIA
+                      </span>
+                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="w-3.5 h-3.5 text-gray-600" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs max-w-[280px]">
+                          A LIA analisou os perfis e combinou skills, experiências e senioridade em comum. Edite ou remova tags antes de buscar.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {combinedSuggestions.map((keyword) => (
+                      <div
+                        key={keyword}
+                        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium group border border-gray-200"
+                        style={{ backgroundColor: "white" }}
+                      >
+                        <span style={{ color: "#60BED1" }}>{keyword}</span>
+                        <button
+                          onClick={() => removeSuggestion(keyword)}
+                          className="opacity-50 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-gray-700">
+                    Baseado em {similarUrls.filter(u => u.trim()).length + similarCvFiles.length} perfis: skills em comum e pontos fortes combinados.
+                  </p>
+                </div>
+              )}
+
+              {/* Search Button */}
+              <Button
+                onClick={handleSubmit}
+                disabled={!canSubmit() || isLoading}
+                className="w-full text-sm h-10"
+                style={{ 
+                  backgroundColor: canSubmit() ? "#60BED1" : "#E5E5E5",
+                  color: canSubmit() ? "white" : "#999"
+                }}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Buscando...
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4 mr-2" />
+                    {hasMultipleSources() ? "Buscar com perfil combinado" : "Buscar candidatos similares"}
+                  </>
+                )}
+              </Button>
+
+              {/* Dica contextual padronizada */}
+              <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+                <div className="flex items-start gap-2">
+                  <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                  <p className="text-[11px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <strong>Dica:</strong> Cole 1 a 3 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Job Description mode */}
+          {mode === "jd" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium" style={{ color: "var(--eleven-text-primary)" }}>
+                  Cole a descrição da vaga
+                </span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".txt,.doc,.docx,.pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-xs h-7"
+                  style={{ borderColor: "var(--eleven-border)" }}
+                >
+                  <Upload className="w-3 h-3 mr-1" />
+                  Upload
+                </Button>
+              </div>
+              <textarea
+                value={jdContent}
+                onChange={(e) => setJdContent(e.target.value)}
+                placeholder={getPlaceholder()}
+                className="w-full resize-none rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 min-h-[120px]"
+                style={{ 
+                  border: "1px solid var(--eleven-border)",
+                  backgroundColor: "var(--eleven-bg-main)",
+                  color: "var(--eleven-text-primary)"
+                }}
+                disabled={isLoading}
+              />
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!canSubmit()}
+                  size="sm"
+                  className="transition-all hover:scale-105 gap-2"
+                  style={{ 
+                    backgroundColor: canSubmit() ? "#1a1a1a" : "var(--eleven-bg-tertiary)",
+                    color: canSubmit() ? "white" : "var(--eleven-text-secondary)"
+                  }}
+                >
+                  <span 
+                    className="flex items-center justify-center w-5 h-5 rounded"
+                    style={{ backgroundColor: canSubmit() ? "#60BED1" : "rgba(96, 190, 209, 0.3)" }}
+                  >
+                    <Brain className="w-3 h-3 text-white" />
+                  </span>
+                  Extrair e Buscar
+                </Button>
+              </div>
+
+              {/* Dica contextual padronizada */}
+              <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+                <div className="flex items-start gap-2">
+                  <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                  <p className="text-[11px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <strong>Dica:</strong> Cole a JD completa para extrair automaticamente requisitos técnicos e comportamentais.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Boolean mode */}
+          {mode === "boolean" && (
+            <div className="space-y-3">
+              <div className="relative">
+                <div className="absolute left-3 top-3">
+                  <Binary className="w-4 h-4" style={{ color: "#60BED1" }} />
+                </div>
+                <textarea
+                  ref={textareaRef}
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={getPlaceholder()}
+                  className={cn(
+                    "w-full resize-none rounded-lg pl-10 pr-12 py-3 text-sm font-mono focus:outline-none focus:ring-2 min-h-[60px]",
+                    booleanError && "ring-2 ring-red-300"
+                  )}
+                  style={{ 
+                    border: `1px solid ${booleanError ? "#fca5a5" : "var(--eleven-border)"}`,
+                    backgroundColor: "var(--eleven-bg-main)",
+                    color: "var(--eleven-text-primary)"
+                  }}
+                  rows={2}
+                  disabled={isLoading}
+                />
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!canSubmit()}
+                  size="sm"
+                  className="absolute right-2 bottom-2 h-8 w-8 p-0 rounded-lg transition-all hover:scale-105"
+                  style={{ 
+                    backgroundColor: canSubmit() ? "#60BED1" : "var(--eleven-bg-tertiary)",
+                    color: canSubmit() ? "white" : "var(--eleven-text-secondary)"
+                  }}
+                >
+                  <Search className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {booleanError && (
+                <div className="flex items-center gap-2 text-xs text-red-500">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {booleanError}
+                </div>
+              )}
+              
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs" style={{ color: "var(--eleven-text-secondary)" }}>Operadores:</span>
+                {["AND", "OR", "NOT", "(", ")"].map((op) => (
+                  <button
+                    key={op}
+                    onClick={() => onChange(value + (value ? " " : "") + op + " ")}
+                    className="px-2 py-0.5 rounded text-xs font-mono hover:bg-gray-100 transition-colors"
+                    style={{ 
+                      backgroundColor: "var(--eleven-bg-tertiary)",
+                      color: "var(--eleven-text-secondary)"
+                    }}
+                  >
+                    {op}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Dica contextual padronizada */}
+              <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+                <div className="flex items-start gap-2">
+                  <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                  <p className="text-[11px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                    <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições. Ex: (Python OR Java) AND "São Paulo"
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Archetypes mode */}
+          {mode === "archetypes" && (
+            <div className="space-y-2">
+              {/* Tabs: Lista / Criar */}
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setArchetypeTab("list")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
+                    archetypeTab === "list" ? "bg-[#60BED1]/10" : "hover:bg-gray-100"
+                  )}
+                  style={{ color: archetypeTab === "list" ? "#60BED1" : "var(--eleven-text-secondary)" }}
+                >
+                  <Target className="w-3 h-3" />
+                  Arquétipos
+                </button>
+                <button
+                  onClick={() => setArchetypeTab("create")}
+                  className="h-7 px-3 rounded-lg text-xs font-bold hover:bg-[#60BED1] hover:text-white transition-colors shadow-sm"
+                  style={{ 
+                    color: "#60BED1", 
+                    backgroundColor: "#F8FCFD"
+                  }}
+                >
+                  + Criar Novo
+                </button>
+              </div>
+
+              {/* Lista de Arquétipos */}
+              {archetypeTab === "list" && (
+                <>
+                  <div className="relative">
+                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2">
+                      <Search className="w-3.5 h-3.5" style={{ color: "var(--eleven-text-secondary)" }} />
+                    </div>
+                    <input
+                      type="text"
+                      value={archetypeSearch}
+                      onChange={(e) => setArchetypeSearch(e.target.value)}
+                      placeholder="Buscar arquétipos..."
+                      className="w-full rounded-lg pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-2"
+                      style={{ 
+                        border: "1px solid var(--eleven-border)",
+                        backgroundColor: "var(--eleven-bg-main)",
+                        color: "var(--eleven-text-primary)"
+                      }}
+                    />
+                  </div>
+
+                  {isLoadingArchetypes ? (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#60BED1" }} />
+                      <span className="ml-2 text-sm" style={{ color: "var(--eleven-text-secondary)" }}>
+                        Carregando arquétipos...
+                      </span>
+                    </div>
+                  ) : filteredArchetypes.length === 0 ? (
+                    <div className="text-center py-6">
+                      <Target className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--eleven-text-secondary)" }} />
+                      <p className="text-sm" style={{ color: "var(--eleven-text-secondary)" }}>
+                        {archetypeVacancies.length === 0 
+                          ? "Nenhum arquétipo encontrado"
+                          : "Nenhum arquétipo corresponde à busca"
+                        }
+                      </p>
+                      <Button
+                        onClick={() => setArchetypeTab("create")}
+                        variant="ghost"
+                        size="sm"
+                        className="mt-3 shadow-sm"
+                        style={{ backgroundColor: "#F8FCFD", color: "#60BED1" }}
+                      >
+                        <Plus className="w-3.5 h-3.5 mr-1" />
+                        Criar Arquétipo
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="max-h-[160px] overflow-y-auto space-y-1.5">
+                      {filteredArchetypes.map((arch: any) => (
+                        <div
+                          key={arch.id}
+                          className={cn(
+                            "group relative w-full px-2.5 py-2 rounded-lg text-left transition-all cursor-pointer border border-gray-200",
+                            selectedArchetype?.id === arch.id 
+                              ? "bg-[#F0F9FB] ring-1 ring-[#60BED1]" 
+                              : "bg-white hover:bg-[#F5F5F5]"
+                          )}
+                          onClick={() => setSelectedArchetype(arch)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm flex-shrink-0">{arch.emoji || "🎯"}</span>
+                            <span className="font-medium text-[13px] truncate" style={{ color: "#1a1a1a" }}>
+                              {arch.name || arch.title}
+                            </span>
+                            {arch.is_default && (
+                              <Badge className="text-[11px] px-1.5 py-0 flex-shrink-0" style={{ backgroundColor: "#60BED1", color: "white" }}>
+                                Padrão
+                              </Badge>
+                            )}
+                            {arch.tags && arch.tags.length > 0 && (
+                              <div className="flex items-center gap-1 ml-auto flex-shrink-0 group-hover:hidden">
+                                {arch.tags.slice(0, 2).map((tag: string, idx: number) => (
+                                  <span key={idx} className="text-[11px] px-1.5 py-0.5 rounded-full bg-[#E8E8E8]" style={{ color: "#666666" }}>
+                                    {tag}
+                                  </span>
+                                ))}
+                                {arch.tags.length > 2 && (
+                                  <span className="text-[11px] px-1 py-0.5" style={{ color: "#999999" }}>
+                                    +{arch.tags.length - 2}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            {!arch.is_default && (
+                              <div className="hidden group-hover:flex items-center gap-1 ml-auto flex-shrink-0">
+                                <TooltipProvider delayDuration={200}>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        onClick={(e) => openEditArchetype(arch, e)}
+                                        className="p-1 rounded hover:bg-[#60BED1]/20 transition-colors"
+                                      >
+                                        <Pencil className="w-3 h-3" style={{ color: "#60BED1" }} />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="text-xs">Editar</TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                <TooltipProvider delayDuration={200}>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        onClick={(e) => deleteArchetype(arch.id, e)}
+                                        disabled={isDeletingArchetype === arch.id}
+                                        className="p-1 rounded hover:bg-red-100 transition-colors"
+                                      >
+                                        {isDeletingArchetype === arch.id ? (
+                                          <Loader2 className="w-3 h-3 animate-spin" style={{ color: "#ef4444" }} />
+                                        ) : (
+                                          <Trash2 className="w-3 h-3" style={{ color: "#ef4444" }} />
+                                        )}
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="text-xs">Excluir</TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                            )}
+                            {selectedArchetype?.id === arch.id && (
+                              <Check className="w-4 h-4 flex-shrink-0 group-hover:hidden" style={{ color: "#60BED1" }} />
+                            )}
+                          </div>
+                          {arch.description && (
+                            <p className="mt-0.5 pl-6 text-[11px] line-clamp-1" style={{ color: "#888888" }}>
+                              {arch.description}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center pt-1.5 border-t" style={{ borderColor: "var(--eleven-border)" }}>
+                    <p className="text-[11px]" style={{ color: "var(--eleven-text-secondary)", fontFamily: "'Open Sans', sans-serif" }}>
+                      {selectedArchetype 
+                        ? `Buscar: ${selectedArchetype.title}`
+                        : "Selecione um arquétipo"
+                      }
+                    </p>
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={!selectedArchetype}
+                      size="sm"
+                      className="transition-all hover:scale-105 gap-2"
+                      style={{ 
+                        backgroundColor: selectedArchetype ? "#1a1a1a" : "var(--eleven-bg-tertiary)",
+                        color: selectedArchetype ? "white" : "var(--eleven-text-secondary)"
+                      }}
+                    >
+                      <span 
+                        className="flex items-center justify-center w-5 h-5 rounded"
+                        style={{ backgroundColor: selectedArchetype ? "#60BED1" : "rgba(96, 190, 209, 0.3)" }}
+                      >
+                        <Search className="w-3 h-3 text-white" />
+                      </span>
+                      Buscar
+                    </Button>
+                  </div>
+
+                  {/* Dica contextual compacta */}
+                  <div className="px-2 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
+                    <div className="flex items-center gap-1.5">
+                      <Lightbulb className="w-3 h-3 flex-shrink-0" style={{ color: '#60BED1' }} />
+                      <p className="text-[11px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                        <strong>Dica:</strong> Arquétipos são perfis baseados em contratações bem-sucedidas.
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Criar Novo Arquétipo */}
+              {archetypeTab === "create" && (
+                <div className="space-y-3">
+                  {/* Sub-tabs: Vaga Fechada / Descrição */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setArchetypeCreateMode("job")}
+                      className={cn(
+                        "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all border border-gray-200",
+                        archetypeCreateMode === "job" 
+                          ? "bg-[#F0F9FB] ring-1 ring-[#60BED1]" 
+                          : "bg-white hover:bg-gray-50"
+                      )}
+                      style={{ color: archetypeCreateMode === "job" ? "#60BED1" : "var(--eleven-text-secondary)" }}
+                    >
+                      <Briefcase className="w-3.5 h-3.5 inline mr-1.5" />
+                      A partir de Vaga
+                    </button>
+                    <button
+                      onClick={() => setArchetypeCreateMode("description")}
+                      className={cn(
+                        "flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all border border-gray-200",
+                        archetypeCreateMode === "description" 
+                          ? "bg-[#F0F9FB] ring-1 ring-[#60BED1]" 
+                          : "bg-white hover:bg-gray-50"
+                      )}
+                      style={{ color: archetypeCreateMode === "description" ? "#60BED1" : "var(--eleven-text-secondary)" }}
+                    >
+                      <FileText className="w-3.5 h-3.5 inline mr-1.5" />
+                      A partir de Descrição
+                    </button>
+                  </div>
+
+                  {/* A partir de Vaga Fechada */}
+                  {archetypeCreateMode === "job" && (
+                    <div className="space-y-2">
+                      <p className="text-xs" style={{ color: "var(--eleven-text-secondary)", fontFamily: "'Open Sans', sans-serif" }}>
+                        Selecione uma vaga fechada para criar um arquétipo:
+                      </p>
+                      {isLoadingClosedJobs ? (
+                        <div className="flex items-center justify-center py-4">
+                          <Loader2 className="w-4 h-4 animate-spin" style={{ color: "#60BED1" }} />
+                          <span className="ml-2 text-xs" style={{ color: "var(--eleven-text-secondary)" }}>
+                            Buscando vagas...
+                          </span>
+                        </div>
+                      ) : closedJobSuggestions.length === 0 ? (
+                        <div className="text-center py-4 px-3 rounded-lg" style={{ backgroundColor: "var(--eleven-bg-tertiary)" }}>
+                          <Briefcase className="w-6 h-6 mx-auto mb-2" style={{ color: "var(--eleven-text-secondary)" }} />
+                          <p className="text-xs" style={{ color: "var(--eleven-text-secondary)" }}>
+                            Nenhuma vaga fechada encontrada
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="max-h-[140px] overflow-y-auto space-y-1.5">
+                          {closedJobSuggestions.map((job) => (
+                            <button
+                              key={job.job_id}
+                              onClick={() => createArchetypeFromJob(job.job_id)}
+                              disabled={isCreatingArchetype}
+                              className="w-full p-2.5 rounded-lg text-left transition-all shadow-sm hover:shadow-md hover:ring-1 hover:ring-[#60BED1] disabled:opacity-50"
+                              style={{ 
+                                backgroundColor: "white"
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-base">{job.suggested_emoji}</span>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-xs truncate" style={{ color: "var(--eleven-text-primary)", fontFamily: "'Open Sans', sans-serif" }}>
+                                    {job.suggested_archetype_name}
+                                  </p>
+                                  <p className="text-[11px]" style={{ color: "var(--eleven-text-secondary)", fontFamily: "'Open Sans', sans-serif" }}>
+                                    {job.department} {job.closed_at ? `• Fechada em ${new Date(job.closed_at).toLocaleDateString('pt-BR')}` : ''}
+                                  </p>
+                                </div>
+                                {isCreatingArchetype ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" style={{ color: "#60BED1" }} />
+                                ) : (
+                                  <Plus className="w-4 h-4" style={{ color: "#60BED1" }} />
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Dica contextual padronizada */}
+                      <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+                        <div className="flex items-start gap-2">
+                          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                          <p className="text-[11px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                            <strong>Dica:</strong> Clique em uma vaga fechada para criar um arquétipo baseado no perfil do candidato contratado.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* A partir de Descrição */}
+                  {archetypeCreateMode === "description" && (
+                    <div className="space-y-2">
+                      <p className="text-xs" style={{ color: "var(--eleven-text-secondary)", fontFamily: "'Open Sans', sans-serif" }}>
+                        Descreva o perfil ideal que deseja buscar:
+                      </p>
+                      <textarea
+                        value={archetypeDescription}
+                        onChange={(e) => setArchetypeDescription(e.target.value)}
+                        placeholder="Ex: Desenvolvedor Python sênior com experiência em machine learning e cloud AWS, preferencialmente com background em fintechs..."
+                        rows={3}
+                        className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none"
+                        style={{ 
+                          border: "1px solid var(--eleven-border)",
+                          backgroundColor: "var(--eleven-bg-main)",
+                          color: "var(--eleven-text-primary)"
+                        }}
+                      />
+                      <Button
+                        onClick={() => createArchetypeFromDescription(archetypeDescription)}
+                        disabled={archetypeDescription.length < 20 || isCreatingArchetype}
+                        size="sm"
+                        className="w-full"
+                        style={{ 
+                          backgroundColor: archetypeDescription.length >= 20 ? "#60BED1" : "var(--eleven-bg-tertiary)",
+                          color: archetypeDescription.length >= 20 ? "white" : "var(--eleven-text-secondary)"
+                        }}
+                      >
+                        {isCreatingArchetype ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            Criando...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-1" />
+                            Criar Arquétipo com LIA
+                          </>
+                        )}
+                      </Button>
+                      
+                      {/* Dica contextual padronizada */}
+                      <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+                        <div className="flex items-start gap-2">
+                          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#60BED1' }} />
+                          <p className="text-[11px] text-gray-700" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                            <strong>Dica:</strong> Descreva o perfil ideal e a LIA vai extrair automaticamente cargo, senioridade e skills para criar o arquétipo.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+
+      {mode === "natural" && filledCount === 0 && value.length > 0 && (
+        <p 
+          className="text-xs px-1"
+          style={{ color: "var(--eleven-text-secondary)" }}
+        >
+          Dica: Inclua cargo, localização e skills para melhores resultados
+        </p>
+      )}
+
+      {/* Modal de Edição de Arquétipo */}
+      {editingArchetype && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={closeEditArchetype}
+        >
+          <div 
+            className="bg-white rounded-xl shadow-2xl p-5 w-full max-w-md mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold" style={{ color: "#1a1a1a", fontFamily: "'Source Serif 4', serif" }}>
+                Editar Arquétipo
+              </h3>
+              <button
+                onClick={closeEditArchetype}
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-4 h-4" style={{ color: "#666" }} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="w-16">
+                  <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Emoji</label>
+                  <input
+                    type="text"
+                    value={editArchetypeEmoji}
+                    onChange={(e) => setEditArchetypeEmoji(e.target.value)}
+                    maxLength={4}
+                    className="w-full rounded-lg px-2 py-2 text-center text-lg focus:outline-none focus:ring-2 focus:ring-[#60BED1]"
+                    style={{ border: "1px solid #E8E8E8", backgroundColor: "#FAFAFA" }}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Nome</label>
+                  <input
+                    type="text"
+                    value={editArchetypeName}
+                    onChange={(e) => setEditArchetypeName(e.target.value)}
+                    placeholder="Nome do arquétipo"
+                    className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#60BED1]"
+                    style={{ border: "1px solid #E8E8E8", backgroundColor: "#FAFAFA" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Query de Busca</label>
+                <textarea
+                  value={editArchetypeQuery}
+                  onChange={(e) => setEditArchetypeQuery(e.target.value)}
+                  placeholder="Ex: Desenvolvedor Python Sênior São Paulo"
+                  rows={2}
+                  className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#60BED1] resize-none"
+                  style={{ border: "1px solid #E8E8E8", backgroundColor: "#FAFAFA" }}
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "#666" }}>Descrição (opcional)</label>
+                <textarea
+                  value={editArchetypeDescription}
+                  onChange={(e) => setEditArchetypeDescription(e.target.value)}
+                  placeholder="Breve descrição do perfil ideal..."
+                  rows={2}
+                  className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#60BED1] resize-none"
+                  style={{ border: "1px solid #E8E8E8", backgroundColor: "#FAFAFA" }}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-5">
+              <Button
+                onClick={closeEditArchetype}
+                variant="ghost"
+                className="flex-1 shadow-sm"
+                style={{ backgroundColor: "#F5F5F5", color: "#666" }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={saveArchetype}
+                disabled={isSavingArchetype || !editArchetypeName || !editArchetypeQuery}
+                className="flex-1"
+                style={{ 
+                  backgroundColor: editArchetypeName && editArchetypeQuery ? "#1a1a1a" : "#E8E8E8",
+                  color: editArchetypeName && editArchetypeQuery ? "white" : "#999"
+                }}
+              >
+                {isSavingArchetype ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-1.5" />
+                    Salvar
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default SmartSearchInput
+
+
+// ============================================================================
+// ARQUIVO 9: components/search/advanced-filters-modal.tsx (Filtros avançados - 1,446 linhas)
+// ============================================================================
+
+"use client"
+
+import { useState, useCallback, useEffect, useMemo } from "react"
+import { 
+  X, Settings, MapPin, Briefcase, Building2, Code, GraduationCap, 
+  Globe, ChevronRight, Search, RotateCcw, Zap, Mail, Phone, Clock,
+  RefreshCw, Filter, AlertCircle, TrendingUp, Save, FolderOpen, History,
+  Bookmark, ChevronDown, Check, Home, Crown, Rocket, UserCheck, Eye
+} from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { CreditConfirmationDialog } from "./credit-confirmation-dialog"
+import { calculateCreditsLocally, CreditEstimate } from "@/lib/api/candidate-search"
+
+export type SaveDestination = "talent_funnel" | "search_history" | "saved_searches"
+export type SearchSource = "local" | "global" | "hybrid"
+
+const saveDestinations: { 
+  key: SaveDestination
+  label: string
+  description: string
+  icon: React.ElementType 
+}[] = [
+  { 
+    key: "talent_funnel", 
+    label: "Funil de Talentos", 
+    description: "Adicionar candidatos ao funil de uma vaga",
+    icon: FolderOpen 
+  },
+  { 
+    key: "search_history", 
+    label: "Histórico de Buscas", 
+    description: "Salvar automaticamente no histórico",
+    icon: History 
+  },
+  { 
+    key: "saved_searches", 
+    label: "Buscas Salvas", 
+    description: "Favoritar para reutilizar depois",
+    icon: Bookmark 
+  },
+]
+
+export interface SearchFilters {
+  ppiOptions?: {
+    searchType?: "fast" | "pro"
+    highFreshness?: boolean
+    strictFilters?: boolean
+    requireEmails?: boolean
+    showEmails?: boolean
+    requirePhoneNumbers?: boolean
+    showPhoneNumbers?: boolean
+    requirePhonesOrEmails?: boolean
+    openToWorkOnly?: boolean
+  }
+  searchOptions?: {
+    includeDiscovered?: boolean
+  }
+  general?: {
+    minExperience?: number
+    maxExperience?: number
+    hideViewedProfiles?: boolean
+  }
+  locations?: {
+    locations?: string[]
+    countries?: string[]
+  }
+  job?: {
+    titles?: string[]
+    includePastTitles?: boolean
+    levels?: string[]
+  }
+  company?: {
+    companies?: string[]
+    includePastCompanies?: boolean
+    excludedCompanies?: string[]
+    industries?: string[]
+    companySizes?: string[]
+  }
+  skills?: {
+    skills?: string[]
+    expertise?: string[]
+  }
+  education?: {
+    universities?: string[]
+    degrees?: string[]
+    fieldsOfStudy?: string[]
+  }
+  languages?: {
+    languages?: string[]
+    proficiencyLevel?: string
+  }
+  profile?: {
+    isDecisionMaker?: boolean
+    isTopUniversities?: boolean
+    isStartup?: boolean
+  }
+}
+
+export function convertToPearchFilters(filters: SearchFilters): {
+  customFilters: Record<string, any>
+  apiOptions: Record<string, any>
+} {
+  const customFilters: Record<string, any> = {}
+  const apiOptions: Record<string, any> = {}
+
+  if (filters.ppiOptions) {
+    apiOptions.type = filters.ppiOptions.searchType || "fast"
+    apiOptions.high_freshness = filters.ppiOptions.highFreshness || false
+    apiOptions.strict_filters = filters.ppiOptions.strictFilters || false
+    apiOptions.require_emails = filters.ppiOptions.requireEmails || false
+    apiOptions.show_emails = filters.ppiOptions.showEmails || false
+    apiOptions.require_phone_numbers = filters.ppiOptions.requirePhoneNumbers || false
+    apiOptions.show_phone_numbers = filters.ppiOptions.showPhoneNumbers || false
+    apiOptions.require_phones_or_emails = filters.ppiOptions.requirePhonesOrEmails || false
+  }
+
+  if (filters.locations?.locations?.length) {
+    customFilters.locations = filters.locations.locations
+  }
+  if (filters.locations?.countries?.length) {
+    customFilters.countries = filters.locations.countries
+  }
+
+  if (filters.job?.titles?.length) {
+    customFilters.titles = filters.job.titles
+  }
+  if (filters.job?.levels?.length) {
+    customFilters.seniority_levels = filters.job.levels
+  }
+
+  if (filters.company?.companies?.length) {
+    customFilters.companies = filters.company.companies
+  }
+  if (filters.company?.industries?.length) {
+    customFilters.industries = filters.company.industries
+  }
+  if (filters.company?.companySizes?.length) {
+    customFilters.company_sizes = filters.company.companySizes
+  }
+
+  if (filters.skills?.skills?.length) {
+    customFilters.skills = filters.skills.skills
+  }
+
+  if (filters.education?.universities?.length) {
+    customFilters.universities = filters.education.universities
+  }
+  if (filters.education?.degrees?.length) {
+    customFilters.degrees = filters.education.degrees
+  }
+  if (filters.education?.fieldsOfStudy?.length) {
+    customFilters.fields_of_study = filters.education.fieldsOfStudy
+  }
+
+  if (filters.languages?.languages?.length) {
+    customFilters.languages = filters.languages.languages
+  }
+
+  // Profile indicators (all free)
+  if (filters.ppiOptions?.openToWorkOnly) {
+    customFilters.is_opentowork = true
+  }
+  if (filters.profile?.isDecisionMaker) {
+    customFilters.is_decision_maker = true
+  }
+  if (filters.profile?.isTopUniversities) {
+    customFilters.is_top_universities = true
+  }
+  if (filters.profile?.isStartup) {
+    customFilters.company_is_startup = true
+  }
+
+  // Expertise
+  if (filters.skills?.expertise?.length) {
+    customFilters.expertise = filters.skills.expertise
+  }
+
+  return { customFilters, apiOptions }
+}
+
+interface AdvancedFiltersModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onApply: (filters: SearchFilters, options?: { searchSource?: SearchSource }) => void
+  onSave?: (filters: SearchFilters, destination: SaveDestination) => void
+  initialFilters?: SearchFilters
+  estimatedMatches?: number
+  candidateLimit?: number
+  defaultSaveDestination?: SaveDestination
+}
+
+type FilterCategory = 
+  | "ppiOptions"
+  | "general" 
+  | "locations" 
+  | "job" 
+  | "company" 
+  | "skills" 
+  | "education" 
+  | "languages"
+  | "profile"
+
+const categories: { key: FilterCategory; label: string; icon: React.ElementType; description?: string }[] = [
+  { key: "ppiOptions", label: "Opções de Busca", icon: Zap, description: "Controle de qualidade e custo" },
+  { key: "general", label: "Geral", icon: Settings, description: "Experiência e perfis" },
+  { key: "profile", label: "Perfil Profissional", icon: UserCheck, description: "Indicadores gratuitos" },
+  { key: "locations", label: "Localização", icon: MapPin, description: "Cidades e países" },
+  { key: "job", label: "Cargo", icon: Briefcase, description: "Títulos e níveis" },
+  { key: "company", label: "Empresa", icon: Building2, description: "Empresas e setores" },
+  { key: "skills", label: "Habilidades", icon: Code, description: "Skills técnicas" },
+  { key: "education", label: "Formação", icon: GraduationCap, description: "Universidades e cursos" },
+  { key: "languages", label: "Idiomas", icon: Globe, description: "Línguas e proficiência" }
+]
+
+const experienceLevels = [
+  { value: "intern", label: "Estagiário" },
+  { value: "entry", label: "Júnior" },
+  { value: "associate", label: "Pleno" },
+  { value: "mid-senior", label: "Sênior" },
+  { value: "director", label: "Diretor" },
+  { value: "vp", label: "VP" },
+  { value: "c-level", label: "C-Level" }
+]
+
+const companySizes = [
+  { value: "1-10", label: "1-10 funcionários" },
+  { value: "11-50", label: "11-50 funcionários" },
+  { value: "51-200", label: "51-200 funcionários" },
+  { value: "201-500", label: "201-500 funcionários" },
+  { value: "501-1000", label: "501-1.000 funcionários" },
+  { value: "1001-5000", label: "1.001-5.000 funcionários" },
+  { value: "5000+", label: "5.000+ funcionários" }
+]
+
+const degreeTypes = [
+  { value: "high-school", label: "Ensino Médio" },
+  { value: "associate", label: "Tecnólogo" },
+  { value: "bachelor", label: "Graduação" },
+  { value: "master", label: "Mestrado" },
+  { value: "phd", label: "Doutorado" },
+  { value: "mba", label: "MBA" }
+]
+
+const proficiencyLevels = [
+  { value: "any", label: "Qualquer nível" },
+  { value: "native", label: "Nativo" },
+  { value: "fluent", label: "Fluente" },
+  { value: "professional", label: "Profissional" },
+  { value: "intermediate", label: "Intermediário" },
+  { value: "basic", label: "Básico" }
+]
+
+export function AdvancedFiltersModal({
+  isOpen,
+  onClose,
+  onApply,
+  onSave,
+  initialFilters = {},
+  estimatedMatches,
+  candidateLimit = 15,
+  defaultSaveDestination = "search_history"
+}: AdvancedFiltersModalProps) {
+  const [activeCategory, setActiveCategory] = useState<FilterCategory>("ppiOptions")
+  const [filters, setFilters] = useState<SearchFilters>(initialFilters)
+  const [searchFilter, setSearchFilter] = useState("")
+  const [saveDestination, setSaveDestination] = useState<SaveDestination>(defaultSaveDestination)
+  const [isDestinationOpen, setIsDestinationOpen] = useState(false)
+  const [searchSource, setSearchSource] = useState<SearchSource>("local")
+  const [showCreditConfirm, setShowCreditConfirm] = useState(false)
+  const [pendingSearch, setPendingSearch] = useState<(() => void) | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setFilters(initialFilters)
+    }
+  }, [isOpen, initialFilters])
+
+  const updateFilter = useCallback(<T extends keyof SearchFilters>(
+    category: T,
+    key: keyof NonNullable<SearchFilters[T]>,
+    value: any
+  ) => {
+    setFilters(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [key]: value
+      }
+    }))
+  }, [])
+
+  const addToArray = useCallback(<T extends keyof SearchFilters>(
+    category: T,
+    key: keyof NonNullable<SearchFilters[T]>,
+    value: string
+  ) => {
+    if (!value.trim()) return
+    setFilters(prev => {
+      const currentArray = (prev[category] as any)?.[key] || []
+      if (currentArray.includes(value.trim())) return prev
+      return {
+        ...prev,
+        [category]: {
+          ...prev[category],
+          [key]: [...currentArray, value.trim()]
+        }
+      }
+    })
+  }, [])
+
+  const removeFromArray = useCallback(<T extends keyof SearchFilters>(
+    category: T,
+    key: keyof NonNullable<SearchFilters[T]>,
+    value: string
+  ) => {
+    setFilters(prev => {
+      const currentArray = (prev[category] as any)?.[key] || []
+      return {
+        ...prev,
+        [category]: {
+          ...prev[category],
+          [key]: currentArray.filter((v: string) => v !== value)
+        }
+      }
+    })
+  }, [])
+
+  const resetFilters = useCallback(() => {
+    setFilters({})
+    setSearchSource("local")
+  }, [])
+
+  const handleApply = useCallback(() => {
+    if (searchSource === "global" || searchSource === "hybrid") {
+      setPendingSearch(() => () => {
+        onApply(filters, { searchSource })
+      })
+      setShowCreditConfirm(true)
+    } else {
+      onApply(filters, { searchSource })
+    }
+  }, [filters, searchSource, onApply])
+
+  const handleConfirmSearch = useCallback(() => {
+    setIsSearching(true)
+    if (pendingSearch) {
+      pendingSearch()
+    }
+    setShowCreditConfirm(false)
+    setPendingSearch(null)
+    setIsSearching(false)
+  }, [pendingSearch])
+
+  const getActiveFiltersCount = useCallback(() => {
+    let count = 0
+    Object.values(filters).forEach(category => {
+      if (category) {
+        Object.values(category).forEach(value => {
+          if (value !== undefined && value !== null && value !== "" && value !== false &&
+              !(Array.isArray(value) && value.length === 0)) {
+            count++
+          }
+        })
+      }
+    })
+    return count
+  }, [filters])
+
+  const creditEstimate = useMemo((): CreditEstimate => {
+    const opts = filters.ppiOptions || {}
+    return calculateCreditsLocally({
+      searchType: opts.searchType || "fast",
+      limit: candidateLimit,
+      highFreshness: opts.highFreshness || false,
+      requireEmails: opts.requireEmails || false,
+      showEmails: opts.showEmails || false,
+      requirePhoneNumbers: opts.requirePhoneNumbers || false,
+      showPhoneNumbers: opts.showPhoneNumbers || false,
+      requirePhonesOrEmails: opts.requirePhonesOrEmails || false
+    })
+  }, [filters.ppiOptions, candidateLimit])
+
+  const filteredCategories = categories.filter(c => 
+    c.label.toLowerCase().includes(searchFilter.toLowerCase())
+  )
+
+  if (!isOpen) return null
+
+  const TagInput = ({ 
+    value = [], 
+    onAdd, 
+    onRemove, 
+    placeholder 
+  }: { 
+    value: string[]
+    onAdd: (val: string) => void
+    onRemove: (val: string) => void
+    placeholder: string
+  }) => {
+    const [inputValue, setInputValue] = useState("")
+    
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && inputValue.trim()) {
+        e.preventDefault()
+        onAdd(inputValue)
+        setInputValue("")
+      }
+    }
+
+    return (
+      <div className="space-y-2">
+        <Input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="border border-gray-200 focus:ring-1 focus:ring-[#60BED1]"
+        />
+        {value.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {value.map((item) => (
+              <Badge
+                key={item}
+                variant="secondary"
+                className="pl-2 pr-1 py-1 text-xs flex items-center gap-1"
+              >
+                {item}
+                <button
+                  onClick={() => onRemove(item)}
+                  className="ml-1 hover:bg-gray-300 rounded p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div 
+        className="absolute inset-0 bg-black/30 backdrop-blur-[1px]"
+        onClick={onClose}
+      />
+      
+      <div 
+        className="relative w-full max-w-4xl max-h-[85vh] rounded-lg overflow-hidden shadow-sm border border-gray-100 flex bg-white"
+        style={{ fontFamily: '"Open Sans", sans-serif' }}
+      >
+        <div 
+          className="w-56 flex-shrink-0 border-r border-gray-100 overflow-y-auto"
+        >
+          <div className="p-3 border-b border-gray-100">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Input
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                placeholder="Buscar filtros"
+                className="pl-8 h-8 text-sm border border-gray-200 focus:ring-1 focus:ring-[#60BED1]"
+              />
+            </div>
+          </div>
+          
+          <div className="py-2">
+            {filteredCategories.map((category) => (
+              <button
+                key={category.key}
+                onClick={() => setActiveCategory(category.key)}
+                className={cn(
+                  "w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors text-left",
+                  activeCategory === category.key 
+                    ? "font-medium bg-gray-100 text-gray-800" 
+                    : "hover:bg-gray-50 text-gray-500"
+                )}
+              >
+                <category.icon className="w-4 h-4 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="truncate">{category.label}</div>
+                  {category.description && (
+                    <div className="text-[11px] truncate opacity-70">{category.description}</div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div 
+            className="flex items-center justify-between px-6 py-4 border-b border-gray-100"
+          >
+            <div>
+              <h2 className="text-[13px] font-semibold text-gray-800">
+                Filtros Avançados
+              </h2>
+              <p className="text-[11px] mt-0.5 text-gray-600">
+                Refine sua busca com filtros compatíveis com a Base Global
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {estimatedMatches !== undefined && (
+                <span className="text-xs text-gray-600">
+                  {estimatedMatches.toLocaleString()}+ resultados
+                </span>
+              )}
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleApply}
+                  className="bg-[#60BED1] hover:bg-[#50a3b8] text-white"
+                >
+                  <ChevronRight className="w-4 h-4 mr-1" />
+                  Aplicar Filtros
+                </Button>
+                {onSave && (
+                  <Popover open={isDestinationOpen} onOpenChange={setIsDestinationOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5"
+                        style={{ borderColor: "#60BED1", color: "#60BED1" }}
+                      >
+                        <Save className="w-4 h-4" />
+                        Salvar
+                        <ChevronDown className="w-3 h-3" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-72 p-2 bg-white border border-gray-100">
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium px-2 py-1.5 text-gray-600">
+                          Salvar busca em:
+                        </p>
+                        {saveDestinations.map((dest) => (
+                          <button
+                            key={dest.key}
+                            onClick={() => {
+                              setSaveDestination(dest.key)
+                              setIsDestinationOpen(false)
+                              onSave(filters, dest.key)
+                            }}
+                            className={cn(
+                              "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-colors",
+                              saveDestination === dest.key 
+                                ? "bg-gray-100" 
+                                : "hover:bg-gray-50"
+                            )}
+                          >
+                            <dest.icon 
+                              className={cn(
+                                "w-4 h-4 flex-shrink-0",
+                                saveDestination === dest.key ? "text-gray-700" : "text-gray-500"
+                              )}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div 
+                                className={cn(
+                                  "text-sm font-medium",
+                                  saveDestination === dest.key ? "text-gray-800" : "text-gray-800"
+                                )}
+                              >
+                                {dest.label}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {dest.description}
+                              </div>
+                            </div>
+                            {saveDestination === dest.key && (
+                              <Check className="w-4 h-4 flex-shrink-0 text-[#60BED1]" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Search className="w-4 h-4 text-[#60BED1]" />
+                <Label className="text-sm font-semibold text-gray-800">
+                  Origem da Busca
+                </Label>
+              </div>
+              
+              <RadioGroup 
+                value={searchSource} 
+                onValueChange={(value) => setSearchSource(value as SearchSource)}
+                className="grid grid-cols-3 gap-3"
+              >
+                <label 
+                  className={cn(
+                    "relative flex flex-col p-4 pt-8 rounded-lg border-2 cursor-pointer transition-all",
+                    searchSource === "local" 
+                      ? "border-gray-300 bg-gray-50" 
+                      : "border-gray-200 hover:border-gray-300"
+                  )}
+                >
+                  <Badge 
+                    className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 font-medium"
+                    style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", color: "#16a34a", border: "none" }}
+                  >
+                    GRATUITO
+                  </Badge>
+                  <div className="flex items-center gap-2 mb-2">
+                    <RadioGroupItem value="local" id="local" className="sr-only" />
+                    <Home className={cn("w-4 h-4", searchSource === "local" ? "text-gray-700" : "text-gray-500")} />
+                    <span 
+                      className={cn("font-medium text-sm", searchSource === "local" ? "text-gray-800" : "text-gray-800")}
+                    >
+                      Base Local
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Candidatos já cadastrados na sua base
+                  </p>
+                  {searchSource === "local" && (
+                    <div 
+                      className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center"
+                      style={{ backgroundColor: "#60BED1" }}
+                    >
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+                </label>
+
+                <label 
+                  className={cn(
+                    "relative flex flex-col p-4 pt-8 rounded-lg border-2 cursor-pointer transition-all",
+                    searchSource === "global" 
+                      ? "border-gray-300 bg-gray-50" 
+                      : "border-gray-200 hover:border-gray-300"
+                  )}
+                >
+                  <Badge 
+                    className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 font-medium"
+                    style={{ backgroundColor: "rgba(245, 158, 11, 0.15)", color: "#d97706", border: "none" }}
+                  >
+                    1 CRÉDITO/CAND.
+                  </Badge>
+                  <div className="flex items-center gap-2 mb-2">
+                    <RadioGroupItem value="global" id="global" className="sr-only" />
+                    <Globe className={cn("w-4 h-4", searchSource === "global" ? "text-gray-700" : "text-gray-500")} />
+                    <span 
+                      className={cn("font-medium text-sm", searchSource === "global" ? "text-gray-800" : "text-gray-800")}
+                    >
+                      Busca Global
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Acesso a +800M de perfis profissionais
+                  </p>
+                  {searchSource === "global" && (
+                    <div 
+                      className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center"
+                      style={{ backgroundColor: "#60BED1" }}
+                    >
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+                </label>
+
+                <label 
+                  className={cn(
+                    "relative flex flex-col p-4 pt-8 rounded-lg border-2 cursor-pointer transition-all",
+                    searchSource === "hybrid" 
+                      ? "border-gray-300 bg-gray-50" 
+                      : "border-gray-200 hover:border-gray-300"
+                  )}
+                >
+                  <Badge 
+                    className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 font-medium"
+                    style={{ backgroundColor: "rgba(245, 158, 11, 0.15)", color: "#d97706", border: "none" }}
+                  >
+                    1 CRÉDITO/CAND.
+                  </Badge>
+                  <div className="flex items-center gap-2 mb-2">
+                    <RadioGroupItem value="hybrid" id="hybrid" className="sr-only" />
+                    <RefreshCw className={cn("w-4 h-4", searchSource === "hybrid" ? "text-gray-700" : "text-gray-500")} />
+                    <span 
+                      className={cn("font-medium text-sm", searchSource === "hybrid" ? "text-gray-800" : "text-gray-800")}
+                    >
+                      Híbrido
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Primeiro local, depois expande para global
+                  </p>
+                  {searchSource === "hybrid" && (
+                    <div 
+                      className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center"
+                      style={{ backgroundColor: "#60BED1" }}
+                    >
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+                </label>
+              </RadioGroup>
+
+              {(searchSource === "local" || searchSource === "hybrid") && (
+                <div className="mt-4 flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                  <div className="flex items-center gap-2">
+                    <Eye className="w-4 h-4 text-amber-600" />
+                    <div>
+                      <span className="text-sm font-medium text-gray-800">
+                        Incluir candidatos descobertos
+                      </span>
+                      <p className="text-[11px] text-gray-500">
+                        Mostrar candidatos encontrados em buscas anteriores ainda não salvos na base
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={filters.searchOptions?.includeDiscovered ?? true}
+                    onCheckedChange={(checked: boolean) => updateFilter("searchOptions", "includeDiscovered", checked)}
+                    className="data-[state=checked]:bg-[#60BED1]"
+                  />
+                </div>
+              )}
+            </div>
+
+            {activeCategory === "ppiOptions" && (
+              <div className="space-y-6">
+                {(searchSource === "global" || searchSource === "hybrid") && (
+                <div 
+                  className="p-4 rounded-lg border bg-gray-50 border-gray-200"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-3.5 h-3.5" style={{ color: "#60BED1" }} />
+                      <span className="font-medium text-xs">Custo Estimado Pearch</span>
+                    </div>
+                    <Badge variant="outline" className="text-[11px] px-1.5 py-0.5" style={{ borderColor: "#60BED1", color: "#60BED1" }}>
+                      Tempo Real
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <div className="text-2xl font-bold" style={{ color: "#60BED1" }}>
+                        {creditEstimate.cost_per_candidate}
+                      </div>
+                      <div className="text-[11px] text-gray-600">
+                        créditos por candidato
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold text-gray-800">
+                        {creditEstimate.total_estimated}
+                      </div>
+                      <div className="text-[11px] text-gray-600">
+                        total ({creditEstimate.limit} candidatos)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 pt-3 border-t space-y-1.5" style={{ borderColor: "rgba(96, 190, 209, 0.2)" }}>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">
+                        Base ({creditEstimate.pearch_type === "fast" ? "Rápida" : "Profissional"})
+                      </span>
+                      <span className="font-medium">{creditEstimate.base_cost}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">Insights + Scoring</span>
+                      <span className="font-medium">+{creditEstimate.insights_cost}</span>
+                    </div>
+                    {creditEstimate.freshness_cost > 0 && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-600">Dados Atualizados</span>
+                        <span className="font-medium">+{creditEstimate.freshness_cost}</span>
+                      </div>
+                    )}
+                    {creditEstimate.email_cost > 0 && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-600">Opções de Email</span>
+                        <span className="font-medium">+{creditEstimate.email_cost}</span>
+                      </div>
+                    )}
+                    {creditEstimate.phone_cost > 0 && (
+                      <div className="flex justify-between text-xs text-amber-600">
+                        <span className="flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          Opções de Telefone
+                        </span>
+                        <span className="font-medium">+{creditEstimate.phone_cost}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between text-xs pt-1.5 border-t" style={{ borderColor: "rgba(96, 190, 209, 0.15)" }}>
+                      <span className="flex items-center gap-1 font-medium text-gray-800">
+                        <TrendingUp className="w-3 h-3" />
+                        Total por Candidato
+                      </span>
+                      <span className="font-bold" style={{ color: "#60BED1" }}>
+                        {creditEstimate.cost_per_candidate}
+                      </span>
+                    </div>
+                  </div>
+
+                  {creditEstimate.warnings.length > 0 && (
+                    <div className="mt-3 p-2 bg-amber-50 rounded border border-amber-200">
+                      {creditEstimate.warnings.map((warning, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-xs text-amber-700">
+                          <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                          <span>{warning}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                )}
+
+                <div className="space-y-3">
+                  <Label className="text-xs font-medium block">Opções de Qualidade</Label>
+                  
+                  <div className="flex items-center justify-between p-2.5 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="w-3.5 h-3.5 text-gray-500" />
+                      <div>
+                        <div className="text-xs font-medium">Dados Atualizados</div>
+                        <div className="text-[11px] text-gray-600">
+                          Perfis em tempo real (+2 créditos)
+                        </div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={filters.ppiOptions?.highFreshness || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "highFreshness", checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-2.5 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-3.5 h-3.5 text-gray-500" />
+                      <div>
+                        <div className="text-xs font-medium">Filtros Rigorosos</div>
+                        <div className="text-[11px] text-gray-600">
+                          Matching exato de títulos
+                        </div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={filters.ppiOptions?.strictFilters || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "strictFilters", checked)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-xs font-medium block">Informações de Contato</Label>
+
+                  <div className="flex items-center justify-between p-2.5 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-3.5 h-3.5 text-gray-500" />
+                      <div>
+                        <div className="text-xs font-medium">Apenas com Email</div>
+                        <div className="text-[11px] text-gray-600">
+                          Filtrar candidatos com email (+1 crédito)
+                        </div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={filters.ppiOptions?.requireEmails || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "requireEmails", checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-2.5 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-3.5 h-3.5" style={{ color: "#60BED1" }} />
+                      <div>
+                        <div className="text-xs font-medium">Mostrar Emails</div>
+                        <div className="text-[11px] text-gray-600">
+                          Exibir emails nos resultados (+2 créditos)
+                        </div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={filters.ppiOptions?.showEmails || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "showEmails", checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4 text-gray-500" />
+                      <div>
+                        <div className="text-sm font-medium">Apenas com Telefone</div>
+                        <div className="text-xs text-gray-600">
+                          Filtrar candidatos com telefone (+1 crédito)
+                        </div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={filters.ppiOptions?.requirePhoneNumbers || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "requirePhoneNumbers", checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4" style={{ color: "#60BED1" }} />
+                      <div>
+                        <div className="text-sm font-medium">Mostrar Telefones</div>
+                        <div className="text-xs text-amber-600 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          Custo alto: +14 créditos/candidato
+                        </div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={filters.ppiOptions?.showPhoneNumbers || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "showPhoneNumbers", checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-4 h-4 text-gray-500" />
+                      <Phone className="w-4 h-4 -ml-2 text-gray-500" />
+                      <div>
+                        <div className="text-sm font-medium">Email OU Telefone</div>
+                        <div className="text-xs text-gray-500">
+                          Pelo menos um contato (+1 crédito)
+                        </div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={filters.ppiOptions?.requirePhonesOrEmails || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "requirePhonesOrEmails", checked)}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeCategory === "general" && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs mb-1.5 block">Experiência Mínima (Anos)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={filters.general?.minExperience || ""}
+                      onChange={(e) => updateFilter("general", "minExperience", e.target.value ? parseInt(e.target.value) : undefined)}
+                      placeholder="Ex: 3 anos"
+                      className="border border-gray-200 focus:ring-1 focus:ring-[#60BED1]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs mb-1.5 block">Experiência Máxima (Anos)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={filters.general?.maxExperience || ""}
+                      onChange={(e) => updateFilter("general", "maxExperience", e.target.value ? parseInt(e.target.value) : undefined)}
+                      placeholder="Ex: 10 anos"
+                      className="border border-gray-200 focus:ring-1 focus:ring-[#60BED1]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox 
+                      checked={filters.general?.hideViewedProfiles || false}
+                      onCheckedChange={(checked) => updateFilter("general", "hideViewedProfiles", !!checked)}
+                    />
+                    <span className="text-sm text-gray-800">
+                      Ocultar perfis já visualizados
+                    </span>
+                  </label>
+                  <p className="text-xs mt-1 ml-6 text-gray-500">
+                    Usa docid_blacklist para excluir perfis anteriores
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {activeCategory === "locations" && (
+              <div className="space-y-6">
+                <div>
+                  <Label className="text-xs mb-1.5 block">Localizações</Label>
+                  <TagInput
+                    value={filters.locations?.locations || []}
+                    onAdd={(val) => addToArray("locations", "locations", val)}
+                    onRemove={(val) => removeFromArray("locations", "locations", val)}
+                    placeholder="Digite cidade ou região e pressione Enter (ex: São Paulo, Rio de Janeiro)"
+                  />
+                  <p className="text-xs mt-1 text-gray-500">
+                    A Busca Global interpreta semanticamente: "SP" = "São Paulo"
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-xs mb-1.5 block">Países</Label>
+                  <TagInput
+                    value={filters.locations?.countries || []}
+                    onAdd={(val) => addToArray("locations", "countries", val)}
+                    onRemove={(val) => removeFromArray("locations", "countries", val)}
+                    placeholder="Digite país e pressione Enter (ex: Brasil, Portugal)"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeCategory === "job" && (
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-sm">Cargos</Label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer">
+                      <Checkbox 
+                        checked={filters.job?.includePastTitles || false}
+                        onCheckedChange={(checked) => updateFilter("job", "includePastTitles", !!checked)}
+                      />
+                      Incluir cargos anteriores
+                    </label>
+                  </div>
+                  <TagInput
+                    value={filters.job?.titles || []}
+                    onAdd={(val) => addToArray("job", "titles", val)}
+                    onRemove={(val) => removeFromArray("job", "titles", val)}
+                    placeholder="Digite cargo e pressione Enter (ex: Desenvolvedor, Product Manager)"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs mb-1.5 block">Níveis de Senioridade</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {experienceLevels.map(level => {
+                      const isSelected = filters.job?.levels?.includes(level.value)
+                      return (
+                        <button
+                          key={level.value}
+                          onClick={() => {
+                            if (isSelected) {
+                              removeFromArray("job", "levels", level.value)
+                            } else {
+                              addToArray("job", "levels", level.value)
+                            }
+                          }}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full text-xs border transition-all",
+                            isSelected 
+                              ? "border-gray-300 bg-gray-100 text-gray-700" 
+                              : "hover:border-gray-400"
+                          )}
+                          style={{ borderColor: isSelected ? undefined : "#f3f4f6" }}
+                        >
+                          {level.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeCategory === "company" && (
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-sm">Empresas</Label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer">
+                      <Checkbox 
+                        checked={filters.company?.includePastCompanies || false}
+                        onCheckedChange={(checked) => updateFilter("company", "includePastCompanies", !!checked)}
+                      />
+                      Incluir empresas anteriores
+                    </label>
+                  </div>
+                  <TagInput
+                    value={filters.company?.companies || []}
+                    onAdd={(val) => addToArray("company", "companies", val)}
+                    onRemove={(val) => removeFromArray("company", "companies", val)}
+                    placeholder="Digite empresa e pressione Enter (ex: Google, Microsoft, Nubank)"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs mb-1.5 block">Empresas Excluídas</Label>
+                  <TagInput
+                    value={filters.company?.excludedCompanies || []}
+                    onAdd={(val) => addToArray("company", "excludedCompanies", val)}
+                    onRemove={(val) => removeFromArray("company", "excludedCompanies", val)}
+                    placeholder="Empresas para NÃO incluir nos resultados"
+                  />
+                  <p className="text-xs mt-1 text-amber-600">
+                    Filtro aplicado localmente após Busca Global
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-xs mb-1.5 block">Setores/Indústrias</Label>
+                  <TagInput
+                    value={filters.company?.industries || []}
+                    onAdd={(val) => addToArray("company", "industries", val)}
+                    onRemove={(val) => removeFromArray("company", "industries", val)}
+                    placeholder="Digite setor e pressione Enter (ex: Tecnologia, Fintech, Saúde)"
+                  />
+                  <p className="text-xs mt-1 text-gray-500">
+                    A Busca Global interpreta: "saúde" = "healthcare"
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-xs mb-1.5 block">Tamanho da Empresa</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {companySizes.map(size => {
+                      const isSelected = filters.company?.companySizes?.includes(size.value)
+                      return (
+                        <button
+                          key={size.value}
+                          onClick={() => {
+                            if (isSelected) {
+                              removeFromArray("company", "companySizes", size.value)
+                            } else {
+                              addToArray("company", "companySizes", size.value)
+                            }
+                          }}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full text-xs border transition-all",
+                            isSelected 
+                              ? "border-gray-300 bg-gray-100 text-gray-700" 
+                              : "hover:border-gray-400"
+                          )}
+                          style={{ borderColor: isSelected ? undefined : "#f3f4f6" }}
+                        >
+                          {size.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeCategory === "skills" && (
+              <div className="space-y-6">
+                <div>
+                  <Label className="text-xs mb-1.5 block">Habilidades Técnicas</Label>
+                  <TagInput
+                    value={filters.skills?.skills || []}
+                    onAdd={(val) => addToArray("skills", "skills", val)}
+                    onRemove={(val) => removeFromArray("skills", "skills", val)}
+                    placeholder="Digite skill e pressione Enter (ex: Python, React, AWS, SQL)"
+                  />
+                  <p className="text-xs mt-2 text-gray-500">
+                    Dica: Skills são melhor tratadas na query natural. Ex: "Python developer with React experience"
+                  </p>
+                </div>
+
+                <div className="mt-4">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Label className="text-xs block">Áreas de Expertise</Label>
+                    <Badge className="text-[11px] px-1.5 py-0.5" style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", color: "#16a34a", border: "none" }}>
+                      GRATUITO
+                    </Badge>
+                  </div>
+                  <TagInput
+                    value={filters.skills?.expertise || []}
+                    onAdd={(val) => addToArray("skills", "expertise", val)}
+                    onRemove={(val) => removeFromArray("skills", "expertise", val)}
+                    placeholder="Digite expertise e pressione Enter (ex: Machine Learning, DevOps, Data Science)"
+                  />
+                  <p className="text-xs mt-1 text-gray-500">
+                    Campos de expertise do LinkedIn (complementa skills)
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {activeCategory === "education" && (
+              <div className="space-y-6">
+                <div>
+                  <Label className="text-xs mb-1.5 block">Universidades</Label>
+                  <TagInput
+                    value={filters.education?.universities || []}
+                    onAdd={(val) => addToArray("education", "universities", val)}
+                    onRemove={(val) => removeFromArray("education", "universities", val)}
+                    placeholder="Digite universidade e pressione Enter (ex: USP, UNICAMP, MIT)"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs mb-1.5 block">Grau Acadêmico</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {degreeTypes.map(degree => {
+                      const isSelected = filters.education?.degrees?.includes(degree.value)
+                      return (
+                        <button
+                          key={degree.value}
+                          onClick={() => {
+                            if (isSelected) {
+                              removeFromArray("education", "degrees", degree.value)
+                            } else {
+                              addToArray("education", "degrees", degree.value)
+                            }
+                          }}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full text-xs border transition-all",
+                            isSelected 
+                              ? "border-gray-300 bg-gray-100 text-gray-700" 
+                              : "hover:border-gray-400"
+                          )}
+                          style={{ borderColor: isSelected ? undefined : "#f3f4f6" }}
+                        >
+                          {degree.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs mb-1.5 block">Áreas de Estudo</Label>
+                  <TagInput
+                    value={filters.education?.fieldsOfStudy || []}
+                    onAdd={(val) => addToArray("education", "fieldsOfStudy", val)}
+                    onRemove={(val) => removeFromArray("education", "fieldsOfStudy", val)}
+                    placeholder="Digite área e pressione Enter (ex: Engenharia, Ciência da Computação)"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeCategory === "languages" && (
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs mb-1.5 block">Idiomas</Label>
+                  <TagInput
+                    value={filters.languages?.languages || []}
+                    onAdd={(val) => addToArray("languages", "languages", val)}
+                    onRemove={(val) => removeFromArray("languages", "languages", val)}
+                    placeholder="Digite idioma e pressione Enter (ex: Inglês, Espanhol, Alemão)"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs mb-1.5 block">Nível de Proficiência</Label>
+                  <Select
+                    value={filters.languages?.proficiencyLevel || "any"}
+                    onValueChange={(value) => updateFilter("languages", "proficiencyLevel", value)}
+                  >
+                    <SelectTrigger className="border border-gray-200 focus:ring-1 focus:ring-[#60BED1]">
+                      <SelectValue placeholder="Selecione o nível" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {proficiencyLevels.map(level => (
+                        <SelectItem key={level.value} value={level.value}>
+                          {level.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs mt-2 text-gray-500">
+                    Dica: Idiomas são melhor tratados na query. Ex: "fluent in English and Portuguese"
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {activeCategory === "profile" && (
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <Label className="text-xs font-medium block">Indicadores de Perfil</Label>
+                  
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <Briefcase className="w-4 h-4 text-green-600" />
+                      <div>
+                        <div className="text-sm font-medium">Aberto a Oportunidades</div>
+                        <div className="text-xs text-gray-500">
+                          Candidatos sinalizando interesse em novas propostas
+                        </div>
+                      </div>
+                    </div>
+                    <Badge className="text-[11px] px-1.5 py-0.5 mr-3" style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", color: "#16a34a", border: "none" }}>
+                      GRATUITO
+                    </Badge>
+                    <Switch
+                      checked={filters.ppiOptions?.openToWorkOnly || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("ppiOptions", "openToWorkOnly", checked)}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <Crown className="w-4 h-4 text-amber-600" />
+                      <div>
+                        <div className="text-sm font-medium">Decisor / Líder</div>
+                        <div className="text-xs text-gray-500">
+                          Profissionais em posições de liderança
+                        </div>
+                      </div>
+                    </div>
+                    <Badge className="text-[11px] px-1.5 py-0.5 mr-3" style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", color: "#16a34a", border: "none" }}>
+                      GRATUITO
+                    </Badge>
+                    <Switch
+                      checked={filters.profile?.isDecisionMaker || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("profile", "isDecisionMaker", checked)}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <GraduationCap className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <div className="text-sm font-medium">Top Universidades</div>
+                        <div className="text-xs text-gray-500">
+                          Formados em universidades de elite
+                        </div>
+                      </div>
+                    </div>
+                    <Badge className="text-[11px] px-1.5 py-0.5 mr-3" style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", color: "#16a34a", border: "none" }}>
+                      GRATUITO
+                    </Badge>
+                    <Switch
+                      checked={filters.profile?.isTopUniversities || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("profile", "isTopUniversities", checked)}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <Rocket className="w-4 h-4 text-purple-600" />
+                      <div>
+                        <div className="text-sm font-medium">Experiência em Startup</div>
+                        <div className="text-xs text-gray-500">
+                          Trabalhou em startups (cultura ágil)
+                        </div>
+                      </div>
+                    </div>
+                    <Badge className="text-[11px] px-1.5 py-0.5 mr-3" style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", color: "#16a34a", border: "none" }}>
+                      GRATUITO
+                    </Badge>
+                    <Switch
+                      checked={filters.profile?.isStartup || false}
+                      onCheckedChange={(checked: boolean) => updateFilter("profile", "isStartup", checked)}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div 
+            className="flex items-center justify-between px-6 py-3 border-t border-gray-100"
+          >
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetFilters}
+                className="text-xs text-gray-500"
+              >
+                <RotateCcw className="w-3 h-3 mr-1" />
+                Limpar filtros
+              </Button>
+              {onSave && (
+                <div 
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs"
+                  style={{ backgroundColor: "rgba(96, 190, 209, 0.1)", color: "#60BED1" }}
+                >
+                  {(() => {
+                    const dest = saveDestinations.find(d => d.key === saveDestination)
+                    const Icon = dest?.icon || Bookmark
+                    return (
+                      <>
+                        <Icon className="w-3 h-3" />
+                        <span>Salvará em: {dest?.label}</span>
+                      </>
+                    )
+                  })()}
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">
+                {getActiveFiltersCount()} filtros ativos
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+              >
+                Cancelar
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleApply}
+                className="bg-[#60BED1] hover:bg-[#50a3b8] text-white"
+              >
+                Aplicar Filtros
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <CreditConfirmationDialog
+        open={showCreditConfirm}
+        onOpenChange={setShowCreditConfirm}
+        onConfirm={handleConfirmSearch}
+        candidateLimit={candidateLimit}
+        creditPerCandidate={creditEstimate.cost_per_candidate}
+        searchType={searchSource === "hybrid" ? "sourcing" : "general"}
+        isLoading={isSearching}
+      />
+    </div>
+  )
+}
+
+export default AdvancedFiltersModal

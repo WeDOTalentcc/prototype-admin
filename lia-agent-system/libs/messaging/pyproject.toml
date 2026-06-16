@@ -1,0 +1,22 @@
+[project]
+name = "lia-messaging"
+version = "0.1.0"
+description = "LIA messaging and notification services"
+requires-python = ">=3.11"
+dependencies = [
+    "lia-config",
+    "sqlalchemy>=2.0.36",
+    "httpx>=0.28.1",
+]
+
+[project.optional-dependencies]
+email-resend = ["resend>=2.19.0"]
+whatsapp-twilio = ["twilio>=9.4.0"]
+all = ["resend>=2.19.0", "twilio>=9.4.0"]
+
+[tool.uv.sources]
+lia-config = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

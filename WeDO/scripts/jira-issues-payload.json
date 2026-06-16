@@ -1,0 +1,1314 @@
+{
+  "action": "create-bulk",
+  "issues": [
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-001] Header Principal Gestao de Vagas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-001\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-002] Botao Nova Vaga",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-002\nStory Points: 5\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-003] Integracao Busca Global",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-003\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-004] Integracao Notificacoes",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-004\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-005] Sistema de Tabs de Filtro",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-005\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-006] Contadores Dinamicos por Status",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-006\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-007] Filtro Todas as Vagas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-007\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-008] Filtro Vagas Ativas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-008\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-009] Filtro Vagas Urgentes",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-009\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-010] Filtro Vagas Paralisadas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-010\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-011] Filtro Concluidas e Canceladas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-011\nStory Points: 3\nPrioridade: Low",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Low"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-012] Container LIA Centralizado",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-012\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-013] Titulo Contextual Dinamico",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-013\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-014] Input de Chat LIA",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-014\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-015] Icones Microfone e Busca",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-015\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-016] Sugestoes Contextuais",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-016\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-017] Integracao Backend LIA",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-017\nStory Points: 13\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-018] Acao Criar Nova Vaga",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-018\nStory Points: 5\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-019] Acao Ver Minhas Vagas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-019\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-020] Acao Ver Todas as Vagas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-020\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-021] Acao Resumo das Vagas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-021\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-022] Acao Mais Ideias (AI)",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-022\nStory Points: 8\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-023] Empty State Design",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-023\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-024] Mensagem Boas-Vindas LIA",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-024\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-028] Tabela de Vagas - Estrutura Base",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-028\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-029] Colunas Configuraveis Toggle/Order",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-029\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-030] Ordenacao Multi-Coluna Sort",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-030\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-031] Redimensionamento de Colunas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-031\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-032] Selecao em Lote Checkbox",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-032\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-033] Persistencia de Config localStorage",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-033\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-034] Coluna Performance LIA Triagens",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-034\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-035] Coluna Roteiro de Triagem",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-035\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-036] Acoes por Linha Menu Dropdown",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-036\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-037] Preview Panel - Estrutura Base",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-037\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-038] Tab Visao Geral - Funil Rapido",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-038\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-039] Tab Visao Geral - Metricas LIA",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-039\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-040] Tab Visao Geral - Responsaveis",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-040\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-041] Tab Visao Geral - Datas Criticas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-041\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-042] Tab Roteiro de Triagem - WSI Blocks",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-042\nStory Points: 13\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-043] WSI Blocks - Accordion Expansivel",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-043\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-044] WSI Blocks - Editor de Perguntas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-044\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-045] Configuracao de Canais de Triagem",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-045\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-046] Processo Seletivo Inline Breadcrumb",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-046\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-047] Resize do Painel de Preview",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-047\nStory Points: 3\nPrioridade: Low",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Low"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-048] JobActionsBar - Barra de Acoes",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-048\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-049] JobPublishModal - Publicar em Canais",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-049\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-050] JobInsightsModal - Metricas Expandidas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-050\nStory Points: 13\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-051] JobDuplicateModal - Duplicar Vaga",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-051\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-052] JobStatusModal - Pausar/Ativar Vaga",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-052\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-053] JobAssignRecruiterModal - Atribuir Recrutador",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-053\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-054] JobUnpublishModal - Despublicar Vaga",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-054\nStory Points: 5\nPrioridade: Low",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Low"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-055] JobCompareModal - Comparar Vagas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-055\nStory Points: 8\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-056] EditJobModal - Edicao Completa",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-056\nStory Points: 13\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-057] JobFiltersPanel - Painel Lateral",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-057\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-058] Filtros Rapidos Ativas/Urgentes/Remotas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-058\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-059] Filtro por Status da Vaga",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-059\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-060] Filtro por Etapa do Processo",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-060\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-061] Filtro por Modelo de Trabalho",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-061\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-062] Filtro por Recrutador/Gestor",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-062\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-063] Busca Booleana AND/OR/NOT",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-063\nStory Points: 5\nPrioridade: Low",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Low"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-064] Pesquisas Salvas Templates",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-064\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-065] Persistencia de Filtros Hook",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-065\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-066] Nivel 1 Mini Prompt Inline",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-066\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-067] Nivel 2 Chat Expandido Lateral",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-067\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-068] Nivel 3 Super Chat Criacao de Vaga",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-068\nStory Points: 13\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-069] Deteccao de Intent de Criacao",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-069\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-070] Auto-Expand LIA ao Selecionar Vagas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-070\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-071] Historico de Mensagens Inline",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-071\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-072] AudioRecordButton Gravacao de Voz",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-072\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-073] LiaVacancyQueriesGuide Popover",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-073\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-074] ExpandedChatModal Modal Full",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-074\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-075] Botao Nova Vaga Header",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-075\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-076] Super Chat Modal Container",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-076\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-077] Wizard Step 1 Descricao Inicial",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-077\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-078] Wizard Step 2 Informacoes Basicas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-078\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-079] Wizard Step 3 Remuneracao e Beneficios",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-079\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-080] Wizard Step 4 Competencias Tecnicas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-080\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-081] Wizard Step 5 Competencias WSI",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-081\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-082] Wizard Step 6 Requisitos Idiomas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-082\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-083] Wizard Step 7 Scorecard Avaliacao",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-083\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-084] Wizard Step 8 Prazos e Cronograma",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-084\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-085] Wizard Step 9 Pipeline do Processo",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-085\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-086] Wizard Step 10 Solicitacao de Dados",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-086\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-087] Wizard Step 11 Revisao Final",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-087\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-088] [BACK] Endpoint /lia/job-wizard/step",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-088\nStory Points: 13\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-089] Navegacao entre Etapas Stepper",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-089\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-090] Calibracao de Candidatos Sourcing",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-090\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-091] ScreeningQuestionsPanel Perguntas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-091\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-092] Integracao com Busca Global Pearch",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-092\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-093] Validacao de Dados Zod Schema",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-093\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Frontend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-094] [BACK-RAILS] API CRUD Vagas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-094\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-095] [BACK-RAILS] API Filtros Avancados",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-095\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-096] [BACK-RAILS] API Publicacao Multi-Canal",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-096\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-097] [BACK-RAILS] API Metricas Vaga",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-097\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-098] [BACK-RAILS] API Duplicacao Vaga",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-098\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-099] [BACK-RAILS] API Status Vaga",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-099\nStory Points: 3\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-100] [BACK-RAILS] API Atribuicao Recrutador",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-100\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-101] [BACK-RAILS] API Comparacao Vagas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-101\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-102] [BACK-RAILS] Webhooks Mudanca Status",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-102\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-103] [BACK-RAILS] API Pesquisas Salvas",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-103\nStory Points: 3\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-104] [BACK-RAILS] API Usuarios Recrutadores",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-104\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-105] [BACK-RAILS] API Pipeline Stages",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-105\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-106] [BACK-RAILS] API Integracao WorkOS",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-106\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-107] [BACK-RAILS] API Logs Auditoria",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-107\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-108] [BACK-RAILS] API Export PDF/CSV",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-108\nStory Points: 5\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-109] [BACK-IA] Comparacao de Candidatos por Cenario",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-109\nStory Points: 13\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-110] [BACK-IA] Score LIA Unificado",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-110\nStory Points: 8\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-111] [BACK-IA] Parecer Automatico de Candidato",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-111\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-112] [BACK-IA] Metodologia LIA Unificada",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-112\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-113] [BACK-IA] WSI Scoped por VacancyCandidate",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-113\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-114] [BACK-IA] Testes de Validacao Cenarios",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-114\nStory Points: 5\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-115] [BACK-IA] WSI Service - Metodologia Cientifica",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-115\nStory Points: 13\nPrioridade: Highest",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "Highest"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-116] [BACK-IA] CV Parser - Extracao Inteligente",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-116\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-117] [BACK-IA] WSI Question Generator",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-117\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-118] [BACK-IA] Personalized Feedback Service",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-118\nStory Points: 8\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-119] [BACK-IA] Culture Analyzer Service",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-119\nStory Points: 8\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "Medium"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-120] [BACK-IA] Interview Transcript Analysis",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-120\nStory Points: 13\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-121] [BACK-IA] Semantic Search Service",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-121\nStory Points: 8\nPrioridade: High",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "High"
+    },
+    {
+      "projectKey": "WT",
+      "summary": "[VAG-122] [BACK-IA] Candidate Enrichment Service",
+      "description": "Card da documentacao de Gestao de Vagas.\n\nID: VAG-122\nStory Points: 8\nPrioridade: Medium",
+      "issueType": "Task",
+      "labels": [
+        "VAGAS",
+        "Backend-IA"
+      ],
+      "priority": "Medium"
+    }
+  ]
+}

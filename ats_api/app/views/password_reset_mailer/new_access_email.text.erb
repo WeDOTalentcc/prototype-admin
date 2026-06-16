@@ -1,0 +1,20 @@
+We Do Talent - Novo Acesso Criado
+=====================================
+
+Olá, <%= @user.name || @user.email %>!
+
+Um novo acesso foi criado para você no We Do Talent.
+
+Para definir sua senha e acessar o sistema, clique no link abaixo:
+<%= @reset_url %>
+
+IMPORTANTE:
+- Este link expira em 7 dias
+- Por segurança, este link só pode ser usado uma vez
+
+Se você não conseguir acessar o link, copie e cole o endereço completo no seu navegador.
+
+---
+Este é um e-mail automático. Por favor, não responda.
+© <%= Date.current.year %> We Do Talent - Todos os direitos reservados
+

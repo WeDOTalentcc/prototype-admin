@@ -1,0 +1,298 @@
+@import '../styles/design-tokens.css';
+@import './styles/typography.css';
+@import './styles/animations.css';
+@import './styles/components.css';
+@import './styles/dark-mode.css';
+@import '../components/pages/chat-page.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background-color: #ffffff;
+}
+
+
+/* Sprint 7: globals.css split -- see src/app/styles/ for themed files */
+
+
+/* OPT-029 2026-03-29: @keyframes fade-in removido -- era NOP (opacity:1→1, transform:none→none).
+   .animate-fade-in também removido -- estava desabilitado (animation: none !important).
+   Zero usos encontrados em src/ via grep. */
+
+/* Radix UI animations desabilitadas globalmente -- 2026-03-29
+   Decisão arquitetural: consistência com design system WeDo (sem animações de entrada/saída).
+   Para reativar em componentes específicos, sobrescreva localmente com animation: <name> duration. */
+/* Desabilitar todas as animações Radix UI */
+[data-radix-tooltip-content] {
+  animation: none !important;
+}
+/* [OPT-030] Animações Radix: os componentes Dialog, Popover, DropdownMenu
+   usam data-state=open/closed. As animações Radix estão desabilitadas globalmente
+   neste projeto (decisão arquitetural de 2026-03-29) via seletores acima.
+   Radix animation classes como [data-state=open] e [data-state=closed] não estão
+   sobrepostas individualmente -- a desativação é global via animation: none !important.
+   Para reativar animações Radix em componentes específicos, remova animation: none !important
+   do seletor correspondente e adicione classes tailwindcss-animate localmente. */
+
+[data-radix-dropdown-menu-content] {
+  animation: none !important;
+}
+
+/* OPT-029 2026-03-29: @keyframes slideDown removido -- NOP, zero usos. */
+
+/* OPT-029 2026-03-29: @keyframes slideUp removido -- NOP, zero usos. */
+
+@layer base {
+  :root {
+/* --font-* CSS vars definidos aqui foram removidos 2026-03-29
+   next/font injeta suas próprias variáveis em runtime (ex: --font-inter: '__Inter_abc123')
+   Definições hardcoded aqui sobrescreviam os valores do next/font → blur por fallback para fonte do sistema */
+
+    /* ===== Voice/Language Tokens → migrados para design-tokens.css como --lia-voice-* ===== */
+    /* Removido 2026-03-29: --eleven-* tokens eliminados.
+       Estruturais: substituídos por --lia-* equivalentes.
+       Temáticos: movidos para design-tokens.css como --lia-voice-* */
+
+    /* WeDoTalent - Paleta Apoio (cores suaves para UI) */
+    /* deprecated - zero uso em .tsx/.ts - remover no Sprint 10 */
+
+    /* WeDoTalent - Paleta Primária (cores vibrantes) */
+    --wedo-primary-coral: #E87575;      /* Coral suave - atualizado 2026-03-29, era #E16162 */
+    --wedo-primary-sky: #7FB3D5;        /* Azul celeste */
+    --wedo-primary-yellow: #F5D547;     /* Amarelo vibrante */
+    --wedo-primary-peach: #FFB5A7;      /* Rosa pêssego */
+    --wedo-primary-orange: #FFAA7F;     /* Laranja pêssego */
+    --wedo-primary-lavender: #C7D2FE;   /* Azul lavanda */
+    --wedo-primary-mint-light: #D4E4DC; /* Verde menta claro */
+
+    /* WeDoTalent brand palette (hex) - Enhanced contrast */
+    --wedo-blue: #3B82F6;           /* Azul principal - mais vibrante */
+    --wedo-light-blue: #0EA5E9;     /* Azul claro apoio - mais contraste */
+    --wedo-mint: #10B981;           /* Menta / success - mais saturado */
+    --wedo-yellow: #F59E0B;         /* Amarelo / warning - mais contraste */
+    --wedo-coral: #F09090;          /* Coral dark mode - boost proporcional (light #E87575 → dark #F09090), atualizado 2026-03-29 */
+    --wedo-peach: #F97316;          /* Pêssego (apoio) - mais contraste */
+
+    /* Subtle tints for backgrounds */
+    --wedo-blue-50: #EFF6FF;
+    --wedo-light-blue-50: #F0F9FF;
+    --wedo-mint-50: #F0FDF4;
+    --wedo-yellow-50: #FEF3C7;
+    --wedo-coral-50: #FEF2F2;
+    --wedo-peach-50: #FFF7ED;
+
+    /* Uniform text tokens */
+    --wedo-text-black: #111827; /* gray-900 */
+    --wedo-text-gray: #4B5563;  /* gray-600 */
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 215 25% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+    --primary: 215 25% 15%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 17% 96%;
+    --secondary-foreground: 215 20% 25%;
+    --muted: 210 17% 96%;
+    --muted-foreground: 215 15% 45%;
+    --accent: 210 17% 96%;
+    --accent-foreground: 215 20% 25%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 78%;
+    --input: 0 0% 69%;
+    --ring: 215 25% 15%;
+    --radius: 0.75rem;
+
+    /* Paleta de Cores Tech Startups 2024-2025 - Valores Corretos */
+    --ai-aqua: 194 100% 39%; /* #0094c6 - futuristic blue-green */
+    --electric-red: 351 79% 49%; /* #de1c31 - vibrant red */
+    --ethereal-green: 75 65% 44%; /* #8bb923 - soft futuristic (green) */
+    --warm-energy: 44 86% 54%; /* #f0b323 - energetic yellow */
+    --peach-fuzz: 16 89% 76%; /* #f6A68c - Pantone 2024 */
+    --deep-tech: 0 0% 11%; /* #1d1d1f - almost black */
+
+    /* Secondary variations - 20% mais claras */
+    --ai-aqua-light: 194 100% 85%;
+    --electric-red-light: 351 79% 85%;
+    --ethereal-green-light: 75 65% 85%;
+    --warm-energy-light: 44 86% 85%;
+    --peach-fuzz-light: 16 89% 90%;
+
+    /* Tons neutros da paleta */
+    --neutral-warm: 48 15% 92%; /* #edeecb */
+    --neutral-cool: 220 9% 75%; /* #bebebf */
+    --neutral-dark: 240 2% 49%; /* #7e7e81 */
+
+    /* WeDo Refined Palette */
+    --wedo-primary: var(--ai-aqua);
+    --wedo-secondary: var(--neutral-warm);
+    --wedo-accent: var(--ai-aqua);
+    --wedo-success: var(--ethereal-green);
+    --wedo-warning: var(--warm-energy);
+    --wedo-error: var(--electric-red);
+
+    /* Updated grays with palette */
+    --wedo-gray-25: var(--neutral-warm);
+    --wedo-gray-50: 48 15% 96%;
+    --wedo-gray-100: 48 15% 94%;
+    --wedo-gray-200: 220 9% 90%;
+    --wedo-gray-300: 220 9% 84%;
+    --wedo-gray-400: var(--neutral-cool);
+    --wedo-gray-500: var(--neutral-dark);
+    --wedo-gray-600: 240 2% 35%;
+    --wedo-gray-700: 240 2% 25%;
+    --wedo-gray-800: var(--deep-tech);
+    --wedo-gray-900: 0 0% 8%;
+
+    --wedo-bg: 0 0% 99%;
+    --wedo-surface: 0 0% 100%;
+  }
+
+  /* .dark variables moved to src/app/styles/dark-mode.css — BCK-04 */
+}
+
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  /* transition-duration e transition-timing-function removidos do * selector 2026-03-29
+     Aplicar transition-all em * causa blur de texto em camadas GPU (sub-pixel rasterization).
+     Use transition-colors duration-200 diretamente nos componentes interativos. */
+
+  html {
+    font-feature-settings: "rlig" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
+    font-family: var(--font-open-sans), "Open Sans", sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    transition: background-color 0.3s ease;
+    letter-spacing: -0.01em;
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== DESABILITAR ANIMAÇÕES RADIX UI (apenas tooltips/dropdowns) ===== */
+[data-radix-tooltip-content],
+[data-radix-dropdown-menu-content],
+[data-radix-popover-content] {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Override animações específicas de fade/slide/scale (não ping/pulse/spin) */
+[class*="animate-fade"],
+[class*="animate-slide"],
+[class*="animate-scale"] {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ===== UTILITY ANIMATION CLASSES (replaces inline style={{animation: ...}}) ===== */
+.animate-slide-in-up { animation: slideInUp 0.3s ease-out; }
+.animate-slide-in-up-slow { animation: slideInUp 0.4s ease-out; }
+.animate-slide-in-right { animation: slideInRight 0.3s ease-out; }
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-fade-in-fast { animation: fadeIn 0.25s ease-in-out; }
+.animate-fade-in-up { animation: fadeInUp 0.2s ease-out; }
+.animate-scale-in-delayed { animation: scaleInDelayed 0.2s ease-out; }
+.animate-check-pulse { animation: check-pulse 2s ease-in-out infinite; }
+.animate-none-no-transition { animation: none; transition-duration: 0ms; }
+
+@keyframes notificationShake {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-12deg); }
+  45% { transform: rotate(10deg); }
+  60% { transform: rotate(-8deg); }
+  75% { transform: rotate(4deg); }
+}
+.animate-notification-shake { animation: notificationShake 0.6s ease-in-out; }
+
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--lia-text-disabled, #9ca3af);
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap:focus {
+  outline: none;
+}
+
+.tiptap h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.tiptap h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.5rem;
+}
+
+.tiptap ul {
+  list-style-type: disc;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid var(--lia-border-subtle, #e5e7eb);
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+
+.tiptap hr {
+  border-color: var(--lia-border-subtle, #e5e7eb);
+  margin: 0.75rem 0;
+}
+
+.tiptap a {
+  color: var(--wedo-cyan, #06b6d4);
+  text-decoration: underline;
+}
+
+.lia-variable-chip {
+  user-select: none;
+  cursor: default;
+}

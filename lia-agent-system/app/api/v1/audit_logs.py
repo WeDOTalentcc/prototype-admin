@@ -36,6 +36,7 @@ from app.schemas.audit_logs import (
 )
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
@@ -339,7 +340,6 @@ company_id: str = Depends(require_company_id)):
 
         # R-011: company_id do ContextVar (JWT-validated, nunca do payload)
         from app.middleware.auth_enforcement import _current_company_id
-from app.shared.errors import LIAError
         _cid_str = _current_company_id.get("")
         try:
             from uuid import UUID as _UUID

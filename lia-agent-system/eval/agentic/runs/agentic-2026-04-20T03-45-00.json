@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "timestamp": "2026-04-20T03-45-00",
+    "base_url": "http://localhost:5000",
+    "pass_k": 1,
+    "scenarios_total": 66,
+    "scenarios_run": 1
+  },
+  "results": [
+    {
+      "scenario_id": "AGT-D03-001",
+      "run_index": 0,
+      "tags": [
+        "d3",
+        "critical",
+        "smoke"
+      ],
+      "severity": "critical",
+      "goal": "Where do I configure the recruitment policy?",
+      "setup_notes": "",
+      "scope": "global",
+      "page": "chat",
+      "expected_tools": [],
+      "expected_state_after": [],
+      "expected_proactive_actions": [],
+      "transcript": [
+        {
+          "role": "user",
+          "content": "Onde eu configuro a política de recrutamento da empresa?"
+        },
+        {
+          "role": "lia",
+          "content": "A política de recrutamento é formalizada e sugerida aqui na plataforma pela LIA, com base nas características da sua empresa. Atualmente, a sua empresa não tem uma política formalizada.\nEu posso sugerir uma política baseline apropriada ao seu setor e tamanho, já validada pelo nosso Fairness Guard para garantir zero discriminação. Isso ajuda muito a padronizar e otimizar seus processos.\nSe quiser que eu faça essa sugestão, me diga qual o tamanho da sua empresa (startup, pequena, média ou grande) e qual o setor de atuação, por favor.Essas configurações gerais da empresa costumam estar na área de Configurações da plataforma, onde você define dados básicos, cultura, benefícios e outros processos."
+        },
+        {
+          "role": "user",
+          "content": "Entendi, obrigado pela explicação! Vou verificar a área de Configurações da plataforma para atualizar os dados básicos da empresa. Não preciso que você sugira uma política baseline agora, vou primeiro organizar essas informações lá. Obrigado!"
+        },
+        {
+          "role": "lia",
+          "content": "De nada! Fico feliz em ajudar.\nQuando precisar de auxílio com as configurações ou se mudar de ideia sobre a política de recrutamento, é só me chamar."
+        },
+        {
+          "role": "user",
+          "content": "Perfeito! Vou explorar as Configurações agora. Obrigado pela ajuda!"
+        },
+        {
+          "role": "lia",
+          "content": "De nada! Fico feliz em ajudar.\nSe precisar de algo mais enquanto explora as Configurações ou em qualquer outra área, é só me chamar!"
+        },
+        {
+          "role": "user",
+          "content": "Tudo bem! Vou acessar as Configurações agora para atualizar os dados da empresa. Obrigado!"
+        },
+        {
+          "role": "lia",
+          "content": "Ótimo! Fico à disposição se precisar de ajuda com algo por lá."
+        },
+        {
+          "role": "user",
+          "content": "Perfeito! Vou acessar as Configurações agora. Obrigado pela disponibilidade!"
+        },
+        {
+          "role": "lia",
+          "content": "De nada! Fico à disposição se precisar de ajuda ou tiver qualquer dúvida enquanto estiver lá nas Configurações. É só chamar!"
+        },
+        {
+          "role": "user",
+          "content": "Tudo certo! Vou acessar as Configurações → Empresa agora para atualizar os dados. Obrigado!  [END]"
+        },
+        {
+          "role": "lia",
+          "content": "De nada! Fico feliz em ajudar. Se precisar de mais alguma coisa ou tiver dúvidas ao preencher as informações da empresa, é só me chamar."
+        },
+        {
+          "role": "user",
+          "content": "Certo! Vou acessar as Configurações → Empresa agora. Obrigado pela ajuda!"
+        },
+        {
+          "role": "lia",
+          "content": "De nada! Fico feliz em ajudar. Se precisar de mais alguma coisa enquanto estiver configurando, é só me chamar."
+        },
+        {
+          "role": "user",
+          "content": "Tudo bem! Vou acessar as Configurações → Empresa agora para atualizar os dados da empresa. Obrigado!  [END]"
+        },
+        {
+          "role": "lia",
+          "content": "Ótimo! Fico feliz em ajudar. Me avise se precisar de algo mais enquanto estiver por lá."
+        }
+      ],
+      "observed_tools": [],
+      "total_turns": 8,
+      "total_duration_ms": 53451,
+      "errored": "MAX_TURNS_REACHED (8)"
+    }
+  ]
+}

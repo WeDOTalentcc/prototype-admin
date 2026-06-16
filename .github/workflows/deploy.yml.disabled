@@ -1,0 +1,98 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "staging"
+        type: choice
+        options: [staging, production]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false  # Never cancel deploys in flight
+
+jobs:
+  # ── Build & push Docker image ──────────────────────────────────────────────
+  build:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate image tag
+        id: meta
+        run: |
+          SHORT_SHA="${{ github.sha }}"
+          SHORT_SHA="${SHORT_SHA:0:7}"
+          echo "image_tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # GCP — authenticate with Workload Identity (keyless)
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Configure GCR Docker auth
+        run: gcloud auth configure-docker gcr.io --quiet
+
+      - name: Build and push (GCP)
+        uses: docker/build-push-action@v5
+        with:
+          context: lia-agent-system
+          file: lia-agent-system/Dockerfile.prod
+          push: true
+          tags: |
+            gcr.io/${{ secrets.GCP_PROJECT_ID }}/lia-agent-system:${{ steps.meta.outputs.image_tag }}
+            gcr.io/${{ secrets.GCP_PROJECT_ID }}/lia-agent-system:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Deploy to GCP VM ────────────────────────────────────────────────────────
+  deploy-gcp:
+    name: Deploy → GCP
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+      url: ${{ vars.API_URL }}
+
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Deploy to GCP VM via SSH
+        uses: google-github-actions/ssh-compute@v1
+        with:
+          instance_name: ${{ secrets.GCP_VM_NAME }}
+          zone: ${{ vars.GCP_ZONE }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          ssh_private_key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          command: |
+            cd /opt/lia
+            IMAGE_TAG=${{ needs.build.outputs.image_tag }} \
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+              pull api celery_worker celery_beat
+            IMAGE_TAG=${{ needs.build.outputs.image_tag }} \
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+              up -d --no-deps api celery_worker celery_beat
+
+      - name: Health check
+        run: |
+          sleep 15
+          curl -sf ${{ vars.API_URL }}/api/v1/health | python3 -m json.tool

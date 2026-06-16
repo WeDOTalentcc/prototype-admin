@@ -1,0 +1,167 @@
+/* Estilos para scrollbar suave */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 20px;
+  border: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.5);
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Estilo para modo escuro */
+.dark .custom-scrollbar {
+  scrollbar-color: rgba(107, 114, 128, 0.3) transparent;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.3);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.5);
+}
+
+/* Smooth scrolling behavior */
+.custom-scrollbar {
+  scroll-behavior: smooth;
+}
+
+.lia-markdown-content strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+.lia-markdown-content em {
+  font-style: italic;
+}
+
+.lia-markdown-content code {
+  background-color: rgba(107, 114, 128, 0.15);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.lia-markdown-content pre {
+  background-color: rgba(17, 24, 39, 0.05);
+  border: 1px solid rgba(107, 114, 128, 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  overflow-x: auto;
+}
+
+.dark .lia-markdown-content pre {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+.lia-markdown-content ul,
+.lia-markdown-content ol {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+
+.lia-markdown-content li {
+  margin: 3px 0;
+}
+
+.lia-markdown-content h3 {
+  font-weight: 600;
+  font-size: 0.95em;
+  margin: 10px 0 4px 0;
+}
+
+.lia-markdown-content h4 {
+  font-weight: 600;
+  font-size: 0.9em;
+  margin: 8px 0 4px 0;
+}
+
+.lia-markdown-content p {
+  margin: 4px 0;
+}
+
+.lia-markdown-content h1 {
+  font-weight: 700;
+  font-size: 1.15em;
+  margin: 12px 0 6px 0;
+}
+
+.lia-markdown-content h2 {
+  font-weight: 600;
+  font-size: 1.05em;
+  margin: 10px 0 5px 0;
+}
+
+.lia-markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.9em;
+}
+
+.lia-markdown-content th,
+.lia-markdown-content td {
+  padding: 6px 10px;
+  border: 1px solid rgba(107, 114, 128, 0.25);
+  text-align: left;
+}
+
+.lia-markdown-content th {
+  font-weight: 600;
+  background-color: rgba(107, 114, 128, 0.08);
+}
+
+.dark .lia-markdown-content th {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark .lia-markdown-content th,
+.dark .lia-markdown-content td {
+  border-color: rgba(107, 114, 128, 0.35);
+}
+
+.lia-markdown-content blockquote {
+  border-left: 3px solid rgba(107, 114, 128, 0.3);
+  padding-left: 12px;
+  margin: 8px 0;
+  color: inherit;
+  opacity: 0.85;
+}
+
+.lia-markdown-content hr {
+  border: none;
+  border-top: 1px solid rgba(107, 114, 128, 0.2);
+  margin: 10px 0;
+}
+
+.lia-markdown-content a {
+  color: #0ea5e9;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.lia-markdown-content a:hover {
+  opacity: 0.8;
+}

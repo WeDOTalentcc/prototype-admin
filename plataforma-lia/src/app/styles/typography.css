@@ -1,0 +1,87 @@
+/* =============================================
+   WeDo DS — Typography
+   Extracted from globals.css — Sprint 7
+   ============================================= */
+
+/* Aplicar fonte Open Sans em elementos de navegação e títulos */
+nav,
+[data-sidebar="true"],
+.menu-item,
+.settings-title,
+.tab-item,
+.tab-button,
+[role="tab"],
+[role="tablist"] button,
+.nav-tabs button,
+.menu-horizontal button {
+  font-family: var(--font-open-sans);
+  font-weight: 500;
+}
+
+/* TÍTULOS DAS CONFIGURAÇÕES - Fonte Open Sans (DS v4.1: Inter apenas para métricas numéricas) */
+.settings-page h1,
+.settings-page h2,
+.settings-page h3,
+.settings-page .settings-category-title {
+  font-family: var(--font-open-sans);
+}
+
+/* MENU PRINCIPAL - Fonte específica para itens de navegação (12px) */
+nav,
+[data-sidebar="true"],
+.menu-item,
+[data-sidebar="true"] a,
+[data-sidebar="true"] span,
+[data-sidebar="true"] div,
+.sidebar a,
+.sidebar span,
+.sidebar div,
+.wedo-nav-item,
+.nav-item,
+.tab-item,
+.tab-button,
+[role="tab"],
+[role="tablist"] button,
+.nav-tabs button,
+.menu-horizontal button,
+/* MENU DE CONFIGURAÇÕES - mesma fonte do menu principal */
+.settings-menu-item,
+.settings-navigation button {
+  font-family: var(--font-open-sans);
+  font-size: 0.75rem; /* 12px */
+  line-height: 1.125rem;
+  font-weight: 500;
+}
+
+/* Uniformizar abas em todas as páginas */
+[aria-label="Tabs"] button,
+.tabs-container button,
+.tab-navigation button,
+nav[role="tablist"] button {
+  font-family: var(--font-open-sans);
+  font-size: 0.75rem; /* 12px */
+  line-height: 1.125rem;
+  font-weight: 500;
+}
+
+/*
+   DESIGN SYSTEM LIA v4.1 - Utility Classes
+   Tipografia: Open Sans 60% | Inter 40% (DS v4.1)
+   Espaçamento: Base 4px
+   =================================================== */
+
+body {
+  font-family: var(--font-open-sans), Open Sans, sans-serif;
+  @apply text-gray-900 dark:text-gray-100;
+  @apply bg-white dark:bg-gray-900;
+}
+
+h1, h2, h3, h4, h5, h6,
+button,
+label {
+  font-family: var(--font-open-sans), Open Sans, sans-serif;
+}
+
+td, th {
+  font-feature-settings: tnum 1;
+}

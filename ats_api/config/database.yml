@@ -1,0 +1,32 @@
+
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("DB_POOL", 25) %>
+  username: "<%= ENV['POSTGRES_USER'] %>"
+  password: "<%= ENV['POSTGRES_PASSWORD'] %>"
+  host: <%= ENV.fetch('POSTGRES_HOST', 'db') %>
+  port: <%= ENV.fetch('POSTGRES_PORT', 5432) %>
+  # GAP-10-005: sslmode not set in default — env-specific. dev/test set disable (local); production uses DATABASE_URL with SSL.
+
+development:
+  <<: *default
+  sslmode: disable  # Local container DB, no TLS needed
+  database: ats_api_development
+  prepared_statements: false
+
+test:
+  <<: *default
+  sslmode: disable  # Local container DB, no TLS needed
+  database: ats_api_test
+  prepared_statements: false
+
+production:
+  adapter: postgresql
+  encoding: unicode
+  # Pool >= Sidekiq concurrency + buffer. db-g1-small: concurrency 10, pool 15.
+  pool: <%= ENV.fetch("DB_POOL", 15) %>
+  # Espera até 20s por uma conexão antes de desistir (default 5s)
+  checkout_timeout: <%= ENV.fetch("DB_CHECKOUT_TIMEOUT", 20) %>
+  sslmode: <%= ENV.fetch('RAILS_DB_SSLMODE', 'require') %>  # GAP-10-005: require TLS in prod
+  url: <%= ENV.fetch("DATABASE_URL", "postgresql://user:password@localhost/fallback_db") %>

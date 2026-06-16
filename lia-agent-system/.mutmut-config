@@ -1,0 +1,6 @@
+[mutmut]
+paths_to_mutate=app/shared/compliance/,app/domains/compliance/,app/shared/evaluation/
+backup=False
+runner=python -m pytest tests/unit/ -x -q --no-cov
+tests_dir=tests/unit/
+dict_synonyms=

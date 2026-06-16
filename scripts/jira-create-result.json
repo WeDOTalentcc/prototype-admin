@@ -1,0 +1,621 @@
+{
+  "timestamp": "2026-02-02T17:55:11.141Z",
+  "totalProcessed": 51,
+  "successCount": 46,
+  "errorCount": 0,
+  "notFoundCount": 5,
+  "results": [
+    {
+      "docCode": "WIZ-009",
+      "jiraKey": "WT-1182",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-wizard",
+        "priority-alta",
+        "wiz-009"
+      ]
+    },
+    {
+      "docCode": "WIZ-010",
+      "jiraKey": "WT-1183",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-wizard",
+        "priority-alta",
+        "wiz-010"
+      ]
+    },
+    {
+      "docCode": "WIZ-011",
+      "jiraKey": "WT-1184",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-wizard",
+        "priority-critica",
+        "wiz-011"
+      ]
+    },
+    {
+      "docCode": "WIZ-012",
+      "jiraKey": "WT-1185",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-wizard",
+        "priority-critica",
+        "wiz-012"
+      ]
+    },
+    {
+      "docCode": "WIZ-013",
+      "jiraKey": "WT-1186",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-wizard",
+        "priority-alta",
+        "wiz-013"
+      ]
+    },
+    {
+      "docCode": "TRI-012",
+      "jiraKey": "WT-1187",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-backend",
+        "epic-tri",
+        "priority-alta",
+        "tri-012"
+      ]
+    },
+    {
+      "docCode": "KAN-010",
+      "status": "not_found"
+    },
+    {
+      "docCode": "KAN-009",
+      "jiraKey": "WT-1188",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-frontend",
+        "epic-kan",
+        "priority-alta",
+        "kan-009"
+      ]
+    },
+    {
+      "docCode": "INT-TWI-005",
+      "jiraKey": "WT-1189",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-configuração-+-backend",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-twi-005"
+      ]
+    },
+    {
+      "docCode": "INT-TWI-006",
+      "jiraKey": "WT-1190",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-twi-006"
+      ]
+    },
+    {
+      "docCode": "INT-TWI-007",
+      "jiraKey": "WT-1191",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-twi-007"
+      ]
+    },
+    {
+      "docCode": "INT-MSG-002",
+      "jiraKey": "WT-1192",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-4",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-msg-002"
+      ]
+    },
+    {
+      "docCode": "INT-MSG-003",
+      "jiraKey": "WT-1193",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-msg-003"
+      ]
+    },
+    {
+      "docCode": "INT-MSG-004",
+      "jiraKey": "WT-1194",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-msg-004"
+      ]
+    },
+    {
+      "docCode": "INT-MSG-006",
+      "jiraKey": "WT-1195",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-4",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-critica",
+        "int-msg-006"
+      ]
+    },
+    {
+      "docCode": "INT-LLM-001",
+      "jiraKey": "WT-1196",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-0",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-critica",
+        "int-llm-001"
+      ]
+    },
+    {
+      "docCode": "INT-LLM-002",
+      "jiraKey": "WT-1197",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-0",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-critica",
+        "int-llm-002"
+      ]
+    },
+    {
+      "docCode": "INT-LLM-003",
+      "jiraKey": "WT-1198",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-llm-003"
+      ]
+    },
+    {
+      "docCode": "INT-LLM-004",
+      "jiraKey": "WT-1199",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-llm-004"
+      ]
+    },
+    {
+      "docCode": "INT-LLM-005",
+      "jiraKey": "WT-1200",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-llm-005"
+      ]
+    },
+    {
+      "docCode": "INT-LLM-006",
+      "jiraKey": "WT-1201",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-media",
+        "int-llm-006"
+      ]
+    },
+    {
+      "docCode": "INT-LLM-007",
+      "jiraKey": "WT-1202",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-4",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-llm-007"
+      ]
+    },
+    {
+      "docCode": "INT-LLM-008",
+      "jiraKey": "WT-1203",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-llm-008"
+      ]
+    },
+    {
+      "docCode": "INT-LLM-009",
+      "jiraKey": "WT-1204",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-4",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-llm-009"
+      ]
+    },
+    {
+      "docCode": "INT-WOS-001",
+      "jiraKey": "WT-1205",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-0",
+        "tipo-configuração-saas",
+        "epic-int-mvp",
+        "priority-critica",
+        "int-wos-001"
+      ]
+    },
+    {
+      "docCode": "INT-WOS-002",
+      "jiraKey": "WT-1206",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-1",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-wos-002"
+      ]
+    },
+    {
+      "docCode": "INT-WOS-003",
+      "jiraKey": "WT-1207",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-media",
+        "int-wos-003"
+      ]
+    },
+    {
+      "docCode": "INT-WOS-004",
+      "jiraKey": "WT-1208",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-wos-004"
+      ]
+    },
+    {
+      "docCode": "INT-WOS-005",
+      "jiraKey": "WT-1209",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-1",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-wos-005"
+      ]
+    },
+    {
+      "docCode": "INT-WOS-006",
+      "jiraKey": "WT-1210",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-1",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-alta",
+        "int-wos-006"
+      ]
+    },
+    {
+      "docCode": "INT-WOS-007",
+      "jiraKey": "WT-1211",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-feature",
+        "epic-int-mvp",
+        "priority-media",
+        "int-wos-007"
+      ]
+    },
+    {
+      "docCode": "INT-APY-001",
+      "status": "not_found"
+    },
+    {
+      "docCode": "INT-APY-002",
+      "status": "not_found"
+    },
+    {
+      "docCode": "INT-APY-003",
+      "status": "not_found"
+    },
+    {
+      "docCode": "JD-001",
+      "jiraKey": "WT-1212",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-frontend",
+        "epic-wizard",
+        "priority-alta",
+        "jd-001"
+      ]
+    },
+    {
+      "docCode": "JD-002",
+      "jiraKey": "WT-1213",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-frontend",
+        "epic-wizard",
+        "priority-alta",
+        "jd-002"
+      ]
+    },
+    {
+      "docCode": "JDW-001",
+      "jiraKey": "WT-1214",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-backend",
+        "epic-jd-wizard",
+        "priority-alta",
+        "jdw-001"
+      ]
+    },
+    {
+      "docCode": "JDW-002",
+      "jiraKey": "WT-1215",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-backend",
+        "epic-jd-wizard",
+        "jdw-002"
+      ]
+    },
+    {
+      "docCode": "JDW-003",
+      "jiraKey": "WT-1216",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-2",
+        "tipo-backend",
+        "epic-jd-wizard",
+        "priority-alta",
+        "jdw-003"
+      ]
+    },
+    {
+      "docCode": "CFG-001",
+      "jiraKey": "WT-1217",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-frontend",
+        "epic-config",
+        "cfg-001"
+      ]
+    },
+    {
+      "docCode": "CFG-002",
+      "jiraKey": "WT-1218",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-backend",
+        "epic-config",
+        "cfg-002"
+      ]
+    },
+    {
+      "docCode": "CFG-003",
+      "jiraKey": "WT-1219",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-frontend",
+        "epic-config",
+        "priority-alta",
+        "cfg-003"
+      ]
+    },
+    {
+      "docCode": "CFG-004",
+      "jiraKey": "WT-1220",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-frontend",
+        "epic-config",
+        "priority-alta",
+        "cfg-004"
+      ]
+    },
+    {
+      "docCode": "CFG-005",
+      "jiraKey": "WT-1221",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-frontend",
+        "epic-config",
+        "cfg-005"
+      ]
+    },
+    {
+      "docCode": "IMP-001",
+      "jiraKey": "WT-1222",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-4",
+        "tipo-frontend",
+        "epic-config",
+        "imp-001"
+      ]
+    },
+    {
+      "docCode": "AGT-001",
+      "jiraKey": "WT-1223",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-4",
+        "tipo-ai",
+        "epic-agents",
+        "priority-alta",
+        "agt-001"
+      ]
+    },
+    {
+      "docCode": "AGT-002",
+      "jiraKey": "WT-1224",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-4",
+        "tipo-ai",
+        "epic-agents",
+        "priority-alta",
+        "agt-002"
+      ]
+    },
+    {
+      "docCode": "AGT-003",
+      "jiraKey": "WT-1225",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-4",
+        "tipo-ai",
+        "epic-agents",
+        "priority-alta",
+        "agt-003"
+      ]
+    },
+    {
+      "docCode": "AGT-004",
+      "status": "not_found"
+    },
+    {
+      "docCode": "DAT-001",
+      "jiraKey": "WT-1226",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-4",
+        "tipo-frontend",
+        "epic-data",
+        "dat-001"
+      ]
+    },
+    {
+      "docCode": "ENT-001",
+      "jiraKey": "WT-1227",
+      "status": "success",
+      "labels": [
+        "lia-mvp",
+        "sprint-3",
+        "tipo-backend",
+        "epic-interview",
+        "priority-alta",
+        "ent-001"
+      ]
+    }
+  ]
+}

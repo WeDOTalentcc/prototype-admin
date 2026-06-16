@@ -1,0 +1,84 @@
+<% content_for :title, "Convite para Avaliação - WeDO Talent" %>
+<% content_for :disclaimer, "Ao iniciar, você concorda com o tratamento de seus dados conforme nossa Política de Privacidade." %>
+
+<%= render layout: 'shared/mailer/email_layout' do %>
+
+  <%= render 'shared/mailer/email_header', company_name: @company_name %>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 32px 32px 0;">
+        <p style="margin: 0 0 4px 0; font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em;">
+          Oportunidade — <%= @company_name %>
+        </p>
+        <h1 style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #111827; line-height: 1.3;">
+          Olá, <%= @candidate_name %>.
+        </h1>
+      </td>
+    </tr>
+  </table>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 0 32px 24px;">
+        <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.7; color: #374151;">
+          Meu nome é <%= @recruiter_name %> e faço parte do time de recrutamento da <%= @company_name %>.
+          Identificamos seu perfil e gostaríamos de conversar sobre a vaga de
+          <strong style="color: #111827;"><%= @job_title %></strong>.
+        </p>
+        <p style="margin: 0; font-size: 15px; line-height: 1.7; color: #374151;">
+          Para dar início ao processo, convidamos você a uma conversa com a <strong style="color: #111827;">LIA</strong>
+          — nossa assistente de inteligência artificial. É uma etapa breve e assíncrona, criada para que possamos conhecer
+          sua trajetória e expectativas antes de qualquer entrevista formal.
+        </p>
+      </td>
+    </tr>
+  </table>
+
+  <%= render 'shared/mailer/email_section',
+    title: 'Sobre a conversa',
+    body: 'A LIA abordará sua experiência, motivações e expectativas em relação à posição. Não há respostas certas ou erradas — o objetivo é simplesmente compreender melhor o seu perfil.' %>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 0 32px 24px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9fafb; border: 1px solid #f3f4f6; border-radius: 10px;">
+          <%= render 'shared/mailer/email_info_row', label: 'Duração', value: 'Aproximadamente 15 a 20 minutos' %>
+          <%= render 'shared/mailer/email_info_row', label: 'Flexibilidade', value: 'Assíncrono — pause e retome conforme sua disponibilidade' %>
+          <%= render 'shared/mailer/email_info_row', label: 'Dispositivo', value: 'Celular ou computador', border: false %>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <% if @channels.size > 1 %>
+    <%= render 'shared/mailer/email_section',
+      title: 'Escolha como participar',
+      body: 'Selecione o formato que funciona melhor para você:',
+      padding_bottom: '16px' %>
+  <% end %>
+
+  <%= render 'shared/mailer/email_channel_buttons',
+    channels: @channels,
+    decline_url: @decline_url %>
+
+  <%= render 'shared/mailer/email_section',
+    title: 'Próximos passos',
+    body: raw("Ao concluir, você receberá um retorno com observações sobre sua participação. As respostas serão analisadas por mim, e darei seguimento com os próximos passos do processo. <strong style=\"color: #111827;\">A decisão final é sempre humana</strong> — a LIA existe para tornar o processo mais ágil e equânime para todos os candidatos."),
+    padding_bottom: '28px' %>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 16px 32px 24px;">
+        <p style="margin: 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">
+          Para melhor experiência, escolha um momento tranquilo e verifique sua conexão à internet.
+          Compatível com Chrome, Firefox e Edge.
+        </p>
+      </td>
+    </tr>
+  </table>
+
+  <%= render 'shared/mailer/email_signature',
+    name: @recruiter_name, role: @recruiter_role, company: @company_name %>
+
+<% end %>

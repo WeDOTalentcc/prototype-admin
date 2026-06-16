@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ruby -c:*)",
+      "Bash(ruby -e:*)",
+      "Bash(ruby -r:*)",
+      "Bash(bash -n:*)",
+      "Bash(bin/rails:*)",
+      "Bash(bundle exec:*)",
+      "Bash(ls:*)",
+      "Bash(git:*)",
+      "Bash(docker compose:*)",
+      "Bash(gcloud:*)",
+      "Bash(cloudflared:*)",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
+    ],
+    "additionalDirectories": [
+      "/home/victhor/ats_mercado/recruiter_agent_v5/src/domains/jobs/actions"
+    ]
+  }
+}

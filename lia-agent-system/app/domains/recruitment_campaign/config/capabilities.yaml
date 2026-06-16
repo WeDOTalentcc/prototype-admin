@@ -1,0 +1,14 @@
+domain: recruitment_campaign
+
+intent_keywords:
+  criar campanha: create_campaign
+  nova campanha: create_campaign
+  iniciar campanha: create_campaign
+  campanha de recrutamento: create_campaign
+  progresso campanha: get_campaign_progress
+  status campanha: get_campaign_progress
+  como está a campanha: get_campaign_progress
+  avançar campanha: advance_campaign
+  próxima etapa: advance_campaign
+  listar campanhas: list_campaigns
+  minhas campanhas: list_campaigns
