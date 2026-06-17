@@ -186,6 +186,71 @@ AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
     "CompanyBenefitsAgent": 2.5,
 }
 
+
+# ---------------------------------------------------------------------------
+# Fase 1.2 — DB-backed plan limits from company_plan_configs
+# ---------------------------------------------------------------------------
+
+# Cache: plan_code -> (daily_limit, request_limit, expires_at_monotonic)
+_DB_PLAN_LIMITS_CACHE: dict[str, tuple[int, int, float]] = {}
+_DB_PLAN_LIMITS_TTL_S: float = 300.0  # 5 min
+
+
+async def _get_plan_limits_from_db(plan_code: str) -> tuple[int, int] | None:
+    """Fetch daily limit and request ceiling from company_plan_configs.
+
+    Returns (llm_monthly_cap, llm_request_ceiling) or None if not found.
+    The monthly cap is converted to a daily equivalent (cap / 30).
+    """
+    if not plan_code:
+        return None
+
+    now_mono = time.monotonic()
+    normalized = plan_code.lower().strip()
+
+    cached = _DB_PLAN_LIMITS_CACHE.get(normalized)
+    if cached is not None:
+        daily, req_ceil, expires = cached
+        if now_mono < expires:
+            return (daily, req_ceil)
+
+    try:
+        from lia_config.database import AsyncSessionLocal
+        from lia_models.plan_config import CompanyPlanConfig
+        from sqlalchemy import select
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(
+                    CompanyPlanConfig.llm_monthly_cap,
+                    CompanyPlanConfig.llm_request_ceiling,
+                ).where(CompanyPlanConfig.plan_code == normalized).limit(1)
+            )
+            row = result.one_or_none()
+            if row:
+                monthly_cap, req_ceiling = row
+                daily_limit = monthly_cap // 30 if monthly_cap > 0 else monthly_cap
+                _DB_PLAN_LIMITS_CACHE[normalized] = (
+                    daily_limit,
+                    req_ceiling,
+                    now_mono + _DB_PLAN_LIMITS_TTL_S,
+                )
+                return (daily_limit, req_ceiling)
+    except Exception as exc:
+        logger.debug("[TokenBudget] DB plan_limits lookup failed for plan=%s: %s", plan_code, exc)
+
+    return None
+
+
+def invalidate_plan_cache(company_id: str) -> None:
+    """Invalidate all plan-related caches for a company.
+
+    Called when admin changes a company's plan.
+    """
+    _plan_mem_cache.pop(company_id, None)
+    _budget_cache.pop(company_id, None)
+    _DB_PLAN_LIMITS_CACHE.clear()
+
 # TTL da chave Redis: 25h para cobrir edge case de meia-noite
 _REDIS_TTL = 25 * 3600
 
@@ -249,9 +314,28 @@ def _is_unlimited_dev_tenant(company_id: str) -> bool:
 
 
 def get_plan_limit(plan_code: str | None) -> int:
-    """Retorna o limite diário de tokens para o plan_code informado."""
+    """Retorna o limite diário de tokens para o plan_code informado.
+
+    Checks DB cache first (populated by async callers), then hardcoded fallback.
+    """
     if not plan_code:
         return DEFAULT_DAILY_LIMIT
+    normalized = plan_code.lower().strip()
+    cached = _DB_PLAN_LIMITS_CACHE.get(normalized)
+    if cached is not None:
+        daily, _, expires = cached
+        if time.monotonic() < expires:
+            return daily
+    return PLAN_DAILY_LIMITS.get(normalized, DEFAULT_DAILY_LIMIT)
+
+
+async def get_plan_limit_async(plan_code: str | None) -> int:
+    """Async version that queries DB if cache is cold."""
+    if not plan_code:
+        return DEFAULT_DAILY_LIMIT
+    db_limits = await _get_plan_limits_from_db(plan_code)
+    if db_limits is not None:
+        return db_limits[0]
     normalized = plan_code.lower().strip()
     return PLAN_DAILY_LIMITS.get(normalized, DEFAULT_DAILY_LIMIT)
 
@@ -259,6 +343,7 @@ def get_plan_limit(plan_code: str | None) -> int:
 def get_request_limit(plan_code: str | None, agent_type: str | None = None) -> int:
     """Retorna o ceiling de tokens por request individual.
 
+    Checks DB cache first, then hardcoded fallback.
     Se ``agent_type`` possuir um override, o limite base é multiplicado
     pelo fator correspondente (ex: AutonomousReActAgent → 2×).
     """
@@ -266,7 +351,15 @@ def get_request_limit(plan_code: str | None, agent_type: str | None = None) -> i
         base = DEFAULT_REQUEST_LIMIT
     else:
         normalized = plan_code.lower().strip()
-        base = PLAN_REQUEST_LIMITS.get(normalized, DEFAULT_REQUEST_LIMIT)
+        cached = _DB_PLAN_LIMITS_CACHE.get(normalized)
+        if cached is not None:
+            _, req_ceil, expires = cached
+            if time.monotonic() < expires:
+                base = req_ceil
+            else:
+                base = PLAN_REQUEST_LIMITS.get(normalized, DEFAULT_REQUEST_LIMIT)
+        else:
+            base = PLAN_REQUEST_LIMITS.get(normalized, DEFAULT_REQUEST_LIMIT)
 
     if agent_type:
         multiplier = AGENT_TYPE_REQUEST_OVERRIDES.get(agent_type, 1.0)
@@ -383,7 +476,7 @@ async def check_budget(
     Returns:
         (allowed, used_today, daily_limit)
     """
-    limit = get_plan_limit(plan_code)
+    limit = await get_plan_limit_async(plan_code)
 
     if limit == -1:
         return True, 0, -1
