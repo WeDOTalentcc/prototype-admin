@@ -160,6 +160,19 @@ export type GlobalUIAction =
           reason?: string;
         }[];
       };
+    }
+  | {
+      // GAP-01-005 mirror (2026-06-17): BE ui_action_sink emite quando
+      // recruiter_copilot semeia wizard via start_creation_from_source.
+      // FE navega para /recrutar; painel wizard já é aberto pelo frame
+      // panel_update (wizard_stage) enviado ANTES desta diretiva via SSE.
+      type: "start_wizard_seeded";
+      params: {
+        type?: string;
+        template_id?: string;
+        job_id?: string;
+        candidate_id?: string;
+      };
     };
 
 /**
@@ -184,6 +197,7 @@ export const GLOBAL_UI_ACTION_TYPES: readonly GlobalUIActionType[] = [
   "apply_table_state",
   "select_rows",
   "bulk_execute", // F3 Gap 1: feedback visual de ação em lote via chat
+  "start_wizard_seeded", // GAP-01-005: mirror BE sink — wizard semeado via recruiter_copilot
 ] as const;
 
 export function isGlobalUIActionType(type: string): type is GlobalUIActionType {

@@ -338,6 +338,14 @@ export function useUIAction(): UseUIActionReturn {
           return true;
         }
 
+        case "start_wizard_seeded": {
+          // GAP-01-005 (2026-06-17): o painel wizard já é aberto pelo frame
+          // panel_update (wizard_stage) emitido ANTES desta diretiva no SSE.
+          // Aqui apenas navegamos para a surface correta para que o panel renderize.
+          router.push(`/${locale}/recrutar`);
+          return true;
+        }
+
         default:
           // exhaustiveness: caso TS deixe escapar um tipo, runtime falha-soft.
           return false;
