@@ -1,8 +1,0 @@
-# Pydantic conventions baseline — ratchet decremental
-# Atualizado automaticamente quando current < baseline.
-# Sensor BLOQUEIA quando current > baseline (regression).
-
-R1=0
-R2=0
-R3=0
-R4=0

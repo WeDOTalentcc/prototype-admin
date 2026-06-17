@@ -1,1 +1,0 @@
-export { BulkResultReport } from './BulkResultReport'

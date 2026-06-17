@@ -1,7 +1,0 @@
-export { TriagemScoresPanel } from "./triagem-scores-panel"
-export { TriagemComparativoTab } from "./triagem-comparativo-tab"
-export { TriagemSummaryBar } from "./triagem-summary-bar"
-export { TriagemDetailsHeader } from "./triagem-details-header"
-export { TriagemResponsesSection } from "./triagem-responses-section"
-export { TriagemParecerTab } from "./triagem-parecer-tab"
-export { TriagemDetailsFooter } from "./triagem-details-footer"

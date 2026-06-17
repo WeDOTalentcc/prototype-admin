@@ -1,2 +1,0 @@
-require "pgvector"
-require "neighbor"

@@ -1,6 +1,0 @@
-export { EAPTabNatural } from './EAPTabNatural'
-export { EAPTabSimilar } from './EAPTabSimilar'
-export { EAPTabJobDescription } from './EAPTabJobDescription'
-export { EAPTabBoolean } from './EAPTabBoolean'
-export { EAPTabFiltros } from './EAPTabFiltros'
-export { EAPTabArquetipos } from './EAPTabArquetipos'

@@ -1,2 +1,0 @@
-class RolePermission < ApplicationRecord
-end

@@ -1,7 +1,0 @@
-domain: interview_intelligence
-# ADR-031-STUB: domínio em implementação. Intent keywords desativadas até execute() estar implementado.
-# Ver: app/domains/interview_intelligence/domain.py::execute() — lança NotImplementedError para qualquer action.
-# Implementação prevista: Sprint N (interview analysis / bias detection features).
-# Princípio CLAUDE.md: nunca ghost setting — keywords ativas com execute() NotImplementedError
-# é ghost setting que mente pro usuário (KeywordIntentMatcher retorna match → execução explode).
-intent_keywords: {}
