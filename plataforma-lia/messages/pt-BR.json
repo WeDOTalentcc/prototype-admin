@@ -7566,6 +7566,14 @@
         "interview_completed": "Entrevista concluída",
         "offer_sent": "Oferta enviada"
       }
+    },
+    "billing": {
+      "errors": {
+        "loadPlan": "Erro ao carregar informações do plano.",
+        "loadUsage": "Erro ao carregar dados de consumo.",
+        "loadInvoices": "Erro ao carregar faturas.",
+        "loadPaymentMethods": "Erro ao carregar métodos de pagamento."
+      }
     }
   },
   "publicJob": {
@@ -8237,5 +8245,100 @@
     "sourceHybrid": "Busca Híbrida",
     "sourceGlobal": "Busca Global",
     "fairnessBlocked": "Busca bloqueada por conter termos discriminatórios"
+  },
+  "candidateStatus": {
+    "errors": {
+      "linkExpiredRh": "Este link expirou. Solicite um novo link ao recrutador responsável.",
+      "loadFailed": "Não foi possível carregar suas candidaturas. Tente novamente mais tarde.",
+      "connectionError": "Erro de conexão. Verifique sua internet e tente novamente.",
+      "invalidLinkContact": "Link inválido. Entre em contato com o recrutador para obter um novo.",
+      "invalidLinkRh": "Link inválido ou corrompido. Solicite um novo link ao RH."
+    },
+    "loading": {
+      "portal": "Carregando seu portal..."
+    },
+    "errorState": {
+      "title": "Ops, algo deu errado",
+      "contactHint": "Se o problema persistir, entre em contato com o recrutador responsável pelo seu processo."
+    }
+  },
+  "portalProposta": {
+    "loading": {
+      "text": "Carregando sua proposta..."
+    },
+    "error": {
+      "title": "Proposta indisponível",
+      "invalidLink": "Este link é inválido ou a proposta não foi encontrada. Verifique o link recebido.",
+      "missingToken": "Link incompleto. Acesse o link completo enviado pelo recrutador."
+    },
+    "done": {
+      "accepted": {
+        "title": "Proposta aceita!"
+      },
+      "declined": {
+        "title": "Proposta recusada"
+      }
+    },
+    "benefit": {
+      "fallback": "Benefício"
+    },
+    "status": {
+      "draft": "Rascunho",
+      "sent": "Enviada",
+      "viewed": "Visualizada",
+      "accepted": "Aceita",
+      "declined": "Recusada",
+      "expired": "Expirada",
+      "cancelled": "Cancelada",
+      "negotiating": "Em negociação"
+    },
+    "header": {
+      "greeting": "Olá, {candidateName}! Confira os detalhes da sua proposta abaixo."
+    },
+    "details": {
+      "sectionTitle": "Detalhes da proposta",
+      "salary": {
+        "label": "Remuneração"
+      },
+      "startDate": {
+        "label": "Data de início"
+      },
+      "deadline": {
+        "label": "Prazo para resposta"
+      },
+      "negotiationRound": {
+        "label": "Rodada de negociação"
+      },
+      "benefits": {
+        "label": "Benefícios"
+      }
+    },
+    "letter": {
+      "sectionTitle": "Carta de oferta"
+    },
+    "response": {
+      "sectionTitle": "Sua resposta",
+      "error": {
+        "generic": "Erro ao enviar resposta. Tente novamente."
+      },
+      "button": {
+        "sending": "Enviando...",
+        "accept": "Aceitar proposta",
+        "decline": "Recusar",
+        "confirmDecline": "Confirmar recusa",
+        "back": "Voltar"
+      },
+      "decline": {
+        "hint": "Se desejar, compartilhe o motivo da recusa. Isso nos ajuda a melhorar futuras propostas.",
+        "notesPlaceholder": "Motivo da recusa (opcional)..."
+      }
+    },
+    "alreadyResponded": {
+      "accepted": "Você já aceitou esta proposta. Parabéns!",
+      "declined": "Você já recusou esta proposta."
+    },
+    "footer": {
+      "legal": "Este portal é operado pela WeDOTalent. Seus dados são protegidos conforme a LGPD."
+    }
   }
 }
