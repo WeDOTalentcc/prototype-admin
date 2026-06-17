@@ -1583,7 +1583,11 @@ function PipelineCandidateCard({
   return (
     <div
       className="flex items-center gap-3 px-4 py-3 rounded-lg bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors border border-transparent hover:border-lia-border-subtle group cursor-pointer"
-      onClick={() => onOpenPreview(candidate)}
+      onClick={() => {
+        const sel = window.getSelection();
+        if (sel && !sel.isCollapsed) return;
+        onOpenPreview(candidate);
+      }}
       role="button"
       aria-label={`Ver detalhes de ${candidate.name}`}
     >

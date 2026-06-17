@@ -70,19 +70,24 @@ export function GlobalSelectionChat() {
 
   const rect = (isChatOpen ? frozenRef.current?.rect : null) ?? selection.rect
   if (!rect) return null
-  // Toolbar: appears just above the selection
+  // Toolbar: appears just above the selection (or below if near top)
+  const nearTop = rect.top < 200;
   const toolbarStyle: React.CSSProperties = {
     position: "fixed",
-    top: Math.max(8, rect.top - 40),
-    left: Math.min(rect.left, window.innerWidth - 220),
+    top: nearTop
+      ? Math.min(rect.bottom + 8, window.innerHeight - 60)
+      : Math.max(8, rect.top - 40),
+    left: Math.min(rect.left, window.innerWidth - 620),
     zIndex: 99998,
   }
-  // Chat popover: appears above selection, anchored left
+  // Chat popover: appears above selection (or below if near top), anchored left
   const chatStyle: React.CSSProperties = {
     position: "fixed",
-    top: Math.max(8, rect.top - 8),
-    transform: "translateY(-100%)",
-    left: Math.min(rect.left, window.innerWidth - 292),
+    top: nearTop
+      ? Math.min(rect.bottom + 8, window.innerHeight - 320)
+      : Math.max(8, rect.top - 8),
+    transform: nearTop ? "none" : "translateY(-100%)",
+    left: Math.min(rect.left, window.innerWidth - 692),
     zIndex: 99999,
     width: "288px",
   }
