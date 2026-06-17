@@ -157,8 +157,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         seeAllTarget: "Agentes",
         isBeta: true,
         subItems: [
-          // NOTE: "Módulos" view is a placeholder — Marketplace page pending implementation
-          { icon: Package, label: "Marketplace", isCore: true, navKey: "Módulos" },
+          { icon: Package, label: "Marketplace", isCore: true },
         ],
       },
       {
