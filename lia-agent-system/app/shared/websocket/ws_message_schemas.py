@@ -217,14 +217,20 @@ class UIBulkExecuteParams(BaseModel):
 GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
     "navigate_to",
     "open_modal",
+    "close_modal",
     "open_offer_review",
     "wizard_step",
     "open_panel",
+    "close_panel",
     "scroll_to",
-    "settings_open_tab",  # WT-2022 Fase 4: bridge chat → SettingsPageEnhanced
-    "apply_table_state",  # Fase 2 slice 1: ponte in-page (filtra/ordena tabela)
-    "select_rows",  # Fase 2 surface close: seleciona candidatos in-page
-    "bulk_execute",  # F3 Gap 1: feedback visual de acao em lote via chat
+    "settings_open_tab",
+    "open_communication_modal",
+    "open_schedule_modal",
+    "open_screening_modal",
+    "apply_table_state",
+    "select_rows",
+    "bulk_execute",
+    "start_wizard_seeded",
 )
 """Espelho runtime do `GLOBAL_UI_ACTION_TYPES` em `src/types/ui-action.ts`."""
 

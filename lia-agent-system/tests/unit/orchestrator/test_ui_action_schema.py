@@ -27,12 +27,20 @@ def test_global_action_types_match_fe_canonical_list():
     assert set(GLOBAL_UI_ACTION_TYPES) == {
         "navigate_to",
         "open_modal",
+        "close_modal",
         "open_offer_review",
         "wizard_step",
         "open_panel",
+        "close_panel",
         "scroll_to",
-        "settings_open_tab",  # WT-2022 Fase 4: bridge chat -> SettingsPageEnhanced
-        "apply_table_state",  # Fase 2 slice 1: ponte in-page
+        "settings_open_tab",
+        "open_communication_modal",
+        "open_schedule_modal",
+        "open_screening_modal",
+        "apply_table_state",
+        "select_rows",
+        "bulk_execute",
+        "start_wizard_seeded",
     }
 
 

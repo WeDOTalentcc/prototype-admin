@@ -106,9 +106,24 @@ def _is_transient_provider_error(exc: BaseException) -> bool:
 # UI actions a agentic tool result may carry that the orchestrator must ACT on
 # (vs. merely feed back to the LLM as text). Additive surfacing: only these
 # directives are promoted to ``run()``'s ``tool_directive`` return field.
-_ACTIONABLE_TOOL_UI_ACTIONS: frozenset[str] = frozenset(
-    {"start_wizard_seeded", "open_modal", "navigate_to", "apply_table_state", "select_rows", "bulk_execute"}
-)
+_ACTIONABLE_TOOL_UI_ACTIONS: frozenset[str] = frozenset({
+    "navigate_to",
+    "open_modal",
+    "close_modal",
+    "open_offer_review",
+    "wizard_step",
+    "open_panel",
+    "close_panel",
+    "scroll_to",
+    "settings_open_tab",
+    "open_communication_modal",
+    "open_schedule_modal",
+    "open_screening_modal",
+    "apply_table_state",
+    "select_rows",
+    "bulk_execute",
+    "start_wizard_seeded",
+})
 
 
 def _extract_response_blocks(result: object) -> list:

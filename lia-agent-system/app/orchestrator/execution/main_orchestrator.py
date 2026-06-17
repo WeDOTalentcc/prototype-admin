@@ -274,9 +274,22 @@ PREFER_AGENTIC_ON_MISSING_PARAMS: frozenset = frozenset({"search_candidates"})
 # (useUIAction). Constante nomeada = sensor testavel. apply_table_state = ponte
 # in-page (filtra/ordena a tabela aberta). open_modal/navigate_to = open_ui.
 _FE_TOOL_UI_ACTIONS: tuple[str, ...] = (
-    "open_modal",
     "navigate_to",
+    "open_modal",
+    "close_modal",
+    "open_offer_review",
+    "wizard_step",
+    "open_panel",
+    "close_panel",
+    "scroll_to",
+    "settings_open_tab",
+    "open_communication_modal",
+    "open_schedule_modal",
+    "open_screening_modal",
     "apply_table_state",
+    "select_rows",
+    "bulk_execute",
+    "start_wizard_seeded",
 )
 
 

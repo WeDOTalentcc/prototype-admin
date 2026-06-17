@@ -23,9 +23,24 @@ _sink: contextvars.ContextVar[dict | None] = contextvars.ContextVar(
 
 # Fallback se o import do allowlist canonico falhar (defensivo). Mantido em
 # sincronia com agentic_loop._ACTIONABLE_TOOL_UI_ACTIONS (fonte unica abaixo).
-_FALLBACK_ACTIONABLE = frozenset(
-    {"open_modal", "navigate_to", "apply_table_state", "start_wizard_seeded"}
-)
+_FALLBACK_ACTIONABLE = frozenset({
+    "navigate_to",
+    "open_modal",
+    "close_modal",
+    "open_offer_review",
+    "wizard_step",
+    "open_panel",
+    "close_panel",
+    "scroll_to",
+    "settings_open_tab",
+    "open_communication_modal",
+    "open_schedule_modal",
+    "open_screening_modal",
+    "apply_table_state",
+    "select_rows",
+    "bulk_execute",
+    "start_wizard_seeded",
+})
 
 
 def _actionable() -> frozenset[str]:
