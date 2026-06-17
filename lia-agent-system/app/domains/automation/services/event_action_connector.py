@@ -138,6 +138,7 @@ class EventActionConnector:
                 message=event.message,
                 notification_type=notification_type,
                 category="pipeline_monitor",
+                channels=["bell"],
                 metadata={
                     "event_type": event.event_type.value,
                     "suggested_action": event.suggested_action,
