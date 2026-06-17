@@ -1,0 +1,101 @@
+version:
+  "3.9" # Você pode remover esta linha 'version: 3.9' se estiver usando uma versão recente do Docker Compose (v2+),
+  # pois ela é obsoleta e pode gerar um warning.
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+    ports:
+      - "5433:5432"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.20
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+    ports:
+      - "9201:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-lia_redis_dev}
+    ports:
+      - "6380:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+
+  sidekiq:
+    build: .
+    command: bundle exec sidekiq
+    volumes:
+      - .:/rails
+    depends_on:
+      - db
+      - redis
+      - elasticsearch
+    environment:
+      REDIS_URL: redis://:${REDIS_PASSWORD:-lia_redis_dev}@redis:6379/0
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+
+  web:
+    build: .
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails server -b 0.0.0.0"
+    volumes:
+      - .:/rails
+    ports:
+      - "8080:3000"
+    depends_on:
+      - db
+      - elasticsearch
+      - redis
+    environment:
+      REDIS_URL: redis://:${REDIS_PASSWORD:-lia_redis_dev}@redis:6379/0
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    stdin_open: true
+    tty: true
+
+  # sneakers:
+  #   build: .
+  #   # Removendo --timeout=60 e o segundo --. O wait-for-it.sh não precisa deles.
+  #   command: bash -c "./docker/wait-for-it.sh rabbitmq:5672 bundle exec rake sneakers:run"
+  #   environment:
+  #     RAILS_ENV: development
+  #     RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+  #     # Definindo as URLs diretamente para evitar dependência de variáveis de ambiente externas
+  #     REDIS_URL: redis://redis:6379/0
+  #     ELASTICSEARCH_URL: http://elasticsearch:9200
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   depends_on:
+  #     - rabbitmq
+  #     - db
+  #     - redis
+
+volumes:
+  esdata:
+
+networks:
+  default:
+    external:
+      name:
+        ats_network # Este warning "external.name is deprecated" significa que você pode usar "name: ats_network" e "external: true" separados.
+        # Exemplo:
+        # default:
+        #   name: ats_network
+        #   external: true
+        # Mas não é um erro crítico.

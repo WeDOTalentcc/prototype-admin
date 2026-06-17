@@ -1,0 +1,265 @@
+{
+  "timestamp": "2026-02-07T16:57:36.485Z",
+  "batchArgs": {
+    "start": 70,
+    "count": 50,
+    "skipCreate": true,
+    "skipRemoved": true
+  },
+  "totalCardsParsed": 173,
+  "rangeProcessed": "[70, 120)",
+  "created": 0,
+  "updated": 49,
+  "removed": 0,
+  "skipped": 1,
+  "errors": 0,
+  "successCount": 49,
+  "errorCount": 0,
+  "results": [
+    {
+      "cardCode": "TPL-002",
+      "jiraKey": "WT-943",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TPL-003",
+      "jiraKey": "WT-944",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TPL-004",
+      "jiraKey": "WT-945",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TPL-005",
+      "jiraKey": "WT-946",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TPL-006",
+      "jiraKey": "WT-947",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TPL-007",
+      "jiraKey": "WT-948",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TPL-008",
+      "jiraKey": "WT-1299",
+      "action": "updated"
+    },
+    {
+      "cardCode": "AGE-001",
+      "jiraKey": "WT-949",
+      "action": "updated"
+    },
+    {
+      "cardCode": "AGE-002",
+      "jiraKey": "WT-950",
+      "action": "updated"
+    },
+    {
+      "cardCode": "AGE-003",
+      "jiraKey": "WT-951",
+      "action": "updated"
+    },
+    {
+      "cardCode": "AGE-004",
+      "jiraKey": "WT-952",
+      "action": "updated"
+    },
+    {
+      "cardCode": "AGE-005",
+      "jiraKey": "WT-953",
+      "action": "updated"
+    },
+    {
+      "cardCode": "AGE-006",
+      "jiraKey": "WT-954",
+      "action": "updated"
+    },
+    {
+      "cardCode": "AGE-007",
+      "jiraKey": "WT-955",
+      "action": "updated"
+    },
+    {
+      "cardCode": "AGE-008",
+      "jiraKey": "WT-956",
+      "action": "updated"
+    },
+    {
+      "cardCode": "NOT-001",
+      "jiraKey": "WT-957",
+      "action": "updated"
+    },
+    {
+      "cardCode": "NOT-002",
+      "jiraKey": "WT-958",
+      "action": "updated"
+    },
+    {
+      "cardCode": "NOT-003",
+      "jiraKey": "WT-959",
+      "action": "updated"
+    },
+    {
+      "cardCode": "NOT-004",
+      "jiraKey": "WT-960",
+      "action": "updated"
+    },
+    {
+      "cardCode": "NOT-005",
+      "jiraKey": "WT-961",
+      "action": "updated"
+    },
+    {
+      "cardCode": "NOT-006",
+      "jiraKey": "WT-962",
+      "action": "updated"
+    },
+    {
+      "cardCode": "NOT-007",
+      "jiraKey": "WT-1300",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-001",
+      "jiraKey": "WT-963",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-002",
+      "jiraKey": "WT-964",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-003",
+      "jiraKey": "WT-965",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-004",
+      "jiraKey": "WT-966",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-006",
+      "jiraKey": "WT-968",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-007",
+      "jiraKey": "WT-969",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-008",
+      "jiraKey": "WT-970",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-010",
+      "jiraKey": "WT-1229",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-011",
+      "jiraKey": "WT-1301",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-012",
+      "jiraKey": "WT-1302",
+      "action": "updated"
+    },
+    {
+      "cardCode": "KAN-013",
+      "jiraKey": "WT-1303",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TAB-001",
+      "jiraKey": "WT-971",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TAB-002",
+      "jiraKey": "WT-972",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TAB-003",
+      "jiraKey": "WT-973",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TAB-004",
+      "jiraKey": "WT-974",
+      "action": "updated"
+    },
+    {
+      "cardCode": "TAB-005",
+      "jiraKey": "WT-975",
+      "action": "updated"
+    },
+    {
+      "cardCode": "PRV-001",
+      "jiraKey": "WT-976",
+      "action": "updated"
+    },
+    {
+      "cardCode": "PRV-002",
+      "jiraKey": "WT-977",
+      "action": "updated"
+    },
+    {
+      "cardCode": "PRV-003",
+      "jiraKey": "WT-978",
+      "action": "updated"
+    },
+    {
+      "cardCode": "PRV-004",
+      "jiraKey": "WT-979",
+      "action": "updated"
+    },
+    {
+      "cardCode": "PRV-005",
+      "jiraKey": "WT-980",
+      "action": "updated"
+    },
+    {
+      "cardCode": "VAG-001",
+      "jiraKey": "WT-283",
+      "action": "updated"
+    },
+    {
+      "cardCode": "VAG-002",
+      "jiraKey": "WT-284",
+      "action": "updated"
+    },
+    {
+      "cardCode": "VAG-003",
+      "jiraKey": "WT-285",
+      "action": "updated"
+    },
+    {
+      "cardCode": "VAG-004",
+      "jiraKey": "WT-286",
+      "action": "updated"
+    },
+    {
+      "cardCode": "VAG-005",
+      "jiraKey": "WT-287",
+      "action": "updated"
+    },
+    {
+      "cardCode": "VAG-006",
+      "jiraKey": "WT-288",
+      "action": "updated"
+    }
+  ]
+}

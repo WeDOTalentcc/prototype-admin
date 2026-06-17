@@ -1,0 +1,259 @@
+{
+  "business_rules": [
+    {
+      "name": "max_candidates_per_vacancy",
+      "description": "Limite máximo de candidatos que podem ser adicionados a uma vaga",
+      "rule_type": "deny",
+      "conditions": {
+        "action": "add_candidate_to_vacancy",
+        "check": "candidate_count",
+        "operator": "greater_than",
+        "value": 500
+      },
+      "actions": ["add_candidate_to_vacancy", "bulk_add_candidates"],
+      "priority": 10
+    },
+    {
+      "name": "require_approval_bulk_rejection",
+      "description": "Aprovação obrigatória para rejeição em massa de candidatos",
+      "rule_type": "require_approval",
+      "conditions": {
+        "action": "bulk_reject_candidates",
+        "check": "candidate_count",
+        "operator": "greater_than",
+        "value": 10
+      },
+      "actions": ["bulk_reject_candidates", "reject_all_pending"],
+      "priority": 5,
+      "approval_config": {
+        "approvers": ["manager", "hr_admin"],
+        "timeout_hours": 24
+      }
+    },
+    {
+      "name": "communication_hours",
+      "description": "Horário permitido para envio de comunicações (8h às 20h)",
+      "rule_type": "deny",
+      "conditions": {
+        "action": "send_communication",
+        "check": "current_hour",
+        "operator": "not_between",
+        "value": [8, 20]
+      },
+      "actions": ["send_email", "send_whatsapp", "send_sms"],
+      "priority": 20
+    },
+    {
+      "name": "max_interviews_per_day",
+      "description": "Número máximo de entrevistas agendadas por dia",
+      "rule_type": "deny",
+      "conditions": {
+        "action": "schedule_interview",
+        "check": "interviews_today",
+        "operator": "greater_than",
+        "value": 15
+      },
+      "actions": ["schedule_interview", "auto_schedule_interview"],
+      "priority": 15
+    },
+    {
+      "name": "require_approval_salary_disclosure",
+      "description": "Aprovação necessária para divulgar faixa salarial fora do padrão",
+      "rule_type": "require_approval",
+      "conditions": {
+        "action": "publish_vacancy",
+        "check": "salary_variance_percent",
+        "operator": "greater_than",
+        "value": 30
+      },
+      "actions": ["publish_vacancy", "update_vacancy_salary"],
+      "priority": 25
+    },
+    {
+      "name": "deny_duplicate_screening",
+      "description": "Impedir triagem duplicada de candidato na mesma vaga",
+      "rule_type": "deny",
+      "conditions": {
+        "action": "start_screening",
+        "check": "already_screened",
+        "operator": "equals",
+        "value": true
+      },
+      "actions": ["start_screening", "auto_screen"],
+      "priority": 5
+    },
+    {
+      "name": "require_approval_external_candidates",
+      "description": "Aprovação para adicionar candidatos externos acima do limite",
+      "rule_type": "require_approval",
+      "conditions": {
+        "action": "add_external_candidate",
+        "check": "external_candidate_count",
+        "operator": "greater_than",
+        "value": 50
+      },
+      "actions": ["add_external_candidate", "import_external_candidates"],
+      "priority": 30
+    },
+    {
+      "name": "deny_weekend_scheduling",
+      "description": "Impedir agendamento de entrevistas em fins de semana (configurável)",
+      "rule_type": "deny",
+      "conditions": {
+        "action": "schedule_interview",
+        "check": "is_weekend",
+        "operator": "equals",
+        "value": true
+      },
+      "actions": ["schedule_interview"],
+      "priority": 18
+    }
+  ],
+  "rate_limit_rules": [
+    {
+      "name": "api_calls_per_minute",
+      "description": "Limite de chamadas API por minuto por empresa",
+      "target_type": "company",
+      "limit_value": 100,
+      "window_seconds": 60,
+      "action_pattern": "api:*"
+    },
+    {
+      "name": "messages_per_hour",
+      "description": "Limite de mensagens enviadas por hora por usuário",
+      "target_type": "user",
+      "limit_value": 50,
+      "window_seconds": 3600,
+      "action_pattern": "send_message:*"
+    },
+    {
+      "name": "evaluations_per_day",
+      "description": "Limite de avaliações de candidatos por dia por empresa",
+      "target_type": "company",
+      "limit_value": 500,
+      "window_seconds": 86400,
+      "action_pattern": "evaluate_candidate:*"
+    },
+    {
+      "name": "ai_calls_per_minute",
+      "description": "Limite de chamadas AI por minuto por empresa",
+      "target_type": "company",
+      "limit_value": 30,
+      "window_seconds": 60,
+      "action_pattern": "ai:*"
+    },
+    {
+      "name": "bulk_actions_per_hour",
+      "description": "Limite de ações em massa por hora por usuário",
+      "target_type": "user",
+      "limit_value": 10,
+      "window_seconds": 3600,
+      "action_pattern": "bulk:*"
+    },
+    {
+      "name": "screening_invites_per_hour",
+      "description": "Limite de convites de triagem por hora",
+      "target_type": "company",
+      "limit_value": 100,
+      "window_seconds": 3600,
+      "action_pattern": "send_screening_invite:*"
+    },
+    {
+      "name": "cv_parsing_per_minute",
+      "description": "Limite de parsing de CVs por minuto",
+      "target_type": "company",
+      "limit_value": 20,
+      "window_seconds": 60,
+      "action_pattern": "parse_cv:*"
+    }
+  ],
+  "escalation_rules": [
+    {
+      "name": "interview_no_show_escalation",
+      "description": "Escalar quando candidato não comparece à entrevista",
+      "trigger_type": "timeout",
+      "condition": {
+        "event": "interview_start",
+        "timeout_minutes": 15,
+        "check": "candidate_joined",
+        "expected": true
+      },
+      "escalate_to": ["recruiter", "hiring_manager"],
+      "escalation_action": "notify_manager",
+      "notification_template": "O candidato {candidate_name} não compareceu à entrevista agendada para {interview_time}.",
+      "cooldown_seconds": 1800
+    },
+    {
+      "name": "high_rejection_rate_alert",
+      "description": "Alerta quando taxa de rejeição ultrapassa limite",
+      "trigger_type": "threshold",
+      "condition": {
+        "metric": "rejection_rate",
+        "operator": "greater_than",
+        "value": 80,
+        "window_hours": 24
+      },
+      "escalate_to": ["hr_admin"],
+      "escalation_action": "send_alert",
+      "notification_template": "A taxa de rejeição na vaga {vacancy_title} atingiu {rejection_rate}% nas últimas 24h.",
+      "cooldown_seconds": 86400
+    },
+    {
+      "name": "agent_failure_escalation",
+      "description": "Escalar após múltiplas falhas de agente",
+      "trigger_type": "failure_count",
+      "condition": {
+        "agent": "*",
+        "failure_count": 5,
+        "window_minutes": 30
+      },
+      "escalate_to": ["tech_admin"],
+      "escalation_action": "pause_workflow",
+      "notification_template": "O agente {agent_name} falhou {failure_count} vezes nos últimos 30 minutos. Workflow pausado.",
+      "cooldown_seconds": 3600
+    },
+    {
+      "name": "pending_approval_timeout",
+      "description": "Escalar aprovações pendentes por muito tempo",
+      "trigger_type": "timeout",
+      "condition": {
+        "event": "approval_requested",
+        "timeout_hours": 48,
+        "check": "approval_status",
+        "expected": "pending"
+      },
+      "escalate_to": ["hr_director"],
+      "escalation_action": "notify_admin",
+      "notification_template": "Aprovação pendente há mais de 48h: {approval_type} para {target_name}.",
+      "cooldown_seconds": 43200
+    },
+    {
+      "name": "sla_breach_warning",
+      "description": "Alerta quando SLA está próximo de ser violado",
+      "trigger_type": "sla_breach",
+      "condition": {
+        "sla_type": "time_to_hire",
+        "threshold_percent": 80
+      },
+      "escalate_to": ["recruiter", "hiring_manager"],
+      "escalation_action": "send_alert",
+      "notification_template": "A vaga {vacancy_title} está a {remaining_days} dias de violar o SLA de contratação.",
+      "cooldown_seconds": 86400
+    },
+    {
+      "name": "low_pipeline_alert",
+      "description": "Alerta quando pipeline de candidatos está baixo",
+      "trigger_type": "threshold",
+      "condition": {
+        "metric": "active_candidates",
+        "operator": "less_than",
+        "value": 5,
+        "per": "vacancy"
+      },
+      "escalate_to": ["recruiter"],
+      "escalation_action": "create_task",
+      "notification_template": "A vaga {vacancy_title} tem apenas {active_candidates} candidatos ativos. Considere ampliar a busca.",
+      "cooldown_seconds": 172800
+    }
+  ]
+}

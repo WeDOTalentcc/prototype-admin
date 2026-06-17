@@ -1,0 +1,13 @@
+domain: digital_twin
+
+intent_keywords:
+  digital twin: list_twins
+  gêmeo digital: list_twins
+  criar twin: create_twin
+  novo twin: create_twin
+  avaliar com twin: evaluate_with_twin
+  avaliação twin: evaluate_with_twin
+  segunda opinião: evaluate_with_twin
+  opinião do especialista: evaluate_with_twin
+  treinar twin: index_twin_audio
+  indexar áudio: index_twin_audio

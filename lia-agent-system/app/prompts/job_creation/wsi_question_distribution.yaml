@@ -1,0 +1,73 @@
+# WSI Question Distribution per Seniority -- canonical config
+# Extraido de graph.py:_get_question_distribution (PR-8 ONDA 3 / F-3.3)
+# Source: WSI_METHODOLOGY_COMPLETE_v2.md
+#
+# Layout: distribution[mode][seniority][block_type] = count
+# - compact mode: total = 7 (technical + behavioral)
+# - full mode:    total = 12 (technical + behavioral)
+#
+# Seniorities canonical (8):
+#   estagiario, junior, pleno, senior, lead, principal, staff, diretor
+#
+# Variantes com acento sao normalizadas no consumer (graph.py):
+#   senior <- sênior
+#   junior <- júnior
+#   estagiario <- estagio, estagiário
+
+compact:
+  estagiario:
+    technical: 5
+    behavioral: 2
+  junior:
+    technical: 5
+    behavioral: 2
+  pleno:
+    technical: 5
+    behavioral: 2
+  senior:
+    technical: 4
+    behavioral: 3
+  lead:
+    technical: 3
+    behavioral: 4
+  principal:
+    technical: 4
+    behavioral: 3
+  staff:
+    technical: 4
+    behavioral: 3
+  diretor:
+    technical: 3
+    behavioral: 4
+  executive:
+    technical: 2
+    behavioral: 5
+
+full:
+  estagiario:
+    technical: 9
+    behavioral: 3
+  junior:
+    technical: 9
+    behavioral: 3
+  pleno:
+    technical: 8
+    behavioral: 4
+  senior:
+    technical: 7
+    behavioral: 5
+  lead:
+    technical: 7
+    behavioral: 5
+  principal:
+    technical: 7
+    behavioral: 5
+  staff:
+    technical: 7
+    behavioral: 5
+  diretor:
+    technical: 7
+    behavioral: 5
+  executive:
+    technical: 7
+    behavioral: 5

@@ -1,0 +1,424 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Backend (FastAPI / Python) ─────────────────────────────────────────────
+  backend:
+    name: Backend — Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lia-agent-system
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install dev tools
+        run: pip install -r requirements-dev.txt
+
+      - name: Install internal libs
+        run: |
+          pip install --no-cache-dir \
+            -e libs/config \
+            -e libs/utils \
+            -e libs/audit \
+            -e libs/messaging \
+            -e libs/models \
+            -e libs/agents-core \
+            -e libs/services \
+            -e libs/contexts \
+            -e libs/auth
+
+      - name: Block unresolved merge conflict markers
+        run: |
+          if grep -rn --include='*.py' -E '^(<<<<<<< HEAD|=======$|>>>>>>> )' .; then
+            echo "::error::Unresolved merge conflict markers found — resolve before pushing"
+            exit 1
+          fi
+
+      - name: Lint with ruff
+        run: ruff check app/ --output-format=github
+
+      - name: Enforce Choose Your AI (LIA-LLM-1)
+        run: python scripts/check_llm_factory_enforcement.py
+
+      - name: "F11 — block langchain_core @tool decorator regression"
+        run: python scripts/check_no_langchain_tool_decorator.py
+
+      - name: "F8 — verify require_company=False exemptions are documented"
+        run: python scripts/check_require_company_exemptions.py
+
+      - name: Architectural fitness functions
+        run: pytest tests/fitness/ -v --timeout=30 --no-cov
+
+      - name: "Eval: unit (blocking)"
+        run: python -m tests.eval.runner --suite unit
+
+      - name: "Eval: bias probes validation (blocking)"
+        run: python -m tests.eval.runner --suite bias --dry-run
+
+      - name: "Eval: golden scenarios (non-blocking)"
+        run: python -m tests.eval.runner --suite golden --dry-run
+        continue-on-error: true
+        # TODO: remove --dry-run when ANTHROPIC_API_KEY secret is configured for LLM-as-judge
+
+      - name: Type check with mypy
+        run: mypy app/ --ignore-missing-imports --no-error-summary
+
+      - name: Verify LangSmith config
+        run: python -c "from app.config.langsmith import configure_langsmith, is_langsmith_enabled; print('LangSmith enabled:', is_langsmith_enabled())"
+        env:
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+        # continue-on-error: intentionally kept — LangSmith API key is optional in CI
+
+      - name: Run tests
+        # Coverage gate: 27% (13/03/2026 — realinhado com pytest.ini). Progressão: 25%→29%→32%→27%→34%→40%→80%.
+        # tests/e2e/ e tests/test_agents/ requerem servidor ativo — não rodam em CI sem infra.
+        run: pytest tests/ -x -q --timeout=60 --cov=app --cov-report=term-missing --cov-fail-under=27 --ignore=tests/e2e --ignore=tests/test_agents --ignore=tests/load
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          SECRET_KEY: "ci-test-secret-key-not-for-production"
+          APP_ENV: "test"
+
+      - name: Run contract tests
+        run: pytest tests/contract/ -v --timeout=60
+
+      - name: Run fairness tests
+        run: pytest tests/fairness/ -v --timeout=60
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          SECRET_KEY: "ci-test-secret-key-not-for-production"
+          APP_ENV: "test"
+
+      - name: Run integration tests (Sprint K2)
+        run: pytest tests/integration/ -v --no-cov --timeout=120 --ignore=tests/integration/test_api_misc_coverage.py
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          SECRET_KEY: "ci-test-secret-key-not-for-production"
+          APP_ENV: "test"
+
+  # ── Frontend (Next.js / TypeScript) ────────────────────────────────────────
+  frontend:
+    name: Frontend — Lint & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plataforma-lia
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: plataforma-lia/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint with Biome
+        run: npx biome check src/ --reporter=github
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Run unit tests
+        run: npx vitest run --reporter=verbose
+        env:
+          CI: true
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+  # ── Frontend E2E (Playwright) ──────────────────────────────────────────────
+  frontend-e2e:
+    name: Frontend — E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: [frontend]
+    defaults:
+      run:
+        working-directory: plataforma-lia
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: plataforma-lia/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          CI: true
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: plataforma-lia/playwright-report/
+          retention-days: 7
+
+  # ── Security (dependency audit) ────────────────────────────────────────────
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Audit frontend dependencies
+        run: cd plataforma-lia && npm audit --audit-level=high || true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit backend dependencies
+        run: cd lia-agent-system && pip-audit -r requirements.txt --ignore-vuln PYSEC-2023-57 || true
+
+  # ── RAGAS — Qualidade de Respostas RAG (blocking quality gate) ─────────────
+  ragas-quality-check:
+    name: RAGAS Quality Check
+    runs-on: ubuntu-latest
+    needs: [backend]
+    continue-on-error: false
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    env:
+      RAGAS_MIN_THRESHOLD: ${{ vars.RAGAS_MIN_THRESHOLD || '0.70' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-asyncio pyyaml anthropic
+          pip install -r lia-agent-system/requirements.txt
+
+      - name: Check hotfix bypass
+        id: bypass-check
+        run: |
+          if [ "${{ vars.RAGAS_BYPASS_FOR_HOTFIX }}" = "true" ] || [ "${{ env.RAGAS_BYPASS_FOR_HOTFIX }}" = "true" ]; then
+            echo "bypass=true" >> $GITHUB_OUTPUT
+            echo "::warning::RAGAS bypass activated — quality gate running in WARNING mode. Audit: actor=${{ github.actor }}, ref=${{ github.ref }}, sha=${{ github.sha }}, time=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          else
+            echo "bypass=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run RAGAS per-metric enforcement (>= 0.70 per metric per domain)
+        id: ragas-eval
+        run: |
+          echo "=== RAGAS Quality Gate (threshold: $RAGAS_MIN_THRESHOLD per metric) ==="
+          echo "Metrics enforced: faithfulness, answer_relevancy, context_precision, context_recall"
+          EVAL_EXIT=0
+          python -m pytest lia-agent-system/tests/ragas/ -v --no-cov --tb=short || EVAL_EXIT=$?
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "ANTHROPIC_API_KEY present — running full LLM evaluation"
+            python tests/eval_runner.py --threshold $RAGAS_MIN_THRESHOLD --output ragas_domain_report.json --report-domains || EVAL_EXIT=$?
+          elif [ "${{ steps.bypass-check.outputs.bypass }}" = "true" ]; then
+            echo "::warning::ANTHROPIC_API_KEY missing — bypass active, running structural validation only"
+            python tests/eval_runner.py --allow-heuristic --threshold $RAGAS_MIN_THRESHOLD --output ragas_domain_report.json --report-domains || true
+          else
+            echo "::error::ANTHROPIC_API_KEY is required for RAGAS quality gate. Set the secret or enable RAGAS_BYPASS_FOR_HOTFIX=true for hotfix bypass."
+            python tests/eval_runner.py --dry-run --output ragas_domain_report.json --report-domains || true
+            EVAL_EXIT=1
+          fi
+          echo "eval_exit=$EVAL_EXIT" >> $GITHUB_OUTPUT
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Post PR comment with RAGAS scores by domain
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let reportContent = '';
+            try {
+              const report = JSON.parse(fs.readFileSync('ragas_domain_report.json', 'utf8'));
+              const bypass = '${{ steps.bypass-check.outputs.bypass }}' === 'true';
+              const evalExit = '${{ steps.ragas-eval.outputs.eval_exit }}';
+              const mode = bypass ? '⚠️ WARNING MODE (bypass active)' : (evalExit === '0' ? '✅ BLOCKING — PASSED' : '❌ BLOCKING — FAILED');
+              const threshold = report.ragas_thresholds?.min_per_metric || report.threshold || 0.70;
+              reportContent = `## RAGAS Quality Gate — ${mode}\n\n`;
+              reportContent += `**Min threshold per metric:** ${threshold} (faithfulness, relevancy, context_precision, context_recall)\n\n`;
+              const evalResult = evalExit === '0' ? 'All per-metric thresholds met' : 'Per-metric threshold violations detected';
+              reportContent += `**Metric enforcement:** ${evalResult}\n\n`;
+              if (report.domain_summary) {
+                reportContent += `### Scores by Domain\n\n`;
+                reportContent += `| Domain | Agents | Cases | Avg Score | Passed | Failed | Status |\n`;
+                reportContent += `|--------|--------|-------|-----------|--------|--------|--------|\n`;
+                for (const [domainName, ds] of Object.entries(report.domain_summary).sort()) {
+                  const status = ds.overall_pass ? '✅ PASS' : '❌ FAIL';
+                  const avgScore = ds.avg_score != null ? ds.avg_score.toFixed(3) : 'N/A';
+                  reportContent += `| ${domainName} | ${ds.agents.join(', ')} | ${ds.total_cases} | ${avgScore} | ${ds.passed_cases} | ${ds.failed_cases} | ${status} |\n`;
+                }
+              }
+              reportContent += `\n### Agent Details\n\n`;
+              reportContent += `| Agent | Domain | Cases | Faithfulness | Relevancy | Ctx Precision | Ctx Recall | Status |\n`;
+              reportContent += `|-------|--------|-------|-------------|-----------|---------------|------------|--------|\n`;
+              for (const agent of (report.agents || [])) {
+                const domain = agent.domain || 'unknown';
+                const status = agent.overall_pass ? '✅ PASS' : '❌ FAIL';
+                const m = agent.avg_metrics || {};
+                const faith = m.faithfulness != null ? m.faithfulness.toFixed(3) : 'N/A';
+                const rel = m.answer_relevancy != null ? m.answer_relevancy.toFixed(3) : 'N/A';
+                const prec = m.context_precision != null ? m.context_precision.toFixed(3) : 'N/A';
+                const rec = m.context_recall != null ? m.context_recall.toFixed(3) : 'N/A';
+                reportContent += `| ${agent.agent} | ${domain} | ${agent.total} | ${faith} | ${rel} | ${prec} | ${rec} | ${status} |\n`;
+              }
+              reportContent += `\n**Generated:** ${report.generated_at} | **Dry run:** ${report.dry_run}\n`;
+              if (bypass) {
+                reportContent += `\n> ⚠️ **Bypass active** (RAGAS_BYPASS_FOR_HOTFIX=true) — failures will not block merge.\n> Audit: actor=${{ github.actor }}, sha=${{ github.sha }}\n`;
+              }
+            } catch (e) {
+              reportContent = `## RAGAS Quality Gate\n\n⚠️ Could not parse evaluation report: ${e.message}\n`;
+            }
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const botComment = comments.find(c => c.body.includes('RAGAS Quality Gate'));
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: reportContent,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: reportContent,
+              });
+            }
+
+      - name: Enforce quality gate (blocking)
+        if: steps.bypass-check.outputs.bypass != 'true'
+        run: |
+          if [ "${{ steps.ragas-eval.outputs.eval_exit }}" != "0" ]; then
+            echo "::error::RAGAS quality gate FAILED — eval exit code: ${{ steps.ragas-eval.outputs.eval_exit }}"
+            echo "Fix failing RAGAS evaluations before merging. Minimum threshold: $RAGAS_MIN_THRESHOLD per metric."
+            exit 1
+          fi
+          echo "RAGAS quality gate PASSED — all metrics >= $RAGAS_MIN_THRESHOLD"
+
+      - name: Quality gate (bypass — warning only)
+        if: steps.bypass-check.outputs.bypass == 'true'
+        run: |
+          echo "::warning::RAGAS quality gate running in WARNING mode (RAGAS_BYPASS_FOR_HOTFIX=true)"
+          echo "::warning::Audit trail: actor=${{ github.actor }}, ref=${{ github.ref }}, sha=${{ github.sha }}, time=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          if [ "${{ steps.ragas-eval.outputs.eval_exit }}" != "0" ]; then
+            echo "::warning::RAGAS evaluations FAILED but bypass is active — not blocking merge"
+          fi
+
+  # ── Prompt Evals — LLM-as-judge (runs on PRs that change prompts) ──────────
+  prompt-evals:
+    name: Prompt Evals (LLM-as-judge)
+    runs-on: ubuntu-latest
+    needs: [backend]
+    # Trigger path filter: only run when prompt files or golden datasets change
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect prompt file changes
+        id: prompt-changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            prompts:
+              - 'lia-agent-system/app/prompts/**'
+              - 'tests/golden/**'
+              - 'tests/eval_runner.py'
+
+      - name: Set up Python
+        if: steps.prompt-changes.outputs.prompts == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install eval dependencies
+        if: steps.prompt-changes.outputs.prompts == 'true'
+        run: pip install anthropic pyyaml
+
+      - name: Validate golden dataset structure (always runs if prompts changed)
+        if: steps.prompt-changes.outputs.prompts == 'true'
+        run: python tests/eval_runner.py --dry-run
+        working-directory: .
+
+      - name: Run LLM-as-judge evals (blocks PR on failure)
+        if: steps.prompt-changes.outputs.prompts == 'true'
+        run: python tests/eval_runner.py --threshold 0.85 --output eval_report.json
+        working-directory: .
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Upload eval report
+        if: always() && steps.prompt-changes.outputs.prompts == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-eval-report
+          path: eval_report.json
+          retention-days: 30
+
+  # ── Acessibilidade — Axe-core WCAG 2.1 AA (não-bloqueante) ────────────────
+  accessibility-check:
+    name: Accessibility Check (WCAG 2.1 AA)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install axe-core CLI
+        run: npm install -g @axe-core/cli
+      - name: Check accessibility baseline
+        run: echo "Axe-core accessibility check configured — run against staging URL"
+        # TODO: axe https://staging.wedotalent.com --exit

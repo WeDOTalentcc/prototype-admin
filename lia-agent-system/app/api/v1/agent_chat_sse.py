@@ -1297,27 +1297,38 @@ company_id: str = Depends(require_company_id)):
 
                         async def _sse_plan_cb(event_type: str, data: dict) -> None:
                             try:
-                                _fr = map_plan_event(event_type, data, _plan_state)
-                                _lbl = data.get("label") or _detected.detected_pattern or "Plano multi-step"
-                                await sse_queue.put(_ser_bg(
-                                    task_id=_plan_task_id,
-                                    task_type="analysis",
-                                    label=_lbl,
-                                    status=_fr["status"],
-                                    progress=_fr["progress"],
-                                    message=data.get("message", ""),
-                                ))
+                                _ev = {"type": "plan_progress"}
+                                if event_type == "step_running":
+                                    _ev["event"] = "step_running"
+                                    _ev["task_id"] = data.get("task_id", "")
+                                    _ev["action_id"] = data.get("action_id", "")
+                                    _ev["domain_id"] = data.get("domain_id", "")
+                                elif event_type == "step_completed":
+                                    _ev["event"] = "step_completed"
+                                    _ev["task_id"] = data.get("task_id", "")
+                                    _ev["action_id"] = data.get("action_id", "")
+                                    _ev["domain_id"] = data.get("domain_id", "")
+                                    _ev["status"] = data.get("status", "completed")
+                                elif event_type == "step_skipped":
+                                    _ev["event"] = "step_skipped"
+                                    _ev["task_id"] = data.get("task_id", "")
+                                    _ev["action_id"] = data.get("action_id", "")
+                                    _ev["domain_id"] = data.get("domain_id", "")
+                                elif event_type in ("plan_started", "plan_completed"):
+                                    return
+                                else:
+                                    return
+                                await sse_queue.put(_ev)
                             except Exception:
                                 pass
 
-                        await sse_queue.put(_ser_bg(
-                            task_id=_plan_task_id,
-                            task_type="analysis",
-                            label=_detected.detected_pattern or "Plano multi-step",
-                            status="running",
-                            progress=0,
-                            message=f"Executando plano com {len(_detected.tasks)} tarefas",
-                        ))
+                        await sse_queue.put({
+                            "type": "plan_progress",
+                            "event": "plan_started",
+                            "plan_id": _plan_task_id,
+                            "total_tasks": len(_detected.tasks),
+                            "tasks": [{"task_id": t.task_id, "action_id": t.action_id, "domain_id": t.domain_id} for t in _detected.tasks],
+                        })
                         _plan_exec = PlanExecutor()
                         _exec_result = await asyncio.wait_for(
                             _plan_exec.execute(
@@ -1344,6 +1355,12 @@ company_id: str = Depends(require_company_id)):
                         except Exception as _pme:
                             logger.warning("[SSEChat] plan memoria persist (fail-open): %s", _pme)
                         from types import SimpleNamespace as _NS
+                        await sse_queue.put({
+                            "type": "plan_progress",
+                            "event": "plan_completed",
+                            "plan_id": _plan_task_id,
+                            "status": "completed",
+                        })
                         await sse_queue.put({"_done": True, "_output": _NS(
                             message=_consolidated.message or "Plano executado.",
                             confidence=getattr(_consolidated, "confidence", 0.9),

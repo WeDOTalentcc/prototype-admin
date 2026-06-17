@@ -1,0 +1,19 @@
+domain: talent_pool
+
+intent_keywords:
+  criar pool: create_talent_pool
+  criar banco: create_talent_pool
+  novo banco: create_talent_pool
+  novo pool: create_talent_pool
+  banco de talentos: list_talent_pools
+  listar pool: list_talent_pools
+  meus bancos: list_talent_pools
+  meus pools: list_talent_pools
+  adicionar ao pool: add_to_pool
+  adicionar no banco: add_to_pool
+  mover para vaga: move_pool_to_job
+  migrar para vaga: move_pool_to_job
+  candidatos do pool: get_pool_candidates
+  ver pool: get_pool_candidates
+  criar vaga do pool: create_job_from_pool
+  vaga a partir do pool: create_job_from_pool

@@ -1,0 +1,188 @@
+# Platform Manifest — Single source of truth for LIA platform knowledge
+#
+# All pages, features, and capabilities known to LIA are declared here.
+# Adding a new page/feature only requires editing this file — LIA automatically
+# learns about it via platform_manifest.py loader.
+#
+# Used by:
+#   - navigation_intent.py (for NavigationIntentDetector pattern matching)
+#   - system_prompt_builder.py (for _PLATFORM_KNOWLEDGE injection)
+#   - precondition_checker.py (future — for context-aware hints)
+
+schema_version: 1
+
+pages:
+  dashboard:
+    display_name: "Painel de Controle"
+    path: "/dashboard"
+    description: "Visão geral, tarefas pendentes, agenda do recrutador e atividade recente."
+    navigation_hint: "Quer que eu abra o Painel de Controle?"
+    keywords:
+      - ["painel de controle", 1.0]
+      - ["dashboard", 0.7]
+      - ["tarefas pendentes", 1.0]
+      - ["atividades", 0.4]
+      - ["pendências", 0.5]
+      - ["agenda do recrutador", 1.0]
+
+  jobs:
+    display_name: "Vagas"
+    path: "/jobs"
+    description: "Lista e gestão de vagas/posições abertas. Criar, editar, duplicar."
+    navigation_hint: "Quer que eu abra a página de Vagas?"
+    keywords:
+      - ["criar vaga", 1.0]
+      - ["abrir vaga", 1.0]
+      - ["publicar vaga", 1.0]
+      - ["nova vaga", 1.0]
+      - ["job description", 0.7]
+      - ["headcount", 0.7]
+      - ["posição aberta", 0.7]
+      - ["requisição", 0.5]
+      - ["aprovação de vaga", 1.0]
+      - ["vagas", 0.3]
+      - ["vaga", 0.3]
+
+  talent_funnel:
+    display_name: "Funil de Talentos"
+    path: "/talent-funnel"
+    description: "Busca de candidatos, sourcing, banco de talentos, kanban e pipeline."
+    navigation_hint: "Quer que eu abra o Funil de Talentos?"
+    keywords:
+      - ["buscar candidato", 1.0]
+      - ["buscar candidatos", 1.0]
+      - ["procurar candidato", 1.0]
+      - ["sourcing", 0.7]
+      - ["banco de talentos", 1.0]
+      - ["perfil candidato", 0.7]
+      - ["score lia", 0.7]
+      - ["screening", 0.5]
+      - ["triagem", 0.4]
+      - ["funil", 0.4]
+      - ["candidato", 0.2]
+      - ["candidatos", 0.2]
+      - ["talento", 0.2]
+      - ["talentos", 0.2]
+      - ["cv", 0.3]
+      - ["currículo", 0.3]
+      - ["kanban", 0.7]
+      - ["pipeline", 0.5]
+      - ["mover candidato", 1.0]
+      - ["avançar candidato", 1.0]
+      - ["mover para etapa", 1.0]
+      - ["board", 0.5]
+      - ["iniciar entrevista", 1.0]
+      - ["entrevista wsi", 1.0]
+      - ["wsi", 0.5]
+      - ["triagem por voz", 1.0]
+      - ["assessment", 0.5]
+      - ["avaliar candidato", 0.7]
+      - ["começar entrevista", 1.0]
+      - ["realizar entrevista", 1.0]
+      - ["fazer entrevista", 1.0]
+
+  settings:
+    display_name: "Configurações"
+    path: "/settings"
+    description: "Configurações da empresa: Dados Básicos, Localização, Cultura, Benefícios, Processos, Integrações."
+    navigation_hint: "Quer que eu abra Configurações?"
+    sections:
+      - id: "basic_data"
+        name: "Dados Básicos"
+        fields: ["nome", "cnpj", "setor", "tamanho", "website"]
+      - id: "culture"
+        name: "Cultura"
+        fields: ["missao", "visao", "valores", "modelo_trabalho"]
+      - id: "benefits"
+        name: "Benefícios"
+        auto_fillable_via: "analyze_company_website"
+      - id: "hiring_policy"
+        name: "Política de Recrutamento"
+        auto_fillable_via: "suggest_recruiting_policy"
+      - id: "integrations"
+        name: "Integrações"
+        description: "HubSpot, WhatsApp, LLM/IA"
+    keywords:
+      - ["configurações", 1.0]
+      - ["configuracoes", 1.0]
+      - ["política", 0.5]
+      - ["politica", 0.5]
+      - ["políticas", 0.5]
+      - ["politicas", 0.5]
+      - ["critérios de triagem", 1.0]
+      - ["criterios de triagem", 1.0]
+      - ["regras de recrutamento", 1.0]
+      - ["ajustar política", 1.0]
+      - ["ajustar criterio", 1.0]
+      - ["configurar triagem", 1.0]
+      - ["parâmetros de seleção", 1.0]
+      - ["compliance recrutamento", 1.0]
+
+  indicators:
+    display_name: "Indicadores"
+    path: "/indicators"
+    description: "Analytics, KPIs, métricas de recrutamento, relatórios."
+    navigation_hint: "Quer que eu abra os Indicadores?"
+    keywords:
+      - ["indicadores", 1.0]
+      - ["métricas", 0.7]
+      - ["metricas", 0.7]
+      - ["relatório", 0.5]
+      - ["relatorio", 0.5]
+      - ["kpis", 1.0]
+      - ["kpi", 0.8]
+      - ["ver indicadores", 1.0]
+      - ["analytics", 0.5]
+      - ["desempenho", 0.4]
+      - ["performance recrutamento", 1.0]
+      - ["taxa de conversão", 0.7]
+      - ["tempo de contratação", 0.7]
+
+  recrutar:
+    display_name: "Recrutar / Visão Global"
+    path: "/recrutar"
+    description: "Visão Global do pipeline de recrutamento. Tabs: Vagas (ciclo de vida) e Candidatos (funil por etapa)."
+    navigation_hint: "Quer que eu abra a Visão Global?"
+    keywords:
+      - ["visão global", 1.0]
+      - ["visao global", 1.0]
+      - ["pipeline overview", 1.0]
+      - ["recrutar", 1.0]
+      - ["recrutamento", 0.5]
+      - ["processo seletivo", 0.7]
+      - ["etapas", 0.4]
+
+# Methodology knowledge injected in every system prompt
+methodology:
+  wsi:
+    name: "WSI (Workplace Science Index)"
+    formula: "70% técnico + 30% comportamental"
+  bloom:
+    name: "Bloom Taxonomy"
+    levels:
+      - {level: 1, name: "Lembrar"}
+      - {level: 2, name: "Compreender"}
+      - {level: 3, name: "Aplicar"}
+      - {level: 4, name: "Analisar"}
+      - {level: 5, name: "Avaliar"}
+      - {level: 6, name: "Criar"}
+  dreyfus:
+    name: "Dreyfus Model"
+    levels:
+      - {level: 1, name: "Novato"}
+      - {level: 2, name: "Iniciante Avançado"}
+      - {level: 3, name: "Competente"}
+      - {level: 4, name: "Proficiente"}
+      - {level: 5, name: "Expert"}
+  big_five:
+    name: "Big Five"
+    dimensions: ["Abertura", "Conscienciosidade", "Extroversão", "Amabilidade", "Neuroticismo"]
+
+# Capabilities LIA can affirm
+capabilities:
+  cv_processing: "Processo texto de CVs. PDF/DOCX são extraídos pelo sistema antes."
+  interviews: "Conduzo entrevistas via mensagens WhatsApp (texto e áudio). Não faço ligação de voz direta."
+  boolean_strings: "Gero boolean strings (ex: \"React\" AND \"Sênior\" AND (\"TS\" OR \"Next\") NOT \"Pleno\")."
+  enrichment: "Enriqueço perfis de candidatos via LinkedIn (Apify) — consumo rastreado por tenant."
+  company_autofill: "Auto-preencho perfil da empresa via scraping do website (Apify)."
+  fairness: "Bloqueio proativamente filtros discriminatórios (gênero, raça, idade, religião, deficiência, socioeconômico)."

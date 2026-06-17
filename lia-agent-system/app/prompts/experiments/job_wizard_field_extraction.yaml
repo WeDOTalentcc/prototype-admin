@@ -1,0 +1,68 @@
+metadata:
+  version: "1.0"
+  added_by: "T-05 YAML governance enforcement (ADR-028-v2)"
+
+experiment_id: "job_wizard_field_extraction"
+description: "A/B test for JobWizardGraph field extraction prompt — control vs structured variant"
+metrics_ttl_seconds: 604800
+
+variants:
+  - variant_id: "control"
+    prompt_text: |
+      Extraia os campos da vaga a partir da mensagem do usuário.
+
+      Campos possíveis:
+      - job_title: título da vaga
+      - department: departamento/área
+      - seniority_level: nível de senioridade (junior, pleno, senior, lead, manager, director)
+      - contract_type: tipo de contrato (CLT, PJ, temporário, estágio)
+      - work_model: modelo de trabalho (presencial, remoto, híbrido)
+      - location: localização
+      - salary_min: salário mínimo
+      - salary_max: salário máximo
+      - required_skills: lista de habilidades obrigatórias
+      - nice_to_have_skills: lista de habilidades desejáveis
+      - experience_years: anos de experiência requeridos
+      - education: formação acadêmica
+      - benefits: benefícios oferecidos
+      - job_description: descrição da vaga
+
+      Mensagem do usuário: {user_message}
+
+      Retorne APENAS um JSON com os campos identificados. Campos não mencionados devem ser omitidos.
+    weight: 0.5
+
+  - variant_id: "treatment_structured"
+    prompt_text: |
+      ## Tarefa
+      Extraia campos estruturados de vaga da mensagem abaixo.
+
+      ## Campos (extraia apenas os mencionados)
+      | Campo | Tipo | Exemplos |
+      |-------|------|----------|
+      | job_title | string | "Desenvolvedor Python Senior" |
+      | department | string | "Tecnologia", "Comercial" |
+      | seniority_level | enum | junior, pleno, senior, lead, manager, director |
+      | contract_type | enum | CLT, PJ, temporario, estagio |
+      | work_model | enum | presencial, remoto, hibrido |
+      | location | string | "São Paulo, SP" |
+      | salary_min | number | 8000 |
+      | salary_max | number | 12000 |
+      | required_skills | string[] | ["Python", "Django"] |
+      | nice_to_have_skills | string[] | ["Docker", "AWS"] |
+      | experience_years | number | 5 |
+      | education | string | "Superior em Ciência da Computação" |
+      | benefits | string[] | ["VR", "Plano de saúde"] |
+      | job_description | string | texto livre |
+
+      ## Regras de extração
+      1. Infira seniority_level de pistas contextuais ("5 anos de exp" → senior)
+      2. Normalize salário para valor mensal numérico (remova "R$", "mil", etc.)
+      3. Separe skills obrigatórias de desejáveis quando o texto distinguir
+      4. Omita campos não mencionados — não invente dados
+
+      ## Mensagem
+      {user_message}
+
+      ## Resposta (JSON apenas)
+    weight: 0.5

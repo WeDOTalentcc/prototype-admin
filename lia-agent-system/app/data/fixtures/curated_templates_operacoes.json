@@ -1,0 +1,4259 @@
+{
+  "OPERACOES_TEMPLATES": [
+    {
+      "category": "operacoes",
+      "subcategory": "logistica",
+      "title": "Analista de Logística",
+      "title_alternatives": [
+        "Logistics Analyst",
+        "Analista de Operações Logísticas",
+        "Analista de Distribuição",
+        "Analista de Supply Chain"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Estoques",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "WMS (Warehouse Management System)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Excel Avançado",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "SAP MM/WM",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": false
+        },
+        {
+          "name": "Power BI",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Gestão de Transportes",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "KPIs Logísticos",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Lean Logistics",
+          "category": "technical",
+          "level": "basic",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Organização",
+          "weight": 1.0,
+          "justification": "Controle de múltiplos processos simultâneos de armazenagem e distribuição"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.9,
+          "justification": "Análise de indicadores e otimização de rotas e custos"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Interface constante com transportadoras, fornecedores e clientes internos"
+        },
+        {
+          "name": "Resolução de Problemas",
+          "weight": 0.8,
+          "justification": "Gestão de imprevistos e contingências operacionais"
+        },
+        {
+          "name": "Trabalho sob Pressão",
+          "weight": 0.7,
+          "justification": "Cumprimento de prazos críticos de entrega"
+        }
+      ],
+      "default_responsibilities": [
+        "Planejar e controlar operações de armazenagem, movimentação e distribuição de materiais",
+        "Monitorar e analisar KPIs logísticos (OTIF, lead time, custo por entrega, acuracidade de estoque)",
+        "Negociar e gerenciar contratos com transportadoras e operadores logísticos",
+        "Otimizar rotas de entrega visando redução de custos e melhoria de nível de serviço",
+        "Elaborar relatórios gerenciais de performance logística",
+        "Implementar melhorias de processos utilizando metodologias Lean",
+        "Garantir conformidade com normas de segurança e regulamentações de transporte"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 3000,
+          "max": 4500
+        },
+        "pleno": {
+          "min": 5000,
+          "max": 8000
+        },
+        "senior": {
+          "min": 9000,
+          "max": 14000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "supply_chain",
+      "title": "Coordenador de Supply Chain",
+      "title_alternatives": [
+        "Supply Chain Coordinator",
+        "Coordenador de Cadeia de Suprimentos",
+        "Coordenador de Planejamento de Demanda",
+        "Supply Chain Manager"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "S&OP (Sales and Operations Planning)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "SAP APO/IBP",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Demanda",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Excel Avançado/Power BI",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de Fornecedores",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Lean Six Sigma",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Gestão de Projetos",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Análise de Dados",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Liderança",
+          "weight": 1.0,
+          "justification": "Coordenação de equipes multidisciplinares e fornecedores"
+        },
+        {
+          "name": "Visão Estratégica",
+          "weight": 0.9,
+          "justification": "Alinhamento da cadeia de suprimentos com objetivos de negócio"
+        },
+        {
+          "name": "Negociação",
+          "weight": 0.9,
+          "justification": "Gestão de contratos e parcerias com fornecedores"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.8,
+          "justification": "Tomada de decisão baseada em dados e cenários"
+        },
+        {
+          "name": "Gestão de Conflitos",
+          "weight": 0.7,
+          "justification": "Mediação entre áreas com interesses divergentes"
+        }
+      ],
+      "default_responsibilities": [
+        "Liderar o processo de S&OP garantindo alinhamento entre demanda, produção e suprimentos",
+        "Coordenar equipe de planejamento e analistas de supply chain",
+        "Desenvolver e implementar estratégias de gestão de inventário e redução de custos",
+        "Gerenciar relacionamento estratégico com fornecedores críticos",
+        "Monitorar indicadores de performance da cadeia de suprimentos (fill rate, stockout, lead time)",
+        "Implementar projetos de melhoria contínua e otimização de processos",
+        "Garantir compliance com políticas de compras e controles internos",
+        "Elaborar budget e forecast de custos de supply chain"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 6000,
+          "max": 8000
+        },
+        "pleno": {
+          "min": 9000,
+          "max": 13000
+        },
+        "senior": {
+          "min": 14000,
+          "max": 22000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "compras",
+      "title": "Comprador(a)",
+      "title_alternatives": [
+        "Buyer",
+        "Analista de Compras",
+        "Procurement Analyst",
+        "Especialista em Suprimentos"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Negociação com Fornecedores",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "SAP MM",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Strategic Sourcing",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Análise de TCO (Total Cost of Ownership)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Excel Avançado",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de Contratos",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Homologação de Fornecedores",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Inglês Intermediário",
+          "category": "language",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Negociação",
+          "weight": 1.0,
+          "justification": "Obtenção das melhores condições comerciais para a empresa"
+        },
+        {
+          "name": "Ética",
+          "weight": 0.9,
+          "justification": "Condução de processos de compras com integridade e transparência"
+        },
+        {
+          "name": "Organização",
+          "weight": 0.8,
+          "justification": "Gestão de múltiplos processos de cotação e compra simultâneos"
+        },
+        {
+          "name": "Relacionamento Interpessoal",
+          "weight": 0.8,
+          "justification": "Construção de parcerias duradouras com fornecedores"
+        },
+        {
+          "name": "Proatividade",
+          "weight": 0.7,
+          "justification": "Busca ativa de alternativas e oportunidades de saving"
+        }
+      ],
+      "default_responsibilities": [
+        "Conduzir processos de cotação, negociação e aquisição de materiais e serviços",
+        "Desenvolver e qualificar novos fornecedores alinhados às políticas da empresa",
+        "Negociar contratos garantindo melhores condições de preço, prazo e qualidade",
+        "Analisar propostas comerciais e elaborar mapas comparativos de fornecedores",
+        "Acompanhar entregas e resolver não-conformidades com fornecedores",
+        "Implementar estratégias de redução de custos e savings",
+        "Manter cadastro atualizado de fornecedores e condições comerciais",
+        "Elaborar relatórios de performance de compras e indicadores"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 3000,
+          "max": 4500
+        },
+        "pleno": {
+          "min": 5000,
+          "max": 8000
+        },
+        "senior": {
+          "min": 9000,
+          "max": 13000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "gestao",
+      "title": "Gerente de Operações",
+      "title_alternatives": [
+        "Operations Manager",
+        "Gerente Operacional",
+        "Head de Operações",
+        "Diretor de Operações"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Equipes",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Lean Manufacturing/Six Sigma",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Planejamento Estratégico",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de P&L",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "ERP (SAP, Oracle)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Gestão de Projetos",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "KPIs Operacionais",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de Mudanças",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Liderança",
+          "weight": 1.0,
+          "justification": "Gestão de grandes equipes e múltiplas áreas operacionais"
+        },
+        {
+          "name": "Visão Estratégica",
+          "weight": 0.9,
+          "justification": "Tradução de objetivos de negócio em planos operacionais"
+        },
+        {
+          "name": "Tomada de Decisão",
+          "weight": 0.9,
+          "justification": "Decisões críticas com impacto em resultados e pessoas"
+        },
+        {
+          "name": "Resiliência",
+          "weight": 0.8,
+          "justification": "Gestão de crises e cenários adversos"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Interface com diretoria, equipes e stakeholders externos"
+        }
+      ],
+      "default_responsibilities": [
+        "Liderar todas as operações da unidade garantindo eficiência e qualidade",
+        "Gerenciar P&L da área de operações com foco em resultados",
+        "Desenvolver e implementar estratégias de melhoria contínua e excelência operacional",
+        "Coordenar áreas de produção, logística, manutenção e qualidade",
+        "Definir e monitorar KPIs operacionais (OEE, produtividade, custos, segurança)",
+        "Liderar projetos de expansão, automação e transformação digital",
+        "Garantir compliance com normas de segurança, qualidade e meio ambiente",
+        "Desenvolver sucessores e promover cultura de alta performance"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 12000,
+          "max": 16000
+        },
+        "pleno": {
+          "min": 18000,
+          "max": 25000
+        },
+        "senior": {
+          "min": 28000,
+          "max": 45000
+        }
+      },
+      "work_model": "onsite",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "qualidade",
+      "title": "Analista de Qualidade",
+      "title_alternatives": [
+        "Quality Analyst",
+        "Analista de Controle de Qualidade",
+        "Analista de Garantia da Qualidade",
+        "Quality Assurance Analyst"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "ISO 9001",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Ferramentas da Qualidade (PDCA, 5W2H, Ishikawa)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Auditorias Internas",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Controle Estatístico de Processo (CEP)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Excel Avançado",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "ISO 14001",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        },
+        {
+          "name": "FMEA",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Six Sigma Green Belt",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 1.0,
+          "justification": "Identificação de não-conformidades e desvios de processo"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.9,
+          "justification": "Análise de causa raiz e resolução de problemas de qualidade"
+        },
+        {
+          "name": "Organização",
+          "weight": 0.8,
+          "justification": "Gestão de documentação e controles do sistema de gestão"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Treinamento de equipes e interface com auditores"
+        },
+        {
+          "name": "Proatividade",
+          "weight": 0.7,
+          "justification": "Identificação de oportunidades de melhoria preventiva"
+        }
+      ],
+      "default_responsibilities": [
+        "Manter e aprimorar o Sistema de Gestão da Qualidade (SGQ) conforme ISO 9001",
+        "Conduzir auditorias internas e acompanhar auditorias externas de certificação",
+        "Analisar não-conformidades e liderar tratativas de ações corretivas e preventivas",
+        "Elaborar e atualizar procedimentos, instruções de trabalho e registros de qualidade",
+        "Monitorar indicadores de qualidade (PPM, índice de retrabalho, satisfação cliente)",
+        "Realizar treinamentos sobre qualidade e ferramentas de melhoria contínua",
+        "Implementar programas de melhoria da qualidade (5S, Kaizen)",
+        "Analisar reclamações de clientes e coordenar respostas e ações"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 3000,
+          "max": 4500
+        },
+        "pleno": {
+          "min": 5000,
+          "max": 8000
+        },
+        "senior": {
+          "min": 9000,
+          "max": 13000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "supply_chain",
+      "title": "Analista de PCP",
+      "title_alternatives": [
+        "PCP Analyst",
+        "Analista de Planejamento e Controle de Produção",
+        "Production Planning Analyst",
+        "Analista de Planejamento de Produção"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Planejamento e Controle de Produção",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "MRP/MRP II",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "ERP (SAP PP, TOTVS)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Excel Avançado",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Estoques",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Sequenciamento de Produção",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "APS (Advanced Planning Systems)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Lean Manufacturing",
+          "category": "technical",
+          "level": "basic",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Organização",
+          "weight": 1.0,
+          "justification": "Gestão de múltiplas ordens de produção e prioridades"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.9,
+          "justification": "Análise de capacidade e balanceamento de recursos"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Interface com produção, compras e comercial"
+        },
+        {
+          "name": "Resolução de Problemas",
+          "weight": 0.8,
+          "justification": "Tratativa de desvios de planejamento e urgências"
+        },
+        {
+          "name": "Trabalho sob Pressão",
+          "weight": 0.8,
+          "justification": "Cumprimento de prazos de entrega ao cliente"
+        }
+      ],
+      "default_responsibilities": [
+        "Elaborar e controlar o plano mestre de produção (MPS) e ordens de produção",
+        "Analisar capacidade produtiva e identificar gargalos e oportunidades de melhoria",
+        "Acompanhar níveis de estoque de matérias-primas e produtos acabados",
+        "Sequenciar produção otimizando setup e produtividade das linhas",
+        "Emitir ordens de produção e requisições de materiais no ERP",
+        "Monitorar aderência ao plano e reportar desvios para gestão",
+        "Participar de reuniões de S&OP representando a área de PCP",
+        "Elaborar relatórios de acompanhamento de produção e indicadores"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 3000,
+          "max": 4500
+        },
+        "pleno": {
+          "min": 5000,
+          "max": 8000
+        },
+        "senior": {
+          "min": 9000,
+          "max": 13000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "gestao",
+      "title": "Coordenador de Produção",
+      "title_alternatives": [
+        "Production Coordinator",
+        "Coordenador de Manufatura",
+        "Supervisor de Produção",
+        "Manufacturing Supervisor"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Produção",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Lean Manufacturing",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Equipes Operacionais",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "OEE (Overall Equipment Effectiveness)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "ERP (SAP, TOTVS)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "Normas de Segurança (NRs)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de Manutenção (TPM)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Six Sigma Green Belt",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Liderança",
+          "weight": 1.0,
+          "justification": "Gestão direta de equipes de produção em múltiplos turnos"
+        },
+        {
+          "name": "Resolução de Problemas",
+          "weight": 0.9,
+          "justification": "Tratativa rápida de paradas e desvios de produção"
+        },
+        {
+          "name": "Tomada de Decisão",
+          "weight": 0.9,
+          "justification": "Decisões operacionais com impacto em produtividade e qualidade"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Alinhamento entre turnos e interface com áreas de suporte"
+        },
+        {
+          "name": "Orientação para Resultados",
+          "weight": 0.8,
+          "justification": "Foco em metas de produtividade, qualidade e segurança"
+        }
+      ],
+      "default_responsibilities": [
+        "Coordenar operações de produção garantindo metas de volume, qualidade e segurança",
+        "Liderar equipe de líderes de produção e operadores em múltiplos turnos",
+        "Monitorar indicadores de produção (OEE, produtividade, refugo, setup)",
+        "Implementar ações de melhoria contínua e metodologias Lean",
+        "Garantir cumprimento de normas de segurança e procedimentos operacionais",
+        "Realizar gestão de pessoas (escalas, férias, desenvolvimento, feedback)",
+        "Reportar resultados e desvios para gerência de operações",
+        "Participar de projetos de expansão e automação industrial"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 7000,
+          "max": 10000
+        },
+        "pleno": {
+          "min": 11000,
+          "max": 15000
+        },
+        "senior": {
+          "min": 16000,
+          "max": 22000
+        }
+      },
+      "work_model": "onsite",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "logistica",
+      "title": "Gerente de Logística",
+      "title_alternatives": [
+        "Logistics Manager",
+        "Gerente de Distribuição",
+        "Head de Logística",
+        "Diretor de Logística"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Operações Logísticas",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Gestão de Transportes e Frotas",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Centros de Distribuição",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "WMS/TMS",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de P&L",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Negociação com Operadores Logísticos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Lean Logistics",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Inglês Avançado",
+          "category": "language",
+          "level": "advanced",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Liderança",
+          "weight": 1.0,
+          "justification": "Gestão de grandes equipes e operações logísticas complexas"
+        },
+        {
+          "name": "Visão Estratégica",
+          "weight": 0.9,
+          "justification": "Planejamento de rede logística e investimentos"
+        },
+        {
+          "name": "Negociação",
+          "weight": 0.9,
+          "justification": "Gestão de contratos com transportadoras e operadores"
+        },
+        {
+          "name": "Orientação para Resultados",
+          "weight": 0.8,
+          "justification": "Foco em custos, nível de serviço e eficiência"
+        },
+        {
+          "name": "Resiliência",
+          "weight": 0.8,
+          "justification": "Gestão de crises e contingências logísticas"
+        }
+      ],
+      "default_responsibilities": [
+        "Liderar operações de armazenagem, transporte e distribuição",
+        "Gerenciar P&L da área de logística garantindo custos e nível de serviço",
+        "Desenvolver e implementar estratégia logística alinhada ao negócio",
+        "Negociar contratos com transportadoras e operadores logísticos",
+        "Monitorar KPIs de logística (OTIF, custo por entrega, ocupação CD)",
+        "Liderar projetos de expansão e otimização da malha logística",
+        "Garantir compliance com legislação de transporte e segurança",
+        "Desenvolver equipe e promover cultura de excelência operacional"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 12000,
+          "max": 16000
+        },
+        "pleno": {
+          "min": 18000,
+          "max": 25000
+        },
+        "senior": {
+          "min": 28000,
+          "max": 45000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "comex",
+      "title": "Analista de Comércio Exterior",
+      "title_alternatives": [
+        "Foreign Trade Analyst",
+        "Analista de Importação e Exportação",
+        "Trade Analyst",
+        "Analista de Comex"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Processos de Importação e Exportação",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Siscomex/Portal Único",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Incoterms",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Legislação Aduaneira",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Classificação Fiscal (NCM)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Câmbio e Documentação Internacional",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Inglês Avançado",
+          "category": "language",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Excel Avançado",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 1.0,
+          "justification": "Precisão em documentação e classificação fiscal"
+        },
+        {
+          "name": "Organização",
+          "weight": 0.9,
+          "justification": "Gestão de múltiplos processos de importação/exportação"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Interface com despachantes, fornecedores internacionais e órgãos"
+        },
+        {
+          "name": "Proatividade",
+          "weight": 0.8,
+          "justification": "Antecipação de problemas de desembaraço e cumprimento de prazos"
+        },
+        {
+          "name": "Resolução de Problemas",
+          "weight": 0.7,
+          "justification": "Tratativa de retenções e pendências aduaneiras"
+        }
+      ],
+      "default_responsibilities": [
+        "Coordenar processos de importação e exportação junto a despachantes e agentes de carga",
+        "Elaborar e conferir documentação de comércio exterior (DI, RE, LI, invoices)",
+        "Classificar mercadorias na NCM e analisar tratamento tributário e administrativo",
+        "Acompanhar desembaraço aduaneiro e liberação de cargas em portos e aeroportos",
+        "Controlar pagamentos internacionais e fechamento de câmbio",
+        "Garantir compliance com legislação aduaneira e regimes especiais",
+        "Elaborar relatórios de custos e performance de operações de comex",
+        "Prospectar e negociar com agentes de carga e prestadores de serviços"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 3500,
+          "max": 5000
+        },
+        "pleno": {
+          "min": 5500,
+          "max": 9000
+        },
+        "senior": {
+          "min": 10000,
+          "max": 15000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "supply_chain",
+      "title": "Especialista em Supply Chain",
+      "title_alternatives": [
+        "Supply Chain Specialist",
+        "Especialista em Cadeia de Suprimentos",
+        "Senior Supply Chain Analyst",
+        "Supply Chain Consultant"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "S&OP/IBP",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Demand Planning",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Gestão de Inventário",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "SAP APO/IBP/SCM",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Analytics e Business Intelligence",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Supply Chain Finance",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Lean Six Sigma Black Belt",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Inglês Fluente",
+          "category": "language",
+          "level": "advanced",
+          "weight": 0.7,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Pensamento Estratégico",
+          "weight": 1.0,
+          "justification": "Desenho de estratégias de supply chain de longo prazo"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.9,
+          "justification": "Análises complexas de dados e cenários"
+        },
+        {
+          "name": "Influência",
+          "weight": 0.9,
+          "justification": "Engajamento de stakeholders em iniciativas de transformação"
+        },
+        {
+          "name": "Comunicação Executiva",
+          "weight": 0.8,
+          "justification": "Apresentação de projetos para alta liderança"
+        },
+        {
+          "name": "Gestão de Projetos",
+          "weight": 0.8,
+          "justification": "Condução de projetos de melhoria e transformação"
+        }
+      ],
+      "default_responsibilities": [
+        "Liderar projetos de transformação e melhoria da cadeia de suprimentos",
+        "Desenvolver modelos de previsão de demanda e otimização de inventário",
+        "Implementar processos de S&OP/IBP com visão end-to-end",
+        "Analisar performance da cadeia de suprimentos e identificar oportunidades",
+        "Suportar decisões estratégicas com análises de cenários e business cases",
+        "Liderar implementação de ferramentas e sistemas de supply chain",
+        "Desenvolver KPIs e dashboards para monitoramento de supply chain",
+        "Atuar como referência técnica e mentor para equipe de planejamento"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 8000,
+          "max": 11000
+        },
+        "pleno": {
+          "min": 12000,
+          "max": 16000
+        },
+        "senior": {
+          "min": 18000,
+          "max": 28000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "compras",
+      "title": "Comprador Sênior",
+      "title_alternatives": [
+        "Senior Buyer",
+        "Comprador Estratégico",
+        "Strategic Procurement Specialist",
+        "Category Buyer"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "Strategic Sourcing",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Negociação Estratégica",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Gestão de Categorias",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "TCO e Cost Breakdown",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Contratos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "SAP MM/Ariba",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Supplier Development",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Inglês Avançado",
+          "category": "language",
+          "level": "advanced",
+          "weight": 0.7,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Negociação",
+          "weight": 1.0,
+          "justification": "Negociações complexas de alto valor e impacto estratégico"
+        },
+        {
+          "name": "Pensamento Estratégico",
+          "weight": 0.9,
+          "justification": "Visão de longo prazo na gestão de fornecedores"
+        },
+        {
+          "name": "Relacionamento",
+          "weight": 0.9,
+          "justification": "Construção de parcerias estratégicas com fornecedores-chave"
+        },
+        {
+          "name": "Ética e Integridade",
+          "weight": 0.9,
+          "justification": "Condução de processos com transparência e compliance"
+        },
+        {
+          "name": "Orientação para Resultados",
+          "weight": 0.8,
+          "justification": "Entrega de savings e valor para o negócio"
+        }
+      ],
+      "default_responsibilities": [
+        "Desenvolver e implementar estratégias de sourcing por categoria",
+        "Conduzir negociações estratégicas de alto valor e complexidade",
+        "Gerenciar relacionamento com fornecedores estratégicos (SRM)",
+        "Liderar projetos de redução de custos e otimização de base de fornecedores",
+        "Desenvolver e qualificar fornecedores alinhados à estratégia da empresa",
+        "Elaborar análises de TCO e business cases para decisões de sourcing",
+        "Garantir compliance com políticas de compras e governança",
+        "Mentorar compradores júnior e disseminar melhores práticas"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 6000,
+          "max": 9000
+        },
+        "pleno": {
+          "min": 10000,
+          "max": 14000
+        },
+        "senior": {
+          "min": 15000,
+          "max": 22000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "supply_chain",
+      "title": "Analista de Planejamento de Demanda",
+      "title_alternatives": [
+        "Demand Planning Analyst",
+        "Analista de Forecast",
+        "Demand Planner",
+        "Analista de Previsão de Demanda"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Previsão de Demanda (Forecasting)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Modelos Estatísticos de Previsão",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Excel Avançado",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "SAP APO/IBP",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": false
+        },
+        {
+          "name": "Power BI/Tableau",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "S&OP",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Python/R para Analytics",
+          "category": "technical",
+          "level": "basic",
+          "weight": 0.6,
+          "required": false
+        },
+        {
+          "name": "Gestão de Inventário",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Pensamento Analítico",
+          "weight": 1.0,
+          "justification": "Análise de dados e padrões de demanda"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.9,
+          "justification": "Interface com comercial, marketing e supply chain"
+        },
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 0.8,
+          "justification": "Precisão nas análises e forecasts"
+        },
+        {
+          "name": "Proatividade",
+          "weight": 0.8,
+          "justification": "Identificação de tendências e desvios"
+        },
+        {
+          "name": "Colaboração",
+          "weight": 0.7,
+          "justification": "Trabalho conjunto com múltiplas áreas no processo de S&OP"
+        }
+      ],
+      "default_responsibilities": [
+        "Elaborar e manter forecast estatístico de demanda por produto/região",
+        "Analisar histórico de vendas e identificar tendências e sazonalidades",
+        "Conduzir reuniões de consenso de demanda com comercial e marketing",
+        "Monitorar acuracidade do forecast e implementar melhorias",
+        "Suportar processo de S&OP com análises e cenários de demanda",
+        "Desenvolver reports e dashboards de performance de previsão",
+        "Analisar impacto de lançamentos, promoções e descontinuações",
+        "Colaborar com supply planning para definição de políticas de estoque"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 4000,
+          "max": 5500
+        },
+        "pleno": {
+          "min": 6000,
+          "max": 9000
+        },
+        "senior": {
+          "min": 10000,
+          "max": 15000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "logistica",
+      "title": "Analista de Almoxarifado",
+      "title_alternatives": [
+        "Warehouse Analyst",
+        "Analista de Estoque",
+        "Inventory Analyst",
+        "Almoxarife"
+      ],
+      "seniorities": [
+        "junior",
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Estoques",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "WMS (Warehouse Management System)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Inventário e Contagem Cíclica",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "ERP (SAP MM, TOTVS)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Excel",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Recebimento e Expedição",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "5S e Organização de Almoxarifado",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "FIFO/FEFO",
+          "category": "technical",
+          "level": "basic",
+          "weight": 0.6,
+          "required": true
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Organização",
+          "weight": 1.0,
+          "justification": "Manutenção de almoxarifado organizado e controlado"
+        },
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 0.9,
+          "justification": "Conferência precisa de materiais e registros"
+        },
+        {
+          "name": "Responsabilidade",
+          "weight": 0.8,
+          "justification": "Guarda e controle de materiais de valor"
+        },
+        {
+          "name": "Trabalho em Equipe",
+          "weight": 0.7,
+          "justification": "Suporte a produção e demais áreas da empresa"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.7,
+          "justification": "Interface com fornecedores e áreas internas"
+        }
+      ],
+      "default_responsibilities": [
+        "Controlar movimentação de materiais (entrada, saída e transferências)",
+        "Realizar recebimento físico e fiscal de materiais conferindo notas fiscais",
+        "Executar inventários rotativos e participar de inventários gerais",
+        "Organizar almoxarifado seguindo metodologia 5S e boas práticas de armazenagem",
+        "Atender requisições de materiais para produção e demais áreas",
+        "Lançar movimentações no sistema ERP/WMS mantendo registros atualizados",
+        "Identificar e segregar materiais não-conformes ou com validade crítica",
+        "Apoiar na expedição de produtos acabados e insumos para terceiros"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 2000,
+          "max": 3000
+        },
+        "pleno": {
+          "min": 3200,
+          "max": 5000
+        },
+        "senior": {
+          "min": 5500,
+          "max": 7500
+        }
+      },
+      "work_model": "onsite",
+      "employment_type": "clt"
+    },
+    {
+      "category": "operacoes",
+      "subcategory": "gestao",
+      "title": "Coordenador de Facilities",
+      "title_alternatives": [
+        "Facilities Coordinator",
+        "Coordenador de Infraestrutura Predial",
+        "Gestor de Facilities",
+        "Facilities Manager"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Facilities",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Manutenção Predial",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Contratos e Terceiros",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Segurança Patrimonial",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de Orçamento",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Normas Regulamentadoras (NRs)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "Sustentabilidade e Eficiência Energética",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        },
+        {
+          "name": "Space Management",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Liderança",
+          "weight": 1.0,
+          "justification": "Gestão de equipes próprias e terceirizadas de facilities"
+        },
+        {
+          "name": "Organização",
+          "weight": 0.9,
+          "justification": "Coordenação de múltiplas atividades e serviços simultâneos"
+        },
+        {
+          "name": "Negociação",
+          "weight": 0.8,
+          "justification": "Gestão de contratos com prestadores de serviços"
+        },
+        {
+          "name": "Resolução de Problemas",
+          "weight": 0.8,
+          "justification": "Tratativa de emergências e demandas inesperadas"
+        },
+        {
+          "name": "Orientação para o Cliente",
+          "weight": 0.7,
+          "justification": "Atendimento às necessidades dos usuários internos"
+        }
+      ],
+      "default_responsibilities": [
+        "Coordenar serviços de facilities (limpeza, segurança, recepção, manutenção, copa)",
+        "Gerenciar contratos de prestadores de serviços e fornecedores",
+        "Planejar e executar manutenções preventivas e corretivas prediais",
+        "Controlar orçamento de facilities e aprovar despesas operacionais",
+        "Garantir conformidade com normas de segurança e acessibilidade",
+        "Coordenar projetos de reformas, mudanças e adequações de espaço",
+        "Implementar iniciativas de sustentabilidade e eficiência energética",
+        "Gerenciar frota de veículos e serviços de transporte quando aplicável"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7000
+        },
+        "pleno": {
+          "min": 8000,
+          "max": 12000
+        },
+        "senior": {
+          "min": 13000,
+          "max": 20000
+        }
+      },
+      "work_model": "onsite",
+      "employment_type": "clt"
+    }
+  ],
+  "JURIDICO_TEMPLATES": [
+    {
+      "category": "juridico",
+      "subcategory": "trabalhista",
+      "title": "Advogado Trabalhista",
+      "title_alternatives": [
+        "Labor Lawyer",
+        "Advogado de Direito do Trabalho",
+        "Especialista Jurídico Trabalhista",
+        "Labor Law Attorney"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Direito do Trabalho",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Processo do Trabalho",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "CLT e Legislação Trabalhista",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Negociação Sindical",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Contencioso Trabalhista",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Consultoria Preventiva",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Cálculos Trabalhistas",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "e-Social",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Ética Profissional",
+          "weight": 1.0,
+          "justification": "Condução íntegra de processos e orientações jurídicas"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.9,
+          "justification": "Tradução de questões jurídicas para linguagem acessível"
+        },
+        {
+          "name": "Negociação",
+          "weight": 0.9,
+          "justification": "Acordos judiciais e extrajudiciais vantajosos para a empresa"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.8,
+          "justification": "Análise de riscos e estratégias processuais"
+        },
+        {
+          "name": "Organização",
+          "weight": 0.7,
+          "justification": "Gestão de prazos processuais e carteira de processos"
+        }
+      ],
+      "default_responsibilities": [
+        "Representar a empresa em audiências trabalhistas e conduzir defesas judiciais",
+        "Elaborar peças processuais (contestações, recursos, memoriais)",
+        "Prestar consultoria jurídica preventiva em questões trabalhistas",
+        "Participar de negociações sindicais e acordos coletivos",
+        "Analisar contratos de trabalho, políticas e regulamentos internos",
+        "Acompanhar e controlar a carteira de processos trabalhistas",
+        "Realizar treinamentos sobre compliance trabalhista para gestores",
+        "Manter-se atualizado sobre jurisprudência e alterações legislativas"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 4000,
+          "max": 6000
+        },
+        "pleno": {
+          "min": 7000,
+          "max": 12000
+        },
+        "senior": {
+          "min": 13000,
+          "max": 20000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "juridico",
+      "subcategory": "societario",
+      "title": "Advogado Societário",
+      "title_alternatives": [
+        "Corporate Lawyer",
+        "Advogado Corporativo",
+        "Advogado de M&A",
+        "Corporate Counsel"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Direito Societário",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Contratos Empresariais",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "M&A (Fusões e Aquisições)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": false
+        },
+        {
+          "name": "Governança Corporativa",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Due Diligence",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Direito Comercial",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Inglês Jurídico",
+          "category": "language",
+          "level": "advanced",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Registro de Empresas (Junta Comercial)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": true
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 1.0,
+          "justification": "Revisão minuciosa de contratos e documentos societários"
+        },
+        {
+          "name": "Pensamento Estratégico",
+          "weight": 0.9,
+          "justification": "Estruturação de operações societárias complexas"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Interação com sócios, investidores e reguladores"
+        },
+        {
+          "name": "Confidencialidade",
+          "weight": 0.9,
+          "justification": "Tratamento de informações sensíveis de negócios"
+        },
+        {
+          "name": "Proatividade",
+          "weight": 0.7,
+          "justification": "Antecipação de riscos e oportunidades jurídicas"
+        }
+      ],
+      "default_responsibilities": [
+        "Elaborar e revisar contratos comerciais, societários e de parceria",
+        "Estruturar operações societárias (constituição, alteração, fusão, cisão)",
+        "Conduzir processos de due diligence em operações de M&A",
+        "Assessorar órgãos de governança (conselho, diretoria, assembleia)",
+        "Garantir conformidade com legislação societária e regulamentações",
+        "Elaborar atas, estatutos e documentos societários",
+        "Acompanhar processos junto a Junta Comercial e órgãos reguladores",
+        "Prestar suporte jurídico em captação de investimentos e joint ventures"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7000
+        },
+        "pleno": {
+          "min": 8000,
+          "max": 14000
+        },
+        "senior": {
+          "min": 15000,
+          "max": 25000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "juridico",
+      "subcategory": "suporte",
+      "title": "Paralegal / Assistente Jurídico",
+      "title_alternatives": [
+        "Paralegal",
+        "Assistente Jurídico",
+        "Auxiliar Jurídico",
+        "Legal Assistant"
+      ],
+      "seniorities": [
+        "junior"
+      ],
+      "default_skills": [
+        {
+          "name": "Rotinas Jurídicas",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Sistemas de Gestão Jurídica",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Pesquisa Jurisprudencial",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Peticionamento Eletrônico",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Pacote Office",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "Controle de Prazos Processuais",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Organização de Documentos",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Atendimento a Clientes",
+          "category": "technical",
+          "level": "basic",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Organização",
+          "weight": 1.0,
+          "justification": "Gestão de grande volume de documentos e prazos críticos"
+        },
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 0.9,
+          "justification": "Verificação precisa de informações processuais"
+        },
+        {
+          "name": "Proatividade",
+          "weight": 0.8,
+          "justification": "Antecipação de necessidades dos advogados"
+        },
+        {
+          "name": "Discrição",
+          "weight": 0.8,
+          "justification": "Tratamento de informações confidenciais"
+        },
+        {
+          "name": "Trabalho em Equipe",
+          "weight": 0.7,
+          "justification": "Suporte a múltiplos advogados e áreas"
+        }
+      ],
+      "default_responsibilities": [
+        "Controlar prazos processuais e garantir cumprimento de agenda jurídica",
+        "Realizar peticionamento eletrônico e acompanhamento de processos",
+        "Pesquisar jurisprudência e legislação para suporte aos advogados",
+        "Organizar e digitalizar documentos jurídicos e processuais",
+        "Alimentar sistemas de gestão jurídica com informações de processos",
+        "Preparar relatórios de acompanhamento processual",
+        "Solicitar certidões e documentos junto a órgãos públicos",
+        "Apoiar na organização de audiências e reuniões jurídicas"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 2000,
+          "max": 3500
+        },
+        "pleno": {
+          "min": 3500,
+          "max": 5500
+        },
+        "senior": {
+          "min": 5500,
+          "max": 8000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "juridico",
+      "subcategory": "gestao",
+      "title": "Gerente Jurídico",
+      "title_alternatives": [
+        "Legal Manager",
+        "Head Jurídico",
+        "Gerente de Contencioso",
+        "Legal Counsel Manager"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Departamento Jurídico",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Contencioso (Cível, Trabalhista, Tributário)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Contratos e Compliance",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Escritórios Externos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Budget e Provisões",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Governança Corporativa",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Legal Operations",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Inglês Fluente",
+          "category": "language",
+          "level": "advanced",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Liderança",
+          "weight": 1.0,
+          "justification": "Gestão de equipe jurídica e relacionamento com alta gestão"
+        },
+        {
+          "name": "Visão de Negócio",
+          "weight": 0.9,
+          "justification": "Tradução de riscos jurídicos em impacto para o negócio"
+        },
+        {
+          "name": "Tomada de Decisão",
+          "weight": 0.9,
+          "justification": "Definição de estratégias e priorização de demandas"
+        },
+        {
+          "name": "Comunicação Executiva",
+          "weight": 0.8,
+          "justification": "Apresentação de pareceres para diretoria e conselho"
+        },
+        {
+          "name": "Gestão de Conflitos",
+          "weight": 0.7,
+          "justification": "Mediação de interesses entre áreas e resolução de disputas"
+        }
+      ],
+      "default_responsibilities": [
+        "Liderar o departamento jurídico e gerenciar equipe de advogados e paralegais",
+        "Definir estratégias jurídicas alinhadas aos objetivos de negócio",
+        "Gerenciar carteira de processos e relacionamento com escritórios externos",
+        "Elaborar e controlar budget do departamento e provisões de contingências",
+        "Assessorar diretoria e conselho em questões jurídicas estratégicas",
+        "Garantir compliance e conformidade regulatória da empresa",
+        "Implementar políticas e processos de gestão jurídica (Legal Operations)",
+        "Representar a empresa em negociações estratégicas e litígios complexos"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 12000,
+          "max": 16000
+        },
+        "pleno": {
+          "min": 18000,
+          "max": 25000
+        },
+        "senior": {
+          "min": 28000,
+          "max": 45000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "juridico",
+      "subcategory": "corporativo",
+      "title": "Advogado Contratual",
+      "title_alternatives": [
+        "Contract Lawyer",
+        "Advogado de Contratos",
+        "Contract Attorney",
+        "Especialista em Contratos"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Elaboração e Revisão de Contratos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Direito Civil e Obrigações",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Negociação de Contratos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Direito Comercial",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Riscos Contratuais",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "CLM (Contract Lifecycle Management)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Inglês Jurídico",
+          "category": "language",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "LGPD e Proteção de Dados",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 1.0,
+          "justification": "Análise minuciosa de cláusulas e termos contratuais"
+        },
+        {
+          "name": "Negociação",
+          "weight": 0.9,
+          "justification": "Defesa dos interesses da empresa em negociações"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.9,
+          "justification": "Interface com áreas de negócio e contrapartes"
+        },
+        {
+          "name": "Pensamento Crítico",
+          "weight": 0.8,
+          "justification": "Identificação de riscos e pontos de atenção"
+        },
+        {
+          "name": "Organização",
+          "weight": 0.8,
+          "justification": "Gestão de múltiplos contratos e prazos"
+        }
+      ],
+      "default_responsibilities": [
+        "Elaborar e revisar contratos comerciais, de prestação de serviços e parcerias",
+        "Negociar cláusulas contratuais representando os interesses da empresa",
+        "Analisar riscos contratuais e propor mitigações adequadas",
+        "Padronizar modelos de contratos e cláusulas (templates)",
+        "Acompanhar execução de contratos e gerir aditivos e renovações",
+        "Prestar suporte jurídico às áreas de negócio em questões contratuais",
+        "Garantir conformidade com LGPD e outras regulamentações em contratos",
+        "Manter arquivo organizado de contratos e histórico de negociações"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 4500,
+          "max": 6500
+        },
+        "pleno": {
+          "min": 7500,
+          "max": 12000
+        },
+        "senior": {
+          "min": 13000,
+          "max": 20000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "juridico",
+      "subcategory": "compliance",
+      "title": "Advogado de Compliance",
+      "title_alternatives": [
+        "Compliance Lawyer",
+        "Advogado de Integridade",
+        "Compliance Attorney",
+        "Especialista em Compliance"
+      ],
+      "seniorities": [
+        "pleno",
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "Programa de Compliance e Integridade",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Legislação Anticorrupção (Lei 12.846)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Investigações Internas",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Due Diligence de Terceiros",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Canal de Denúncias",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Treinamentos de Compliance",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "LGPD",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Governança Corporativa",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Ética e Integridade",
+          "weight": 1.0,
+          "justification": "Exemplo e defesa dos valores de compliance"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.9,
+          "justification": "Análise de riscos e condução de investigações"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.9,
+          "justification": "Disseminação da cultura de compliance e treinamentos"
+        },
+        {
+          "name": "Imparcialidade",
+          "weight": 0.9,
+          "justification": "Condução justa de investigações e apurações"
+        },
+        {
+          "name": "Resiliência",
+          "weight": 0.8,
+          "justification": "Manutenção de postura firme diante de pressões"
+        }
+      ],
+      "default_responsibilities": [
+        "Desenvolver e implementar programa de compliance e integridade",
+        "Conduzir investigações internas de denúncias e irregularidades",
+        "Elaborar e revisar código de conduta e políticas de compliance",
+        "Gerenciar canal de denúncias e garantir apuração adequada",
+        "Realizar treinamentos de compliance e anticorrupção para colaboradores",
+        "Conduzir due diligence de integridade em terceiros e fornecedores",
+        "Monitorar riscos de compliance e elaborar relatórios para a alta gestão",
+        "Assessorar áreas de negócio em questões de compliance e ética"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7000
+        },
+        "pleno": {
+          "min": 8000,
+          "max": 14000
+        },
+        "senior": {
+          "min": 15000,
+          "max": 25000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "juridico",
+      "subcategory": "corporativo",
+      "title": "Advogado Tributário",
+      "title_alternatives": [
+        "Tax Lawyer",
+        "Advogado de Direito Tributário",
+        "Tax Attorney",
+        "Especialista em Tributação"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Direito Tributário",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Contencioso Tributário (Administrativo e Judicial)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Planejamento Tributário",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "ICMS, ISS, PIS/COFINS, IR/CSLL",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Consultoria Tributária",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Reforma Tributária",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Transfer Pricing",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        },
+        {
+          "name": "Regimes Especiais de Tributação",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Pensamento Analítico",
+          "weight": 1.0,
+          "justification": "Análise de legislação complexa e identificação de oportunidades"
+        },
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 0.9,
+          "justification": "Precisão em cálculos e análises tributárias"
+        },
+        {
+          "name": "Atualização Constante",
+          "weight": 0.9,
+          "justification": "Acompanhamento de mudanças legislativas frequentes"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Tradução de questões tributárias para linguagem de negócio"
+        },
+        {
+          "name": "Ética",
+          "weight": 0.8,
+          "justification": "Planejamento tributário dentro dos limites legais"
+        }
+      ],
+      "default_responsibilities": [
+        "Conduzir contencioso tributário administrativo e judicial",
+        "Prestar consultoria tributária para operações e projetos da empresa",
+        "Elaborar e revisar planejamento tributário visando otimização fiscal",
+        "Analisar novas legislações e seus impactos para o negócio",
+        "Acompanhar fiscalizações e responder a intimações de órgãos fazendários",
+        "Elaborar pareceres e orientações sobre questões tributárias",
+        "Suportar área contábil-fiscal em questões jurídicas tributárias",
+        "Recuperar créditos tributários e acompanhar restituições e compensações"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7500
+        },
+        "pleno": {
+          "min": 8500,
+          "max": 14000
+        },
+        "senior": {
+          "min": 15000,
+          "max": 25000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "juridico",
+      "subcategory": "gestao",
+      "title": "Coordenador Jurídico",
+      "title_alternatives": [
+        "Legal Coordinator",
+        "Coordenador de Contencioso",
+        "Coordenador de Contratos",
+        "Legal Team Lead"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Equipe Jurídica",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Contencioso (Cível e/ou Trabalhista)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Consultoria Jurídica Empresarial",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Escritórios Externos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Controle de Prazos e Processos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Sistemas de Gestão Jurídica",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "Elaboração de Relatórios Gerenciais",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "Inglês Intermediário",
+          "category": "language",
+          "level": "intermediate",
+          "weight": 0.5,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Liderança",
+          "weight": 1.0,
+          "justification": "Coordenação de advogados e paralegais da equipe"
+        },
+        {
+          "name": "Organização",
+          "weight": 0.9,
+          "justification": "Gestão de carteira de processos e demandas jurídicas"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.9,
+          "justification": "Interface entre equipe, gestão e áreas de negócio"
+        },
+        {
+          "name": "Tomada de Decisão",
+          "weight": 0.8,
+          "justification": "Definição de prioridades e estratégias processuais"
+        },
+        {
+          "name": "Desenvolvimento de Pessoas",
+          "weight": 0.8,
+          "justification": "Mentoria e capacitação da equipe"
+        }
+      ],
+      "default_responsibilities": [
+        "Coordenar equipe de advogados e paralegais em área específica",
+        "Distribuir demandas e acompanhar produtividade e qualidade das entregas",
+        "Definir estratégias para processos de maior complexidade ou valor",
+        "Gerenciar relacionamento e performance de escritórios externos",
+        "Elaborar relatórios de indicadores para gerência jurídica",
+        "Garantir cumprimento de prazos processuais e qualidade das peças",
+        "Participar de audiências e negociações estratégicas",
+        "Propor melhorias de processos e implementar boas práticas"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 8000,
+          "max": 11000
+        },
+        "pleno": {
+          "min": 12000,
+          "max": 16000
+        },
+        "senior": {
+          "min": 18000,
+          "max": 28000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "juridico",
+      "subcategory": "compliance",
+      "title": "DPO - Data Protection Officer",
+      "title_alternatives": [
+        "Data Protection Officer",
+        "Encarregado de Proteção de Dados",
+        "Privacy Officer",
+        "Especialista em LGPD"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "LGPD (Lei Geral de Proteção de Dados)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "GDPR e Regulamentações Internacionais",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": false
+        },
+        {
+          "name": "Gestão de Programa de Privacidade",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Mapeamento de Dados e ROPA",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Análise de Riscos de Privacidade",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Privacy by Design",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de Incidentes de Dados",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Segurança da Informação",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Comunicação",
+          "weight": 1.0,
+          "justification": "Interface com ANPD, titulares e todas as áreas da empresa"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.9,
+          "justification": "Análise de riscos e impactos de tratamento de dados"
+        },
+        {
+          "name": "Influência",
+          "weight": 0.9,
+          "justification": "Engajamento da organização em práticas de privacidade"
+        },
+        {
+          "name": "Integridade",
+          "weight": 0.9,
+          "justification": "Independência na função de encarregado"
+        },
+        {
+          "name": "Atualização Constante",
+          "weight": 0.8,
+          "justification": "Acompanhamento de orientações da ANPD e melhores práticas"
+        }
+      ],
+      "default_responsibilities": [
+        "Atuar como ponto de contato oficial com a ANPD e titulares de dados",
+        "Desenvolver e manter programa de privacidade e proteção de dados",
+        "Conduzir mapeamento de dados pessoais e manter ROPA atualizado",
+        "Realizar análises de impacto à proteção de dados (DPIA/RIPD)",
+        "Responder a solicitações de titulares de dados (DSARs)",
+        "Conduzir treinamentos de privacidade para colaboradores",
+        "Gerenciar incidentes de segurança envolvendo dados pessoais",
+        "Assessorar áreas de negócio em questões de privacidade e proteção de dados"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 8000,
+          "max": 12000
+        },
+        "pleno": {
+          "min": 13000,
+          "max": 18000
+        },
+        "senior": {
+          "min": 20000,
+          "max": 35000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    }
+  ],
+  "ENGENHARIA_TEMPLATES": [
+    {
+      "category": "engenharia",
+      "subcategory": "civil",
+      "title": "Engenheiro Civil",
+      "title_alternatives": [
+        "Civil Engineer",
+        "Engenheiro de Obras",
+        "Engenheiro de Construção",
+        "Structural Engineer"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Obras",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "AutoCAD",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Orçamento e Planejamento de Obras",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Cálculo Estrutural",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "MS Project/Primavera",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Normas Técnicas (ABNT)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "BIM (Revit)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Topografia",
+          "category": "technical",
+          "level": "basic",
+          "weight": 0.5,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Liderança de Equipes de Campo",
+          "weight": 1.0,
+          "justification": "Coordenação de mestres de obras e equipes técnicas"
+        },
+        {
+          "name": "Resolução de Problemas",
+          "weight": 0.9,
+          "justification": "Solução de imprevistos e adaptações em obra"
+        },
+        {
+          "name": "Organização",
+          "weight": 0.8,
+          "justification": "Gestão simultânea de cronograma, custos e qualidade"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Interface com clientes, fornecedores e órgãos reguladores"
+        },
+        {
+          "name": "Atenção a Segurança",
+          "weight": 0.9,
+          "justification": "Garantia de segurança em canteiro de obras"
+        }
+      ],
+      "default_responsibilities": [
+        "Planejar, executar e fiscalizar obras de construção civil",
+        "Elaborar orçamentos, cronogramas e planejamento de obras",
+        "Acompanhar execução garantindo conformidade com projetos e normas técnicas",
+        "Gerenciar equipes de campo (mestres de obras, pedreiros, técnicos)",
+        "Realizar medições e aprovar pagamentos de empreiteiros",
+        "Garantir cumprimento de normas de segurança no canteiro de obras",
+        "Elaborar relatórios técnicos e diário de obra",
+        "Coordenar interface com projetistas, fornecedores e órgãos fiscalizadores"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7500
+        },
+        "pleno": {
+          "min": 8000,
+          "max": 13000
+        },
+        "senior": {
+          "min": 14000,
+          "max": 22000
+        }
+      },
+      "work_model": "onsite",
+      "employment_type": "clt"
+    },
+    {
+      "category": "engenharia",
+      "subcategory": "producao",
+      "title": "Engenheiro de Produção",
+      "title_alternatives": [
+        "Production Engineer",
+        "Engenheiro Industrial",
+        "Engenheiro de Processos",
+        "Manufacturing Engineer"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Lean Manufacturing",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Gestão de Produção",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Six Sigma",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": false
+        },
+        {
+          "name": "Planejamento e Controle de Produção (PCP)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Cronoanálise/Tempos e Métodos",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "ERP (SAP, TOTVS)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "Excel Avançado",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de Indicadores (OEE, Produtividade)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Pensamento Analítico",
+          "weight": 1.0,
+          "justification": "Análise de processos e identificação de oportunidades de melhoria"
+        },
+        {
+          "name": "Liderança",
+          "weight": 0.9,
+          "justification": "Coordenação de equipes de produção e projetos de melhoria"
+        },
+        {
+          "name": "Orientação para Resultados",
+          "weight": 0.9,
+          "justification": "Foco em produtividade, qualidade e redução de custos"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Interface entre produção, engenharia e áreas de suporte"
+        },
+        {
+          "name": "Resolução de Problemas",
+          "weight": 0.8,
+          "justification": "Tratativa de desvios de processo e gargalos produtivos"
+        }
+      ],
+      "default_responsibilities": [
+        "Analisar e otimizar processos produtivos visando eficiência e qualidade",
+        "Implementar metodologias Lean (5S, Kaizen, TPM, SMED)",
+        "Desenvolver estudos de tempos e métodos para balanceamento de linhas",
+        "Acompanhar indicadores de produção (OEE, produtividade, refugo)",
+        "Liderar projetos de melhoria contínua e redução de custos",
+        "Elaborar layouts produtivos e fluxos de processo",
+        "Suportar PCP no planejamento de capacidade produtiva",
+        "Treinar equipes operacionais em novas metodologias e processos"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7500
+        },
+        "pleno": {
+          "min": 8000,
+          "max": 13000
+        },
+        "senior": {
+          "min": 14000,
+          "max": 22000
+        }
+      },
+      "work_model": "onsite",
+      "employment_type": "clt"
+    },
+    {
+      "category": "engenharia",
+      "subcategory": "seguranca_trabalho",
+      "title": "Técnico de Segurança do Trabalho",
+      "title_alternatives": [
+        "Safety Technician",
+        "Técnico de SST",
+        "Técnico em Segurança Ocupacional",
+        "Ocupational Safety Technician"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "NRs (Normas Regulamentadoras)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "PPRA/PGR",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "CIPA",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Investigação de Acidentes",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Treinamentos de Segurança",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "e-Social SST",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "Combate a Incêndio",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "Primeiros Socorros",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": true
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 1.0,
+          "justification": "Identificação de riscos e condições inseguras"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.9,
+          "justification": "Conscientização e treinamento de colaboradores"
+        },
+        {
+          "name": "Proatividade",
+          "weight": 0.9,
+          "justification": "Prevenção de acidentes e atuação preventiva"
+        },
+        {
+          "name": "Firmeza",
+          "weight": 0.8,
+          "justification": "Exigir cumprimento de normas mesmo sob resistência"
+        },
+        {
+          "name": "Empatia",
+          "weight": 0.7,
+          "justification": "Acolhimento em situações de acidente e afastamento"
+        }
+      ],
+      "default_responsibilities": [
+        "Implementar e fiscalizar programas de segurança do trabalho (PGR, PCMSO)",
+        "Realizar inspeções de segurança e identificar riscos ocupacionais",
+        "Ministrar treinamentos de segurança (integração, NRs específicas)",
+        "Investigar acidentes e incidentes, propondo ações corretivas",
+        "Acompanhar e orientar a CIPA e atividades da SIPAT",
+        "Controlar e distribuir EPIs garantindo uso adequado",
+        "Elaborar documentos e relatórios exigidos por legislação",
+        "Garantir conformidade com eSocial para eventos de SST"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 2500,
+          "max": 3500
+        },
+        "pleno": {
+          "min": 4000,
+          "max": 6000
+        },
+        "senior": {
+          "min": 6500,
+          "max": 9000
+        }
+      },
+      "work_model": "onsite",
+      "employment_type": "clt"
+    },
+    {
+      "category": "engenharia",
+      "subcategory": "civil",
+      "title": "Coordenador de Obras",
+      "title_alternatives": [
+        "Construction Coordinator",
+        "Coordenador de Construção",
+        "Gerente de Obras",
+        "Site Manager"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Múltiplas Obras",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Planejamento e Controle de Obras",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Orçamento e Gestão de Custos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "MS Project/Primavera",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de Contratos e Terceiros",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Normas de Segurança (NRs)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "AutoCAD/BIM",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Licitações e Contratos Públicos",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Liderança",
+          "weight": 1.0,
+          "justification": "Coordenação de engenheiros, mestres e equipes em múltiplas obras"
+        },
+        {
+          "name": "Tomada de Decisão",
+          "weight": 0.9,
+          "justification": "Decisões críticas de cronograma, custo e qualidade"
+        },
+        {
+          "name": "Negociação",
+          "weight": 0.9,
+          "justification": "Gestão de contratos com empreiteiros e fornecedores"
+        },
+        {
+          "name": "Resiliência",
+          "weight": 0.8,
+          "justification": "Gestão de imprevistos e pressão por prazos"
+        },
+        {
+          "name": "Visão Estratégica",
+          "weight": 0.8,
+          "justification": "Planejamento de recursos e priorização de obras"
+        }
+      ],
+      "default_responsibilities": [
+        "Coordenar execução de múltiplas obras garantindo prazo, custo e qualidade",
+        "Gerenciar equipe de engenheiros residentes e mestres de obras",
+        "Elaborar e controlar cronogramas físico-financeiros das obras",
+        "Negociar e gerenciar contratos com empreiteiros e fornecedores",
+        "Realizar visitas técnicas e aprovar soluções de engenharia em campo",
+        "Garantir conformidade com normas de segurança e meio ambiente",
+        "Reportar status das obras para diretoria e clientes",
+        "Participar de processos de licitação e proposta técnica"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 10000,
+          "max": 14000
+        },
+        "pleno": {
+          "min": 15000,
+          "max": 20000
+        },
+        "senior": {
+          "min": 22000,
+          "max": 35000
+        }
+      },
+      "work_model": "onsite",
+      "employment_type": "clt"
+    },
+    {
+      "category": "engenharia",
+      "subcategory": "mecanica",
+      "title": "Engenheiro Mecânico",
+      "title_alternatives": [
+        "Mechanical Engineer",
+        "Engenheiro de Projetos Mecânicos",
+        "Engenheiro de Equipamentos",
+        "Mechanical Design Engineer"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Projetos Mecânicos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "AutoCAD/SolidWorks/Inventor",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Análise de Elementos Finitos (FEA)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": false
+        },
+        {
+          "name": "Materiais e Processos de Fabricação",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Termodinâmica e Mecânica dos Fluidos",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "Normas Técnicas (ABNT, ASME)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de Projetos",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "HVAC",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Pensamento Analítico",
+          "weight": 1.0,
+          "justification": "Análise de projetos e solução de problemas técnicos"
+        },
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 0.9,
+          "justification": "Precisão em cálculos e especificações técnicas"
+        },
+        {
+          "name": "Criatividade",
+          "weight": 0.8,
+          "justification": "Desenvolvimento de soluções inovadoras de engenharia"
+        },
+        {
+          "name": "Comunicação Técnica",
+          "weight": 0.8,
+          "justification": "Elaboração de documentação e interface com fabricantes"
+        },
+        {
+          "name": "Trabalho em Equipe",
+          "weight": 0.7,
+          "justification": "Integração com outras disciplinas de engenharia"
+        }
+      ],
+      "default_responsibilities": [
+        "Desenvolver projetos mecânicos de equipamentos, estruturas e sistemas",
+        "Elaborar desenhos técnicos e especificações de componentes",
+        "Realizar cálculos estruturais, térmicos e de dimensionamento",
+        "Especificar materiais e processos de fabricação adequados",
+        "Acompanhar fabricação e montagem de equipamentos",
+        "Suportar manutenção na resolução de problemas em equipamentos",
+        "Elaborar documentação técnica (memoriais, datasheets, manuais)",
+        "Garantir conformidade com normas técnicas e de segurança"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7500
+        },
+        "pleno": {
+          "min": 8000,
+          "max": 13000
+        },
+        "senior": {
+          "min": 14000,
+          "max": 22000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "engenharia",
+      "subcategory": "eletrica",
+      "title": "Engenheiro Eletricista",
+      "title_alternatives": [
+        "Electrical Engineer",
+        "Engenheiro Elétrico",
+        "Engenheiro de Projetos Elétricos",
+        "Electrical Design Engineer"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Projetos Elétricos (AT/MT/BT)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "AutoCAD Elétrico/EPLAN",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Subestações e Distribuição",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Normas NR-10 e NBR 5410",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Sistemas de Proteção e Comando",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Automação Industrial (CLP)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Eficiência Energética",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        },
+        {
+          "name": "Sistemas Fotovoltaicos",
+          "category": "technical",
+          "level": "basic",
+          "weight": 0.5,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Pensamento Analítico",
+          "weight": 1.0,
+          "justification": "Análise de sistemas elétricos e solução de problemas"
+        },
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 0.9,
+          "justification": "Precisão em projetos e conformidade com normas"
+        },
+        {
+          "name": "Responsabilidade",
+          "weight": 0.9,
+          "justification": "Segurança em projetos de instalações elétricas"
+        },
+        {
+          "name": "Comunicação Técnica",
+          "weight": 0.8,
+          "justification": "Interface com equipes de execução e clientes"
+        },
+        {
+          "name": "Atualização Técnica",
+          "weight": 0.7,
+          "justification": "Acompanhamento de novas tecnologias e normas"
+        }
+      ],
+      "default_responsibilities": [
+        "Desenvolver projetos de instalações elétricas industriais e prediais",
+        "Dimensionar sistemas de distribuição, proteção e aterramento",
+        "Elaborar diagramas unifilares, trifilares e de comando",
+        "Especificar equipamentos elétricos (transformadores, painéis, cabos)",
+        "Acompanhar obras e comissionamento de instalações elétricas",
+        "Garantir conformidade com normas técnicas (NBR, NR-10, concessionárias)",
+        "Elaborar laudos técnicos e responsabilidade técnica (ART)",
+        "Suportar manutenção em diagnóstico de falhas elétricas"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7500
+        },
+        "pleno": {
+          "min": 8000,
+          "max": 13000
+        },
+        "senior": {
+          "min": 14000,
+          "max": 22000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "engenharia",
+      "subcategory": "producao",
+      "title": "Engenheiro de Qualidade",
+      "title_alternatives": [
+        "Quality Engineer",
+        "Engenheiro de Garantia da Qualidade",
+        "Quality Assurance Engineer",
+        "Engenheiro de Controle de Qualidade"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Sistema de Gestão da Qualidade (ISO 9001)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "APQP/PPAP/FMEA",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Controle Estatístico de Processo (CEP)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Auditorias de Qualidade",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Six Sigma Green Belt",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": false
+        },
+        {
+          "name": "8D/MASP",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Metrologia e Calibração",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        },
+        {
+          "name": "IATF 16949",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 1.0,
+          "justification": "Identificação de não-conformidades e desvios de qualidade"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.9,
+          "justification": "Análise de causa raiz e solução de problemas"
+        },
+        {
+          "name": "Orientação para Processos",
+          "weight": 0.9,
+          "justification": "Padronização e melhoria de processos"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Interface com produção, fornecedores e clientes"
+        },
+        {
+          "name": "Liderança",
+          "weight": 0.7,
+          "justification": "Condução de equipes em projetos de qualidade"
+        }
+      ],
+      "default_responsibilities": [
+        "Desenvolver e manter Sistema de Gestão da Qualidade certificado",
+        "Conduzir APQP e validar processos e produtos (PPAP)",
+        "Analisar não-conformidades e liderar resoluções via 8D/MASP",
+        "Realizar auditorias internas e de fornecedores",
+        "Monitorar indicadores de qualidade (PPM, Cpk, índice de refugo)",
+        "Implementar projetos de melhoria utilizando Six Sigma e Lean",
+        "Gerenciar calibração de instrumentos de medição",
+        "Suportar desenvolvimento de fornecedores e qualidade de materiais"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7500
+        },
+        "pleno": {
+          "min": 8000,
+          "max": 13000
+        },
+        "senior": {
+          "min": 14000,
+          "max": 22000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "engenharia",
+      "subcategory": "outras",
+      "title": "Gerente de Projetos de Engenharia",
+      "title_alternatives": [
+        "Engineering Project Manager",
+        "Gerente de Projetos Industriais",
+        "Engineering Manager",
+        "Gerente de Engenharia"
+      ],
+      "seniorities": [
+        "senior"
+      ],
+      "default_skills": [
+        {
+          "name": "Gestão de Projetos (PMI/PMBOK)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "MS Project/Primavera",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Orçamento e Custos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Engenharia Básica e Detalhada",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Contratos EPC",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Gestão de Stakeholders",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Metodologias Ágeis",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        },
+        {
+          "name": "Inglês Avançado",
+          "category": "language",
+          "level": "advanced",
+          "weight": 0.7,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Liderança",
+          "weight": 1.0,
+          "justification": "Coordenação de equipes multidisciplinares de engenharia"
+        },
+        {
+          "name": "Visão Estratégica",
+          "weight": 0.9,
+          "justification": "Alinhamento de projetos com objetivos de negócio"
+        },
+        {
+          "name": "Tomada de Decisão",
+          "weight": 0.9,
+          "justification": "Decisões críticas de escopo, prazo e custo"
+        },
+        {
+          "name": "Negociação",
+          "weight": 0.9,
+          "justification": "Gestão de contratos e resolução de conflitos"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Reportes para diretoria e alinhamento com stakeholders"
+        }
+      ],
+      "default_responsibilities": [
+        "Liderar projetos de engenharia do conceito à entrega (CAPEX)",
+        "Gerenciar escopo, cronograma, custo e qualidade dos projetos",
+        "Coordenar equipes de engenharia multidisciplinares",
+        "Gerenciar contratos com fornecedores e prestadores de serviços",
+        "Elaborar e controlar orçamentos de projetos (CAPEX)",
+        "Reportar status de projetos para diretoria e stakeholders",
+        "Garantir conformidade com normas técnicas, segurança e meio ambiente",
+        "Conduzir comissionamento e startup de novos equipamentos/plantas"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 12000,
+          "max": 16000
+        },
+        "pleno": {
+          "min": 18000,
+          "max": 25000
+        },
+        "senior": {
+          "min": 28000,
+          "max": 45000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "engenharia",
+      "subcategory": "mecanica",
+      "title": "Engenheiro de Manutenção",
+      "title_alternatives": [
+        "Maintenance Engineer",
+        "Engenheiro de Manutenção Industrial",
+        "Reliability Engineer",
+        "Engenheiro de Confiabilidade"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Manutenção Industrial (Preventiva, Preditiva, Corretiva)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "TPM (Total Productive Maintenance)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Análise de Falhas (FMEA, RCA)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Gestão de Ativos e CMMS",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Mecânica Industrial",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Elétrica e Automação Industrial",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Gestão de Indicadores (MTBF, MTTR, Disponibilidade)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "SAP PM",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Resolução de Problemas",
+          "weight": 1.0,
+          "justification": "Diagnóstico e correção de falhas em equipamentos"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.9,
+          "justification": "Análise de causa raiz e melhoria da confiabilidade"
+        },
+        {
+          "name": "Liderança",
+          "weight": 0.8,
+          "justification": "Coordenação de equipes de manutenção"
+        },
+        {
+          "name": "Organização",
+          "weight": 0.8,
+          "justification": "Planejamento de paradas e manutenções programadas"
+        },
+        {
+          "name": "Trabalho sob Pressão",
+          "weight": 0.8,
+          "justification": "Atuação em paradas emergenciais e críticas"
+        }
+      ],
+      "default_responsibilities": [
+        "Desenvolver e implementar planos de manutenção preventiva e preditiva",
+        "Liderar análises de falhas e implementar ações de melhoria",
+        "Acompanhar indicadores de manutenção (MTBF, MTTR, disponibilidade)",
+        "Coordenar execução de manutenções corretivas e programadas",
+        "Implementar metodologias TPM e RCM (Manutenção Centrada em Confiabilidade)",
+        "Gerenciar estoque de peças sobressalentes e materiais de manutenção",
+        "Especificar e acompanhar serviços de manutenção terceirizados",
+        "Suportar projetos de melhoria e modificações em equipamentos"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7500
+        },
+        "pleno": {
+          "min": 8000,
+          "max": 13000
+        },
+        "senior": {
+          "min": 14000,
+          "max": 22000
+        }
+      },
+      "work_model": "onsite",
+      "employment_type": "clt"
+    },
+    {
+      "category": "engenharia",
+      "subcategory": "producao",
+      "title": "Engenheiro de Processos",
+      "title_alternatives": [
+        "Process Engineer",
+        "Engenheiro de Processos Industriais",
+        "Process Improvement Engineer",
+        "Engenheiro de Melhoria Contínua"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Mapeamento e Otimização de Processos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Lean Manufacturing",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Six Sigma",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": false
+        },
+        {
+          "name": "Análise de Capacidade e Gargalos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Simulação de Processos",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Controle Estatístico de Processo (CEP)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Excel Avançado/Minitab",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "ERP e Sistemas de Produção",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": true
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Pensamento Analítico",
+          "weight": 1.0,
+          "justification": "Análise de processos e identificação de melhorias"
+        },
+        {
+          "name": "Orientação para Resultados",
+          "weight": 0.9,
+          "justification": "Foco em eficiência, qualidade e redução de custos"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Interface com produção e áreas de suporte"
+        },
+        {
+          "name": "Influência",
+          "weight": 0.8,
+          "justification": "Engajamento de equipes em mudanças de processo"
+        },
+        {
+          "name": "Criatividade",
+          "weight": 0.7,
+          "justification": "Desenvolvimento de soluções inovadoras"
+        }
+      ],
+      "default_responsibilities": [
+        "Mapear e documentar processos produtivos e de suporte",
+        "Analisar processos e identificar oportunidades de melhoria",
+        "Implementar projetos de otimização e redução de custos",
+        "Desenvolver e padronizar procedimentos operacionais (POPs)",
+        "Monitorar indicadores de processo e performance",
+        "Liderar projetos de melhoria contínua (Kaizen, DMAIC)",
+        "Suportar implantação de novos produtos e processos",
+        "Treinar equipes operacionais em novos procedimentos"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 5000,
+          "max": 7500
+        },
+        "pleno": {
+          "min": 8000,
+          "max": 13000
+        },
+        "senior": {
+          "min": 14000,
+          "max": 22000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    },
+    {
+      "category": "engenharia",
+      "subcategory": "civil",
+      "title": "Orçamentista",
+      "title_alternatives": [
+        "Cost Estimator",
+        "Orçamentista de Obras",
+        "Estimator",
+        "Analista de Orçamentos"
+      ],
+      "seniorities": [
+        "pleno"
+      ],
+      "default_skills": [
+        {
+          "name": "Orçamentação de Obras e Projetos",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "Levantamento Quantitativo",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 1.0,
+          "required": true
+        },
+        {
+          "name": "SINAPI e Tabelas de Preços",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Excel Avançado",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "AutoCAD (Leitura de Projetos)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.8,
+          "required": true
+        },
+        {
+          "name": "Composição de Custos (BDI)",
+          "category": "technical",
+          "level": "advanced",
+          "weight": 0.9,
+          "required": true
+        },
+        {
+          "name": "Software de Orçamentação (OrçaFascio, Volare)",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.7,
+          "required": false
+        },
+        {
+          "name": "Licitações Públicas",
+          "category": "technical",
+          "level": "intermediate",
+          "weight": 0.6,
+          "required": false
+        }
+      ],
+      "default_behavioral": [
+        {
+          "name": "Atenção a Detalhes",
+          "weight": 1.0,
+          "justification": "Precisão nos levantamentos e cálculos de custos"
+        },
+        {
+          "name": "Pensamento Analítico",
+          "weight": 0.9,
+          "justification": "Análise crítica de projetos e identificação de custos"
+        },
+        {
+          "name": "Organização",
+          "weight": 0.9,
+          "justification": "Gestão de múltiplos orçamentos e prazos"
+        },
+        {
+          "name": "Comunicação",
+          "weight": 0.8,
+          "justification": "Interface com engenheiros, compradores e clientes"
+        },
+        {
+          "name": "Proatividade",
+          "weight": 0.7,
+          "justification": "Busca de alternativas para otimização de custos"
+        }
+      ],
+      "default_responsibilities": [
+        "Elaborar orçamentos de obras e projetos de construção",
+        "Realizar levantamento quantitativo a partir de projetos e memoriais",
+        "Pesquisar preços de materiais e serviços junto a fornecedores",
+        "Compor custos unitários e calcular BDI",
+        "Elaborar planilhas orçamentárias conforme SINAPI e tabelas de mercado",
+        "Analisar viabilidade econômica de empreendimentos",
+        "Participar de processos de licitação e propostas comerciais",
+        "Realizar comparativos de custos e análises de desvios"
+      ],
+      "salary_range": {
+        "junior": {
+          "min": 3500,
+          "max": 5000
+        },
+        "pleno": {
+          "min": 5500,
+          "max": 9000
+        },
+        "senior": {
+          "min": 10000,
+          "max": 15000
+        }
+      },
+      "work_model": "hybrid",
+      "employment_type": "clt"
+    }
+  ]
+}

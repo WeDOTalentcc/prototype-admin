@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Microsoft Integration</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #0095AC 0%, #007A8C 100%);
+      color: #333;
+    }
+    
+    .container {
+      text-align: center;
+      padding: 40px 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 90%;
+    }
+    
+    .icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+    
+    .success .icon { color: #28a745; }
+    .error .icon { color: #dc3545; }
+    
+    h2 {
+      margin: 0 0 15px 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    p {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    
+    .success p { color: #155724; }
+    .error p { color: #721c24; }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #0095AC;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container <%= @success ? 'success' : 'error' %>">
+    <div class="icon">
+      <%= @success ? '✅' : '❌' %>
+    </div>
+    
+    <h2><%= @success ? 'Integração realizada com sucesso!' : 'Erro na integração' %></h2>
+    
+    <p>
+      <%= @success ? 'Você pode fechar esta janela.' : @error %>
+    </p>
+    
+    <% unless @success %>
+      <p style="margin-top: 15px; font-size: 14px; color: #6c757d;">
+        Tente novamente ou entre em contato com o suporte.
+      </p>
+    <% end %>
+    
+    <div class="loading"></div>
+  </div>
+
+  <script>
+    // Notificar a janela pai sobre o resultado
+    const message = <%= raw @message.to_json %>;
+    
+    if (window.opener) {
+      try {
+        window.opener.postMessage(message, '*');
+        console.log('Message sent to parent window:', message);
+      } catch (e) {
+        console.error('Failed to send message to parent:', e);
+      }
+    }
+    
+    // Fechar a janela após um breve delay
+    setTimeout(() => {
+      try {
+        window.close();
+      } catch (e) {
+        console.log('Could not close window automatically');
+      }
+    }, <%= @success ? 1500 : 3000 %>);
+    
+    // Fallback: detectar se a janela não fechou e mostrar instrução
+    setTimeout(() => {
+      if (!window.closed) {
+        document.querySelector('.loading').style.display = 'none';
+        const container = document.querySelector('.container');
+        container.innerHTML += '<p style="margin-top: 20px; font-size: 14px; color: #6c757d;">Se esta janela não fechar automaticamente, você pode fechá-la manualmente.</p>';
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

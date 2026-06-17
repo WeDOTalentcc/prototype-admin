@@ -1,0 +1,81 @@
+# ==============================================================================
+# Dockerfile.prod — LIA Agent System (Production)
+# Multi-stage build: builder + runtime (non-root, minimal attack surface)
+# ==============================================================================
+
+# ── Stage 1: builder ──────────────────────────────────────────────────────────
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# Build deps only (won't be in final image)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Copy source for internal libs
+COPY libs/ libs/
+RUN pip install --no-cache-dir --prefix=/install \
+    libs/config \
+    libs/utils \
+    libs/audit \
+    libs/messaging \
+    libs/models \
+    libs/agents-core \
+    libs/services \
+    libs/contexts \
+    libs/auth
+
+
+# ── Stage 2: runtime ──────────────────────────────────────────────────────────
+FROM python:3.11-slim AS runtime
+
+# Runtime OS deps only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Non-root user (security hardening)
+RUN useradd --no-create-home --no-log-init --uid 1001 appuser
+
+WORKDIR /app
+
+# Copy installed packages from builder
+COPY --from=builder /install /usr/local
+
+# Copy application source
+COPY --chown=appuser:appuser . .
+
+# Drop root
+USER appuser
+
+# Port
+EXPOSE 8000
+
+# Health check — liveness probe para GCP/AWS/k8s
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/api/v1/health || exit 1
+
+# LIA-D02: Migrations must run BEFORE containers start.
+# Use a pre-deploy step (Cloud Run Job, init container, or GitHub Actions step).
+# See deploy/run_migrations.sh or .github/workflows/deploy.yml migration step.
+# DO NOT add `alembic upgrade head` unconditionally to CMD -- race condition on scale-up.
+#
+# Transition: Set LIA_SKIP_MIGRATIONS_IN_CMD=true to disable in-container migrations.
+# Without the env var, alembic still runs (backward-compatible with existing deploys).
+CMD ["sh", "-c", \
+    "if [ \"$LIA_SKIP_MIGRATIONS_IN_CMD\" != \"true\" ]; then echo \'[LIA-D02] Running alembic in CMD (legacy mode)...\'; alembic upgrade head; fi && \
+     gunicorn app.main:app \
+     --workers ${GUNICORN_WORKERS:-4} \
+     --worker-class uvicorn.workers.UvicornWorker \
+     --bind 0.0.0.0:${PORT:-8000} \
+     --timeout 120 \
+     --graceful-timeout 30 \
+     --keep-alive 5 \
+     --access-logfile - \
+     --error-logfile -"]

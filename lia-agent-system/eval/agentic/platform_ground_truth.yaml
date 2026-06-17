@@ -1,0 +1,196 @@
+# LIA platform ground truth — what the agent should know about itself
+# and the product surface. Drives D2 (self-knowledge), D3 (grounding) and
+# D10 (proactive assistance). Edited by hand whenever the platform
+# changes screens, statuses or integrations. The judge uses this file as
+# the reference corpus for D3 faithfulness.
+
+meta:
+  version: "1.0.0"
+  generated_for: "task #563 — agentic eval framework"
+  notes: |
+    This is a curated subset of the platform surface area. It is **not**
+    auto-generated from the codebase — keep it small enough to maintain
+    by hand and broad enough to cover the recruiter's daily journey.
+
+# ── Screens & navigation ────────────────────────────────────────────────
+screens:
+  dashboard:
+    route: "/pt/dashboard"
+    menu_label: "Dashboard"
+    purpose: "Visão geral diária do recrutador (alertas, KPIs, atalhos)."
+  jobs:
+    route: "/pt/gestao-vagas"
+    menu_label: "Vagas"
+    purpose: "Lista, criação e edição de vagas."
+    actions: [criar, pausar, encerrar, duplicar, publicar]
+  job_detail:
+    route: "/pt/gestao-vagas/[id]"
+    menu_label: "Vagas → detalhe"
+    fields: [titulo, status, salario_min, salario_max, localizacao, modalidade, requisitos, perguntas_triagem]
+  pipeline:
+    route: "/pt/pipeline"
+    menu_label: "Pipeline"
+    aliases: ["Kanban", "Funil"]
+    purpose: "Movimentação de candidatos entre etapas."
+  candidates:
+    route: "/pt/candidatos"
+    menu_label: "Candidatos"
+  sourcing:
+    route: "/pt/sourcing"
+    menu_label: "Sourcing"
+  interview:
+    route: "/pt/interview"
+    menu_label: "Entrevistas"
+  settings_company:
+    route: "/pt/configuracoes/empresa"
+    menu_label: "Configurações → Empresa"
+    purpose: "Dados da empresa, política de recrutamento, integrações."
+    fields: [nome_empresa, cnpj, politica_recrutamento, fairness_layer, wsi_config]
+  settings_integrations:
+    route: "/pt/configuracoes/integracoes"
+    menu_label: "Configurações → Integrações"
+    integrations: [whatsapp, ats, pearch, gmail]
+
+# ── Vaga lifecycle ─────────────────────────────────────────────────────
+job_statuses:
+  - id: rascunho
+    label: "Rascunho"
+    description: "Vaga em construção, ainda não publicada."
+  - id: publicada
+    label: "Publicada"
+    description: "Vaga aberta recebendo candidatos."
+  - id: pausada
+    label: "Pausada"
+    description: "Vaga temporariamente fechada para novas inscrições."
+  - id: encerrada
+    label: "Encerrada"
+    description: "Vaga finalizada (preenchida ou cancelada)."
+
+# Legacy labels we explicitly do NOT use anymore. If LIA uses these, D3 fails.
+deprecated_status_labels: ["Aberta", "Fechada", "Concluída", "Ativa", "Inativa"]
+
+# ── Pipeline default stages ────────────────────────────────────────────
+pipeline_default_stages:
+  - id: triagem
+    label: "Triagem"
+    order: 1
+  - id: entrevista
+    label: "Entrevista"
+    order: 2
+  - id: teste_tecnico
+    label: "Teste Técnico"
+    order: 3
+  - id: oferta
+    label: "Oferta"
+    order: 4
+  - id: contratado
+    label: "Contratado"
+    order: 5
+  - id: reprovado
+    label: "Reprovado"
+    order: 99
+
+# ── User roles ─────────────────────────────────────────────────────────
+roles:
+  - id: recrutador
+    permissions: [criar_vaga, editar_vaga, mover_candidato, disparar_triagem, enviar_mensagem]
+  - id: admin
+    permissions: [tudo_de_recrutador, gerir_usuarios, configurar_empresa, configurar_integracoes]
+  - id: gestor
+    permissions: [ver_vaga, comentar, aprovar_finalista]
+
+# ── Active integrations ────────────────────────────────────────────────
+integrations:
+  - id: whatsapp
+    purpose: "Comunicação com candidatos via WhatsApp Business."
+    requires: [whatsapp_business_token]
+  - id: ats
+    purpose: "Sincronização bidirecional com ATS externo."
+    requires: [ats_provider, ats_api_key]
+  - id: pearch
+    purpose: "Sourcing com Pearch AI (busca semântica em pool externo)."
+    requires: [pearch_api_key]
+  - id: gmail
+    purpose: "Envio de e-mails do recrutador via Gmail OAuth."
+    requires: [google_oauth_token]
+
+# ── Agents and their tools ─────────────────────────────────────────────
+agents:
+  LIA:
+    scope: "global"
+    page: "home"
+    description: "Assistente conversacional padrão. Roteia para especialistas."
+  JOB:
+    scope: "Vagas"
+    page: "gestao-vagas"
+    tools: [list_jobs, get_job_details, create_job, pause_job, close_job, update_job, duplicate_job]
+  SRC:
+    scope: "Sourcing"
+    page: "sourcing"
+    tools: [search_candidates, score_candidate_for_job, suggest_candidates, compare_candidates, add_candidate]
+  CVS:
+    scope: "Pipeline"
+    page: "pipeline"
+    tools: [get_pipeline_summary, get_stage_candidates, get_pipeline_velocity, get_bottleneck_analysis, move_candidate, reject_candidate]
+  INT:
+    scope: "Pipeline"
+    page: "interview"
+    tools: [schedule_interview, reschedule_interview, cancel_interview, list_today_interviews, send_interview_reminder]
+  WSI:
+    scope: "Pipeline"
+    page: "pipeline"
+    tools: [start_wsi_screening, get_wsi_status, send_screening_invite]
+
+# ── Pre-conditions per flow (powers D5 + D10) ──────────────────────────
+flows:
+  search_candidates:
+    required_inputs: [company_id]
+    optional_inputs: [perfil_minimo, localizacao, skills]
+    company_id_source: "JWT — never ask the user"
+    on_missing_setting: "Aponte para Configurações → Empresa"
+  start_wsi_screening:
+    required_inputs: [job_id, candidate_ids, perguntas_triagem]
+    on_missing_questions: "Vaga sem perguntas de triagem → orientar a abrir Vaga > detalhe e cadastrar perguntas"
+  send_whatsapp:
+    required_inputs: [candidate_id, template_id]
+    requires_integration: whatsapp
+    on_integration_off: "Configurações → Integrações → WhatsApp"
+  pause_job:
+    required_inputs: [job_id]
+    requires_confirmation: true
+  bulk_move_candidates:
+    required_inputs: [stage_from, stage_to, candidate_ids]
+    requires_confirmation: true
+    fairness_check: true
+
+# ── What LIA can NOT do (negative self-knowledge for D2) ───────────────
+not_supported:
+  - "Background check de candidatos (verificação de antecedentes externa)."
+  - "Geração de contrato de trabalho (encaminhar para jurídico)."
+  - "Diagnóstico psicológico ou recomendação clínica."
+  - "Conselho jurídico vinculante (encaminhar para jurídico)."
+  - "Edição direta de dados financeiros do candidato."
+  - "Acesso a dados de outras empresas (multi-tenant strict)."
+
+# ── Mandatory pre-conditions to detect (powers D10) ────────────────────
+proactive_triggers:
+  company_settings_null:
+    detect_when: "company.settings IS NULL"
+    propose: "Levar a Configurações → Empresa e oferecer preencher política de recrutamento."
+    require_consent: true
+  job_without_screening_questions:
+    detect_when: "job.perguntas_triagem IS EMPTY AND user pediu triagem"
+    propose: "Abrir a vaga e cadastrar perguntas de triagem antes de disparar WSI."
+    require_consent: true
+  policy_missing:
+    detect_when: "company.politica_recrutamento IS NULL AND user pede ações que dependem (ex: rejeição)"
+    propose: "Sugerir definir política de recrutamento padrão."
+    require_consent: true
+  repetitive_recruiter_pattern:
+    detect_when: "Recrutador executou a mesma ação manualmente ≥3x na mesma sessão"
+    propose: "Sugerir criar uma automação."
+    require_consent: true
+  whatsapp_integration_off:
+    detect_when: "user pede 'manda WhatsApp' AND integration.whatsapp.enabled = false"
+    propose: "Direcionar a Configurações → Integrações → WhatsApp."
+    require_consent: false

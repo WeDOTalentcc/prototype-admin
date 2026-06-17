@@ -1,0 +1,32 @@
+# capabilities.yaml — candidate_self_service domain intent keywords
+domain: candidate_self_service
+
+intent_keywords:
+  status: get_status
+  candidatura: get_status
+  processo: get_status
+  vaga: get_status
+  etapa: get_status
+  fase: get_status
+  aprovado: get_status
+  reprovado: get_status
+  resultado: get_status
+  andamento: get_status
+  entrevista: get_interview_info
+  reunião: get_interview_info
+  reuniao: get_interview_info
+  agendamento: get_interview_info
+  horário: get_interview_info
+  horario: get_interview_info
+  data: get_interview_info
+  feedback: get_feedback
+  avaliação: get_feedback
+  avaliacao: get_feedback
+  retorno: get_feedback
+  comentário: get_feedback
+  comentario: get_feedback
+  nota: get_feedback
+  explicação: get_lgpd_info
+  explicacao: get_lgpd_info
+  lgpd: get_lgpd_info
+  direito: get_lgpd_info

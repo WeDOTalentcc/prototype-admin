@@ -1,6 +1,3 @@
-Welcome to the Replit SSH Proxy.
-
-Visit https://docs.replit.com/replit-workspace/ssh to learn more about SSH on Replit.
 """
 Shared Searches API endpoints - manage shared candidate searches with external stakeholders.
 """

@@ -1,0 +1,1058 @@
+{
+  "metadata": {
+    "timestamp": "2026-04-03T20:29:22.879405",
+    "base_url": "http://localhost:5000",
+    "component_filter": null,
+    "total_tests": 18,
+    "total_time_ms": 143863,
+    "http_library": "httpx",
+    "timeout_s": 30,
+    "benchmark_version": "1.0.0"
+  },
+  "summary": {
+    "total_tests": 18,
+    "passed": 16,
+    "failed": 2,
+    "pass_rate": "88.9%",
+    "avg_score": 83.9,
+    "avg_latency_ms": 7991,
+    "max_latency_ms": 30022,
+    "min_latency_ms": 106,
+    "by_component": {
+      "chat": {
+        "total": 5,
+        "passed": 4,
+        "failed": 1,
+        "pass_rate": "80%",
+        "avg_score": 99.0,
+        "avg_latency_ms": 10452
+      },
+      "orchestrator": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "pass_rate": "100%",
+        "avg_score": 80.0,
+        "avg_latency_ms": 9772
+      },
+      "wizard": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "pass_rate": "100%",
+        "avg_score": 72.5,
+        "avg_latency_ms": 115
+      },
+      "conversational": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "pass_rate": "100%",
+        "avg_score": 100.0,
+        "avg_latency_ms": 2761
+      },
+      "wsi": {
+        "total": 2,
+        "passed": 1,
+        "failed": 1,
+        "pass_rate": "50%",
+        "avg_score": 52.5,
+        "avg_latency_ms": 21874
+      }
+    },
+    "quality_issues": [
+      "[chat_001] Risco de alucinação detectado",
+      "[chat_002] Risco de alucinação detectado",
+      "[chat_004] Keywords ausentes: ['aplicar']",
+      "[orch_001] Keywords ausentes: ['pipeline']",
+      "[orch_002] Resposta não está em português",
+      "[orch_002] Keywords ausentes: ['amanhã', '14', 'horário']",
+      "[orch_003] Resposta não está em português",
+      "[orch_003] Resposta não menciona contexto de recrutamento",
+      "[orch_003] Keywords ausentes: ['feedback', 'candidato', 'reprovado']",
+      "[wizard_001] Resposta não está em português",
+      "[wizard_001] Resposta não menciona contexto de recrutamento",
+      "[wizard_001] Keywords ausentes: ['fintech', 'engenheiro']",
+      "[wizard_002] Resposta não está em português",
+      "[wizard_002] Resposta não menciona contexto de recrutamento",
+      "[wizard_002] Keywords ausentes: ['spark', 'experiência', 'requisito']",
+      "[wizard_003] Keywords ausentes: ['raciocínio', 'equipe', 'competência', 'avaliar', 'habilidade']",
+      "[wizard_004] Keywords ausentes: ['publicar', 'vaga', 'confirm', 'ok', 'publicada', 'pronto']",
+      "[conv_001] Keywords ausentes: ['recrutamento']",
+      "[conv_002] Keywords ausentes: ['wizard', 'informação']",
+      "[conv_003] Keywords ausentes: ['candidato', 'etapa']",
+      "[wsi_001] Keywords ausentes: ['experiência', 'desenvolveu']"
+    ],
+    "hallucination_risks": 2,
+    "non_portuguese": 4
+  },
+  "results": [
+    {
+      "id": "chat_001",
+      "component": "chat",
+      "name": "Consulta candidatos triagem",
+      "endpoint": "/api/backend-proxy/chat/",
+      "description": "LIA deve entender consulta sobre candidatos na triagem",
+      "latency_ms": 14239,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 1338,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": true,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 1.0,
+      "expected_found": [
+        "candidato",
+        "triagem",
+        "semana",
+        "etapa",
+        "pipeline"
+      ],
+      "expected_missing": [],
+      "forbidden_found": [
+        "null"
+      ],
+      "extra_checks": {},
+      "score": 95,
+      "passed": false,
+      "error": null,
+      "response_text": "```json\n{\n    \"thought\": \"O retorno indica 0 candidatos no pipeline. Isso pode significar que o company_id 'current' não é válido, ou realmente não há candidatos. Vou informar o recrutador de forma amigável sobre o resultado e sugerir verificações.\",\n    \"action\": \"respond\",\n    \"tool_name\": null,\n    \"tool_args\": {},\n    \"response\": \"Consultei o pipeline agora e, de acordo com os dados disponíveis, **não há candidatos registrados na etapa de Triagem** no momento.\\n\\nIsso pode acontecer por algu",
+      "raw_response": {
+        "message": {
+          "id": "a813a559-a83c-4fe1-bfc5-559ce060cd62",
+          "conversation_id": "c61c5395-2193-4cd3-a371-4a96dae96472",
+          "role": "ai",
+          "content": "```json\n{\n    \"thought\": \"O retorno indica 0 candidatos no pipeline. Isso pode significar que o company_id 'current' não é válido, ou realmente não há candidatos. Vou informar o recrutador de forma amigável sobre o resultado e sugerir verificações.\",\n    \"action\": \"respond\",\n    \"tool_name\": null,\n    \"tool_args\": {},\n    \"response\": \"Consultei o pipeline agora e, de acordo com os dados disponíveis, **não há candidatos registrados na etapa de Triagem** no momento.\\n\\nIsso pode acontecer por alguns motivos:\\n\\n- 📭 Nenhuma candidatura foi recebida ainda esta semana\\n- 🔄 Os candidatos já foram movidos para etapas seguintes\\n- ⚙️ Pode haver um filtro de vaga específica que precise ser aplicado\\n\\nQuer que eu verifique para uma **vaga específica**? Se sim, me informe o nome ou código da vaga e busco os dados certinhos para você! 😊\"\n}\n```\n\nConsultei o pipeline agora e, de acordo com os dados disponíveis, **não há candidatos registrados na etapa de Triagem** no momento.\n\nIsso pode acontecer por alguns motivos:\n\n- 📭 Nenhuma candidatura foi recebida ainda esta semana\n- 🔄 Os candidatos já foram movidos para etapas seguintes\n- ⚙️ Pode haver um filtro de vaga específica que precise ser aplicado\n\nQuer que eu verifique para uma **vaga específica**? Se sim, me informe o nome ou código da vaga e busco os dados certinhos para você! 😊",
+          "message_metadata": {
+            "intent": "auto_screen",
+            "entities": {}
+          },
+          "created_at": "2026-04-03T20:27:11.386955"
+        },
+        "conversation": {
+          "id": "c61c5395-2193-4cd3-a371-4a96dae96472",
+          "user_id": "13cf82fb-f1f6-4205-9377-758e59040148",
+          "user_role": "recruiter",
+          "title": "Quantos candidatos estão no estágio de triagem essa semana?",
+          "intent": "auto_screen",
+          "workflow_type": null,
+          "workflow_step": 0,
+          "workflow_data": {},
+          "status": "active",
+          "created_at": "2026-04-03T20:26:59.233759",
+          "updated_at": "2026-04-03T20:27:11.385953"
+        }
+      }
+    },
+    {
+      "id": "chat_002",
+      "component": "chat",
+      "name": "Pipeline travado",
+      "endpoint": "/api/backend-proxy/chat/",
+      "description": "LIA deve identificar vagas com pipeline parado",
+      "latency_ms": 12568,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 1151,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": true,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 1.0,
+      "expected_found": [
+        "vaga",
+        "pipeline",
+        "dias",
+        "candidato"
+      ],
+      "expected_missing": [],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 100,
+      "passed": true,
+      "error": null,
+      "response_text": "# 📊 Análise de Pipeline Travado\n\nVou verificar as vagas com candidatos parados há mais de 5 dias no pipeline!\n\n---\n\n## ⚠️ Vagas com Pipeline Travado\n\n> 🔄 *Para trazer os dados em tempo real, preciso acessar seu painel Kanban. Aqui está o que posso fazer:*\n\n---\n\n### 🔍 O que analiso para identificar travamentos:\n\n| Critério | Descrição |\n|----------|-----------|\n| ⏱️ **Tempo por etapa** | Candidatos parados > 5 dias na mesma fase |\n| 🚦 **Etapas críticas** | Triagem → Entrevista → Proposta → Contra",
+      "raw_response": {
+        "message": {
+          "id": "1bd4020f-01d0-451b-b89c-95ecc607a880",
+          "conversation_id": "920221c2-917f-44a2-a30f-a939a8e7d68f",
+          "role": "ai",
+          "content": "# 📊 Análise de Pipeline Travado\n\nVou verificar as vagas com candidatos parados há mais de 5 dias no pipeline!\n\n---\n\n## ⚠️ Vagas com Pipeline Travado\n\n> 🔄 *Para trazer os dados em tempo real, preciso acessar seu painel Kanban. Aqui está o que posso fazer:*\n\n---\n\n### 🔍 O que analiso para identificar travamentos:\n\n| Critério | Descrição |\n|----------|-----------|\n| ⏱️ **Tempo por etapa** | Candidatos parados > 5 dias na mesma fase |\n| 🚦 **Etapas críticas** | Triagem → Entrevista → Proposta → Contratação |\n| 📉 **Taxa de conversão** | Etapas com maior queda de candidatos |\n| 👤 **Responsável** | Quem está segurando a decisão |\n\n---\n\n### ✅ Para ativar essa análise, me informe:\n\n1. **Qual empresa/cliente** deseja verificar?\n2. **Quais vagas** específicas? *(ou verifico todas abertas)*\n3. **Período de análise** *(padrão: últimos 30 dias)*\n\n---\n\n### 💡 Ou posso te ajudar diretamente com:\n\n- 🔔 **Configurar alertas automáticos** de travamento\n- 📋 **Gerar relatório completo** de SLA por etapa\n- 📧 **Enviar notificações** para responsáveis com pendências\n- 📈 **Ver KPIs de velocidade** do pipeline\n\n---\n\n**Qual dessas ações faz mais sentido agora?** 🎯",
+          "message_metadata": {
+            "intent": "kanban_insight",
+            "entities": {}
+          },
+          "created_at": "2026-04-03T20:27:25.803431"
+        },
+        "conversation": {
+          "id": "920221c2-917f-44a2-a30f-a939a8e7d68f",
+          "user_id": "13cf82fb-f1f6-4205-9377-758e59040148",
+          "user_role": "recruiter",
+          "title": "Quais vagas estão com pipeline travado há mais de 5 dias?",
+          "intent": "kanban_insight",
+          "workflow_type": null,
+          "workflow_step": 0,
+          "workflow_data": {},
+          "status": "active",
+          "created_at": "2026-04-03T20:27:16.679438",
+          "updated_at": "2026-04-03T20:27:25.802347"
+        }
+      }
+    },
+    {
+      "id": "chat_003",
+      "component": "chat",
+      "name": "Relatório processos seletivos",
+      "endpoint": "/api/backend-proxy/chat/",
+      "description": "LIA deve entender pedido de relatório mensal",
+      "latency_ms": 7900,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 997,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 30,
+      "keywords_coverage": 1.0,
+      "expected_found": [
+        "relatório",
+        "processo",
+        "seletivo",
+        "mês"
+      ],
+      "expected_missing": [],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 100,
+      "passed": true,
+      "error": null,
+      "response_text": "# 📊 Relatório de Processos Seletivos\n\nOlá! Vou te ajudar a gerar esse relatório. Para compilar os dados do mês passado com precisão, preciso de algumas informações:\n\n---\n\n## 🔍 Qual o escopo do relatório?\n\n**1. Abrangência:**\n- [ ] Todos os processos seletivos da empresa\n- [ ] Uma área/departamento específico\n- [ ] Vagas específicas\n\n**2. Tipo de relatório desejado:**\n\n| Opção | Conteúdo |\n|-------|----------|\n| 📈 **Executivo** | KPIs principais, funil geral, highlights |\n| 🔎 **Detalhado** | Vaga",
+      "raw_response": {
+        "message": {
+          "id": "4d3e84f2-c448-4279-848a-15fc750d7525",
+          "conversation_id": "f4f3d896-6c4d-481c-863c-76101d399bee",
+          "role": "ai",
+          "content": "# 📊 Relatório de Processos Seletivos\n\nOlá! Vou te ajudar a gerar esse relatório. Para compilar os dados do mês passado com precisão, preciso de algumas informações:\n\n---\n\n## 🔍 Qual o escopo do relatório?\n\n**1. Abrangência:**\n- [ ] Todos os processos seletivos da empresa\n- [ ] Uma área/departamento específico\n- [ ] Vagas específicas\n\n**2. Tipo de relatório desejado:**\n\n| Opção | Conteúdo |\n|-------|----------|\n| 📈 **Executivo** | KPIs principais, funil geral, highlights |\n| 🔎 **Detalhado** | Vaga a vaga, etapa a etapa |\n| ⏱️ **Eficiência** | Time-to-hire, SLAs, gargalos |\n| 🎯 **Qualidade** | Scores WSI, assertividade, fit cultural |\n| 💰 **Financeiro** | Custo por contratação, ROI |\n\n**3. Formato de entrega:**\n- [ ] Visualização aqui no chat\n- [ ] PDF executivo\n- [ ] Planilha Excel\n- [ ] Dashboard interativo\n\n---\n\n## ⚡ Relatório Rápido\n\nSe preferir, posso gerar um **resumo executivo padrão** agora mesmo com os principais indicadores. É só confirmar! 👇\n\nO que funciona melhor para você?",
+          "message_metadata": {
+            "intent": "get_dashboard_data",
+            "entities": {}
+          },
+          "created_at": "2026-04-03T20:27:33.676400"
+        },
+        "conversation": {
+          "id": "f4f3d896-6c4d-481c-863c-76101d399bee",
+          "user_id": "13cf82fb-f1f6-4205-9377-758e59040148",
+          "user_role": "recruiter",
+          "title": "Preciso de um relatório dos processos seletivos do mês passado",
+          "intent": "get_dashboard_data",
+          "workflow_type": null,
+          "workflow_step": 0,
+          "workflow_data": {},
+          "status": "active",
+          "created_at": "2026-04-03T20:27:25.925237",
+          "updated_at": "2026-04-03T20:27:33.674954"
+        }
+      }
+    },
+    {
+      "id": "chat_004",
+      "component": "chat",
+      "name": "Candidatos vaga backend",
+      "endpoint": "/api/backend-proxy/chat/",
+      "description": "LIA deve listar candidatos de uma vaga específica",
+      "latency_ms": 8348,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 911,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 0.75,
+      "expected_found": [
+        "candidato",
+        "vaga",
+        "backend"
+      ],
+      "expected_missing": [
+        "aplicar"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 100,
+      "passed": true,
+      "error": null,
+      "response_text": "# 🔍 Buscando Candidatos - Vaga de Backend\n\nVou buscar os candidatos para você! Porém, precisei de algumas informações para localizar a vaga correta. 😊\n\n---\n\n## ℹ️ Preciso de mais detalhes\n\nPara trazer os candidatos certos, me informe:\n\n**1. Identificação da vaga:**\n- Você tem o **ID ou código** da vaga de Backend?\n- Ou o **título exato**? *(ex: Desenvolvedor Backend Pleno, Engenheiro Backend Senior...)*\n\n**2. Filtros desejados** *(opcional)*:\n- 📋 **Status dos candidatos** — Ex: todos, apenas tri",
+      "raw_response": {
+        "message": {
+          "id": "3e98ebcd-1f60-470b-82b9-627bf1e2a4f2",
+          "conversation_id": "833bf2cf-81d7-42e5-b412-e32a7c8c7ffb",
+          "role": "ai",
+          "content": "# 🔍 Buscando Candidatos - Vaga de Backend\n\nVou buscar os candidatos para você! Porém, precisei de algumas informações para localizar a vaga correta. 😊\n\n---\n\n## ℹ️ Preciso de mais detalhes\n\nPara trazer os candidatos certos, me informe:\n\n**1. Identificação da vaga:**\n- Você tem o **ID ou código** da vaga de Backend?\n- Ou o **título exato**? *(ex: Desenvolvedor Backend Pleno, Engenheiro Backend Senior...)*\n\n**2. Filtros desejados** *(opcional)*:\n- 📋 **Status dos candidatos** — Ex: todos, apenas triados, em entrevista...\n- ⭐ **Nota mínima** de avaliação\n- 📅 **Período** de aplicação\n\n---\n\n## 💡 Enquanto isso, posso mostrar:\n\n| Opção | Descrição |\n|-------|-----------|\n| 📌 **Todas as vagas de Backend** | Listar vagas abertas com esse perfil |\n| 🏆 **Top candidatos** | Os melhor avaliados da vaga |\n| 📊 **Resumo do funil** | Quantos estão em cada etapa |\n\n---\n\n**Qual vaga de Backend você quer visualizar?** 🎯",
+          "message_metadata": {
+            "intent": "kanban_search",
+            "entities": {}
+          },
+          "created_at": "2026-04-03T20:27:42.060762"
+        },
+        "conversation": {
+          "id": "833bf2cf-81d7-42e5-b412-e32a7c8c7ffb",
+          "user_id": "13cf82fb-f1f6-4205-9377-758e59040148",
+          "user_role": "recruiter",
+          "title": "Me mostra os candidatos que aplicaram para a vaga de backend",
+          "intent": "kanban_search",
+          "workflow_type": null,
+          "workflow_step": 0,
+          "workflow_data": {},
+          "status": "active",
+          "created_at": "2026-04-03T20:27:33.821962",
+          "updated_at": "2026-04-03T20:27:42.059593"
+        }
+      }
+    },
+    {
+      "id": "chat_005",
+      "component": "chat",
+      "name": "Silver medalist Product Manager",
+      "endpoint": "/api/backend-proxy/chat/",
+      "description": "LIA deve entender conceito de silver medalist",
+      "latency_ms": 9208,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 1133,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 1.0,
+      "expected_found": [
+        "silver",
+        "medalist",
+        "candidato",
+        "vaga",
+        "product manager"
+      ],
+      "expected_missing": [],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 100,
+      "passed": true,
+      "error": null,
+      "response_text": "# 🥈 Buscando Silver Medalists — Product Manager\n\nOlá! Vou verificar os candidatos **silver medalists** para a vaga de Product Manager no nosso banco de talentos.\n\n---\n\n⚠️ **Atenção:** Não tenho acesso direto ao sistema neste momento para consultar os dados em tempo real da sua conta.\n\n---\n\n## O que posso fazer por você:\n\n### 🔍 Para localizar os Silver Medalists, você pode:\n\n1. **Acessar o Kanban da vaga** → filtrar pela coluna **\"Silver Medalist\"** ou status equivalente\n2. **Ir em Banco de Talen",
+      "raw_response": {
+        "message": {
+          "id": "533cb940-06c0-4eb2-9cfd-34bdf532d341",
+          "conversation_id": "91926580-2f0c-47ea-8655-c04ffec94040",
+          "role": "ai",
+          "content": "# 🥈 Buscando Silver Medalists — Product Manager\n\nOlá! Vou verificar os candidatos **silver medalists** para a vaga de Product Manager no nosso banco de talentos.\n\n---\n\n⚠️ **Atenção:** Não tenho acesso direto ao sistema neste momento para consultar os dados em tempo real da sua conta.\n\n---\n\n## O que posso fazer por você:\n\n### 🔍 Para localizar os Silver Medalists, você pode:\n\n1. **Acessar o Kanban da vaga** → filtrar pela coluna **\"Silver Medalist\"** ou status equivalente\n2. **Ir em Banco de Talentos** → buscar por tag *silver medalist* + filtro *Product Manager*\n3. **Relatórios** → seção de candidatos finalistas por vaga\n\n---\n\n## 📋 Quer que eu te ajude a:\n\n| Ação | Descrição |\n|------|-----------|\n| 🔎 **Refinar busca** | Definir critérios para identificar os melhores silver medalists |\n| 📩 **Reengajar candidatos** | Criar mensagem personalizada para recontato |\n| 📊 **Comparar perfis** | Avaliar fit com a nova demanda |\n| 📅 **Agendar entrevistas** | Retomar processo rapidamente |\n\n---\n\n💡 **Dica:** Poderia me informar o **ID ou nome exato da vaga** de Product Manager? Assim consigo direcionar a busca com mais precisão!",
+          "message_metadata": {
+            "intent": "kanban_action",
+            "entities": {}
+          },
+          "created_at": "2026-04-03T20:27:51.265199"
+        },
+        "conversation": {
+          "id": "91926580-2f0c-47ea-8655-c04ffec94040",
+          "user_id": "13cf82fb-f1f6-4205-9377-758e59040148",
+          "user_role": "recruiter",
+          "title": "Existe algum silver medalist para a vaga de Product Manager?",
+          "intent": "kanban_action",
+          "workflow_type": null,
+          "workflow_step": 0,
+          "workflow_data": {},
+          "status": "active",
+          "created_at": "2026-04-03T20:27:42.186479",
+          "updated_at": "2026-04-03T20:27:51.264138"
+        }
+      }
+    },
+    {
+      "id": "orch_001",
+      "component": "orchestrator",
+      "name": "Mover candidato próxima etapa",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "description": "Orquestrador deve entender ação de mover candidato no pipeline",
+      "latency_ms": 21395,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 790,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.83,
+      "expected_found": [
+        "candidato",
+        "etapa",
+        "mover",
+        "joão",
+        "silva"
+      ],
+      "expected_missing": [
+        "pipeline"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 100,
+      "passed": true,
+      "error": null,
+      "response_text": "# Movendo João Silva para a Próxima Etapa 🔄\n\nPara realizar essa ação no Kanban, preciso de algumas informações adicionais:\n\n---\n\n## 📋 Dados Necessários\n\n**1. Qual vaga está vinculado o João Silva?**\n> Ex: Analista de Marketing, Desenvolvedor Backend...\n\n**2. Em qual etapa ele está atualmente?**\n\n| Etapas Comuns |\n|---|\n| 📥 Triagem de Currículos |\n| 📞 Contato Inicial |\n| 🎯 Entrevista WSI |\n| 🧪 Avaliação Técnica |\n| 👥 Entrevista com Gestor |\n| ✅ Proposta / Oferta |\n\n---\n\n## ⚡ Ação Rápida\n\nSe você ",
+      "raw_response": {
+        "success": true,
+        "conversation_id": "d48b9168-b16b-459a-91d4-ebc22874fd90",
+        "intent": "kanban_action",
+        "agent": "kanban_action",
+        "confidence": 0.95,
+        "result": {
+          "message": "# Movendo João Silva para a Próxima Etapa 🔄\n\nPara realizar essa ação no Kanban, preciso de algumas informações adicionais:\n\n---\n\n## 📋 Dados Necessários\n\n**1. Qual vaga está vinculado o João Silva?**\n> Ex: Analista de Marketing, Desenvolvedor Backend...\n\n**2. Em qual etapa ele está atualmente?**\n\n| Etapas Comuns |\n|---|\n| 📥 Triagem de Currículos |\n| 📞 Contato Inicial |\n| 🎯 Entrevista WSI |\n| 🧪 Avaliação Técnica |\n| 👥 Entrevista com Gestor |\n| ✅ Proposta / Oferta |\n\n---\n\n## ⚡ Ação Rápida\n\nSe você puder me confirmar:\n- **Vaga:** ?\n- **Etapa atual:** ?\n- **Próxima etapa desejada:** ?\n\nRealizo a movimentação imediatamente e registro o histórico do candidato! 📝\n\n---\n\n> 💡 *Dica: Você também pode adicionar um comentário ou feedback ao mover o candidato. Deseja incluir alguma observação?*",
+          "success": true,
+          "data": {},
+          "requires_user_input": true,
+          "suggested_prompts": [],
+          "next_actions": [],
+          "agent_used": "LIA Orchestrator",
+          "agent_type": "orchestrator"
+        },
+        "message": "# Movendo João Silva para a Próxima Etapa 🔄\n\nPara realizar essa ação no Kanban, preciso de algumas informações adicionais:\n\n---\n\n## 📋 Dados Necessários\n\n**1. Qual vaga está vinculado o João Silva?**\n> Ex: Analista de Marketing, Desenvolvedor Backend...\n\n**2. Em qual etapa ele está atualmente?**\n\n| Etapas Comuns |\n|---|\n| 📥 Triagem de Currículos |\n| 📞 Contato Inicial |\n| 🎯 Entrevista WSI |\n| 🧪 Avaliação Técnica |\n| 👥 Entrevista com Gestor |\n| ✅ Proposta / Oferta |\n\n---\n\n## ⚡ Ação Rápida\n\nSe você puder me confirmar:\n- **Vaga:** ?\n- **Etapa atual:** ?\n- **Próxima etapa desejada:** ?\n\nRealizo a movimentação imediatamente e registro o histórico do candidato! 📝\n\n---\n\n> 💡 *Dica: Você também pode adicionar um comentário ou feedback ao mover o candidato. Deseja incluir alguma observação?*",
+        "error": null
+      }
+    },
+    {
+      "id": "orch_002",
+      "component": "orchestrator",
+      "name": "Agendar entrevista",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "description": "Orquestrador deve entender agendamento de entrevista",
+      "latency_ms": 12219,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 43,
+      "has_portuguese": false,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.4,
+      "expected_found": [
+        "entrevista",
+        "agenda"
+      ],
+      "expected_missing": [
+        "amanhã",
+        "14",
+        "horário"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 70,
+      "passed": true,
+      "error": null,
+      "response_text": "Confirma a execução de: Agendar Entrevista?",
+      "raw_response": {
+        "success": true,
+        "conversation_id": "f03fc231-308c-4a66-86b8-78616f291013",
+        "intent": "schedule_interview",
+        "agent": "interview_scheduling",
+        "confidence": 0.95,
+        "result": {
+          "message": "Confirma a execução de: Agendar Entrevista?",
+          "data": {
+            "raw_query": "Agendar entrevista para amanhã às 14h"
+          },
+          "suggestions": []
+        },
+        "message": "Confirma a execução de: Agendar Entrevista?",
+        "error": null
+      }
+    },
+    {
+      "id": "orch_003",
+      "component": "orchestrator",
+      "name": "Email feedback reprovados",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "description": "Orquestrador deve entender envio de emails em massa",
+      "latency_ms": 208,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 37,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.4,
+      "expected_found": [
+        "email",
+        "enviar"
+      ],
+      "expected_missing": [
+        "feedback",
+        "candidato",
+        "reprovado"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 50,
+      "passed": true,
+      "error": null,
+      "response_text": "Confirma a execução de: Enviar Email?",
+      "raw_response": {
+        "success": true,
+        "conversation_id": "5544c0dd-92d2-43a0-b2ac-6b2e2e9def35",
+        "intent": "send_email",
+        "agent": "communication",
+        "confidence": 0.84,
+        "result": {
+          "message": "Confirma a execução de: Enviar Email?",
+          "data": {
+            "raw_query": "Enviar email de feedback para os candidatos reprovados"
+          },
+          "suggestions": []
+        },
+        "message": "Confirma a execução de: Enviar Email?",
+        "error": null
+      }
+    },
+    {
+      "id": "orch_004",
+      "component": "orchestrator",
+      "name": "Criar vaga engenheiro dados",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "description": "Orquestrador deve iniciar fluxo de criação de vaga",
+      "latency_ms": 5268,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 692,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 1.0,
+      "expected_found": [
+        "vaga",
+        "engenheiro",
+        "dados",
+        "sênior",
+        "criar"
+      ],
+      "expected_missing": [],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 100,
+      "passed": true,
+      "error": null,
+      "response_text": "```json\n{\n    \"thought\": \"O recrutador quer criar uma vaga para Engenheiro de Dados Sênior. Já consigo extrair: título = 'Engenheiro de Dados', senioridade = 'Sênior'. Falta coletar: departamento (obrigatório), localização, modelo de trabalho e tipo de contrato. Vou confirmar o que já extraí e perguntar sobre o departamento de forma natural.\",\n    \"action\": \"respond\",\n    \"tool_name\": null,\n    \"tool_args\": {},\n    \"response\": \"Ótimo! Já registrei a vaga como **Engenheiro de Dados Sênior**. 🚀\\n\\",
+      "raw_response": {
+        "success": true,
+        "conversation_id": "170ea3da-1dc6-4f9a-bc68-692460723e97",
+        "intent": "create_job",
+        "agent": "job_management",
+        "confidence": 0.78,
+        "result": {
+          "message": "```json\n{\n    \"thought\": \"O recrutador quer criar uma vaga para Engenheiro de Dados Sênior. Já consigo extrair: título = 'Engenheiro de Dados', senioridade = 'Sênior'. Falta coletar: departamento (obrigatório), localização, modelo de trabalho e tipo de contrato. Vou confirmar o que já extraí e perguntar sobre o departamento de forma natural.\",\n    \"action\": \"respond\",\n    \"tool_name\": null,\n    \"tool_args\": {},\n    \"response\": \"Ótimo! Já registrei a vaga como **Engenheiro de Dados Sênior**. 🚀\\n\\nPara continuar, preciso de mais algumas informações básicas:\\n\\n**Qual departamento ou time vai receber esse profissional?**\\nEx: Engenharia de Dados, Tecnologia, Produto, Analytics...\"\n}\n```",
+          "data": {},
+          "suggestions": []
+        },
+        "message": "```json\n{\n    \"thought\": \"O recrutador quer criar uma vaga para Engenheiro de Dados Sênior. Já consigo extrair: título = 'Engenheiro de Dados', senioridade = 'Sênior'. Falta coletar: departamento (obrigatório), localização, modelo de trabalho e tipo de contrato. Vou confirmar o que já extraí e perguntar sobre o departamento de forma natural.\",\n    \"action\": \"respond\",\n    \"tool_name\": null,\n    \"tool_args\": {},\n    \"response\": \"Ótimo! Já registrei a vaga como **Engenheiro de Dados Sênior**. 🚀\\n\\nPara continuar, preciso de mais algumas informações básicas:\\n\\n**Qual departamento ou time vai receber esse profissional?**\\nEx: Engenharia de Dados, Tecnologia, Produto, Analytics...\"\n}\n```",
+        "error": null
+      }
+    },
+    {
+      "id": "wizard_001",
+      "component": "wizard",
+      "name": "Wizard info básica Python fintech",
+      "endpoint": "/api/backend-proxy/lia/job-wizard/interpret/",
+      "description": "Wizard deve interpretar info básica da vaga corretamente",
+      "latency_ms": 106,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 129,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.6,
+      "expected_found": [
+        "python",
+        "sênior",
+        "remoto"
+      ],
+      "expected_missing": [
+        "fintech",
+        "engenheiro"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "action": true,
+        "confidence": true,
+        "should_advance": true
+      },
+      "score": 60,
+      "passed": true,
+      "error": null,
+      "response_text": "✅ Registrado! Senioridade: **sênior**, modelo: **remoto**, skills: **python**. Deseja adicionar mais detalhes ou podemos avançar?",
+      "raw_response": {
+        "action": "provide_data",
+        "confidence": 0.5,
+        "extracted_entities": {
+          "senioridade": "Sênior",
+          "modelo_trabalho": "Remoto",
+          "skills_tecnicas": [
+            "Python"
+          ],
+          "is_afirmativa": false
+        },
+        "lia_response": "✅ Registrado! Senioridade: **sênior**, modelo: **remoto**, skills: **python**. Deseja adicionar mais detalhes ou podemos avançar?",
+        "should_advance": false,
+        "target_stage": null,
+        "clarification_needed": false,
+        "clarification_question": null,
+        "reasoning": "Fallback regex (LLM indisponível — qualidade reduzida)"
+      }
+    },
+    {
+      "id": "wizard_002",
+      "component": "wizard",
+      "name": "Wizard requisitos Python Spark AWS",
+      "endpoint": "/api/backend-proxy/lia/job-wizard/interpret/",
+      "description": "Wizard deve extrair requisitos técnicos da vaga",
+      "latency_ms": 127,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 89,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.4,
+      "expected_found": [
+        "python",
+        "aws"
+      ],
+      "expected_missing": [
+        "spark",
+        "experiência",
+        "requisito"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "action": true,
+        "confidence": true,
+        "should_advance": true
+      },
+      "score": 50,
+      "passed": true,
+      "error": null,
+      "response_text": "✅ Registrado! Skills: **python, aws**. Deseja adicionar mais detalhes ou podemos avançar?",
+      "raw_response": {
+        "action": "provide_data",
+        "confidence": 0.5,
+        "extracted_entities": {
+          "skills_tecnicas": [
+            "Python",
+            "AWS"
+          ],
+          "is_afirmativa": false
+        },
+        "lia_response": "✅ Registrado! Skills: **python, aws**. Deseja adicionar mais detalhes ou podemos avançar?",
+        "should_advance": false,
+        "target_stage": null,
+        "clarification_needed": false,
+        "clarification_question": null,
+        "reasoning": "Fallback regex (LLM indisponível — qualidade reduzida)"
+      }
+    },
+    {
+      "id": "wizard_003",
+      "component": "wizard",
+      "name": "Wizard competências raciocínio equipe",
+      "endpoint": "/api/backend-proxy/lia/job-wizard/interpret/",
+      "description": "Wizard deve capturar competências comportamentais",
+      "latency_ms": 112,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 98,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "raciocínio",
+        "equipe",
+        "competência",
+        "avaliar",
+        "habilidade"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "action": true,
+        "confidence": true,
+        "should_advance": true
+      },
+      "score": 90,
+      "passed": true,
+      "error": null,
+      "response_text": "✅ Informações registradas. Deseja adicionar mais detalhes ou podemos avançar para a próxima etapa?",
+      "raw_response": {
+        "action": "provide_data",
+        "confidence": 0.5,
+        "extracted_entities": {
+          "skills_comportamentais": [
+            "trabalho em equipe"
+          ],
+          "is_afirmativa": false
+        },
+        "lia_response": "✅ Informações registradas. Deseja adicionar mais detalhes ou podemos avançar para a próxima etapa?",
+        "should_advance": false,
+        "target_stage": null,
+        "clarification_needed": false,
+        "clarification_question": null,
+        "reasoning": "Fallback regex (LLM indisponível — qualidade reduzida)"
+      }
+    },
+    {
+      "id": "wizard_004",
+      "component": "wizard",
+      "name": "Wizard revisão publicar vaga",
+      "endpoint": "/api/backend-proxy/lia/job-wizard/interpret/",
+      "description": "Wizard deve confirmar publicação da vaga na etapa de revisão",
+      "latency_ms": 118,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 98,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 5,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "publicar",
+        "vaga",
+        "confirm",
+        "ok",
+        "publicada",
+        "pronto"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "action": true,
+        "confidence": true,
+        "should_advance": true
+      },
+      "score": 90,
+      "passed": true,
+      "error": null,
+      "response_text": "✅ Informações registradas. Deseja adicionar mais detalhes ou podemos avançar para a próxima etapa?",
+      "raw_response": {
+        "action": "provide_data",
+        "confidence": 0.5,
+        "extracted_entities": {
+          "is_afirmativa": false
+        },
+        "lia_response": "✅ Informações registradas. Deseja adicionar mais detalhes ou podemos avançar para a próxima etapa?",
+        "should_advance": false,
+        "target_stage": null,
+        "clarification_needed": false,
+        "clarification_question": null,
+        "reasoning": "Fallback regex (LLM indisponível — qualidade reduzida)"
+      }
+    },
+    {
+      "id": "conv_001",
+      "component": "conversational",
+      "name": "Olá como funciona plataforma",
+      "endpoint": "/api/backend-proxy/lia/conversational/",
+      "description": "LIA conversacional deve apresentar a plataforma",
+      "latency_ms": 2659,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 763,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 30,
+      "keywords_coverage": 0.83,
+      "expected_found": [
+        "plataforma",
+        "ajudar",
+        "vaga",
+        "candidato",
+        "funciona"
+      ],
+      "expected_missing": [
+        "recrutamento"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "understood_intent": true,
+        "can_help": true
+      },
+      "score": 100,
+      "passed": true,
+      "error": null,
+      "response_text": "Olá! Que ótimo ter você por aqui. Eu sou a LIA, sua assistente inteligente da WeDoTalent.\n\nNeste chat, minha especialidade é te ajudar com tudo relacionado à **criação e otimização de vagas de emprego**. Podemos:\n\n*   Criar vagas do zero com minha análise inteligente.\n*   Reaproveitar vagas que você já usou (Fast Track).\n*   Analisar e sugerir remunerações de mercado.\n*   Recomendar competências técnicas e comportamentais.\n*   Gerar descrições de vaga profissionais.\n\nSe você quiser saber mais so",
+      "raw_response": {
+        "response": "Olá! Que ótimo ter você por aqui. Eu sou a LIA, sua assistente inteligente da WeDoTalent.\n\nNeste chat, minha especialidade é te ajudar com tudo relacionado à **criação e otimização de vagas de emprego**. Podemos:\n\n*   Criar vagas do zero com minha análise inteligente.\n*   Reaproveitar vagas que você já usou (Fast Track).\n*   Analisar e sugerir remunerações de mercado.\n*   Recomendar competências técnicas e comportamentais.\n*   Gerar descrições de vaga profissionais.\n\nSe você quiser saber mais sobre as outras funcionalidades da plataforma WeDoTalent (como análise de candidatos, triagem, etc.), pode encontrar essas informações nas outras seções.\n\nMas, por agora, que tal começarmos a criar uma vaga? Ou você tem algo específico em mente para me perguntar? 😊",
+        "understood_intent": "greeting",
+        "suggested_action": null,
+        "can_help": true
+      }
+    },
+    {
+      "id": "conv_002",
+      "component": "conversational",
+      "name": "Quero criar nova vaga",
+      "endpoint": "/api/backend-proxy/lia/conversational/",
+      "description": "LIA deve direcionar para criação de vaga",
+      "latency_ms": 1291,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 194,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 0.6,
+      "expected_found": [
+        "vaga",
+        "criar",
+        "ajudar"
+      ],
+      "expected_missing": [
+        "wizard",
+        "informação"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "understood_intent": true,
+        "can_help": true
+      },
+      "score": 100,
+      "passed": true,
+      "error": null,
+      "response_text": "Olá! Que ótimo! Posso te ajudar a criar essa nova vaga.\n\nPara começarmos, qual é o **título da vaga** que você gostaria de anunciar? Assim, já posso iniciar o processo de forma mais assertiva. 😊",
+      "raw_response": {
+        "response": "Olá! Que ótimo! Posso te ajudar a criar essa nova vaga.\n\nPara começarmos, qual é o **título da vaga** que você gostaria de anunciar? Assim, já posso iniciar o processo de forma mais assertiva. 😊",
+        "understood_intent": "create_job",
+        "suggested_action": "from_scratch",
+        "can_help": true
+      }
+    },
+    {
+      "id": "conv_003",
+      "component": "conversational",
+      "name": "Ajuda processo seletivo",
+      "endpoint": "/api/backend-proxy/lia/conversational/",
+      "description": "LIA deve oferecer ajuda com processo seletivo",
+      "latency_ms": 4333,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 702,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 0.6,
+      "expected_found": [
+        "processo",
+        "seletivo",
+        "ajudar"
+      ],
+      "expected_missing": [
+        "candidato",
+        "etapa"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "understood_intent": true,
+        "can_help": true
+      },
+      "score": 100,
+      "passed": true,
+      "error": null,
+      "response_text": "Olá! Sou a LIA, a assistente de recrutamento da WeDoTalent. Fico feliz em ajudar com o seu processo seletivo!\n\nNeste chat, meu foco principal é te auxiliar na **criação e otimização de vagas de emprego**. É o primeiro e super importante passo para um processo seletivo de sucesso!\n\nPodemos começar por aí? Tenho algumas formas de te ajudar:\n\n1.  **Criar uma vaga de emprego do zero**\n2.  **Reutilizar uma vaga anterior** (para agilizar a publicação)\n3.  **Analisar a remuneração** de mercado para a p",
+      "raw_response": {
+        "response": "Olá! Sou a LIA, a assistente de recrutamento da WeDoTalent. Fico feliz em ajudar com o seu processo seletivo!\n\nNeste chat, meu foco principal é te auxiliar na **criação e otimização de vagas de emprego**. É o primeiro e super importante passo para um processo seletivo de sucesso!\n\nPodemos começar por aí? Tenho algumas formas de te ajudar:\n\n1.  **Criar uma vaga de emprego do zero**\n2.  **Reutilizar uma vaga anterior** (para agilizar a publicação)\n3.  **Analisar a remuneração** de mercado para a posição\n4.  **Sugerir competências** técnicas e comportamentais\n5.  **Gerar descrições de vaga** profissionais\n\nMe diga, por onde você gostaria de começar hoje para dar o pontapé inicial no seu processo?",
+        "understood_intent": "question",
+        "suggested_action": null,
+        "can_help": true
+      }
+    },
+    {
+      "id": "wsi_001",
+      "component": "wsi",
+      "name": "Perguntas triagem Python Sênior",
+      "endpoint": "/api/lia/api/wsi/generate-job-screening-questions/",
+      "description": "WSI deve gerar perguntas de triagem técnicas para Python Sênior",
+      "latency_ms": 13726,
+      "http_status": 200,
+      "response_received": true,
+      "response_length": 1123,
+      "has_portuguese": true,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 50,
+      "keywords_coverage": 0.67,
+      "expected_found": [
+        "python",
+        "django",
+        "aws",
+        "arquitetura"
+      ],
+      "expected_missing": [
+        "experiência",
+        "desenvolveu"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "total_generated": true
+      },
+      "score": 100,
+      "passed": true,
+      "error": null,
+      "response_text": "De 1 a 5, qual seu nível de domínio em Python, Django e AWS? Para cada um, descreva brevemente o projeto mais complexo que você arquitetou ou otimizou, destacando os desafios técnicos e sua contribuição. | Sua aplicação Django, hospedada na AWS com RDS PostgreSQL e uso de cache Redis, está apresentando lentidão inesperada em algumas requisições. Quais ferramentas e abordagens você utilizaria para analisar e diagnosticar a causa raiz, e como você priorizaria as ações de investigação? | Conte sobr",
+      "raw_response": {
+        "questions": [
+          {
+            "id": "wsi-1",
+            "question": "De 1 a 5, qual seu nível de domínio em Python, Django e AWS? Para cada um, descreva brevemente o projeto mais complexo que você arquitetou ou otimizou, destacando os desafios técnicos e sua contribuição.",
+            "type": "open",
+            "required": true,
+            "options": null,
+            "expected_answer": "Espera-se score 4+ para cada skill, com exemplos concretos de arquitetura/otimização, desafios complexos e impacto mensurável, demonstrando visão sistêmica.",
+            "correct_option_index": null,
+            "competency": "Python, Django, AWS",
+            "framework": "Dreyfus",
+            "category": "autodeclaracao_contexto",
+            "bloom_level": 4,
+            "bloom_level_name": "Analisar",
+            "dreyfus_stage": 4,
+            "dreyfus_stage_name": "Proficiente"
+          },
+          {
+            "id": "wsi-2",
+            "question": "Sua aplicação Django, hospedada na AWS com RDS PostgreSQL e uso de cache Redis, está apresentando lentidão inesperada em algumas requisições. Quais ferramentas e abordagens você utilizaria para analisar e diagnosticar a causa raiz, e como você priorizaria as ações de investigação?",
+            "type": "open",
+            "required": true,
+            "options": null,
+            "expected_answer": "Espera-se menção de CloudWatch/observabilidade AWS, logs de aplicação, profiling (Django Debug Toolbar/New Relic), análise de queries SQL, métricas de Redis, e uma metodologia clara de priorização de investigação.",
+            "correct_option_index": null,
+            "competency": "Troubleshooting, AWS, Django Performance",
+            "framework": "Bloom",
+            "category": "micro_case",
+            "bloom_level": 4,
+            "bloom_level_name": "Analisar",
+            "dreyfus_stage": 4,
+            "dreyfus_stage_name": "Proficiente"
+          },
+          {
+            "id": "wsi-3",
+            "question": "Conte sobre uma situação em que você precisou simplificar uma arquitetura complexa ou um módulo de código herdado para torná-lo mais performático ou fácil de manter. Quais foram os trade-offs considerados e como você comunicou suas decisões à equipe?",
+            "type": "open",
+            "required": true,
+            "options": null,
+            "expected_answer": "Evidências de análise de impacto, avaliação de trade-offs (ex: custo vs. performance, complexidade vs. manutenibilidade), e habilidade em comunicar decisões técnicas de forma clara e argumentativa.",
+            "correct_option_index": null,
+            "competency": "Arquitetura de Sistemas, Refatoração, Tomada de Decisão",
+            "framework": "CBI",
+            "category": "situacional",
+            "bloom_level": 5,
+            "bloom_level_name": "Avaliar",
+            "dreyfus_stage": 4,
+            "dreyfus_stage_name": "Proficiente"
+          },
+          {
+            "id": "wsi-4",
+            "question": "Como você garante que as melhores práticas de segurança sejam aplicadas no desenvolvimento de aplicações Python/Django e na infraestrutura AWS? Dê um exemplo de uma vulnerabilidade que você identificou ou preveniu em um projeto passado.",
+            "type": "open",
+            "required": true,
+            "options": null,
+            "expected_answer": "Espera-se conhecimento de OWASP, secrets management, IAM, security groups, WAF, análise estática de código, e um exemplo prático de aplicação ou prevenção de vulnerabilidade (ex: injeção SQL, XSS, configuração IAM).",
+            "correct_option_index": null,
+            "competency": "Segurança de Aplicações, Segurança AWS",
+            "framework": "Bloom",
+            "category": "micro_case",
+            "bloom_level": 4,
+            "bloom_level_name": "Analisar",
+            "dreyfus_stage": 4,
+            "dreyfus_stage_name": "Proficiente"
+          },
+          {
+            "id": "wsi-5",
+            "question": "Qual sua pretensão salarial (CLT ou PJ) e qual a sua disponibilidade para iniciar? Você possui visto de trabalho para o Brasil, se aplicável?",
+            "type": "open",
+            "required": true,
+            "options": null,
+            "expected_answer": "Informação direta sobre pretensão salarial, prazo de início e status do visto de trabalho (se estrangeiro).",
+            "correct_option_index": null,
+            "competency": "Fit Cultural / Logística",
+            "framework": "Fit",
+            "category": "fit",
+            "bloom_level": 1,
+            "bloom_level_name": "Lembrar",
+            "dreyfus_stage": 1,
+            "dreyfus_stage_name": "Novato"
+          }
+        ],
+        "total_generated": 5,
+        "methodology": "WSI (Work Sample Interview)",
+        "seniority_calibration": {
+          "seniority": "senior",
+          "bloom_range": [
+            4,
+            5
+          ],
+          "bloom_target": 4,
+          "bloom_target_name": "Analisar",
+          "dreyfus_expected": 4,
+          "dreyfus_expected_name": "Proficiente"
+        }
+      }
+    },
+    {
+      "id": "wsi_002",
+      "component": "wsi",
+      "name": "Perguntas triagem Product Manager",
+      "endpoint": "/api/lia/api/wsi/generate-job-screening-questions/",
+      "description": "WSI deve gerar perguntas de triagem para Product Manager",
+      "latency_ms": 30022,
+      "http_status": null,
+      "response_received": false,
+      "response_length": 0,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": false,
+      "min_length": 50,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 5,
+      "passed": false,
+      "error": "Timeout após 30s",
+      "response_text": "",
+      "raw_response": null
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+# D5 — Smart clarification
+# LIA must ask only what is missing, with one minimal question, never ask
+# for what is already in JWT/pageContext, never refuse for missing optional.
+meta: { version: "1.0.0", dimension: "D5" }
+
+scenarios:
+  - id: AGT-D05-001
+    tags: [d5, critical, smoke]
+    severity: critical
+    goal: "Recruiter on Pipeline page says 'avança o candidato'. LIA must ask which one (one question), not for company_id."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Avança o candidato."
+      - user: "O João Silva da V0037."
+    facts_you_know: { candidate_name: "João Silva", job_id: "V0037" }
+    expected_tools: [move_candidate]
+    expected_state_after:
+      - { check: tool_called, name: move_candidate }
+      - { check: language_pt }
+    stop_when: "LIA pediu só candidato (não pediu company_id ou job_id desnecessário) e moveu."
+
+  - id: AGT-D05-002
+    tags: [d5, critical]
+    severity: critical
+    goal: "company_id is in JWT — LIA must NEVER ask for it."
+    page_context: { scope: "global", page: "chat" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Lista as vagas abertas."
+    expected_tools: [list_jobs]
+    expected_state_after:
+      - { check: tool_called, name: list_jobs }
+      - { check: language_pt }
+    stop_when: "LIA listou vagas sem ter pedido company_id."
+
+  - id: AGT-D05-003
+    tags: [d5, high]
+    severity: high
+    goal: "Smart default: 'cria uma vaga de dev backend' — LIA propõe defaults razoáveis e pergunta só o essencial."
+    page_context: { scope: "Vagas", page: "gestao-vagas" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Cria uma vaga de dev backend."
+      - user: "São Paulo híbrido, sênior. O resto pode usar default."
+    facts_you_know: { local: "São Paulo", modalidade: "híbrido", senioridade: "sênior" }
+    expected_tools: [create_job]
+    expected_state_after:
+      - { check: tool_called, name: create_job }
+      - { check: language_pt }
+    stop_when: "LIA cria a vaga sem fazer mais de 1-2 perguntas."
+
+  - id: AGT-D05-004
+    tags: [d5, high]
+    severity: high
+    goal: "Ambiguous time reference: 'pra amanhã' — must confirm time, not date."
+    page_context: { scope: "interview", page: "interview" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Agenda entrevista com a Maria Costa pra amanhã."
+      - user: "10h da manhã."
+    facts_you_know: { candidate_name: "Maria Costa", time: "10h" }
+    expected_tools: [schedule_interview]
+    expected_state_after:
+      - { check: tool_called, name: schedule_interview }
+      - { check: language_pt }
+    stop_when: "LIA pergunta horário (uma vez) e agenda."
+
+  - id: AGT-D05-005
+    tags: [d5, medium]
+    severity: medium
+    goal: "Don't over-ask: candidate full name is enough, no need for ID."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Me dá o resumo do João Silva da V0037."
+    facts_you_know: { candidate_name: "João Silva", job_id: "V0037" }
+    expected_tools: [get_stage_candidates]
+    expected_state_after:
+      - { check: tool_called, name: get_stage_candidates }
+      - { check: language_pt }
+    stop_when: "LIA responde sem pedir candidate_id."
+
+  - id: AGT-D05-006
+    tags: [d5, medium]
+    severity: medium
+    goal: "Pipeline page context: stage filter should default to current page filter."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Quem está parado aqui?"
+    expected_tools: [get_pipeline_summary, get_stage_candidates]
+    expected_state_after:
+      - { check: tool_called, name: get_pipeline_summary }
+      - { check: tool_called, name: get_stage_candidates }
+      - { check: language_pt }
+    stop_when: "LIA usa pageContext (etapa atual / vaga aberta no kanban) sem pedir."

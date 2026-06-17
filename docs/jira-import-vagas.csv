@@ -1,0 +1,383 @@
+Summary,Issue Type,Priority,Labels,Description,Story Points,Epic Link
+"[FRONT] Header Principal - Gestao de Vagas",Story,High,"frontend,header,gestao-vagas","**Descricao:**
+Implementar header principal da pagina de Gestao de Vagas com icone, titulo e alinhamento conforme design system.
+
+**Historia de Usuario:**
+Como recrutador, eu quero ver o titulo da pagina claramente identificado para saber onde estou na plataforma.
+
+**Requisitos Tecnicos:**
+- Componente: JobsPageHeader
+- Icone: Building2 (Lucide) ou icone customizado
+- Titulo: Gestao de Vagas
+- Fonte: Open Sans 18px semibold
+- Cor: #2D2D2D (gray-950)
+
+**Criterios de Aceitacao:**
+- [ ] Icone Building2 24px visivel
+- [ ] Titulo Gestao de Vagas visivel
+- [ ] Fonte Open Sans 18px semibold
+- [ ] Alinhamento correto com sidebar
+- [ ] Responsivo em tablets",3,EPIC-VAG-001
+"[FRONT] Botao Nova Vaga - CTA Principal",Story,Highest,"frontend,cta,gestao-vagas","**Descricao:**
+Implementar botao principal de criacao de vaga no header, com estilo cyan (#60BED1), icone plus e acao de abertura do wizard de criacao via LIA.
+
+**Historia de Usuario:**
+Como recrutador, eu quero criar uma nova vaga rapidamente clicando em um botao visivel no topo da pagina.
+
+**Requisitos Tecnicos:**
+- Componente: NewJobButton
+- Estilo: bg-[#60BED1] text-white rounded-lg
+- Icone: Plus (Lucide) 16px
+- Texto: Nova Vaga
+- Acao: Abrir ExpandedChatModal em modo job-creation
+
+**Criterios de Aceitacao:**
+- [ ] Botao cyan visivel no header
+- [ ] Icone Plus + texto Nova Vaga
+- [ ] Abre ExpandedChatModal corretamente
+- [ ] Estado hover funciona
+- [ ] Responsivo (apenas icone em mobile)",5,EPIC-VAG-001
+"[FRONT] Integracao Busca Global - Header Icon",Story,Medium,"frontend,search,gestao-vagas","**Descricao:**
+Integrar icone de busca global no header da pagina de vagas, conectando com o GlobalSearchModal existente.
+
+**Historia de Usuario:**
+Como recrutador, eu quero buscar vagas, candidatos ou qualquer coisa rapidamente usando a busca global.
+
+**Requisitos Tecnicos:**
+- Componente: GlobalSearchButton (reutilizar)
+- Icone: Search (Lucide) 20px
+- Cor: #666666 (gray-500)
+- Acao: Abrir GlobalSearchModal, Atalho Cmd+K
+
+**Criterios de Aceitacao:**
+- [ ] Icone de busca visivel no header
+- [ ] Abre GlobalSearchModal ao clicar
+- [ ] Atalho Cmd+K funciona
+- [ ] Tooltip Buscar (Cmd+K)",3,EPIC-VAG-001
+"[FRONT] Integracao Notificacoes - Bell Icon",Story,Medium,"frontend,notifications,gestao-vagas","**Descricao:**
+Integrar icone de notificacoes no header com badge de contador de nao lidas e dropdown de notificacoes recentes.
+
+**Historia de Usuario:**
+Como recrutador, eu quero ver minhas notificacoes rapidamente sem sair da pagina.
+
+**Requisitos Tecnicos:**
+- Componente: NotificationBell (reutilizar)
+- Icone: Bell (Lucide) 20px
+- Badge: Contador de nao lidas
+- Dropdown: Lista de notificacoes recentes
+
+**Criterios de Aceitacao:**
+- [ ] Icone de sino visivel
+- [ ] Badge contador quando ha nao lidas
+- [ ] Dropdown com ultimas notificacoes
+- [ ] Click em notificacao navega para destino",3,EPIC-VAG-001
+"[FRONT] Sistema de Tabs de Filtro por Status",Story,High,"frontend,filters,tabs,gestao-vagas","**Descricao:**
+Implementar sistema de tabs horizontais para filtrar vagas por status, com design conforme design system.
+
+**Historia de Usuario:**
+Como recrutador, eu quero filtrar vagas por status rapidamente usando tabs visuais.
+
+**Requisitos Tecnicos:**
+- Componente: JobStatusTabs
+- Tabs: Todas, Ativas, Urgentes, Paralisadas, Concluidas/Canceladas
+- Layout: Horizontal, scrollable em mobile
+- Animacao: Underline slide transition
+
+**Criterios de Aceitacao:**
+- [ ] Tabs renderizam corretamente
+- [ ] Click muda filtro ativo
+- [ ] Underline animada na tab ativa
+- [ ] Scrollable em mobile
+- [ ] Persiste estado no URL",8,EPIC-VAG-002
+"[FRONT/BACK] Contadores Dinamicos por Status",Story,High,"frontend,backend,counters,gestao-vagas","**Descricao:**
+Implementar contadores dinamicos ao lado de cada tab mostrando quantidade de vagas naquele status.
+
+**Historia de Usuario:**
+Como recrutador, eu quero ver quantas vagas tenho em cada status rapidamente.
+
+**Requisitos Tecnicos:**
+- Backend: GET /api/v1/jobs/counts-by-status
+- Frontend: Badge com contador ao lado de cada tab
+- Realtime: Atualiza ao criar/editar vaga
+
+**Criterios de Aceitacao:**
+- [ ] Contadores exibidos corretamente
+- [ ] Atualizacao em tempo real
+- [ ] Loading state enquanto carrega
+- [ ] Badge estilo consistente",5,EPIC-VAG-002
+"[FRONT] Filtro Todas as Vagas",Story,High,"frontend,filters,gestao-vagas","**Descricao:**
+Implementar filtro Todas que mostra todas as vagas independente do status.
+
+**Criterios de Aceitacao:**
+- [ ] Tab Todas funciona
+- [ ] Mostra todas as vagas
+- [ ] Contador total correto",3,EPIC-VAG-002
+"[FRONT] Filtro Vagas Ativas",Story,High,"frontend,filters,gestao-vagas","**Descricao:**
+Implementar filtro Ativas que mostra vagas com status ativo (em andamento, abertas).
+
+**Criterios de Aceitacao:**
+- [ ] Tab Ativas funciona
+- [ ] Filtra corretamente
+- [ ] Contador correto",3,EPIC-VAG-002
+"[FRONT] Filtro Vagas Urgentes",Story,High,"frontend,filters,urgent,gestao-vagas","**Descricao:**
+Implementar filtro Urgentes que mostra vagas marcadas como urgentes ou com deadline proximo.
+
+**Requisitos Tecnicos:**
+- Criterios: flag is_urgent=true OU deadline < 7 dias
+- Visual: Badge vermelho/laranja
+
+**Criterios de Aceitacao:**
+- [ ] Tab Urgentes funciona
+- [ ] Filtra por flag is_urgent
+- [ ] Filtra por deadline proximo
+- [ ] Visual diferenciado",5,EPIC-VAG-002
+"[FRONT] Filtro Vagas Paralisadas",Story,Medium,"frontend,filters,gestao-vagas","**Descricao:**
+Implementar filtro Paralisadas que mostra vagas com status pausado ou on-hold.
+
+**Criterios de Aceitacao:**
+- [ ] Tab Paralisadas funciona
+- [ ] Filtra corretamente
+- [ ] Visual indica status pausado",3,EPIC-VAG-002
+"[FRONT] Filtro Concluidas e Canceladas",Story,Low,"frontend,filters,gestao-vagas","**Descricao:**
+Implementar filtro combinado para vagas concluidas (fechadas com contratacao) e canceladas.
+
+**Criterios de Aceitacao:**
+- [ ] Tab funciona
+- [ ] Filtra concluidas e canceladas
+- [ ] Visual indica status final",3,EPIC-VAG-002
+"[FRONT] Container LIA Centralizado",Story,Highest,"frontend,lia,prompt,gestao-vagas","**Descricao:**
+Implementar container centralizado para o prompt da LIA na pagina de vagas, seguindo lia-prompt-design-specs.md.
+
+**Historia de Usuario:**
+Como recrutador, eu quero ver um prompt da LIA claro e acessivel na pagina.
+
+**Requisitos Tecnicos:**
+- Componente: LIAPromptContainer
+- Max-width: 600px
+- Border: 1px solid #E5E7EB
+- Border-radius: 12px
+- Centralizado na pagina
+
+**Criterios de Aceitacao:**
+- [ ] Container renderiza centralizado
+- [ ] Borda e background corretos
+- [ ] Responsivo
+- [ ] Segue specs do design system",8,EPIC-VAG-003
+"[FRONT] Titulo Contextual Dinamico",Story,High,"frontend,lia,dynamic,gestao-vagas","**Descricao:**
+Implementar titulo contextual que muda baseado no estado atual da pagina.
+
+**Exemplos:**
+- Pagina vazia: O que voce gostaria de fazer?
+- Com vagas: Como posso ajudar com suas vagas?
+- Filtro ativo: Voce esta vendo vagas [status]
+
+**Criterios de Aceitacao:**
+- [ ] Titulo muda conforme contexto
+- [ ] Fonte Source Serif 4 11px
+- [ ] Cor #60BED1",3,EPIC-VAG-003
+"[FRONT] Input de Chat LIA",Story,Highest,"frontend,lia,input,gestao-vagas","**Descricao:**
+Implementar input de chat para interacao com LIA, seguindo lia-prompt-design-specs.md.
+
+**Requisitos Tecnicos:**
+- Placeholder: Digite seu comando ou pergunta...
+- Font: Open Sans 13px
+- Border-radius: 20px
+- Submit: Enter ou botao Send
+
+**Criterios de Aceitacao:**
+- [ ] Input renderiza corretamente
+- [ ] Placeholder visivel
+- [ ] Submit funciona (Enter + botao)
+- [ ] Focus state com borda cyan",8,EPIC-VAG-003
+"[FRONT] Icones Microfone e Busca",Story,Medium,"frontend,lia,voice,gestao-vagas,validacao-andre","**Descricao:**
+Implementar icones de microfone (voice input) e busca no prompt da LIA.
+
+**Requisitos Tecnicos:**
+- Icones: Mic, Search (Lucide) 16px
+- Voice: Integrar com Web Speech API
+- Fallback: Gemini voice-to-text
+
+**Integracoes:**
+- Web Speech API (primaria, gratuita)
+- Gemini voice-to-text (fallback)
+- Deepgram (alternativa premium)
+
+VALIDACAO PENDENTE - Andre Bevilaqua: Arquitetura de voice input
+
+**Criterios de Aceitacao:**
+- [ ] Icone mic visivel
+- [ ] Icone busca visivel
+- [ ] Voice input funciona
+- [ ] Fallback para Gemini
+- [ ] Loading state durante transcricao",5,EPIC-VAG-003
+"[FRONT] Sugestoes Contextuais",Story,High,"frontend,lia,suggestions,gestao-vagas","**Descricao:**
+Implementar chips de sugestoes contextuais abaixo do input da LIA.
+
+**Exemplos:**
+- Criar nova vaga
+- Ver minhas vagas
+- Resumo das vagas
+- Mais ideias
+
+**Criterios de Aceitacao:**
+- [ ] Chips renderizam
+- [ ] Click envia comando para LIA
+- [ ] Sugestoes mudam por contexto
+- [ ] Max 4-5 sugestoes visiveis",8,EPIC-VAG-003
+"[BACK] Integracao Backend LIA - Vagas Context",Story,Highest,"backend,lia,ai,agents,gestao-vagas,validacao-andre","**Descricao:**
+Integrar frontend com backend da LIA para processar comandos especificos de gestao de vagas.
+
+**Historia de Usuario:**
+Como recrutador, eu quero que a LIA entenda meus comandos sobre vagas e execute acoes relevantes.
+
+**Requisitos Tecnicos:**
+- Endpoint: POST /api/v1/lia/chat
+- Context: { page: jobs, filters: {...}, vacancies: [...] }
+- Streaming: SSE para respostas longas
+
+**Integracoes LLM:**
+- Anthropic Claude 4 Sonnet (primario)
+- Google Gemini 1.5 Flash (fallback)
+- LangGraph (orquestrador)
+
+**Agentes Relacionados:**
+- Orchestrator: app/orchestrator/orchestrator.py
+- job_intake_agent: Criacao de vagas
+- analytics_agent: Resumos e insights
+- recruiter_assistant_agent: Sugestoes proativas
+
+VALIDACAO PENDENTE - Andre Bevilaqua: Arquitetura de agentes e roteamento de intents
+
+**Criterios de Aceitacao:**
+- [ ] Comandos processados corretamente
+- [ ] Respostas em streaming
+- [ ] Acoes executadas (filtros, wizard)
+- [ ] Erro handling gracioso
+- [ ] Fallback para Gemini funciona",13,EPIC-VAG-003
+"[FRONT] Quick Action - Criar Nova Vaga",Story,Highest,"frontend,quick-action,gestao-vagas,validacao-andre","**Descricao:**
+Implementar botao de quick action + Criar nova vaga que abre o wizard de criacao.
+
+**Historia de Usuario:**
+Como recrutador, eu quero criar vaga com um clique sem precisar digitar comando.
+
+**Requisitos Tecnicos:**
+- Icone: Plus 14px
+- Texto: Criar nova vaga
+- Acao: Abre ExpandedChatModal em modo job-creation
+
+**Agente Relacionado:**
+- job_intake_agent: Coleta de requisitos via conversa guiada
+
+VALIDACAO PENDENTE - Andre Bevilaqua: Fluxo de ativacao do job_intake_agent
+
+**Criterios de Aceitacao:**
+- [ ] Botao visivel nas quick actions
+- [ ] Abre wizard de criacao
+- [ ] Icone Plus correto
+- [ ] Hover state funciona",5,EPIC-VAG-004
+"[FRONT] Quick Action - Ver Minhas Vagas",Story,High,"frontend,quick-action,gestao-vagas","**Descricao:**
+Implementar botao que filtra lista para mostrar apenas vagas do usuario logado.
+
+**Criterios de Aceitacao:**
+- [ ] Botao visivel
+- [ ] Filtra por assigned_recruiter = current_user
+- [ ] Atualiza contador",3,EPIC-VAG-004
+"[FRONT] Quick Action - Ver Todas as Vagas",Story,High,"frontend,quick-action,gestao-vagas","**Descricao:**
+Implementar botao que remove filtros e mostra todas as vagas.
+
+**Criterios de Aceitacao:**
+- [ ] Botao visivel
+- [ ] Remove filtro de usuario
+- [ ] Mostra todas as vagas",3,EPIC-VAG-004
+"[FRONT] Quick Action - Resumo das Vagas",Story,Medium,"frontend,quick-action,analytics,gestao-vagas,validacao-andre","**Descricao:**
+Implementar botao que pede para LIA gerar um resumo analytics das vagas abertas.
+
+**Historia de Usuario:**
+Como recrutador, eu quero um resumo rapido do status geral das minhas vagas.
+
+**Output Esperado:**
+- Total de vagas por status
+- Vagas com deadline proximo
+- Candidatos totais no pipeline
+- Sugestoes de acao
+
+**Agente Relacionado:**
+- analytics_agent: Geracao de resumos e insights
+
+VALIDACAO PENDENTE - Andre Bevilaqua: Metricas do analytics_agent
+
+**Criterios de Aceitacao:**
+- [ ] Envia comando para LIA
+- [ ] LIA retorna resumo formatado
+- [ ] Dados sao reais (nao mock)",5,EPIC-VAG-004
+"[FRONT] Quick Action - Mais Ideias (AI)",Story,Medium,"frontend,quick-action,ai,proactive,gestao-vagas,validacao-andre","**Descricao:**
+Implementar botao que pede sugestoes proativas da LIA baseadas no contexto atual das vagas.
+
+**Historia de Usuario:**
+Como recrutador, eu quero que a LIA me sugira acoes que eu nao pensei.
+
+**Design:**
+- Background: bg-cyan/10
+- Border: border-cyan
+- Estilo diferenciado (indica AI feature)
+
+**Exemplos de Output:**
+- Voce tem 3 vagas sem candidatos - que tal publicar no LinkedIn?
+- A vaga X esta aberta ha 30 dias - considere revisar os requisitos
+
+**Agente Relacionado:**
+- recruiter_assistant_agent: Sugestoes proativas e contextuais
+- proactive_alert_service: Pre-calculo de insights
+
+VALIDACAO PENDENTE - Andre Bevilaqua: Regras de sugestao proativa
+
+**Criterios de Aceitacao:**
+- [ ] Estilo diferenciado (AI feature)
+- [ ] LIA retorna sugestoes contextuais
+- [ ] Sugestoes sao acionaveis
+- [ ] Usa cache quando disponivel",8,EPIC-VAG-004
+"[FRONT] Empty State - Design Pagina Vazia",Story,High,"frontend,empty-state,onboarding,gestao-vagas","**Descricao:**
+Implementar design de pagina vazia quando nao ha vagas cadastradas.
+
+**Criterios de Aceitacao:**
+- [ ] Ilustracao ou icone grande
+- [ ] Mensagem acolhedora
+- [ ] CTA claro para criar vaga",5,EPIC-VAG-005
+"[FRONT] Mensagem Boas-Vindas LIA",Story,High,"frontend,lia,onboarding,gestao-vagas","**Descricao:**
+Implementar mensagem de boas-vindas da LIA para novos usuarios.
+
+**Exemplo:**
+Ola! Eu sou a LIA, sua assistente de recrutamento. Posso ajudar voce a criar sua primeira vaga. Quer comecar?
+
+**Criterios de Aceitacao:**
+- [ ] Mensagem personalizada com nome
+- [ ] Tom acolhedor
+- [ ] Sugere proxima acao",3,EPIC-VAG-005
+"[FRONT] CTA Criar Primeira Vaga",Story,High,"frontend,cta,onboarding,gestao-vagas","**Descricao:**
+Implementar botao CTA destacado para criar a primeira vaga.
+
+**Criterios de Aceitacao:**
+- [ ] Botao grande e destacado
+- [ ] Cor cyan primaria
+- [ ] Abre wizard de criacao
+- [ ] Texto motivacional",5,EPIC-VAG-005
+"[FRONT] Tutorial Onboarding Vagas",Story,Medium,"frontend,tutorial,onboarding,gestao-vagas","**Descricao:**
+Implementar tutorial guiado para novos usuarios aprenderem a usar a gestao de vagas.
+
+**Criterios de Aceitacao:**
+- [ ] Steps guiados (3-5 passos)
+- [ ] Highlights em elementos
+- [ ] Pode pular
+- [ ] Marca como visto",8,EPIC-VAG-005
+"[FRONT] Integracao First Access Manager",Story,Medium,"frontend,first-access,onboarding,gestao-vagas","**Descricao:**
+Integrar com sistema de first access para saber se usuario ja viu onboarding.
+
+**Requisitos Tecnicos:**
+- Service: FirstAccessManager
+- Storage: LocalStorage + Backend sync
+- Flags: has_seen_jobs_onboarding, has_created_first_job
+
+**Criterios de Aceitacao:**
+- [ ] Detecta primeiro acesso
+- [ ] Persiste estado
+- [ ] Nao mostra onboarding repetido",5,EPIC-VAG-005

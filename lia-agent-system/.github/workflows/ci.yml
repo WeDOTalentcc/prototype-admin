@@ -1,0 +1,762 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Nightly run that feeds eval/.gate_history.json with real backend scores
+    # so the eval-gates job (T-E + T6 #993) stops sitting at "warming up" and
+    # actually blocks regression after two consecutive bad nights. Pinned to
+    # 05:17 UTC to land outside business hours.
+    - cron: "17 5 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    name: Test Suite
+    # Skip on the nightly schedule — that trigger only exists to feed
+    # eval/.gate_history.json via eval-nightly. Re-runs on push/PR/dispatch.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lia
+          POSTGRES_PASSWORD: lia
+          POSTGRES_DB: lia_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://lia:lia@localhost:5432/lia_test
+      REDIS_URL: redis://localhost:6379
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ENVIRONMENT: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]" || pip install -e . || pip install -r requirements.txt
+
+      # UC-P1-09: coverage threshold enforced at 50% (plan: raise to 70% once baseline stabilizes).
+      # If this step fails, actual coverage is below 50% — check htmlcov/index.html artifact.
+      - name: Run tests with coverage
+        run: |
+          pip install pytest-cov --quiet
+          python -m pytest tests/ \
+            --ignore=tests/e2e \
+            --ignore=tests/test_agents \
+            --ignore=tests/load \
+            --cov=app \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-fail-under=50 \
+            -q --tb=short --no-header
+
+      # Recovery sensors (Audit 2026-05-23 — merge incident 02361f41c
+      # anti-regression). Step DEDICADO pra visibilidade no GitHub Actions UI.
+      # Esses sensors também rodam no step anterior via `pytest tests/`, mas
+      # ter step separado garante que regressão em recovery aparece com label
+      # explícito (não fica enterrado em 1657 testes).
+      # Referências:
+      #   - ~/Documents/Python/AUDIT_DEEP_2026-05-23.md (incident root cause)
+      #   - ~/Documents/Python/RECOVERY_AUDIT_MATRIX.md (10 arquivos Tipo A)
+      #   - Makefile target `make check-recoveries`
+      - name: Recovery sensors (merge incident 02361f41c anti-regression)
+        run: |
+          python -m pytest \
+            tests/contract/test_lia_feedback_contract.py \
+            tests/contract/test_wsi_audit_trail_contract.py \
+            tests/contract/test_analytics_actions_contract.py \
+            tests/contract/test_job_actions_contract.py \
+            tests/contract/test_candidate_actions_migration.py \
+            tests/contract/test_teams_bridge_contract.py \
+            tests/contract/test_interview_graph_fairness_contract.py \
+            tests/contract/test_rails_client_canonical_home.py \
+            tests/contract/test_wedotalent_rails_client_contract.py \
+            tests/contract/test_policy_migration.py \
+            tests/api/test_lia_feedback_hardening.py \
+            --no-header --no-cov -q --tb=short
+
+      # Test orphan detection sensor (Recovery #2). Roda pytest --collect-only
+      # e bloqueia se algum test file fica com ImportError silencioso —
+      # mesmo padrão do test_dev_auto_login_tenant.py que ficou 22 dias broken.
+      # Step separado porque é mais lento (~90s) que os contract tests.
+      - name: Test orphan detection (Recovery #2 sensor)
+        run: |
+          python -m pytest tests/contract/test_no_collection_errors.py \
+            --no-header --no-cov -q --tb=short
+
+      # ADR-029 §2 (audit C2/#4 2026-06-05): tool schemas nao podem expor
+      # chave de tenant (company_id/tenant_id/...) — LLM jamais fornece tenant;
+      # vem do RuntimeContext/ContextVar via @tool_handler. Ja --block no pre-commit;
+      # aqui fecha o gate de CI (defesa contra commit que pulou o hook).
+      - name: ADR-029 — tenant key leak in tool schemas
+        run: python3 scripts/check_no_tenant_in_tool_schemas.py --block
+
+      # Domain structure conformance (BLOCKING). Ensures every domain under
+      # app/domains/ follows the canonical directory layout (services/, repos,
+      # __init__.py, etc.). Catches structural drift before it compounds.
+      - name: Domain structure conformance
+        run: |
+          python -m pytest tests/contract/test_domain_structure_conformance.py \
+            -v --tb=short --no-header --no-cov
+
+      - name: Security scan (bandit)
+        continue-on-error: true
+        run: |
+          pip install bandit[toml] --quiet
+          bandit -r app/ -ll -q --exclude app/tests 2>&1 | tail -20
+
+      - name: Verify LangSmith config
+        continue-on-error: true
+        env:
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_PROJECT: lia-agent-system
+        run: |
+          python -m pytest tests/unit/test_langsmith_config.py \
+            -q --no-cov --tb=short --no-header
+
+
+      # UC-P3-11: Mutation Testing (compliance modules) — non-blocking.
+      # Runs only on push to main/develop to avoid slowing down PRs.
+      # Results are surfaced in CI logs; does not block the build.
+      # To review: run  locally after .
+      - name: Mutation Testing (compliance modules)
+        if: github.event_name == "push"
+        continue-on-error: true
+        run: |
+          pip install mutmut --quiet
+          mutmut run --paths-to-mutate=app/shared/compliance/ 2>&1 || true
+          mutmut results 2>&1 || true
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 7
+
+  eval-gates:
+    # T-E + T6 (#993): canary eval gates. Each call reads
+    # eval/.gate_history.json (filtered by dataset) and exits 1 if the last
+    # 2 consecutive runs averaged below 0.85 OR if inventory coverage drops
+    # below 80%. Runs are appended by `python eval/eval_runner.py` against a
+    # live backend; here we only enforce the gate decision so a regression
+    # blocks the build the moment two bad runs land in history. The first
+    # call (tenant_context.jsonl) is the T-E reference gate; the second
+    # (company_settings_prefill.jsonl) is the T6 Settings ↔ chat lateral gate
+    # — same infra, same threshold (0.85), same consecutive-run rule (2).
+    name: Eval Gates (T-E + Settings prefill)
+    runs-on: ubuntu-latest
+    needs: test
+    defaults:
+      run:
+        working-directory: lia-agent-system
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install minimal eval deps
+        run: pip install pyyaml httpx pyjwt --quiet
+
+      - name: Gate — tenant_context.jsonl (T-E)
+        run: python -m eval.eval_runner --gate eval/golden/tenant_context.jsonl
+
+      - name: Gate — company_settings_prefill.jsonl (T6 #993)
+        run: python -m eval.eval_runner --gate eval/golden/company_settings_prefill.jsonl
+
+      - name: Gate — wizard_calibration_handoff.jsonl (Task #1111)
+        # Garante que a etapa de calibração não regrida silenciosamente para
+        # respostas vazias ("nenhum candidato encontrado") quando o tenant
+        # tem pool. Anti-patterns regex bloqueiam "Carreguei 0 candidato",
+        # "0/N aprovados", "nenhum candidato"; success_criteria exigem
+        # contagem numérica de candidatos carregados e de aprovados/threshold
+        # na resposta final do node de calibração.
+        run: python -m eval.eval_runner --gate eval/golden/wizard_calibration_handoff.jsonl
+
+  eval-nightly:
+    # Task #999: feeds eval/.gate_history.json with REAL backend scores for
+    # the canary golden datasets (T-E tenant_context + T6 #993 Settings
+    # prefill). Without this job, eval-gates above only ever sees the
+    # bootstrapped history and stays at "pass — warming up" forever, so a
+    # regression in the Settings ↔ chat lateral flow (or in any of the 16
+    # ReActAgents) ships unblocked. Runs nightly + on-demand only — never on
+    # PRs (no live LLM budget burn per push).
+    #
+    # Flow: boot Postgres + Redis as service containers, install deps, start
+    # uvicorn in the background, wait for /health, run eval_runner against
+    # each golden dataset, then commit the updated .gate_history.json back
+    # to the branch with [skip ci] so the next CI run reads it. After two
+    # green nights the gate has real data and stops being a no-op; after
+    # two red nights it blocks the next merge to main.
+    name: Eval Nightly (record gate history)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: lia-agent-system
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lia
+          POSTGRES_PASSWORD: lia
+          POSTGRES_DB: lia_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://lia:lia@localhost:5432/lia_test
+      REDIS_URL: redis://localhost:6379
+      ENVIRONMENT: test
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # eval_runner._make_eval_token() signs JWTs with app.core.config.settings.SECRET_KEY.
+      # Pin a stable test key so the token survives the uvicorn boot in this
+      # job. NEVER use this value in prod.
+      SECRET_KEY: ${{ secrets.EVAL_BACKEND_SECRET_KEY || 'eval-nightly-secret-key-do-not-use-in-prod' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Need full history + a writeable token so we can push the updated
+          # .gate_history.json back to the branch without losing context.
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]" || pip install -e . || pip install -r requirements.txt
+          pip install httpx pyjwt pyyaml --quiet
+
+      - name: Boot uvicorn in the background
+        run: |
+          nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 > /tmp/lia-backend.log 2>&1 &
+          echo $! > /tmp/lia-backend.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8001/health >/dev/null 2>&1; then
+              echo "backend ready after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::backend did not become healthy in 120s"
+          tail -200 /tmp/lia-backend.log
+          exit 1
+
+      - name: Run Settings prefill battery (T6 #993 — 18+ scenarios)
+        run: python -m eval.eval_runner --dataset eval/golden/company_settings_prefill.jsonl --url http://localhost:8001
+
+      - name: Run tenant_context battery (T-E — 16 ReActAgents)
+        # Non-blocking: a flaky run shouldn't hide a clean Settings recording.
+        # The gate-check job below decides pass/fail using the persisted history.
+        continue-on-error: true
+        run: python -m eval.eval_runner --dataset eval/golden/tenant_context.jsonl --url http://localhost:8001
+
+      - name: Run wizard_calibration_handoff battery (Task #1111)
+        # Non-blocking nightly recording for the calibration gate. The
+        # gate-check (eval-gates job) consumes the persisted history.
+        continue-on-error: true
+        run: python -m eval.eval_runner --dataset eval/golden/wizard_calibration_handoff.jsonl --url http://localhost:8001
+
+      - name: Stop backend
+        if: always()
+        run: |
+          if [ -f /tmp/lia-backend.pid ]; then
+            kill "$(cat /tmp/lia-backend.pid)" 2>/dev/null || true
+          fi
+
+      - name: Upload backend log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lia-backend-log
+          path: /tmp/lia-backend.log
+          retention-days: 7
+
+      - name: Commit updated gate history
+        run: |
+          if git diff --quiet eval/.gate_history.json; then
+            echo "no gate-history changes — nothing to commit"
+            exit 0
+          fi
+          git config user.name 'lia-eval-bot'
+          git config user.email 'lia-eval-bot@users.noreply.github.com'
+          git add eval/.gate_history.json
+          # [skip ci] avoids a feedback loop with the on:push trigger above.
+          git commit -m "chore(eval): record nightly gate history [skip ci]"
+          # Push back to the branch the workflow ran on (main on schedule,
+          # whatever the user picked on workflow_dispatch).
+          git push origin HEAD:"${GITHUB_REF#refs/heads/}"
+
+  load-tests:
+    name: Load Tests (non-blocking)
+    runs-on: ubuntu-latest
+    needs: test
+    continue-on-error: true
+    # Skip on nightly schedule (eval-nightly is the only intended schedule job).
+    if: github.event_name != 'schedule' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]" || pip install -e . || pip install -r requirements.txt
+
+      - name: Run load tests
+        run: |
+          python -m pytest tests/load/ \
+            -q --tb=short --no-header --no-cov 2>&1 | tail -30
+
+  deepeval:
+    name: DeepEval Quality Gate (non-blocking)
+    runs-on: ubuntu-latest
+    needs: test
+    continue-on-error: true
+    # Skip on nightly schedule (eval-nightly is the only intended schedule job).
+    if: github.event_name != 'schedule'
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install DeepEval
+        run: |
+          pip install deepeval --quiet
+
+      - name: Run DeepEval metrics
+        continue-on-error: true
+        run: |
+          python -m pytest tests/deepeval/ \
+            -q --tb=short --no-header --no-cov 2>&1 | tail -30
+
+  lint:
+    name: Lint
+    # Skip on nightly schedule (eval-nightly is the only intended schedule job).
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Block unresolved merge conflict markers
+        run: |
+          if grep -rn --include='*.py' -E '^(<<<<<<< HEAD|=======|>>>>>>> )' .; then
+            echo "::error::Unresolved merge conflict markers found in source files"
+            exit 1
+          fi
+
+      # R-009 — Sprint 1 Quick Wins (REMEDIATION_BRIEF Wave 0).
+      # BYOK / Choose Your AI enforcement: bloqueia instanciacao direta de
+      # AsyncAnthropic / ChatAnthropic / ChatOpenAI / ChatGoogleGenerativeAI / genai.Client
+      # fora da allowlist. Fix-on-source: violacoes vao para scripts/check_llm_factory_enforcement.py.
+      # NAO usar '|| true' nem 'continue-on-error: true' — sensor precisa ser bloqueante (Hashimoto: nunca mais BYOK bypass em prod).
+      - name: "G-LLM: BYOK enforcement (LLM Factory)"
+        run: python scripts/check_llm_factory_enforcement.py
+      # R-012 — Wave 1 Sprint 2 (REMEDIATION_BRIEF Wave 1).
+      # RLS enforcement: bloqueia Depends(get_db) em app/domains/ — deve usar get_tenant_db
+      # para garantir que PostgreSQL RLS isola dados por tenant automaticamente.
+      # NAO usar '|| true' — sensor precisa ser bloqueante.
+      - name: "G-TENANTDB: RLS tenant_db enforcement"
+        run: python scripts/check_tenant_db.py
+
+      - name: "G-TOOLS: tool output schemas"
+        run: python scripts/check_tool_output_schemas.py
+
+      - name: "G-GOV: tool governance contracts (PII/decision/delete)"
+        run: python scripts/check_tool_governance.py
+
+      # ADR-001 — Repository Pattern enforcement (BLOCKING — promoted 2026-05-25)
+      # Sensor 1: raw SQL inline in services — baseline 0 since Sprint 8.
+      # Fix: move sql to repositories/, or add # ADR-001-EXEMPT: <reason> on the line.
+      - name: "G-ADR001-SQL: no raw SQL inline in services (BLOCKING)"
+        run: python scripts/check_no_sql_inline_in_services.py
+
+      # ADR-001 — Sensor 2: direct select(Model) in services — baseline 0 since Sprint 8.
+      # Fix: move select() to repositories/, or add # ADR-001-EXEMPT: <reason> on the line.
+      # Known warn-only exception: app/services/ agent layer (38 violations, deferred to Sprint 10).
+      - name: "G-ADR001-SELECT: no direct select(Model) in services (BLOCKING)"
+        run: python scripts/check_no_select_in_services.py
+      # R-017 — ADR-002 model completeness: every *.py in lia_models/ must appear in __init__.py.
+      # Prevents silent ImportError when new model files are added but not re-exported.
+      # Fix: add `from lia_models.<module> import ...` to libs/models/lia_models/__init__.py.
+      - name: "G-MODELS: lia_models __init__ completeness (ADR-002)"
+        run: python scripts/check_init_completeness.py
+
+      # G-MRO — Gap G (enterprise-readiness 2026-06-08): todo agente que herda
+      # LangGraphReActBase DEVE herdar TenantAwareAgentMixin (strict-mode tenant
+      # gate). CustomAgentRuntime escapava disso. Baseline 0 (18 agentes).
+      # Fix: class X(TenantAwareAgentMixin, LangGraphReActBase, ...). Ver AI_LAYER_TREE 12.3.
+      - name: "G-MRO: agent tenant-mixin compliance (BLOCKING)"
+        run: python scripts/check_agent_mro_compliance.py
+
+      # G-TENANT-EXC — Sprint 3 (enterprise-readiness 2026-06-08): toda exceção ao
+      # fail-closed de tenant (@tool_handler require_company=False) DEVE ter
+      # justificativa inline auditável (governança LGPD/SOX). Baseline 0 (7 usos).
+      - name: "G-TENANT-EXC: require_company=False justificado (BLOCKING)"
+        run: python scripts/check_require_company_justified.py
+
+      # G-FED-HITL — Consolidação do chat (2026-06-09): preparando o federado para
+      # cobrir TODOS os domínios, toda tool de ESCRITA exposta pelo recruiter_copilot
+      # (_FEDERATION_SPEC) DEVE estar no gate HITL (_HITL_ACTION_TYPES). Impede que
+      # uma ação sensível (ex: update_hiring_policy) entre no federado sem confirmação
+      # humana. Baseline 0. Allowlist documentada para ações que não persistem.
+      - name: "G-FED-HITL: ações de escrita federadas gated (BLOCKING)"
+        run: python scripts/check_federated_hitl_coverage.py
+
+      # Task #1143 — Multi-tenant Ownership Foundation.
+      # G-RLS: every table with `company_id` must have a corresponding
+      # ENABLE ROW LEVEL SECURITY migration (or `# RLS-EXEMPT:` marker /
+      # scripts/.rls_allowlist.txt entry). Warn-only until S10 Sealing.
+      - name: "G-RLS: ADR-030 RLS coverage sensor (warn-only)"
+        run: python scripts/check_table_has_rls_policy.py
+        continue-on-error: true
+
+      # Task #1143 — require_company_id explicit gate ratchet.
+      # Counts remaining `Sprint follow-up: add _require_company_id` markers
+      # across app/api. Historical marker counter — kept for telemetry only;
+      # canonical gate is the structural verifier below.
+      - name: "G-OWN: require_company_id marker ratchet (legacy telemetry)"
+        run: python scripts/check_require_company_id_coverage.py --block
+
+      # Task #1143 — STRUCTURAL gate. Walks every router decorator in
+      # app/api/**/*.py with libcst and asserts the function either carries an
+      # explicit Depends(require_company_id[_strict_match]) on its params /
+      # decorator dependencies, OR sits behind the PUBLIC_FILES /
+      # PUBLIC_FUNCTIONS allowlist baked into the script. Today: 0 gaps
+      # across 333 files. Any new endpoint without an explicit gate fails CI.
+      - name: "G-OWN-STRUCT: require_company_id structural verifier (--block)"
+        run: python scripts/enforce_require_company_id.py --strict
+
+
+
+      # LIA-D04: TODO — make lint blocking once 752 ruff errors are resolved.
+      # Auto-fixable: ~0 remaining (28 already fixed). F821 (155) and F405 (360) need manual fixes.
+      # Currently `|| true` is intentional — remove when error count is near zero.
+      - name: Install ruff
+        run: pip install ruff
+
+      # UC-P1-09: Blocking step for critical errors only (syntax + undefined names).
+      # E9=syntax errors, F821=undefined name. These are always fixable and block deploy.
+      # To fix E9: check for syntax errors in the flagged file.
+      # To fix F821: add the missing import or define the name before use.
+      - name: Lint critical errors (syntax + undefined names) — BLOCKING
+        run: |
+          if ruff check app/ --select=E9,F821 --quiet; then
+            echo "No critical lint errors found"
+          else
+            echo "::error::Critical lint errors (syntax/undefined names) found — fix before merging."
+            echo "Run: ruff check app/ --select=E9,F821 to see details."
+            ruff check app/ --select=E9,F821
+            exit 1
+          fi
+
+      - name: Run ruff (non-blocking)
+        run: ruff check app/ --select=E,F --ignore=E501,F401,F403 || true
+
+      # UC-P1-09: mypy type checking — non-blocking. Errors are surfaced for awareness.
+      # To fix: add type annotations or use 'type: ignore' with a comment explaining why.
+      - name: Type check mypy (non-blocking)
+        continue-on-error: true
+        run: |
+          pip install mypy types-requests --quiet
+          mypy app/ --ignore-missing-imports --no-strict-optional 2>&1 | tail -20
+
+      # WT-2022 P0.STAGES — RECRUITMENT_STAGES direct import ratchet
+      # Promovido warn-only → STRICT em 2026-05-21 (baseline 0 sustentado, 10 consumers migrados
+      # pra useRecruitmentStages() ou via @/lib/recruitment/stages-data). Sensor agora exit 1
+      # em qualquer violation. Fix: usar useRecruitmentStages().legacyStages em React, ou
+      # importar normalizeStagesFromHook em utils. Rollback emergencial: --warn-only flag.
+      - name: "G-STAGES: no direct RECRUITMENT_STAGES import (BLOCKING — promoted 2026-05-21)"
+        run: python3 scripts/check_no_recruitment_stages_direct_import.py
+
+      # WT-2022 P3.1 — V1 PolicyEngine reintroduction sensor
+      # Promovido warn-only → STRICT em 2026-05-21 (baseline 0 fora paths exempt;
+      # allowlist EXEMPT_RELATIVE cobre V1 itself + bridges V1↔V2). Sensor exit 1
+      # em qualquer import novo de app.orchestrator.policy_engine.PolicyEngine.
+      # Fix: usar PolicyEngineService (V2) em app/domains/policy/services/.
+      - name: "G-POLICY-V1: no V1 PolicyEngine imports outside allowlist (BLOCKING — promoted 2026-05-21)"
+        run: python3 scripts/check_no_v1_policy_engine.py
+
+      # WT-2022 P0.TENANT — company_id NOT NULL ratchet
+      # Promovido warn-only → STRICT em 2026-05-21 (baseline 51→0 via 29 TENANT-EXEMPT
+      # markers + 4 alembic migrations NOT NULL backfill). Sensor exit 1 em qualquer
+      # company_id = Column(..., nullable=True) sem marker exempt. Fix: nullable=False
+      # + migration alembic com backfill (pattern alembic/versions/161_tasks_company_id_not_null.py),
+      # ou marker # TENANT-EXEMPT: <razao> se a tabela for legitimamente global.
+      # Rollback emergencial: --warn-only flag preservada.
+      - name: "G-TENANT: company_id NOT NULL em models (BLOCKING — promoted 2026-05-21)"
+        run: python3 scripts/check_tenant_columns_not_null.py
+
+      # T-RATCHET — Pydantic conventions ratchet decremental (R1+R2+R3+R4)
+      # Registrado 2026-05-22. Sensor BLOQUEIA quando current > baseline (regressão).
+      # Quando current < baseline, atualiza baseline file automaticamente (ratchet
+      # decremental). Baseline atual em scripts/baselines/pydantic_baseline.txt.
+      # R1/R3/R4 já em 0 (SKIP absorve canonical defenses); R2 não-zero raw
+      # mas todas violations estão em SKIP_R2 com refactor tickets WAVE3.
+      # Rollback emergencial: --warn-only flag.
+      - name: "T-RATCHET: Pydantic conventions ratchet (BLOCKING)"
+        run: python3 scripts/check_pydantic_conventions.py app --baseline-file scripts/baselines/pydantic_baseline.txt
+
+      # T-RATCHET — Tenant filter ratchet (B.1 sensor)
+      # Registrado 2026-05-22 (sensor já tinha --baseline-file desde 2026-05-20).
+      # BLOCKING: count > baseline (553) = exit 1. Reduction promotes baseline.
+      # Quando count = 0 sustentado, promover sensor a --blocking sem --baseline-file
+      # (lock canonical permanente). Rollback emergencial: --warn-only flag.
+      - name: "T-RATCHET: tenant filter ratchet (BLOCKING)"
+        run: python3 scripts/check_query_has_tenant_filter.py --blocking --baseline-file scripts/baselines/tenant_filter.txt --quiet
+
+      # Sprint 7B-3b Part 3b v2 (2026-05-26): sensor #8 promoted BLOCKING.
+      # Baseline 0 sustentado pos DELETE app/api/v1/sourcing_agents.py +
+      # cleanup libs/models/lia_models/__init__.py (so re-export SourcingAgentSignal canonical).
+      # Bane qualquer reintroducao de import SourcingAgent (use CustomAgent + category='sourcing').
+      - name: "H-AGENT: no legacy SourcingAgent import (BLOCKING)"
+        run: python3 scripts/check_no_legacy_sourcing_agent_import.py
+
+      - name: G-RLS-WRITE -- RLS write endpoints use get_tenant_db (BLOCKING)
+        run: python3 scripts/check_get_db_rls_safety.py --blocking
+
+      - name: G-LLM-ATYPE -- LLM calls have agent_type kwarg (BLOCKING)
+        run: python3 scripts/check_llm_calls_agent_type.py --blocking
+
+      - name: "G-HITL-GHOST: Capability catalog anti-ghost sensor (BLOCKING, baseline=0 2026-06-08)"
+        run: python3 scripts/check_capability_catalog_sync.py --blocking
+
+      - name: "G5-METADATA-HANDLER: YAML metadata -> handler sync (BLOCKING, baseline=0 2026-06-08)"
+        run: python3 scripts/check_metadata_handler_sync.py --blocking
+
+      # ADR-031 §6.1 — Domain type annotations: every domain under app/domains/
+      # must define __domain_type__ with a valid DomainType enum value.
+      # Baseline 0 (36 domains verified). Any new domain without __domain_type__ fails CI.
+      - name: "ADR-031: domain type annotations (BLOCKING)"
+        run: python3 scripts/check_domain_type_annotations.py
+
+      # ADR-031 §4 R1+R3 — Agent base class conformance: every agent file must
+      # inherit from the canonical base class and respect the mixin contract.
+      # Baseline 0 (35 agent files verified). Runs in blocking mode.
+      - name: "ADR-031/032: agent base class R1+R3 (BLOCKING)"
+        run: python3 scripts/check_agent_base_class.py
+
+  # ──────────────────────────────────────────────────────────────────────
+  # E2E persistence smoke (Configurações > Minha Empresa / Learning Loops /
+  # Schedule). Gap original Paulo 2026-05-21 — round-trip browser-level
+  # complementa sensors estáticos (ADR-001, lint scripts, contract tests).
+  #
+  # Dispara só em PRs que tocam settings UI ou backend de profile/
+  # communication. Roda contra staging (PLAYWRIGHT_BASE_URL env). Falhas
+  # bloqueiam merge — override com `[skip-e2e-persistence]` no commit msg.
+  # ──────────────────────────────────────────────────────────────────────
+  e2e-persistence:
+    name: E2E Settings Persistence
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'schedule' &&
+      !contains(github.event.head_commit.message, '[skip-e2e-persistence]')
+    needs: [test]
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: plataforma-lia
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: plataforma-lia/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run persistence specs
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ secrets.E2E_BASE_URL || 'https://staging.wedotalent.cc' }}
+          DEV_AUTO_LOGIN_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          DEV_AUTO_LOGIN_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+          LIA_BACKEND_URL: ${{ secrets.E2E_BACKEND_URL }}
+        run: npx playwright test e2e/tests/settings/persistence/ --reporter=html
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-persistence
+          path: plataforma-lia/playwright-report/
+          retention-days: 14
+
+  smoke:
+    # Audit C7/#6 (2026-06-05): o smoke (tests/contract/test_endpoint_smoke.py,
+    # ~1798 endpoints) so dava pytest.skip silencioso quando backend offline e
+    # nunca rodava de verdade no CI — sensor inerte (stack-leak / NameError /
+    # schema mismatch passavam). Este job sobe uvicorn:8001 e roda o smoke com
+    # LIA_SMOKE_REQUIRED=1 (backend morto => FALHA dura, nao skip). WARN-ONLY
+    # (continue-on-error no step) ate baseline verde observado; promover a
+    # blocking depois (triar endpoints quebrados via SKIP_ENDPOINTS + ticket).
+    # So em PR / dispatch — sem burn de LLM por push (espelha eval-nightly).
+    name: API Smoke (no 500s)
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: lia-agent-system
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lia
+          POSTGRES_PASSWORD: lia
+          POSTGRES_DB: lia_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://lia:lia@localhost:5432/lia_test
+      REDIS_URL: redis://localhost:6379
+      ENVIRONMENT: test
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      SECRET_KEY: ${{ secrets.EVAL_BACKEND_SECRET_KEY || 'eval-nightly-secret-key-do-not-use-in-prod' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]" || pip install -e . || pip install -r requirements.txt
+          pip install httpx pyjwt pyyaml pytest --quiet
+
+      - name: Boot uvicorn in the background
+        run: |
+          nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 > /tmp/lia-backend.log 2>&1 &
+          echo $! > /tmp/lia-backend.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8001/health >/dev/null 2>&1; then
+              echo "backend ready after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::backend did not become healthy in 120s"
+          tail -200 /tmp/lia-backend.log
+          exit 1
+
+      - name: API smoke — no endpoint 500s (warn-only ratchet)
+        continue-on-error: true
+        env:
+          LIA_SMOKE_REQUIRED: "1"
+        run: |
+          python -m pytest tests/contract/test_endpoint_smoke.py \
+            --no-header --no-cov -q --tb=short

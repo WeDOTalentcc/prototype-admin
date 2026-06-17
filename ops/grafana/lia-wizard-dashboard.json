@@ -1,0 +1,298 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "LIA Wizard de Criação de Vaga — saúde do supervisor pre-graph (Task #1127) e dos 4 LLM gates HITL (Tasks #1085/#1086/#1087/#1088, GA #1130). Cobre intent distribution, latency p50/p95/p99, taxa de fallback determinístico, e outcomes do classifier por stage. Runbook: docs/runbooks/wizard-observability.md.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "Runbook: wizard observability",
+      "tags": ["lia", "wizard"],
+      "type": "link",
+      "url": "https://github.com/your-org/plataforma-lia/blob/main/docs/runbooks/wizard-observability.md"
+    }
+  ],
+  "panels": [
+    {
+      "type": "row",
+      "title": "Supervisor (pre-graph) — Task #1127",
+      "id": 100,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Supervisor — intent distribution (rate 5m)",
+      "id": 1,
+      "description": "Volume por intent classificado pelo WizardSupervisorClassifier. Esperado: `create_new` + `continue_current` dominantes; `meta_question` < 15% do total; `exit_wizard` < 5%.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "sum by (intent) (rate(lia_wizard_supervisor_intent_total[5m]))",
+          "legendFormat": "{{intent}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "bars", "stacking": { "mode": "normal" } },
+          "unit": "reqps"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Supervisor — fallback rate (5m)",
+      "id": 2,
+      "description": "Taxa do supervisor caindo em `continue_current` por exceção/timeout. Alerta amarelo se > 2%; vermelho se > 5%. Investigar via runbook §Troubleshooting.",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "100 * sum(rate(lia_wizard_supervisor_intent_total{intent=\"continue_current\"}[5m])) / clamp_min(sum(rate(lia_wizard_supervisor_intent_total[5m])), 0.0001)",
+          "legendFormat": "fallback %",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "graphMode": "area",
+        "colorMode": "value"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Silent fallback (session_service)",
+      "id": 3,
+      "description": "Counter `lia_wizard_silent_fallback_total` — fallback do WizardSessionService (helper Haiku quando o graph retorna state inconsistente). Alerta se rate > 5%/5min vs intents totais.",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "sum(increase(lia_wizard_silent_fallback_total[5m]))",
+          "legendFormat": "silent fallbacks 5m",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        }
+      },
+      "options": { "graphMode": "area", "colorMode": "value" }
+    },
+    {
+      "type": "row",
+      "title": "Gate classifier (HITL #1-4) — Tasks #1085/#1086/#1087/#1088 — GA #1130",
+      "id": 101,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Gate classifier latency — p50 / p95 / p99 by stage",
+      "id": 4,
+      "description": "Histogram `lia_wizard_gate_classifier_latency_ms` por stage (jd_enrichment, competency, wsi_questions, review). Target: p95 < 700ms (Haiku). Alerta se p95 > 2000ms por 5min.",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 10 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (stage, le) (rate(lia_wizard_gate_classifier_latency_ms_bucket[5m])))",
+          "legendFormat": "p50 {{stage}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (stage, le) (rate(lia_wizard_gate_classifier_latency_ms_bucket[5m])))",
+          "legendFormat": "p95 {{stage}}",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (stage, le) (rate(lia_wizard_gate_classifier_latency_ms_bucket[5m])))",
+          "legendFormat": "p99 {{stage}}",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": { "drawStyle": "line", "lineWidth": 2 },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 700 },
+              { "color": "red", "value": 2000 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Gate classifier — intent distribution by stage (rate 5m)",
+      "id": 5,
+      "description": "Counter `lia_wizard_gate_classifier_total` agregado por (stage, intent). Anomalia esperada: spike de `ask_question` indica recrutadores confusos; spike de `regenerate_all` no stage wsi_questions indica qualidade ruim das perguntas geradas.",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 10 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "sum by (stage, intent) (rate(lia_wizard_gate_classifier_total[5m]))",
+          "legendFormat": "{{stage}} / {{intent}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "bars", "stacking": { "mode": "normal" } },
+          "unit": "reqps"
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Gate classifier — error rate (5m)",
+      "id": 6,
+      "description": "Soma dos buckets de erro (`timeout`, `error`, `invalid_shape`, `off_allowlist`, `schema_invalid`) do label `intent`. Alerta amarelo > 1%; vermelho > 5%.",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 19 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "100 * sum(rate(lia_wizard_gate_classifier_total{intent=~\"timeout|error|invalid_shape|off_allowlist|schema_invalid\"}[5m])) / clamp_min(sum(rate(lia_wizard_gate_classifier_total[5m])), 0.0001)",
+          "legendFormat": "error %",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": { "graphMode": "area", "colorMode": "value" }
+    },
+    {
+      "type": "stat",
+      "title": "Review gate — publish_now rate (5m)",
+      "id": 7,
+      "description": "Volume da intent terminal `publish_now` no review gate. Sinaliza throughput de vagas publicadas via wizard. NB: dual-confirmation SOX gera 2 audit rows correlatas (chat + dual), mas só 1 classification.",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 19 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "sum(increase(lia_wizard_gate_classifier_total{stage=\"review\",intent=\"publish_now\"}[5m]))",
+          "legendFormat": "publish_now 5m",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      },
+      "options": { "graphMode": "area", "colorMode": "value" }
+    },
+    {
+      "type": "stat",
+      "title": "Review gate — ask_clarification rate (5m)",
+      "id": 8,
+      "description": "Recrutadores pedindo clarificação no review. Alta taxa (>15% de publish_now) sinaliza UX confusa no ReviewPanel.",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 19 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "sum(increase(lia_wizard_gate_classifier_total{stage=\"review\",intent=\"ask_clarification\"}[5m]))",
+          "legendFormat": "ask_clarification 5m",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        }
+      },
+      "options": { "graphMode": "area", "colorMode": "value" }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": ["lia", "wizard", "llm", "observability"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Prometheus", "value": "Prometheus" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "LIA — Wizard de Criação de Vaga (supervisor + LLM gates)",
+  "uid": "lia-wizard-observability",
+  "version": 1,
+  "weekStart": ""
+}

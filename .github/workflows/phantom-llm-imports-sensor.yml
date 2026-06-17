@@ -1,0 +1,52 @@
+name: Phantom LLM Imports Sensor
+
+# Registrado 2026-05-27 (pós-fix get_llm fantasma em 8 sites).
+#
+# Sensor:
+#   - check_no_phantom_llm_imports.py (AST checker, ~1s)
+#
+# Bloqueia imports que NÃO existem em runtime — get_llm é o exemplo canonical:
+# nunca existiu em app/shared/providers/llm_factory.py, mas 8 sites importavam
+# dentro de try/except, mascarando ImportError como fallback. Features
+# atingidas (twin evaluate, sourcing, voice scoring, wsi compact, etc.)
+# rodavam 100% degradadas sem ninguém saber.
+#
+# Fix canonical: substituir por create_tracked_llm(temperature=..., service_name=...,
+# operation=..., max_output_tokens=..., tenant_id=company_id) — vide commit 305a7e5af.
+#
+# Baseline 2026-05-27: 0 violations (BLOCKING desde o start — não existe
+# débito legacy aqui, todo site foi fixado de uma vez).
+
+on:
+  push:
+    branches: [main, develop, "feat/**", "fix/**"]
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "lia-agent-system/**"
+      - ".github/workflows/phantom-llm-imports-sensor.yml"
+
+concurrency:
+  group: phantom-llm-imports-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phantom-llm-imports:
+    name: Phantom LLM Imports (AST checker, BLOCKING, baseline 0)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lia-agent-system
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check no phantom LLM imports (BLOCKING)
+        run: |
+          # Detecta `from app.shared.providers.llm_factory import get_llm`
+          # (símbolo fantasma) e quaisquer outros imports bloqueados explicitamente.
+          # Output otimizado pra consumo de LLM (mensagem com fix canonical).
+          python3 scripts/check_no_phantom_llm_imports.py

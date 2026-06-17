@@ -1,0 +1,36 @@
+from __future__ import annotations
+
+from app.domains.base import DomainAction
+
+SOURCING_ACTIONS: list[DomainAction] = [
+    DomainAction(action_id="search_candidates", name="Buscar candidatos", description="Busca candidatos com filtros"),
+    DomainAction(action_id="global_search", name="Busca global", description="Busca em todas as fontes"),
+    DomainAction(action_id="semantic_search", name="Busca semântica", description="Busca por embeddings"),
+    DomainAction(action_id="generate_boolean", name="Gerar boolean", description="Gera query booleana"),
+    DomainAction(action_id="parse_cv", name="Analisar CV", description="Extrai dados de currículo"),
+    DomainAction(action_id="add_candidate", name="Adicionar candidato", description="Cadastra novo candidato"),
+    DomainAction(action_id="suggest_candidates", name="Sugerir candidatos", description="Sugere candidatos para vaga"),
+    DomainAction(action_id="match_candidates", name="Match de candidatos", description="Calcula compatibilidade"),
+    DomainAction(action_id="enrich_profile", name="Enriquecer perfil", description="Enriquece dados do candidato"),
+    DomainAction(action_id="auto_source", name="Sourcing automático", description="Pipeline automatizado"),
+    DomainAction(action_id="check_volume", name="Verificar volume", description="Avalia volume de candidatos"),
+    DomainAction(action_id="proactive_suggest", name="Sugestão proativa", description="Sugere ações proativas"),
+    DomainAction(action_id="filter_candidates", name="Filtrar candidatos", description="Aplica filtros avançados"),
+    DomainAction(action_id="rank_candidates", name="Rankear candidatos", description="Ordena por pontuação"),
+    DomainAction(action_id="compare_candidates", name="Comparar candidatos", description="Compara candidatos lado a lado"),
+    DomainAction(action_id="talent_pool_search", name="Busca talent pool", description="Busca no pool interno"),
+    DomainAction(action_id="pearch_search", name="Busca Pearch", description="Busca via Pearch AI"),
+    DomainAction(action_id="build_search_strategy", name="Estratégia de busca", description="Define estratégia de sourcing"),
+    DomainAction(action_id="analyze_search_results", name="Analisar resultados", description="Analisa efetividade da busca"),
+    DomainAction(action_id="feedback_search", name="Feedback de busca", description="Registra feedback de resultados"),
+    DomainAction(action_id="expand_search", name="Expandir busca", description="Amplia critérios de busca"),
+    DomainAction(action_id="contact_candidates", name="Contatar candidatos", description="Inicia outreach"),
+    DomainAction(action_id="screen_candidates", name="Triagem rápida", description="Screening inicial"),
+    DomainAction(action_id="assess_market", name="Avaliar mercado", description="Análise de mercado de talentos"),
+    DomainAction(action_id="export_candidates", name="Exportar candidatos", description="Exporta lista de candidatos"),
+    DomainAction(action_id="import_candidates", name="Importar candidatos", description="Importa de fonte externa"),
+    DomainAction(action_id="dedup_candidates", name="Deduplicar", description="Remove candidatos duplicados"),
+    DomainAction(action_id="tag_candidates", name="Taguear candidatos", description="Adiciona tags aos candidatos"),
+    DomainAction(action_id="engagement_pipeline", name="Pipeline engagement", description="Fluxo de engajamento"),
+    DomainAction(action_id="schedule_outreach", name="Agendar outreach", description="Agenda contato futuro"),
+]

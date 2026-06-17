@@ -1,0 +1,139 @@
+# D4 — Multi-step planning
+# Each scenario requires ≥3 tool calls in the right order, with intermediate
+# state propagating between steps.
+meta: { version: "1.0.0", dimension: "D4" }
+
+scenarios:
+  - id: AGT-D04-001
+    tags: [d4, critical, smoke, passk]
+    severity: critical
+    goal: "Sourcing → add 3 → trigger WSI screening, single conversation."
+    page_context: { scope: "sourcing", page: "sourcing" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Busca candidatos com Python para a V0037."
+      - user: "Adiciona os 3 melhores ao pipeline."
+      - user: "Dispara triagem WSI pra eles."
+    facts_you_know: { job_id: "V0037" }
+    expected_tools: [search_candidates, add_candidate, start_wsi_screening]
+    expected_state_after:
+      - { check: tool_called, name: search_candidates }
+      - { check: tool_called, name: add_candidate }
+      - { check: tool_called, name: start_wsi_screening }
+      - { check: language_pt }
+    stop_when: "LIA confirma WSI disparado para os 3 candidatos."
+
+  - id: AGT-D04-002
+    tags: [d4, critical, passk]
+    severity: critical
+    goal: "Entrevista flow: agendar → confirmar → mandar lembrete."
+    page_context: { scope: "interview", page: "interview" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Agenda entrevista com a Maria Costa pra amanhã 14h."
+      - user: "Manda o lembrete pra ela."
+    facts_you_know: { candidate_name: "Maria Costa", time: "amanhã 14h" }
+    expected_tools: [schedule_interview, send_interview_reminder]
+    expected_state_after:
+      - { check: tool_called, name: schedule_interview }
+      - { check: tool_called, name: send_interview_reminder }
+      - { check: language_pt }
+    stop_when: "LIA confirma agendamento + envio de lembrete."
+
+  - id: AGT-D04-003
+    tags: [d4, high, passk]
+    severity: high
+    goal: "Vaga lifecycle: criar rascunho → publicar → confirmar status."
+    page_context: { scope: "Vagas", page: "gestao-vagas" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Cria uma vaga rascunho 'Analista de RH Pleno' pra São Paulo, modalidade híbrida."
+      - user: "Publica ela."
+      - user: "Confirma o status pra mim."
+    facts_you_know: { titulo: "Analista de RH Pleno", local: "São Paulo", modalidade: "híbrida" }
+    expected_tools: [create_job, update_job, list_jobs]
+    expected_state_after:
+      - { check: tool_called, name: create_job }
+      - { check: tool_called, name: update_job }
+      - { check: tool_called, name: list_jobs }
+      - { check: language_pt }
+    stop_when: "LIA confirma vaga publicada."
+
+  - id: AGT-D04-004
+    tags: [d4, high]
+    severity: high
+    goal: "Pipeline triage: ver bottleneck → mover candidatos → confirmar."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Onde está travado o pipeline da V0037?"
+      - user: "Move 2 candidatos da etapa travada pra próxima."
+    facts_you_know: { job_id: "V0037" }
+    expected_tools: [get_bottleneck_analysis, move_candidate]
+    expected_state_after:
+      - { check: tool_called, name: get_bottleneck_analysis }
+      - { check: tool_called, name: move_candidate }
+      - { check: language_pt }
+    stop_when: "LIA reporta o gargalo + confirma 2 movimentações."
+
+  - id: AGT-D04-005
+    tags: [d4, high]
+    severity: high
+    goal: "Compare candidates → recommend → move forward."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Compara João Silva e Maria Costa pra V0037."
+      - user: "Quem você recomendaria pra Oferta?"
+      - user: "Move quem você recomendou."
+    facts_you_know: { candidates: ["João Silva", "Maria Costa"], job_id: "V0037" }
+    expected_tools: [compare_candidates, move_candidate]
+    expected_state_after:
+      - { check: tool_called, name: compare_candidates }
+      - { check: tool_called, name: move_candidate }
+      - { check: language_pt }
+    stop_when: "LIA move o candidato recomendado para Oferta."
+
+  - id: AGT-D04-006
+    tags: [d4, medium]
+    severity: medium
+    goal: "Bulk-flow: rejeitar todos os reprovados na triagem."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: ask_what_will_happen_first }
+    turns:
+      - user: "Quem está há mais de 7 dias parado em Triagem na V0037?"
+      - user: "Rejeita todos com motivo 'Sem retorno'."
+    facts_you_know: { job_id: "V0037", reason: "Sem retorno" }
+    expected_tools: [get_stage_candidates, reject_candidate]
+    expected_state_after:
+      - { check: tool_called, name: get_stage_candidates }
+      - { check: tool_called, name: reject_candidate }
+      - { check: language_pt }
+      # DB postcondition: at least one candidate row on V0037 ends up
+      # with status='rejected' and the matching reason note. Skipped
+      # automatically when DATABASE_URL is not set (local smoke runs).
+      - check: db_query
+        sql: >
+          SELECT COUNT(*) FROM vacancy_candidates vc
+          JOIN vacancies v ON v.id = vc.vacancy_id
+          WHERE v.external_id = 'V0037' AND vc.status = 'rejected'
+            AND vc.notes ILIKE '%Sem retorno%'
+        expected: { value: "1" }
+    stop_when: "LIA pede confirmação ANTES de rejeitar em massa."
+
+  - id: AGT-D04-007
+    tags: [d4, medium]
+    severity: medium
+    goal: "Cross-domain: vaga + sourcing + entrevista numa só intenção."
+    page_context: { scope: "global", page: "chat" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Pra V0037, busca 5 candidatos novos, adiciona ao pipeline e me agenda entrevista com o melhor pra sexta 10h."
+    facts_you_know: { job_id: "V0037", time: "sexta 10h" }
+    expected_tools: [search_candidates, add_candidate, schedule_interview]
+    expected_state_after:
+      - { check: tool_called, name: search_candidates }
+      - { check: tool_called, name: add_candidate }
+      - { check: tool_called, name: schedule_interview }
+      - { check: language_pt }
+    stop_when: "LIA confirma busca, adições e agendamento."

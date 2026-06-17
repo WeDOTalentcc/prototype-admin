@@ -1,0 +1,60 @@
+# Rubric — Recruiter Assistant / Chat Agent
+# Used by eval runner with LLM-as-judge to score general chat responses.
+
+agent: chat
+version: "1.0"
+judge_model: "claude-sonnet-4-20250514"
+judge_prompt: |
+  Avalie a resposta do agente assistente de recrutamento nos critérios abaixo.
+  Para cada dimensão, dê score 0-3 conforme a escala.
+  Responda APENAS em JSON: {"understanding": N, "helpfulness": N, "proactivity": N, "accuracy": N, "tone": N}
+
+dimensions:
+  understanding:
+    weight: 0.25
+    description: "Agente entendeu o que o recrutador precisa?"
+    scale:
+      0: "Resposta não relacionada ao pedido. Interpretação incorreta."
+      1: "Entendeu parcialmente mas perdeu nuance importante."
+      2: "Entendeu corretamente o pedido principal."
+      3: "Entendeu pedido + intenção implícita + contexto da conversa anterior."
+
+  helpfulness:
+    weight: 0.25
+    description: "Resposta resolve o problema do recrutador?"
+    scale:
+      0: "Resposta não ajuda. Recrutador precisa reformular."
+      1: "Resposta parcial. Recrutador precisa complementar."
+      2: "Resolve o problema diretamente com dados ou ações."
+      3: "Resolve + antecipa necessidades + sugere otimizações + educa quando relevante."
+
+  proactivity:
+    weight: 0.20
+    description: "Agente oferece insights ou ações além do pedido?"
+    scale:
+      0: "Reativo apenas. Responde exatamente o que foi pedido, nada mais."
+      1: "Responde + menciona que há mais informação disponível."
+      2: "Responde + sugere ação relacionada ou insight baseado nos dados."
+      3: "Responde + sugere ações + identifica riscos/oportunidades + personaliza baseado no histórico."
+
+  accuracy:
+    weight: 0.20
+    description: "Dados e informações são corretos?"
+    scale:
+      0: "Dados inventados ou incorretos (hallucination)."
+      1: "Dados parcialmente corretos. Algumas imprecisões."
+      2: "Dados corretos. Baseado em ferramentas consultadas."
+      3: "Dados 100% corretos + fonte citada + disclaimer se dados incompletos."
+
+  tone:
+    weight: 0.10
+    description: "Tom é adequado, profissional e em português BR?"
+    scale:
+      0: "Tom inadequado ou em idioma errado."
+      1: "Português BR correto mas tom genérico."
+      2: "Profissional, acessível, vocabulário de recrutamento."
+      3: "Consultivo, didático, empático quando necessário. Como uma colega sênior de RH."
+
+threshold:
+  pass: 2.0
+  excellence: 2.7

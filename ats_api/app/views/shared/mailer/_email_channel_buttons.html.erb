@@ -1,0 +1,29 @@
+<% channels = local_assigns.fetch(:channels, []) %>
+<% decline_url = local_assigns[:decline_url] %>
+
+<table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td style="padding: 0 32px 8px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+        <% channels.each_with_index do |channel, index| %>
+          <tr>
+            <td align="center" style="padding-bottom: 10px;">
+              <a href="<%= channel[:url] %>" target="_blank" style="display: block; padding: 14px 24px; font-size: 13px; font-weight: 700; color: <%= index == 0 ? '#ffffff' : '#374151' %>; background-color: <%= index == 0 ? '#111827' : '#ffffff' %>; text-decoration: none; border-radius: 10px; text-align: center; letter-spacing: 0.04em; text-transform: uppercase; <%= index > 0 ? 'border: 1px solid #e5e7eb;' : '' %>">
+                <%= channel[:label] %>
+              </a>
+            </td>
+          </tr>
+        <% end %>
+        <% if decline_url.present? %>
+          <tr>
+            <td align="center" style="padding-top: 4px;">
+              <a href="<%= decline_url %>" style="font-size: 12px; color: #9ca3af; text-decoration: underline;">
+                Não tenho interesse
+              </a>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    </td>
+  </tr>
+</table>

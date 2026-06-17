@@ -1,0 +1,52 @@
+# WeDo Talent - Plataforma LIA
+# Regras de Contexto para Cursor AI
+
+## Projeto
+Plataforma de recrutamento e seleção com IA (LIA - Learning Intelligence Assistant).
+Metodologia proprietária WSI (WeDoTalent Skill Index) para triagem por voz.
+
+## Stack Técnica
+- Frontend: Next.js 14, React, TypeScript, Tailwind CSS
+- UI: Radix UI, shadcn/ui
+- Backend: FastAPI (Python), LangGraph, Claude Sonnet
+- Database: PostgreSQL (Neon)
+- Auth: WorkOS (SSO, SCIM)
+
+## Design System
+- Paleta: 90% monocromática
+- Cor destaque: #60BED1 (wedo-cyan)
+- Tipografia: Open Sans
+- Padrão: ElevenLabs-like
+
+## Estrutura de Pastas
+- plataforma-lia/src/components/ - Componentes React
+- plataforma-lia/src/lib/ - Utilitários e hooks
+- lia-agent-system/app/ - Backend FastAPI
+- docs/ - Documentação e specs
+
+## Convenções de Código
+- Componentes pequenos e focados (Single Responsibility)
+- Usar design tokens de src/lib/design-tokens.ts
+- Componentes existentes em src/components/ui/
+- Lógica de negócio no backend, apenas apresentação no frontend
+- Evitar comentários desnecessários no código
+
+## Idioma
+- Código: Inglês
+- Documentação: Português
+- UI: Português (pt-BR)
+
+## Arquivos Importantes
+- replit.md - Visão geral do projeto
+- docs/configuracoes-admin-cards-jira.md - Cards de funcionalidades
+- docs/gestao-vagas-cards-jira.md - Cards de gestão de vagas
+- docs/funil-talentos-cards-jira.md - Cards de funil
+
+
+## Regras de organização de branch e BRANCH_MAP
+
+- Todo novo tema/feature abre branch própria: `feat/<tema>-<descricao>` ou `fix/<tema>-<descricao>`
+- Proibido acumular temas distintos em branch de sprint genérica
+- `docs/BRANCH_MAP.md` é o mapa canônico do repo. Toda nova entrega exige atualização (seção §N + tag `milestone/<descricao>` + cross-refs)
+- Antes de qualquer mudança não-trivial: ler `docs/BRANCH_MAP.md` para identificar tema, milestones e docs cruzados
+- Templates de prompt no Apêndice A do BRANCH_MAP

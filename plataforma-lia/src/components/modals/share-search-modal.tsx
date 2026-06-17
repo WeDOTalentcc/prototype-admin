@@ -1,6 +1,3 @@
-Welcome to the Replit SSH Proxy.
-
-Visit https://docs.replit.com/replit-workspace/ssh to learn more about SSH on Replit.
 "use client"
 
 import { useState, useEffect, useMemo } from"react"

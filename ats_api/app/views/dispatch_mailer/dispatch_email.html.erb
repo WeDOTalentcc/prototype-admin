@@ -1,0 +1,33 @@
+<% content_for :title, @message&.subject || "WeDO Talent" %>
+
+<%= render layout: "shared/mailer/email_layout" do %>
+
+  <%= render "shared/mailer/email_header", company_name: @account_name || "WeDO Talent" %>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 32px 32px 24px;">
+        <%= @message&.body&.to_s&.html_safe %>
+      </td>
+    </tr>
+  </table>
+
+  <% if @message&.tracking_pixel_url.present? %>
+    <img src="<%= @message.tracking_pixel_url %>" width="1" height="1" alt="" style="display:none" />
+  <% end %>
+
+  <% if @message&.unsubscribe_url.present? %>
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td align="center" style="padding: 0 32px 16px;">
+          <p style="margin: 0; font-size: 11px; color: #9ca3af;">
+            <a href="<%= @message.unsubscribe_url %>" style="color: #9ca3af; text-decoration: underline;">
+              Nao desejo mais receber estes emails
+            </a>
+          </p>
+        </td>
+      </tr>
+    </table>
+  <% end %>
+
+<% end %>

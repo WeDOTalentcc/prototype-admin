@@ -1,0 +1,27 @@
+# capabilities.yaml — offer domain intent keywords
+# PR-B (2026-04-26)
+
+domain: offer
+
+intent_keywords:
+  enviar proposta: send_offer
+  send offer: send_offer
+  fazer oferta: send_offer
+  proposta salarial: send_offer
+  proposta de emprego: send_offer
+  carta oferta: send_offer
+  preparar proposta: create_offer_draft
+  criar proposta: create_offer_draft
+  nova proposta: create_offer_draft
+  rascunho proposta: create_offer_draft
+  criar rascunho: create_offer_draft
+  atualizar proposta: update_offer_draft
+  editar proposta: update_offer_draft
+  modificar proposta: update_offer_draft
+  ver proposta: get_offer_draft
+  ver rascunho: get_offer_draft
+  abrir proposta: get_offer_draft
+  proposta manual: prepare_offer_manual_send
+  envio manual: prepare_offer_manual_send
+  cancelar proposta: cancel_offer
+  cancelar oferta: cancel_offer

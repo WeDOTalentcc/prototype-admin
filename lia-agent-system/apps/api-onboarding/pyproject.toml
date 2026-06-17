@@ -1,0 +1,42 @@
+[project]
+name = "api-onboarding"
+version = "0.1.0"
+description = "WeDo Talent — Onboarding API (company setup, auth/SSO, integrations, billing, compliance)"
+requires-python = ">=3.11"
+dependencies = [
+    # Core framework
+    "fastapi>=0.115.5",
+    "uvicorn[standard]==0.32.1",
+    "python-multipart>=0.0.21",
+    # Internal workspace libs
+    "lia-config",
+    "lia-models",
+    "lia-events",
+    "lia-audit",
+    "lia-utils",
+    # Observability
+    "sentry-sdk[fastapi]>=2.25.0",
+    # Auth
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    # HTTP
+    "httpx>=0.28.1",
+]
+
+[tool.uv.sources]
+lia-config  = { workspace = true }
+lia-models  = { workspace = true }
+lia-events  = { workspace = true }
+lia-audit   = { workspace = true }
+lia-utils   = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

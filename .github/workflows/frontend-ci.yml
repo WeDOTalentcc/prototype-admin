@@ -1,0 +1,328 @@
+name: CI — Frontend
+
+on:
+  push:
+    # Inclui branches de trabalho (feat/**, fix/**) para que os sensores
+    # BLOCKING baseline-0 (i18n, tsc, eslint settings, Phase 2/2.5 invariants)
+    # rodem na branch ativa, NAO apenas em main/develop. Descoberta C4.3 Fase 2.5:
+    # CI dormente ate o merge deixava os sensores cegos durante o sprint.
+    # Ratchet/warn-only steps mantem continue-on-error; so os strict-zero
+    # (baseline 0) bloqueiam o push.
+    branches: [main, develop, 'feat/**', 'fix/**']
+    paths:
+      - 'plataforma-lia/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'plataforma-lia/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Lint · Test · Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plataforma-lia
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: plataforma-lia/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Conflict markers sensor (BLOCKING)
+        # Sensor harness 2026-05-26: bloqueia merge conflict markers vivos.
+        # Histórico: 5 arquivos com markers atravessaram para feat/benefits-prv-canonical
+        # e quebraram tsc/build. Sensor canonical em plataforma-lia/scripts/.
+        working-directory: ${{ github.workspace }}
+        run: python3 plataforma-lia/scripts/check_no_conflict_markers.py
+
+      - name: ESLint (Rules of Hooks sensor)
+        # Sensor harness focado: bloqueia `react-hooks/rules-of-hooks` em main.
+        # Não quebra a build pela dívida ESLint legada (22 errors pré-existentes
+        # em 2026-05-04) — apenas pela classe de bug que crashou o Bulk Import.
+        # Quando a dívida for sanada, troque para `npx eslint src` direto.
+        # Ver CLAUDE.md § Frontend / React rules-of-hooks discipline.
+        run: |
+          set -o pipefail
+          npx eslint src --no-color 2>&1 | tee /tmp/eslint.out
+          if grep -E "rules-of-hooks" /tmp/eslint.out; then
+            echo "::error::react-hooks/rules-of-hooks violation detected — see CLAUDE.md"
+            exit 1
+          fi
+          echo "OK: no Rules of Hooks violations"
+
+      - name: Settings scope ESLint — 0 errors + 0 warnings (BLOCKING)
+        # Harness ratchet 2026-05-26 (Sessão B enterprise hardening).
+        # src/components/settings/ + src/hooks/settings/ atingiram baseline 0
+        # violations pós fixes: rules-of-hooks P0, exhaustive-deps, DS tokens,
+        # unused eslint-disable, rounded-2xl, transition-all, bg-blue-606.
+        # Qualquer regressão neste escopo bloqueia PR.
+        # Escopo será expandido a src/ completo quando restante for limpo.
+        run: npx eslint src/components/settings/ src/hooks/settings/ --max-warnings=0
+
+      - name: VacancyAction stage coverage sensor (Phase F)
+        # Compares JOB_LIFECYCLE_ORDER (backend) with getVacancyAction switch
+        # (frontend). Blocks if a stage is added in one place but not the other.
+        # See .planning/vacancy-pipeline-plan.md > Phase F.
+        run: npx tsx scripts/check-vacancy-action-coverage.ts
+      - name: Chips design-system sensor (strict)
+        # Sensor harness 2026-05-22: bloqueia overrides anti-canonical em <Chip>.
+        # Detecta 5 buckets (CTA-style bg, padding excessivo, text-size override,
+        # text-xs warn, font-weight warn). Strict mode — falha PR se errors > 0.
+        # Warn-only ratchet pode ser usado em outros contextos via npm run lint:chips:warn.
+        # Ver scripts/check_chip_overrides.mjs + commits 36cb22fa4/82e92d7dc/fe38f191d.
+        run: npm run lint:chips
+
+      - name: Sensor #9 — no legacy useSourcingAgents / SourcingAgent (BLOCKING)
+        # Sprint 7B-3b Part 3a (2026-05-26): promovido a BLOCKING.
+        # Baseline 0 mantido pos Part 2 v2 frontend swap (cc622d4c9): AgentsTab +
+        # AgentStudioPage + AgentPanel passam custom_agent.id direto.
+        # Honra marker `// SOURCING-LEGACY-EXEMPT: <reason>`.
+        # Ver scripts/check_no_legacy_useSourcingAgents.mjs.
+        run: node scripts/check_no_legacy_useSourcingAgents.mjs
+
+      - name: Proxy auth sensor (BLOCKING desde 2026-06-05)
+        # Detecta proxies em backend-proxy/*/route.ts que chamam o backend
+        # (BACKEND_URL + fetch) sem encaminhar auth (getAuthHeaders /
+        # Authorization / createProxyHandlers). Raiz do bug do reveal
+        # (2026-06-05): proxy bespoke sem Bearer -> backend respondia
+        # 'No Bearer token'. Baseline 0 apos triagem dos 45 (4 exempt + 41 Bearer).
+        # Honra marker `// proxy-auth-exempt: <motivo>` p/ endpoints publicos.
+        run: node scripts/check_proxy_auth.mjs --blocking
+
+
+      - name: Multi-tenancy gate sensor (Phase F, warn-only)
+        # Walks app/api/v1/*.py and warns on routes missing
+        # _require_company_id / get_user_company_id. Pre-existing
+        # offenders in recruitment_stages exist; cleaning is a separate
+        # PR. Pass --strict after cleanup to make this a CI gate.
+        run: |
+          cd ../lia-agent-system
+          python3 scripts/check_company_id_in_routes.py
+        continue-on-error: true
+
+      - name: i18n key sensor v2 scope-aware (BLOCKING desde 2026-05-23)
+        # Walks src/**/*.{ts,tsx} resolvendo `t('key')`, `t(`key.${var}`)` e
+        # `t('key.' + var)` contra messages/pt-BR.json + messages/en.json.
+        # Scope-aware: pareia cada chamada com seu próprio useTranslations()
+        # via variable binding (suporta t, tOnboarding, tCat, etc).
+        # Baseline atingiu 0 violations em 2026-05-23 após (a) fix de 16 keys
+        # do AlertPreferencesPanel (Sprint D), (b) refactor v2 do sensor que
+        # eliminou 154 falsos positivos do v1 single-namespace, (c) fix de 6
+        # voice keys do AgentCard.tsx. Qualquer regressão bloqueia merge.
+        # Ver CLAUDE.md § i18n contract canonical (2026-05-23).
+        #
+        # RATCHET (2026-05-29): baseline 790 — débito legado settings
+        # (não Studio). Reduzir incremental; novas violações falham
+        # (max 790 → a 791ª quebra). lint:i18n:blocking (max 0) deixava CI
+        # vermelho no merge por débito histórico. ratchet protege contra
+        # regressão sem bloquear o pipeline com débito pré-existente.
+        run: npm run lint:i18n:ratchet
+
+      - name: RRP block schema-sync sensor TS<->Python (BLOCKING desde 2026-06-05)
+        # Verifica que rrp_blocks.py (Pydantic) e rrp-blocks.ts (TS mirror)
+        # declaram os mesmos kinds + enums (BlockRole/Layout/State). Drift =
+        # backend emite kind que o renderer nao conhece (fallback AD6, nunca
+        # renderiza o bloco rico). Baseline 0 na criacao (2026-06-05).
+        # Ver plataforma-lia/scripts/check_rrp_blocks_sync.py.
+        run: npm run lint:rrp-sync:blocking
+
+      - name: proxy-unwrap sensor (RATCHET desde 2026-06-06)
+        # Flag proxies backend-proxy/*/route.ts hand-rolled (res.text()
+        # passthrough) que NAO desembrulham o ResponseEnvelopeMiddleware
+        # do FastAPI ({ok,data,meta}). Sem unwrap o FE le data.data aninhado
+        # (bug 'Banco criado mas nao foi possivel abrir' em talent-pools;
+        # mesma classe da Task #1167 jd/wsi). Baseline 71 (debito legado).
+        # Ratchet: novas rotas devem usar createProxyHandlers/unwrapEnvelope
+        # (a 72a quebra). Ver scripts/check_proxy_unwrap.mjs.
+        run: npm run lint:proxy-unwrap:ratchet
+
+      - name: Candidate canonical axis sensors (WSI 0-10 + LGPD field policy) BLOCKING
+        # F6 ADR-001/002. WSI 0-10 (Task #512): bloqueia /100 em candidate-* surfaces.
+        # LGPD: bloqueia EditableField/updateField em campos LGPD-sensiveis
+        # (race/gender/marital/religion/health/etc). Baseline 0 violations em
+        # ambos sensors em 2026-05-23 (commits e6fefa878 e 77686ef05).
+        working-directory: plataforma-lia
+        run: npm run lint:candidate-axis:blocking
+
+      - name: No broken window.location refs BLOCKING (Task #712 anti-regressão)
+        # Onda 4-Fase8 (2026-05-24): promovido BLOCKING após baseline 0.
+        # Sensor descobriu 3 P0 latentes na Fase 6 (acesso-negado, indicadores,
+        # integracoes-ats) — todos corrigidos na Fase 7 (commit 6fe1b8e18).
+        # Pattern: window.location.href / router.push pra rota inexistente em
+        # src/app/**. Qualquer regressão tipo Task #712 (35 dias quebrado em
+        # produção) bloqueia merge automaticamente.
+        run: python3 lia-agent-system/scripts/check_no_broken_window_location.py
+
+      - name: Agent template catalog sensor (Sprint 3 — BLOCKING)
+        # Sensor #3 harness 2026-05-25: bloqueia reintrodução do legacy
+        # agent-templates-data.ts (deletado na Sprint 3 Caminho B Parte 2).
+        # Canonical: backend agent_template_catalog + adapter.
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_hardcoded_templates_import.py
+      - name: Sourcing panel canonical import sensor (Sprint 4 v3 — BLOCKING)
+        # Sensor #4 harness 2026-05-25: bloqueia dual-mount do panel de
+        # sourcing. Canonical: sub-tab Sourcing do TalentPoolPage. Import fora
+        # desse path = regressão (era exatamente o bug que Sprint 4 v3 corrigiu).
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_dup_search_panel_import.py
+      - name: Studio font-inter sensor (Sprint 6 — BLOCKING)
+        # Sensor #6 harness 2026-05-25: bana classe Tailwind font-inter
+        # (DESIGN.md mandate Open Sans canonical via font-sans).
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_font_inter.py
+      - name: Studio decorative gradient sensor (Sprint 6 — BLOCKING)
+        # Sensor #7 harness 2026-05-25: bana gradient cyan/violet decorativo
+        # em pages-agent-studio (DESIGN.md Quiet Operator 90/10 Rule).
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_studio_decorative_gradient.py
+      - name: Studio no-substabs sensor (Sprint Studio Restructure F4 — BLOCKING)
+        # Sensor #15 harness 2026-05-26: AgentStudioPage tem 2 abas topo apenas
+        # (my-agents + digital-twins). Marketplace foi extraido para rota
+        # /agents/marketplace. Bloqueia reintroducao de type MySubTab, state
+        # mySubTab, ou import de MarketplaceTab em AgentStudioPage.tsx.
+        working-directory: plataforma-lia
+        run: python3 scripts/check_no_studio_substabs.py
+
+      - name: Canonical tokens sensor (BLOCKING desde 2026-05-26)
+        # Sensor harness 2026-05-26 (tasks 7+8 blocking promotion).
+        # Detecta uso de tokens legacy (lia-surface/border/primary/muted) em
+        # componentes. Aliases temporarios em tailwind.config.ts — NAO usar em
+        # codigo novo. Baseline atingiu 0 violations apos exclusao do produtor
+        # design-tokens.ts (false-positive) e cleanup de compensation-policies.
+        # design-tokens.ts excluido (produtor, como tailwind.config.ts).
+        # Ver CLAUDE.md § Tailwind legacy token fix 2026-05-25.
+        working-directory: plataforma-lia
+        run: npm run sensor:tokens:blocking
+
+      - name: Studio hardcoded hex sensor (BLOCKING desde 2026-06-01)
+        # Sensor harness 2026-06-01: cor hex CRUA em pages-agent-studio/
+        # (ex.: bg-[#60BED1]) escapa do sensor de tokens legados e do de cyan —
+        # foi assim que o redesign do funil reintroduziu ~120 cores fora do DS.
+        # Baseline atingiu 0 (migracao dos callouts laranja) -> promovido a blocking.
+        working-directory: plataforma-lia
+        run: npm run sensor:studio-hex:blocking
+
+      - name: Schema sync sensor TS<->Python (BLOCKING desde 2026-05-26)
+        # Sensor harness 2026-05-26 (tasks 7+8 blocking promotion).
+        # Valida que LIA_FIELD_DEFINITIONS (TS: use-company-lia-instructions.ts)
+        # e DEFAULT_FIELD_TOGGLES (PY: lia_field_toggles.py) estao em sincronia
+        # (mesmo conjunto de 34 campos). Baseline 0 violations desde criacao.
+        # Adicionar campo em um lado sem o outro bloqueia o merge.
+        # Ver CLAUDE.md § lia_field_toggles canonical pattern 2026-05-21.
+        working-directory: plataforma-lia
+        run: npm run sensor:lia-sync:blocking
+
+      - name: Wizard panel idle signals sensor (warn-only desde 2026-05-29)
+        # Sensor harness 2026-05-29 — defeito de canal produtor->consumidor.
+        # Walks lia-agent-system/app/domains/job_creation/nodes/ extraindo
+        # todos awaiting_*_input: True emit sites; cruza com SIGNAL_TO_PANEL
+        # map e verifica que o panel correspondente le e usa o sinal em
+        # conditional. Baseline 0 violations + 1 OK (awaiting_jd_input ->
+        # JdEnrichmentPanel.tsx). Promover a --blocking quando estavel.
+        # Ver plataforma-lia/CLAUDE.md secao Wizard panels canonical pattern.
+        continue-on-error: true
+        working-directory: plataforma-lia
+        run: python3 scripts/check_wizard_panel_idle_signals.py
+
+      - name: Anti-ghost ui_action sensor (BLOCKING desde 2026-06-04)
+        # Sensor harness P0.2 (2026-06-04): toda ui_action declarada no
+        # contrato BE->FE (src/lib/api/kanban-assistant.ts) DEVE ter handler
+        # FE (global em useUIAction ou case/=== num handler page-specific).
+        # Acao sem handler = ghost descartada em silencio (mesma classe do
+        # lia_field_toggles ghost-setting). Baseline atingiu 0 em 2026-06-04
+        # apos wire de compare_jobs (-> JobCompareModal via useJobsChat) e
+        # remocao do start_candidate_wizard morto -> promovido a --blocking.
+        # Ver scripts/check_ui_action_handlers.py.
+        working-directory: plataforma-lia
+        run: python3 scripts/check_ui_action_handlers.py --blocking
+
+      - name: Unit & Component tests
+        run: npx vitest run --reporter=verbose
+
+      - name: G-CANDIDATE-FIELDS -- canonical snake_case candidate fields (BLOCKING)
+        run: python3 scripts/check_canonical_candidate_fields.py --blocking
+
+      - name: Phase 2 invariants (Onda 5.9 — BLOCKING)
+        # Sensor agregado que roda 9 sensores BLOCKING + 2 warn-only da
+        # Studio Fase 2 (Ondas 0+1+2+3+4 + promovido 5.4). Falha em qualquer
+        # BLOCKING sub-sensor bloqueia o merge. warn-only sub-sensors apenas
+        # imprimem warning. Doc: CLAUDE.md § Studio Fase 2.
+        run: python3 ../lia-agent-system/scripts/check_phase2_invariants.py
+
+      - name: Phase 2.5 invariants (motor unificado - BLOCKING)
+        # Sensor agregado Fase 2.5 (Onda C2): roda os 5 sensores BLOCKING
+        # do motor unificado (RLS tenant tables, BYOK tenant_id, deployment
+        # tem executor, no novo pool_agent_assignments, no silent LLM
+        # fallback) + sub-chamada Phase 2. --skip-phase2 evita rodar o
+        # agregado Fase 2 duas vezes (ja roda no step anterior).
+        # Baseline 0 (2026-05-29). Doc: CLAUDE.md secao Fase 2.5.
+        run: python3 ../lia-agent-system/scripts/check_phase25_invariants.py --skip-phase2
+
+      - name: Hardcoded PT-BR strings em Agent Studio UI (BLOCKING desde 2026-05-29 Q4.4)
+        # Sensor harness Fase 2.5 (Onda C1, AUDIT 3/5 P2-8): detecta texto
+        # PT-BR hardcoded em surfaces de Agent Studio que NAO passam por
+        # useTranslations/t() - complemento do check_i18n_keys.py (que so
+        # valida t() existente). Baseline ZERADO em Q4.4 (6 strings migradas em
+        # ApproachStep/ConfigStep/GoalStep) -> promovido a --blocking. Qualquer
+        # regressao bloqueia merge. Ver CLAUDE.md secao i18n contract.
+        working-directory: plataforma-lia
+        run: python3 scripts/check_hardcoded_strings_in_agent_ui.py --blocking
+
+
+      - name: No useState-for-server-data in wizard panel components (Mecanismo 4 -- BLOCKING)
+        # Sensor harness 2026-06-12 (Mecanismo 4 Adaptive Surface):
+        # DynamicContextPanel e paineis do wizard SAO views derivadas -- recebem
+        # dados via props do lia-float-context, nunca buscam dados proprios.
+        # Anti-pattern: useState(null)/useState([]) + useEffect+fetch no mesmo
+        # arquivo de panel (self-fetching). Viola o principio de
+        # "panel = view derivada, sem estado proprio de dados".
+        # Distingue de useState LEGITIMO: localData/draft/form (formulario)
+        # e estado de UI (open, selected, expanded) SAO ok.
+        # Baseline 0 violations na criacao (2026-06-12).
+        # Fix canonical: mover fetch para o parent DynamicContextPanel e
+        # passar os dados como prop para o panel.
+        working-directory: ${{ github.workspace }}
+        run: |
+          PANELS_DIR=plataforma-lia/src/components/unified-chat/wizard/panels
+          VIOLATIONS=''
+          for f in "$PANELS_DIR"/*.tsx; do
+            [[ "$f" == *"test"* || "$f" == *"__tests__"* ]] && continue
+            HAS_NULL_STATE=$(grep -n '= useState(null\|= useState(\[\])' "$f" 2>/dev/null | grep -v 'local[A-Z]\|[Dd]raft\|[Ff]orm\|localData' || true)
+            HAS_FETCH=$(grep -n 'useEffect\|fetch(\|axios\.' "$f" 2>/dev/null | grep -vE '^\s*//' || true)
+            if [ -n "$HAS_NULL_STATE" ] && [ -n "$HAS_FETCH" ]; then
+              VIOLATIONS="$VIOLATIONS$f\n"
+            fi
+          done
+          if [ -n "$VIOLATIONS" ]; then
+            echo "Panel components com useState para dados de servidor -- viola DynamicContextPanel como view derivada (Mecanismo 4)."
+            echo ""
+            echo "Principio: paineis recebem dados via props do contexto central."
+            echo "Anti-pattern: useState(null/[]) + useEffect+fetch no mesmo panel."
+            echo "Fix canonical: mover o fetch para o parent e passar como prop."
+            echo ""
+            echo "Violations:"
+            printf "%s" "$VIOLATIONS"
+            exit 1
+          fi
+          echo "OK: Nenhum panel com useState-para-dados-de-servidor (baseline 0)"
+
+      - name: Build
+        run: npm run build

@@ -1,0 +1,1213 @@
+{
+  "metadata": {
+    "total_agents": 20,
+    "total_tools": 60,
+    "total_scopes": 5,
+    "uncovered_tools": [],
+    "coverage_pct": 100.0
+  },
+  "scopes": {
+    "talent_funnel": {
+      "query": [
+        "search_candidates",
+        "get_candidate_details",
+        "get_candidate_stats",
+        "compare_candidates",
+        "get_talent_quality",
+        "get_talent_engagement",
+        "get_talent_availability",
+        "get_diversity_metrics",
+        "get_candidate_history",
+        "get_ml_predictions",
+        "get_conversion_patterns"
+      ],
+      "action": [
+        "add_candidate_to_vacancy",
+        "reject_candidate",
+        "shortlist_candidate",
+        "add_to_list",
+        "hide_candidate",
+        "send_email",
+        "send_whatsapp",
+        "send_bulk_email",
+        "export_candidates"
+      ]
+    },
+    "job_table": {
+      "query": [
+        "search_jobs",
+        "get_job_details",
+        "get_pipeline_stats",
+        "get_recruiter_metrics",
+        "get_velocity_metrics",
+        "get_efficiency_metrics",
+        "get_comparative_metrics",
+        "get_workload_distribution",
+        "get_hiring_quality",
+        "get_cost_metrics",
+        "get_trends",
+        "get_market_benchmarks"
+      ],
+      "action": [
+        "create_job",
+        "update_job",
+        "pause_job",
+        "close_job",
+        "publish_job",
+        "export_job_analytics",
+        "generate_report"
+      ]
+    },
+    "in_job": {
+      "query": [
+        "get_job_details",
+        "get_vacancy_funnel",
+        "get_candidate_details",
+        "get_activity_summary",
+        "get_pending_actions",
+        "compare_candidates",
+        "get_candidate_stats",
+        "get_bottleneck_analysis",
+        "get_job_velocity",
+        "get_job_quality_metrics",
+        "get_stakeholder_metrics",
+        "get_prediction_metrics",
+        "get_job_benchmark",
+        "get_smart_alerts"
+      ],
+      "action": [
+        "update_candidate_stage",
+        "bulk_update_candidates_stage",
+        "reject_candidate",
+        "shortlist_candidate",
+        "add_to_list",
+        "hide_candidate",
+        "wsi_screening",
+        "send_email",
+        "send_whatsapp",
+        "schedule_interview",
+        "send_feedback"
+      ]
+    },
+    "global": {
+      "query": [],
+      "action": [
+        "generate_report",
+        "schedule_report",
+        "analyze_cv_match",
+        "create_and_screen_candidate",
+        "parse_and_create_candidate",
+        "add_to_vacancy"
+      ]
+    },
+    "universal": {
+      "query": [
+        "search_candidates",
+        "get_candidate_details",
+        "get_candidate_stats",
+        "compare_candidates",
+        "get_talent_quality",
+        "get_talent_engagement",
+        "get_talent_availability",
+        "get_diversity_metrics",
+        "get_candidate_history",
+        "get_ml_predictions",
+        "get_conversion_patterns",
+        "search_jobs",
+        "get_job_details",
+        "get_pipeline_stats",
+        "get_recruiter_metrics",
+        "get_velocity_metrics",
+        "get_efficiency_metrics",
+        "get_comparative_metrics",
+        "get_workload_distribution",
+        "get_hiring_quality",
+        "get_cost_metrics",
+        "get_trends",
+        "get_market_benchmarks",
+        "get_vacancy_funnel",
+        "get_activity_summary",
+        "get_pending_actions",
+        "get_bottleneck_analysis",
+        "get_job_velocity",
+        "get_job_quality_metrics",
+        "get_stakeholder_metrics",
+        "get_prediction_metrics",
+        "get_job_benchmark",
+        "get_smart_alerts"
+      ],
+      "action": [
+        "add_candidate_to_vacancy",
+        "add_to_list",
+        "add_to_vacancy",
+        "analyze_cv_match",
+        "bulk_update_candidates_stage",
+        "close_job",
+        "create_and_screen_candidate",
+        "create_job",
+        "create_sourcing_agent",
+        "export_candidates",
+        "export_job_analytics",
+        "generate_report",
+        "hide_candidate",
+        "parse_and_create_candidate",
+        "pause_job",
+        "publish_job",
+        "reject_candidate",
+        "schedule_interview",
+        "schedule_report",
+        "send_bulk_email",
+        "send_email",
+        "send_feedback",
+        "send_whatsapp",
+        "shortlist_candidate",
+        "update_candidate_stage",
+        "update_job",
+        "wsi_screening"
+      ]
+    }
+  },
+  "tool_catalog": {
+    "search_candidates": {
+      "name": "search_candidates",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "get_candidate_details": {
+      "name": "get_candidate_details",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_candidate_stats": {
+      "name": "get_candidate_stats",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "in_job",
+        "universal"
+      ]
+    },
+    "compare_candidates": {
+      "name": "compare_candidates",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_talent_quality": {
+      "name": "get_talent_quality",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "get_talent_engagement": {
+      "name": "get_talent_engagement",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "get_talent_availability": {
+      "name": "get_talent_availability",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "get_diversity_metrics": {
+      "name": "get_diversity_metrics",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "get_candidate_history": {
+      "name": "get_candidate_history",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "get_ml_predictions": {
+      "name": "get_ml_predictions",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "get_conversion_patterns": {
+      "name": "get_conversion_patterns",
+      "type": "query",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "add_candidate_to_vacancy": {
+      "name": "add_candidate_to_vacancy",
+      "type": "action",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "reject_candidate": {
+      "name": "reject_candidate",
+      "type": "action",
+      "scopes": [
+        "talent_funnel",
+        "in_job",
+        "universal"
+      ]
+    },
+    "shortlist_candidate": {
+      "name": "shortlist_candidate",
+      "type": "action",
+      "scopes": [
+        "talent_funnel",
+        "in_job",
+        "universal"
+      ]
+    },
+    "add_to_list": {
+      "name": "add_to_list",
+      "type": "action",
+      "scopes": [
+        "talent_funnel",
+        "in_job",
+        "universal"
+      ]
+    },
+    "hide_candidate": {
+      "name": "hide_candidate",
+      "type": "action",
+      "scopes": [
+        "talent_funnel",
+        "in_job",
+        "universal"
+      ]
+    },
+    "send_email": {
+      "name": "send_email",
+      "type": "action",
+      "scopes": [
+        "talent_funnel",
+        "in_job",
+        "universal"
+      ]
+    },
+    "send_whatsapp": {
+      "name": "send_whatsapp",
+      "type": "action",
+      "scopes": [
+        "talent_funnel",
+        "in_job",
+        "universal"
+      ]
+    },
+    "send_bulk_email": {
+      "name": "send_bulk_email",
+      "type": "action",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "export_candidates": {
+      "name": "export_candidates",
+      "type": "action",
+      "scopes": [
+        "talent_funnel",
+        "universal"
+      ]
+    },
+    "search_jobs": {
+      "name": "search_jobs",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "get_job_details": {
+      "name": "get_job_details",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_pipeline_stats": {
+      "name": "get_pipeline_stats",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "get_recruiter_metrics": {
+      "name": "get_recruiter_metrics",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "get_velocity_metrics": {
+      "name": "get_velocity_metrics",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "get_efficiency_metrics": {
+      "name": "get_efficiency_metrics",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "get_comparative_metrics": {
+      "name": "get_comparative_metrics",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "get_workload_distribution": {
+      "name": "get_workload_distribution",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "get_hiring_quality": {
+      "name": "get_hiring_quality",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "get_cost_metrics": {
+      "name": "get_cost_metrics",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "get_trends": {
+      "name": "get_trends",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "get_market_benchmarks": {
+      "name": "get_market_benchmarks",
+      "type": "query",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "create_job": {
+      "name": "create_job",
+      "type": "action",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "update_job": {
+      "name": "update_job",
+      "type": "action",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "pause_job": {
+      "name": "pause_job",
+      "type": "action",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "close_job": {
+      "name": "close_job",
+      "type": "action",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "publish_job": {
+      "name": "publish_job",
+      "type": "action",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "export_job_analytics": {
+      "name": "export_job_analytics",
+      "type": "action",
+      "scopes": [
+        "job_table",
+        "universal"
+      ]
+    },
+    "generate_report": {
+      "name": "generate_report",
+      "type": "action",
+      "scopes": [
+        "job_table",
+        "global",
+        "universal"
+      ]
+    },
+    "get_vacancy_funnel": {
+      "name": "get_vacancy_funnel",
+      "type": "query",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_activity_summary": {
+      "name": "get_activity_summary",
+      "type": "query",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_pending_actions": {
+      "name": "get_pending_actions",
+      "type": "query",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_bottleneck_analysis": {
+      "name": "get_bottleneck_analysis",
+      "type": "query",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_job_velocity": {
+      "name": "get_job_velocity",
+      "type": "query",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_job_quality_metrics": {
+      "name": "get_job_quality_metrics",
+      "type": "query",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_stakeholder_metrics": {
+      "name": "get_stakeholder_metrics",
+      "type": "query",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_prediction_metrics": {
+      "name": "get_prediction_metrics",
+      "type": "query",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_job_benchmark": {
+      "name": "get_job_benchmark",
+      "type": "query",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "get_smart_alerts": {
+      "name": "get_smart_alerts",
+      "type": "query",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "update_candidate_stage": {
+      "name": "update_candidate_stage",
+      "type": "action",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "bulk_update_candidates_stage": {
+      "name": "bulk_update_candidates_stage",
+      "type": "action",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "wsi_screening": {
+      "name": "wsi_screening",
+      "type": "action",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "schedule_interview": {
+      "name": "schedule_interview",
+      "type": "action",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "send_feedback": {
+      "name": "send_feedback",
+      "type": "action",
+      "scopes": [
+        "in_job",
+        "universal"
+      ]
+    },
+    "schedule_report": {
+      "name": "schedule_report",
+      "type": "action",
+      "scopes": [
+        "global",
+        "universal"
+      ]
+    },
+    "analyze_cv_match": {
+      "name": "analyze_cv_match",
+      "type": "action",
+      "scopes": [
+        "global",
+        "universal"
+      ]
+    },
+    "create_and_screen_candidate": {
+      "name": "create_and_screen_candidate",
+      "type": "action",
+      "scopes": [
+        "global",
+        "universal"
+      ]
+    },
+    "parse_and_create_candidate": {
+      "name": "parse_and_create_candidate",
+      "type": "action",
+      "scopes": [
+        "global",
+        "universal"
+      ]
+    },
+    "add_to_vacancy": {
+      "name": "add_to_vacancy",
+      "type": "action",
+      "scopes": [
+        "global",
+        "universal"
+      ]
+    },
+    "create_sourcing_agent": {
+      "name": "create_sourcing_agent",
+      "type": "action",
+      "scopes": [
+        "universal"
+      ]
+    }
+  },
+  "agents": {
+    "orchestrator": {
+      "agent_type": "orchestrator",
+      "implementation_file": "app/orchestrator/orchestrator.py",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [
+        "global"
+      ],
+      "tools": {
+        "query": [],
+        "action": [
+          "generate_report",
+          "schedule_report",
+          "analyze_cv_match",
+          "create_and_screen_candidate",
+          "parse_and_create_candidate",
+          "add_to_vacancy"
+        ]
+      }
+    },
+    "job_planner": {
+      "agent_type": "job_planner",
+      "implementation_file": "app/domains/job_management/agents/wizard_react_agent.py",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [
+        "job_table"
+      ],
+      "tools": {
+        "query": [
+          "search_jobs",
+          "get_job_details",
+          "get_pipeline_stats",
+          "get_recruiter_metrics",
+          "get_velocity_metrics",
+          "get_efficiency_metrics",
+          "get_comparative_metrics",
+          "get_workload_distribution",
+          "get_hiring_quality",
+          "get_cost_metrics",
+          "get_trends",
+          "get_market_benchmarks"
+        ],
+        "action": [
+          "create_job",
+          "update_job",
+          "pause_job",
+          "close_job",
+          "publish_job",
+          "export_job_analytics",
+          "generate_report"
+        ]
+      }
+    },
+    "sourcing": {
+      "agent_type": "sourcing",
+      "implementation_file": "app/domains/sourcing/agents/sourcing_react_agent.py",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [
+        "talent_funnel"
+      ],
+      "tools": {
+        "query": [
+          "search_candidates",
+          "get_candidate_details",
+          "get_candidate_stats",
+          "compare_candidates",
+          "get_talent_quality",
+          "get_talent_engagement",
+          "get_talent_availability",
+          "get_diversity_metrics",
+          "get_candidate_history",
+          "get_ml_predictions",
+          "get_conversion_patterns"
+        ],
+        "action": [
+          "add_candidate_to_vacancy",
+          "reject_candidate",
+          "shortlist_candidate",
+          "add_to_list",
+          "hide_candidate",
+          "send_email",
+          "send_whatsapp",
+          "send_bulk_email",
+          "export_candidates"
+        ]
+      }
+    },
+    "cv_screening": {
+      "agent_type": "cv_screening",
+      "implementation_file": "app/domains/cv_screening/agents/pipeline_react_agent.py",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [
+        "in_job"
+      ],
+      "tools": {
+        "query": [
+          "get_job_details",
+          "get_vacancy_funnel",
+          "get_candidate_details",
+          "get_activity_summary",
+          "get_pending_actions",
+          "compare_candidates",
+          "get_candidate_stats",
+          "get_bottleneck_analysis",
+          "get_job_velocity",
+          "get_job_quality_metrics",
+          "get_stakeholder_metrics",
+          "get_prediction_metrics",
+          "get_job_benchmark",
+          "get_smart_alerts"
+        ],
+        "action": [
+          "update_candidate_stage",
+          "bulk_update_candidates_stage",
+          "reject_candidate",
+          "shortlist_candidate",
+          "add_to_list",
+          "hide_candidate",
+          "wsi_screening",
+          "send_email",
+          "send_whatsapp",
+          "schedule_interview",
+          "send_feedback"
+        ]
+      }
+    },
+    "interviewer": {
+      "agent_type": "interviewer",
+      "implementation_file": "unknown",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [],
+      "tools": {
+        "query": [],
+        "action": []
+      }
+    },
+    "wsi_evaluator": {
+      "agent_type": "wsi_evaluator",
+      "implementation_file": "app/domains/cv_screening/agents/avaliador_wsi_agent.py",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [
+        "in_job"
+      ],
+      "tools": {
+        "query": [
+          "get_job_details",
+          "get_vacancy_funnel",
+          "get_candidate_details",
+          "get_activity_summary",
+          "get_pending_actions",
+          "compare_candidates",
+          "get_candidate_stats",
+          "get_bottleneck_analysis",
+          "get_job_velocity",
+          "get_job_quality_metrics",
+          "get_stakeholder_metrics",
+          "get_prediction_metrics",
+          "get_job_benchmark",
+          "get_smart_alerts"
+        ],
+        "action": [
+          "update_candidate_stage",
+          "bulk_update_candidates_stage",
+          "reject_candidate",
+          "shortlist_candidate",
+          "add_to_list",
+          "hide_candidate",
+          "wsi_screening",
+          "send_email",
+          "send_whatsapp",
+          "schedule_interview",
+          "send_feedback"
+        ]
+      }
+    },
+    "scheduling": {
+      "agent_type": "scheduling",
+      "implementation_file": "unknown",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [],
+      "tools": {
+        "query": [],
+        "action": []
+      }
+    },
+    "analyst_feedback": {
+      "agent_type": "analyst_feedback",
+      "implementation_file": "unknown",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [],
+      "tools": {
+        "query": [],
+        "action": []
+      }
+    },
+    "ats_integrator": {
+      "agent_type": "ats_integrator",
+      "implementation_file": "app/domains/ats_integration/agents/ats_integration_react_agent.py",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [],
+      "tools": {
+        "query": [],
+        "action": []
+      }
+    },
+    "recruiter_assistant": {
+      "agent_type": "recruiter_assistant",
+      "implementation_file": "unknown",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [
+        "talent_funnel"
+      ],
+      "tools": {
+        "query": [
+          "search_candidates",
+          "get_candidate_details",
+          "get_candidate_stats",
+          "compare_candidates",
+          "get_talent_quality",
+          "get_talent_engagement",
+          "get_talent_availability",
+          "get_diversity_metrics",
+          "get_candidate_history",
+          "get_ml_predictions",
+          "get_conversion_patterns"
+        ],
+        "action": [
+          "add_candidate_to_vacancy",
+          "reject_candidate",
+          "shortlist_candidate",
+          "add_to_list",
+          "hide_candidate",
+          "send_email",
+          "send_whatsapp",
+          "send_bulk_email",
+          "export_candidates"
+        ]
+      }
+    },
+    "proactive_insights": {
+      "agent_type": "proactive_insights",
+      "implementation_file": "unknown",
+      "prompt_summary": "## Persona LIA\n\n### Identidade\nVocê é LIA (Learning Intelligence Assistant), assistente de recrutamento inteligente da WeDOTalent.\n\n### Tom de Comunicação\n- **Tom**: Profissional, empático, direto e p...",
+      "accessible_scopes": [],
+      "tools": {
+        "query": [],
+        "action": []
+      }
+    },
+    "autonomous": {
+      "agent_type": "autonomous",
+      "implementation_file": "app/domains/autonomous/agents/autonomous_react_agent.py",
+      "prompt_summary": "N/A",
+      "accessible_scopes": [
+        "talent_funnel",
+        "job_table",
+        "in_job",
+        "global",
+        "universal"
+      ],
+      "tools": {
+        "query": [
+          "search_candidates",
+          "get_candidate_details",
+          "get_candidate_stats",
+          "compare_candidates",
+          "get_talent_quality",
+          "get_talent_engagement",
+          "get_talent_availability",
+          "get_diversity_metrics",
+          "get_candidate_history",
+          "get_ml_predictions",
+          "get_conversion_patterns",
+          "search_jobs",
+          "get_job_details",
+          "get_pipeline_stats",
+          "get_recruiter_metrics",
+          "get_velocity_metrics",
+          "get_efficiency_metrics",
+          "get_comparative_metrics",
+          "get_workload_distribution",
+          "get_hiring_quality",
+          "get_cost_metrics",
+          "get_trends",
+          "get_market_benchmarks",
+          "get_vacancy_funnel",
+          "get_activity_summary",
+          "get_pending_actions",
+          "get_bottleneck_analysis",
+          "get_job_velocity",
+          "get_job_quality_metrics",
+          "get_stakeholder_metrics",
+          "get_prediction_metrics",
+          "get_job_benchmark",
+          "get_smart_alerts"
+        ],
+        "action": [
+          "add_candidate_to_vacancy",
+          "reject_candidate",
+          "shortlist_candidate",
+          "add_to_list",
+          "hide_candidate",
+          "send_email",
+          "send_whatsapp",
+          "send_bulk_email",
+          "export_candidates",
+          "create_job",
+          "update_job",
+          "pause_job",
+          "close_job",
+          "publish_job",
+          "export_job_analytics",
+          "generate_report",
+          "update_candidate_stage",
+          "bulk_update_candidates_stage",
+          "wsi_screening",
+          "schedule_interview",
+          "send_feedback",
+          "schedule_report",
+          "analyze_cv_match",
+          "create_and_screen_candidate",
+          "parse_and_create_candidate",
+          "add_to_vacancy",
+          "create_sourcing_agent"
+        ]
+      }
+    },
+    "communication": {
+      "agent_type": "communication",
+      "implementation_file": "app/domains/communication/agents/communication_react_agent.py",
+      "prompt_summary": "Você é LIA, especialista em Comunicação Multi-Canal da WeDOTalent.\n\n## Sua Missão\nGerenciar toda comunicação com candidatos e stakeholders de forma profissional,\nrastreável e em conformidade com LGPD....",
+      "accessible_scopes": [
+        "global"
+      ],
+      "tools": {
+        "query": [],
+        "action": [
+          "generate_report",
+          "schedule_report",
+          "analyze_cv_match",
+          "create_and_screen_candidate",
+          "parse_and_create_candidate",
+          "add_to_vacancy"
+        ]
+      }
+    },
+    "analytics": {
+      "agent_type": "analytics",
+      "implementation_file": "app/domains/analytics/agents/analytics_react_agent.py",
+      "prompt_summary": "Você é LIA, especialista em Analytics e Reporting de Recrutamento da WeDOTalent.\n\n## Sua Missão\nTransformar dados do processo seletivo em insights acionáveis para recrutadores\ne gestores tomarem decis...",
+      "accessible_scopes": [
+        "job_table",
+        "global"
+      ],
+      "tools": {
+        "query": [
+          "search_jobs",
+          "get_job_details",
+          "get_pipeline_stats",
+          "get_recruiter_metrics",
+          "get_velocity_metrics",
+          "get_efficiency_metrics",
+          "get_comparative_metrics",
+          "get_workload_distribution",
+          "get_hiring_quality",
+          "get_cost_metrics",
+          "get_trends",
+          "get_market_benchmarks"
+        ],
+        "action": [
+          "create_job",
+          "update_job",
+          "pause_job",
+          "close_job",
+          "publish_job",
+          "export_job_analytics",
+          "generate_report",
+          "schedule_report",
+          "analyze_cv_match",
+          "create_and_screen_candidate",
+          "parse_and_create_candidate",
+          "add_to_vacancy"
+        ]
+      }
+    },
+    "pipeline_transition": {
+      "agent_type": "pipeline_transition",
+      "implementation_file": "app/domains/pipeline/agents/pipeline_transition_agent.py",
+      "prompt_summary": "Você é LIA, assistente de recrutamento especializada em gerenciar o pipeline de candidatos.\nVocê pode mover candidatos entre etapas, interpretar contextos de transição, predizer sub-status\ne sugerir p...",
+      "accessible_scopes": [
+        "in_job"
+      ],
+      "tools": {
+        "query": [
+          "get_job_details",
+          "get_vacancy_funnel",
+          "get_candidate_details",
+          "get_activity_summary",
+          "get_pending_actions",
+          "compare_candidates",
+          "get_candidate_stats",
+          "get_bottleneck_analysis",
+          "get_job_velocity",
+          "get_job_quality_metrics",
+          "get_stakeholder_metrics",
+          "get_prediction_metrics",
+          "get_job_benchmark",
+          "get_smart_alerts"
+        ],
+        "action": [
+          "update_candidate_stage",
+          "bulk_update_candidates_stage",
+          "reject_candidate",
+          "shortlist_candidate",
+          "add_to_list",
+          "hide_candidate",
+          "wsi_screening",
+          "send_email",
+          "send_whatsapp",
+          "schedule_interview",
+          "send_feedback"
+        ]
+      }
+    },
+    "kanban": {
+      "agent_type": "kanban",
+      "implementation_file": "app/domains/recruiter_assistant/agents/kanban_react_agent.py",
+      "prompt_summary": "N/A",
+      "accessible_scopes": [
+        "in_job"
+      ],
+      "tools": {
+        "query": [
+          "get_job_details",
+          "get_vacancy_funnel",
+          "get_candidate_details",
+          "get_activity_summary",
+          "get_pending_actions",
+          "compare_candidates",
+          "get_candidate_stats",
+          "get_bottleneck_analysis",
+          "get_job_velocity",
+          "get_job_quality_metrics",
+          "get_stakeholder_metrics",
+          "get_prediction_metrics",
+          "get_job_benchmark",
+          "get_smart_alerts"
+        ],
+        "action": [
+          "update_candidate_stage",
+          "bulk_update_candidates_stage",
+          "reject_candidate",
+          "shortlist_candidate",
+          "add_to_list",
+          "hide_candidate",
+          "wsi_screening",
+          "send_email",
+          "send_whatsapp",
+          "schedule_interview",
+          "send_feedback"
+        ]
+      }
+    },
+    "talent": {
+      "agent_type": "talent",
+      "implementation_file": "app/domains/recruiter_assistant/agents/talent_react_agent.py",
+      "prompt_summary": "N/A",
+      "accessible_scopes": [
+        "talent_funnel"
+      ],
+      "tools": {
+        "query": [
+          "search_candidates",
+          "get_candidate_details",
+          "get_candidate_stats",
+          "compare_candidates",
+          "get_talent_quality",
+          "get_talent_engagement",
+          "get_talent_availability",
+          "get_diversity_metrics",
+          "get_candidate_history",
+          "get_ml_predictions",
+          "get_conversion_patterns"
+        ],
+        "action": [
+          "add_candidate_to_vacancy",
+          "reject_candidate",
+          "shortlist_candidate",
+          "add_to_list",
+          "hide_candidate",
+          "send_email",
+          "send_whatsapp",
+          "send_bulk_email",
+          "export_candidates"
+        ]
+      }
+    },
+    "jobs_management": {
+      "agent_type": "jobs_management",
+      "implementation_file": "app/domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py",
+      "prompt_summary": "N/A",
+      "accessible_scopes": [
+        "job_table"
+      ],
+      "tools": {
+        "query": [
+          "search_jobs",
+          "get_job_details",
+          "get_pipeline_stats",
+          "get_recruiter_metrics",
+          "get_velocity_metrics",
+          "get_efficiency_metrics",
+          "get_comparative_metrics",
+          "get_workload_distribution",
+          "get_hiring_quality",
+          "get_cost_metrics",
+          "get_trends",
+          "get_market_benchmarks"
+        ],
+        "action": [
+          "create_job",
+          "update_job",
+          "pause_job",
+          "close_job",
+          "publish_job",
+          "export_job_analytics",
+          "generate_report"
+        ]
+      }
+    },
+    "automation": {
+      "agent_type": "automation",
+      "implementation_file": "app/domains/automation/agents/automation_react_agent.py",
+      "prompt_summary": "Você é LIA, especialista em Automação e Tarefas de Recrutamento da WeDOTalent.\n\n## Sua Missão\nAutomatizar fluxos repetitivos do processo seletivo, gerenciar tarefas e disparar\nalertas proativos para m...",
+      "accessible_scopes": [],
+      "tools": {
+        "query": [],
+        "action": []
+      }
+    },
+    "hiring_policy": {
+      "agent_type": "hiring_policy",
+      "implementation_file": "app/domains/hiring_policy/agents/policy_react_agent.py",
+      "prompt_summary": "N/A",
+      "accessible_scopes": [],
+      "tools": {
+        "query": [],
+        "action": []
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+name: Pydantic Conventions + Smoke Test Sensors
+
+# Registrado 2026-05-20 (Sprint 0 pós-audit E2E).
+# Modelado em .github/workflows/adr-001-sensors.yml.
+#
+# Sensores:
+#   - check_pydantic_conventions.py R1+R2+R3+R4 (AST checker, ~1s)
+#   - test_endpoint_smoke.py (contract test, ~34s, requires uvicorn local)
+#
+# Histórico de baseline:
+#   2026-05-20 (Sprint 0):  R1=694  R2=139  R3=0    R4=29   (warn-only)
+#   2026-05-21 (Wave 3):    R1=0    R2=0    R3=0    R4=0    (BLOCKING ✅)
+#
+# Promovido a BLOCKING em 2026-05-21 após Wave 3 atingir baseline 0
+# em todas as 4 regras (commit C25 + C29 + C31 + Sprint 1 #40 refactor).
+# Daqui pra frente: qualquer nova violação bloqueia o CI.
+
+on:
+  push:
+    branches: [main, develop, "feat/**", "fix/**"]
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "lia-agent-system/**"
+      - ".github/workflows/pydantic-conventions-sensors.yml"
+
+concurrency:
+  group: pydantic-conventions-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pydantic-conventions:
+    name: Pydantic Conventions R1+R2+R3+R4 (AST checker, BLOCKING)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lia-agent-system
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: R1+R2+R3+R4 — Pydantic Conventions canonical (BLOCKING, baseline 0)
+        run: |
+          # Promoted to BLOCKING after Wave 3 achieved baseline 0 (2026-05-21).
+          # Trajetória: R1 694→0, R2 139→0, R3 0→0, R4 29→0.
+          # QUALQUER nova violação bloqueia o CI. Para bypass legítimo em
+          # branch stale: edite o script para adicionar SKIP_R{1,2,3,4}
+          # entry com justification comment (audit trace anchor obrigatório).
+          # Output otimizado pra consumo de LLM (mensagens com fix sugerido em PT-BR).
+          python3 scripts/check_pydantic_conventions.py app/

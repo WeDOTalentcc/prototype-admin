@@ -1,0 +1,184 @@
+[project]
+name = "lia-agent-system"
+version = "0.1.0"
+description = "LIA Agent System — WeDOTalent backend"
+requires-python = ">=3.11"
+dependencies = [
+    # FastAPI & Web
+    "fastapi>=0.115.5",
+    "starlette>=0.42.0",
+    "uvicorn[standard]==0.32.1",
+    "python-multipart>=0.0.21",
+    "websockets==13.1",
+    # Database
+    "sqlalchemy==2.0.36",
+    "alembic==1.14.0",
+    "psycopg2-binary==2.9.10",
+    "asyncpg==0.30.0",
+    # LangChain & LangGraph
+    "langchain>=1.0.8,<2.0.0",
+    "langchain-anthropic>=1.1.0,<2.0.0",
+    "langchain-openai>=1.0.3,<2.0.0",
+    "langchain-google-vertexai>=3.0.3,<4.0.0",
+    "google-cloud-aiplatform>=1.131.0",
+    "langgraph>=0.4.1",
+    "langgraph-checkpoint-postgres>=2.0.8",
+    "langsmith>=0.7.25,<1.0.0",
+    # Async & Queue
+    "celery==5.4.0",
+    "redis==5.2.0",
+    "aio-pika==9.5.3",
+    # Pydantic & Validation
+    "pydantic==2.10.3",
+    "pydantic-settings==2.6.1",
+    # HTTP Clients
+    "httpx==0.28.1",
+    "aiohttp==3.13.4",
+    # Vector Search
+    "pgvector==0.3.6",
+    # Utilities
+    "python-dotenv>=1.1.1",
+    "passlib[bcrypt]==1.7.4",
+    "python-dateutil==2.9.0",
+    # Microsoft Integration
+    "msal>=1.31.1",
+    "msgraph-sdk==1.12.0",
+    "botbuilder-core==4.17.1",
+    "botbuilder-schema==4.17.1",
+    "jsonpickle>=3.3.4",
+    "msrest==0.7.1",
+    "pyjwt[crypto]==2.12.1",
+    "python-jose>=3.5.0",
+    "cryptography>=44.0.4",
+    # Communication
+    "twilio==9.4.0",
+    "resend==2.19.0",
+    # Monitoring
+    "sentry-sdk[fastapi]==2.19.2",
+    "email-validator==2.2.0",
+    # CV Parsing
+    "pypdf>=5.4.0",
+    "python-docx==1.1.2",
+    # Spreadsheet
+    "openpyxl==3.1.5",
+    # Web Scraping
+    "beautifulsoup4==4.12.3",
+    "lxml>=5.5.0",
+    # Calendar
+    "icalendar==6.0.1",
+    "pytz==2024.2",
+    # Google Calendar
+    "google-api-python-client>=2.151.0",
+    "google-auth>=2.45.0,<3.0.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.2.1",
+    # Scheduler
+    "APScheduler==3.10.4",
+    "croniter==3.0.3",
+    # Workspace libs (editable installs)
+    "lia-config",
+    "lia-utils",
+    "lia-audit",
+    "lia-messaging",
+    "lia-models",
+    "lia-events",
+    "lia-agents-core",
+    "lia-services",
+    "lia-llm",
+    "lia-pii",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.4.0",
+    "pytest-asyncio>=1.0.0,<2.0.0",
+]
+
+[tool.uv.workspace]
+members = ["libs/*", "apps/api-onboarding"]
+
+[tool.uv.sources]
+lia-config      = { workspace = true }
+lia-utils       = { workspace = true }
+lia-audit       = { workspace = true }
+lia-messaging   = { workspace = true }
+lia-models      = { workspace = true }
+lia-events      = { workspace = true }
+api-onboarding  = { workspace = true }
+lia-agents-core = { workspace = true }
+lia-services    = { workspace = true }
+lia-llm         = { workspace = true }
+lia-pii         = { workspace = true }
+
+# Per-module ignores: high-error-density domains that need time to fix.
+# These are isolated from strict mode so new code CAN be enforced.
+# Remove each override when that module is cleaned up.
+[[tool.mypy.overrides]]
+module = [
+    "app.domains.sourcing.*",
+    "app.domains.recruiter_assistant.*",
+    "app.domains.analytics.services.recruiter_personalization_service",
+    "app.domains.analytics.services.intelligence_layer_service",
+    "app.api.v1.data_request",
+]
+ignore_errors = true
+
+# Compliance + evaluation modules: enforce strictly (these are already clean).
+# Add disallow_any_generics + warn_return_any so new code meets the bar.
+[[tool.mypy.overrides]]
+module = [
+    "app.shared.compliance.*",
+    "app.domains.compliance.*",
+    "app.shared.evaluation.*",
+]
+disallow_any_generics = true
+warn_return_any = true
+disallow_untyped_defs = true
+
+# ---------------------------------------------------------------------------
+# Lint configuration — enforces architectural boundaries
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+# TID251: ban specific imports — prevents re-introduction of app.shared.agents shims.
+# Any import from app.shared.agents.* is forbidden; use lia_agents_core.* directly.
+extend-select = ["TID"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+# Ban imports from the removed shim layer.
+# Violations appear as TID251 and fail CI.
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"app.shared.agents" = { msg = "Import from lia_agents_core.* directly — app.shared.agents shims were removed in task-124." }
+
+# ---------------------------------------------------------------------------
+# mypy — static type checking (gradual mode)
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+# Gradual adoption: warn but don't block on missing stubs or return-any
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_ignores = true
+# Global default: permissive for existing large files
+disallow_untyped_defs = false
+# Exclude test and migration directories from strict checks
+exclude = [
+    "^tests/",
+    "^migrations/",
+    "^scripts/",
+]
+
+# Stricter rules applied to newly created/extracted modules
+[[tool.mypy.overrides]]
+module = [
+    "app.enums.*",
+    "app.domains.communication.services.message_providers",
+    "app.domains.communication.services.template_service",
+    "app.schemas.company",
+]
+disallow_untyped_defs = true
+warn_return_any = true

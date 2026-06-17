@@ -1,0 +1,140 @@
+# Wizard node user-facing messages (PT-BR canonical)
+# Used by app/domains/job_creation/helpers/i18n.py
+# PR-18 F-4.1 (2026-05-26)
+#
+# Strings may include {var} placeholders for Python .format(**kwargs).
+# Organised by node name (matches app/domains/job_creation/nodes/<node>.py).
+
+# ── handoff ────────────────────────────────────────────────────────────────
+handoff:
+  job_ready: "Vaga pronta! Vou levar você para a página da vaga"
+  job_ready_with_url: "Vaga pronta! Vou levar você para a página da vaga ({handoff_url})."
+  share_link_suffix: " Link de divulgação: {share_link}."
+
+# ── eligibility ────────────────────────────────────────────────────────────
+eligibility:
+  questions_configured: "Configurei {count} pergunta(s) eliminatória(s) para a triagem inicial."
+  no_questions: "Nenhuma pergunta eliminatória configurada — quer adicionar alguma ou seguir direto para a revisão final?"
+
+# ── calibration ────────────────────────────────────────────────────────────
+calibration:
+  fresh_publish_with_wsi: "🎉 Vaga publicada com sucesso! Já está visível para captação. Quando os primeiros candidatos se inscreverem, vou usar suas {wsi_n} perguntas WSI para calibrar a triagem inicial — é só voltar para revisar."
+  fresh_publish_no_wsi: "🎉 Vaga publicada com sucesso! Já está visível para captação. Quando candidatos se inscreverem, vou ajudar você a calibrar a triagem por aqui."
+  complete: "Calibração concluída — {approved_count}/{threshold} candidatos aprovados. Posso encerrar a configuração da vaga?"
+  in_progress: "Carreguei {candidates_count} candidato(s) para calibração ({approved_count}/{threshold} aprovados). Continue avaliando para liberar a publicação completa."
+
+# ── salary ─────────────────────────────────────────────────────────────────
+salary:
+  ready: "Faixa salarial e benefícios prontos. Quer ajustar algo ou seguir para competências?"
+  ready_fallback: "Faixa salarial e benefícios prontos (benchmark indisponível — revise manualmente). Quer ajustar algo ou seguir para competências?"
+
+# ── competency ─────────────────────────────────────────────────────────────
+competency:
+  seniority_with_mode: "Resolvi a senioridade ({seniority_display}) e a distribuição de perguntas WSI (modo {screening_mode}). Quer ajustar ou seguir para gerar as perguntas?"
+  seniority_no_mode: "Resolvi a senioridade ({seniority_display}) e a distribuição de perguntas WSI — escolha entre modo compacto (7q) ou completo (12q). Quer ajustar ou seguir para gerar as perguntas?"
+
+# ── publish ────────────────────────────────────────────────────────────────
+publish:
+  policy_deny: "Não consigo publicar a vaga — {rationale}"
+  policy_hitl: "Antes de publicar, preciso da sua confirmação explícita: {rationale}"
+  error: "Tive um problema ao publicar a vaga: {error}. Posso tentar de novo?"
+  success: "Vaga publicada com sucesso! Quer seguir para a calibração de candidatos?"
+  success_with_share_link: "Vaga publicada com sucesso! Link de divulgação: {share_link}. Quer seguir para a calibração de candidatos?"
+
+# ── bigfive ────────────────────────────────────────────────────────────────
+bigfive:
+  fairness_blocked: "Detectei linguagem que pode ser discriminatória na descrição enriquecida — vou pausar o mapeamento Big Five para esta vaga. Revise a JD e me peça para retomar."
+  policy_deny: "Não consigo gerar o perfil Big Five — política da empresa bloqueou: {rationale}"
+  ready: "Mapeei o perfil Big Five para {title}. Quer ajustar algum traço ou seguir para a faixa salarial?"
+  ready_fallback: "Mapeei o perfil Big Five para {title} (sugestão mínima — revise antes de seguir). Quer ajustar algum traço ou seguir para a faixa salarial?"
+
+# ── wsi_questions ───────────────────────────────────────────────────────────
+wsi_questions:
+  policy_deny: "Não consigo gerar as perguntas WSI — política da empresa bloqueou: {rationale}"
+  ready: "Gerei {count} perguntas WSI. Pode revisar — preciso da sua aprovação antes de seguir."
+  ready_fallback: "Gerei {count} perguntas WSI (sugestão mínima — revise). Pode revisar — preciso da sua aprovação antes de seguir."
+  ready_with_dropped: "Gerei {count} perguntas WSI. Bloqueei {dropped} pergunta(s) por linguagem potencialmente discriminatória. Pode revisar — preciso da sua aprovação antes de seguir."
+  ready_fallback_with_dropped: "Gerei {count} perguntas WSI (sugestão mínima — revise). Bloqueei {dropped} pergunta(s) por linguagem potencialmente discriminatória. Pode revisar — preciso da sua aprovação antes de seguir."
+
+# ── pipeline_template ──────────────────────────────────────────────────────
+pipeline_template:
+  suggest_template: "Para essa vaga, sugiro o pipeline **{top_name}**. Você pode aplicar este, escolher outro ou usar o padrão da empresa."
+  no_custom_match: "Não encontrei um pipeline customizado que combine perfeitamente. Quer usar um dos templates padrão ou seguir com o pipeline padrão da empresa?"
+  use_default: "Vamos usar o pipeline padrão da empresa para essa vaga? Você pode customizar depois nas configurações."
+
+# ── intake ─────────────────────────────────────────────────────────────────
+intake:
+  captured: "Captei: {parsed_title}."
+  ask_for_title: "Pode me passar o título da vaga ou colar a JD?"
+
+# ── review ─────────────────────────────────────────────────────────────────
+review:
+  ready: "Tudo pronto para publicar. Quer revisar algo ou publicar a vaga agora?"
+  missing_fields: "Antes de publicar, ainda faltam alguns campos: {missing}. Quer ajustar?"
+
+# ── jd_enrichment ──────────────────────────────────────────────────────────
+jd_enrichment:
+  ask_for_title: "Pode me passar o título do cargo para começar?"
+  stage_description_hitl: "início do wizard: precisamos do título do cargo ou da descrição da vaga (JD) para começar."
+  ask_for_jd: "Para começar a criação da vaga, preciso de mais contexto. Você pode (a) colar a descrição da vaga (JD) aqui no chat, ou (b) anexar um arquivo (PDF, DOCX ou TXT). Se preferir, me diga em uma frase o título do cargo, a senioridade e as principais responsabilidades."
+  enriched_ok: "Enriqueci a descrição de **{title}** (qualidade: {quality}%). Revise no painel ao lado e me diga: **ok** para avançar, o que quer ajustar, ou cole uma nova descrição se quiser substituir."
+  enriched_fallback: "Recebi a descrição de **{title}**. O serviço de IA está degradado neste momento, então gerei um enriquecimento mínimo (qualidade estimada: {quality}%). Revise no painel à direita: se estiver ok, me confirme aqui no chat (ex.: \"pode seguir\"); se quiser ajustar, me diga o que mudar; ou cole uma versão nova."
+  fallback_warning: "Enriquecimento via LLM em fallback determinístico (timeout)"
+
+# ── jd_gate ────────────────────────────────────────────────────────────────
+jd_gate:
+  new_jd_received: "Recebi a descrição nova. Vou re-enriquecer agora."
+  new_jd_short_clarify: "Para substituir o texto, cole a nova descrição completa. Para aprovar o que temos, diga ok ou pode avançar."
+  off_topic_redirect: "Vamos focar na descrição da vaga? Você quer aprovar ou ajustar algo?"
+  unhandled_intent: "Não consegui interpretar sua resposta. Pode me dizer se aprovou a descrição enriquecida ou se quer ajustar alguma coisa?"
+
+# ── review_gate ────────────────────────────────────────────────────────────
+review_gate:
+  clarify_default: "Você quer publicar agora, ajustar alguma seção do resumo, configurar destinos ou tirar uma dúvida?"
+  missing_field_jd_approved: "aprovação da descrição"
+  missing_field_questions_approved: "aprovação das questões WSI"
+  missing_field_has_questions: "questões WSI geradas"
+  missing_field_quality_score_ok: "qualidade da descrição (score ≥ 50)"
+  missing_fields_summary: "Quando esses pontos estiverem ok, é só me dizer 'publica' que sigo."
+  no_title_fallback: "(sem título)"
+  salary_not_defined: "faixa salarial não definida"
+  explain_clarify: "Posso explicar qualquer parte do resumo. O que você quer saber?"
+  final_clarify: "Você quer publicar agora, ajustar alguma seção, escolher destinos ou tirar uma dúvida?"
+  channels_ask: "Quais canais você quer publicar? {scope_capitalized}: {allow_str}."
+  channels_rejected: "Os canais {rej_str} não estão {scope} pra essa empresa. Quais você quer publicar? {scope_capitalized}: {allowed_str}."
+  channels_ask_fallback: "Quais canais você quer publicar? {scope_capitalized}: {allowed_str}."
+  channels_partial_ok: "Configurando publicação em: {valid_channels} (ignorei {rej_str} — não estão {scope}). "
+  channels_ok: "Configurando publicação em: {valid_channels}. Quando quiser, me confirma pra publicar."
+  request_changes_clarify: "Qual seção você quer ajustar ({valid_sections}) e o que mudar nela?"
+  tenant_scope: "habilitados pelo seu tenant"
+  available_scope: "disponíveis"
+  missing_fields_publish_blocked: "Antes de publicar preciso fechar: {missing}. Quando esses pontos estiverem ok, é só me dizer 'publica' que sigo."
+
+# ── wsi_questions_gate ─────────────────────────────────────────────────────
+wsi_questions_gate:
+  approve_or_regen: "Você quer aprovar o pacote, regenerar tudo, editar/adicionar/remover alguma pergunta específica?"
+  edit_question_clarify: "Qual pergunta você quer editar (1 a {total_q}) e o que mudar nela?"
+  add_question_topic: "Sobre que tópico você quer a pergunta nova?"
+  remove_question_clarify: "Qual pergunta você quer remover (1 a {total_q})?"
+  explain_clarify: "Posso explicar a metodologia WSI ou o pacote atual. O que você quer saber?"
+  final_clarify: "Você quer aprovar, regenerar, editar, adicionar ou remover alguma pergunta?"
+
+# ── competency_gate ────────────────────────────────────────────────────────
+competency_gate:
+  recommend_mode: "HITL #2: escolha do modo de triagem WSI (Compacto 7 perguntas ou Completo 12 perguntas). Recomendação para este nível: {recommended}."
+  explain_modes: "Compacto tem 7 perguntas (mais ágil) e Completo tem 12 (mais evidência). Pra esta vaga eu sugiro {recommended}."
+
+# ── intake_gate ─────────────────────────────────────────────────────────────
+intake_gate:
+  ask_fields: "Para criar a vaga, ainda preciso de: {missing}."
+  ask_fields_with_title: "Para **{title}**, ainda preciso de: {missing}."
+  ask_fields_partial: "Quase lá! Só falta: {missing}."
+  salary_suggestion: "Para **{title}** ({seniority}, {model}), o mercado pratica em torno de **{min}–{max}/mês**. Posso começar a criar a vaga?"
+  salary_fallback: "Para **{title}** ({seniority}), não tenho dados de mercado disponíveis no momento. Posso começar a criar a vaga assim mesmo?"
+  ask_permission: "Posso seguir com a criação?"
+  proceeding: "Ótimo! Processando a criação de **{title}**..."
+  off_topic_redirect: "Para avançar, é só confirmar que posso criar a vaga (ex: \"pode criar\", \"sim\" ou \"pode avançar\"). Quer algum ajuste antes?"
+  salary_with_mode: "Para **{title}** ({seniority}, {model}), o mercado pratica em torno de **{min}\u2013{max}/mês**.\n\nComo prefere a triagem?\n\u2022 **Compacto** \u2014 {compact_q} perguntas (~{compact_min} min)\n\u2022 **Completo** \u2014 {full_q} perguntas (~{full_min} min)\n\nMe confirma o modo e posso criar!"
+  salary_estimate_with_mode: "Para **{title}** ({seniority}, {model}), uma estimativa de referência (não-verificada, sem fonte externa confirmada) seria em torno de **{min}\u2013{max}/mês** — vale validar com sua pesquisa.\n\nComo prefere a triagem?\n\u2022 **Compacto** \u2014 {compact_q} perguntas (~{compact_min} min)\n\u2022 **Completo** \u2014 {full_q} perguntas (~{full_min} min)\n\nMe confirma o modo e posso criar!"
+  salary_fallback_with_mode: "Para **{title}** ({seniority}), não tenho dados de mercado disponíveis.\n\nComo prefere a triagem?\n\u2022 **Compacto** \u2014 {compact_q} perguntas (~{compact_min} min)\n\u2022 **Completo** \u2014 {full_q} perguntas (~{full_min} min)\n\nMe confirma o modo e posso criar!"
+  proceeding_with_mode: "Modo **{mode_label}** registrado. Criando **{title}**..."

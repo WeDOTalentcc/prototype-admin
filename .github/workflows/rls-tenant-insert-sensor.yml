@@ -1,0 +1,58 @@
+name: RLS Tenant INSERT Sensor
+
+# Registrado 2026-05-23 (Sprint RLS chat saga), estendido 2026-05-24 (Sprint 4.1).
+# Modelado em .github/workflows/silent-llm-fallback-sensor.yml.
+#
+# Enforça canonical: tabelas com policy RLS DEVEM receber company_id em
+# todo INSERT — tanto via Model(...) constructor (Sprint 0) quanto via
+# text("INSERT INTO ...") raw SQL (Sprint 4.1).
+#
+# Histórico de baseline:
+#   2026-05-23 (Sprint RLS chat saga):  Pattern A (Model constructor) → 0 ✅
+#   2026-05-24 (Sprint 4.1 H):          Pattern B (raw SQL) → 33 descobertas
+#                                       Ratchet em 33 enquanto Sprint 5 não fixa
+#   FUTURO (Sprint 5+ planejado):       fix dos 33 → ratchet 0 → BLOCKING ✅
+#
+# Próximo offender ALÉM do ratchet bloqueia o CI. Bypass: marker
+# `# RLS-EXEMPT: <reason>` na linha imediatamente anterior ao INSERT.
+
+on:
+  push:
+    branches: [main, develop, "feat/**", "fix/**"]
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "lia-agent-system/**.py"
+      - ".github/workflows/rls-tenant-insert-sensor.yml"
+
+concurrency:
+  group: rls-tenant-insert-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rls-tenant-insert:
+    name: RLS Tenant INSERT Sensor (BLOCKING, baseline 0)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lia-agent-system
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: RLS tenant INSERT sensor (ratchet)
+        run: |
+          # Sprint 4.1 (2026-05-24): sensor extended to catch raw-SQL
+          # INSERT INTO via text("...") in addition to Model(...) constructors.
+          # Baseline 33 violations descobertas (todas em raw-SQL).
+          # Ratchet preserva baseline atual; novo offender é bloqueado.
+          # Sprint 5 fixou 4 reais + 29 EXEMPT markers.
+          python3 scripts/check_rls_table_inserts_have_company_id.py --max-violations 0
+
+      - name: Human-readable report (always)
+        if: always()
+        run: |
+          python3 scripts/check_rls_table_inserts_have_company_id.py --warn-only | head -120

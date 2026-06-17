@@ -1,0 +1,208 @@
+# Task #977 — Tenant-context no-regression eval suite
+#
+# Cenários realistas (wizard + agentes principais) que exercitam o /api/v1/chat
+# com um JWT válido e MARCAM como falha qualquer resposta que contenha frases
+# sintoma do bug "LIA esquece a empresa":
+#   - "sua empresa", "sua organização", "qual a empresa", "qual sua empresa"
+#   - "ID da empresa", "company_id", "informe a empresa", "preciso saber a empresa"
+#   - "em qual empresa você trabalha", "qual o id"
+#
+# Asserção é puramente NEGATIVA: a LIA pode legitimamente perguntar outras
+# coisas ("qual vaga?", "qual candidato?") — o que NÃO PODE é pedir/citar a
+# empresa, porque o snippet de tenant já chega injetado pelo backend.
+#
+# Cobertura canônica: 18 cenários cobrindo os 16 ReActAgents do inventário
+# sentinela (`tests/integration/agents/test_tenant_aware_rollout_t_d.py`) —
+# wizard (3) + 15 demais agentes (1 cada). Expansão Task #1042 fechou os
+# gaps de automation, autonomous, company_settings, cv_screening_pipeline,
+# sourcing e pipeline_transition sobre a base original (Task #977).
+# Escopo dos prompts é intencionalmente diverso: criação de vaga, busca de
+# candidatos, kanban, KPIs, comunicação, sourcing, política de contratação,
+# pool de talentos, self-service de candidato, automação, autônomo, settings
+# da empresa, triagem de CV e transição de pipeline.
+
+meta:
+  version: "1.1.0"
+  task: "#977"
+  # Task #1042: cobertura ampliada para os 16 ReActAgents canônicos.
+  # Antes 12 cenários; +6 para fechar gap de automation, autonomous,
+  # company_settings, cv_screening_pipeline, sourcing e pipeline_transition.
+  total_cases: 18
+  forbidden_phrases:
+    # frases-sintoma case-insensitive — qualquer match → FAIL
+    - "sua empresa"
+    - "sua organização"
+    - "sua organizacao"
+    - "qual a empresa"
+    - "qual sua empresa"
+    - "qual empresa"
+    - "id da empresa"
+    - "id de empresa"
+    - "company_id"
+    - "informe a empresa"
+    - "preciso saber a empresa"
+    - "em qual empresa você trabalha"
+    - "em qual empresa voce trabalha"
+    - "workspace_id=0"
+    - "para qual empresa"
+
+cases:
+  # ── WIZARD (3) ─────────────────────────────────────────────────
+  - id: TCNR-WZ-001
+    agent: wizard
+    severity: critical
+    prompt: "cria uma nova vaga de Engenheiro de Dados sênior, modalidade híbrida em São Paulo"
+    context:
+      scope: "Vagas"
+      page: "gestao-vagas"
+
+  - id: TCNR-WZ-002
+    agent: wizard
+    severity: critical
+    prompt: "abre uma vaga rascunho de Product Manager pleno com foco em fintech"
+    context:
+      scope: "Vagas"
+      page: "gestao-vagas"
+
+  - id: TCNR-WZ-003
+    agent: wizard
+    severity: high
+    prompt: "configura o pipeline da nova vaga: triagem, teste técnico, entrevista RH, entrevista técnica, proposta"
+    context:
+      scope: "Vagas"
+      page: "gestao-vagas"
+
+  # ── JOBS_MGMT ──────────────────────────────────────────────────
+  - id: TCNR-JM-001
+    agent: jobs_mgmt
+    severity: critical
+    prompt: "mostra todas as vagas que estão ativas hoje"
+    context:
+      scope: "Vagas"
+      page: "gestao-vagas"
+
+  # ── KANBAN / PIPELINE ──────────────────────────────────────────
+  - id: TCNR-KB-001
+    agent: kanban
+    severity: high
+    prompt: "quem está na etapa de entrevista técnica agora?"
+    context:
+      scope: "Kanban"
+      page: "kanban"
+
+  # ── ANALYTICS ──────────────────────────────────────────────────
+  - id: TCNR-AN-001
+    agent: analytics
+    severity: high
+    prompt: "qual o tempo médio de contratação no último trimestre?"
+    context:
+      scope: "Analytics"
+      page: "kpis"
+
+  # ── SOURCING / TALENT FUNNEL ───────────────────────────────────
+  - id: TCNR-SO-001
+    agent: talent_funnel
+    severity: high
+    prompt: "busca candidatos com Python sênior e experiência em AWS"
+    context:
+      scope: "Funil de Talentos"
+      page: "funil-de-talentos"
+
+  # ── COMMUNICATION ──────────────────────────────────────────────
+  - id: TCNR-CO-001
+    agent: communication
+    severity: medium
+    prompt: "envia um e-mail de acompanhamento para os candidatos finalistas"
+    context:
+      scope: "Comunicação"
+      page: "candidates"
+
+  # ── HIRING POLICY ──────────────────────────────────────────────
+  - id: TCNR-HP-001
+    agent: hiring_policy
+    severity: medium
+    prompt: "qual o nível de automação configurado para movimentação de candidatos?"
+    context:
+      scope: "Configurações"
+      page: "configuracoes"
+
+  # ── TALENT POOL ────────────────────────────────────────────────
+  - id: TCNR-TP-001
+    agent: talent_pool
+    severity: medium
+    prompt: "lista os bancos de talentos disponíveis"
+    context:
+      scope: "Bancos de Talentos"
+      page: "talent-pool"
+
+  # ── ATS INTEGRATION ────────────────────────────────────────────
+  - id: TCNR-ATS-001
+    agent: ats_integration
+    severity: medium
+    prompt: "quais integrações com ATS estão ativas?"
+    context:
+      scope: "Configurações"
+      page: "configuracoes/integracoes"
+
+  # ── CANDIDATE SELF-SERVICE (público / candidato logado) ────────
+  - id: TCNR-CSS-001
+    agent: candidate_self_service
+    severity: high
+    prompt: "como acompanho meu processo seletivo?"
+    context:
+      scope: "Candidato"
+      page: "candidato/processos"
+
+  # ── AUTOMATION (Task #1042) ────────────────────────────────────
+  - id: TCNR-AU-001
+    agent: automation
+    severity: medium
+    prompt: "configura uma automação para mover candidatos aprovados na triagem para o teste técnico"
+    context:
+      scope: "Automação"
+      page: "configuracoes/automacoes"
+
+  # ── AUTONOMOUS (Task #1042) ────────────────────────────────────
+  - id: TCNR-AT-001
+    agent: autonomous
+    severity: high
+    prompt: "executa o plano autônomo de prospecção de candidatos para a vaga de Engenheiro Backend"
+    context:
+      scope: "Autônomo"
+      page: "home"
+
+  # ── COMPANY SETTINGS (Task #1042) ──────────────────────────────
+  - id: TCNR-CS-001
+    agent: company_settings
+    severity: critical
+    prompt: "atualiza o setor de atuação e o headcount da empresa nas configurações"
+    context:
+      scope: "Configurações"
+      page: "configuracoes"
+
+  # ── CV SCREENING PIPELINE (Task #1042) ─────────────────────────
+  - id: TCNR-CV-001
+    agent: cv_screening_pipeline
+    severity: high
+    prompt: "processa os currículos recebidos hoje e classifica por aderência à vaga"
+    context:
+      scope: "Triagem"
+      page: "candidates"
+
+  # ── SOURCING (Task #1042) ──────────────────────────────────────
+  - id: TCNR-SR-001
+    agent: sourcing
+    severity: high
+    prompt: "faz uma rodada de sourcing externo no LinkedIn para a vaga de Product Manager"
+    context:
+      scope: "Sourcing"
+      page: "funil-de-talentos"
+
+  # ── PIPELINE TRANSITION (Task #1042) ───────────────────────────
+  - id: TCNR-PT-001
+    agent: pipeline_transition
+    severity: high
+    prompt: "move o candidato João Silva da etapa de entrevista RH para entrevista técnica"
+    context:
+      scope: "Kanban"
+      page: "kanban"

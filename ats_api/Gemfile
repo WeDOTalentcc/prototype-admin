@@ -1,0 +1,111 @@
+source "https://rubygems.org"
+
+# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
+gem "rails", "~> 7.2", ">= 7.2.3"
+gem "rack-session", ">= 2.1.2"
+# The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
+gem "sprockets-rails"
+# Use postgresql as the database for Active Record
+gem "pg", "~> 1.1"
+# Use the Puma web server [https://github.com/puma/puma]
+gem "puma", ">= 5.0"
+# Build JSON APIs with ease [https://github.com/rails/jbuilder]
+gem "jbuilder"
+# Use Redis adapter to run Action Cable in production
+gem "redis", ">= 4.0.1"
+# dotenv-rails: Carrega .env em todos os ambientes (necessário para VM do Sidekiq)
+gem "dotenv-rails"
+# Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
+# gem "kredis"
+gem "sidekiq", "~> 7.0"
+gem "connection_pool", "~> 2.4"
+gem "bcrypt", "~> 3.1.7"
+gem "jwt"
+gem "ros-apartment", require: "apartment"
+gem "searchkick", "~> 5.3"                  # compatível com ES 7/8
+gem "elasticsearch", ">= 8.0", "< 9.0"      # client Ruby v8 (qualquer 8.x)
+gem "elastic-transport", ">= 8.0", "< 9.0"  # garante transportar v8 (até 8.4.1 hoje)
+# Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
+# gem "bcrypt", "~> 3.1.7"
+gem "twilio-ruby"
+gem "httparty", ">= 0.23.2"
+gem "addressable", ">= 2.9.0"
+gem "net-imap", ">= 0.6.3"
+gem "gemini-ai"
+gem "pgvector"
+gem "neighbor"
+gem "terminal-table"
+# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
+gem "tzinfo-data", platforms: %i[ windows jruby ]
+gem "rerun"
+gem "benchmark"
+# Reduces boot times through caching; required in config/boot.rb
+gem "bootsnap", require: false
+gem "jsonapi-serializer"
+# Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
+# gem "image_processing", "~> 1.2"
+gem "pundit"
+gem "workos"
+gem "rack-cors"
+gem "yomu", "~> 0.1.1"
+gem "activestorage-validator"
+gem "active_storage_validations"
+gem "google-cloud-storage", "~> 1.47", require: false
+# gem para rapptmq
+gem "sneakers"
+gem "bunny"
+gem "sneakers_handlers"
+gem "nokogiri", ">= 1.18.8"
+gem "sidekiq-cron", ">= 2.4.0"
+gem "exception_notification"
+gem "matrix"
+gem "prawn", "~> 2.4"
+gem "prawn-table", "~> 0.2"
+# group :mq do
+#   gem 'sneakers'
+# end
+
+
+group :development, :test do
+  gem "shoulda-matchers"
+  # gem 'reek', '>= 6.1.4'
+  gem "rspec-rails", "~> 6.1.0"
+  gem "brakeman", require: false
+  gem "byebug", platforms: %i[mri mingw x64_mingw]
+  gem "factory_bot_rails"
+  gem "faker"
+  gem "faraday"
+  gem "faraday-retry"
+  gem "parallel"
+  gem "parallel_tests"
+  gem "pronto"
+  gem "pronto-brakeman"
+  # Removed explicit require to avoid load error in container; use manual 'require "debug"' when needed
+  gem "debug", platforms: %i[ mri windows ]
+  gem "pronto-flay"
+  # gem 'pronto-reek'
+  gem "pronto-rubocop"
+  gem "rspec_junit_formatter"
+  gem "rubocop-rspec"
+  gem "rswag-specs"
+  gem "rubocop-rails-omakase", require: false
+  # gem 'rails-controller-testing', '~> 1.0.5'
+end
+
+group :development do
+  # Use console on exceptions pages [https://github.com/rails/web-console]
+  gem "web-console"
+
+  # Highlight the fine-grained location where an error occurred [https://github.com/ruby/error_highlight]
+  # gem "error_highlight", ">= 0.4.0", platforms: [ :ruby ]
+end
+
+group :test do
+  gem "database_cleaner-active_record"
+  gem "rails-controller-testing", "1.0.5"
+  gem "rspec-openapi"
+  gem "ruby-prof", ">= 0.17.0", require: false
+  gem "simplecov", "~> 0.16.0"
+  gem "webmock"
+  # gem "error_highlight", ">= 0.4.0", platforms: [ :ruby ]
+end

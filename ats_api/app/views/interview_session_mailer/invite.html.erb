@@ -1,0 +1,55 @@
+<% candidate_first_name = @candidate.name.to_s.split.first %>
+<% content_for :title, "Triagem por Voz - WeDO Talent" %>
+<% content_for :disclaimer, "Ao iniciar, você concorda com o tratamento de seus dados conforme nossa Política de Privacidade." %>
+
+<%= render layout: 'shared/mailer/email_layout' do %>
+
+  <%= render 'shared/mailer/email_header', company_name: @company_name %>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 32px 32px 0;">
+        <p style="margin: 0 0 4px 0; font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em;">
+          Triagem por voz — <%= @company_name %>
+        </p>
+        <h1 style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #111827; line-height: 1.3;">
+          Olá, <%= candidate_first_name %>.
+        </h1>
+      </td>
+    </tr>
+  </table>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 0 32px 24px;">
+        <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.7; color: #374151;">
+          Gostaríamos de convidá-lo(a) para uma triagem por voz com a <strong style="color: #111827;">LIA</strong>,
+          nossa assistente de recrutamento com inteligência artificial. A entrevista é rápida,
+          simples e pode ser feita de onde você estiver — basta ter um microfone funcionando.
+        </p>
+      </td>
+    </tr>
+  </table>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="padding: 0 32px 24px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9fafb; border: 1px solid #f3f4f6; border-radius: 10px;">
+          <%= render 'shared/mailer/email_info_row', label: 'Vaga', value: @job_title, border: true %>
+          <%= render 'shared/mailer/email_info_row', label: 'Duração', value: "Aproximadamente #{@duration} minutos", border: true %>
+          <%= render 'shared/mailer/email_info_row', label: 'Formato', value: 'Triagem por voz com IA (LIA)', border: true %>
+          <% if @expires_at %>
+            <%= render 'shared/mailer/email_info_row', label: 'Válido até', value: @expires_at.strftime("%d/%m/%Y às %H:%M"), border: false %>
+          <% end %>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <%= render 'shared/mailer/email_button', url: @interview_url, text: 'Iniciar Entrevista' %>
+
+  <%= render 'shared/mailer/email_section',
+    title: 'Dicas',
+    body: 'Escolha um local silencioso, use fones de ouvido com microfone e verifique se o navegador tem permissão para acessar o microfone.' %>
+
+<% end %>

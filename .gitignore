@@ -1,0 +1,130 @@
+# Replit internal files
+.local/
+.cache/
+.config/
+.pythonlibs/
+.upm/
+.replit
+replit.nix
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+ppt_env/
+*.so
+
+# Node
+node_modules/
+.next/
+.nuxt/
+out/
+dist/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+# Allow Next.js dynamic API route subdir matching the literal name "logs"
+!plataforma-lia/src/app/api/backend-proxy/webhooks/[id]/logs/
+
+# Large assets - not for GitHub
+attached_assets/
+RECRUITER_AGENT_V5_DOCUMENTACAO_COMPLETA.md
+
+# Build output and exports
+plataforma-lia/out/
+plataforma-lia/exports/
+
+# Virtual envs in docs
+plataforma-lia/docs/ppt_env/
+
+# Generated/candidate images
+plataforma-lia/public/images/candidates/
+
+# Audit logs (runtime generated)
+lia-agent-system/audit_logs/
+
+# Agent skills (Replit-managed) — exclude everything except LIA-authored skills below
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/SKILLS_INDEX.md
+!.agents/skills/canonical-fix/
+!.agents/skills/canonical-fix/**
+!.agents/skills/feature-audit/
+!.agents/skills/feature-audit/**
+!.agents/skills/lia-planning/
+!.agents/skills/lia-planning/**
+!.agents/skills/design-patterns/
+!.agents/skills/design-patterns/**
+!.agents/skills/design-standardize/
+!.agents/skills/design-standardize/**
+!.agents/skills/frontend-design/
+!.agents/skills/frontend-design/**
+!.agents/skills/humanizer/
+!.agents/skills/humanizer/**
+!.agents/skills/lia-compliance/
+!.agents/skills/lia-compliance/**
+!.agents/skills/lia-testing/
+!.agents/skills/lia-testing/**
+!.agents/skills/vue-migration-prep/
+!.agents/skills/vue-migration-prep/**
+!.agents/skills/vue-vuetify-standardize/
+!.agents/skills/vue-vuetify-standardize/**
+
+# Storybook assets (large PNGs)
+plataforma-lia/src/stories/assets/*.png
+
+# Redis snapshots — may contain runtime data/PII
+dump.rdb
+*.rdb
+
+# Replit Canvas internal files
+.canvas/
+
+# Temporary
+/tmp/
+*.tmp
+.coverage
+.coverage
+=155
+
+# macOS resource forks (Phase G.2)
+._*
+**/._*
+.DS_Store
+
+# Coverage artifacts (Task #969 cleanup)
+lia-agent-system/coverage.json
+coverage.json
+.coverage
+htmlcov/
+
+# Editor/agent backups (audit Configurações 2026-05-21 cleanup)
+# Inclui sufixos: .bak, .bak.<sprint>, .bak.before-<fix>, .bak.<unix-ts>, etc.
+# 65 arquivos limpos em 2026-05-21; pattern previne recidiva.
+*.bak
+*.bak.*

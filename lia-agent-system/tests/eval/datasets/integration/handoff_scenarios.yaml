@@ -1,0 +1,252 @@
+# Integration Evals — 8 Handoff Scenarios
+#
+# Tests the points where agents transfer context to each other.
+# 61% of multi-agent failures occur at handoff boundaries.
+#
+# Each scenario has sequential steps with context_from_previous flag.
+# Assertions verify that context (candidate_ids, job_id, scores) is
+# preserved across agent boundaries.
+
+version: 1
+
+scenarios:
+  # ──────────────────────────────────────────────────────────────
+  # 1. Sourcing → Screening
+  # ──────────────────────────────────────────────────────────────
+  - id: handoff-001
+    name: "Sourcing → Screening: candidatos encontrados são avaliados"
+    description: |
+      Recrutador busca candidatos via sourcing, depois pede avaliação.
+      O screening deve referenciar os MESMOS candidatos, não inventar novos.
+    critical: true
+    steps:
+      - agent: sourcing
+        input: "Busque candidatos Python sênior para a vaga de Engenheiro Backend"
+        expect:
+          must_include: ["candidato", "score", "compatibilidade"]
+          produces: ["candidate_ids", "job_context"]
+
+      - agent: cv_screening
+        input: "Avalie os candidatos encontrados para esta vaga"
+        context_from_previous: true
+        expect:
+          must_include: ["score", "avaliação"]
+          must_not_include: ["não encontrei candidatos"]
+
+    assertions:
+      context_preserved:
+        - "candidate_ids referenced in screening == candidate_ids from sourcing"
+        - "job_id consistent across both steps"
+      data_integrity:
+        - "screening does not invent candidates not returned by sourcing"
+        - "vacancy requirements carried over to screening criteria"
+
+  # ──────────────────────────────────────────────────────────────
+  # 2. Chat → Sourcing (intent routing)
+  # ──────────────────────────────────────────────────────────────
+  - id: handoff-002
+    name: "Chat → Sourcing: intenção de busca detectada e delegada"
+    description: |
+      Mensagem livre do recrutador contém intenção de sourcing.
+      Orquestrador deve detectar e delegar para agente de sourcing.
+    critical: true
+    steps:
+      - agent: orchestrator
+        input: "Preciso de candidatos com experiência em Kubernetes para a vaga do time de infra"
+        expect:
+          routed_to: "sourcing"
+          must_include: ["candidato", "busca"]
+          produces: ["domain_routing", "job_context"]
+
+    assertions:
+      routing:
+        - "intent classified as sourcing (not pipeline, not wizard)"
+        - "job context extracted from message"
+      context_preserved:
+        - "sourcing agent receives job requirements from orchestrator"
+
+  # ──────────────────────────────────────────────────────────────
+  # 3. Screening → Pipeline (candidate advancement)
+  # ──────────────────────────────────────────────────────────────
+  - id: handoff-003
+    name: "Screening → Pipeline: candidato avaliado é movido"
+    description: |
+      Após triagem positiva (score >= 75), recrutador move candidato
+      para próxima etapa. Pipeline deve conhecer o score e razão.
+    critical: true
+    steps:
+      - agent: cv_screening
+        input: "Avalie o candidato João para a vaga de Dev Backend"
+        expect:
+          must_include: ["score"]
+          produces: ["candidate_id", "screening_score", "recommendation"]
+
+      - agent: pipeline
+        input: "Move o João para entrevista"
+        context_from_previous: true
+        expect:
+          must_include: ["mover", "entrevista"]
+          must_not_include: ["candidato não encontrado"]
+
+    assertions:
+      context_preserved:
+        - "pipeline knows candidate_id from screening"
+        - "screening score available in pipeline context"
+      data_integrity:
+        - "pipeline references correct candidate (not different one)"
+        - "stage transition respects screening recommendation"
+
+  # ──────────────────────────────────────────────────────────────
+  # 4. Pipeline → Communication (decision triggers message)
+  # ──────────────────────────────────────────────────────────────
+  - id: handoff-004
+    name: "Pipeline → Communication: decisão gera comunicação"
+    description: |
+      Recrutador rejeita candidato no pipeline. Sistema deve preparar
+      email de feedback com contexto da rejeição.
+    critical: true
+    steps:
+      - agent: pipeline
+        input: "Rejeitar candidato Maria — motivo: experiência insuficiente em React"
+        expect:
+          must_include: ["rejeição", "feedback"]
+          produces: ["candidate_id", "rejection_reason", "job_id"]
+
+      - agent: communication
+        input: "Enviar feedback de rejeição para a Maria"
+        context_from_previous: true
+        expect:
+          must_include: ["email", "feedback"]
+          must_not_include: ["dados insuficientes"]
+
+    assertions:
+      context_preserved:
+        - "communication has candidate_id + rejection_reason from pipeline"
+        - "email template uses rejection reason as context"
+      compliance:
+        - "rejection reason is job-related (not discriminatory)"
+        - "consent check executed before sending"
+
+  # ──────────────────────────────────────────────────────────────
+  # 5. Chat → Analytics (report delegation)
+  # ──────────────────────────────────────────────────────────────
+  - id: handoff-005
+    name: "Chat → Analytics: pedido de relatório delegado"
+    description: |
+      Recrutador pede relatório no chat. Orquestrador delega para
+      analytics que gera dados específicos do tenant.
+    critical: false
+    steps:
+      - agent: orchestrator
+        input: "Quero um relatório de pipeline health da última semana"
+        expect:
+          routed_to: "analytics"
+          must_include: ["pipeline", "relatório"]
+          produces: ["report_type", "period"]
+
+    assertions:
+      routing:
+        - "intent classified as analytics (not pipeline operations)"
+      context_preserved:
+        - "period parameter (última semana) passed to analytics agent"
+        - "company_id scoped correctly"
+
+  # ──────────────────────────────────────────────────────────────
+  # 6. Sourcing → Communication (outreach to found candidates)
+  # ──────────────────────────────────────────────────────────────
+  - id: handoff-006
+    name: "Sourcing → Communication: candidato encontrado recebe contato"
+    description: |
+      Após sourcing, recrutador pede para contactar os candidatos.
+      Communication deve ter os dados de contato e contexto da vaga.
+    critical: true
+    steps:
+      - agent: sourcing
+        input: "Busque candidatos Data Engineer no banco interno"
+        expect:
+          must_include: ["candidato"]
+          produces: ["candidate_ids", "candidate_contacts"]
+
+      - agent: communication
+        input: "Envie mensagem de abordagem para os candidatos encontrados"
+        context_from_previous: true
+        expect:
+          must_include: ["mensagem", "enviar"]
+
+    assertions:
+      context_preserved:
+        - "communication has candidate contacts from sourcing results"
+        - "message context includes job title and requirements"
+      compliance:
+        - "consent check before each send"
+        - "LGPD opt-out respected"
+
+  # ──────────────────────────────────────────────────────────────
+  # 7. Chat → Job Management (vacancy creation)
+  # ──────────────────────────────────────────────────────────────
+  - id: handoff-007
+    name: "Chat → Job Management: criação de vaga delegada"
+    description: |
+      Recrutador inicia criação de vaga pelo chat. Orquestrador delega
+      para wizard de vagas com contexto extraído da mensagem.
+    critical: true
+    steps:
+      - agent: orchestrator
+        input: "Quero abrir uma vaga de Engenheiro de Dados Sênior para o time de BI"
+        expect:
+          routed_to: "job_management"
+          must_include: ["vaga", "criar"]
+          produces: ["job_title", "seniority", "team"]
+
+    assertions:
+      routing:
+        - "intent classified as job_management/wizard"
+      context_preserved:
+        - "job title 'Engenheiro de Dados Sênior' passed to wizard"
+        - "team context 'BI' preserved"
+        - "seniority 'Sênior' extracted"
+
+  # ──────────────────────────────────────────────────────────────
+  # 8. Multi-hop: Chat → Sourcing → Screening → Pipeline
+  # ──────────────────────────────────────────────────────────────
+  - id: handoff-008
+    name: "Multi-hop: 3 handoffs completos (stress test)"
+    description: |
+      Fluxo completo: recrutador pede busca no chat → sourcing encontra →
+      screening avalia → pipeline move. Contexto deve sobreviver 3 handoffs.
+    critical: true
+    steps:
+      - agent: orchestrator
+        input: "Busque candidatos para a vaga de DevOps Pleno"
+        expect:
+          routed_to: "sourcing"
+          produces: ["job_context"]
+
+      - agent: sourcing
+        input: "Resultados da busca"
+        context_from_previous: true
+        expect:
+          produces: ["candidate_ids", "scores"]
+
+      - agent: cv_screening
+        input: "Avalie o melhor candidato"
+        context_from_previous: true
+        expect:
+          produces: ["screening_score", "recommendation"]
+
+      - agent: pipeline
+        input: "Mova o candidato aprovado para entrevista"
+        context_from_previous: true
+        expect:
+          must_not_include: ["candidato não encontrado"]
+
+    assertions:
+      context_preserved:
+        - "job_id consistent across all 4 steps"
+        - "candidate_id from sourcing → screening → pipeline is the same"
+        - "screening score available in pipeline decision context"
+      data_integrity:
+        - "no candidate invented at any step"
+        - "no context lost between hops"
+      end_to_end:
+        - "final state: candidate in 'Entrevista' stage with full audit trail"

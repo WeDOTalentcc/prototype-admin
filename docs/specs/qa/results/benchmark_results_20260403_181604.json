@@ -1,0 +1,760 @@
+{
+  "metadata": {
+    "timestamp": "2026-04-03T18:16:04.892433",
+    "base_url": "http://localhost:5000",
+    "component_filter": null,
+    "total_tests": 18,
+    "total_time_ms": 203,
+    "http_library": "httpx",
+    "timeout_s": 30,
+    "benchmark_version": "1.0.0"
+  },
+  "summary": {
+    "total_tests": 18,
+    "passed": 17,
+    "failed": 1,
+    "pass_rate": "94.4%",
+    "avg_score": 59.2,
+    "avg_latency_ms": 10,
+    "max_latency_ms": 47,
+    "min_latency_ms": 7,
+    "by_component": {
+      "chat": {
+        "total": 5,
+        "passed": 4,
+        "failed": 1,
+        "pass_rate": "80%",
+        "avg_score": 47.0,
+        "avg_latency_ms": 16
+      },
+      "orchestrator": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "pass_rate": "100%",
+        "avg_score": 50.0,
+        "avg_latency_ms": 8
+      },
+      "wizard": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "pass_rate": "100%",
+        "avg_score": 70.0,
+        "avg_latency_ms": 9
+      },
+      "conversational": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "pass_rate": "100%",
+        "avg_score": 70.0,
+        "avg_latency_ms": 7
+      },
+      "wsi": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "pass_rate": "100%",
+        "avg_score": 70.0,
+        "avg_latency_ms": 7
+      }
+    },
+    "quality_issues": [
+      "[chat_001] Resposta não está em português",
+      "[chat_001] Resposta não menciona contexto de recrutamento",
+      "[chat_001] Keywords ausentes: ['candidato', 'triagem', 'semana', 'etapa', 'pipeline']",
+      "[chat_002] Resposta não está em português",
+      "[chat_002] Resposta não menciona contexto de recrutamento",
+      "[chat_002] Keywords ausentes: ['vaga', 'pipeline', 'dias', 'candidato']",
+      "[chat_003] Resposta não está em português",
+      "[chat_003] Resposta não menciona contexto de recrutamento",
+      "[chat_003] Keywords ausentes: ['relatório', 'processo', 'seletivo', 'mês']",
+      "[chat_004] Resposta não está em português",
+      "[chat_004] Resposta não menciona contexto de recrutamento",
+      "[chat_004] Keywords ausentes: ['candidato', 'vaga', 'aplicar']",
+      "[chat_005] Resposta não está em português",
+      "[chat_005] Resposta não menciona contexto de recrutamento",
+      "[chat_005] Keywords ausentes: ['silver', 'medalist', 'candidato', 'vaga', 'product manager']",
+      "[orch_001] Resposta não está em português",
+      "[orch_001] Resposta não menciona contexto de recrutamento",
+      "[orch_001] Keywords ausentes: ['candidato', 'etapa', 'mover', 'pipeline', 'joão', 'silva']",
+      "[orch_002] Resposta não está em português",
+      "[orch_002] Resposta não menciona contexto de recrutamento",
+      "[orch_002] Keywords ausentes: ['entrevista', 'agenda', 'amanhã', '14', 'horário']",
+      "[orch_003] Resposta não está em português",
+      "[orch_003] Resposta não menciona contexto de recrutamento",
+      "[orch_003] Keywords ausentes: ['email', 'feedback', 'candidato', 'reprovado', 'enviar']",
+      "[orch_004] Resposta não está em português",
+      "[orch_004] Resposta não menciona contexto de recrutamento",
+      "[orch_004] Keywords ausentes: ['vaga', 'engenheiro', 'dados', 'sênior', 'criar']",
+      "[wizard_001] Resposta não está em português",
+      "[wizard_001] Keywords ausentes: ['python', 'sênior', 'remoto', 'fintech', 'engenheiro']",
+      "[wizard_002] Resposta não está em português",
+      "[wizard_002] Keywords ausentes: ['python', 'spark', 'aws', 'experiência', 'requisito']",
+      "[wizard_003] Resposta não está em português",
+      "[wizard_003] Keywords ausentes: ['raciocínio', 'equipe', 'competência', 'avaliar', 'habilidade']",
+      "[wizard_004] Resposta não está em português",
+      "[wizard_004] Keywords ausentes: ['publicar', 'vaga', 'confirm', 'ok', 'publicada', 'pronto']",
+      "[conv_001] Resposta não está em português",
+      "[conv_001] Keywords ausentes: ['plataforma', 'recrutamento', 'ajudar', 'vaga', 'candidato', 'funciona']",
+      "[conv_002] Resposta não está em português",
+      "[conv_002] Keywords ausentes: ['vaga', 'criar', 'wizard', 'informação', 'ajudar']",
+      "[conv_003] Resposta não está em português",
+      "[conv_003] Keywords ausentes: ['processo', 'seletivo', 'ajudar', 'candidato', 'etapa']",
+      "[wsi_001] Resposta não está em português",
+      "[wsi_001] Keywords ausentes: ['python', 'django', 'aws', 'experiência', 'desenvolveu', 'arquitetura']",
+      "[wsi_002] Resposta não está em português",
+      "[wsi_002] Keywords ausentes: ['produto', 'roadmap', 'stakeholder', 'prioridade', 'métrica', 'produto', 'manager']"
+    ],
+    "hallucination_risks": 0,
+    "non_portuguese": 18
+  },
+  "results": [
+    {
+      "id": "chat_001",
+      "component": "chat",
+      "name": "Consulta candidatos triagem",
+      "endpoint": "/api/backend-proxy/chat",
+      "description": "LIA deve entender consulta sobre candidatos na triagem",
+      "latency_ms": 47,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 24,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "candidato",
+        "triagem",
+        "semana",
+        "etapa",
+        "pipeline"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 50,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/chat/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/chat/"
+      }
+    },
+    {
+      "id": "chat_002",
+      "component": "chat",
+      "name": "Pipeline travado",
+      "endpoint": "/api/backend-proxy/chat",
+      "description": "LIA deve identificar vagas com pipeline parado",
+      "latency_ms": 8,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 24,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "vaga",
+        "pipeline",
+        "dias",
+        "candidato"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 50,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/chat/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/chat/"
+      }
+    },
+    {
+      "id": "chat_003",
+      "component": "chat",
+      "name": "Relatório processos seletivos",
+      "endpoint": "/api/backend-proxy/chat",
+      "description": "LIA deve entender pedido de relatório mensal",
+      "latency_ms": 9,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 24,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": false,
+      "min_length": 30,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "relatório",
+        "processo",
+        "seletivo",
+        "mês"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 35,
+      "passed": false,
+      "error": null,
+      "response_text": "/api/backend-proxy/chat/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/chat/"
+      }
+    },
+    {
+      "id": "chat_004",
+      "component": "chat",
+      "name": "Candidatos vaga backend",
+      "endpoint": "/api/backend-proxy/chat",
+      "description": "LIA deve listar candidatos de uma vaga específica",
+      "latency_ms": 8,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 24,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 0.25,
+      "expected_found": [
+        "backend"
+      ],
+      "expected_missing": [
+        "candidato",
+        "vaga",
+        "aplicar"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 50,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/chat/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/chat/"
+      }
+    },
+    {
+      "id": "chat_005",
+      "component": "chat",
+      "name": "Silver medalist Product Manager",
+      "endpoint": "/api/backend-proxy/chat",
+      "description": "LIA deve entender conceito de silver medalist",
+      "latency_ms": 11,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 24,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "silver",
+        "medalist",
+        "candidato",
+        "vaga",
+        "product manager"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 50,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/chat/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/chat/"
+      }
+    },
+    {
+      "id": "orch_001",
+      "component": "orchestrator",
+      "name": "Mover candidato próxima etapa",
+      "endpoint": "/api/backend-proxy/orchestrator/process",
+      "description": "Orquestrador deve entender ação de mover candidato no pipeline",
+      "latency_ms": 8,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 40,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "candidato",
+        "etapa",
+        "mover",
+        "pipeline",
+        "joão",
+        "silva"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 50,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/orchestrator/process/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/orchestrator/process/"
+      }
+    },
+    {
+      "id": "orch_002",
+      "component": "orchestrator",
+      "name": "Agendar entrevista",
+      "endpoint": "/api/backend-proxy/orchestrator/process",
+      "description": "Orquestrador deve entender agendamento de entrevista",
+      "latency_ms": 10,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 40,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "entrevista",
+        "agenda",
+        "amanhã",
+        "14",
+        "horário"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 50,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/orchestrator/process/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/orchestrator/process/"
+      }
+    },
+    {
+      "id": "orch_003",
+      "component": "orchestrator",
+      "name": "Email feedback reprovados",
+      "endpoint": "/api/backend-proxy/orchestrator/process",
+      "description": "Orquestrador deve entender envio de emails em massa",
+      "latency_ms": 8,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 40,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "email",
+        "feedback",
+        "candidato",
+        "reprovado",
+        "enviar"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 50,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/orchestrator/process/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/orchestrator/process/"
+      }
+    },
+    {
+      "id": "orch_004",
+      "component": "orchestrator",
+      "name": "Criar vaga engenheiro dados",
+      "endpoint": "/api/backend-proxy/orchestrator/process",
+      "description": "Orquestrador deve iniciar fluxo de criação de vaga",
+      "latency_ms": 7,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 40,
+      "has_portuguese": false,
+      "is_relevant": false,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "vaga",
+        "engenheiro",
+        "dados",
+        "sênior",
+        "criar"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {},
+      "score": 50,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/orchestrator/process/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/orchestrator/process/"
+      }
+    },
+    {
+      "id": "wizard_001",
+      "component": "wizard",
+      "name": "Wizard info básica Python fintech",
+      "endpoint": "/api/backend-proxy/lia/job-wizard/interpret",
+      "description": "Wizard deve interpretar info básica da vaga corretamente",
+      "latency_ms": 8,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 44,
+      "has_portuguese": false,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "python",
+        "sênior",
+        "remoto",
+        "fintech",
+        "engenheiro"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "action": false,
+        "confidence": false,
+        "should_advance": false
+      },
+      "score": 70,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/lia/job-wizard/interpret/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/lia/job-wizard/interpret/"
+      }
+    },
+    {
+      "id": "wizard_002",
+      "component": "wizard",
+      "name": "Wizard requisitos Python Spark AWS",
+      "endpoint": "/api/backend-proxy/lia/job-wizard/interpret",
+      "description": "Wizard deve extrair requisitos técnicos da vaga",
+      "latency_ms": 9,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 44,
+      "has_portuguese": false,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "python",
+        "spark",
+        "aws",
+        "experiência",
+        "requisito"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "action": false,
+        "confidence": false,
+        "should_advance": false
+      },
+      "score": 70,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/lia/job-wizard/interpret/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/lia/job-wizard/interpret/"
+      }
+    },
+    {
+      "id": "wizard_003",
+      "component": "wizard",
+      "name": "Wizard competências raciocínio equipe",
+      "endpoint": "/api/backend-proxy/lia/job-wizard/interpret",
+      "description": "Wizard deve capturar competências comportamentais",
+      "latency_ms": 15,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 44,
+      "has_portuguese": false,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 10,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "raciocínio",
+        "equipe",
+        "competência",
+        "avaliar",
+        "habilidade"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "action": false,
+        "confidence": false,
+        "should_advance": false
+      },
+      "score": 70,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/lia/job-wizard/interpret/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/lia/job-wizard/interpret/"
+      }
+    },
+    {
+      "id": "wizard_004",
+      "component": "wizard",
+      "name": "Wizard revisão publicar vaga",
+      "endpoint": "/api/backend-proxy/lia/job-wizard/interpret",
+      "description": "Wizard deve confirmar publicação da vaga na etapa de revisão",
+      "latency_ms": 7,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 44,
+      "has_portuguese": false,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 5,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "publicar",
+        "vaga",
+        "confirm",
+        "ok",
+        "publicada",
+        "pronto"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "action": false,
+        "confidence": false,
+        "should_advance": false
+      },
+      "score": 70,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/lia/job-wizard/interpret/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/lia/job-wizard/interpret/"
+      }
+    },
+    {
+      "id": "conv_001",
+      "component": "conversational",
+      "name": "Olá como funciona plataforma",
+      "endpoint": "/api/backend-proxy/lia/conversational",
+      "description": "LIA conversacional deve apresentar a plataforma",
+      "latency_ms": 7,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 38,
+      "has_portuguese": false,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 30,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "plataforma",
+        "recrutamento",
+        "ajudar",
+        "vaga",
+        "candidato",
+        "funciona"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "understood_intent": false,
+        "can_help": false
+      },
+      "score": 70,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/lia/conversational/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/lia/conversational/"
+      }
+    },
+    {
+      "id": "conv_002",
+      "component": "conversational",
+      "name": "Quero criar nova vaga",
+      "endpoint": "/api/backend-proxy/lia/conversational",
+      "description": "LIA deve direcionar para criação de vaga",
+      "latency_ms": 7,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 38,
+      "has_portuguese": false,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "vaga",
+        "criar",
+        "wizard",
+        "informação",
+        "ajudar"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "understood_intent": false,
+        "can_help": false
+      },
+      "score": 70,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/lia/conversational/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/lia/conversational/"
+      }
+    },
+    {
+      "id": "conv_003",
+      "component": "conversational",
+      "name": "Ajuda processo seletivo",
+      "endpoint": "/api/backend-proxy/lia/conversational",
+      "description": "LIA deve oferecer ajuda com processo seletivo",
+      "latency_ms": 7,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 38,
+      "has_portuguese": false,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 20,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "processo",
+        "seletivo",
+        "ajudar",
+        "candidato",
+        "etapa"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "understood_intent": false,
+        "can_help": false
+      },
+      "score": 70,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/backend-proxy/lia/conversational/",
+      "raw_response": {
+        "_raw_text": "/api/backend-proxy/lia/conversational/"
+      }
+    },
+    {
+      "id": "wsi_001",
+      "component": "wsi",
+      "name": "Perguntas triagem Python Sênior",
+      "endpoint": "/api/lia/api/wsi/generate-job-screening-questions",
+      "description": "WSI deve gerar perguntas de triagem técnicas para Python Sênior",
+      "latency_ms": 7,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 50,
+      "has_portuguese": false,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 50,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "python",
+        "django",
+        "aws",
+        "experiência",
+        "desenvolveu",
+        "arquitetura"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "total_generated": false
+      },
+      "score": 70,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/lia/api/wsi/generate-job-screening-questions/",
+      "raw_response": {
+        "_raw_text": "/api/lia/api/wsi/generate-job-screening-questions/"
+      }
+    },
+    {
+      "id": "wsi_002",
+      "component": "wsi",
+      "name": "Perguntas triagem Product Manager",
+      "endpoint": "/api/lia/api/wsi/generate-job-screening-questions",
+      "description": "WSI deve gerar perguntas de triagem para Product Manager",
+      "latency_ms": 7,
+      "http_status": 308,
+      "response_received": true,
+      "response_length": 50,
+      "has_portuguese": false,
+      "is_relevant": true,
+      "has_hallucination_risk": false,
+      "length_ok": true,
+      "min_length": 50,
+      "keywords_coverage": 0.0,
+      "expected_found": [],
+      "expected_missing": [
+        "produto",
+        "roadmap",
+        "stakeholder",
+        "prioridade",
+        "métrica",
+        "produto",
+        "manager"
+      ],
+      "forbidden_found": [],
+      "extra_checks": {
+        "total_generated": false
+      },
+      "score": 70,
+      "passed": true,
+      "error": null,
+      "response_text": "/api/lia/api/wsi/generate-job-screening-questions/",
+      "raw_response": {
+        "_raw_text": "/api/lia/api/wsi/generate-job-screening-questions/"
+      }
+    }
+  ]
+}

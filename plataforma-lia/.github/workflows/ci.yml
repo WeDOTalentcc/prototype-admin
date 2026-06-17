@@ -1,0 +1,50 @@
+name: CI — Frontend
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'plataforma-lia/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'plataforma-lia/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Lint · Test · Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plataforma-lia
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: plataforma-lia/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Unit & Component tests
+        run: npx vitest run --reporter=verbose
+
+      - name: G-CANDIDATE-FIELDS — canonical snake_case candidate fields (BLOCKING)
+        run: python3 scripts/check_canonical_candidate_fields.py --blocking
+
+      - name: Build
+        run: npm run build

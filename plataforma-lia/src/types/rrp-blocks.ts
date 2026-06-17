@@ -1,0 +1,167 @@
+// src/types/rrp-blocks.ts — Rich Response Protocol (RRP) block catalog (TS mirror).
+//
+// Espelho 1:1 de lia-agent-system/app/shared/rrp_blocks.py (Pydantic).
+// AD1: single source of truth é o Pydantic; este arquivo deveria ser GERADO via
+// codegen (datamodel-code-generator / pydantic→JSON Schema→ts). Até o codegen
+// existir, manter em sincronia manual — qualquer campo novo no .py exige mudar aqui.
+// Puro tipos + 1 helper de exaustividade; sem imports → não pode quebrar o build.
+
+export type BlockRole = "answer" | "support" | "evidence" | "action";
+export type BlockLayout = "inline" | "wide" | "panel";
+export type BlockState = "loading" | "partial" | "ready" | "error";
+export type Confidence = "low" | "medium" | "high";
+
+export interface BlockError {
+  reason: string;
+  recoverable: boolean;
+}
+
+interface BaseBlock {
+  block_id: string;
+  role: BlockRole;
+  layout: BlockLayout;
+  state: BlockState;
+  error?: BlockError | null;
+}
+
+// ── prose ────────────────────────────────────────────────────────────────────
+export interface ProseBlock extends BaseBlock {
+  kind: "prose";
+  markdown: string;
+}
+
+// ── evidence_stack ────────────────────────────────────────────────────────────
+export type EvidenceSourceType =
+  | "linkedin"
+  | "resume"
+  | "assessment"
+  | "interview"
+  | "internal_record";
+
+export interface EvidenceItem {
+  source_type: EvidenceSourceType;
+  ref_id: string;
+  label: string;
+  captured_at?: string | null;
+  url?: string | null;
+  excerpt?: string | null;
+}
+
+export interface EvidenceStackBlock extends BaseBlock {
+  kind: "evidence_stack";
+  items: EvidenceItem[];
+  count: number;
+}
+
+// ── score_explainer (o moat) ──────────────────────────────────────────────────
+export interface ScoreFactor {
+  label: string;
+  weight: number;
+  contribution: "+" | "-";
+  detail?: string;
+  evidence_refs: string[];
+}
+
+export interface ScoreExplainerBlock extends BaseBlock {
+  kind: "score_explainer";
+  subject_id: string;
+  subject_label: string;
+  score: number; // 0–100
+  score_label: string;
+  confidence: Confidence;
+  confidence_basis?: string;
+  factors: ScoreFactor[];
+  summary?: string;
+  unverified: boolean;
+  provenance_note?: string;
+}
+
+// ── comparison_table ──────────────────────────────────────────────────────────
+export type ComparisonCellType = "score" | "text" | "badge" | "number";
+
+export interface ComparisonColumn {
+  key: string;
+  label: string;
+  type: ComparisonCellType;
+  sortable: boolean;
+}
+
+export interface ComparisonRow {
+  entity_id: string;
+  cells: Record<string, unknown>;
+  score_block_id?: string | null;
+  highlight?: "attention" | "top" | null;
+}
+
+export interface ComparisonTableBlock extends BaseBlock {
+  kind: "comparison_table";
+  title: string;
+  entity_type: "candidate" | "job";
+  columns: ComparisonColumn[];
+  rows: ComparisonRow[];
+  default_sort?: Record<string, string> | null;
+  total_count: number;
+  shown_count: number;
+}
+
+// ── funnel (pipeline) ─────────────────────────────────────────────────────────
+export interface FunnelStage {
+  label: string;
+  count: number;
+}
+
+export interface FunnelBlock extends BaseBlock {
+  kind: "funnel";
+  title: string;
+  stages: FunnelStage[];
+  total: number;
+  conversion_rate: number;
+}
+
+// ── candidate_card (perfil inline) ────────────────────────────────────────────
+export interface CandidateCardBlock extends BaseBlock {
+  kind: "candidate_card";
+  candidate_id: string;
+  name: string;
+  title?: string | null;
+  seniority?: string | null;
+  location?: string | null;
+  experience_years?: number | null;
+  top_skills: string[];
+  score?: number | null;
+  score_label?: string | null;
+  recommendation?: string | null;
+  summary?: string | null;
+  unverified: boolean;
+}
+
+
+// ── jd_preview (wizard inline JD) ────────────────────────────────────────────
+export interface JdPreviewBlock extends BaseBlock {
+  kind: "jd_preview";
+  title: string;
+  body: string;
+  data?: Record<string, unknown> | null;
+}
+
+// ── União discriminada ────────────────────────────────────────────────────────
+export type ResponseBlock =
+  | ProseBlock
+  | ComparisonTableBlock
+  | ScoreExplainerBlock
+  | EvidenceStackBlock
+  | FunnelBlock
+  | CandidateCardBlock
+  | JdPreviewBlock;
+
+export type ResponseBlockKind = ResponseBlock["kind"];
+
+/**
+ * Exaustividade em compile-time (espelha o padrão assertNeverAction canônico).
+ * USAR no `default` do switch do <ResponseBlockRenderer> SOMENTE depois de um
+ * guard de runtime para kind desconhecido (AD6: backend pode emitir um kind novo
+ * que esta union ainda não conhece — nesse caso renderizar fallback, NUNCA throw).
+ */
+export function assertNeverBlock(x: never): never {
+  throw new Error(`ResponseBlock kind não tratado: ${JSON.stringify(x)}`);
+}

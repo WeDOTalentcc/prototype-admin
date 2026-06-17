@@ -1,0 +1,80 @@
+---
+description: Diversidade, Equidade e Inclusão (DEI) e Fairness — use ao criar/modificar funcionalidades de screening, avaliação, ranking, perguntas de entrevista ou qualquer componente que possa impactar candidatos de forma desigual. Cobre FairnessGuard (3 camadas), Bias Audit e Critérios Afirmativos.
+alwaysApply: false
+---
+
+# DEI e Fairness — Plataforma LIA
+
+> Referência completa: `.agents/skills/dei-fairness/SKILL.md`
+> Skills relacionadas: `@.cursor/rules/wedo-governance.mdc`, `@.cursor/rules/screening-compliance.mdc`
+
+**Ativar quando:** a feature avalia, pontua, classifica, filtra, ordena ou exclui candidatos.
+
+## FairnessGuard — 3 Camadas de Proteção
+
+Implementação: `lia-agent-system/app/shared/compliance/fairness_guard.py`
+
+| Camada | Mecanismo | Ação |
+|--------|-----------|------|
+| 1 — Regex Patterns | 40+ patterns em 8 categorias discriminatórias | BLOCK_AND_WARN |
+| 2 — Léxico Implícito | 15+ termos de viés sutil | soft_warnings |
+| 3 — LLM Semântico | Análise contextual para textos longos | flag + revisão humana |
+
+**FairnessGuard é obrigatório em 100% das decisões de screening/ranking. Sem exceções.**
+
+## Dimensões de Diversidade Monitoradas
+
+7 dimensões: Gênero | Idade | Etnia | Formação | Região | Proficiência Linguística | Trajetória
+
+**Meta:** variância entre grupos < 3%
+
+## Regra dos 4/5 (Four-Fifths Rule)
+
+Rota de auditoria: `admin/compliance/auditoria/bias`
+
+| Ratio | Status |
+|-------|--------|
+| >= 0.80 | OK |
+| 0.60-0.79 | Investigar |
+| < 0.60 | Ação imediata |
+
+## Critérios Afirmativos
+
+Patterns detectados pelo IntentClassifier: PCD | Mulheres | Pessoas Negras | LGBTQIA+ | 50+ | Indígena | Pessoas Trans
+
+**Regra:**
+- MANTÉM como preferência positiva
+- NÃO PENALIZA candidatos fora do grupo
+- NÃO EXCLUI — apenas favorece dentro dos limites legais
+
+## Acessibilidade como DEI
+
+- WCAG 2.1 AA obrigatório em todas as interfaces
+- Radix UI primitives para componentes interativos
+- `aria-labels` em todos os botões e controles
+- `sr-only` para texto acessível apenas a leitores de tela
+- `focus-visible` para navegação por teclado
+- Contraste mínimo 4.5:1
+
+## Atributos Protegidos — Mascaramento
+
+Os seguintes dados NUNCA devem chegar ao LLM sem mascaramento:
+- Gênero, nome (indicativo de gênero/etnia)
+- Idade, data de nascimento
+- Origem, nacionalidade, religião
+- Deficiências
+- Orientação sexual, identidade de gênero
+
+## Checklist DEI para Novas Features
+
+- [ ] Linguagem neutra de gênero em todos os textos
+- [ ] Sem proxies discriminatórios (CEP → renda, universidade → classe social)
+- [ ] FairnessGuard integrado (3 camadas ativas)
+- [ ] Atributos protegidos mascarados antes do LLM
+- [ ] Acessível via teclado e screen reader
+- [ ] Candidato informado sobre avaliação por IA
+- [ ] Opt-out disponível (conforme LGPD)
+- [ ] Feedback personalizado (nunca genérico)
+- [ ] Resultado explicável (sem "caixa preta")
+- [ ] Logs de auditoria registrando decisões
+- [ ] Ratio dos 4/5 monitorado por grupo demográfico
