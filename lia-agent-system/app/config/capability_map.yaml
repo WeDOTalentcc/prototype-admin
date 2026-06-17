@@ -144,6 +144,15 @@ capabilities:
     entity_required: []
     navigate_fallback: /talent-pools
 
+  view_talent_pool_insights:
+    label: "Ver Talent Pool Insights"
+    chat_executable: false
+    entity_required:
+      - type: job
+        param: job_id
+    modal_id: talent_pool_insights
+    navigate_fallback: /analytics
+
   criar_automacao:
     chat_executable: false
     entity_required: []
