@@ -8232,5 +8232,100 @@
     "sourceHybrid": "Hybrid Search",
     "sourceGlobal": "Global Search",
     "fairnessBlocked": "Search blocked for containing discriminatory terms"
+  },
+  "portalProposta": {
+    "loading": {
+      "text": "Loading offer..."
+    },
+    "error": {
+      "title": "Offer not found",
+      "invalidLink": "This offer link is invalid or has expired. Please check that you accessed the correct link.",
+      "missingToken": "Offer token is missing."
+    },
+    "done": {
+      "accepted": {
+        "title": "Offer accepted!"
+      },
+      "declined": {
+        "title": "Response submitted"
+      }
+    },
+    "benefit": {
+      "fallback": "Benefit"
+    },
+    "status": {
+      "draft": "Draft",
+      "sent": "Awaiting response",
+      "viewed": "Viewed",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "expired": "Expired",
+      "cancelled": "Cancelled",
+      "negotiating": "In negotiation"
+    },
+    "header": {
+      "greeting": "Hello, {candidateName}! You have received a job offer."
+    },
+    "details": {
+      "sectionTitle": "Offer Details",
+      "salary": {
+        "label": "Compensation"
+      },
+      "startDate": {
+        "label": "Start date"
+      },
+      "deadline": {
+        "label": "Respond by"
+      },
+      "negotiationRound": {
+        "label": "Negotiation round"
+      },
+      "benefits": {
+        "label": "Benefits"
+      }
+    },
+    "letter": {
+      "sectionTitle": "Offer Letter"
+    },
+    "response": {
+      "sectionTitle": "Your Response",
+      "button": {
+        "accept": "Accept Offer",
+        "sending": "Sending...",
+        "decline": "Decline",
+        "confirmDecline": "Confirm Decline",
+        "back": "Back"
+      },
+      "decline": {
+        "hint": "You may leave an optional message before declining.",
+        "notesPlaceholder": "Reason (optional)..."
+      },
+      "error": {
+        "generic": "Error submitting response."
+      }
+    },
+    "alreadyResponded": {
+      "accepted": "You have already accepted this offer. Please await contact from the recruiter.",
+      "declined": "You have already declined this offer."
+    },
+    "footer": {
+      "legal": "This offer was sent via WeDOTalent. Your data is handled in accordance with the LGPD."
+    }
+  },
+  "candidateStatus": {
+    "errors": {
+      "linkExpiredRh": "Your link has expired. Please request a new link from HR.",
+      "loadFailed": "Could not load your applications. Please try again.",
+      "connectionError": "Connection error. Please check your internet connection.",
+      "invalidLinkContact": "Invalid link. Please check the link received by e-mail or WhatsApp.",
+      "invalidLinkRh": "Invalid link. Please request a new link from HR."
+    },
+    "loading": {
+      "portal": "Loading your portal..."
+    },
+    "errorState": {
+      "title": "Could not open the portal",
+      "contactHint": "If you have any questions, please contact the company that received your application."
+    }
   }
 }

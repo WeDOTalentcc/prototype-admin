@@ -8232,5 +8232,100 @@
     "sourceHybrid": "Busca Híbrida",
     "sourceGlobal": "Busca Global",
     "fairnessBlocked": "Busca bloqueada por conter termos discriminatórios"
+  },
+  "candidateStatus": {
+    "errors": {
+      "linkExpiredRh": "Seu link expirou. Solicite um novo link ao RH.",
+      "loadFailed": "Não foi possível carregar suas candidaturas. Tente novamente.",
+      "connectionError": "Erro de conexão. Verifique sua internet.",
+      "invalidLinkContact": "Link inválido. Verifique o link recebido por e-mail ou WhatsApp.",
+      "invalidLinkRh": "Link inválido. Solicite um novo link ao RH."
+    },
+    "loading": {
+      "portal": "Carregando seu portal..."
+    },
+    "errorState": {
+      "title": "Não foi possível abrir o portal",
+      "contactHint": "Em caso de dúvidas, entre em contato com a empresa que realizou sua candidatura."
+    }
+  },
+  "portalProposta": {
+    "loading": {
+      "text": "Carregando proposta..."
+    },
+    "error": {
+      "title": "Proposta não encontrada",
+      "invalidLink": "Este link de proposta é inválido ou expirou. Verifique se você acessou o link correto.",
+      "missingToken": "Token de proposta ausente."
+    },
+    "done": {
+      "accepted": {
+        "title": "Proposta aceita!"
+      },
+      "declined": {
+        "title": "Resposta enviada"
+      }
+    },
+    "benefit": {
+      "fallback": "Benefício"
+    },
+    "status": {
+      "draft": "Rascunho",
+      "sent": "Aguardando resposta",
+      "viewed": "Visualizada",
+      "accepted": "Aceita",
+      "declined": "Recusada",
+      "expired": "Expirada",
+      "cancelled": "Cancelada",
+      "negotiating": "Em negociação"
+    },
+    "header": {
+      "greeting": "Olá, {candidateName}! Você recebeu uma proposta de emprego."
+    },
+    "details": {
+      "sectionTitle": "Detalhes da Proposta",
+      "salary": {
+        "label": "Remuneração"
+      },
+      "startDate": {
+        "label": "Data de início"
+      },
+      "deadline": {
+        "label": "Responder até"
+      },
+      "negotiationRound": {
+        "label": "Rodada de negociação"
+      },
+      "benefits": {
+        "label": "Benefícios"
+      }
+    },
+    "letter": {
+      "sectionTitle": "Carta de Oferta"
+    },
+    "response": {
+      "sectionTitle": "Sua Resposta",
+      "button": {
+        "accept": "Aceitar Proposta",
+        "sending": "Enviando...",
+        "decline": "Recusar",
+        "confirmDecline": "Confirmar Recusa",
+        "back": "Voltar"
+      },
+      "decline": {
+        "hint": "Você pode deixar uma mensagem opcional antes de recusar.",
+        "notesPlaceholder": "Motivo (opcional)..."
+      },
+      "error": {
+        "generic": "Erro ao enviar resposta."
+      }
+    },
+    "alreadyResponded": {
+      "accepted": "Você já aceitou esta proposta. Aguarde o contato do recrutador.",
+      "declined": "Você já recusou esta proposta."
+    },
+    "footer": {
+      "legal": "Esta proposta foi enviada via WeDOTalent. Seus dados são tratados conforme a LGPD."
+    }
   }
 }
