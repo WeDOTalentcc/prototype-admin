@@ -216,6 +216,7 @@ from app.api.v1 import (
 from app.api.v1 import wsi_async as wsi_async_v1
 from app.api.v1.admin_agents import router as admin_agents_router
 from app.api.v1.admin_external import router as admin_external_router
+from app.api.v1.admin_plan_api import router as admin_plan_api_router
 from app.api.v1.admin_circuit_breakers import router as admin_cb_router
 from app.api.v1.admin_dlq import router as admin_dlq_router
 from app.api.v1.admin_lgpd import router as admin_lgpd_router
@@ -625,6 +626,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(admin_cb_router, prefix="/api/v1")
     app.include_router(admin_agents_router, prefix="/api/v1")
     app.include_router(admin_external_router, prefix="/api/v1", tags=["admin-external"])
+    app.include_router(admin_plan_api_router, prefix="/api/v1", tags=["admin-integration"])
     app.include_router(admin_dlq_router, prefix="/api/v1")
 
     # ── Short Lists / RAG ─────────────────────────────────────────────────────
