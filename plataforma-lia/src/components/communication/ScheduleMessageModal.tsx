@@ -217,3 +217,25 @@ export function ScheduleMessageModal({
     </Dialog>
   )
 }
+
+// ── Global store-driven wrapper (GAP-07-007) ──────────────────────────────────
+// Self-contained: reads open/candidateId/candidateName from useScheduleMessageStore.
+// Mount once in a layout or page-level modals host; no prop drilling required.
+import { useScheduleMessageStore } from "@/stores/schedule-message-store"
+
+export function ScheduleMessageModalGlobal() {
+  const { open, candidateId, candidateName, vacancyId, closeScheduleModal } =
+    useScheduleMessageStore()
+
+  if (!candidateId) return null
+
+  return (
+    <ScheduleMessageModal
+      open={open}
+      onClose={closeScheduleModal}
+      candidateId={candidateId}
+      candidateName={candidateName ?? ""}
+      vacancyId={vacancyId ?? undefined}
+    />
+  )
+}

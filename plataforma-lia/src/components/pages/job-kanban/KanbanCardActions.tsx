@@ -18,7 +18,9 @@ import {
   MessageSquareText,
   Bookmark,
   Heart,
+  Clock,
 } from "lucide-react"
+import { useScheduleMessageStore } from "@/stores/schedule-message-store"
 
 interface KanbanCardActionsProps {
   candidate: {
@@ -52,6 +54,8 @@ export function KanbanCardActions({
   onToggleFavorite,
 }: KanbanCardActionsProps) {
   const t = useTranslations('kanban')
+  const openScheduleModal = useScheduleMessageStore((s) => s.openScheduleModal)
+
   return (
     <>
 {/* Ações rápidas - Posicionadas no canto direito */}
@@ -98,6 +102,17 @@ export function KanbanCardActions({
       >
         <Calendar className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
         {t('scheduleInterview')}
+      </DropdownMenuItem>
+      {/* GAP-07-007 — Schedule Message (store-driven, no prop drilling) */}
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation()
+          openScheduleModal(candidate.id, candidate.name)
+        }}
+        className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
+      >
+        <Clock className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
+        {t('scheduleMessage')}
       </DropdownMenuItem>
       <DropdownMenuItem
         onClick={(e) => {

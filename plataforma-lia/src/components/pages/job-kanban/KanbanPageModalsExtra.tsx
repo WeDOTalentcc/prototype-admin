@@ -20,6 +20,7 @@ const JobStatusModal = dynamic(() => import("@/components/modals/job-status-moda
 const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => null })
 const BulkActionModal = dynamic(() => import("@/components/modals/bulk-action-modal").then(m => ({ default: m.BulkActionModal })), { ssr: false, loading: () => null })
 const OfferReviewModal = dynamic(() => import("@/components/offer-review-modal/OfferReviewModal").then(m => ({ default: m.OfferReviewModal })), { ssr: false })
+const ScheduleMessageModalGlobal = dynamic(() => import("@/components/communication").then(m => ({ default: m.ScheduleMessageModalGlobal })), { ssr: false, loading: () => null })
 
 export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
   const t = useTranslations('kanban')
@@ -321,6 +322,8 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
       />
       {/* PR-B: OfferReviewModal — controlado pelo useOfferDraftStore, sem props */}
       <OfferReviewModal />
+      {/* GAP-07-007: ScheduleMessageModalGlobal — controlado pelo useScheduleMessageStore, sem props */}
+      <ScheduleMessageModalGlobal />
     </>
   )
 }
