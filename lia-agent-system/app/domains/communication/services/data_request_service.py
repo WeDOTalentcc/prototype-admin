@@ -14,6 +14,7 @@ from typing import Any
 from uuid import UUID
 
 from app.domains.communication.repositories.data_request_repository import DataRequestRepository
+from app.services.notification_service import notification_service
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -264,6 +265,27 @@ class DataRequestService:
                 )
 
         await db.commit()
+
+        # G5: Emit bell notification if any channel succeeded
+        any_success = any(r.get("success") for r in results.values())
+        if any_success:
+            try:
+                await notification_service.create_notification(
+                    user_id=str(data_request.candidate_id),
+                    title="Dados solicitados para seu processo seletivo",
+                    message="Precisamos de algumas informações e documentos para continuar.",
+                    notification_type="info",
+                    category="data_request",
+                    related_candidate_id=str(data_request.candidate_id),
+                    related_job_id=str(data_request.vacancy_id) if data_request.vacancy_id else None,
+                    channels=["bell"],
+                    db=db,
+                )
+            except Exception as e:
+                logger.error(
+                    "Failed to create bell notification for data request %s: %s",
+                    data_request_id, e, exc_info=True,
+                )
 
         return results
 
