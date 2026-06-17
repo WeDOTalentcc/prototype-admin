@@ -391,9 +391,16 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     if (canonical === CANONICAL_PAGES.GENERAL) return; // unknown page — keep prev label
     const label = CANONICAL_PAGE_DISPLAY[canonical];
     if (label) {
-      setState((prev) =>
-        prev.contextPage === label ? prev : { ...prev, contextPage: label },
-      );
+      setState((prev) => {
+        const needsPageChange = prev.contextPage !== label;
+        const needsEntityClear = prev.entityContext !== null;
+        if (!needsPageChange && !needsEntityClear) return prev;
+        return {
+          ...prev,
+          ...(needsPageChange ? { contextPage: label } : {}),
+          ...(needsEntityClear ? { entityContext: null } : {}),
+        };
+      });
     }
   }, [_pathname]);
   const [pendingPrefill, setPendingPrefill] = useState<string | null>(null);

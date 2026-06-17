@@ -51,7 +51,7 @@ export default function JobPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [reloadTrigger, setReloadTrigger] = useState(0)
-  const { setFocusedJob } = useFocusedJobStore()
+  const { setFocusedJob, clearFocusedJob } = useFocusedJobStore()
 
   const handleRetry = useCallback(() => {
     setError(null)
@@ -155,7 +155,11 @@ export default function JobPage() {
         setError("Erro ao carregar a vaga")
       })
       .finally(() => setIsLoading(false))
-  }, [jobId, reloadTrigger, setFocusedJob])
+
+    return () => {
+      clearFocusedJob()
+    }
+  }, [jobId, reloadTrigger, setFocusedJob, clearFocusedJob])
 
   if (isLoading) {
     return (
