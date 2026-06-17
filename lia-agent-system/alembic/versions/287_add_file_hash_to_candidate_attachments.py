@@ -14,7 +14,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "287"
-down_revision = "286"
+down_revision = "286_add_model_version_to_audit_logs"
 branch_labels = None
 depends_on = None
 

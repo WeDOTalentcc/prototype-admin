@@ -145,6 +145,7 @@ from lia_models.communication_settings import (
     ConsentType,
     DEFAULT_COMMUNICATION_SETTINGS
 )
+from lia_models.plan_config import CompanyPlanConfig
 from lia_models.billing import (
     Subscription,
     Invoice,
