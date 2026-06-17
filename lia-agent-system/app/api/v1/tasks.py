@@ -167,6 +167,7 @@ async def list_tasks(
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List tasks with optional filters."""
     tasks = await repo.get_pending_tasks(
+        company_id=company_id,
         user_id=user_id,
         agent_type=agent_type,
         priority=priority,
@@ -184,18 +185,20 @@ async def get_task_summary(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get task summary for dashboard."""
-    summary = await repo.get_task_summary(user_id=user_id)
+    summary = await repo.get_task_summary(company_id=company_id, user_id=user_id)
     return summary
 
 
 @router.get("/today", response_model=list[TaskResponse])
 async def get_tasks_due_today(
     user_id: str | None = None,
-    repo: TasksRepository = Depends(get_tasks_repo), 
-company_id: str = Depends(require_company_id)):
+    repo: TasksRepository = Depends(get_tasks_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get tasks due today."""
-    tasks = await repo.get_tasks_due_today(user_id=user_id)
+    tasks = await repo.get_tasks_due_today(company_id=company_id, user_id=user_id)
     tasks = await _filter_tasks_by_visible_scope(tasks, current_user)
     return [task.to_dict() for task in tasks]
 
@@ -203,11 +206,13 @@ company_id: str = Depends(require_company_id)):
 @router.get("/overdue", response_model=list[TaskResponse])
 async def get_overdue_tasks(
     user_id: str | None = None,
-    repo: TasksRepository = Depends(get_tasks_repo), 
-company_id: str = Depends(require_company_id)):
+    repo: TasksRepository = Depends(get_tasks_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get overdue tasks."""
-    tasks = await repo.get_overdue_tasks(user_id=user_id)
+    tasks = await repo.get_overdue_tasks(company_id=company_id, user_id=user_id)
     tasks = await _filter_tasks_by_visible_scope(tasks, current_user)
     return [task.to_dict() for task in tasks]
 
@@ -219,7 +224,7 @@ async def get_task(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a specific task by ID."""
-    task = await repo.get_task(task_id=task_id)
+    task = await repo.get_task(task_id=task_id, company_id=company_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
@@ -236,7 +241,7 @@ async def update_task(
 ):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a task."""
-    task = await repo.get_task(task_id=task_id)
+    task = await repo.get_task(task_id=task_id, company_id=company_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
         await assert_mutation_allowed(task, current_user, resource_label="tarefa")
