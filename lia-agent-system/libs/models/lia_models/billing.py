@@ -486,7 +486,7 @@ AVAILABLE_MODULES = {
     "predictive_analytics": {
         "label": "Predictive Attrition",
         "description": "Previsão de risco de turnover com ML",
-        "initial_status": "coming_soon",
+        "initial_status": "beta",
     },
 }
 
