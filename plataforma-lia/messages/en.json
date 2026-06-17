@@ -1771,7 +1771,8 @@
     "sortFieldNotaLiaGeral": "Overall AI Score",
     "sortOrderAsc": "Ascending",
     "sortOrderDesc": "Descending",
-    "sortLabel": "Sort by"
+    "sortLabel": "Sort by",
+    "scheduleMessage": "Schedule message"
   },
   "pipeline": {
     "title": "Talent Pipeline",

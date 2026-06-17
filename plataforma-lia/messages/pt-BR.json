@@ -1771,7 +1771,8 @@
     "sortFieldNotaLiaGeral": "Nota Geral IA",
     "sortOrderAsc": "Crescente",
     "sortOrderDesc": "Decrescente",
-    "sortLabel": "Ordenar por"
+    "sortLabel": "Ordenar por",
+    "scheduleMessage": "Agendar mensagem"
   },
   "pipeline": {
     "title": "Funil de Talentos",
