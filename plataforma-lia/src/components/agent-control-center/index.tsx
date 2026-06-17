@@ -328,7 +328,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
         </div>
 
         {/* Quality Metrics Section */}
-        {qualityData && (
+        {qualityData?.overall && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-lia-text-secondary flex items-center gap-2">
@@ -376,7 +376,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
               />
             </div>
             {/* Per-agent quality table */}
-            {qualityData.agents.length > 0 && (
+            {(qualityData.agents?.length ?? 0) > 0 && (
               <div className="rounded-lg border border-lia-border-subtle overflow-hidden">
                 <table className="w-full text-xs">
                   <thead>
@@ -390,7 +390,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-lia-border-subtle">
-                    {qualityData.agents.slice(0, 8).map(a => (
+                    {qualityData.agents!.slice(0, 8).map(a => (
                       <tr key={a.agent_id} className="hover:bg-lia-bg-secondary/50">
                         <td className="p-2 font-medium text-lia-text-primary">{a.agent_id}</td>
                         <td className="p-2 text-right text-lia-text-secondary">{a.total_executions}</td>
@@ -481,7 +481,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
         )}
 
         {/* Calibration Dashboard Section */}
-        {calibration && calibration.overall.total_events > 0 && (
+        {calibration?.overall && calibration.overall.total_events > 0 && (
           <div className="mb-6">
             <h3 className="text-sm font-medium text-lia-text-secondary flex items-center gap-2 mb-3">
               <Activity className="w-4 h-4" />

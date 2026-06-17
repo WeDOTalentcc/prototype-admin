@@ -74,7 +74,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
   if (!isOpen) return null
 
   // Dados reais do backend mesclados com fallback para campos sem cobertura de DB
-  const funnelMetrics = reportApiData
+  const funnelMetrics = reportApiData?.funnel_metrics
     ? {
         totalCandidates: reportApiData.funnel_metrics.total_candidates,
         screening: reportApiData.funnel_metrics.screening,
@@ -90,7 +90,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
         hired: 0, conversionRate: 0, averageTimeToHire: 0, costPerHire: 0,
       }
 
-  const channelPerformance = reportApiData?.channel_performance.map(c => ({
+  const channelPerformance = reportApiData?.channel_performance?.map(c => ({
     channel: c.channel,
     candidates: c.candidates,
     quality: 0,
@@ -98,7 +98,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
     cost: 0,
   })) ?? []
 
-  const topCandidates = reportApiData?.top_candidates.map(c => ({
+  const topCandidates = reportApiData?.top_candidates?.map(c => ({
     name: c.name,
     score: Math.round(c.score),
     status: c.status,

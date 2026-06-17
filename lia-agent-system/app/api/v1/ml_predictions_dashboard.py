@@ -57,9 +57,14 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
         from lia_models.job_vacancy import JobVacancy
 
         # --- 1. Historical TTF by seniority (closed vacancies) ---
+        # NOTE: build the seniority expression ONCE and reuse the same object in
+        # both SELECT and GROUP BY. Creating two separate coalesce(..., "pleno")
+        # calls makes SQLAlchemy emit two distinct bind params, and Postgres then
+        # rejects the GROUP BY ("column must appear in the GROUP BY clause").
+        seniority_expr = func.lower(func.coalesce(JobVacancy.seniority_level, "pleno"))
         hist_result = await db.execute(
             select(
-                func.lower(func.coalesce(JobVacancy.seniority_level, "pleno")).label("seniority"),
+                seniority_expr.label("seniority"),
                 func.avg(
                     extract("epoch", JobVacancy.closed_at) - extract("epoch", JobVacancy.created_at)
                 ).label("avg_seconds"),
@@ -72,7 +77,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
                     JobVacancy.created_at >= cutoff,
                 )
             )
-            .group_by(func.lower(func.coalesce(JobVacancy.seniority_level, "pleno")))
+            .group_by(seniority_expr)
         )
 
         tenant_avgs: dict[str, dict] = {}
