@@ -195,13 +195,7 @@ function renderPanel(
     case "publish":
       return null
     case "calibration":
-      return (
-        <CalibrationPanel
-          data={data}
-          onApprove={onApprove}
-          onReject={onReject}
-        />
-      )
+      return null
     case "handoff":
       return null
     case "done":
