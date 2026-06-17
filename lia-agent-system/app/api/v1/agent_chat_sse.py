@@ -1278,6 +1278,112 @@ company_id: str = Depends(require_company_id)):
                 # caminho normal agent.process. Guard >=2 tasks evita deteccao
                 # falso-positivo em frases simples.
                 _plan_executed = False
+
+                # -- /planejar slash command: decompose + execute --------
+                import re as _re_plan
+                _PLANEJAR_RE = _re_plan.compile(r"^/planejar\b\s*(.*)", _re_plan.IGNORECASE)
+                _planejar_match = _PLANEJAR_RE.match((_eff_content or "").strip())
+                if _planejar_match:
+                    _task_desc = _planejar_match.group(1).strip()
+                    if _task_desc:
+                        try:
+                            from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
+                            from app.shared.execution import PlanExecutor
+                            from app.shared.execution.plan_detector import ExecutionPlan, AgentTask
+
+                            _auto = AutomationReActAgent()
+                            _decomp = await _auto.decompose_task(
+                                task_description=_task_desc,
+                                company_id=str(company_id or ""),
+                                user_id=str(user_id or "system"),
+                                persist=False,
+                            )
+                            _subtasks = _decomp.get("subtasks", []) if isinstance(_decomp, dict) else []
+                            if _subtasks and len(_subtasks) >= 2:
+                                _agent_tasks = []
+                                for i, st in enumerate(_subtasks):
+                                    _agent_tasks.append(AgentTask(
+                                        task_id=st.get("task_id", f"t{i}"),
+                                        domain_id=st.get("domain_id", st.get("domain", "automation")),
+                                        action_id=st.get("action_id", st.get("action", st.get("description", f"step-{i}")[:50])),
+                                        description=st.get("description", ""),
+                                        depends_on=st.get("depends_on", []),
+                                        is_critical=st.get("is_critical", True),
+                                        context_mappings=st.get("context_mappings", {}),
+                                    ))
+                                _plan = ExecutionPlan(
+                                    plan_id=f"planejar-{session_id[:8]}",
+                                    detected_pattern=f"/planejar {_task_desc[:40]}",
+                                    tasks=_agent_tasks,
+                                )
+                                _plan_task_id = _plan.plan_id
+
+                                async def _sse_planejar_cb(event_type: str, data: dict) -> None:
+                                    try:
+                                        _ev = {"type": "plan_progress"}
+                                        if event_type == "step_running":
+                                            _ev["event"] = "step_running"
+                                        elif event_type == "step_completed":
+                                            _ev["event"] = "step_completed"
+                                            _ev["status"] = data.get("status", "completed")
+                                        elif event_type == "step_skipped":
+                                            _ev["event"] = "step_skipped"
+                                        elif event_type in ("plan_started", "plan_completed"):
+                                            return
+                                        else:
+                                            return
+                                        _ev["task_id"] = data.get("task_id", "")
+                                        _ev["action_id"] = data.get("action_id", "")
+                                        _ev["domain_id"] = data.get("domain_id", "")
+                                        await sse_queue.put(_ev)
+                                    except Exception:
+                                        pass
+
+                                await sse_queue.put({
+                                    "type": "plan_progress",
+                                    "event": "plan_started",
+                                    "plan_id": _plan_task_id,
+                                    "total_tasks": len(_agent_tasks),
+                                    "tasks": [{"task_id": t.task_id, "action_id": t.action_id, "domain_id": t.domain_id} for t in _agent_tasks],
+                                })
+
+                                _plan_exec = PlanExecutor()
+                                _exec_result = await asyncio.wait_for(
+                                    _plan_exec.execute(
+                                        plan=_plan,
+                                        user_id=user_id,
+                                        session_id=session_id,
+                                        tenant_id=company_id,
+                                        base_context={"company_id": company_id, "user_id": user_id},
+                                        progress_callback=_sse_planejar_cb,
+                                    ),
+                                    timeout=_AGENT_TIMEOUT,
+                                )
+
+                                await sse_queue.put({
+                                    "type": "plan_progress",
+                                    "event": "plan_completed",
+                                    "plan_id": _plan_task_id,
+                                    "status": "completed",
+                                })
+
+                                _consolidated = _plan_exec.build_consolidated_response(_exec_result)
+                                from types import SimpleNamespace as _NS2
+                                await sse_queue.put({"_done": True, "_output": _NS2(
+                                    message=_consolidated.message or "Plano executado.",
+                                    confidence=getattr(_consolidated, "confidence", 0.9),
+                                    actions=[],
+                                    navigation=None,
+                                    state_updates=None,
+                                    metadata=getattr(_consolidated, "metadata", {}) or {},
+                                )})
+                                _plan_executed = True
+                                logger.info("[SSEChat] /planejar executed: %d tasks", len(_agent_tasks))
+                            else:
+                                logger.info("[SSEChat] /planejar decompose returned < 2 subtasks, falling through")
+                        except Exception as _pe:
+                            logger.warning("[SSEChat] /planejar execution (fail-open): %s", _pe)
+
                 try:
                     from app.shared.execution import PlanDetector, PlanExecutor
                     from app.shared.execution.plan_progress_mapper import (
