@@ -314,7 +314,7 @@ const MenuItem = React.memo(({
             ? "text-lia-text-primary cursor-default opacity-60"
             : "hover:bg-lia-interactive-hover",
           isActive && canAccess
-            ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
+            ? "bg-blue-50 text-lia-text-primary font-semibold"
             : canAccess
             ? "text-lia-text-primary font-normal"
             : "text-lia-text-primary font-normal",
@@ -409,7 +409,7 @@ const MenuItem = React.memo(({
                     : "hover:bg-lia-interactive-hover",
                   subItem.isFuturo ? "opacity-40 pointer-events-none" : "",
                   currentPage === subItem.label && subCanAccess
-                    ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
+                    ? "bg-blue-50 text-lia-text-primary font-semibold"
                     : subCanAccess
                     ? "text-lia-text-secondary font-normal"
                     : "text-lia-text-secondary font-normal"
@@ -478,7 +478,7 @@ const JobFilterItem = React.memo(({
  "w-full flex items-center gap-2 px-2 py-1.5 rounded-full text-left transition-colors duration-200 text-xs leading-tight min-h-[36px]",
         "hover:bg-lia-interactive-hover",
         isActive
-          ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
+          ? "bg-blue-50 text-lia-text-primary font-semibold"
           : "text-lia-text-primary font-normal",
         isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
       )}
