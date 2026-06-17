@@ -253,7 +253,9 @@
       "projects": "Projects",
       "agentes": "Agents",
       "marketplace": "Marketplace",
-      "decidir": "Decide"
+      "decidir": "Decide",
+      "indicadores": "Indicators",
+      "relatorios": "Reports"
     },
     "filters": {
       "all": "All",
@@ -1264,7 +1266,6 @@
     "scheduleInterview": "Schedule Interview",
     "wsiScreening": "WSI Screening",
     "sendFeedback": "Send Feedback",
-    "scheduleMessage": "Schedule Message",
     "removeFromShortList": "Remove from Short List",
     "addToShortList": "Add to Short List",
     "removeFromFavorites": "Remove from Favorites",
@@ -6755,7 +6756,7 @@
         "ia": "AI Credits",
         "pearch": "Pearch",
         "agentes": "Agents",
-        "billing": "Plan & Billing"
+        "billing": "Billing"
       },
       "pearch": {
         "description": "Credits consumed in global candidate searches via Pearch.",
@@ -7562,54 +7563,6 @@
         "interview_completed": "Interview completed",
         "offer_sent": "Offer sent"
       }
-    },
-    "billing": {
-      "currentPlan": "Current plan",
-      "seats": "contracted seats",
-      "trialNotice": "Evaluation period — contact us for upgrade.",
-      "usage": "Period usage",
-      "embeddingTokens": "Embedding tokens",
-      "llmGeneralTokens": "General LLM tokens",
-      "byokActive": "General LLM — BYOK active",
-      "pearchCredits": "Pearch credits",
-      "apifyCredits": "Apify credits",
-      "agentExecutions": "Agent executions",
-      "tokens": "tokens",
-      "credits": "credits",
-      "executions": "exec.",
-      "unlimited": "∞",
-      "capReached": "Cap reached — overage will be billed next cycle",
-      "capWarning": "{pct}% of monthly cap used",
-      "agentsSummary": "Agents: {custom} custom · {sourcing} sourcing · {twins} digital twins · {campaigns} projects",
-      "invoices": "Invoice history",
-      "noInvoices": "No invoices found.",
-      "invoiceDate": "Date",
-      "invoiceAmount": "Amount",
-      "invoiceStatus": "Status",
-      "invoicePdf": "PDF",
-      "download": "Download",
-      "paymentMethod": "Payment method",
-      "noPaymentMethod": "No payment method registered.",
-      "card": "Card",
-      "status": {
-        "active": "Active",
-        "trialing": "Trial",
-        "suspended": "Suspended",
-        "canceled": "Canceled",
-        "past_due": "Past due"
-      },
-      "invoiceStatuses": {
-        "paid": "Paid",
-        "pending": "Pending",
-        "overdue": "Overdue",
-        "failed": "Failed"
-      },
-      "errors": {
-        "loadPlan": "Failed to load plan",
-        "loadUsage": "Failed to load usage",
-        "loadInvoices": "Failed to load invoices",
-        "loadPaymentMethods": "Failed to load payment methods"
-      }
     }
   },
   "publicJob": {
@@ -8281,177 +8234,5 @@
     "sourceHybrid": "Hybrid Search",
     "sourceGlobal": "Global Search",
     "fairnessBlocked": "Search blocked for containing discriminatory terms"
-  },
-  "portalProposta": {
-    "loading": {
-      "text": "Loading offer..."
-    },
-    "error": {
-      "title": "Offer not found",
-      "invalidLink": "This offer link is invalid or has expired. Please check that you accessed the correct link.",
-      "missingToken": "Offer token is missing."
-    },
-    "done": {
-      "accepted": {
-        "title": "Offer accepted!"
-      },
-      "declined": {
-        "title": "Response submitted"
-      }
-    },
-    "benefit": {
-      "fallback": "Benefit"
-    },
-    "status": {
-      "draft": "Draft",
-      "sent": "Awaiting response",
-      "viewed": "Viewed",
-      "accepted": "Accepted",
-      "declined": "Declined",
-      "expired": "Expired",
-      "cancelled": "Cancelled",
-      "negotiating": "In negotiation"
-    },
-    "header": {
-      "greeting": "Hello, {candidateName}! You have received a job offer."
-    },
-    "details": {
-      "sectionTitle": "Offer Details",
-      "salary": {
-        "label": "Compensation"
-      },
-      "startDate": {
-        "label": "Start date"
-      },
-      "deadline": {
-        "label": "Respond by"
-      },
-      "negotiationRound": {
-        "label": "Negotiation round"
-      },
-      "benefits": {
-        "label": "Benefits"
-      }
-    },
-    "letter": {
-      "sectionTitle": "Offer Letter"
-    },
-    "response": {
-      "sectionTitle": "Your Response",
-      "button": {
-        "accept": "Accept Offer",
-        "sending": "Sending...",
-        "decline": "Decline",
-        "confirmDecline": "Confirm Decline",
-        "back": "Back"
-      },
-      "decline": {
-        "hint": "You may leave an optional message before declining.",
-        "notesPlaceholder": "Reason (optional)..."
-      },
-      "error": {
-        "generic": "Error submitting response."
-      }
-    },
-    "alreadyResponded": {
-      "accepted": "You have already accepted this offer. Please await contact from the recruiter.",
-      "declined": "You have already declined this offer."
-    },
-    "footer": {
-      "legal": "This offer was sent via WeDOTalent. Your data is handled in accordance with the LGPD."
-    }
-  },
-  "candidateStatus": {
-    "errors": {
-      "linkExpiredRh": "Your link has expired. Please request a new link from HR.",
-      "loadFailed": "Could not load your applications. Please try again.",
-      "connectionError": "Connection error. Please check your internet connection.",
-      "invalidLinkContact": "Invalid link. Please check the link received by e-mail or WhatsApp.",
-      "invalidLinkRh": "Invalid link. Please request a new link from HR."
-    },
-    "loading": {
-      "portal": "Loading your portal..."
-    },
-    "errorState": {
-      "title": "Could not open the portal",
-      "contactHint": "If you have any questions, please contact the company that received your application."
-    }
-  },
-  "vacancyAnalytics": {
-    "tabAnalise": "Analytics",
-    "tabInfo": "Details",
-    "funnel": {
-      "title": "Pipeline",
-      "total": "Total",
-      "screening": "Screening",
-      "interview": "Interview",
-      "offer": "Offer",
-      "hired": "Hired"
-    },
-    "performance": {
-      "title": "Performance",
-      "conversionRate": "Conversion Rate",
-      "timeToFill": "Time to Fill",
-      "days": "days"
-    },
-    "forecast": {
-      "title": "AI Forecast",
-      "closureProbability": "Closure Probability",
-      "estimatedDays": "Estimated Days",
-      "comingSoon": "Forecast coming soon."
-    }
-  },
-  "indicadores": {
-    "title": "Indicators",
-    "subtitle": "Predictive analytics for your recruitment pipeline",
-    "filters": {
-      "allVacancies": "All vacancies",
-      "last30days": "Last 30 days",
-      "last90days": "Last 90 days",
-      "last6months": "Last 6 months"
-    },
-    "kpi": {
-      "activeCandidates": "Active Candidates",
-      "avgHiringProbability": "Avg. Hiring Probability",
-      "avgTimeToFill": "Avg. Time to Fill",
-      "conversionRate": "Conversion Rate",
-      "openVacancies": "Open Vacancies",
-      "slaAtRisk": "SLA at Risk"
-    },
-    "charts": {
-      "applicationsTrend": "Applications Trend",
-      "pipelineForecast": "Pipeline Forecast"
-    },
-    "premium": {
-      "title": "Advanced Analytics",
-      "description": "Access 14+ advanced predictive indicators",
-      "upgrade": "Upgrade Plan"
-    }
-  },
-  "talentPoolInsights": {
-    "title": "Talent Pool Insights",
-    "candidates": "candidates",
-    "hiringProbability": "Hiring Probability",
-    "closureProbability": "Closure Probability",
-    "timeToFill": "Estimated Time to Fill",
-    "days": "days",
-    "topSkills": "Top Skills",
-    "noSkills": "No skills available yet.",
-    "pipelineSnapshot": {
-      "screening": "Screening",
-      "interview": "Interview",
-      "offer": "Offer"
-    },
-    "confidence": {
-      "high": "High confidence",
-      "medium": "Medium confidence",
-      "low": "Limited data"
-    },
-    "premium": {
-      "locked": "Available on Enterprise plan",
-      "upgrade": "Upgrade Plan"
-    },
-    "viewFull": "View full analysis",
-    "loadingError": "Could not load insights."
   }
 }

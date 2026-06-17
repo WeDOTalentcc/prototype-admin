@@ -253,7 +253,9 @@
       "projects": "Projetos",
       "agentes": "Agentes",
       "marketplace": "Marketplace",
-      "decidir": "Decidir"
+      "decidir": "Decidir",
+      "indicadores": "Indicadores",
+      "relatorios": "Relatórios"
     },
     "filters": {
       "all": "Todas",
@@ -1264,7 +1266,6 @@
     "scheduleInterview": "Agendar Entrevista",
     "wsiScreening": "Triagem WSI",
     "sendFeedback": "Enviar Feedback",
-    "scheduleMessage": "Agendar Mensagem",
     "removeFromShortList": "Remover da Short List",
     "addToShortList": "Adicionar à Short List",
     "removeFromFavorites": "Remover dos Favoritos",
@@ -6755,7 +6756,7 @@
         "ia": "Créditos IA",
         "pearch": "Pearch",
         "agentes": "Agentes",
-        "billing": "Plano e Cobrança"
+        "billing": "Billing"
       },
       "pearch": {
         "description": "Créditos consumidos nas buscas globais de candidatos via Pearch.",
@@ -7562,54 +7563,6 @@
         "interview_completed": "Entrevista concluída",
         "offer_sent": "Oferta enviada"
       }
-    },
-    "billing": {
-      "currentPlan": "Plano atual",
-      "seats": "seats contratados",
-      "trialNotice": "Período de avaliação — entre em contato para upgrade.",
-      "usage": "Uso do período",
-      "embeddingTokens": "Embedding tokens",
-      "llmGeneralTokens": "LLM Geral tokens",
-      "byokActive": "LLM Geral — BYOK ativo",
-      "pearchCredits": "Créditos Pearch",
-      "apifyCredits": "Créditos Apify",
-      "agentExecutions": "Execuções de agentes",
-      "tokens": "tokens",
-      "credits": "créditos",
-      "executions": "exec.",
-      "unlimited": "∞",
-      "capReached": "Cap atingido — excedente será cobrado no próximo ciclo",
-      "capWarning": "{pct}% do cap mensal utilizado",
-      "agentsSummary": "Agentes: {custom} custom · {sourcing} sourcing · {twins} digital twins · {campaigns} projetos",
-      "invoices": "Histórico de faturas",
-      "noInvoices": "Nenhuma fatura encontrada.",
-      "invoiceDate": "Data",
-      "invoiceAmount": "Valor",
-      "invoiceStatus": "Status",
-      "invoicePdf": "PDF",
-      "download": "Download",
-      "paymentMethod": "Meio de pagamento",
-      "noPaymentMethod": "Nenhum meio de pagamento cadastrado.",
-      "card": "Cartão",
-      "status": {
-        "active": "Ativo",
-        "trialing": "Trial",
-        "suspended": "Suspenso",
-        "canceled": "Cancelado",
-        "past_due": "Inadimplente"
-      },
-      "invoiceStatuses": {
-        "paid": "Pago",
-        "pending": "Pendente",
-        "overdue": "Atrasado",
-        "failed": "Falhou"
-      },
-      "errors": {
-        "loadPlan": "Erro ao carregar plano",
-        "loadUsage": "Erro ao carregar uso",
-        "loadInvoices": "Erro ao carregar faturas",
-        "loadPaymentMethods": "Erro ao carregar meios de pagamento"
-      }
     }
   },
   "publicJob": {
@@ -8281,177 +8234,5 @@
     "sourceHybrid": "Busca Híbrida",
     "sourceGlobal": "Busca Global",
     "fairnessBlocked": "Busca bloqueada por conter termos discriminatórios"
-  },
-  "candidateStatus": {
-    "errors": {
-      "linkExpiredRh": "Seu link expirou. Solicite um novo link ao RH.",
-      "loadFailed": "Não foi possível carregar suas candidaturas. Tente novamente.",
-      "connectionError": "Erro de conexão. Verifique sua internet.",
-      "invalidLinkContact": "Link inválido. Verifique o link recebido por e-mail ou WhatsApp.",
-      "invalidLinkRh": "Link inválido. Solicite um novo link ao RH."
-    },
-    "loading": {
-      "portal": "Carregando seu portal..."
-    },
-    "errorState": {
-      "title": "Não foi possível abrir o portal",
-      "contactHint": "Em caso de dúvidas, entre em contato com a empresa que realizou sua candidatura."
-    }
-  },
-  "portalProposta": {
-    "loading": {
-      "text": "Carregando proposta..."
-    },
-    "error": {
-      "title": "Proposta não encontrada",
-      "invalidLink": "Este link de proposta é inválido ou expirou. Verifique se você acessou o link correto.",
-      "missingToken": "Token de proposta ausente."
-    },
-    "done": {
-      "accepted": {
-        "title": "Proposta aceita!"
-      },
-      "declined": {
-        "title": "Resposta enviada"
-      }
-    },
-    "benefit": {
-      "fallback": "Benefício"
-    },
-    "status": {
-      "draft": "Rascunho",
-      "sent": "Aguardando resposta",
-      "viewed": "Visualizada",
-      "accepted": "Aceita",
-      "declined": "Recusada",
-      "expired": "Expirada",
-      "cancelled": "Cancelada",
-      "negotiating": "Em negociação"
-    },
-    "header": {
-      "greeting": "Olá, {candidateName}! Você recebeu uma proposta de emprego."
-    },
-    "details": {
-      "sectionTitle": "Detalhes da Proposta",
-      "salary": {
-        "label": "Remuneração"
-      },
-      "startDate": {
-        "label": "Data de início"
-      },
-      "deadline": {
-        "label": "Responder até"
-      },
-      "negotiationRound": {
-        "label": "Rodada de negociação"
-      },
-      "benefits": {
-        "label": "Benefícios"
-      }
-    },
-    "letter": {
-      "sectionTitle": "Carta de Oferta"
-    },
-    "response": {
-      "sectionTitle": "Sua Resposta",
-      "button": {
-        "accept": "Aceitar Proposta",
-        "sending": "Enviando...",
-        "decline": "Recusar",
-        "confirmDecline": "Confirmar Recusa",
-        "back": "Voltar"
-      },
-      "decline": {
-        "hint": "Você pode deixar uma mensagem opcional antes de recusar.",
-        "notesPlaceholder": "Motivo (opcional)..."
-      },
-      "error": {
-        "generic": "Erro ao enviar resposta."
-      }
-    },
-    "alreadyResponded": {
-      "accepted": "Você já aceitou esta proposta. Aguarde o contato do recrutador.",
-      "declined": "Você já recusou esta proposta."
-    },
-    "footer": {
-      "legal": "Esta proposta foi enviada via WeDOTalent. Seus dados são tratados conforme a LGPD."
-    }
-  },
-  "vacancyAnalytics": {
-    "tabAnalise": "Análise",
-    "tabInfo": "Informações",
-    "funnel": {
-      "title": "Pipeline",
-      "total": "Total",
-      "screening": "Triagem",
-      "interview": "Entrevista",
-      "offer": "Oferta",
-      "hired": "Contratados"
-    },
-    "performance": {
-      "title": "Performance",
-      "conversionRate": "Taxa de Conversão",
-      "timeToFill": "Tempo para Preencher",
-      "days": "dias"
-    },
-    "forecast": {
-      "title": "Previsão IA",
-      "closureProbability": "Probabilidade de Fechamento",
-      "estimatedDays": "Dias Estimados",
-      "comingSoon": "Previsão de fechamento em breve."
-    }
-  },
-  "talentPoolInsights": {
-    "title": "Talent Pool Insights",
-    "candidates": "candidatos",
-    "hiringProbability": "Probabilidade de Contratação",
-    "closureProbability": "Probabilidade de Fechamento",
-    "timeToFill": "Tempo Estimado para Preencher",
-    "days": "dias",
-    "topSkills": "Principais Skills",
-    "noSkills": "Nenhuma skill disponível ainda.",
-    "pipelineSnapshot": {
-      "screening": "Triagem",
-      "interview": "Entrevista",
-      "offer": "Oferta"
-    },
-    "confidence": {
-      "high": "Alta confiança",
-      "medium": "Média confiança",
-      "low": "Dados limitados"
-    },
-    "premium": {
-      "locked": "Disponível no plano Enterprise",
-      "upgrade": "Upgrade Plan"
-    },
-    "viewFull": "Ver análise completa",
-    "loadingError": "Não foi possível carregar os insights."
-  },
-  "indicadores": {
-    "title": "Indicadores",
-    "subtitle": "Análise preditiva do seu pipeline de recrutamento",
-    "filters": {
-      "allVacancies": "Todas as vagas",
-      "last30days": "Últimos 30 dias",
-      "last90days": "Últimos 90 dias",
-      "last6months": "Últimos 6 meses"
-    },
-    "kpi": {
-      "activeCandidates": "Candidatos Ativos",
-      "avgHiringProbability": "Prob. Média de Contratação",
-      "avgTimeToFill": "Tempo Médio para Preencher",
-      "conversionRate": "Taxa de Conversão",
-      "openVacancies": "Vagas Abertas",
-      "slaAtRisk": "SLA em Risco"
-    },
-    "charts": {
-      "applicationsTrend": "Trend de Aplicações",
-      "pipelineForecast": "Previsão do Pipeline"
-    },
-    "premium": {
-      "title": "Análise Avançada",
-      "description": "Acesse 14+ indicadores preditivos avançados",
-      "upgrade": "Upgrade Plan"
-    }
   }
 }

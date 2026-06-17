@@ -41,6 +41,8 @@ import {
   FolderKanban,
   Package,
   BarChart2,
+  LineChart,
+  FileText,
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/shared/use-recent-items"
 import { useFocusedJobStore } from "@/stores/focused-job-store"
@@ -92,6 +94,8 @@ const itemLabelKeys: Record<string, string> = {
   "Agentes": "items.agentes",
   "Marketplace": "items.marketplace",
   "Decidir": "items.decidir",
+  "Indicadores": "items.indicadores",
+  "Relatórios": "items.relatorios",
 }
 
 const filterLabelKeys: Record<string, string> = {
@@ -127,7 +131,16 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
   {
     label: "",
     items: [
-      { icon: BarChart2, label: "Decidir", isCore: true },
+      {
+        icon: BarChart2,
+        label: "Decidir",
+        isCore: true,
+        alwaysExpanded: true,
+        subItems: [
+          { icon: LineChart, label: "Indicadores", isCore: true },
+          { icon: FileText, label: "Relatórios", isCore: true, disabled: true },
+        ],
+      },
       {
         icon: GitBranch,
         label: "Recrutar",
