@@ -314,7 +314,7 @@ const MenuItem = React.memo(({
             ? "text-lia-text-primary cursor-default opacity-60"
             : "hover:bg-lia-interactive-hover",
           isActive && canAccess
-            ? "bg-blue-50 text-lia-text-primary font-semibold"
+            ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
             : canAccess
             ? "text-lia-text-primary font-normal"
             : "text-lia-text-primary font-normal",
@@ -409,7 +409,7 @@ const MenuItem = React.memo(({
                     : "hover:bg-lia-interactive-hover",
                   subItem.isFuturo ? "opacity-40 pointer-events-none" : "",
                   currentPage === subItem.label && subCanAccess
-                    ? "bg-blue-50 text-lia-text-primary font-semibold"
+                    ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
                     : subCanAccess
                     ? "text-lia-text-secondary font-normal"
                     : "text-lia-text-secondary font-normal"
@@ -478,7 +478,7 @@ const JobFilterItem = React.memo(({
  "w-full flex items-center gap-2 px-2 py-1.5 rounded-full text-left transition-colors duration-200 text-xs leading-tight min-h-[36px]",
         "hover:bg-lia-interactive-hover",
         isActive
-          ? "bg-blue-50 text-lia-text-primary font-semibold"
+          ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
           : "text-lia-text-primary font-normal",
         isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
       )}
@@ -565,50 +565,54 @@ const FocusedJobSection = React.memo(({
   if (!shouldShowContent) return null
 
   return (
-    <div className="mb-1">
-      <div className="flex items-center justify-between px-2 mb-1">
-        <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-[0.18em] uppercase opacity-70">
-          {t('focusedJob.label')}
-        </span>
-        <button
-          onClick={onClear}
-          className="p-0.5 rounded hover:bg-lia-interactive-hover text-lia-text-muted hover:text-lia-text-secondary"
-          title={t('focusedJob.dismiss')}
-          aria-label={t('focusedJob.dismiss')}
-        >
-          <X className="w-3 h-3" />
-        </button>
-      </div>
-      <div className="px-2 py-1 mb-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
-        <span className="text-xs font-medium text-lia-text-primary line-clamp-1">{job.title}</span>
-      </div>
-      <div className="space-y-0.5">
-        <button
-          onClick={() => onNavigate(`jobs/${job.id}`)}
-          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-lia-interactive-hover text-lia-text-secondary min-h-8"
-        >
-          <GitBranch className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="text-sm-ui">{t('focusedJob.pipeline')}</span>
-        </button>
-        <button
-          onClick={() => onNavigate(`Funil de Talentos`)}
-          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-lia-interactive-hover text-lia-text-secondary min-h-8"
-        >
-          <Users className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="text-sm-ui flex-1">{t('focusedJob.candidates')}</span>
-          {job.candidateCount > 0 && (
-            <span className="text-micro bg-lia-interactive-active px-1.5 py-0.5 rounded-full">
-              {job.candidateCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => onNavigate(`jobs/${job.id}?tab=edit&section=configuracoes`)}
-          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-lia-interactive-hover text-lia-text-secondary min-h-8"
-        >
-          <Settings className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="text-sm-ui">{t('focusedJob.configure')}</span>
-        </button>
+    <div className="mb-1 px-1">
+      {/* Card azul envolvendo o bloco EM FOCO (bg-blue-50 per DS) */}
+      <div className="rounded-lg bg-blue-50 border border-blue-100 p-2">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-[0.18em] uppercase opacity-70">
+            {t('focusedJob.label')}
+          </span>
+          <button
+            onClick={onClear}
+            className="p-0.5 rounded hover:bg-blue-100 text-lia-text-muted hover:text-lia-text-secondary"
+            title={t('focusedJob.dismiss')}
+            aria-label={t('focusedJob.dismiss')}
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+        <div className="flex items-center gap-1.5 px-1 mb-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" aria-hidden="true" />
+          <span className="text-xs font-medium text-lia-text-primary line-clamp-1">{job.title}</span>
+        </div>
+        <div className="space-y-0.5">
+          <button
+            onClick={() => onNavigate(`jobs/${job.id}`)}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
+          >
+            <GitBranch className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-sm-ui">{t('focusedJob.pipeline')}</span>
+          </button>
+          <button
+            onClick={() => onNavigate(`Funil de Talentos`)}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
+          >
+            <Users className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-sm-ui flex-1">{t('focusedJob.candidates')}</span>
+            {job.candidateCount > 0 && (
+              <span className="text-micro bg-lia-interactive-active px-1.5 py-0.5 rounded-full">
+                {job.candidateCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => onNavigate(`jobs/${job.id}?tab=edit&section=configuracoes`)}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
+          >
+            <Settings className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-sm-ui">{t('focusedJob.configure')}</span>
+          </button>
+        </div>
       </div>
     </div>
   )
