@@ -173,11 +173,21 @@ def _format_list_jobs_result(jobs_list: list, *, total: int = 0) -> dict:
 
 @tool_handler("jobs_mgmt")
 async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
-    status = kwargs.get("status", "all")
+    raw_status = kwargs.get("status", "all")
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
-    limit = int(kwargs.get("limit", 50))
+    limit = min(int(kwargs.get("limit", 20)), 50)
     query: str | None = kwargs.get("query") or kwargs.get("title_query") or None
+    status_map = {
+        "active": "Ativa", "ativa": "Ativa",
+        "paused": "Pausada", "pausada": "Pausada",
+        "closed": "Concluída", "concluida": "Concluída", "concluída": "Concluída",
+        "draft": "Rascunho", "rascunho": "Rascunho",
+        "cancelled": "Cancelada", "cancelada": "Cancelada",
+        "archived": "Arquivada", "arquivada": "Arquivada",
+        "all": "all",
+    }
+    status = status_map.get(raw_status.lower(), raw_status) if raw_status else "all"
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] list_jobs called: status={status} department={department} query={query!r}")
 
@@ -820,11 +830,22 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
         parameters={
             "type": "object",
             "properties": {
-                "status": {"type": "string", "description": "Filtro de status: active, paused, closed, all (padrao: all)"},
+                "status": {
+                    "type": "string",
+                    "description": (
+                        "Filtro de status da vaga. Valores aceitos: "
+                        "ativa, pausada, concluida, rascunho, cancelada, arquivada, all. "
+                        "Padrao: all. Use 'ativa' para vagas ativas."
+                    ),
+                },
                 "department": {"type": "string", "description": "Filtro por departamento (padrao: all)"},
                 "query": {
                     "type": "string",
                     "description": "Busca por titulo da vaga (substring, case-insensitive). Use quando o usuario mencionar o nome de uma vaga especifica.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Numero maximo de vagas a retornar (padrao: 20, max: 50)",
                 },
             },
             "required": [],

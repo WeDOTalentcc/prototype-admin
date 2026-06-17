@@ -26,6 +26,9 @@ def _num(v: Any) -> float:
         return 0.0
 
 
+MAX_DISPLAY_ROWS = 20
+
+
 RRP_TABLE_HINT = (
     "FORMATO: esta tabela JA esta sendo exibida ao usuario como um card visual "
     "rico. NAO repita os dados como tabela markdown -- escreva apenas 1-2 frases "
@@ -41,6 +44,7 @@ def build_table_block(
     rows: list[dict],
     source_tool: str,
     total_count: int = 0,
+    max_rows: int | None = None,
 ) -> list[dict]:
     """Tabela RRP generica (ComparisonTableBlock) p/ list tools -> unifica o
     visual com o ranking (card) em vez de markdown da LLM. FE ja renderiza
@@ -57,6 +61,9 @@ def build_table_block(
 
     if not rows:
         return []
+    cap = max_rows or MAX_DISPLAY_ROWS
+    original_count = len(rows)
+    rows = rows[:cap]
     cols = [ComparisonColumn(key=k, label=l, type=t) for (k, l, t) in columns]
     block_rows = [
         ComparisonRow(
@@ -72,13 +79,13 @@ def build_table_block(
         entity_type=entity_type,
         columns=cols,
         rows=block_rows,
-        total_count=total_count or len(rows),
+        total_count=total_count or original_count,
         shown_count=len(rows),
     )
     return [table.model_dump(mode="json")]
 
 
-def build_candidate_ranking_blocks(job_id: str, rows: list[dict]) -> list[dict]:
+def build_candidate_ranking_blocks(job_id: str, rows: list[dict], max_rows: int | None = None) -> list[dict]:
     from app.shared.rrp_blocks import (
         ComparisonColumn,
         ComparisonRow,
@@ -91,6 +98,9 @@ def build_candidate_ranking_blocks(job_id: str, rows: list[dict]) -> list[dict]:
 
     if not rows:
         return []
+    cap = max_rows or MAX_DISPLAY_ROWS
+    _original_count = len(rows)
+    rows = rows[:cap]
 
     table_rows: list[ComparisonRow] = []
     explainers: list[ScoreExplainerBlock] = []
@@ -178,7 +188,7 @@ def build_candidate_ranking_blocks(job_id: str, rows: list[dict]) -> list[dict]:
         ],
         rows=table_rows,
         default_sort={"column_key": "score", "dir": "desc"},
-        total_count=len(rows),
+        total_count=_original_count,
         shown_count=len(rows),
     )
     blocks = [table.model_dump(mode="json")]

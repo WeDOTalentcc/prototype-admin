@@ -447,7 +447,8 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "") or get_active_vacancy()
     criteria = kwargs.get("criteria", "fit_score")
     company_id = kwargs.get("company_id", "")
-    logger.info(f"[talent_tools] rank_candidates called: vacancy={vacancy_id} criteria={criteria}")
+    limit = min(int(kwargs.get("limit", 10)), 50)
+    logger.info(f"[talent_tools] rank_candidates called: vacancy={vacancy_id} criteria={criteria} limit={limit}")
 
     ranking = []
     _rrp_blocks: list = []
@@ -458,6 +459,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
                 vacancy_id=vacancy_id,
                 company_id=company_id,
                 criteria=criteria,
+                limit=limit,
             )
             # AD3 (RRP): enriquece com pareceres + monta blocos ricos (moat).
             try:
@@ -1121,6 +1123,10 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "properties": {
                 "query": {"type": "string", "description": "Texto de busca (skills, cargo, etc.)"},
                 "filters": {"type": "object", "description": "Filtros opcionais (localizacao, experiencia, etc.)"},
+                "limit": {
+                    "type": "integer",
+                    "description": "Numero maximo de candidatos a retornar (padrao: 20, max: 50)",
+                },
             },
             "required": ["query"],
         },
@@ -1178,6 +1184,10 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "properties": {
                 "vacancy_id": {"type": "string", "description": "ID da vaga para calcular fit"},
                 "criteria": {"type": "string", "description": "Criterio de ranking: fit_score, experience, skills"},
+                "limit": {
+                    "type": "integer",
+                    "description": "Numero maximo de candidatos no ranking (padrao: 10, max: 50)",
+                },
             },
             "required": ["vacancy_id"],
         },

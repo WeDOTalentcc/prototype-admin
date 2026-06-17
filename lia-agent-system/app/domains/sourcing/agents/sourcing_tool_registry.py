@@ -66,7 +66,7 @@ async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
             """),
             {"role_pattern": f"%{role}%", "company_id": company_id},
         )
-        rows = result.mappings().all()
+        rows = result.mappings().all()[:limit]
 
     if not rows:
         return {
@@ -654,6 +654,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")  # P0.A canonical (handoff site 1 + 2)
 
+    limit = min(int(kwargs.get("limit", 10)), 50)
     if not shortlist_id and not vacancy_id:
         return {"success": False, "data": {}, "message": "Informe 'shortlist_id' ou 'vacancy_id' para gerar o ranking."}
 
@@ -1193,6 +1194,10 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "properties": {
                 "shortlist_id": {"type": "string", "description": "ID da shortlist"},
                 "vacancy_id": {"type": "string", "description": "ID da vaga para ranking por vacancy_candidates"},
+                "limit": {
+                    "type": "integer",
+                    "description": "Numero maximo de candidatos no ranking (padrao: 10, max: 50)",
+                },
             },
             "required": [],
         },

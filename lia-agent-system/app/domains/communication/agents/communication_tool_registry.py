@@ -833,11 +833,22 @@ def get_communication_tools() -> list[ToolDefinition]:
             "email_address",
             "phone_number"],
             name="get_communication_history",
-            description=(
-                "Recuperar histórico de comunicações de um candidato. "
-                "Parâmetros: candidate_id (int, obrigatório), company_id (str, obrigatório), "
-                "limit (int, padrão 10)."
-            ),
+            description="Recuperar histórico de comunicações de um candidato.",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "candidate_id": {"type": "string", "description": "ID do candidato"},
+                    "limit": {
+                        "type": "integer",
+                        "description": "Numero maximo de mensagens (padrao: 10, max: 50)",
+                    },
+                    "channel": {
+                        "type": "string",
+                        "description": "Filtro por canal: email, whatsapp, all (padrao: all)",
+                    },
+                },
+                "required": ["candidate_id"],
+            },
             output_schema=ToolOutput,
             function=_wrap_get_communication_history,
         ),

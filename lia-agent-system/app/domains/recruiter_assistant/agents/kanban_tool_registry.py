@@ -339,6 +339,7 @@ async def _wrap_get_at_risk_candidates(**kwargs: Any) -> dict[str, Any]:
 
     company_id = kwargs["company_id"]
     min_risk_level = kwargs.get("min_risk_level", "medium")
+    limit = min(int(kwargs.get("limit", 15)), 50)
 
     candidates = await early_warning_service.get_at_risk_candidates(
         company_id=company_id,
@@ -351,7 +352,7 @@ async def _wrap_get_at_risk_candidates(**kwargs: Any) -> dict[str, Any]:
         "success": True,
         "total": len(candidates),
         "summary": summary,
-        "candidates": candidates[:15],
+        "candidates": candidates[:limit],
         "message": (
             f"{summary['by_risk_level']['critical']} candidato(s) em risco crítico, "
             f"{summary['by_risk_level']['high']} alto risco, "
@@ -737,6 +738,8 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[kanban_tools] suggest_movements error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": "Erro ao gerar sugestoes de movimentacao."}
+    limit = min(int(kwargs.get("limit", 10)), 50)
+    suggestions = suggestions[:limit]
     return {
         "success": True,
         "data": {"stage": stage or "all", "vacancy_id": vacancy_id or "all",
@@ -1058,6 +1061,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "properties": {
                 "stage": {"type": "string", "description": "Etapa especifica (opcional, padrao: todas)"},
                 "days_threshold": {"type": "integer", "description": "Limite de dias para considerar estagnado (opcional, padrao: 7)"},
+                "vacancy_id": {"type": "string", "description": "ID da vaga (opcional, padrao: todas as vagas)"},
+                "limit": {"type": "integer", "description": "Numero maximo de candidatos (padrao: 15)"},
             },
             "required": [],
         },
@@ -1087,6 +1092,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "properties": {
                 "stage": {"type": "string", "description": "Etapa de origem para sugestoes"},
                 "vacancy_id": {"type": "string", "description": "ID da vaga (opcional)"},
+                "limit": {"type": "integer", "description": "Numero maximo de sugestoes (padrao: 10)"},
             },
             "required": ["stage"],
         },
@@ -1292,6 +1298,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
                     "description": "Nível mínimo de risco a retornar: medium (padrão), high ou critical.",
                     "enum": ["medium", "high", "critical"],
                 },
+                "vacancy_id": {"type": "string", "description": "ID da vaga (opcional, padrao: todas as vagas)"},
+                "limit": {"type": "integer", "description": "Numero maximo de candidatos (padrao: 15)"},
             },
             "required": [],
         },
