@@ -44,6 +44,7 @@ export type PagePath = (typeof PAGE_PATHS)[PageLabel]
  * remains the single typed enumeration of valid `currentPage` values.
  */
 export const SPA_ONLY_PAGE_LABELS = [
+  "Relatórios",
   "Indicadores",
   "Templates",
   "Estúdio de Agentes",

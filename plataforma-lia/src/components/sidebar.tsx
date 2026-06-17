@@ -138,6 +138,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         icon: BarChart2,
         label: "Decidir",
         isCore: true,
+        navigateOnClick: true,
         alwaysExpanded: true,
         subItems: [
           { icon: LineChart, label: "Indicadores", isCore: true },
