@@ -1382,7 +1382,6 @@ export function UnifiedChat({
               onRegenerate={handleRegenerate}
               onOpenPanel={() => setWizardPanelMode("expanded")}
               planProgressSteps={chatPlanProgressSteps}
-                  activePanelStage={dynamicPanel?.stage ?? null}
             />
           </ToolActivateContext.Provider>
         ) : (

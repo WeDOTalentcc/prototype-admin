@@ -47,6 +47,9 @@ interface UseCandidatesInteractionsParams {
   // CV modal
   setParsedCVData: (d: ParsedCVResponse | null) => void
   setShowCVPreviewModal: (v: boolean) => void
+  // Schedule Message Modal (GAP-07-007)
+  setShowScheduleMessageModal?: (v: boolean) => void
+  setScheduleMessageCandidate?: (c: Candidate | null) => void
   // Toast
   // Callbacks from props
   onAddRecentItem?: (item: {
@@ -93,6 +96,8 @@ export function useCandidatesInteractions({
   handleBulkActionComplete,
   handleAICommand,
   deselectAllCandidates,
+  setShowScheduleMessageModal,
+  setScheduleMessageCandidate,
 }: UseCandidatesInteractionsParams) {
   const router = useRouter()
 
@@ -333,6 +338,12 @@ export function useCandidatesInteractions({
       source: 'linkedin', tags: c.tags || [], jobTitle: c.position, department: 'Tecnologia',
     }))
 
+  // GAP-07-007 — Open schedule message modal for a specific candidate
+  const handleOpenScheduleMessageModal = (candidate: Candidate) => {
+    if (setScheduleMessageCandidate) setScheduleMessageCandidate(candidate)
+    if (setShowScheduleMessageModal) setShowScheduleMessageModal(true)
+  }
+
   return {
     openUnifiedModal,
     handleCandidateClick,
@@ -357,6 +368,7 @@ export function useCandidatesInteractions({
     handleSendTriagem,
     handleSendAgendamento,
     handleSendFeedback,
+    handleOpenScheduleMessageModal,
     handleBulkEmail,
     handleBulkWSIScreening,
     handleBulkScheduleInterview,

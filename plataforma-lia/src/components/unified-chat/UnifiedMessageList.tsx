@@ -16,6 +16,9 @@ import { WizardIntakeCard } from "./wizard/WizardIntakeCard"
 import { WizardCompetencyCard } from "./wizard/WizardCompetencyCard"
 import { WizardWsiCard } from "./wizard/WizardWsiCard"
 import { WizardCalibrationCard } from "./wizard/WizardCalibrationCard"
+import { WizardReviewCard } from "./wizard/WizardReviewCard"
+import { WizardPublishCard } from "./wizard/WizardPublishCard"
+import { WizardDoneCard } from "./wizard/WizardDoneCard"
 import { WebsiteProposalCard } from "./WebsiteProposalCard"
 import { ToolSurfaceContext, useToolActivate } from "@/contexts/ToolSurfaceContext"
 import { CandidateResultCard, type CandidateSummary } from "./tool-cards/CandidateResultCard"
@@ -182,23 +185,12 @@ interface Props {
   onRegenerate?: (messageId: string) => void
   /** F2 wizard: expande o painel lateral ao clicar em "Abrir no painel" dentro de WizardJdCard */
   onOpenPanel?: () => void
-  /** T4: stage currently shown in the lateral panel — cards for this stage render as indicator */
-  activePanelStage?: string | null
   planProgressSteps?: Array<{
     task_id: string
     action_id: string
     domain_id?: string
     status: string
   }>
-}
-
-function StageCardIndicator({ stage, label }: { stage: string; label: string }) {
-  return (
-    <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary text-xs text-lia-text-secondary">
-      <span className="text-status-success">✓</span>
-      <span>{label} atualizada no painel</span>
-    </div>
-  )
 }
 
 function MessageActions({
@@ -432,7 +424,6 @@ export function UnifiedMessageList({
   onChipClick,
   onRegenerate,
   onOpenPanel,
-  activePanelStage,
   planProgressSteps,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -576,6 +567,12 @@ export function UnifiedMessageList({
           meta?.type === "wizard_stage_card" && meta?.wizardStage === "intake"
         const hasWizardCompetencyCard =
           meta?.type === "wizard_stage_card" && meta?.wizardStage === "competency"
+        const hasWizardReviewCard =
+          meta?.type === "wizard_stage_card" && meta?.wizardStage === "review"
+        const hasWizardPublishCard =
+          meta?.type === "wizard_stage_card" && meta?.wizardStage === "publish"
+        const hasWizardDoneCard =
+          meta?.type === "wizard_stage_card" && (meta?.wizardStage === "done" || meta?.wizardStage === "handoff")
         const hasWebsiteProposal =
           meta?.type === "website_proposal" && meta?.websiteProposal != null
         const hasCandidateProfile =
@@ -795,43 +792,35 @@ export function UnifiedMessageList({
 
                                 {/* Intake card — ficha viva with parsed fields from stage intake. */}
                 {hasWizardIntakeCard && (
-                  activePanelStage === "intake"
-                    ? <StageCardIndicator stage="intake" label="Ficha da vaga" />
-                    : <WizardIntakeCard
-                        data={meta!.wizardStageData as Record<string, unknown>}
-                        onOpenPanel={onOpenPanel}
-                      />
+                  <WizardIntakeCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                    onOpenPanel={onOpenPanel}
+                  />
                 )}
 
                 {/* Competency card — mapped competencies with tech/behavioral badges. */}
                 {hasWizardCompetencyCard && (
-                  activePanelStage === "competency"
-                    ? <StageCardIndicator stage="competency" label="Competências" />
-                    : <WizardCompetencyCard
-                        data={meta!.wizardStageData as Record<string, unknown>}
-                        onOpenPanel={onOpenPanel}
-                      />
+                  <WizardCompetencyCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                    onOpenPanel={onOpenPanel}
+                  />
                 )}
 
                 {/* JD enrichment card — rendered when wizard stage jd_enrichment
                     emits ws_stage_payload; shows quality score + expandable details. */}
                 {hasWizardJdCard && (
-                  activePanelStage === "jd_enrichment"
-                    ? <StageCardIndicator stage="jd_enrichment" label="Descrição da vaga" />
-                    : <WizardJdCard
-                        data={meta!.wizardStageData as Record<string, unknown>}
-                        onOpenPanel={onOpenPanel}
-                      />
+                  <WizardJdCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                    onOpenPanel={onOpenPanel}
+                  />
                 )}
 
                 {/* WSI questions card — rendered when wizard stage wsi_questions
                     emits ws_stage_payload; collapsible list with type badges. */}
                 {hasWizardWsiCard && (
-                  activePanelStage === "wsi_questions"
-                    ? <StageCardIndicator stage="wsi_questions" label="Perguntas de triagem" />
-                    : <WizardWsiCard
-                        data={meta!.wizardStageData as Record<string, unknown>}
-                      />
+                  <WizardWsiCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                  />
                 )}
 
                 {/* Calibration card — rendered when wizard stage calibration
@@ -839,11 +828,27 @@ export function UnifiedMessageList({
                     approve count progress. Serves as primary interaction when
                     in sidebar/floating mode; secondary checkpoint in fullscreen. */}
                 {hasWizardCalibrationCard && (
-                  activePanelStage === "calibration"
-                    ? <StageCardIndicator stage="calibration" label="Calibração" />
-                    : <WizardCalibrationCard
-                        data={meta!.wizardStageData as Record<string, unknown>}
-                      />
+                  <WizardCalibrationCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                  />
+                )}
+
+                {hasWizardReviewCard && (
+                  <WizardReviewCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                  />
+                )}
+
+                {hasWizardPublishCard && (
+                  <WizardPublishCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                  />
+                )}
+
+                {hasWizardDoneCard && (
+                  <WizardDoneCard
+                    data={meta!.wizardStageData as Record<string, unknown>}
+                  />
                 )}
 
                 {/* Closing card — "Vaga publicada" injected when the wizard

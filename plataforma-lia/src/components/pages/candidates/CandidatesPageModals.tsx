@@ -32,6 +32,10 @@ export function CandidatesPageModals(props: CandidatesPageModalsProps) {
         setShowSendEmailModal={props.setShowSendEmailModal}
         emailCandidateSelected={props.emailCandidateSelected}
         setEmailCandidateSelected={props.setEmailCandidateSelected}
+        showScheduleMessageModal={props.showScheduleMessageModal}
+        setShowScheduleMessageModal={props.setShowScheduleMessageModal}
+        scheduleMessageCandidate={props.scheduleMessageCandidate}
+        setScheduleMessageCandidate={props.setScheduleMessageCandidate}
       />
 
       <CandidatesCoreModals

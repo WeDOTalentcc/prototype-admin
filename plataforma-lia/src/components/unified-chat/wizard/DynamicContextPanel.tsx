@@ -32,24 +32,6 @@ const EligibilityPanel = lazy(() =>
 const AffirmativePanel = lazy(() =>
   import("./panels/AffirmativePanel").then((m) => ({ default: m.AffirmativePanel }))
 )
-const ReviewPanel = lazy(() =>
-  import("./panels/ReviewPanel").then((m) => ({ default: m.ReviewPanel }))
-)
-const PublishPanel = lazy(() =>
-  import("./panels/PublishPanel").then((m) => ({ default: m.PublishPanel }))
-)
-const CalibrationPanel = lazy(() =>
-  import("./panels/CalibrationPanel").then((m) => ({ default: m.CalibrationPanel }))
-)
-const HandoffPanel = lazy(() =>
-  import("./panels/HandoffPanel").then((m) => ({ default: m.HandoffPanel }))
-)
-const DonePanel = lazy(() =>
-  import("./panels/DonePanel").then((m) => ({ default: m.DonePanel }))
-)
-const SchedulingPanel = lazy(() =>
-  import("./panels/SchedulingPanel").then((m) => ({ default: m.SchedulingPanel }))
-)
 
 /**
  * Declarative map stage → lazy panel component.
@@ -70,12 +52,6 @@ export const PANEL_REGISTRY: Partial<Record<WizardStage, React.LazyExoticCompone
   wsi_questions: WsiQuestionsPanel,
   eligibility:   EligibilityPanel,
   affirmative:   AffirmativePanel,
-  review:        ReviewPanel,
-  publish:       PublishPanel,
-  calibration:   CalibrationPanel,
-  handoff:       HandoffPanel,
-  done:          DonePanel,
-  scheduling:    SchedulingPanel,
 }
 
 function PanelLoader() {
@@ -101,25 +77,10 @@ interface Props {
  * Stages not listed (intake → eligibility) are conversational — full-width only.
  */
 export const SPLIT_STAGES: WizardStage[] = [
-  // HITL canonical stages -- todos com case correspondente em renderPanel switch
-  // abaixo. Fix C 2026-05-27: expandido de 7 -> 13 stages cobrindo todo o fluxo
-  // wizard. pipeline_template e deliberadamente excluido pq tem rendering
-  // proprio em UnifiedChat.tsx (via WizardPipelineTemplateStagePanel inline).
-  // Sensor canonical em __tests__/DynamicContextPanel.split-stages-canonical.test.ts.
-  "intake",
-  "jd_enrichment",
-  "bigfive",
-  "salary",
-  "competency",
-  "wsi_questions",
-  "eligibility",
-  "affirmative",
-  "review",
-  "publish",
-  "calibration",
-  "handoff",
-  "done",
-  "scheduling",
+  // 2026-06-17: Esvaziado — todos os estágios agora renderizam como rich cards
+  // inline no chat (WizardReviewCard, WizardPublishCard, WizardDoneCard, etc).
+  // O painel lateral não monta mais. Pendente: deletar DynamicContextPanel
+  // inteiro após validação.
 ]
 
 /**
@@ -230,9 +191,9 @@ function renderPanel(
     case "affirmative":
       return <AffirmativePanel data={data} onUpdate={onUpdate} />
     case "review":
-      return <ReviewPanel data={data} onUpdate={onUpdate} />
+      return null
     case "publish":
-      return <PublishPanel data={data} onUpdate={onUpdate} />
+      return null
     case "calibration":
       return (
         <CalibrationPanel
@@ -242,9 +203,9 @@ function renderPanel(
         />
       )
     case "handoff":
-      return <HandoffPanel data={data} />
+      return null
     case "done":
-      return <DonePanel data={data} />
+      return null
     case "scheduling":
       return <div className="p-4 text-sm text-lia-text-secondary">Agendamento de entrevistas...</div>
     default:

@@ -11,6 +11,7 @@ import type { BulkItemResult } from "@/lib/bulk"
 const ContactModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ContactModal })), { ssr: false, loading: () => null })
 const ScheduleModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ScheduleModal })), { ssr: false, loading: () => null })
 const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => null })
+const ScheduleMessageModal = dynamic(() => import("@/components/communication").then(m => ({ default: m.ScheduleMessageModal })), { ssr: false, loading: () => null })
 const SendEmailModal = dynamic(() => import("@/components/email-templates").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => null })
 
 type CandidatesContactModalsProps = Pick<CandidatesPageModalsProps,
@@ -37,6 +38,10 @@ type CandidatesContactModalsProps = Pick<CandidatesPageModalsProps,
   | 'setShowSendEmailModal'
   | 'emailCandidateSelected'
   | 'setEmailCandidateSelected'
+  | 'showScheduleMessageModal'
+  | 'setShowScheduleMessageModal'
+  | 'scheduleMessageCandidate'
+  | 'setScheduleMessageCandidate'
 >
 
 const TYPE_LABELS: Record<string, string> = {
@@ -72,6 +77,10 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
     setShowSendEmailModal,
     emailCandidateSelected,
     setEmailCandidateSelected,
+    showScheduleMessageModal,
+    setShowScheduleMessageModal,
+    scheduleMessageCandidate,
+    setScheduleMessageCandidate,
   } = props
 
   const [bulkReport, setBulkReport] = useState<{
@@ -229,6 +238,18 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
           setShowSendEmailModal(false)
           setEmailCandidateSelected(null)
         }}
+      />
+
+
+      {/* GAP-07-007 - Schedule Message Modal */}
+      <ScheduleMessageModal
+        open={showScheduleMessageModal}
+        onClose={() => {
+          setShowScheduleMessageModal(false)
+          setScheduleMessageCandidate(null)
+        }}
+        candidateId={scheduleMessageCandidate?.id ?? ""}
+        candidateName={scheduleMessageCandidate?.name ?? ""}
       />
 
       <BulkResultReport

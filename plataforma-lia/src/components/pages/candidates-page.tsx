@@ -70,7 +70,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     handleCandidatePageOpen, handleCloseCandidatePage, handleCloseCandidatePreview, handleConfirmPearchSearch, handleContactCandidate, handleExitWithoutSaving,
     handleExpandToGlobal, handleLIAChatMessage, handleLIAClick, handleLoadMore, handleNavigateToFullProfile, handlePreviewResize,
     handleQuickAction, handleRevealContact, handleSaveAllAndExit, handleSaveToLocalBase, handleScheduleComplete, handleScheduleInterview,
-    handleSendAgendamento, handleSendEmail, handleSendFeedback, handleSendMessage, handleSendTriagem, handleSendWhatsApp,
+    handleSendAgendamento, handleSendEmail, handleSendFeedback, handleOpenScheduleMessageModal, handleSendMessage, handleSendTriagem, handleSendWhatsApp,
     handleStartWSITextScreening, handleTabChangeWithWarning, handleToggleColumnConfig, handleToggleFavorite, handleTogglePin, handleTogglePreviewMaximize,
     handleUnifiedModalClose, handleUnifiedModalSend, handleUpdateFavoriteNote, handleWSIScreeningComplete, hideViewedCandidates, isAddingToList,
     isLIAThinking, isLoading, isSavingToBase, isSearchActive,
@@ -86,12 +86,12 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     setSelectedCandidatesForBatch, setSelectedListForVacancies, setShareSearchCandidates, setShareSearchTitle, setShowAddCandidateModal, setShowAddListToVacanciesModal,
     setShowAddToListModal, setShowAddToVacancyModal, setShowAdvancedSearch, setShowBatchApproval, setShowCVPreviewModal, setShowColumnConfig,
     setShowComparisonModal, setShowContactFilterModal, setShowContactModal, setShowCreditConfirmation, setShowRevealModal, setShowRubricModal,
-    setShowScheduleModal, setShowSendEmailModal, setShowShareSearchModal, setShowSourceChangeModal, setShowTableFiltersPanel, setShowUnsavedWarningModal,
+    setShowScheduleModal, setShowScheduleMessageModal, setScheduleMessageCandidate, setShowSendEmailModal, setShowShareSearchModal, setShowSourceChangeModal, setShowTableFiltersPanel, setShowUnsavedWarningModal,
     setShowWSIInviteModal, setShowWSITextModal, setShowWSIVoiceModal, setTableColumns, setTableFilters, setWsiCandidateForScreening,
     setWsiInviteCandidate, shareSearchCandidates, shareSearchTitle, showAddCandidateModal, showAddListToVacanciesModal, showAddToListModal,
     showAddToVacancyModal, showAdvancedSearch, showBatchApproval, showCVPreviewModal, showColumnConfig, showComparisonModal,
     showContactFilterModal, showContactModal, showCreditConfirmation, showRevealModal, showRubricModal, showScheduleModal,
-    showSendEmailModal, showShareSearchModal, showSourceChangeModal, showTableFiltersPanel, showUnsavedWarningModal, showWSIInviteModal,
+    showScheduleMessageModal, scheduleMessageCandidate, showSendEmailModal, showShareSearchModal, showSourceChangeModal, showTableFiltersPanel, showUnsavedWarningModal, showWSIInviteModal,
     showWSITextModal, showWSIVoiceModal, sortedCandidates, tableColumns, tableContainerRef, tableFilters,
     talentFunnel, toggleTableFilter, unifiedModalCandidate, unifiedModalSelectedCandidates, unifiedModalOpen, unifiedModalType,
     unsavedPearchCandidates, user, visibleCandidates, visibleTableColumns, wsiCandidateForScreening, wsiInviteCandidate,
@@ -356,6 +356,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             onSendTriagem={handleSendTriagem}
             onSendAgendamento={handleSendAgendamento}
             onSendFeedback={handleSendFeedback}
+            onScheduleMessage={handleOpenScheduleMessageModal}
             setPreviewCandidate={setPreviewCandidate}
             setShareSearchCandidates={setShareSearchCandidates}
             setShareSearchTitle={setShareSearchTitle}
@@ -741,6 +742,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setShowSendEmailModal={setShowSendEmailModal}
         emailCandidateSelected={emailCandidateSelected}
         setEmailCandidateSelected={setEmailCandidateSelected}
+        showScheduleMessageModal={showScheduleMessageModal}
+        setShowScheduleMessageModal={setShowScheduleMessageModal}
+        scheduleMessageCandidate={scheduleMessageCandidate}
+        setScheduleMessageCandidate={setScheduleMessageCandidate}
         showRevealModal={showRevealModal}
         setShowRevealModal={setShowRevealModal}
         revealCandidate={revealCandidate}

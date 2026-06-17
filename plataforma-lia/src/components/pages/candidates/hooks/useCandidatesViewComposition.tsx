@@ -117,6 +117,8 @@ export interface UseCandidatesViewCompositionParams {
   setShowBatchApproval: (v: boolean) => void
   setParsedCVData: (v: ParsedCVResponse | null) => void
   setShowCVPreviewModal: (v: boolean) => void
+  setShowScheduleMessageModal?: (v: boolean) => void
+  setScheduleMessageCandidate?: (c: Candidate | null) => void
   setShowAddCandidateModal: (v: boolean) => void
   onAddRecentItem?: (item: { id: string; type: 'chat' | 'vaga' | 'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void
   markCandidateAsViewed: (id: string) => void
@@ -285,6 +287,8 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
     setShowComparisonModal: params.setShowComparisonModal,
     setShowQuickViewModal: params.setShowQuickViewModal,
     setShowBatchApproval: params.setShowBatchApproval,
+    setShowScheduleMessageModal: params.setShowScheduleMessageModal,
+    setScheduleMessageCandidate: params.setScheduleMessageCandidate,
     setParsedCVData: params.setParsedCVData,
     setShowCVPreviewModal: params.setShowCVPreviewModal,
     onAddRecentItem: params.onAddRecentItem,

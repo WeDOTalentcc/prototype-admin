@@ -129,6 +129,9 @@ export function useCandidatesUIState() {
   const [rubricEvaluationData, setRubricEvaluationData] = useState<Record<string, unknown> | null>(null)
   const [showSendEmailModal, setShowSendEmailModal] = useState(false)
   const [emailCandidateSelected, setEmailCandidateSelected] = useState<Candidate | null>(null)
+  // GAP-07-007 — Schedule Message Modal
+  const [showScheduleMessageModal, setShowScheduleMessageModal] = useState(false)
+  const [scheduleMessageCandidate, setScheduleMessageCandidate] = useState<Candidate | null>(null)
   const [showCVPreviewModal, setShowCVPreviewModal] = useState(false)
   const [parsedCVData, setParsedCVData] = useState<ParsedCVResponse | null>(null)
   const [showAddToListModal, setShowAddToListModal] = useState(false)
@@ -199,6 +202,8 @@ export function useCandidatesUIState() {
     rubricEvaluationData, setRubricEvaluationData,
     showSendEmailModal, setShowSendEmailModal,
     emailCandidateSelected, setEmailCandidateSelected,
+    showScheduleMessageModal, setShowScheduleMessageModal,
+    scheduleMessageCandidate, setScheduleMessageCandidate,
     showCVPreviewModal, setShowCVPreviewModal,
     parsedCVData, setParsedCVData,
     showAddToListModal, setShowAddToListModal,
