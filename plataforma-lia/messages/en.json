@@ -6755,7 +6755,7 @@
         "ia": "AI Credits",
         "pearch": "Pearch",
         "agentes": "Agents",
-        "billing": "Billing"
+        "billing": "Plan & Billing"
       },
       "pearch": {
         "description": "Credits consumed in global candidate searches via Pearch.",
@@ -7561,6 +7561,54 @@
         "interview_scheduled": "Interview scheduled",
         "interview_completed": "Interview completed",
         "offer_sent": "Offer sent"
+      }
+    },
+    "billing": {
+      "currentPlan": "Current plan",
+      "seats": "contracted seats",
+      "trialNotice": "Evaluation period — contact us for upgrade.",
+      "usage": "Period usage",
+      "embeddingTokens": "Embedding tokens",
+      "llmGeneralTokens": "General LLM tokens",
+      "byokActive": "General LLM — BYOK active",
+      "pearchCredits": "Pearch credits",
+      "apifyCredits": "Apify credits",
+      "agentExecutions": "Agent executions",
+      "tokens": "tokens",
+      "credits": "credits",
+      "executions": "exec.",
+      "unlimited": "∞",
+      "capReached": "Cap reached — overage will be billed next cycle",
+      "capWarning": "{pct}% of monthly cap used",
+      "agentsSummary": "Agents: {custom} custom · {sourcing} sourcing · {twins} digital twins · {campaigns} projects",
+      "invoices": "Invoice history",
+      "noInvoices": "No invoices found.",
+      "invoiceDate": "Date",
+      "invoiceAmount": "Amount",
+      "invoiceStatus": "Status",
+      "invoicePdf": "PDF",
+      "download": "Download",
+      "paymentMethod": "Payment method",
+      "noPaymentMethod": "No payment method registered.",
+      "card": "Card",
+      "status": {
+        "active": "Active",
+        "trialing": "Trial",
+        "suspended": "Suspended",
+        "canceled": "Canceled",
+        "past_due": "Past due"
+      },
+      "invoiceStatuses": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "overdue": "Overdue",
+        "failed": "Failed"
+      },
+      "errors": {
+        "loadPlan": "Failed to load plan",
+        "loadUsage": "Failed to load usage",
+        "loadInvoices": "Failed to load invoices",
+        "loadPaymentMethods": "Failed to load payment methods"
       }
     }
   },

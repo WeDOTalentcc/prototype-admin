@@ -6755,7 +6755,7 @@
         "ia": "Créditos IA",
         "pearch": "Pearch",
         "agentes": "Agentes",
-        "billing": "Billing"
+        "billing": "Plano e Cobrança"
       },
       "pearch": {
         "description": "Créditos consumidos nas buscas globais de candidatos via Pearch.",
@@ -7561,6 +7561,54 @@
         "interview_scheduled": "Entrevista agendada",
         "interview_completed": "Entrevista concluída",
         "offer_sent": "Oferta enviada"
+      }
+    },
+    "billing": {
+      "currentPlan": "Plano atual",
+      "seats": "seats contratados",
+      "trialNotice": "Período de avaliação — entre em contato para upgrade.",
+      "usage": "Uso do período",
+      "embeddingTokens": "Embedding tokens",
+      "llmGeneralTokens": "LLM Geral tokens",
+      "byokActive": "LLM Geral — BYOK ativo",
+      "pearchCredits": "Créditos Pearch",
+      "apifyCredits": "Créditos Apify",
+      "agentExecutions": "Execuções de agentes",
+      "tokens": "tokens",
+      "credits": "créditos",
+      "executions": "exec.",
+      "unlimited": "∞",
+      "capReached": "Cap atingido — excedente será cobrado no próximo ciclo",
+      "capWarning": "{pct}% do cap mensal utilizado",
+      "agentsSummary": "Agentes: {custom} custom · {sourcing} sourcing · {twins} digital twins · {campaigns} projetos",
+      "invoices": "Histórico de faturas",
+      "noInvoices": "Nenhuma fatura encontrada.",
+      "invoiceDate": "Data",
+      "invoiceAmount": "Valor",
+      "invoiceStatus": "Status",
+      "invoicePdf": "PDF",
+      "download": "Download",
+      "paymentMethod": "Meio de pagamento",
+      "noPaymentMethod": "Nenhum meio de pagamento cadastrado.",
+      "card": "Cartão",
+      "status": {
+        "active": "Ativo",
+        "trialing": "Trial",
+        "suspended": "Suspenso",
+        "canceled": "Cancelado",
+        "past_due": "Inadimplente"
+      },
+      "invoiceStatuses": {
+        "paid": "Pago",
+        "pending": "Pendente",
+        "overdue": "Atrasado",
+        "failed": "Falhou"
+      },
+      "errors": {
+        "loadPlan": "Erro ao carregar plano",
+        "loadUsage": "Erro ao carregar uso",
+        "loadInvoices": "Erro ao carregar faturas",
+        "loadPaymentMethods": "Erro ao carregar meios de pagamento"
       }
     }
   },

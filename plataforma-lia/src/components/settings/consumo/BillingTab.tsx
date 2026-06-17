@@ -1,6 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import {
   CreditCard,
   FileText,
@@ -22,48 +23,48 @@ import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
 // Query hooks
 // ---------------------------------------------------------------------------
 
-function useBillingSubscription() {
+function useBillingSubscription(errorMsg: string) {
   return useQuery({
     queryKey: SETTINGS_QUERY_KEYS.billing(),
     queryFn: async () => {
       const res = await fetch("/api/backend-proxy/billing/plan-summary")
-      if (!res.ok) throw new Error("Erro ao carregar plano")
+      if (!res.ok) throw new Error(errorMsg)
       return res.json()
     },
     staleTime: 60_000,
   })
 }
 
-function useBillingUsage() {
+function useBillingUsage(errorMsg: string) {
   return useQuery({
     queryKey: SETTINGS_QUERY_KEYS.billingUsage(),
     queryFn: async () => {
       const res = await fetch("/api/backend-proxy/billing/usage-summary")
-      if (!res.ok) throw new Error("Erro ao carregar uso")
+      if (!res.ok) throw new Error(errorMsg)
       return res.json()
     },
     staleTime: 30_000,
   })
 }
 
-function useBillingInvoices() {
+function useBillingInvoices(errorMsg: string) {
   return useQuery({
     queryKey: SETTINGS_QUERY_KEYS.billingInvoices(),
     queryFn: async () => {
       const res = await fetch("/api/backend-proxy/billing/invoices?limit=6")
-      if (!res.ok) throw new Error("Erro ao carregar faturas")
+      if (!res.ok) throw new Error(errorMsg)
       return res.json()
     },
     staleTime: 120_000,
   })
 }
 
-function useBillingPaymentMethods() {
+function useBillingPaymentMethods(errorMsg: string) {
   return useQuery({
     queryKey: SETTINGS_QUERY_KEYS.billingPaymentMethods(),
     queryFn: async () => {
       const res = await fetch("/api/backend-proxy/billing/payment-methods")
-      if (!res.ok) throw new Error("Erro ao carregar meios de pagamento")
+      if (!res.ok) throw new Error(errorMsg)
       return res.json()
     },
     staleTime: 120_000,
@@ -74,16 +75,17 @@ function useBillingPaymentMethods() {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; variant: "success" | "warning" | "error" | "neutral" }> = {
-    active: { label: "Ativo", variant: "success" },
-    trialing: { label: "Trial", variant: "warning" },
-    suspended: { label: "Suspenso", variant: "error" },
-    canceled: { label: "Cancelado", variant: "error" },
-    past_due: { label: "Inadimplente", variant: "error" },
+function StatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
+  const variants: Record<string, "success" | "warning" | "error" | "neutral"> = {
+    active: "success",
+    trialing: "warning",
+    suspended: "error",
+    canceled: "error",
+    past_due: "error",
   }
-  const entry = map[status] || { label: status, variant: "neutral" as const }
-  return <Chip variant={entry.variant}>{entry.label}</Chip>
+  const label = t(`status.${status}`) || status
+  const variant = variants[status] || "neutral"
+  return <Chip variant={variant}>{label}</Chip>
 }
 
 function UsageBar({
@@ -93,6 +95,8 @@ function UsageBar({
   cap,
   unit,
   alertThreshold = 0.8,
+  capReachedText,
+  capWarningTemplate,
 }: {
   label: string
   icon: React.ElementType
@@ -100,6 +104,8 @@ function UsageBar({
   cap: number
   unit: string
   alertThreshold?: number
+  capReachedText: string
+  capWarningTemplate: string
 }) {
   const isUnlimited = cap === -1
   const pct = isUnlimited ? 0 : cap > 0 ? Math.min((used / cap) * 100, 100) : 0
@@ -131,8 +137,8 @@ function UsageBar({
       {isWarning && (
         <p className="text-xs text-amber-600">
           {pct >= 100
-            ? "Cap atingido — excedente será cobrado no próximo ciclo"
-            : `${pct.toFixed(0)}% do cap mensal utilizado`}
+            ? capReachedText
+            : capWarningTemplate.replace("{pct}", pct.toFixed(0))}
         </p>
       )}
     </div>
@@ -143,7 +149,7 @@ function UsageBar({
 // Section A — Current Plan
 // ---------------------------------------------------------------------------
 
-function CurrentPlanSection({ data }: { data: any }) {
+function CurrentPlanSection({ data, t }: { data: any; t: (key: string) => string }) {
   if (!data) return null
   const features: string[] = data.features_enabled || []
 
@@ -156,20 +162,20 @@ function CurrentPlanSection({ data }: { data: any }) {
           </div>
           <div>
             <p className="text-sm font-medium text-lia-text-primary">
-              Plano {data.plan_name || data.plan_code}
+              {t("currentPlan")} {data.plan_name || data.plan_code}
             </p>
             <p className="text-xs text-lia-text-tertiary mt-0.5">
-              {data.seats_contracted} seats contratados
+              {data.seats_contracted} {t("seats")}
             </p>
           </div>
         </div>
-        <StatusBadge status={data.status} />
+        <StatusBadge status={data.status} t={t} />
       </div>
 
       {data.status === "trialing" && (
         <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
           <p className="text-xs text-amber-800">
-            Período de avaliação — entre em contato para upgrade.
+            {t("trialNotice")}
           </p>
         </div>
       )}
@@ -191,7 +197,7 @@ function CurrentPlanSection({ data }: { data: any }) {
 // Section B — Usage
 // ---------------------------------------------------------------------------
 
-function UsageSection({ subscription, usage }: { subscription: any; usage: any }) {
+function UsageSection({ subscription, usage, t }: { subscription: any; usage: any; t: (key: string) => string }) {
   if (!subscription || !usage) return null
 
   const llm = subscription.llm || {}
@@ -199,69 +205,85 @@ function UsageSection({ subscription, usage }: { subscription: any; usage: any }
   const apify = subscription.apify || {}
   const quotas = subscription.agent_quotas || {}
 
+  const capReached = t("capReached")
+  const capWarning = t("capWarning")
+
   return (
     <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-5 space-y-4">
       <div className="flex items-center gap-2">
         <Gauge className="h-4 w-4 text-lia-text-muted" aria-hidden="true" />
-        <p className="text-sm font-medium text-lia-text-primary">Uso do período</p>
+        <p className="text-sm font-medium text-lia-text-primary">{t("usage")}</p>
       </div>
 
       <div className="space-y-3">
         <UsageBar
-          label="Embedding tokens"
+          label={t("embeddingTokens")}
           icon={Database}
           used={usage.embedding_tokens_used || 0}
           cap={llm.embedding_monthly_cap || 0}
-          unit="tokens"
+          unit={t("tokens")}
+          capReachedText={capReached}
+          capWarningTemplate={capWarning}
         />
 
         {llm.byok_active ? (
           <div className="flex items-center gap-2 text-sm text-lia-text-secondary">
             <Zap className="h-3.5 w-3.5" aria-hidden="true" />
             <span>
-              LLM Geral — BYOK ativo
+              {t("byokActive")}
               {llm.byok_provider ? ` (${llm.byok_provider})` : ""}
             </span>
           </div>
         ) : (
           <UsageBar
-            label="LLM Geral tokens"
+            label={t("llmGeneralTokens")}
             icon={Zap}
             used={usage.llm_general_tokens_used || 0}
             cap={llm.general_monthly_cap || 0}
-            unit="tokens"
+            unit={t("tokens")}
+            capReachedText={capReached}
+            capWarningTemplate={capWarning}
           />
         )}
 
         <UsageBar
-          label="Créditos Pearch"
+          label={t("pearchCredits")}
           icon={Search}
           used={usage.pearch_credits_used || 0}
           cap={pearch.monthly_included_credits || 0}
-          unit="créditos"
+          unit={t("credits")}
+          capReachedText={capReached}
+          capWarningTemplate={capWarning}
         />
 
         <UsageBar
-          label="Créditos Apify"
+          label={t("apifyCredits")}
           icon={Database}
           used={usage.apify_credits_used || 0}
           cap={apify.monthly_included_credits || 0}
-          unit="créditos"
+          unit={t("credits")}
+          capReachedText={capReached}
+          capWarningTemplate={capWarning}
         />
 
         <UsageBar
-          label="Execuções de agentes"
+          label={t("agentExecutions")}
           icon={Bot}
           used={usage.agent_executions_used || 0}
           cap={0}
-          unit="exec."
+          unit={t("executions")}
+          capReachedText={capReached}
+          capWarningTemplate={capWarning}
         />
       </div>
 
       <div className="pt-2 border-t border-lia-border-subtle">
         <p className="text-xs text-lia-text-tertiary">
-          Agentes: {quotas.custom_agents ?? 0} custom · {quotas.sourcing_agents ?? 0} sourcing
-          · {quotas.digital_twins ?? 0} digital twins · {quotas.campaigns ?? 0} projetos
+          {t("agentsSummary")
+            .replace("{custom}", String(quotas.custom_agents ?? 0))
+            .replace("{sourcing}", String(quotas.sourcing_agents ?? 0))
+            .replace("{twins}", String(quotas.digital_twins ?? 0))
+            .replace("{campaigns}", String(quotas.campaigns ?? 0))}
         </p>
       </div>
     </div>
@@ -272,17 +294,17 @@ function UsageSection({ subscription, usage }: { subscription: any; usage: any }
 // Section D — Invoices
 // ---------------------------------------------------------------------------
 
-function InvoicesSection({ data }: { data: any }) {
+function InvoicesSection({ data, t }: { data: any; t: (key: string) => string }) {
   const invoices = Array.isArray(data?.invoices) ? data.invoices : Array.isArray(data) ? data : []
   if (invoices.length === 0) {
     return (
       <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-5">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-lia-text-muted" aria-hidden="true" />
-          <p className="text-sm font-medium text-lia-text-primary">Histórico de faturas</p>
+          <p className="text-sm font-medium text-lia-text-primary">{t("invoices")}</p>
         </div>
         <p className="text-xs text-lia-text-tertiary mt-2">
-          Nenhuma fatura encontrada.
+          {t("noInvoices")}
         </p>
       </div>
     )
@@ -292,16 +314,16 @@ function InvoicesSection({ data }: { data: any }) {
     <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-5 space-y-3">
       <div className="flex items-center gap-2">
         <FileText className="h-4 w-4 text-lia-text-muted" aria-hidden="true" />
-        <p className="text-sm font-medium text-lia-text-primary">Histórico de faturas</p>
+        <p className="text-sm font-medium text-lia-text-primary">{t("invoices")}</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr className="text-left text-lia-text-tertiary border-b border-lia-border-subtle">
-              <th className="pb-2 pr-4 font-medium">Data</th>
-              <th className="pb-2 pr-4 font-medium">Valor</th>
-              <th className="pb-2 pr-4 font-medium">Status</th>
-              <th className="pb-2 font-medium">PDF</th>
+              <th className="pb-2 pr-4 font-medium">{t("invoiceDate")}</th>
+              <th className="pb-2 pr-4 font-medium">{t("invoiceAmount")}</th>
+              <th className="pb-2 pr-4 font-medium">{t("invoiceStatus")}</th>
+              <th className="pb-2 font-medium">{t("invoicePdf")}</th>
             </tr>
           </thead>
           <tbody>
@@ -318,7 +340,7 @@ function InvoicesSection({ data }: { data: any }) {
                     : inv.total || "-"}
                 </td>
                 <td className="py-2 pr-4">
-                  <InvoiceStatusChip status={inv.status} />
+                  <InvoiceStatusChip status={inv.status} t={t} />
                 </td>
                 <td className="py-2">
                   {inv.pdf_url ? (
@@ -328,7 +350,7 @@ function InvoicesSection({ data }: { data: any }) {
                       rel="noopener noreferrer"
                       className="text-lia-accent-primary hover:underline"
                     >
-                      Download
+                      {t("download")}
                     </a>
                   ) : (
                     "-"
@@ -343,22 +365,23 @@ function InvoicesSection({ data }: { data: any }) {
   )
 }
 
-function InvoiceStatusChip({ status }: { status: string }) {
-  const map: Record<string, { label: string; variant: "success" | "warning" | "error" | "neutral" }> = {
-    paid: { label: "Pago", variant: "success" },
-    pending: { label: "Pendente", variant: "warning" },
-    overdue: { label: "Atrasado", variant: "error" },
-    failed: { label: "Falhou", variant: "error" },
+function InvoiceStatusChip({ status, t }: { status: string; t: (key: string) => string }) {
+  const variants: Record<string, "success" | "warning" | "error" | "neutral"> = {
+    paid: "success",
+    pending: "warning",
+    overdue: "error",
+    failed: "error",
   }
-  const entry = map[status] || { label: status || "-", variant: "neutral" as const }
-  return <Chip variant={entry.variant} muted className="text-[10px]">{entry.label}</Chip>
+  const label = t(`invoiceStatuses.${status}`) || status || "-"
+  const variant = variants[status] || "neutral"
+  return <Chip variant={variant} muted className="text-[10px]">{label}</Chip>
 }
 
 // ---------------------------------------------------------------------------
 // Section E — Payment Method
 // ---------------------------------------------------------------------------
 
-function PaymentMethodSection({ data }: { data: any }) {
+function PaymentMethodSection({ data, t }: { data: any; t: (key: string) => string }) {
   const methods = Array.isArray(data?.payment_methods)
     ? data.payment_methods
     : Array.isArray(data)
@@ -369,12 +392,12 @@ function PaymentMethodSection({ data }: { data: any }) {
     <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-5 space-y-3">
       <div className="flex items-center gap-2">
         <Wallet className="h-4 w-4 text-lia-text-muted" aria-hidden="true" />
-        <p className="text-sm font-medium text-lia-text-primary">Meio de pagamento</p>
+        <p className="text-sm font-medium text-lia-text-primary">{t("paymentMethod")}</p>
       </div>
 
       {methods.length === 0 ? (
         <p className="text-xs text-lia-text-tertiary">
-          Nenhum meio de pagamento cadastrado.
+          {t("noPaymentMethod")}
         </p>
       ) : (
         <div className="space-y-2">
@@ -385,7 +408,7 @@ function PaymentMethodSection({ data }: { data: any }) {
             >
               <CreditCard className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
               <span>
-                {m.brand || m.type || "Cartão"}{" "}
+                {m.brand || m.type || t("card")}{" "}
                 {m.last4 ? `•••• ${m.last4}` : ""}{" "}
                 {m.exp_month && m.exp_year
                   ? `(${String(m.exp_month).padStart(2, "0")}/${m.exp_year})`
@@ -404,10 +427,12 @@ function PaymentMethodSection({ data }: { data: any }) {
 // ---------------------------------------------------------------------------
 
 export function BillingTab() {
-  const subscription = useBillingSubscription()
-  const usage = useBillingUsage()
-  const invoices = useBillingInvoices()
-  const paymentMethods = useBillingPaymentMethods()
+  const t = useTranslations("settings.billing")
+
+  const subscription = useBillingSubscription(t("errors.loadPlan"))
+  const usage = useBillingUsage(t("errors.loadUsage"))
+  const invoices = useBillingInvoices(t("errors.loadInvoices"))
+  const paymentMethods = useBillingPaymentMethods(t("errors.loadPaymentMethods"))
 
   const isLoading =
     subscription.isLoading || usage.isLoading || invoices.isLoading || paymentMethods.isLoading
@@ -428,11 +453,11 @@ export function BillingTab() {
   }
 
   return (
-    <div className="space-y-3 max-w-2xl">
-      <CurrentPlanSection data={subscription.data} />
-      <UsageSection subscription={subscription.data} usage={usage.data} />
-      <InvoicesSection data={invoices.data} />
-      <PaymentMethodSection data={paymentMethods.data} />
+    <div className="space-y-4">
+      <CurrentPlanSection data={subscription.data} t={t} />
+      <UsageSection subscription={subscription.data} usage={usage.data} t={t} />
+      <InvoicesSection data={invoices.data} t={t} />
+      <PaymentMethodSection data={paymentMethods.data} t={t} />
     </div>
   )
 }
