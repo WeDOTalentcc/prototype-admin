@@ -77,7 +77,7 @@ export function ConsumoHub() {
           <TabsTrigger value="ia">Créditos IA</TabsTrigger>
           <TabsTrigger value="pearch">Pearch</TabsTrigger>
           <TabsTrigger value="agentes">Agentes</TabsTrigger>
-          <TabsTrigger value="billing">Billing · Em breve</TabsTrigger>
+          <TabsTrigger value="billing">Plano e Cobrança</TabsTrigger>
         </TabsList>
         <TabsContent value="ia" className="mt-6">
           <CreditosIaTab onOpenDrilldown={openDrilldown} />

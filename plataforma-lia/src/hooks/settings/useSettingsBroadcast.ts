@@ -31,6 +31,10 @@ export const SETTINGS_QUERY_KEYS = {
   digestSchedule: () => ["digest-schedule"] as const,
   digestScheduleCompany: () => ["digest-schedule-company"] as const,
   offerRules: () => ["offer-rules"] as const,
+  billing: () => ["billing"] as const,
+  billingUsage: () => ["billing-usage"] as const,
+  billingInvoices: () => ["billing-invoices"] as const,
+  billingPaymentMethods: () => ["billing-payment-methods"] as const,
 } as const
 
 export type SettingsBroadcastDetail = {

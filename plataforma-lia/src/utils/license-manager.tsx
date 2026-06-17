@@ -18,7 +18,7 @@ interface ModuleInfo {
 }
 
 // Para desenvolvimento/demo, todos os módulos estão disponíveis
-const DEMO_MODE = true
+const DEMO_MODE = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_FEATURE_DEMO === 'true'
 
 // Módulos disponíveis na licença atual (em produção, viria de API)
 const availableModules: LicenseModule[] = DEMO_MODE ? [
