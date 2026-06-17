@@ -281,34 +281,55 @@ export function CandidateSearchResultsView({
   const [isExporting, setIsExporting] = useState(false)
 
   const handleBulkExport = useCallback(async () => {
-    if (selectedCandidatesForBatch.size === 0) return
     setIsExporting(true)
     try {
-      const result = await bulkExport({
-        candidate_ids: Array.from(selectedCandidatesForBatch),
-        format: 'xlsx',
-      })
-      if ('blob' in result) {
-        const url = URL.createObjectURL(result.blob)
+      if (selectedCandidatesForBatch.size > 0) {
+        // Export por IDs selecionados manualmente
+        const result = await bulkExport({
+          candidate_ids: Array.from(selectedCandidatesForBatch),
+          format: 'xlsx',
+        })
+        if ('blob' in result) {
+          const url = URL.createObjectURL(result.blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `candidatos-export.${result.formatFallback ? 'csv' : 'xlsx'}`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+          if (result.formatFallback) {
+            toast.warning(t('results.exportFallback'))
+          } else {
+            toast.success(t('results.exportSuccess'))
+          }
+        }
+      } else {
+        // GAP-03-009: Export por filtros ativos (sem selecao manual)
+        const res = await fetch('/api/backend-proxy/candidates/export-by-filters', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sort_by: sortBy, sort_order: sortOrder }),
+        })
+        if (!res.ok) throw new Error(await res.text())
+        const blob = await res.blob()
+        const total = res.headers.get('X-Export-Total') || '0'
+        const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `candidatos-${new Date().toISOString().slice(0, 10)}.${result.formatFallback ? 'csv' : 'xlsx'}`
+        a.download = 'candidatos-filtros.csv'
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
-        if (result.formatFallback) {
-          toast.warning(t('results.exportFallback'))
-        } else {
-          toast.success(t('results.exportSuccess'))
-        }
+        toast.success(t('results.exportSuccess'), { description: total + ' candidatos exportados' })
       }
-    } catch (error) {
+    } catch (err) {
       toast.error(t('results.exportError'))
     } finally {
       setIsExporting(false)
     }
-  }, [selectedCandidatesForBatch, t])
+  }, [selectedCandidatesForBatch, sortBy, sortOrder, t])
 
   // Critérios para QualificationMatrixCard: prefere filtros de tabela ativos;
   // senão usa os critérios parseados da última busca natural.
