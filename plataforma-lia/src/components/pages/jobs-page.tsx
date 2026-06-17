@@ -34,11 +34,13 @@ interface JobsPageProps {
 
 export function JobsPage(props: JobsPageProps) {
   const state = useJobsPageCore(props)
-  const { setFocusedJob, clearFocusedJob } = useFocusedJobStore()
+  const { setFocusedJob } = useFocusedJobStore()
 
-  // Sync focused-job store when kanban opens/closes via SPA inline path.
+  // Sync focused-job store when kanban opens via SPA inline path.
   // JobDetailClient only fires setFocusedJob on the /jobs/[id] Next.js route;
   // when the user clicks a vaga from the Vagas list the kanban renders here.
+  // NOTE: we intentionally do NOT clear on kanban close — the EM FOCO card
+  // persists in the sidebar until the user dismisses it or opens another job.
   useEffect(() => {
     if (state.showKanban && state.selectedJob) {
       setFocusedJob({
@@ -47,10 +49,8 @@ export function JobsPage(props: JobsPageProps) {
         candidateCount: state.selectedJob.funnel?.total ?? 0,
         todayInterviewCount: 0,
       })
-    } else if (!state.showKanban) {
-      clearFocusedJob()
     }
-  }, [state.showKanban, state.selectedJob, setFocusedJob, clearFocusedJob])
+  }, [state.showKanban, state.selectedJob, setFocusedJob])
   // Phase 4H — Bulk import modal state
   const [showBulkImportModal, setShowBulkImportModal] = React.useState(false)
   const t = useTranslations('jobs')

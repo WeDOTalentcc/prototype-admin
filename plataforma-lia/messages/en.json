@@ -291,9 +291,11 @@
     "focusedJob": {
       "label": "In Focus",
       "dismiss": "Close focused job",
-      "pipeline": "Pipeline",
       "candidates": "Candidates",
-      "configure": "Configure job"
+      "configure": "Configure job",
+      "agents": "Agents",
+      "interviews": "Interviews",
+      "today": "today"
     },
     "user": {
       "admin": "Administrator",

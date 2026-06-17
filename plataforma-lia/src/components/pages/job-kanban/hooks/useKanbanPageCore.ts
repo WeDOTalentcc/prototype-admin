@@ -117,7 +117,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const _searchParams = useSearchParams()
   useEffect(() => {
     const requested = _searchParams?.get("tab")
-    if (requested === "edit" || requested === "management") {
+    if (requested === "edit" || requested === "management" || requested === "agents") {
       if (requested !== activeTab) {
         setActiveTab(requested)
       }

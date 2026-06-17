@@ -291,9 +291,11 @@
     "focusedJob": {
       "label": "Em Foco",
       "dismiss": "Fechar vaga em foco",
-      "pipeline": "Pipeline",
       "candidates": "Candidatos",
-      "configure": "Configurar vaga"
+      "configure": "Configurar vaga",
+      "agents": "Agentes",
+      "interviews": "Entrevistas",
+      "today": "hoje"
     },
     "user": {
       "admin": "Administrador(a)",

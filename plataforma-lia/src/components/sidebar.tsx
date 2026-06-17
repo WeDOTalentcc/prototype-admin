@@ -46,6 +46,7 @@ import {
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/shared/use-recent-items"
 import { useFocusedJobStore } from "@/stores/focused-job-store"
+import { useTargetDeployments } from "@/hooks/agents/use-target-deployments"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -78,6 +79,8 @@ import { useAuthenticatedUserId } from "@/hooks/shared/use-authenticated-user-id
 import type { Notification as AppNotification } from "@/hooks/shared/use-notifications"
 import Image from "next/image"
 import { useTranslations } from 'next-intl'
+import { useRouter } from "next/navigation"
+import { useLocale } from "next-intl"
 import { LanguageSwitcher } from "@/components/language-switcher"
 
 const sectionLabelKeys: Record<string, string> = {
@@ -551,22 +554,30 @@ RecentItemRow.displayName = 'RecentItemRow'
 
 const FocusedJobSection = React.memo(({
   job,
-  onNavigate,
   onClear,
   shouldShowContent,
 }: {
   job: { id: string; title: string; candidateCount: number; todayInterviewCount: number }
-  onNavigate: (page: string) => void
   onClear: () => void
   shouldShowContent: boolean
 }) => {
   const t = useTranslations('sidebar')
+  const router = useRouter()
+  const locale = useLocale()
+  const { data: deploymentsData } = useTargetDeployments({
+    targetType: "job",
+    targetId: job.id,
+  })
+  const activeAgentCount = (deploymentsData?.deployments ?? []).filter(
+    (d: { is_active?: boolean }) => d.is_active !== false
+  ).length
 
   if (!shouldShowContent) return null
 
+  const jobUrl = `/${locale}/jobs/${job.id}`
+
   return (
     <div className="mb-1 px-1">
-      {/* Card azul envolvendo o bloco EM FOCO (bg-blue-50 per DS) */}
       <div className="rounded-lg bg-blue-50 border border-blue-100 p-2">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-[0.18em] uppercase opacity-70">
@@ -587,26 +598,43 @@ const FocusedJobSection = React.memo(({
         </div>
         <div className="space-y-0.5">
           <button
-            onClick={() => onNavigate(`jobs/${job.id}`)}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
-          >
-            <GitBranch className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="text-sm-ui">{t('focusedJob.pipeline')}</span>
-          </button>
-          <button
-            onClick={() => onNavigate(`Funil de Talentos`)}
+            onClick={() => router.push(jobUrl)}
             className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
           >
             <Users className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="text-sm-ui flex-1">{t('focusedJob.candidates')}</span>
             {job.candidateCount > 0 && (
-              <span className="text-micro bg-lia-interactive-active px-1.5 py-0.5 rounded-full">
+              <span className="text-micro bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
                 {job.candidateCount}
               </span>
             )}
           </button>
+          {job.todayInterviewCount > 0 && (
+            <button
+              onClick={() => router.push(jobUrl)}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
+            >
+              <Eye className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="text-sm-ui flex-1">{t('focusedJob.interviews')}</span>
+              <span className="text-micro bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
+                {job.todayInterviewCount} {t('focusedJob.today')}
+              </span>
+            </button>
+          )}
           <button
-            onClick={() => onNavigate(`jobs/${job.id}?tab=edit&section=configuracoes`)}
+            onClick={() => router.push(`${jobUrl}?tab=agents`)}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
+          >
+            <Bot className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-sm-ui flex-1">{t('focusedJob.agents')}</span>
+            {activeAgentCount > 0 && (
+              <span className="text-micro bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
+                {activeAgentCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => router.push(`${jobUrl}?tab=edit&section=configuracoes`)}
             className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
           >
             <Settings className="w-3.5 h-3.5 flex-shrink-0" />
@@ -930,7 +958,6 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               {sectionIdx === 0 && isMounted && focusedJob && (
                 <FocusedJobSection
                   job={focusedJob}
-                  onNavigate={handleDynamicNavigate}
                   onClear={clearFocusedJob}
                   shouldShowContent={shouldShowContent}
                 />
