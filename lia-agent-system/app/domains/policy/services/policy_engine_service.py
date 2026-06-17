@@ -40,6 +40,7 @@ from lia_models.policy import (
     RuleType,
     TargetType,
 )
+from app.services.notification_service import notification_service
 
 logger = logging.getLogger(__name__)
 
@@ -703,20 +704,18 @@ class PolicyEngineService:
         notifications_sent = []
         
         try:
-            from app.services.notification_service import NotificationService
-            notification_service = NotificationService()
-            
             message = self._format_template(template or "Escalation triggered", context)
             
             for recipient in recipients:
                 try:
-                    await notification_service.send_notification(
+                    await notification_service.create_notification(
                         user_id=recipient,
                         title="Escalação - Ação Necessária",
                         message=message,
                         notification_type="urgent",
-                        priority="high",
-                        source_agent="policy_engine"
+                        category="policy_escalation",
+                        source_agent="policy_engine",
+                        channels=["bell"],
                     )
                     notifications_sent.append(f"notification:{recipient}")
                 except Exception as e:
