@@ -91,7 +91,7 @@ class AgentMonitoringService {
 
   async getGlobalMetrics(): Promise<GlobalMetrics> {
     try {
-      const response = await fetch(`${this.baseUrl}/agent-monitoring/metrics`)
+      const response = await fetch(`${this.baseUrl}/agent-monitoring/metrics`, { signal: AbortSignal.timeout(10000) })
       if (!response.ok) {
         throw new Error(`Failed to fetch global metrics: ${response.statusText}`)
       }
@@ -103,7 +103,7 @@ class AgentMonitoringService {
 
   async getAllAgentsSummary(): Promise<AgentSummary[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/agent-monitoring/agents`)
+      const response = await fetch(`${this.baseUrl}/agent-monitoring/agents`, { signal: AbortSignal.timeout(10000) })
       if (!response.ok) {
         throw new Error(`Failed to fetch agents summary: ${response.statusText}`)
       }

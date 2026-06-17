@@ -129,7 +129,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
   const fetchQualityData = useCallback(async () => {
     try {
-      const res = await fetch(`/api/backend-proxy/analytics/agent-quality-dashboard?period=${qualityPeriod}`)
+      const res = await fetch(`/api/backend-proxy/analytics/agent-quality-dashboard?period=${qualityPeriod}`, { signal: AbortSignal.timeout(10000) })
       if (res.ok) {
         setQualityData(await res.json())
       }
@@ -140,7 +140,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
   const fetchPredictions = useCallback(async () => {
     try {
-      const res = await fetch('/api/backend-proxy/analytics/ml-predictions')
+      const res = await fetch('/api/backend-proxy/analytics/ml-predictions', { signal: AbortSignal.timeout(10000) })
       if (res.ok) {
         setPredictions(await res.json())
       }
@@ -151,7 +151,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
   const fetchCalibration = useCallback(async () => {
     try {
-      const res = await fetch('/api/backend-proxy/analytics/calibration-dashboard?days=30')
+      const res = await fetch('/api/backend-proxy/analytics/calibration-dashboard?days=30', { signal: AbortSignal.timeout(10000) })
       if (res.ok) {
         setCalibration(await res.json())
       }
@@ -243,7 +243,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
     setSelectedStatusFilter([])
   }
 
-  if (!globalMetrics || agents.length === 0) {
+  // Gate de loading: só mostra o spinner enquanto não houver métricas globais.
+  // NÃO incluir `agents.length === 0` aqui — uma lista de agentes legitimamente
+  // vazia (resposta 200 sem agentes) deixava o spinner travado para sempre.
+  if (!globalMetrics) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex items-center gap-2 text-lia-text-tertiary">

@@ -26,7 +26,6 @@ import {
   Activity, Users, DollarSign, Clock, Target, AlertCircle, CheckCircle,
   ChevronDown, Filter, Download, RefreshCw
 } from"lucide-react"
-import { getElementAtEvent } from 'react-chartjs-2'
 
 ChartJS.register(
   CategoryScale,
@@ -111,21 +110,20 @@ export function InteractiveChart({
   const [highlightedSeries, setHighlightedSeries] = useState<string | null>(null)
   const chartRef = useRef<ChartJS | null>(null)
 
-  const handleClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!chartRef.current) return
-    
-    const chart = chartRef.current
-    const elements = getElementAtEvent(chart, event)
-    
-    if (elements.length > 0) {
-      const element = elements[0]
-      const datasetIndex = element.datasetIndex
-      const index = element.index
-      const dataPoint = data[index]
-      
-      setSelectedDataPoint(dataPoint)
-      onDrillDown?.(dataPoint)
-    }
+  // chart.js invoca options.onClick com (event, elements, chart) — os elementos
+  // clicados já vêm prontos no 2º argumento, então não usamos getElementAtEvent
+  // (que esperava um React.MouseEvent e quebrava: "Cannot use 'in' operator to
+  // search for 'native' in undefined").
+  const handleClick = (_event: unknown, elements: InteractionItem[]) => {
+    if (!elements || elements.length === 0) return
+
+    const element = elements[0]
+    const index = element.index
+    const dataPoint = data[index]
+    if (!dataPoint) return
+
+    setSelectedDataPoint(dataPoint)
+    onDrillDown?.(dataPoint)
   }
 
   const getChartData = () => {
@@ -252,7 +250,7 @@ export function InteractiveChart({
           }
         },
       },
-      onClick: handleClick as unknown as () => void,
+      onClick: handleClick as unknown as ChartOptions['onClick'],
     }
 
     if (type === 'pie') {
