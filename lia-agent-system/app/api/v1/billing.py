@@ -1775,3 +1775,222 @@ company_id: str = Depends(require_company_id)):
         )
 
 reorder_collection_before_item(router)
+
+
+# ---------------------------------------------------------------------------
+# Fase 2: Plan summary for BillingTab (combines Subscription + CompanyPlanConfig)
+# ---------------------------------------------------------------------------
+
+@router.get("/my-plan-summary", summary="Get enriched plan summary for billing UI")
+async def get_my_plan_summary(
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
+    repo: BillingRepository = Depends(get_billing_repo),
+    company_id: str = Depends(require_company_id),
+):
+    """Aggregates Subscription + CompanyPlanConfig + ClientAccount overrides."""
+    try:
+        company_id = _extract_company_id_from_user(current_user)
+
+        # Get subscription
+        from sqlalchemy import and_, select
+        from app.models.billing import Subscription
+        db = repo.db
+        sub_result = await db.execute(
+            select(Subscription).where(
+                and_(
+                    Subscription.client_id == company_id,
+                    Subscription.status.in_(["active", "trialing"]),
+                )
+            ).order_by(Subscription.created_at.desc()).limit(1)
+        )
+        subscription = sub_result.scalar_one_or_none()
+
+        if not subscription:
+            return {"success": True, "data": None}
+
+        plan_code = (subscription.plan_code or "starter").lower().strip()
+
+        # Get plan config from company_plan_configs
+        plan_data = {}
+        try:
+            from lia_models.plan_config import CompanyPlanConfig
+            pc_result = await db.execute(
+                select(CompanyPlanConfig).where(
+                    CompanyPlanConfig.plan_code == plan_code
+                ).limit(1)
+            )
+            pc = pc_result.scalar_one_or_none()
+            if pc:
+                features = [k for k, v in (pc.feature_flags or {}).items() if v]
+                plan_data = {
+                    "plan_name": pc.plan_name,
+                    "plan_code": plan_code,
+                    "status": subscription.status or "active",
+                    "seats_contracted": pc.max_seats,
+                    "features_enabled": features,
+                    "llm": {
+                        "embedding_monthly_cap": pc.embedding_monthly_cap,
+                        "general_monthly_cap": pc.llm_monthly_cap,
+                        "byok_active": pc.byok_enabled,
+                        "byok_provider": None,
+                    },
+                    "pearch": {
+                        "monthly_included_credits": pc.pearch_credits_monthly,
+                        "credits_rollover": pc.pearch_credits_rollover,
+                    },
+                    "apify": {
+                        "monthly_included_credits": pc.apify_credits_monthly,
+                        "credits_rollover": pc.apify_credits_rollover,
+                    },
+                    "agent_quotas": {
+                        "custom_agents": pc.max_custom_agents,
+                        "sourcing_agents": pc.max_sourcing_agents,
+                        "digital_twins": pc.max_digital_twins,
+                        "campaigns": pc.max_campaigns,
+                    },
+                }
+        except Exception as exc:
+            logger.debug("[Billing] CompanyPlanConfig lookup failed: %s", exc)
+
+        if not plan_data:
+            plan_data = {
+                "plan_name": plan_code,
+                "plan_code": plan_code,
+                "status": subscription.status or "active",
+                "seats_contracted": 5,
+                "features_enabled": [],
+                "llm": {"embedding_monthly_cap": 50000000, "general_monthly_cap": 2000000, "byok_active": False, "byok_provider": None},
+                "pearch": {"monthly_included_credits": 500, "credits_rollover": False},
+                "apify": {"monthly_included_credits": 500, "credits_rollover": False},
+                "agent_quotas": {"custom_agents": 2, "sourcing_agents": 1, "digital_twins": 0, "campaigns": 0},
+            }
+
+        # Check BYOK status from LLM config
+        try:
+            from app.models.tenant_llm_config import TenantLLMConfig
+            llm_result = await db.execute(
+                select(TenantLLMConfig).where(
+                    TenantLLMConfig.company_id == company_id
+                ).limit(1)
+            )
+            llm_config = llm_result.scalar_one_or_none()
+            if llm_config and getattr(llm_config, "byok_active", False):
+                plan_data["llm"]["byok_active"] = True
+                plan_data["llm"]["byok_provider"] = getattr(llm_config, "provider", None)
+        except Exception:
+            pass
+
+        # Apply per-company overrides
+        try:
+            client = await get_client_by_id(company_id, repo)
+            if client and client.settings:
+                aq = client.settings.get("agent_quotas", {})
+                if aq:
+                    plan_data["overrides"] = {"agent_quotas": aq}
+                    plan_data["agent_quotas"].update(aq)
+        except Exception:
+            pass
+
+        return {"success": True, "data": plan_data}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting plan summary: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get plan summary: {str(e)}"
+        )
+
+
+@router.get("/my-usage-summary", summary="Get usage summary for billing UI")
+async def get_my_usage_summary(
+    current_user: dict[str, Any] = Depends(get_user_from_headers),
+    repo: BillingRepository = Depends(get_billing_repo),
+    company_id: str = Depends(require_company_id),
+):
+    """Aggregates token/credit consumption for the current billing period."""
+    try:
+        company_id = _extract_company_id_from_user(current_user)
+        db = repo.db
+
+        from datetime import UTC, datetime
+        from sqlalchemy import and_, func, select
+
+        now = datetime.now(UTC)
+        period_start = datetime(now.year, now.month, 1, tzinfo=UTC)
+        if now.month == 12:
+            period_end = datetime(now.year + 1, 1, 1, tzinfo=UTC)
+        else:
+            period_end = datetime(now.year, now.month + 1, 1, tzinfo=UTC)
+
+        # Token usage from ai_consumptions
+        llm_used = 0
+        try:
+            from app.models.ai_consumption import AiConsumption
+            result = await db.execute(
+                select(func.coalesce(func.sum(AiConsumption.total_tokens), 0)).where(
+                    and_(
+                        AiConsumption.company_id == company_id,
+                        AiConsumption.created_at >= period_start,
+                        AiConsumption.created_at < period_end,
+                    )
+                )
+            )
+            llm_used = result.scalar() or 0
+        except Exception:
+            pass
+
+        # Credit transactions
+        pearch_used = 0
+        apify_used = 0
+        actions = {}
+        try:
+            from app.models.billing import CreditTransaction
+            txns = await db.execute(
+                select(
+                    CreditTransaction.reference_type,
+                    CreditTransaction.amount,
+                ).where(
+                    and_(
+                        CreditTransaction.company_id == company_id,
+                        CreditTransaction.created_at >= period_start,
+                        CreditTransaction.created_at < period_end,
+                        CreditTransaction.transaction_type == "consumption",
+                    )
+                )
+            )
+            for row in txns.all():
+                ref = (row.reference_type or "").lower()
+                amt = abs(row.amount or 0)
+                if "pearch" in ref:
+                    pearch_used += amt
+                elif "apify" in ref:
+                    apify_used += amt
+                else:
+                    actions[ref] = actions.get(ref, 0) + amt
+        except Exception:
+            pass
+
+        return {
+            "success": True,
+            "data": {
+                "period": {"start": period_start.isoformat(), "end": period_end.isoformat()},
+                "embedding_tokens_used": 0,
+                "llm_general_tokens_used": llm_used,
+                "pearch_credits_used": pearch_used,
+                "apify_credits_used": apify_used,
+                "agent_executions_used": 0,
+                "actions_used": actions,
+            },
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting usage summary: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get usage summary: {str(e)}"
+        )
+

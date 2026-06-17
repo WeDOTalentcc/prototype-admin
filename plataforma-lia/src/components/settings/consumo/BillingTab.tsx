@@ -26,7 +26,7 @@ function useBillingSubscription() {
   return useQuery({
     queryKey: SETTINGS_QUERY_KEYS.billing(),
     queryFn: async () => {
-      const res = await fetch("/api/backend-proxy/billing/subscription")
+      const res = await fetch("/api/backend-proxy/billing/plan-summary")
       if (!res.ok) throw new Error("Erro ao carregar plano")
       return res.json()
     },
@@ -38,7 +38,7 @@ function useBillingUsage() {
   return useQuery({
     queryKey: SETTINGS_QUERY_KEYS.billingUsage(),
     queryFn: async () => {
-      const res = await fetch("/api/backend-proxy/billing/usage")
+      const res = await fetch("/api/backend-proxy/billing/usage-summary")
       if (!res.ok) throw new Error("Erro ao carregar uso")
       return res.json()
     },
