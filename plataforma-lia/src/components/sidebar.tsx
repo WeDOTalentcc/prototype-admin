@@ -783,6 +783,10 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
     handleCloseTipsModal()
   }, [onNavigate, handleCloseTipsModal])
 
+  useEffect(() => {
+    useFocusedJobStore.persist.rehydrate()
+  }, [])
+
   return (
     <nav
       data-sidebar="true"

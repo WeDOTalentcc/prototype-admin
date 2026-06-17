@@ -28,6 +28,7 @@ export const useFocusedJobStore = create<FocusedJobStore>()(
     }),
     {
       name: 'focused-job-storage',
+      skipHydration: true,
     }
   )
 )
