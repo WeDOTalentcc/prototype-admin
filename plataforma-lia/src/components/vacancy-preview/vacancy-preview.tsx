@@ -47,6 +47,8 @@ import { VacancyPreviewActionBar } from "./VacancyPreviewActionBar"
 import { VacancyDecisionBar } from "./VacancyDecisionBar"
 import { JobScreeningSection } from "@/components/pages/jobs/job-preview/sections/JobScreeningSection"
 import { mapVacancyToJob, type VacancyDetailFromApi } from "./utils/mapVacancyToJob"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { VacancyAnalyticsTab } from "./VacancyAnalyticsTab"
 
 interface VacancyLite {
   id: string
@@ -341,30 +343,55 @@ export function VacancyPreview({
         {/* DecisionBar — stage-aware primary action (canonical: TOP, not footer) */}
         <VacancyDecisionBar vacancy={vacancy} action={action} onAction={onAction} />
 
-        {/* Body — composed from existing JobScreeningSection */}
-        <div className="flex-1 overflow-y-auto">
-          {isLoadingDetail ? (
-            <div className="px-4 py-6 space-y-2">
-              <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse" />
-              <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse w-5/6" />
-              <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse w-4/6" />
-              <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse w-3/6" />
+        {/* Body — tabs: Informações (existing) + Análise (analytics) */}
+        <div className="flex-1 overflow-y-auto flex flex-col">
+          <Tabs defaultValue="info" className="flex flex-col flex-1">
+            <div className="px-3 pt-2 pb-0 border-b border-lia-border-subtle bg-lia-bg-primary">
+              <TabsList className="h-8 p-0.5 bg-lia-bg-secondary rounded-md">
+                <TabsTrigger
+                  value="info"
+                  className="text-xs px-3 py-1 h-7"
+                >
+                  Informações
+                </TabsTrigger>
+                <TabsTrigger
+                  value="analytics"
+                  className="text-xs px-3 py-1 h-7"
+                >
+                  📊 Análise
+                </TabsTrigger>
+              </TabsList>
             </div>
-          ) : detailError ? (
-            <p className="px-4 py-6 text-xs text-status-error">
-              Erro ao carregar detalhes: {detailError}
-            </p>
-          ) : detail ? (
-            <JobScreeningSection
-              previewJob={composedJob}
-              screeningConfig={(detail.screening_config as never) ?? undefined}
-              isLoadingScreeningConfig={false}
-              collapsedPreviewSections={collapsedSections}
-              expandedBlocks={expandedBlocks}
-              onToggleSection={toggleSection}
-              onToggleBlock={toggleBlock}
-            />
-          ) : null}
+
+            <TabsContent value="info" className="flex-1 overflow-y-auto mt-0">
+              {isLoadingDetail ? (
+                <div className="px-4 py-6 space-y-2">
+                  <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse" />
+                  <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse w-5/6" />
+                  <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse w-4/6" />
+                  <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse w-3/6" />
+                </div>
+              ) : detailError ? (
+                <p className="px-4 py-6 text-xs text-status-error">
+                  Erro ao carregar detalhes: {detailError}
+                </p>
+              ) : detail ? (
+                <JobScreeningSection
+                  previewJob={composedJob}
+                  screeningConfig={(detail.screening_config as never) ?? undefined}
+                  isLoadingScreeningConfig={false}
+                  collapsedPreviewSections={collapsedSections}
+                  expandedBlocks={expandedBlocks}
+                  onToggleSection={toggleSection}
+                  onToggleBlock={toggleBlock}
+                />
+              ) : null}
+            </TabsContent>
+
+            <TabsContent value="analytics" className="flex-1 overflow-y-auto mt-0">
+              <VacancyAnalyticsTab jobId={vacancy.id} />
+            </TabsContent>
+          </Tabs>
         </div>
       </TooltipProvider>
     </div>
