@@ -8328,5 +8328,82 @@
       "title": "Could not open the portal",
       "contactHint": "If you have any questions, please contact the company that received your application."
     }
+  },
+  "vacancyAnalytics": {
+    "tabAnalise": "Analytics",
+    "tabInfo": "Details",
+    "funnel": {
+      "title": "Pipeline",
+      "total": "Total",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer",
+      "hired": "Hired"
+    },
+    "performance": {
+      "title": "Performance",
+      "conversionRate": "Conversion Rate",
+      "timeToFill": "Time to Fill",
+      "days": "days"
+    },
+    "forecast": {
+      "title": "AI Forecast",
+      "closureProbability": "Closure Probability",
+      "estimatedDays": "Estimated Days",
+      "comingSoon": "Forecast coming soon."
+    }
+  },
+  "indicadores": {
+    "title": "Indicators",
+    "subtitle": "Predictive analytics for your recruitment pipeline",
+    "filters": {
+      "allVacancies": "All vacancies",
+      "last30days": "Last 30 days",
+      "last90days": "Last 90 days",
+      "last6months": "Last 6 months"
+    },
+    "kpi": {
+      "activeCandidates": "Active Candidates",
+      "avgHiringProbability": "Avg. Hiring Probability",
+      "avgTimeToFill": "Avg. Time to Fill",
+      "conversionRate": "Conversion Rate",
+      "openVacancies": "Open Vacancies",
+      "slaAtRisk": "SLA at Risk"
+    },
+    "charts": {
+      "applicationsTrend": "Applications Trend",
+      "pipelineForecast": "Pipeline Forecast"
+    },
+    "premium": {
+      "title": "Advanced Analytics",
+      "description": "Access 14+ advanced predictive indicators",
+      "upgrade": "Upgrade Plan"
+    }
+  },
+  "talentPoolInsights": {
+    "title": "Talent Pool Insights",
+    "candidates": "candidates",
+    "hiringProbability": "Hiring Probability",
+    "closureProbability": "Closure Probability",
+    "timeToFill": "Estimated Time to Fill",
+    "days": "days",
+    "topSkills": "Top Skills",
+    "noSkills": "No skills available yet.",
+    "pipelineSnapshot": {
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer"
+    },
+    "confidence": {
+      "high": "High confidence",
+      "medium": "Medium confidence",
+      "low": "Limited data"
+    },
+    "premium": {
+      "locked": "Available on Enterprise plan",
+      "upgrade": "Upgrade Plan"
+    },
+    "viewFull": "View full analysis",
+    "loadingError": "Could not load insights."
   }
 }

@@ -8328,5 +8328,82 @@
     "footer": {
       "legal": "Esta proposta foi enviada via WeDOTalent. Seus dados são tratados conforme a LGPD."
     }
+  },
+  "vacancyAnalytics": {
+    "tabAnalise": "Análise",
+    "tabInfo": "Informações",
+    "funnel": {
+      "title": "Pipeline",
+      "total": "Total",
+      "screening": "Triagem",
+      "interview": "Entrevista",
+      "offer": "Oferta",
+      "hired": "Contratados"
+    },
+    "performance": {
+      "title": "Performance",
+      "conversionRate": "Taxa de Conversão",
+      "timeToFill": "Tempo para Preencher",
+      "days": "dias"
+    },
+    "forecast": {
+      "title": "Previsão IA",
+      "closureProbability": "Probabilidade de Fechamento",
+      "estimatedDays": "Dias Estimados",
+      "comingSoon": "Previsão de fechamento em breve."
+    }
+  },
+  "talentPoolInsights": {
+    "title": "Talent Pool Insights",
+    "candidates": "candidatos",
+    "hiringProbability": "Probabilidade de Contratação",
+    "closureProbability": "Probabilidade de Fechamento",
+    "timeToFill": "Tempo Estimado para Preencher",
+    "days": "dias",
+    "topSkills": "Principais Skills",
+    "noSkills": "Nenhuma skill disponível ainda.",
+    "pipelineSnapshot": {
+      "screening": "Triagem",
+      "interview": "Entrevista",
+      "offer": "Oferta"
+    },
+    "confidence": {
+      "high": "Alta confiança",
+      "medium": "Média confiança",
+      "low": "Dados limitados"
+    },
+    "premium": {
+      "locked": "Disponível no plano Enterprise",
+      "upgrade": "Upgrade Plan"
+    },
+    "viewFull": "Ver análise completa",
+    "loadingError": "Não foi possível carregar os insights."
+  },
+  "indicadores": {
+    "title": "Indicadores",
+    "subtitle": "Análise preditiva do seu pipeline de recrutamento",
+    "filters": {
+      "allVacancies": "Todas as vagas",
+      "last30days": "Últimos 30 dias",
+      "last90days": "Últimos 90 dias",
+      "last6months": "Últimos 6 meses"
+    },
+    "kpi": {
+      "activeCandidates": "Candidatos Ativos",
+      "avgHiringProbability": "Prob. Média de Contratação",
+      "avgTimeToFill": "Tempo Médio para Preencher",
+      "conversionRate": "Taxa de Conversão",
+      "openVacancies": "Vagas Abertas",
+      "slaAtRisk": "SLA em Risco"
+    },
+    "charts": {
+      "applicationsTrend": "Trend de Aplicações",
+      "pipelineForecast": "Previsão do Pipeline"
+    },
+    "premium": {
+      "title": "Análise Avançada",
+      "description": "Acesse 14+ indicadores preditivos avançados",
+      "upgrade": "Upgrade Plan"
+    }
   }
 }
