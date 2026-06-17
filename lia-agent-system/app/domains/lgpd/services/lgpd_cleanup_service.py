@@ -567,7 +567,7 @@ async def run_cleanup(dry_run: bool = True) -> dict:
         logger.error("Error during LGPD expired_job audit: %s", exc)
         summary["errors"].append(f"expired_jobs: {exc}")
 
-        mode = "DRY-RUN" if dry_run else "REAL"
+    mode = "DRY-RUN" if dry_run else "REAL"
     logger.info(
         "LGPD cleanup [%s] complete — candidates: %d, vacancy_candidates: %d, "
         "ai_consumption: %d, chat_messages: %d, interview_notes: %d, "
