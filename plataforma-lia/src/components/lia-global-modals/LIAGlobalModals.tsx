@@ -11,6 +11,7 @@ import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 import { LiaEntityModalHost } from "@/components/lia-global-modals/LiaEntityModalHost"
 import { LiaTableStateBridge } from "@/components/lia-global-modals/LiaTableStateBridge"
 import { HiringPolicyConfigModal } from "@/components/modals/hiring-policy-config-modal"
+import { TalentPoolInsightsModal } from "@/components/talent-pool-insights/TalentPoolInsightsModal"
 
 /**
  * LIAGlobalModals — listens for `lia:open_modal` events (dispatched by useUIAction)
@@ -26,6 +27,8 @@ import { HiringPolicyConfigModal } from "@/components/modals/hiring-policy-confi
  *
  * Fase B3b (2026-06-09): adiciona hiring_policy_config (LiaPersonalizacaoHub em Dialog).
  * job_insights + job_compare tratados no LiaEntityModalHost (precisam de entidade).
+ *
+ * 2026-06-17: talent_pool_insights — Juicybox 2-column insights for a job's talent pool.
  */
 export function LIAGlobalModals() {
   const router = useRouter()
@@ -61,6 +64,12 @@ export function LIAGlobalModals() {
     job_id?: string
     draft_id?: string
   }>("offer_review")
+
+  // 2026-06-17: Talent Pool Insights modal (Juicybox pattern)
+  const talentPoolInsights = useModalOpenListener<{
+    job_id?: string
+    job_title?: string
+  }>("talent_pool_insights")
 
   // PR-B Trigger A: Rail A Card 5.1 sends ui_action="open_offer_review".
   // useUIAction dispatches `lia:open_offer_review` CustomEvent — handled here
@@ -105,6 +114,7 @@ export function LIAGlobalModals() {
     create_job: createJob.close,
     hiring_policy_config: hiringPolicyConfig.close,
     offer_review: offerReview.close,
+    talent_pool_insights: talentPoolInsights.close,
   }
 
   // GAP-04-004: selective close — modal_id targets one modal, omission closes all
@@ -180,6 +190,18 @@ export function LIAGlobalModals() {
         isOpen={hiringPolicyConfig.isOpen}
         onClose={hiringPolicyConfig.close}
       />
+
+      {/* 2026-06-17: Talent Pool Insights — Juicybox 2-column modal.
+          Opened via open_ui(modal_id="talent_pool_insights", data={job_id, job_title}).
+          Falls back gracefully when job_id is missing (modal stays closed). */}
+      {talentPoolInsights.isOpen && talentPoolInsights.data.job_id && (
+        <TalentPoolInsightsModal
+          isOpen={talentPoolInsights.isOpen}
+          onClose={talentPoolInsights.close}
+          jobId={talentPoolInsights.data.job_id}
+          jobTitle={talentPoolInsights.data.job_title}
+        />
+      )}
 
       {/* Fase B3: modais que precisam do objeto completo (candidato/vaga)
           abertos pela LIA via open_ui — resolve id→objeto e monta. */}
