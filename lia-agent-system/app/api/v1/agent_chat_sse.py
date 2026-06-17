@@ -1300,12 +1300,32 @@ company_id: str = Depends(require_company_id)):
                             )
                             _subtasks = _decomp.get("subtasks", []) if isinstance(_decomp, dict) else []
                             if _subtasks and len(_subtasks) >= 2:
+                                _AGENT_TYPE_TO_DOMAIN = {
+                                    "sourcing": "sourcing",
+                                    "cv_screening": "cv_screening",
+                                    "interviewer": "cv_screening",
+                                    "wsi_evaluator": "cv_screening",
+                                    "job_planner": "job_management",
+                                    "scheduling": "communication",
+                                    "analyst_feedback": "communication",
+                                    "communication": "communication",
+                                    "automation": "automation",
+                                }
+                                _DOMAIN_DEFAULT_ACTION = {
+                                    "sourcing": "search_candidates",
+                                    "cv_screening": "score_candidates",
+                                    "communication": "send_notification",
+                                    "job_management": "generate_jd",
+                                    "automation": "move_candidate_stage",
+                                }
                                 _agent_tasks = []
                                 for i, st in enumerate(_subtasks):
+                                    _raw_domain = st.get("domain_id") or _AGENT_TYPE_TO_DOMAIN.get(st.get("agent_type", ""), "automation")
+                                    _raw_action = st.get("action_id") or _DOMAIN_DEFAULT_ACTION.get(_raw_domain, "generic_step")
                                     _agent_tasks.append(AgentTask(
-                                        task_id=st.get("task_id", f"t{i}"),
-                                        domain_id=st.get("domain_id", st.get("domain", "automation")),
-                                        action_id=st.get("action_id", st.get("action", st.get("description", f"step-{i}")[:50])),
+                                        task_id=st.get("id", st.get("task_id", f"t{i}")),
+                                        domain_id=_raw_domain,
+                                        action_id=_raw_action,
                                         description=st.get("description", ""),
                                         depends_on=st.get("depends_on", []),
                                         is_critical=st.get("is_critical", True),
