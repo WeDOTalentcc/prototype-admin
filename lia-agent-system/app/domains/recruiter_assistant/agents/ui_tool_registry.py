@@ -76,6 +76,11 @@ async def _wrap_open_ui(**kwargs: Any) -> dict[str, Any]:
         }
 
     capability = (kwargs.get("capability") or "").strip()
+    if not capability:
+        return {
+            "success": False,
+            "message": "capability is required and cannot be empty",
+        }
     entity_ids = kwargs.get("entity_ids") or {}
     if not isinstance(entity_ids, dict):
         entity_ids = {}
