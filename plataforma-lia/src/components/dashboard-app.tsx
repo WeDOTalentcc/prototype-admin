@@ -457,6 +457,8 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
       case "Vagas":
         return <JobsPage onNavigate={handleNavigate} onAddRecentItem={addRecentItem} pendingChatOpen={pendingChatOpen as any} onChatOpened={() => setPendingChatOpen(null)} pendingJobOpen={pendingJobOpen} onJobOpened={() => setPendingJobOpen(null)} />
       case "Indicadores":
+        return <IndicadoresPage />
+      case "Relatórios":
         return <IndicatorsPage />
       case "Central Comunicação":
         if (!hasModuleAccess('communication_center')) {
@@ -474,7 +476,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
       case "Templates":
         return <TemplatesPage />
       case "Decidir":
-        return <IndicadoresPage />
+        return <IndicatorsPage />
       case "Agentes":
       case "Estúdio de Agentes":
         return (
