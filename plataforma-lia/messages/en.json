@@ -970,7 +970,11 @@
         "divulgacao": "Publishing",
         "requisitos": "Requirements",
         "targeting": "Targeting",
-        "metricas": "Metrics"
+        "metricas": "Metrics",
+        "confidencialidade": "Confidentiality",
+        "processo": "Hiring Process",
+        "tags": "Tags",
+        "timestamps": "Dates"
       }
     },
     "tableColumns": {

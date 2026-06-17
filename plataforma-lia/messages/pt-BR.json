@@ -970,7 +970,11 @@
         "divulgacao": "Divulgação",
         "requisitos": "Requisitos",
         "targeting": "Segmentação",
-        "metricas": "Métricas"
+        "metricas": "Métricas",
+        "confidencialidade": "Confidencialidade",
+        "processo": "Processo Seletivo",
+        "tags": "Tags",
+        "timestamps": "Datas"
       }
     },
     "tableColumns": {
