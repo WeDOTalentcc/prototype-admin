@@ -16,6 +16,7 @@ import { ChatPage } from "@/components/pages/chat-page"
 import { JobsPage } from "@/components/pages/jobs-page"
 import { TasksPage } from "@/components/pages/tasks-page"
 import { IndicatorsPage } from "@/components/pages/indicators-page"
+import { IndicadoresPage } from "@/components/indicadores/IndicadoresPage"
 import { CommunicationHub } from "@/components/settings/CommunicationHub"
 import { TemplatesPage } from "@/components/pages/templates-page"
 import LiaLibraryPage from "@/components/pages/lia-library-page"
@@ -473,7 +474,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
       case "Templates":
         return <TemplatesPage />
       case "Decidir":
-        return <TasksPage onNavigate={handleNavigate} />
+        return <IndicadoresPage />
       case "Agentes":
       case "Estúdio de Agentes":
         return (

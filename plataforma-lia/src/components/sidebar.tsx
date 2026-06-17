@@ -622,9 +622,14 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   const [passwordSuccess, setPasswordSuccess] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
 
-  const handleNotificationClick = useCallback((_notification: AppNotification) => {
+  const handleNotificationClick = useCallback((notification: AppNotification) => {
+    // talent_pool_insight: navigate to Indicadores for pool-level metrics
+    if ((notification as { type?: string }).type === "talent_pool_insight") {
+      onNavigate("Decidir")
+      return
+    }
     // digest notifications are now handled by WeeklyDigestChatProvider
-  }, [])
+  }, [onNavigate])
 
   const roleLabels: Record<string, string> = {
     admin: t("user.admin"),
