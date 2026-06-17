@@ -24,6 +24,7 @@ import { ToolSurfaceContext, useToolActivate } from "@/contexts/ToolSurfaceConte
 import { CandidateResultCard, type CandidateSummary } from "./tool-cards/CandidateResultCard"
 import { JobListCard, type JobSummary } from "./tool-cards/JobListCard"
 import { CalibrationResultCard, type CalibrationCandidate } from "./tool-cards/CalibrationResultCard"
+import { TalentInsightsCard, type TalentInsightsCardData } from "./tool-cards/TalentInsightsCard"
 import { useSurfaceForTool } from "@/hooks/chat/useSurfaceForTool"
 import { CandidateProfileCard, type CandidateProfileActionId } from "./candidate/CandidateProfileCard"
 import { CandidateEvaluationCard } from "./candidate/CandidateEvaluationCard"
@@ -674,7 +675,7 @@ export function UnifiedMessageList({
 
                 {message.response_blocks && message.response_blocks.length > 0 && (() => {
                   // Filtrar somente blocos RRP (kind-based); blocos type-based
-                  // (list_jobs_result, search_candidates_result, calibration_result)
+                  // (list_jobs_result, search_candidates_result, calibration_result, talent_pool_insights_card)
                   // são renderizados abaixo pelo map() dedicado.
                   const rrpBlocks = message.response_blocks!.filter(
                     (b) => "kind" in (b as unknown as Record<string, unknown>)
@@ -732,6 +733,19 @@ export function UnifiedMessageList({
                         mode={mode}
                       />
                     )
+                  }
+
+                  if (raw.type === "talent_pool_insights_card") {
+                    const cardData = raw.data as TalentInsightsCardData | undefined
+                    if (cardData?.job_id && cardData?.job_title) {
+                      return (
+                        <TalentInsightsCard
+                          key={`tpi-${idx}`}
+                          data={cardData}
+                        />
+                      )
+                    }
+                    return null
                   }
 
                   return null
