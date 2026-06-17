@@ -42,6 +42,10 @@ from app.schemas.email_template import (
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.errors import LIAError, LIAInternalError
+from app.shared.template_validation import (
+    extract_template_variables,
+    validate_template_variables,
+)
 from app.shared.compliance.fairness_guard_middleware import check_fairness_async  # P1-W2-04
 from typing import Annotated
 from fastapi import Path
@@ -593,6 +597,33 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(
                 status_code=400,
                 detail="Recipient email must belong to a known active candidate in the system",
+            )
+
+        # GAP-06-008: pre-flight template variable validation — structured 422
+        # before any send attempt (fail before side effect).
+        # Combine subject + body to check all variables in one pass.
+        _template_content = (
+            (str(getattr(template_check, 'subject', '') or '') + ' ' +
+             str(getattr(template_check, 'body_html', '') or '') + ' ' +
+             str(getattr(template_check, 'body_text', '') or ''))
+        )
+        if request.subject_override:
+            _template_content += ' ' + request.subject_override
+        if request.body_override:
+            _template_content += ' ' + request.body_override
+        _provided_vars = dict(request.variables)
+        if request.recipient_name:
+            _provided_vars.setdefault("candidate_name", request.recipient_name)
+        _missing = validate_template_variables(_template_content, _provided_vars)
+        if _missing:
+            _required = sorted(extract_template_variables(_template_content))
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "missing_template_variables",
+                    "missing": _missing,
+                    "required": _required,
+                },
             )
 
         variables = sanitize_variables(request.variables.copy())
