@@ -17,7 +17,6 @@ export function useIndicatorsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("cards")
   const [sortBy, setSortBy] = useState("totalScore")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  const [selectedCandidates, setSelectedCandidates] = useState<any[]>([])
   const [showExportModal, setShowExportModal] = useState(false)
 
   // Live metrics from backend (keyed by recruiter user_id)
@@ -113,10 +112,6 @@ export function useIndicatorsPage() {
     }
   }, [])
 
-  const handleCommandAction = useCallback((_command: string, _action: string) => {
-    // Implementar acoes da LIA aqui
-  }, [])
-
   const handleAlertAction = useCallback((_alertId: string, action: string) => {
     switch (action) {
       case "mark_read":
@@ -147,8 +142,6 @@ export function useIndicatorsPage() {
     setSortBy,
     sortOrder,
     setSortOrder,
-    selectedCandidates,
-    setSelectedCandidates,
     showExportModal,
     setShowExportModal,
     recruiters,
@@ -156,7 +149,6 @@ export function useIndicatorsPage() {
     filteredRecruiters,
     teamMetrics,
     getStatusColor,
-    handleCommandAction,
     handleAlertAction,
     liveMetrics,
   }
