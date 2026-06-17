@@ -475,8 +475,12 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
         return <LiaLibraryPage onNavigate={handleNavigate} />
       case "Templates":
         return <TemplatesPage />
-      case "Decidir":
-        return <IndicatorsPage />
+      // "Decidir" has a dedicated route ("/tasks") that renders <TasksPage />
+      // via `children`. It must NOT have a switch case: handleNavigate sets
+      // currentPage="Decidir" synchronously BEFORE router.push commits, so any
+      // component returned here would flash on the way to /tasks. Falls through
+      // to `default: return null` (see comment below). Returning <IndicatorsPage />
+      // here was the root cause of the analytics-dashboard flash on Decidir click.
       case "Agentes":
       case "Estúdio de Agentes":
         return (
