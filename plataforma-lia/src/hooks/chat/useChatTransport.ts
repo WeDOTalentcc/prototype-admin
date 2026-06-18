@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react"
 
 import type { TransportMode } from "./lia-chat-connection-types"
 import { useFocusedJobStore } from "@/stores/focused-job-store"
+import { usePathname } from "next/navigation"
 export type { TransportMode }
 
 const WS_BASE_URL =
@@ -253,6 +254,7 @@ export function useChatTransport(
   const onEventRef = useRef(onEvent)
 
   const { focusedJob } = useFocusedJobStore()
+  const _pathname = usePathname()
 
   useEffect(() => {
     onEventRef.current = onEvent
@@ -578,6 +580,9 @@ export function useChatTransport(
         conversation_id: conversationId,
         approve_pending_id: (_approvePendingId as string | null) ?? null,
         focused_job_id: focusedJob?.id ?? null,
+        focused_job_mode: focusedJob?.id
+          ? (_pathname?.includes(focusedJob.id) ? "active" : "background")
+          : null,
       })
 
       const headers: Record<string, string> = {
