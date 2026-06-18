@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.shared.tool_guards import validate_uuid_params
 from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,11 @@ async def get_stakeholder_metrics(
         delayed_decisions, stakeholder_bottlenecks
     """
     company_id = require_company_id_from_context(kwargs, "get_stakeholder_metrics")
+
+    if job_id:
+        _err = validate_uuid_params(job_id=job_id)
+        if _err:
+            return _err
 
     logger.info(f"👥 Getting stakeholder metrics (company: {company_id}, job: {job_id})")
 
@@ -247,6 +253,10 @@ async def get_prediction_metrics(
         Predictions including success probability, estimated close date, and risk factors
     """
     company_id = require_company_id_from_context(kwargs, "get_prediction_metrics")
+
+    _err = validate_uuid_params(job_id=job_id)
+    if _err:
+        return _err
 
     logger.info(f"🔮 Getting prediction metrics for job {job_id} (company: {company_id})")
 

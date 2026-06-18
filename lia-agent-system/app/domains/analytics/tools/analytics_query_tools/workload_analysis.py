@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.shared.tool_guards import validate_uuid_params
 from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,10 @@ async def get_bottleneck_analysis(
         slowest_stage, and recommendations
     """
     company_id = require_company_id_from_context(kwargs, "get_bottleneck_analysis")
+
+    _err = validate_uuid_params(job_id=job_id)
+    if _err:
+        return _err
 
     logger.info(f"🔍 Analyzing bottlenecks for job: {job_id} (company: {company_id})")
 
