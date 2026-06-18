@@ -175,7 +175,7 @@ async function fetchJobsData(): Promise<JobsQueryData> {
   let stats: Record<string, unknown> | null = null
       try {
         const overviewData = overviewResult
-        const stats = {
+        stats = {
           total: overviewData.active_jobs.total + (overviewData.all_jobs.hired_last_90d || 0),
           ativas: overviewData.active_jobs.total,
           urgentes: overviewData.active_jobs.by_urgency?.['alta'] || 0,
@@ -194,11 +194,8 @@ async function fetchJobsData(): Promise<JobsQueryData> {
           tendenciaSemanal: overviewData.all_jobs.trend_weeks,
           insights: overviewData.insights,
         }
-        setDashboardStats(stats)
-        setIsLoadingStats(false)
-        setIsLoadingJobs(false)
       } catch {
-        const stats = {
+        stats = {
           total: convertedJobs.length,
           ativas: convertedJobs.filter(job => job.status === 'Ativa').length,
           urgentes: convertedJobs.filter(job => job.urgencyLevel >= 4).length,
@@ -217,9 +214,6 @@ async function fetchJobsData(): Promise<JobsQueryData> {
           tendenciaSemanal: [],
           insights: [],
         }
-        setDashboardStats(stats)
-        setIsLoadingStats(false)
-        setIsLoadingJobs(false)
       }
 
   if (!stats) {
