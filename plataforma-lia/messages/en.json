@@ -1156,7 +1156,8 @@
       "Arquivada": "Archived"
     },
     "tabs": {
-      "agents": "Agents"
+      "agents": "Agents",
+      "indicators": "Indicators"
     },
     "agents": {
       "header": "Agents attached to this job",
@@ -1777,7 +1778,8 @@
     "sortOrderAsc": "Ascending",
     "sortOrderDesc": "Descending",
     "sortLabel": "Sort by",
-    "scheduleMessage": "Schedule message"
+    "scheduleMessage": "Schedule message",
+    "indicators": "Indicators"
   },
   "pipeline": {
     "title": "Talent Pipeline",

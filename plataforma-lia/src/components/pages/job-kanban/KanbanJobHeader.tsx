@@ -9,7 +9,7 @@ import { SCREENING_STATUS_LABELS } from"@/types/screening"
 import { liaApi } from"@/services/lia-api"
 import {
   ArrowLeft, Settings, Share2, FileText, Layers3, ListChecks, Lightbulb,
-  PauseCircle, PlayCircle, Archive, Calendar, Link2, RotateCcw, Brain, Search,
+  PauseCircle, PlayCircle, Archive, Calendar, Link2, RotateCcw, Brain, Search, BarChart3,
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -365,6 +365,18 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
             >
               <Brain className="w-3.5 h-3.5 text-lia-cyan" />
               {tJobs('tabs.agents')}
+            </button>
+            <button
+              onClick={() => { setActiveTab('indicators'); setShowJobEditor(false); }}
+              data-testid="job-tab-indicators"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                activeTab === 'indicators'
+                  ? 'bg-lia-bg-tertiary text-lia-text-primary'
+                  : 'text-lia-text-secondary hover:bg-lia-interactive-hover'
+              }`}
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              {t('indicators')}
             </button>
             <div className="ml-auto flex items-center gap-2">
               {pipelineInheritance.isCustomized ? (

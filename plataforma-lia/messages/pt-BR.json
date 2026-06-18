@@ -1156,7 +1156,8 @@
       "Arquivada": "Arquivada"
     },
     "tabs": {
-      "agents": "Agentes"
+      "agents": "Agentes",
+      "indicators": "Indicadores"
     },
     "agents": {
       "header": "Agentes acoplados a esta vaga",
@@ -1777,7 +1778,8 @@
     "sortOrderAsc": "Crescente",
     "sortOrderDesc": "Decrescente",
     "sortLabel": "Ordenar por",
-    "scheduleMessage": "Agendar mensagem"
+    "scheduleMessage": "Agendar mensagem",
+    "indicators": "Indicadores"
   },
   "pipeline": {
     "title": "Funil de Talentos",

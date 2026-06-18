@@ -9,6 +9,7 @@ import { PipelineStagesCarousel } from "@/components/ui/pipeline-stages-carousel
 import { JobEditTab } from "@/components/jobs/JobEditTab"
 // Onda 3 F4 (2026-05-28) — aba Agentes da Vaga.
 import { JobAgentsTab } from "@/components/jobs/JobAgentsTab"
+import { VacancyAnalyticsTab } from "@/components/vacancy-preview/VacancyAnalyticsTab"
 import { KanbanToolbar } from "@/components/pages/job-kanban/KanbanToolbar"
 import { KanbanTableView } from "@/components/pages/job-kanban/KanbanTableView"
 import { KanbanBoardSection } from "@/components/pages/job-kanban/KanbanBoardSection"
@@ -69,6 +70,16 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
         jobId={String(currentJob?.id || jobData?.id || '')}
         jobTitle={(currentJob?.title || jobData?.title) as string | undefined}
       />
+    )
+  }
+
+  if (activeTab === 'indicators') {
+    return (
+      <div className="flex-1 overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary">
+        <div className="px-4 py-4 pb-12">
+          <VacancyAnalyticsTab jobId={String(currentJob?.id || jobData?.id || '')} />
+        </div>
+      </div>
     )
   }
 
