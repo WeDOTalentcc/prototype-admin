@@ -31,7 +31,7 @@ export function PearchTab() {
     queryKey: ["pearch-consumption", days] as const,
     queryFn: async () => {
       const res = await fetch(`/api/backend-proxy/consumo/pearch?days=${days}`)
-      if (!res.ok) throw new Error("Erro ao carregar dados do Pearch")
+      if (!res.ok) throw new Error("Erro ao carregar dados de busca")
       return res.json()
     },
     staleTime: 30_000,
@@ -57,7 +57,7 @@ export function PearchTab() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <p className="text-sm text-lia-text-tertiary">
-          Buscas globais de candidatos via Pearch.
+          Buscas globais de candidatos.
         </p>
         <div className="flex items-center gap-1 rounded-md border border-lia-border-subtle bg-lia-bg-primary p-0.5">
           {PERIOD_OPTIONS.map(({ label, value }) => (
@@ -82,7 +82,7 @@ export function PearchTab() {
           <Search className="h-8 w-8 text-lia-text-tertiary mb-3" />
           <p className="text-sm font-medium text-lia-text-secondary">Nenhuma busca registrada</p>
           <p className="text-xs text-lia-text-tertiary mt-1">
-            Nenhuma busca Pearch nos últimos {days} dias.
+            Nenhuma busca global nos últimos {days} dias.
           </p>
         </div>
       ) : (

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { HubHeader } from "@/components/settings/_shared"
 import { PlanoTab } from "./consumo/PlanoTab"
 import { ConsumoUnificadoTab } from "./consumo/ConsumoUnificadoTab"
 import { FaturasTab } from "./consumo/FaturasTab"
@@ -62,16 +61,12 @@ export function ConsumoHub() {
 
   return (
     <div className="space-y-6">
-      <HubHeader
-        title="Plano e Cobrança"
-        description="Plano contratado, consumo de créditos, faturas e dados de cobrança."
-      />
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4 max-w-lg">
           <TabsTrigger value="plano">Plano</TabsTrigger>
           <TabsTrigger value="consumo">Consumo</TabsTrigger>
           <TabsTrigger value="faturas">Faturas</TabsTrigger>
-          <TabsTrigger value="cobranca">Cobrança</TabsTrigger>
+          <TabsTrigger value="cobranca">Dados de Pagamento</TabsTrigger>
         </TabsList>
 
         <TabsContent value="plano" className="mt-6">

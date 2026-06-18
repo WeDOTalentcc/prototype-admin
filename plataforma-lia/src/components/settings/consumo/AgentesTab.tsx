@@ -152,9 +152,16 @@ export function AgentesTab({ onOpenDrilldown }: AgentesTabProps) {
 
   if (agentChartData.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center text-sm text-lia-text-muted">
-        {t('empty')}
-      </div>
+      <Card className="border border-lia-border-subtle shadow-none">
+        <CardHeader className="pb-2 pt-4">
+          <CardTitle className="text-xs font-medium text-lia-text-tertiary">
+            {t('breakdownTitle')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex h-48 flex-col items-center justify-center gap-2">
+          <p className="text-sm text-lia-text-muted">{t('empty')}</p>
+        </CardContent>
+      </Card>
     )
   }
 
