@@ -366,6 +366,28 @@ class JDImportService:
                 )
                 return
 
+        else:
+            # Dedup by title for imports without external_id (manual uploads)
+            # ADR-001-EXEMPT: cross-repo query; no canonical repository covers
+            # job_vacancies title-dedup without an external_id anchor.
+            title_check = await db.execute(
+                sa_text(
+                    "SELECT 1 FROM job_vacancies "
+                    "WHERE company_id = :cid "
+                    "AND title = :title "
+                    "AND status = 'Rascunho' "
+                    "AND created_at > NOW() - INTERVAL '24 hours' "
+                    "LIMIT 1"
+                ),
+                {"cid": str(company_id), "title": imported_jd.title},
+            )
+            if title_check.scalar_one_or_none() is not None:
+                logger.info(
+                    "[JDImport] Duplicate title (no external_id) \u2014 skip: %s",
+                    imported_jd.title,
+                )
+                return
+
         salary_range = None
         if imported_jd.salary_min is not None or imported_jd.salary_max is not None:
             salary_range = {
