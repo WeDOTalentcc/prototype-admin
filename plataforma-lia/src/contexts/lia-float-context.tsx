@@ -682,6 +682,43 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("lia:settings-updated", onUpdated);
   }, []);
 
+  // C5 (2026-06-18): vacancy context sync — quando recrutador abre preview de
+  // uma vaga no painel lateral (pipeline-overview-page), o pipeline despacha
+  // "lia:set-vacancy-context" com { vacancyId, vacancyTitle }. Aqui absorvemos
+  // como entityContext { type:"job", id, name } para que sendChatMessage
+  // inclua automaticamente job_id no metadata de toda mensagem subsequente
+  // (via entityContextRef branch B3b 2026-06-09). Ao fechar o preview (null),
+  // limpamos o contexto de entidade para nao vazar para outra pagina.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onVacancyContext = (e: Event) => {
+      const detail = ((e as CustomEvent).detail || {}) as {
+        vacancyId?: string | number | null;
+        vacancyTitle?: string | null;
+      };
+      if (detail.vacancyId) {
+        setState((prev) => ({
+          ...prev,
+          entityContext: {
+            type: "job",
+            id: detail.vacancyId!,
+            name: detail.vacancyTitle ?? undefined,
+            meta: { source: "vacancy_preview" },
+          },
+        }));
+      } else {
+        // Preview fechado — limpa contexto de entidade para nao vazar.
+        setState((prev) =>
+          prev.entityContext?.meta?.source === "vacancy_preview"
+            ? { ...prev, entityContext: null }
+            : prev,
+        );
+      }
+    };
+    window.addEventListener("lia:set-vacancy-context", onVacancyContext);
+    return () => window.removeEventListener("lia:set-vacancy-context", onVacancyContext);
+  }, []);
+
   const switchChatContext = useCallback(
     (
       newType: ChatContextType,

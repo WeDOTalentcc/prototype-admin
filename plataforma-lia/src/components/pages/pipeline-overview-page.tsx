@@ -32,6 +32,8 @@ import {
   Archive,
   Database,
   Users2,
+  Copy,
+  RotateCcw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -234,7 +236,8 @@ export type VacancyActionKind =
   | "open-jd-config"           // ats_importada, rascunho → /jobs/{id}?tab=edit&section=descricao
   | "open-questions-config"    // enriquecida → /jobs/{id}?tab=edit&section=perguntas
   | "request-approval"         // wsi_config → POST approve-stage (Phase I.1 BLOQUEANTE)
-  | "dispatch-screening"       // aguardando_aprovacao → POST dispatch-screening (audience='new_only')
+  | "dispatch-screening"       // pre-screen dispatch POST (audience=newonly)
+  | "view-approval-status"    // aguardando_aprovacao: navigate to /tasks (awaiting manager approval)
   | "open-publish-modal"       // publicada → <JobPublishModal> inline
   | "open-status-modal"        // ao_vivo → <JobStatusModal> inline
   | "noop"                     // fallback unknown stage
@@ -248,6 +251,7 @@ export type VacancyAction =
   | { kind: "open-questions-config"; label: string }
   | { kind: "request-approval"; label: string }
   | { kind: "dispatch-screening"; label: string }
+  | { kind: "view-approval-status"; label: string }
   | { kind: "open-publish-modal"; label: string }
   | { kind: "open-status-modal"; label: string; mode: VacancyStatusModalMode }
   | { kind: "noop"; label: string; disabled: true }
@@ -280,7 +284,9 @@ function getVacancyAction(
       // vaga to aguardando_aprovacao.
       return { kind: "request-approval", label: t("vacancyCard.requestApproval") }
     case "aguardando_aprovacao":
-      return { kind: "dispatch-screening", label: t("vacancyCard.openApproval") }
+      // C6 fix: was incorrectly dispatching screening. Vacancy is awaiting manager
+      // approval — navigate user to /tasks where pending approvals are listed.
+      return { kind: "view-approval-status", label: t("vacancyCard.viewApprovalStatus") }
     case "publicada":
       return { kind: "open-publish-modal", label: t("vacancyCard.openPublish") }
     case "ao_vivo":
@@ -301,6 +307,7 @@ export function vacancyActionKindIsExhaustive(kind: VacancyActionKind): true {
     case "open-questions-config":
     case "request-approval":
     case "dispatch-screening":
+    case "view-approval-status":
     case "open-publish-modal":
     case "open-status-modal":
     case "noop":
@@ -606,11 +613,27 @@ export function PipelineOverviewPage() {
   const handleOpenVacancyPreview = useCallback((vacancy: JobLifecycleVacancy) => {
     setPreviewVacancy(vacancy)
     setShowVacancyPreview(true)
+    // C5 (2026-06-18): notify chat of the active vacancy so LIA can answer
+    // questions about this specific job ("resumir candidatos desta vaga").
+    // sendChatMessage injects job_id automatically via entityContextRef (B3b).
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("lia:set-vacancy-context", {
+          detail: { vacancyId: vacancy.id, vacancyTitle: vacancy.title },
+        }),
+      )
+    }
   }, [])
 
   const handleCloseVacancyPreview = useCallback(() => {
     setShowVacancyPreview(false)
     setPreviewVacancy(null)
+    // C5 (2026-06-18): clear vacancy entity context on close.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("lia:set-vacancy-context", { detail: { vacancyId: null } }),
+      )
+    }
   }, [])
 
   const handleNavigateVacancyPreview = useCallback((index: number) => {
@@ -698,6 +721,15 @@ export function PipelineOverviewPage() {
         setDispatchVacancyId(vacancy.id)
         setDispatchAudience(vacancy.imported_from_ats ? "imported_untriaged" : "new_only")
         setShowDispatchDialog(true)
+        return
+      }
+      case "view-approval-status": {
+        // C6 fix: Vacancy is awaiting manager approval. Navigate to /tasks
+        // where the pending approval task is listed. Toast gives context.
+        toast.info("Vaga aguardando aprovação", {
+          description: "Acesse Tarefas para ver e aprovar a solicitação.",
+        })
+        router.push("/tasks")
         return
       }
       case "open-publish-modal":
@@ -1775,9 +1807,11 @@ interface PipelineVacancyCardProps {
   /** Phase A: optional preview opener. When provided, card click opens the
    * side panel instead of navigating to /jobs/{id}. */
   onOpenPreview?: (vacancy: JobLifecycleVacancy) => void
+  /** C8: inline CTAs for encerrada (Duplicar/Reativar). */
+  onAction?: (action: VacancyAction, vacancy: JobLifecycleVacancy) => void
 }
 
-function PipelineVacancyCard({ vacancy, stageKey, stageColor, onOpenPreview }: PipelineVacancyCardProps) {
+function PipelineVacancyCard({ vacancy, stageKey, stageColor, onOpenPreview, onAction }: PipelineVacancyCardProps) {
   const tCard = useTranslations("pipelineOverview")
   const timeInStage = getTimeInStage(vacancy.stage_entered_at)
   // Phase A: derive label from VacancyAction instead of legacy CTA href.
@@ -1935,6 +1969,30 @@ function PipelineVacancyCard({ vacancy, stageKey, stageColor, onOpenPreview }: P
                 {b.label}
               </Chip>
             ))}
+          </div>
+        )}
+
+        {/* C8: inline CTAs for encerrada stage */}
+        {action.kind === "duplicate" && onAction && (
+          <div className="flex gap-1 mt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 text-xs px-2"
+              onClick={(e) => { e.stopPropagation(); onAction(action, vacancy) }}
+            >
+              <Copy className="w-3 h-3 mr-1" />
+              {tCard("vacancyCard.duplicateJob")}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 text-xs px-2"
+              onClick={(e) => { e.stopPropagation(); onAction({ kind: "reactivate", label: tCard("vacancyCard.reactivateJob") }, vacancy) }}
+            >
+              <RotateCcw className="w-3 h-3 mr-1" />
+              {tCard("vacancyCard.reactivateJob")}
+            </Button>
           </div>
         )}
       </div>
