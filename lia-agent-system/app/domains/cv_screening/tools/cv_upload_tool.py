@@ -14,6 +14,8 @@ from datetime import date, datetime
 from typing import Any
 from uuid import UUID
 
+from app.shared.tool_guards import validate_uuid_params
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -232,9 +234,17 @@ async def add_to_vacancy(
     user_id = getattr(context, "user_id", "system") if context else "system"
 
     logger.info(
-        f"➕ add_to_vacancy: cand={candidate_id[:8]}... "
+        f"➕ add_to_vacancy: cand={str(candidate_id)[:8]}... "
         f"vacancy_id={vacancy_id} vacancy_title={vacancy_title}"
     )
+
+    err = validate_uuid_params(candidate_id=candidate_id)
+    if err:
+        return err
+    if vacancy_id:
+        err = validate_uuid_params(vacancy_id=vacancy_id)
+        if err:
+            return err
 
     try:
         from sqlalchemy import and_, func, select
