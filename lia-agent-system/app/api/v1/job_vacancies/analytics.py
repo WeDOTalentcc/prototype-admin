@@ -261,18 +261,19 @@ company_id: str = Depends(require_company_id)):
 
         stage_order = ["sourcing", "initial", "pending_gate1", "screening", "triagem", "interview", "entrevista", "offer", "proposta", "hired", "contratado", "rejected", "reprovado"]
         funnel_items = []
-        cumulative_count = total_candidates
+        prev_count = total_candidates  # stage-to-stage: updates after each stage
 
         for stage_name in stage_order:
             if stage_name in stage_counts:
                 count = stage_counts[stage_name]
-                conversion_rate = (count / cumulative_count * 100) if cumulative_count > 0 else 0.0
+                conversion_rate = (count / prev_count * 100) if prev_count > 0 else 0.0
                 funnel_items.append(FunnelStageItem(
                     stage=stage_name,
                     count=count,
                     conversion_rate=round(conversion_rate, 1),
                     avg_days=0.0
                 ))
+                prev_count = count  # advance denominator for next stage
 
         for stage_name, count in stage_counts.items():
             if stage_name not in stage_order:
