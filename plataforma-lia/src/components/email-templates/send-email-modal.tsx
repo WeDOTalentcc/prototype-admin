@@ -28,7 +28,11 @@ interface SendEmailModalProps {
   onSuccess?: () => void
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEmailModalProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('send-email', isOpen)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("")
   const [recipientEmail, setRecipientEmail] = useState("")
   const [recipientName, setRecipientName] = useState("")

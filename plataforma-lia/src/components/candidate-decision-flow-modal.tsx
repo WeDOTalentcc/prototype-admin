@@ -171,6 +171,8 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
   )
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export const CandidateDecisionFlowModal: React.FC<CandidateDecisionFlowModalProps> = ({
   isOpen,
   onClose,
@@ -179,6 +181,8 @@ export const CandidateDecisionFlowModal: React.FC<CandidateDecisionFlowModalProp
   onConfirm,
   onOpenFeedbackModal,
 }) => {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('candidate-decision', isOpen)
   const [isLoading, setIsLoading] = useState(false)
   const [showFeedbackEditor, setShowFeedbackEditor] = useState(false)
   const [feedbackChannel, setFeedbackChannel] = useState<'whatsapp' | 'email'>('whatsapp')

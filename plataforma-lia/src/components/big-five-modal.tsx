@@ -176,7 +176,11 @@ const calculateFitScore = (candidateScores: Record<string, number>, jobProfile?:
   return Math.max(0, Math.round(100 - avgDiff))
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('big-five', isOpen)
   const hasData = candidate?.bigFiveScores && Object.keys(candidate.bigFiveScores as Record<string, unknown>).length > 0
   const scores = (hasData ? candidate.bigFiveScores : {}) as Record<string, number>
   const traits = Object.keys(scores)

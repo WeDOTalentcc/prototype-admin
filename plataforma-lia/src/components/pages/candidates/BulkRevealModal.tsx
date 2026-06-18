@@ -27,6 +27,8 @@ export interface BulkRevealModalProps {
   onCancel?: () => void
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function BulkRevealModal({
   isOpen,
   onClose,
@@ -35,6 +37,8 @@ export function BulkRevealModal({
   isRevealing,
   onCancel,
 }: BulkRevealModalProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('bulk-reveal', isOpen)
   const [revealEmail, setRevealEmail] = useState(true)
   const [revealPhone, setRevealPhone] = useState(false)
 

@@ -106,6 +106,8 @@ interface CVPreviewProps {
   jobVacancies?: JobVacancy[]
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function CVPreview({
   isOpen,
   onClose,
@@ -113,6 +115,8 @@ export function CVPreview({
   onConfirm,
   jobVacancies = [],
 }: CVPreviewProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('cv-preview', isOpen)
   const [editedCV, setEditedCV] = useState<ParsedCV | null>(null)
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")

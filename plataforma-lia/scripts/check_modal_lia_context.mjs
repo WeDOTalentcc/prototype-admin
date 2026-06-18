@@ -38,7 +38,7 @@ const EXEMPT_PATTERNS = [
 // Regex: any Dialog/Sheet/AlertDialog rendered with an open={} or isOpen={} prop
 const HAS_MODAL_OPEN = /(?:Dialog|Sheet|AlertDialog)\s+[^>]*(?:open=\{|isOpen=\{)/
 // Regex: import of setLiaModal from lia-context-store
-const HAS_LIA_MODAL = /(?:import[^;]*setLiaModal[^;]*lia-context-store|\/\/ lia-context:)/
+const HAS_LIA_MODAL = /(?:import[^;]*setLiaModal[^;]*lia-context-store|import[^;]*useLiaModalTracking[^;]*use-lia-modal-tracking|\/\/ lia-context:)/
 
 function walkTsx(dir, files = []) {
   for (const entry of readdirSync(dir)) {

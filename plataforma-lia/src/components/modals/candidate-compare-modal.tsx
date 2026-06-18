@@ -56,6 +56,8 @@ function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) 
   )
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function CandidateCompareModal({
   open,
   onClose,
@@ -63,6 +65,8 @@ export function CandidateCompareModal({
   jobId,
   companyId,
 }: CandidateCompareModalProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('candidate-compare', open)
   const { data, loading, error, compare, reset } = useCandidateCompare()
 
   useEffect(() => {

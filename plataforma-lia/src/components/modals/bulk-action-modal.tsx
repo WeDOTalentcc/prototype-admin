@@ -175,6 +175,8 @@ const getRandomAvatarUrl = (_candidateId: string, _name: string): string | undef
   return undefined
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function BulkActionModal({
   isOpen,
   onClose,
@@ -184,6 +186,8 @@ export function BulkActionModal({
   jobTitle,
   onExecute,
 }: BulkActionModalProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('bulk-action', isOpen)
   const { stages: companyPipelineStages } = useRecruitmentStages()
 
   // Sub-statuses do estágio"rejected" vindos do DB; fallback para REJECTION_REASONS estático

@@ -1,4 +1,5 @@
 import React from "react"
+import { setLiaPagination } from "@/lib/lia-context-store"
 import type { Candidate } from "../types"
 import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
 
@@ -410,6 +411,19 @@ export function useCandidatesFilterSort(params: UseCandidatesFilterSortParams) {
   }
 
   const paginatedCandidates = getPaginatedCandidates().candidates
+
+  // P0-2 (2026-06-18): keep LIA aware of pagination state
+  React.useEffect(() => {
+    const totalPages = Math.ceil(sortedCandidates.length / itemsPerPage)
+    setLiaPagination({
+      current_page: currentPage,
+      total_pages: totalPages,
+      page_size: itemsPerPage,
+      total_items: sortedCandidates.length,
+    })
+    return () => setLiaPagination(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, itemsPerPage, sortedCandidates])
 
   const searchDisplayCandidates = React.useMemo(() => {
     const sorted = [...sortedCandidates]

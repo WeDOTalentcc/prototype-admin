@@ -62,6 +62,8 @@ function minDatetimeLocal(): string {
   return dt.toISOString().slice(0, 16)
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function ScheduleMessageModal({
   open,
   onClose,
@@ -69,6 +71,8 @@ export function ScheduleMessageModal({
   candidateName,
   vacancyId,
 }: ScheduleMessageModalProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('schedule-message', open)
   const [channel, setChannel] = useState<"email" | "whatsapp">("email")
   const [sendAt, setSendAt] = useState("")
   const [message, setMessage] = useState("")
