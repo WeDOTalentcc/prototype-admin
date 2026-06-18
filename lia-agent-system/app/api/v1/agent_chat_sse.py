@@ -20,6 +20,7 @@ for a subsequent phase. Currently, if the SSE connection drops mid-stream,
 the client re-sends the original message.
 """
 import asyncio
+import contextlib
 import hashlib
 import json
 import logging
@@ -668,13 +669,44 @@ company_id: str = Depends(require_company_id)):
 
         # All 5 setup tasks run in parallel — budget, routing, B2 identity
         # masking, tenant context, and focused job are fully independent I/O ops.
-        budget_result, resolved_domain, _, _, _ = await asyncio.gather(
+        # [HARNESS FIX P0 keepalive-setup] Keepalive loop emite SSE comment a cada 8s
+        # durante o gather para evitar timeout de 90s no gateway/frontend.
+        _setup_ka_q: asyncio.Queue = asyncio.Queue()
+        _setup_ka_stop = asyncio.Event()
+
+        async def _setup_ka_loop() -> None:
+            try:
+                while not _setup_ka_stop.is_set():
+                    await asyncio.sleep(8)
+                    if not _setup_ka_stop.is_set():
+                        await _setup_ka_q.put(format_sse_keepalive())
+            except asyncio.CancelledError:
+                pass
+
+        _setup_ka_task = asyncio.create_task(_setup_ka_loop())
+        _gather_task = asyncio.create_task(asyncio.gather(
             _check_budget_async(),
             _route_domain_async(),
             _b2_setup_async(),
             _inject_tenant_context_async(),
             _inject_focused_job_async(),
-        )
+        ))
+        try:
+            while not _gather_task.done():
+                try:
+                    _ka_chunk = _setup_ka_q.get_nowait()
+                    yield _ka_chunk
+                except asyncio.QueueEmpty:
+                    pass
+                await asyncio.sleep(0.1)
+            _gather_results = await _gather_task
+        finally:
+            _setup_ka_stop.set()
+            _setup_ka_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError, Exception):
+                await _setup_ka_task
+
+        budget_result, resolved_domain, _, _, _ = _gather_results
         budget_ok, used, limit = budget_result
         # Vaga em Foco: append focused job snippet to tenant context so all
         # downstream agents see it as part of the injected company context.

@@ -284,3 +284,14 @@ def format_sse_event(data: dict[str, Any], event_id: str | None = None) -> str:
 
 def format_sse_keepalive() -> str:
     return ": keepalive\n\n"
+
+
+def serialize_keepalive() -> str:
+    """Emite evento SSE data: de keepalive com JSON.
+
+    Retorna um evento JSON data: {"type": "keepalive", "ts": <timestamp>}
+    para compatibilidade com clientes que filtram apenas eventos data:.
+    Retrocompat: format_sse_keepalive() continua retornando SSE comment.
+    """
+    payload = json.dumps({"type": "keepalive", "ts": int(time.time())})
+    return f"data: {payload}\n\n"
