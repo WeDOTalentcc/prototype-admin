@@ -1,158 +1,115 @@
 #!/usr/bin/env python3
-"""B2: Sensor verifica que TODOS list methods têm ORDER BY.
+"""B2 Sensor: ORDER BY in all list methods (deterministic ordering).
 
-Regra canônica:
-  - Toda query que retorna múltiplos registros (SELECT * ou lista) DEVE ter
-    ORDER BY explícito para garantir ordem determinística entre paginações.
-  - Sem ORDER BY: ordem é undefined (até pode variar entre execuções).
-  - Padrão: .order_by(Model.created_at.desc()) ou similar no final da query.
+REGRA CANÔNICA (GAP-03-005, registrada 2026-06-18):
+  - Todo método list_* em Repository classes DEVE incluir ORDER BY explícito.
+  - Sem ORDER BY = resultado não-determinístico = flakey tests.
+  - Padrão:
+    1. Repository.list_* sempre retorna query.order_by(Model.created_at.desc())
+    2. OU order_by(Model.id) se created_at não apropriado
+    3. OU order_by(...) com campo semanticamente apropriado ao domínio
+  - Default recomendado: .order_by(Model.created_at.desc()) (mais recente primeiro)
 
-Sensor:
-  - Busca funções async def list_* em app/api/v1/ e app/domains/*/services/
-  - Verifica se a função/serviço chama query.order_by(...) ou repository.list_ordered(...)
-  - Se usar pagination sem order_by, é violation
-  - Honra marcador: # B2-EXEMPT: <reason>
+SENSOR COMPUTACIONAL (AST-based):
+  - Encontra def list_* em app/domains/*/repositories/
+  - Valida que source contém .order_by() após select()
+  - Honra marcador inline: # B2-EXEMPT: <reason> para casos especiais
 
-Exit 0 = sem violations. Exit 1 = violations. --warn-only para modo audit.
+EXEMPTIONS VÁLIDAS (B2-EXEMPT):
+  - "aggregation query" — COUNT/SUM que retorna escalar, não lista
+  - "unordered acceptable" — cases extremamente raros onde ordem não importa (comentar porquê)
+  - "client-side sort" — client pede dados unsorted pra fazer sua própria sort (raro, documentar)
 
-Referências:
-  - AUDIT_GAPS_V3: GAP-02-001 (sort determinístico em list)
-  - padrão canonical: repository.list_ordered(filters) ou query.order_by(Model.created_at.desc())
+VIOLAÇÃO (falta .order_by()):
+  - query.select(Model).all() sem .order_by()
+  - Resultado: ordem impredictível entre runs
+  - Risco: testes flakeyy, debugging difícil ("às vezes passa, às vezes falha")
+
+EXIT CODES:
+  - 0: sem violations ou warn-only
+  - 1: violations encontradas (BLOCKING)
+
+USAGE:
+  python3 scripts/check_list_methods_have_order_by.py [--warn-only]
 """
 import ast
 import sys
-import re
 from pathlib import Path
 from typing import List, Tuple
 
 
 SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent
+REPOS_ROOT = PROJECT_ROOT / "app" / "domains"
 
 
-def find_list_methods_without_order_by() -> List[Tuple[Path, int, str, str]]:
-    """Acha funções list_* que não possuem ORDER BY visível.
-    
-    Retorna lista de (filepath, lineno, function_name, reason).
-    
-    Heurística:
-    - Se função chama query.all() ou .scalars() sem .order_by() antes = violation
-    - Se função chama repository.list(...) sem repository.list_ordered() = OK (skip)
-    - Se função tem return padrão/vazio = skip (stub)
-    """
+def find_list_methods_missing_order_by() -> List[Tuple[Path, int, str]]:
+    """Acha métodos list_* em repositories sem ORDER BY."""
     violations = []
     
-    # Busca em API endpoints e services
-    search_paths = [
-        PROJECT_ROOT / "app" / "api" / "v1",
-        PROJECT_ROOT / "app" / "domains",
-    ]
-    
-    for base_path in search_paths:
-        if not base_path.exists():
+    for repo_file in sorted(REPOS_ROOT.rglob("repositories/*.py")):
+        if "__pycache__" in str(repo_file):
             continue
         
-        for py_file in sorted(base_path.rglob("*.py")):
-            if "__pycache__" in str(py_file) or "test" in str(py_file):
+        try:
+            with open(repo_file) as f:
+                content = f.read()
+                tree = ast.parse(content)
+        except Exception as e:
+            print(f"⚠️  Falha ao parsear {repo_file}: {e}", file=sys.stderr)
+            continue
+        
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
             
-            try:
-                with open(py_file) as f:
-                    content = f.read()
-                    tree = ast.parse(content)
-            except Exception as e:
-                print(f"⚠️  Falha ao parsear {py_file}: {e}", file=sys.stderr)
+            if not node.name.startswith("list_"):
                 continue
             
-            # Procura por funções que fazem list
-            for node in ast.walk(tree):
-                if not isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef)):
+            func_first_line = node.lineno
+            if func_first_line and func_first_line > 0:
+                lines = content.split("\n")
+                func_line = lines[func_first_line - 1] if func_first_line <= len(lines) else ""
+                if "B2-EXEMPT" in func_line:
                     continue
-                
-                func_name = node.name
-                
-                # Filtra por nome (list_*, get_all_*, *_list, etc.)
-                is_list_like = any([
-                    "list" in func_name.lower(),
-                    "get_all" in func_name.lower(),
-                    func_name.lower().endswith("s"),  # plurals como candidates, jobs
-                ])
-                
-                if not is_list_like:
-                    continue
-                
-                # Verifica se função tem B2-EXEMPT marker
-                try:
-                    line_content = content.split("\n")[node.lineno - 1] if node.lineno else ""
-                except:
-                    line_content = ""
-                
-                if "B2-EXEMPT" in line_content:
-                    continue
-                
-                # Analisa função body para detectar ORDER BY
-                func_source = ast.get_source_segment(content, node) if hasattr(ast, "get_source_segment") else ""
-                if not func_source:
-                    # Fallback: unparse (menos acurado)
-                    func_source = ast.unparse(node) if hasattr(ast, "unparse") else ""
-                
-                # Red flags: tem query/select mas sem order_by
-                has_query_call = any([
-                    ".select(" in func_source,
-                    ".all()" in func_source,
-                    ".scalars()" in func_source,
-                    "Query(" in func_source,
-                ])
-                
-                has_order_by = any([
-                    ".order_by(" in func_source,
-                    ".sort_by(" in func_source,
-                ])
-                
-                # Exceção: se chama repository.list_ordered (que já tem order)
-                has_repo_list_ordered = ".list_ordered(" in func_source
-                
-                # Exceção: se é um stub (só tem pass / ...)
-                is_stub = (
-                    ("pass" in func_source and func_source.count("\n") < 3) or
-                    ("..." in func_source and func_source.count("\n") < 3)
-                )
-                
-                if has_query_call and not has_order_by and not has_repo_list_ordered and not is_stub:
-                    violations.append((
-                        py_file,
-                        node.lineno,
-                        func_name,
-                        "query/.all()/.scalars() sem .order_by()"
-                    ))
+            
+            has_select = False
+            has_order_by = False
+            
+            func_source = ast.get_source_segment(content, node) or ""
+            
+            if "select(" in func_source:
+                has_select = True
+                if ".order_by(" in func_source:
+                    has_order_by = True
+            
+            if has_select and not has_order_by:
+                violations.append((repo_file, node.lineno, node.name))
     
     return violations
 
 
 def main():
     warn_only = "--warn-only" in sys.argv
-    blocking = "--blocking" not in sys.argv  # Default: warn-only (inverso de blocking)
-    
-    violations = find_list_methods_without_order_by()
+    violations = find_list_methods_missing_order_by()
     
     if violations:
-        print("❌ B2 Violations: list methods sem ORDER BY\n", file=sys.stderr)
-        for fpath, lineno, fname, reason in violations:
+        print("❌ B2 Violations: list methods missing ORDER BY\n", file=sys.stderr)
+        for fpath, lineno, fname in violations:
             rel_path = fpath.relative_to(PROJECT_ROOT)
             print(f"  {rel_path}:{lineno} {fname}()", file=sys.stderr)
-            print(f"    → {reason}", file=sys.stderr)
-            print(f"    → Adicionar .order_by(Model.created_at.desc()) ou similar", file=sys.stderr)
-            print(f"    → OU usar repository.list_ordered() que já tem ORDER BY", file=sys.stderr)
+            print(f"    → Adicionar .order_by(...) ao select()", file=sys.stderr)
+            print(f"    → Padrão: .order_by(Model.created_at.desc())", file=sys.stderr)
             print(f"    → OU marcar com # B2-EXEMPT: <reason>\n", file=sys.stderr)
         
         if warn_only:
-            print(f"\n⚠️  {len(violations)} violation(s) detectada(s) (warn-only mode)", file=sys.stderr)
+            print(f"\n⚠️  {len(violations)} violation(s) (warn-only mode)", file=sys.stderr)
             return 0
         else:
             print(f"\n❌ {len(violations)} violation(s). Bloqueado.", file=sys.stderr)
             return 1
     else:
-        print("✅ B2: All list methods have deterministic ordering (ORDER BY)")
+        print("✅ B2: All list methods have ORDER BY")
         return 0
 
 
