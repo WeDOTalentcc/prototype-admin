@@ -537,7 +537,7 @@ function InstalledAgents() {
   // Mutation: Uninstall agent
   const uninstallMutation = useMutation({
     mutationFn: async (installationId: string) => {
-      const res = await fetch(, {
+      const res = await fetch(`/api/backend-proxy/agent-marketplace/installations/${installationId}`, {
         method: "DELETE",
       })
       if (!res.ok) throw new Error("Failed to uninstall")
