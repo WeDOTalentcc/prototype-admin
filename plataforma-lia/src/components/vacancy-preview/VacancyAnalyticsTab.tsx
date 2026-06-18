@@ -166,7 +166,7 @@ export function VacancyAnalyticsTab({ jobId }: VacancyAnalyticsTabProps) {
     queryKey: ["vacancy-analytics-v2", jobId],
     queryFn: async ({ signal }) => {
       const res = await fetch(`/api/backend-proxy/job-vacancies/${jobId}/analytics`, {
-        signal: signal ?? AbortSignal.timeout(12_000),
+        signal: signal ?? AbortSignal.timeout(30_000),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()

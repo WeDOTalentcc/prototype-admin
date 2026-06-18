@@ -146,7 +146,7 @@ export function JobDraftsSection() {
   const { drafts, total, isLoading, isError } = useJobDraftsList()
 
   const handleContinue = (id: string) => {
-    window.location.href = `/pt/jobs/wizard?draft_id=${id}`
+    window.location.href = `/pt/jobs/${id}?tab=edit`
   }
 
   const handlePublish = async (id: string) => {

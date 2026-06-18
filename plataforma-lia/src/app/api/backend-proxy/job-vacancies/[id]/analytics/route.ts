@@ -5,4 +5,5 @@ export const { dynamic, GET } = createProxyHandlers({
   methods: ["GET"],
   auth: true,
   backendTarget: "fastapi",
+  timeoutMs: 30_000,
 })
