@@ -7,4 +7,5 @@ export const { dynamic, GET, PUT } = createProxyHandlers({
   backendPath: "/api/v1/job-vacancies/:id",
   methods: ["GET", "PUT"],
   bodySchema: jobUpdateBodySchema,
+  timeoutMs: 15000,
 })

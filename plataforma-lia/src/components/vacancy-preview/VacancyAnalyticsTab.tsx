@@ -93,8 +93,10 @@ export function VacancyAnalyticsTab({ jobId }: VacancyAnalyticsTabProps) {
     refetch,
   } = useQuery<VacancyMetrics>({
     queryKey: ["vacancy-analytics", jobId],
-    queryFn: async () => {
-      const res = await fetch(`/api/backend-proxy/job-vacancies/${jobId}/analytics`)
+    queryFn: async ({ signal }) => {
+      const res = await fetch(`/api/backend-proxy/job-vacancies/${jobId}/analytics`, {
+        signal: signal ?? AbortSignal.timeout(12_000),
+      })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       // Suporte a response envelope {ok, data: {...}} e resposta plana

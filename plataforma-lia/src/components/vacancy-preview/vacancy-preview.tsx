@@ -139,6 +139,7 @@ export function VacancyPreview({
   const [detail, setDetail] = useState<VacancyDetailFromApi | null>(null)
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
+  const [detailRetryKey, setDetailRetryKey] = useState(0)
   const panelRef = useRef<HTMLDivElement | null>(null)
 
   // Phase I.2 — local state pra collapse das sections (espelha useJobPreviewState
@@ -201,7 +202,15 @@ export function VacancyPreview({
       })
       .catch((err: unknown) => {
         if (cancelled) return
-        setDetailError(err instanceof Error ? err.message : "Erro desconhecido")
+        const isAbortOrTimeout =
+          err instanceof DOMException &&
+          (err.name === 'AbortError' || err.name === 'TimeoutError')
+        const msg = isAbortOrTimeout
+          ? 'Tempo esgotado ao carregar os detalhes da vaga.'
+          : err instanceof Error
+            ? err.message
+            : 'Erro desconhecido'
+        setDetailError(msg)
       })
       .finally(() => {
         if (!cancelled) setIsLoadingDetail(false)
@@ -209,7 +218,7 @@ export function VacancyPreview({
     return () => {
       cancelled = true
     }
-  }, [isOpen, vacancy?.id, vacancy?.status, vacancy?.approval_status])
+  }, [isOpen, vacancy?.id, vacancy?.status, vacancy?.approval_status, detailRetryKey])
 
   // ESC closes the preview.
   useEffect(() => {
@@ -372,9 +381,16 @@ export function VacancyPreview({
                   <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse w-3/6" />
                 </div>
               ) : detailError ? (
-                <p className="px-4 py-6 text-xs text-status-error">
-                  Erro ao carregar detalhes: {detailError}
-                </p>
+                <div className="px-4 py-6 flex flex-col gap-3">
+                  <p className="text-xs text-status-error">{detailError}</p>
+                  <button
+                    type="button"
+                    onClick={() => setDetailRetryKey((k) => k + 1)}
+                    className="text-xs text-wedo-cyan underline self-start"
+                  >
+                    Tentar novamente
+                  </button>
+                </div>
               ) : detail ? (
                 <JobScreeningSection
                   previewJob={composedJob}
