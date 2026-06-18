@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from app.shared.tool_guards import validate_uuid_params
 from app.tools.registry import ToolDefinition, tool_registry
 
 logger = logging.getLogger(__name__)
@@ -47,6 +48,9 @@ async def send_email(
     _hitl_block = hitl_preflight(tool="send_email", domain="communication", data={"candidate_id": candidate_id, "job_id": job_id, "subject": subject})
     if _hitl_block is not None:
         return _hitl_block
+    err = validate_uuid_params(candidate_id=candidate_id)
+    if err:
+        return err
     logger.info(f"📧 Sending email to candidate {candidate_id}")
     
     try:
@@ -149,6 +153,9 @@ async def send_whatsapp(
     _hitl_block = hitl_preflight(tool="send_whatsapp", domain="communication", data={"candidate_id": candidate_id, "job_id": job_id})
     if _hitl_block is not None:
         return _hitl_block
+    err = validate_uuid_params(candidate_id=candidate_id)
+    if err:
+        return err
     logger.info(f"📱 Sending WhatsApp to candidate {candidate_id}")
     
     try:
@@ -259,6 +266,10 @@ async def schedule_interview(
         Result with success status and interview details
     """
     logger.info(f"📅 Scheduling {interview_type} interview for candidate {candidate_id}")
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
+
     
     try:
         interview_datetime = datetime.fromisoformat(datetime_str.replace('Z', '+00:00'))
@@ -383,6 +394,12 @@ async def send_bulk_email(
     if _hitl_block is not None:
         return _hitl_block
     logger.info(f"📧 Sending bulk email to {len(candidate_ids)} candidates")
+
+    # Validate all UUIDs upfront before sending any
+    for _cid_check in candidate_ids:
+        _err = validate_uuid_params(candidate_id=_cid_check)
+        if _err:
+            return _err
     
     success_count = 0
     failed_ids = []
@@ -434,6 +451,10 @@ async def send_feedback(
         Result with success status and message
     """
     logger.info(f"💬 Sending {feedback_type} feedback to candidate {candidate_id}")
+
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
 
     # ACH-026 — FairnessGuard Camada 3: verificar viés em feedback de rejeição antes do envio
     if feedback_type == "rejection" and feedback_message:
