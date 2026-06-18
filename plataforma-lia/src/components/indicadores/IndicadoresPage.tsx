@@ -355,6 +355,13 @@ function DistTable({
             <span className="text-xs text-gray-700 w-24 shrink-0 truncate">{item.label}</span>
             <MiniBar pct={item.pct} color={color} />
             <span className="text-[10px] text-gray-500 tabular-nums w-8 text-right shrink-0">{item.pct}%</span>
+          </div>
+        ))
+      }
+    </div>
+  )
+}
+
 function DiversityPanel({ isEnterprise }: { isEnterprise: boolean }) {
   const { data, isLoading } = useQuery<DEIInsights>({
     queryKey: ["dei-insights"],

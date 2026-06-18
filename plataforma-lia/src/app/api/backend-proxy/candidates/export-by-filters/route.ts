@@ -7,8 +7,9 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    const backendUrl = `${BACKEND_URL}/api/v1/candidates/export`
     const response = await fetch(
-      ,
+      backendUrl,
       {
         method: "POST",
         headers: { ...getAuthHeaders(request), "Content-Type": "application/json" },
