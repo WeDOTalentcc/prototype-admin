@@ -254,6 +254,10 @@ from app.domains.job_creation.nodes.salary import salary_node  # noqa: F401, E40
 # competency_node moved to nodes/competency.py (PR-10 ONDA 3 sub-B)
 from app.domains.job_creation.nodes.competency import competency_node  # noqa: F401, E402
 
+# benefits + variable_comp nodes (2026-06-18) -- inferencia + confirmacao assistida
+from app.domains.job_creation.nodes.benefits import benefits_node  # noqa: F401, E402
+from app.domains.job_creation.nodes.variable_comp import variable_comp_node  # noqa: F401, E402
+
 
 # wsi_questions_node moved to nodes/wsi_questions.py (PR-10 ONDA 3 sub-B)
 from app.domains.job_creation.nodes.wsi_questions import wsi_questions_node  # noqa: F401, E402
@@ -780,6 +784,8 @@ def create_job_creation_graph(
     builder.add_node("pipeline_template", pipeline_template_node)
     builder.add_node("bigfive", bigfive_node)
     builder.add_node("salary", salary_node)
+    builder.add_node("benefits", benefits_node)
+    builder.add_node("variable_comp", variable_comp_node)
     builder.add_node("competency", competency_node)
     if use_llm_gates:
         builder.add_node("competency_gate", competency_gate_node)
@@ -850,9 +856,11 @@ def create_job_creation_graph(
     # tornando bigfive/salary/competency/wsi/eligibility/review/publish/etc unreachable.
     builder.add_edge("pipeline_template", "bigfive")
 
-    # F2+F3 -> salary -> F4+F5
+    # F2+F3 -> salary -> benefits -> variable_comp -> F4+F5
     builder.add_edge("bigfive", "salary")
-    builder.add_edge("salary", "competency")
+    builder.add_edge("salary", "benefits")
+    builder.add_edge("benefits", "variable_comp")
+    builder.add_edge("variable_comp", "competency")
 
     # F4+F5: needs screening mode
     if use_llm_gates:

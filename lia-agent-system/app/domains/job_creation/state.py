@@ -300,6 +300,18 @@ class JobCreationState(TypedDict, total=False):
     department_creation_done: Optional[bool]         # True = sub-fluxo encerrado (criou ou escolheu existente)
     department_created_id: Optional[str]             # UUID do dept criado inline (para audit trail)
 
+    # --- Sub-estado 2.0: beneficios inferidos + confirmacao (2026-06-18) ---
+    # OBRIGATÓRIO declarar aqui: LangGraph descarta keys nao-declaradas no merge.
+    # wizard_session_service.py:1206 ja le confirmed_benefits deste state.
+    benefits_suggested: Optional[bool]              # True apos sugestao de benefits emitida
+    confirmed_benefits: List[Dict[str, Any]]        # [{id, name, category, value, ...}] confirmados pelo recruiter
+
+    # --- Sub-estado 2.1: remuneracao variavel inferida + confirmacao (2026-06-18) ---
+    # wizard_session_service.py:1209 ja le confirmed_variable_compensation deste state.
+    variable_comp_suggested: Optional[bool]         # True apos sugestao de var comp emitida
+    confirmed_variable_compensation: List[Dict[str, Any]]  # [{kind, target_pct, frequency, ...}]
+
+
     # --- Fase 3 (2026-05-30): confirmação assistida de competências ---
     # intake_gate sugere competências (via CompetencyBenchmarkService, Fase 2),
     # dimensionadas pelo modo; recruiter confirma/edita via painel (Fase 5).
