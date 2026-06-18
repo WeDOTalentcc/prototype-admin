@@ -1173,7 +1173,7 @@ async def get_market_benchmarks(
             )
             jobs = jobs_result.scalars().all()
             
-            closed_jobs = [j for j in jobs if j.status == "Fechada" and j.closed_at]
+            closed_jobs = [j for j in jobs if j.status == "Concluída" and j.closed_at]
             
             if closed_jobs:
                 ttf_values = [(j.closed_at - j.created_at).days for j in closed_jobs if j.created_at]

@@ -69,7 +69,7 @@ async def get_pipeline_stats(
                 status = j.status or 'Indefinido'
                 jobs_by_status[status] = jobs_by_status.get(status, 0) + 1
 
-            closed_jobs = sum(1 for j in jobs if j.status == 'Fechada')
+            closed_jobs = sum(1 for j in jobs if j.status == 'Concluída')
             active_jobs = sum(1 for j in jobs if j.status == 'Ativa')
 
             job_ids = [j.id for j in jobs]

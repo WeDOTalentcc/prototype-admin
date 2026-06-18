@@ -72,7 +72,7 @@ async def get_cost_metrics(
 
             conditions = [
                 JobVacancy.company_id == company_id,
-                JobVacancy.status == 'Fechada',
+                JobVacancy.status == 'Concluída',
                 JobVacancy.closed_at >= start_date
             ]
 

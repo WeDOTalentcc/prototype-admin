@@ -198,7 +198,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             # Include all valid statuses (both Portuguese and English, various cases)
             valid_statuses = [
-                "Concluída", "Fechada", "Filled", "Closed", "Cancelada", "Cancelled",
+                "Concluída", "Cancelada", "Arquivada",
                 "Ativa", "Active", "Open", "Em Andamento", "active", "ativa", "open"
             ]
             conditions.append(JobVacancy.status.in_(valid_statuses))
@@ -244,7 +244,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             summaries = []
             for v in vacancies:
-                status_normalized = "contratado" if v.status in ["Concluída", "Filled", "Closed", "Fechada"] else (
+                status_normalized = "contratado" if v.status in ["Concluída", "Cancelada", "Arquivada"] else (
                     "cancelado" if v.status in ["Cancelada", "Cancelled"] else "ativa"
                 )
                 

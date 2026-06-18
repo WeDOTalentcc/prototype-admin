@@ -267,7 +267,7 @@ class JobVacancyCRUDRepository:
         from app.models.job_vacancy import JobVacancy
 
         valid_statuses = [
-            "Concluída", "Fechada", "Filled", "Closed", "Cancelada", "Cancelled",
+            "Concluída", "Cancelada", "Arquivada",
             "Ativa", "Active", "Open", "Em Andamento", "active", "ativa", "open",
         ]
         conditions = [

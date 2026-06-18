@@ -313,7 +313,7 @@ class PipelineMonitor:
                     WHERE jv.company_id = :company_id
                       AND vc.stage IN ('rejected', 'reprovado')
                       AND vc.updated_at < :cutoff
-                      AND jv.status IN ('Ativa', 'active', 'open', 'closed', 'Fechada')
+                      AND jv.status IN ('Rascunho', 'Ativa', 'Pausada', 'Concluída', 'Cancelada', 'Arquivada')
                       AND NOT EXISTS (
                           SELECT 1 FROM communication_logs cl
                           WHERE cl.candidate_id = vc.candidate_id

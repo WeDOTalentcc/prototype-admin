@@ -232,7 +232,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             summaries = []
             for v in vacancies:
-                status_normalized = "contratado" if v.status in ["Concluída", "Filled", "Closed", "Fechada"] else (
+                status_normalized = "contratado" if v.status in ["Concluída", "Cancelada", "Arquivada"] else (
                     "cancelado" if v.status in ["Cancelada", "Cancelled"] else "ativa"
                 )
                 

@@ -187,7 +187,7 @@ async def get_hiring_quality(
         async with analytics_db() as db:
             conditions = [
                 JobVacancy.company_id == company_id,
-                JobVacancy.status == 'Fechada',
+                JobVacancy.status == 'Concluída',
                 JobVacancy.closed_at >= start_date
             ]
 
