@@ -1383,3 +1383,41 @@ def get_kanban_tools(stage: str = "") -> list[ToolDefinition]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"[kanban_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Opção C — registro global com namespace de domínio (2026-06-18)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_kanban_global() -> int:
+    """Registra as tools de kanban/pipeline no tool_registry global.
+
+    Apenas 'get_pipeline_prediction' recebe prefixo 'kb_' para evitar
+    conflito com o homônimo de jobs_mgmt (Opção C — namespace de domínio,
+    2026-06-18). Tools únicas mantêm o nome original.
+    Segue o padrão de register_ui_tools_global() (ui_tool_registry.py).
+    Chamada por app/tools/__init__.py:initialize_tools().
+
+    Renames:
+        get_pipeline_prediction → kb_pipeline_prediction
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    _RENAMES: dict[str, str] = {
+        "get_pipeline_prediction": "kb_pipeline_prediction",
+    }
+
+    n = 0
+    for td in TOOL_DEFINITIONS:
+        _reg.register(
+            _G(
+                name=_RENAMES.get(td.name, td.name),
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=["recruiter_assistant", "orchestrator"],
+            )
+        )
+        n += 1
+    return n

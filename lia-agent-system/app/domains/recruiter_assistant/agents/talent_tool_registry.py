@@ -1418,3 +1418,45 @@ def get_talent_tools(stage: str = "") -> list[ToolDefinition]:
     # pii-logs ok: t.name são nomes de tools (identificadores de sistema, não PII de pessoa)
     logger.debug(f"[talent_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Opção C — registro global com namespace de domínio (2026-06-18)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_talent_global() -> int:
+    """Registra as tools de talent pool no tool_registry global.
+
+    Tools com nomes conflitantes recebem prefixo 'talent_' (Opção C —
+    namespace de domínio). Tools únicas mantêm o nome original.
+    Segue o padrão de register_ui_tools_global() (ui_tool_registry.py).
+    Chamada por app/tools/__init__.py:initialize_tools().
+
+    Renames:
+        search_candidates  → talent_search_candidates
+        compare_candidates → talent_compare_candidates
+        generate_report    → talent_generate_report
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    _RENAMES: dict[str, str] = {
+        "search_candidates": "talent_search_candidates",
+        "compare_candidates": "talent_compare_candidates",
+        "generate_report": "talent_generate_report",
+        "rank_candidates": "talent_rank_candidates",
+    }
+
+    n = 0
+    for td in TOOL_DEFINITIONS:
+        _reg.register(
+            _G(
+                name=_RENAMES.get(td.name, td.name),
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=["recruiter_assistant", "orchestrator"],
+            )
+        )
+        n += 1
+    return n

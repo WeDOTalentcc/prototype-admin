@@ -1010,3 +1010,43 @@ def get_stage_tools(stage: str) -> list[ToolDefinition]:
 
     stage_tool_names = set(_stage_tools(stage))
     return [t for t in get_communication_tools() if t.name in stage_tool_names]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Opção C — registro global com namespace de domínio (2026-06-18)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_communication_global() -> int:
+    """Registra as tools de comunicação (agente) no tool_registry global.
+
+    'send_email' e 'send_whatsapp' recebem prefixo 'comm_' para evitar
+    conflito com os wrappers globais de communication/tools/communication_tools.py
+    (Opção C — namespace de domínio, 2026-06-18). Tools únicas mantêm o nome.
+    Segue o padrão de register_ui_tools_global() (ui_tool_registry.py).
+    Chamada por app/tools/__init__.py:initialize_tools().
+
+    Renames:
+        send_email     → comm_send_email
+        send_whatsapp  → comm_send_whatsapp
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    _RENAMES: dict[str, str] = {
+        "send_email": "comm_send_email",
+        "send_whatsapp": "comm_send_whatsapp",
+    }
+
+    n = 0
+    for td in get_communication_tools():
+        _reg.register(
+            _G(
+                name=_RENAMES.get(td.name, td.name),
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=["recruiter_assistant", "orchestrator"],
+            )
+        )
+        n += 1
+    return n

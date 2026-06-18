@@ -1043,3 +1043,46 @@ def get_jobs_mgmt_tools(stage: str = "") -> list[ToolDefinition]:
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
     return tools
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Opção C — registro global com namespace de domínio (2026-06-18)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_jobs_mgmt_global() -> int:
+    """Registra as tools de gestão de vagas no tool_registry global.
+
+    Tools com nomes conflitantes recebem prefixo 'jm_' (Opção C —
+    namespace de domínio). Tools únicas mantêm o nome original.
+    Segue o padrão de register_ui_tools_global() (ui_tool_registry.py).
+    Chamada por app/tools/__init__.py:initialize_tools().
+
+    Renames:
+        pause_job             → jm_pause_job
+        close_job             → jm_close_job
+        generate_report       → jm_generate_report
+        get_pipeline_prediction → jm_pipeline_prediction
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    _RENAMES: dict[str, str] = {
+        "pause_job": "jm_pause_job",
+        "close_job": "jm_close_job",
+        "generate_report": "jm_generate_report",
+        "get_pipeline_prediction": "jm_pipeline_prediction",
+    }
+
+    n = 0
+    for td in TOOL_DEFINITIONS:
+        _reg.register(
+            _G(
+                name=_RENAMES.get(td.name, td.name),
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=["recruiter_assistant", "orchestrator"],
+            )
+        )
+        n += 1
+    return n

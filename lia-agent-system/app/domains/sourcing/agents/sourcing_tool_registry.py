@@ -1556,3 +1556,45 @@ def get_stage_tools(stage: str) -> list[ToolDefinition]:
 
 
 
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Opção C — registro global com namespace de domínio (2026-06-18)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_sourcing_global() -> int:
+    """Registra as tools de sourcing no tool_registry global.
+
+    Tools com nomes conflitantes recebem prefixo 'sourcing_' (Opção C —
+    namespace de domínio, 2026-06-18). Tools únicas mantêm o nome original.
+    Segue o padrão de register_ui_tools_global() (ui_tool_registry.py).
+    Chamada por app/tools/__init__.py:initialize_tools().
+
+    Renames:
+        search_candidates  → sourcing_search_candidates
+        compare_candidates → sourcing_compare_candidates
+        generate_report    → sourcing_generate_report
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    _RENAMES: dict[str, str] = {
+        "search_candidates": "sourcing_search_candidates",
+        "compare_candidates": "sourcing_compare_candidates",
+        "generate_report": "sourcing_generate_report",
+        "rank_candidates": "sourcing_rank_candidates",
+    }
+
+    n = 0
+    for td in TOOL_DEFINITIONS:
+        _reg.register(
+            _G(
+                name=_RENAMES.get(td.name, td.name),
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=["recruiter_assistant", "orchestrator"],
+            )
+        )
+        n += 1
+    return n

@@ -160,6 +160,33 @@ def initialize_tools() -> None:
     import logging
     logger = logging.getLogger(__name__)
     logger.info(f"✅ Initialized {len(tool_registry.list_tools())} tools")
+
+    # Opção C (2026-06-18): ~77 domain-local tools registradas globalmente.
+    # Tools com nomes conflitantes recebem prefixo de domínio (jm_, talent_,
+    # kb_, comm_, sourcing_). Ambos federado e supervisor alcançam estas tools.
+    # Padrão: register_ui_tools_global() em ui_tool_registry.py.
+    from app.domains.recruiter_assistant.agents.jobs_mgmt_tool_registry import (
+        register_jobs_mgmt_global,
+    )
+    from app.domains.recruiter_assistant.agents.talent_tool_registry import (
+        register_talent_global,
+    )
+    from app.domains.recruiter_assistant.agents.kanban_tool_registry import (
+        register_kanban_global,
+    )
+    from app.domains.communication.agents.communication_tool_registry import (
+        register_communication_global,
+    )
+    from app.domains.sourcing.agents.sourcing_tool_registry import (
+        register_sourcing_global,
+    )
+
+    register_jobs_mgmt_global()
+    register_talent_global()
+    register_kanban_global()
+    register_communication_global()
+    register_sourcing_global()
+
     _INITIALIZED = True
 
 
