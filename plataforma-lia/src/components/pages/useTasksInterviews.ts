@@ -21,6 +21,7 @@ export function useTasksInterviews(onNavigate?: (page: string) => void) {
         res = await fetch('/api/backend-proxy/interviews/?limit=100', {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' },
+          signal: AbortSignal.timeout(10_000),
         })
         if (res.ok || (res.status >= 400 && res.status < 500)) break
         await new Promise(r => setTimeout(r, 2000 * (attempt + 1)))

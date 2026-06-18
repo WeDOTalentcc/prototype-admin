@@ -24,7 +24,7 @@ interface UseActiveAgentsSummaryOptions {
   surface?: ActiveAgentSurface
   limit?: number
   enabled?: boolean
-  /** Override polling em ms. Default 10_000 (10s). */
+  /** Override polling em ms. Default 30_000 (30s). */
   refetchInterval?: number | false
 }
 
@@ -37,8 +37,13 @@ async function fetchActiveSummary(
   const url = `/api/backend-proxy/agent-monitoring/active-summary?surface=${encodeURIComponent(
     surface,
   )}&limit=${limit}`
+  // AbortSignal.timeout garante que o fetch não fique pendurado indefinidamente
+  // no backend. Sem esse timeout, o polling de 30s mantinha isFetching > 0 por
+  // tempo indeterminado, disparando o LoadingWatchdogBridge ("Aguarde...") no
+  // Decidir mesmo quando a página já estava totalmente renderizada.
   const res = await fetch(url, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
+    signal: AbortSignal.timeout(8_000),
   })
   if (!res.ok) {
     throw new Error(`Failed to fetch active agents summary: ${res.status}`)
@@ -54,7 +59,7 @@ export function useActiveAgentsSummary(
   return useQuery<ActiveSummaryResponse, Error>({
     queryKey: ACTIVE_AGENTS_SUMMARY_QUERY_KEY(surface, limit),
     queryFn: () => fetchActiveSummary(surface, limit),
-    refetchInterval: opts.refetchInterval ?? 10_000,
+    refetchInterval: opts.refetchInterval ?? 30_000,
     staleTime: 5_000,
     enabled: opts.enabled ?? true,
   })

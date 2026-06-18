@@ -151,7 +151,9 @@ export function DailyBriefingCard({
     setLoading(true)
     setFetchError(false)
     try {
-      const response = await fetch(`${API_BASE}/briefing?user_id=${encodeURIComponent(userId)}`)
+      const response = await fetch(`${API_BASE}/briefing?user_id=${encodeURIComponent(userId)}`, {
+        signal: AbortSignal.timeout(10_000),
+      })
       if (response.ok) {
         const result = await response.json()
         if (result.success && result.data) {
@@ -176,6 +178,7 @@ export function DailyBriefingCard({
       if (!userId) { setRefreshing(false); return }
       const response = await fetch(`${API_BASE}/briefing?user_id=${encodeURIComponent(userId)}&refresh=true`, {
         method: 'POST',
+        signal: AbortSignal.timeout(10_000),
       })
       if (response.ok) {
         const result = await response.json()
