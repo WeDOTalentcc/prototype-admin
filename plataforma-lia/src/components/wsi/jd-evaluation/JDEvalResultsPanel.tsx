@@ -22,6 +22,8 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
   enrichedJd,
 }: JDEvalResultsPanelProps) {
   const [showFullDescription, setShowFullDescription] = useState(false)
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
 
   return (
     <div className="grid grid-cols-2 gap-4 pt-2">
