@@ -248,6 +248,347 @@ CREATE_PIPELINE_STAGE_SCHEMA = {
 }
 
 
+
+async def rename_pipeline_stage(
+    stage_id: str,
+    new_name: str,
+    company_id: str,
+    **kwargs
+) -> dict:
+    context = _extract_context(kwargs)
+    effective_company_id = context.company_id if context else company_id
+
+    logger.info(f"🔧 Renaming pipeline stage: {stage_id} -> '{new_name}' (company: {effective_company_id})")
+
+    try:
+        from sqlalchemy import and_, select
+
+        from app.core.database import AsyncSessionLocal
+        from app.models.recruitment_stages import RecruitmentStage
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(RecruitmentStage).where(
+                    and_(
+                        RecruitmentStage.id == stage_id,
+                        RecruitmentStage.company_id == effective_company_id,
+                        RecruitmentStage.is_active
+                    )
+                )
+            )
+            stage = result.scalar_one_or_none()
+            if not stage:
+                return {
+                    "success": False,
+                    "message": f"❌ Etapa não encontrada ou não pertence a esta empresa.",
+                    "error": "stage_not_found"
+                }
+
+            old_name = stage.display_name
+            stage.display_name = new_name.strip()
+            stage.name = _slugify(new_name)
+            stage.updated_at = datetime.utcnow()
+
+            await db.commit()
+            await db.refresh(stage)
+
+            logger.info(f"✅ Renamed pipeline stage {stage_id}: '{old_name}' -> '{new_name}'")
+
+            return {
+                "success": True,
+                "message": f"✅ Etapa renomeada de '{old_name}' para '{new_name}'.",
+                "action_taken": "rename_pipeline_stage",
+                "affected_entities": [stage_id],
+                "data": {
+                    "stage_id": stage_id,
+                    "old_name": old_name,
+                    "new_name": stage.display_name,
+                    "slug": stage.name,
+                    "company_id": effective_company_id,
+                }
+            }
+
+    except Exception as e:
+        logger.error(f"❌ Error renaming pipeline stage: {e}", exc_info=True)
+        return {
+            "success": False,
+            "message": f"❌ Erro ao renomear etapa: {str(e)}",
+            "error": str(e)
+        }
+
+
+async def reorder_pipeline_stages(
+    stage_ids_ordered: list,
+    company_id: str,
+    **kwargs
+) -> dict:
+    context = _extract_context(kwargs)
+    effective_company_id = context.company_id if context else company_id
+
+    logger.info(f"🔧 Reordering {len(stage_ids_ordered)} pipeline stages (company: {effective_company_id})")
+
+    try:
+        from sqlalchemy import and_, select
+
+        from app.core.database import AsyncSessionLocal
+        from app.models.recruitment_stages import RecruitmentStage
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(RecruitmentStage).where(
+                    and_(
+                        RecruitmentStage.company_id == effective_company_id,
+                        RecruitmentStage.is_active
+                    )
+                )
+            )
+            all_stages = {str(s.id): s for s in result.scalars().all()}
+
+            # Validate all provided IDs belong to this company
+            invalid_ids = [sid for sid in stage_ids_ordered if sid not in all_stages]
+            if invalid_ids:
+                return {
+                    "success": False,
+                    "message": f"❌ Etapas não encontradas ou não pertencem a esta empresa: {invalid_ids}",
+                    "error": "stage_not_found",
+                    "invalid_ids": invalid_ids
+                }
+
+            # Apply new order
+            new_order_result = []
+            for idx, stage_id in enumerate(stage_ids_ordered):
+                stage = all_stages[stage_id]
+                stage.stage_order = idx + 1
+                stage.updated_at = datetime.utcnow()
+                new_order_result.append({
+                    "stage_id": stage_id,
+                    "display_name": stage.display_name,
+                    "new_order": idx + 1
+                })
+
+            await db.commit()
+
+            logger.info(f"✅ Reordered {len(stage_ids_ordered)} pipeline stages")
+
+            return {
+                "success": True,
+                "message": f"✅ {len(stage_ids_ordered)} etapas reordenadas com sucesso.",
+                "action_taken": "reorder_pipeline_stages",
+                "affected_entities": list(stage_ids_ordered),
+                "data": {
+                    "company_id": effective_company_id,
+                    "new_order": new_order_result
+                }
+            }
+
+    except Exception as e:
+        logger.error(f"❌ Error reordering pipeline stages: {e}", exc_info=True)
+        return {
+            "success": False,
+            "message": f"❌ Erro ao reordenar etapas: {str(e)}",
+            "error": str(e)
+        }
+
+
+async def delete_pipeline_stage(
+    stage_id: str,
+    company_id: str,
+    move_candidates_to_stage_id: str | None = None,
+    **kwargs
+) -> dict:
+    context = _extract_context(kwargs)
+    effective_company_id = context.company_id if context else company_id
+
+    logger.info(f"🔧 Deleting pipeline stage: {stage_id} (company: {effective_company_id})")
+
+    try:
+        from sqlalchemy import and_, func, select
+
+        from app.core.database import AsyncSessionLocal
+        from app.models.recruitment_stages import RecruitmentStage
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(RecruitmentStage).where(
+                    and_(
+                        RecruitmentStage.id == stage_id,
+                        RecruitmentStage.company_id == effective_company_id,
+                        RecruitmentStage.is_active
+                    )
+                )
+            )
+            stage = result.scalar_one_or_none()
+            if not stage:
+                return {
+                    "success": False,
+                    "message": f"❌ Etapa não encontrada ou não pertence a esta empresa.",
+                    "error": "stage_not_found"
+                }
+
+            if stage.is_system:
+                return {
+                    "success": False,
+                    "message": f"❌ Etapa '{stage.display_name}' é uma etapa do sistema e não pode ser excluída.",
+                    "error": "system_stage_protected"
+                }
+
+            # Count candidates in this stage
+            candidate_count = 0
+            try:
+                from app.models.vacancy_candidates import VacancyCandidate
+                count_result = await db.execute(
+                    select(func.count()).where(
+                        and_(
+                            VacancyCandidate.stage_id == stage_id,
+                            VacancyCandidate.company_id == effective_company_id,
+                        )
+                    )
+                )
+                candidate_count = count_result.scalar() or 0
+            except Exception:
+                # VacancyCandidate model may have different field names — safe fallback
+                logger.warning("Could not count candidates in stage, proceeding with caution")
+
+            # HITL guard: refuse to delete stage with candidates if no move_to provided
+            if candidate_count > 0 and not move_candidates_to_stage_id:
+                return {
+                    "success": False,
+                    "message": (
+                        f"⚠️ A etapa '{stage.display_name}' possui {candidate_count} candidato(s). "
+                        f"Informe 'move_candidates_to_stage_id' para mover os candidatos antes de excluir."
+                    ),
+                    "error": "stage_has_candidates",
+                    "requires_confirmation": True,
+                    "candidate_count": candidate_count,
+                    "ui_action": "confirm_with_move_target"
+                }
+
+            # Move candidates if requested
+            if candidate_count > 0 and move_candidates_to_stage_id:
+                # Validate destination stage belongs to same company
+                dest_result = await db.execute(
+                    select(RecruitmentStage).where(
+                        and_(
+                            RecruitmentStage.id == move_candidates_to_stage_id,
+                            RecruitmentStage.company_id == effective_company_id,
+                            RecruitmentStage.is_active
+                        )
+                    )
+                )
+                dest_stage = dest_result.scalar_one_or_none()
+                if not dest_stage:
+                    return {
+                        "success": False,
+                        "message": f"❌ Etapa de destino não encontrada ou não pertence a esta empresa.",
+                        "error": "destination_stage_not_found"
+                    }
+
+                try:
+                    from sqlalchemy import update as sa_update
+
+                    from app.models.vacancy_candidates import VacancyCandidate
+                    await db.execute(
+                        sa_update(VacancyCandidate)
+                        .where(
+                            and_(
+                                VacancyCandidate.stage_id == stage_id,
+                                VacancyCandidate.company_id == effective_company_id,
+                            )
+                        )
+                        .values(stage_id=move_candidates_to_stage_id, updated_at=datetime.utcnow())
+                    )
+                    logger.info(f"Moved {candidate_count} candidates from {stage_id} to {move_candidates_to_stage_id}")
+                except Exception as e:
+                    logger.warning(f"Could not move candidates: {e}")
+
+            stage_name = stage.display_name
+            stage.is_active = False
+            stage.updated_at = datetime.utcnow()
+
+            await db.commit()
+
+            logger.info(f"✅ Deleted (soft) pipeline stage {stage_id}: '{stage_name}'")
+
+            return {
+                "success": True,
+                "message": f"✅ Etapa '{stage_name}' excluída com sucesso.",
+                "action_taken": "delete_pipeline_stage",
+                "affected_entities": [stage_id],
+                "data": {
+                    "stage_id": stage_id,
+                    "stage_name": stage_name,
+                    "candidates_moved": candidate_count if move_candidates_to_stage_id else 0,
+                    "move_target": move_candidates_to_stage_id,
+                    "company_id": effective_company_id,
+                }
+            }
+
+    except Exception as e:
+        logger.error(f"❌ Error deleting pipeline stage: {e}", exc_info=True)
+        return {
+            "success": False,
+            "message": f"❌ Erro ao excluir etapa: {str(e)}",
+            "error": str(e)
+        }
+
+
+RENAME_PIPELINE_STAGE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "stage_id": {
+            "type": "string",
+            "description": "ID da etapa a ser renomeada"
+        },
+        "new_name": {
+            "type": "string",
+            "description": "Novo nome para a etapa (1-80 caracteres)",
+            "minLength": 1,
+            "maxLength": 80
+        },
+        "company_id": {
+            "type": "string",
+            "description": "ID da empresa"
+        }
+    },
+    "required": ["stage_id", "new_name", "company_id"]
+}
+
+REORDER_PIPELINE_STAGES_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "stage_ids_ordered": {
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1,
+            "description": "Lista completa de IDs de etapas na nova ordem desejada"
+        },
+        "company_id": {
+            "type": "string",
+            "description": "ID da empresa"
+        }
+    },
+    "required": ["stage_ids_ordered", "company_id"]
+}
+
+DELETE_PIPELINE_STAGE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "stage_id": {
+            "type": "string",
+            "description": "ID da etapa a ser excluída"
+        },
+        "move_candidates_to_stage_id": {
+            "type": "string",
+            "description": "ID da etapa destino para mover candidatos (obrigatório se a etapa tiver candidatos)"
+        },
+        "company_id": {
+            "type": "string",
+            "description": "ID da empresa"
+        }
+    },
+    "required": ["stage_id", "company_id"]
+}
+
 def register_pipeline_tools() -> None:
     tool_registry.register(ToolDefinition(
         name="create_pipeline_stage",
@@ -257,4 +598,28 @@ def register_pipeline_tools() -> None:
         allowed_agents=["orchestrator", "recruiter_assistant", "job_planner"]
     ))
 
-    logger.info("✅ Registered 1 pipeline tool")
+    tool_registry.register(ToolDefinition(
+        name="rename_pipeline_stage",
+        description="Renomeia uma etapa existente no pipeline de recrutamento. Use quando o recrutador quiser alterar o nome de uma coluna/etapa do pipeline.",
+        parameters_schema=RENAME_PIPELINE_STAGE_SCHEMA,
+        handler=rename_pipeline_stage,
+        allowed_agents=["orchestrator", "recruiter_assistant", "job_planner"]
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="reorder_pipeline_stages",
+        description="Reordena as etapas do pipeline de recrutamento. Recebe a lista completa de IDs das etapas na nova ordem desejada.",
+        parameters_schema=REORDER_PIPELINE_STAGES_SCHEMA,
+        handler=reorder_pipeline_stages,
+        allowed_agents=["orchestrator", "recruiter_assistant", "job_planner"]
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="delete_pipeline_stage",
+        description="Exclui uma etapa do pipeline de recrutamento. Se a etapa tiver candidatos, é necessário informar para qual etapa movê-los antes de excluir (HITL guard).",
+        parameters_schema=DELETE_PIPELINE_STAGE_SCHEMA,
+        handler=delete_pipeline_stage,
+        allowed_agents=["orchestrator", "recruiter_assistant", "job_planner"]
+    ))
+
+    logger.info("✅ Registered 4 pipeline tools")

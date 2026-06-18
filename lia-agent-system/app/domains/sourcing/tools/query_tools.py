@@ -19,6 +19,7 @@ from app.shared.tool_guards import validate_uuid_params
 
 from app.tools.registry import ToolDefinition, tool_registry
 from app.tools.context_helpers import require_company_id_from_context, normalize_wrapper_kwargs
+from app.shared.tool_handler import tool_handler
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -80,6 +81,7 @@ def _format_search_candidates_result(candidates_list: list, applied_filters: dic
     }
 
 
+@tool_handler("sourcing")
 async def search_candidates(
     skills: list[str] | None = None,
     min_experience_years: int | None = None,
@@ -234,6 +236,7 @@ async def search_candidates(
         }
 
 
+@tool_handler("sourcing")
 async def rank_candidates(
     vacancy_id: str | None = None,
     candidate_ids: list[str] | None = None,
@@ -397,6 +400,7 @@ async def rank_candidates(
         }
 
 
+@tool_handler("sourcing")
 async def get_candidate_details(
     candidate_id: str,
     include_vacancies: bool = True,
@@ -503,6 +507,7 @@ async def get_candidate_details(
         }
 
 
+@tool_handler("sourcing")
 async def get_candidate_stats(
     job_id: str | None = None,
     period: str | None = "month",
@@ -611,6 +616,7 @@ async def get_candidate_stats(
         }
 
 
+@tool_handler("sourcing")
 async def get_candidate_history(
     candidate_id: str | None = None,
     job_id: str | None = None,
@@ -747,6 +753,7 @@ async def get_candidate_history(
         }
 
 
+@tool_handler("sourcing")
 async def get_talent_quality(
     period: str = "month",
     min_score: float | None = None,
@@ -858,6 +865,7 @@ async def get_talent_quality(
         }
 
 
+@tool_handler("sourcing")
 async def get_talent_engagement(
     period: str = "month",
     **kwargs
@@ -947,6 +955,7 @@ async def get_talent_engagement(
         }
 
 
+@tool_handler("sourcing")
 async def get_talent_availability(
     **kwargs
 ) -> dict[str, Any]:
@@ -1047,6 +1056,7 @@ async def get_talent_availability(
         }
 
 
+@tool_handler("sourcing")
 async def get_diversity_metrics(
     job_id: str | None = None,
     period: str = "month",
@@ -1164,6 +1174,7 @@ async def get_diversity_metrics(
         }
 
 
+@tool_handler("sourcing")
 async def get_market_benchmarks(
     job_title: str | None = None,
     industry: str | None = None,

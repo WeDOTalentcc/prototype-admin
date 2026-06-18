@@ -6,11 +6,13 @@ from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
 from app.shared.tool_guards import validate_uuid_params
+from app.shared.tool_handler import tool_handler
 from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
 
+@tool_handler("analytics")
 async def get_stakeholder_metrics(
     job_id: str | None = None,
     period: str = "month",
@@ -164,6 +166,7 @@ async def get_stakeholder_metrics(
         return error_response(f"❌ Erro ao buscar métricas de stakeholders: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_hiring_quality(
     period: str = "quarter",
     department_id: str | None = None,
@@ -239,6 +242,7 @@ async def get_hiring_quality(
         return error_response(f"❌ Erro ao buscar métricas de qualidade: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_prediction_metrics(
     job_id: str,
     **kwargs

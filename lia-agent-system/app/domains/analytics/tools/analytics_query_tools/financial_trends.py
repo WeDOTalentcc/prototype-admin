@@ -5,11 +5,13 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.shared.tool_handler import tool_handler
 from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
 
+@tool_handler("analytics")
 async def get_cost_metrics(
     job_id: str | None = None,
     period: str = "month",
@@ -129,6 +131,7 @@ async def get_cost_metrics(
         return error_response(f"❌ Erro ao buscar métricas de custo: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_trends(
     metric_type: str = "candidates",
     period: str = "month",

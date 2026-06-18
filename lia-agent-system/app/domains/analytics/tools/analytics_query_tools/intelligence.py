@@ -5,11 +5,13 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.shared.tool_handler import tool_handler
 from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
 
+@tool_handler("analytics")
 async def get_ml_predictions(
     candidate_id: str | None = None,
     job_id: str | None = None,
@@ -165,6 +167,7 @@ async def get_ml_predictions(
         return error_response(f"❌ Erro ao gerar predições ML: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_conversion_patterns(
     period: str = "month",
     job_id: str | None = None,
@@ -296,6 +299,7 @@ async def get_conversion_patterns(
         return error_response(f"❌ Erro ao analisar padrões de conversão: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_smart_alerts(
     job_id: str | None = None,
     severity: str = "all",

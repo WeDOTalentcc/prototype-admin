@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 from app.tools.registry import ToolDefinition, tool_registry
 from app.tools.context_helpers import normalize_wrapper_kwargs
+from app.shared.tool_handler import tool_handler
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
 logger = logging.getLogger(__name__)
@@ -85,6 +86,7 @@ def _format_search_jobs_result(jobs_list: list, applied_filters: dict) -> dict:
             },
         },
     }
+@tool_handler("job_management")
 async def search_jobs(
     status: str | None = None,
     department: str | None = None,
@@ -215,6 +217,7 @@ async def search_jobs(
             "message": f"❌ Erro ao buscar vagas: {str(e)}",
             "error": str(e)
         }
+@tool_handler("job_management")
 async def get_job_details(
     job_id: str,
     include_candidates: bool = True,
@@ -365,6 +368,7 @@ async def get_job_details(
             "message": f"❌ Erro ao buscar detalhes da vaga: {str(e)}",
             "error": str(e)
         }
+@tool_handler("job_management")
 async def get_job_velocity(
     job_id: str,
     **kwargs
@@ -502,6 +506,7 @@ async def get_job_velocity(
             "message": f"❌ Erro ao calcular velocidade da vaga: {str(e)}",
             "error": str(e)
         }
+@tool_handler("job_management")
 async def get_job_quality_metrics(
     job_id: str,
     **kwargs
@@ -654,6 +659,7 @@ async def get_job_quality_metrics(
             "message": f"❌ Erro ao buscar métricas de qualidade: {str(e)}",
             "error": str(e)
         }
+@tool_handler("job_management")
 async def get_job_benchmark(
     job_id: str,
     **kwargs

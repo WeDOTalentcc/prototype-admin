@@ -1110,28 +1110,31 @@ def register_job_wizard_tools() -> None:
         allowed_agents=["job_planner", "job_intake", "orchestrator", "job_wizard"]
     ))
     
+    # P2-3 (2026-06-18): wizard-only — not available in global chat (orchestrator)
     tool_registry.register(ToolDefinition(
         name="validate_job_fields",
         description="Validate that all required job fields are complete and ready for publication. Returns completeness score and lists of missing critical/important fields.",
         parameters_schema=VALIDATE_JOB_FIELDS_SCHEMA,
         handler=validate_job_fields,
-        allowed_agents=["job_planner", "job_intake", "orchestrator", "job_wizard"]
+        allowed_agents=["job_planner", "job_intake", "job_wizard"]
     ))
     
+    # P2-3 (2026-06-18): wizard-only — not available in global chat (orchestrator)
     tool_registry.register(ToolDefinition(
         name="get_job_suggestions",
         description="Get AI-powered suggestions for a specific job field like benefits, skills, or behavioral competencies based on job context.",
         parameters_schema=GET_JOB_SUGGESTIONS_SCHEMA,
         handler=get_job_suggestions,
-        allowed_agents=["job_planner", "job_intake", "orchestrator", "job_wizard"]
+        allowed_agents=["job_planner", "job_intake", "job_wizard"]
     ))
     
+    # P2-3 (2026-06-18): wizard-only — not available in global chat (orchestrator)
     tool_registry.register(ToolDefinition(
         name="save_job_draft",
         description="Save updates to an existing job draft. Use this to persist changes made during the job creation wizard.",
         parameters_schema=SAVE_JOB_DRAFT_SCHEMA,
         handler=save_job_draft,
-        allowed_agents=["job_planner", "job_intake", "orchestrator", "job_wizard"]
+        allowed_agents=["job_planner", "job_intake", "job_wizard"]
     ))
     
     tool_registry.register(ToolDefinition(
