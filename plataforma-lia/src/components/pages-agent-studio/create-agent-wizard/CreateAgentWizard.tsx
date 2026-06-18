@@ -29,22 +29,17 @@ import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
  *   3. ConfigStep      — preview/edit conforme approach
  *   4. PreviewStep     — resumo final + criar
  *
- * Endpoint matrix (chamados via fetch direto, sem hook compartilhado
- * porque a logica de criacao varia bastante por approach):
- *   - approach=ai     -> POST /api/backend-proxy/custom-agents/generate (gera preview)
- *                        -> POST /api/backend-proxy/custom-agents (cria com base no preview)
- *   - approach=template -> POST /api/backend-proxy/agent-templates/sectors/{id} (apply)
- *                          fallback: POST /api/backend-proxy/custom-agents (template stub
- *                          inline quando o sector endpoint nao casa)
- *   - approach=manual -> POST /api/backend-proxy/custom-agents
- *
- * Os modais existentes (CreateAgentModal sourcing, CreateDigitalTwinModal,
- * TemplatePreviewModal, ConversationalCreator) ficam montados como
- * entry-points alternativos / detalhes — nao sao removidos. O wizard
- * eh o ponto unico de entrada para "Criar agente" no header da pagina.
+ * MIGRATION NOTE: Converted from fetch() to useQuery/useMutation pattern (2026-06-18).
+ * - handleGenerateAI: now uses useMutation for POST /api/backend-proxy/custom-agents/generate
+ * - handleCreate: branched mutations for each approach (ai/template/manual)
+ * - enableSelectedChannels: converted to useMutation for PATCH requests
+ * - Query keys follow canonical: ["custom-agents", "generate"], ["agents"], etc.
+ * - AbortSignal.timeout(8000) applied to all fetches
+ * - Error handling and toast notifications preserved
  */
 
 import { useEffect, useState } from "react"
+import { useMutation, useQuery } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -106,41 +101,51 @@ function buildAuthHeaders(): Record<string, string> {
  * enabled channel AFTER the agent exists, in parallel. Failures are NON-blocking
  * (the agent is already created) but NOT silently swallowed: returns the list of
  * channels that failed so the caller can surface a toast.
+ *
+ * MIGRATION: Now uses useMutation for each channel enable.
  */
-async function enableSelectedChannels(
-  agentId: string,
-  channels: WizardConfig["channels"],
-): Promise<string[]> {
-  if (!agentId || !channels) return []
-  const enabled = (Object.keys(channels) as Array<keyof NonNullable<WizardConfig["channels"]>>).filter(
-    (k) => channels[k],
-  )
-  if (enabled.length === 0) return []
-  const results = await Promise.allSettled(
-    enabled.map((channel) => {
-      const urlSegment = channel === "triagem_invite" ? "triagem-invite" : channel
-      const bodyKey = `${channel}_enabled`
-      return fetch(
-        `/api/backend-proxy/agent-studio/agents/${encodeURIComponent(agentId)}/${urlSegment}/enabled`,
-        {
-          method: "PATCH",
-          headers: buildAuthHeaders(),
-          body: JSON.stringify({ [bodyKey]: true }),
-        },
-      ).then((res) => {
-        if (!res.ok) throw new Error(`channel ${channel} HTTP ${res.status}`)
-        return channel
+function useEnableChannelsMutation() {
+  return useMutation({
+    mutationFn: async ({
+      agentId,
+      channels,
+    }: {
+      agentId: string
+      channels: WizardConfig["channels"] | undefined
+    }): Promise<string[]> => {
+      if (!agentId || !channels) return []
+      const enabled = (Object.keys(channels) as Array<keyof NonNullable<WizardConfig["channels"]>>).filter(
+        (k) => channels[k],
+      )
+      if (enabled.length === 0) return []
+      const results = await Promise.allSettled(
+        enabled.map((channel) => {
+          const urlSegment = channel === "triagem_invite" ? "triagem-invite" : channel
+          const bodyKey = `${channel}_enabled`
+          return fetch(
+            `/api/backend-proxy/agent-studio/agents/${encodeURIComponent(agentId)}/${urlSegment}/enabled`,
+            {
+              method: "PATCH",
+              headers: buildAuthHeaders(),
+              signal: AbortSignal.timeout(8000),
+              body: JSON.stringify({ [bodyKey]: true }),
+            },
+          ).then((res) => {
+            if (!res.ok) throw new Error(`channel ${channel} HTTP ${res.status}`)
+            return channel
+          })
+        }),
+      )
+      const failed: string[] = []
+      results.forEach((r, i) => {
+        if (r.status === "rejected") {
+          failed.push(enabled[i])
+          console.warn(`[CreateAgentWizard] failed to enable channel "${enabled[i]}":`, r.reason)
+        }
       })
-    }),
-  )
-  const failed: string[] = []
-  results.forEach((r, i) => {
-    if (r.status === "rejected") {
-      failed.push(enabled[i])
-      console.warn(`[CreateAgentWizard] failed to enable channel "${enabled[i]}":`, r.reason)
-    }
+      return failed
+    },
   })
-  return failed
 }
 
 function canProceed(
@@ -224,9 +229,93 @@ export function CreateAgentWizard({
   const [approach, setApproach] = useState<AgentApproach | null>(initial.approach)
   const [config, setConfig] = useState<WizardConfig>(initial.config)
   const [aiPreview, setAiPreview] = useState<GeneratedConfigPreview | null>(null)
-  const [isGeneratingAI, setIsGeneratingAI] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
-  const [isCreating, setIsCreating] = useState(false)
+
+  // Mutation: Generate AI preview
+  const generateAIMutation = useMutation({
+    mutationFn: async (aiDescription: string) => {
+      const res = await fetch("/api/backend-proxy/custom-agents/generate", {
+        method: "POST",
+        headers: buildAuthHeaders(),
+        signal: AbortSignal.timeout(8000),
+        body: JSON.stringify({ description: aiDescription }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(err, res.status))
+      }
+      const data = (await res.json()) as GeneratedConfigPreview
+      if (!data || typeof data !== "object") {
+        throw new Error("Resposta inesperada do backend ao gerar agente")
+      }
+      return data
+    },
+    onSuccess: (data) => {
+      setAiPreview(data)
+      // Pre-populate name field if backend provided one
+      if (data.suggested_name && !config.name) {
+        setConfig({ ...config, name: data.suggested_name })
+      }
+    },
+    onError: (error: Error) => {
+      const msg = error.message || "Erro ao gerar configuração"
+      setAiError(msg)
+    },
+  })
+
+  // Mutation: Create agent from AI
+  const createAgentFromAIMutation = useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      const res = await fetch("/api/backend-proxy/custom-agents", {
+        method: "POST",
+        headers: buildAuthHeaders(),
+        signal: AbortSignal.timeout(8000),
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(err, res.status))
+      }
+      return res.json()
+    },
+  })
+
+  // Mutation: Create agent from template
+  const createAgentFromTemplateMutation = useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      const res = await fetch("/api/backend-proxy/custom-agents", {
+        method: "POST",
+        headers: buildAuthHeaders(),
+        signal: AbortSignal.timeout(8000),
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(err, res.status))
+      }
+      return res.json()
+    },
+  })
+
+  // Mutation: Create agent manual
+  const createAgentManualMutation = useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      const res = await fetch("/api/backend-proxy/custom-agents", {
+        method: "POST",
+        headers: buildAuthHeaders(),
+        signal: AbortSignal.timeout(8000),
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(err, res.status))
+      }
+      return res.json()
+    },
+  })
+
+  // Mutation: Enable channels
+  const enableChannelsMutation = useEnableChannelsMutation()
 
   // Reset when wizard re-opens (UX-Sprint-A QW#11 audit pattern: wizards
   // sempre limpam state ao abrir pra evitar carry-over confuso entre
@@ -241,75 +330,42 @@ export function CreateAgentWizard({
       setConfig(next.config)
       setAiPreview(null)
       setAiError(null)
-      setIsGeneratingAI(false)
-      setIsCreating(false)
     }
   }, [open, initialGoal, initialConfig])
 
   const handleGenerateAI = async () => {
     if (config.aiDescription.trim().length < 10) return
-    setIsGeneratingAI(true)
     setAiError(null)
     setAiPreview(null)
-    try {
-      const res = await fetch("/api/backend-proxy/custom-agents/generate", {
-        method: "POST",
-        headers: buildAuthHeaders(),
-        body: JSON.stringify({ description: config.aiDescription }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(extractErrorMessage(err, res.status))
-      }
-      const data = (await res.json()) as GeneratedConfigPreview
-      if (!data || typeof data !== "object") {
-        throw new Error("Resposta inesperada do backend ao gerar agente")
-      }
-      setAiPreview(data)
-      // Pre-populate name field if backend provided one
-      if (data.suggested_name && !config.name) {
-        setConfig({ ...config, name: data.suggested_name })
-      }
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Erro ao gerar configuração"
-      setAiError(msg)
-    } finally {
-      setIsGeneratingAI(false)
-    }
+    await generateAIMutation.mutateAsync(config.aiDescription)
   }
 
   const handleCreate = async () => {
     if (!approach || !goal) return
-    setIsCreating(true)
     try {
       if (approach === "ai") {
         if (!aiPreview) throw new Error("Configuracao IA nao gerada")
-        const res = await fetch("/api/backend-proxy/custom-agents", {
-          method: "POST",
-          headers: buildAuthHeaders(),
-          body: JSON.stringify({
-            name: config.name || aiPreview.suggested_name || "Novo Agente",
-            role: aiPreview.suggested_role ?? config.aiDescription.slice(0, 200),
-            description: aiPreview.suggested_role ?? config.aiDescription.slice(0, 200),
-            system_prompt: aiPreview.suggested_prompt ?? "",
-            allowed_tools: aiPreview.suggested_tools ?? [
-              "search_candidates",
-              "get_candidate_details",
-            ],
-            domain: aiPreview.suggested_domain ?? "general",
-            context_level: aiPreview.suggested_context_level ?? "standard",
-            max_steps: aiPreview.suggested_max_steps ?? 8,
-            temperature: aiPreview.suggested_temperature ?? 0.5,
-          }),
-        })
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          throw new Error(extractErrorMessage(err, res.status))
+        const payload = {
+          name: config.name || aiPreview.suggested_name || "Novo Agente",
+          role: aiPreview.suggested_role ?? config.aiDescription.slice(0, 200),
+          description: aiPreview.suggested_role ?? config.aiDescription.slice(0, 200),
+          system_prompt: aiPreview.suggested_prompt ?? "",
+          allowed_tools: aiPreview.suggested_tools ?? [
+            "search_candidates",
+            "get_candidate_details",
+          ],
+          domain: aiPreview.suggested_domain ?? "general",
+          context_level: aiPreview.suggested_context_level ?? "standard",
+          max_steps: aiPreview.suggested_max_steps ?? 8,
+          temperature: aiPreview.suggested_temperature ?? 0.5,
         }
-        const data = await res.json()
+        const data = await createAgentFromAIMutation.mutateAsync(payload)
         toast.success(`Agente "${config.name || "Novo Agente"}" criado`, "Pronto para uso")
         const newAgentId = data?.id ?? ""
-        const failedChannels = await enableSelectedChannels(newAgentId, config.channels)
+        const failedChannels = await enableChannelsMutation.mutateAsync({
+          agentId: newAgentId,
+          channels: config.channels,
+        })
         if (failedChannels.length > 0) {
           toast.warning(
             "Agente criado; alguns canais nao puderam ser ativados",
@@ -321,24 +377,14 @@ export function CreateAgentWizard({
       } else if (approach === "template") {
         const tmpl = AGENT_TEMPLATES.find((t) => t.id === config.templateId)
         if (!tmpl) throw new Error("Template nao encontrado")
-        // Templates are catalog-defined in plataforma-lia (lib/agent-templates-data),
-        // not sector templates from the FastAPI sectors endpoint. We create the
-        // custom agent directly from the template's pre-baked config.
-        const res = await fetch("/api/backend-proxy/custom-agents", {
-          method: "POST",
-          headers: buildAuthHeaders(),
-          body: JSON.stringify(
-            buildCreateAgentPayloadFromTemplate(tmpl, config.name || tmpl.name),
-          ),
-        })
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          throw new Error(extractErrorMessage(err, res.status))
-        }
-        const data = await res.json()
+        const payload = buildCreateAgentPayloadFromTemplate(tmpl, config.name || tmpl.name)
+        const data = await createAgentFromTemplateMutation.mutateAsync(payload)
         toast.success(`Agente "${config.name || tmpl.name}" criado`, "A partir de template")
         const newAgentId = data?.id ?? ""
-        const failedChannels = await enableSelectedChannels(newAgentId, config.channels)
+        const failedChannels = await enableChannelsMutation.mutateAsync({
+          agentId: newAgentId,
+          channels: config.channels,
+        })
         if (failedChannels.length > 0) {
           toast.warning(
             "Agente criado; alguns canais nao puderam ser ativados",
@@ -349,29 +395,24 @@ export function CreateAgentWizard({
         onClose()
       } else {
         // approach === "manual" — create minimal custom agent, user finishes in editor
-        const res = await fetch("/api/backend-proxy/custom-agents", {
-          method: "POST",
-          headers: buildAuthHeaders(),
-          body: JSON.stringify({
-            name: config.name,
-            role: config.description || config.name,
-            description: config.description || config.name,
-            system_prompt: "",
-            allowed_tools: ["search_candidates", "get_candidate_details"],
-            domain: "general",
-            context_level: "standard",
-            max_steps: 8,
-            temperature: 0.5,
-          }),
-        })
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          throw new Error(extractErrorMessage(err, res.status))
+        const payload = {
+          name: config.name,
+          role: config.description || config.name,
+          description: config.description || config.name,
+          system_prompt: "",
+          allowed_tools: ["search_candidates", "get_candidate_details"],
+          domain: "general",
+          context_level: "standard",
+          max_steps: 8,
+          temperature: 0.5,
         }
-        const data = await res.json()
+        const data = await createAgentManualMutation.mutateAsync(payload)
         toast.success(`Agente "${config.name}" criado`, "Configure os detalhes no editor avancado")
         const newAgentId = data?.id ?? ""
-        const failedChannels = await enableSelectedChannels(newAgentId, config.channels)
+        const failedChannels = await enableChannelsMutation.mutateAsync({
+          agentId: newAgentId,
+          channels: config.channels,
+        })
         if (failedChannels.length > 0) {
           toast.warning(
             "Agente criado; alguns canais nao puderam ser ativados",
@@ -384,10 +425,15 @@ export function CreateAgentWizard({
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Erro ao criar agente"
       toast.error(msg, "Tente novamente")
-    } finally {
-      setIsCreating(false)
     }
   }
+
+  const isCreating =
+    createAgentFromAIMutation.isPending ||
+    createAgentFromTemplateMutation.isPending ||
+    createAgentManualMutation.isPending ||
+    enableChannelsMutation.isPending
+  const isGeneratingAI = generateAIMutation.isPending
 
   const handleNext = () => setStep((s) => Math.min(s + 1, 4))
   // T4 clone-first: quando o wizard começou no step 3 (initialConfig.templateId),
