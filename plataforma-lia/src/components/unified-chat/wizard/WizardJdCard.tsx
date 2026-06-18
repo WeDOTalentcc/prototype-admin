@@ -27,7 +27,14 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
   const title = (enriched?.titulo_padronizado as string) ?? "Descrição da vaga"
   const seniority = (enriched?.senioridade_confirmada as string) ?? ""
   const aboutRole = (enriched?.about_role as string) ?? ""
-  const responsibilities = (enriched?.responsabilidades as string[]) ?? []
+  const rawResps = (enriched?.responsabilidades as unknown[]) ?? []
+  const responsibilities: string[] = rawResps.map((r) =>
+    typeof r === "string" ? r :
+    ((r as Record<string, unknown>)?.responsabilidade ??
+     (r as Record<string, unknown>)?.texto ??
+     (r as Record<string, unknown>)?.text ??
+     String(r)) as string
+  ).filter(Boolean)
   const skills = (enriched?.skills_obrigatorias as Array<{ skill: string }>) ?? []
 
   const scoreColor =
