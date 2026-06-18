@@ -32,6 +32,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 # apenas para validar mismatch contra o JWT, nao para preencher o ContextVar).
 # Hashimoto: nunca mais cross-tenant via header forging.
 _current_company_id: ContextVar[str] = ContextVar("_current_company_id", default="")
+# P1-5 (2026-06-18): view_context snapshot for read_table_state tool
+_lia_view_context: ContextVar["dict | None"] = ContextVar("_lia_view_context", default=None)
 
 
 def _set_company_id_from_jwt(verified_payload: dict) -> str:

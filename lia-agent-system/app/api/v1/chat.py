@@ -940,6 +940,10 @@ async def _sse_via_orchestrator(
             # Pass-through P0.3 activity stream + paineis emitidos pelo orchestrator.
             await sse_queue.put(event)
 
+    # P1-5 (2026-06-18): expose view_context to read_table_state tool via ContextVar
+    from app.middleware.auth_enforcement import _lia_view_context as _lia_vc_ctx
+    _lia_vc_token = _lia_vc_ctx.set(view_context)
+
     ctx = UniversalContext(
         message=user_message,
         user_id=user_id,

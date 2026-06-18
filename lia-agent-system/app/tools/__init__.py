@@ -193,6 +193,12 @@ def initialize_tools() -> None:
     )
     register_talent_pool_global()
 
+    # P1-6 (2026-06-18): offer lifecycle — 8 tools acessíveis via chat principal
+    from app.domains.offer.agents.offer_tool_registry import (
+        register_offer_global,
+    )
+    register_offer_global()
+
     _INITIALIZED = True
 
 

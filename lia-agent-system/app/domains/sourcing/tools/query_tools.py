@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
+from app.shared.tool_guards import validate_uuid_params
 
 from app.tools.registry import ToolDefinition, tool_registry
 from app.tools.context_helpers import require_company_id_from_context, normalize_wrapper_kwargs
@@ -113,6 +114,11 @@ async def search_candidates(
         List of matching candidates with their details
     """
     company_id = require_company_id_from_context(kwargs, "search_candidates")
+
+    if in_vacancy_id:
+        _err = validate_uuid_params(in_vacancy_id=in_vacancy_id)
+        if _err:
+            return _err
     
     logger.info(f"🔍 Searching candidates with filters (company: {company_id})")
     
@@ -248,6 +254,16 @@ async def rank_candidates(
         Ranked list of candidates with WRF scores
     """
     company_id = require_company_id_from_context(kwargs, "rank_candidates")
+
+    if vacancy_id:
+        _err = validate_uuid_params(vacancy_id=vacancy_id)
+        if _err:
+            return _err
+    if candidate_ids:
+        for _cid in candidate_ids:
+            _err = validate_uuid_params(candidate_id=_cid)
+            if _err:
+                return _err
 
     logger.info(f"🏆 Ranking candidates with WRF (company: {company_id}, level: {qualification_level})")
 
@@ -399,6 +415,10 @@ async def get_candidate_details(
         Detailed candidate information
     """
     company_id = require_company_id_from_context(kwargs, "get_candidate_details")
+
+    _err = validate_uuid_params(candidate_id=candidate_id)
+    if _err:
+        return _err
     
     logger.info(f"📋 Getting candidate details: {candidate_id} (company: {company_id})")
     
@@ -499,6 +519,11 @@ async def get_candidate_stats(
         Candidate statistics including quality metrics, distribution
     """
     company_id = require_company_id_from_context(kwargs, "get_candidate_stats")
+
+    if job_id:
+        _err = validate_uuid_params(job_id=job_id)
+        if _err:
+            return _err
     
     logger.info(f"📊 Getting candidate stats (company: {company_id})")
     
@@ -602,6 +627,15 @@ async def get_candidate_history(
         History metrics including reapplication rates and process counts
     """
     company_id = require_company_id_from_context(kwargs, "get_candidate_history")
+
+    if candidate_id:
+        _err = validate_uuid_params(candidate_id=candidate_id)
+        if _err:
+            return _err
+    if job_id:
+        _err = validate_uuid_params(job_id=job_id)
+        if _err:
+            return _err
     
     logger.info(f"📜 Getting candidate history (company: {company_id})")
     

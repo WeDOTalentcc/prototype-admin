@@ -793,9 +793,80 @@ def _build_close_panel_definition():
     )
 
 
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# P1-5 (2026-06-18) — read_table_state: lê estado da tela atual via ContextVar
+# ─────────────────────────────────────────────────────────────────────────────
+# Retorna o view_context capturado no início desta rodada de chat.
+# NOTA: estado reflete o início do turno — após apply_table_state
+# o novo estado estará disponível na PRÓXIMA mensagem.
+
+async def _wrap_read_table_state(**kwargs: Any) -> dict[str, Any]:
+    from app.middleware.auth_enforcement import _lia_view_context as _lia_vc_ctx
+    vc: dict = _lia_vc_ctx.get(None) or {}
+
+    pagination = vc.get("pagination_state")
+    pag_out = None
+    if isinstance(pagination, dict):
+        pag_out = {
+            "current_page": pagination.get("current_page", 1),
+            "total_pages": pagination.get("total_pages", 1),
+            "page_size": pagination.get("page_size", 20),
+            "total_items": pagination.get("total_items"),
+        }
+
+    entity_focus = vc.get("entity_focus")
+    focus_out = None
+    if isinstance(entity_focus, dict):
+        focus_out = {
+            "type": entity_focus.get("type", "candidate"),
+            "id": entity_focus.get("id", ""),
+            "label": entity_focus.get("label", ""),
+        }
+
+    return {
+        "success": True,
+        "data": {
+            "page_type": vc.get("page_type"),
+            "active_filters": vc.get("active_filters") or [],
+            "filters_active": vc.get("filters_active") or {},
+            "active_modal": vc.get("active_modal"),
+            "pagination": pag_out,
+            "visible_ids_count": len(vc.get("visible_ids") or []),
+            "entity_focus": focus_out,
+            "captured_at": vc.get("captured_at"),
+        },
+        "message": (
+            "Estado da tela no inicio desta rodada. "
+            "Apos apply_table_state, o novo estado estara disponivel na proxima mensagem."
+        ),
+    }
+
+
+def _build_read_table_state_definition() -> ToolDefinition:
+    return ToolDefinition(
+        name="read_table_state",
+        description=(
+            "Le o estado atual da tela: pagina ativa, filtros aplicados, paginacao, "
+            "modal aberto e foco de entidade. "
+            "when_to_use: antes de filtrar (para saber o estado atual), "
+            "apos apply_table_state para confirmar o que foi aplicado, "
+            "quando o recrutador perguntar quantos candidatos aparecem ou qual pagina esta. "
+            "when_not_to_use: busca no banco de dados de candidatos (use search_candidates); "
+            "aplicar filtros (use apply_table_state)."
+        ),
+        parameters_schema={
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+        function=_wrap_read_table_state,
+    )
+
 def get_ui_tools() -> list[ToolDefinition]:
     """ToolDefinitions de UI (open_ui + apply_table_state + select_rows). Federadas no recruiter_copilot."""
-    return [_build_open_ui_definition(), _build_close_ui_definition(), _build_close_panel_definition(), _build_apply_table_state_definition(), _build_select_rows_definition()]
+    return [_build_open_ui_definition(), _build_close_ui_definition(), _build_close_panel_definition(), _build_apply_table_state_definition(), _build_read_table_state_definition(), _build_select_rows_definition()]
 
 
 def get_open_ui_tools() -> list[ToolDefinition]:

@@ -438,3 +438,180 @@ async def _wrap_get_learning_context(
     service = OfferService(db)
     return await service.get_learning_context(company_id)
 
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# P1-6 (2026-06-18) — registro global das 8 tools de offer lifecycle
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_offer_global() -> int:
+    """Registra as 8 tools do offer concierge no tool_registry global.
+
+    Cada tool usa o handler _wrap_* existente (ja @tool_handler decorado).
+    Segue o padrao de register_ui_tools_global() (ui_tool_registry.py).
+    Chamada por app/tools/__init__.py:initialize_tools().
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    _STR = {"type": "string"}
+    _FLOAT_OPT = {"type": "number"}
+    _STR_OPT = {"type": "string"}
+    _LIST_STR_OPT = {"type": "array", "items": {"type": "string"}}
+
+    offer_tools = [
+        _G(
+            name="get_offer_status",
+            description=(
+                "Retorna status completo de uma proposta de oferta com historico de eventos. "
+                "when_to_use: status da proposta, candidato aceitou, proposta enviada. "
+                "when_not_to_use: criar ou editar proposta."
+            ),
+            parameters_schema={
+                "type": "object",
+                "properties": {
+                    "offer_id": dict(_STR, description="UUID da proposta de oferta"),
+                },
+                "required": ["offer_id"],
+            },
+            handler=_wrap_get_offer_status,
+            allowed_agents=["recruiter_assistant", "orchestrator"],
+        ),
+        _G(
+            name="get_negotiation_context",
+            description=(
+                "Retorna contexto interno de negociacao (margens, limites). "
+                "ATENCAO: NUNCA revelar valores de margem ao candidato. Uso INTERNO. "
+                "when_to_use: preparar argumentario para recrutador. "
+                "when_not_to_use: qualquer mensagem destinada ao candidato."
+            ),
+            parameters_schema={
+                "type": "object",
+                "properties": {
+                    "offer_id": dict(_STR, description="UUID da proposta de oferta"),
+                },
+                "required": ["offer_id"],
+            },
+            handler=_wrap_get_negotiation_context,
+            allowed_agents=["recruiter_assistant", "orchestrator"],
+        ),
+        _G(
+            name="suggest_next_start_date",
+            description=(
+                "Sugere proxima data de inicio valida respeitando regras de Configuracoes "
+                "Minha Empresa Contratacao. "
+                "when_to_use: proxima data de inicio, quando pode comecar. "
+                "when_not_to_use: consultar dados de candidato ou vaga."
+            ),
+            parameters_schema={
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
+            handler=_wrap_suggest_next_start_date,
+            allowed_agents=["recruiter_assistant", "orchestrator"],
+        ),
+        _G(
+            name="escalate_offer_to_recruiter",
+            description=(
+                "HITL: cria solicitacao de aprovacao para o recrutador via Teams/notificacao. "
+                "Use SEMPRE antes de qualquer acao irreversivel que afete o candidato. "
+                "when_to_use: contra-proposta, prorrogacao de prazo, decisao de oferta. "
+                "when_not_to_use: consultas de status ou informacoes."
+            ),
+            parameters_schema={
+                "type": "object",
+                "properties": {
+                    "offer_id": dict(_STR, description="UUID da proposta"),
+                    "reason": dict(_STR, description="Motivo da escalada"),
+                    "action_type": dict(_STR, description="Tipo: counter_proposal | extend_deadline | accept | decline"),
+                    "counter_salary": dict(_FLOAT_OPT, description="Salario proposto pelo candidato (opcional)"),
+                },
+                "required": ["offer_id", "reason", "action_type"],
+            },
+            handler=_wrap_escalate_to_recruiter,
+            allowed_agents=["recruiter_assistant", "orchestrator"],
+        ),
+        _G(
+            name="log_negotiation_event",
+            description=(
+                "Registra evento de negociacao (visualizacao, rodada, proposta, resposta). "
+                "when_to_use: apos qualquer interacao relevante do candidato com a proposta. "
+                "when_not_to_use: consultas de informacao sem interacao nova."
+            ),
+            parameters_schema={
+                "type": "object",
+                "properties": {
+                    "offer_id": dict(_STR, description="UUID da proposta"),
+                    "event_type": dict(_STR, description="Tipo: viewed | counter_proposed | accepted | declined | extended"),
+                    "actor": dict(_STR, description="Quem executou: candidate | recruiter | system"),
+                    "notes": dict(_STR_OPT, description="Notas adicionais (opcional)"),
+                    "salary_proposed": dict(_FLOAT_OPT, description="Salario proposto (opcional)"),
+                    "salary_counter": dict(_FLOAT_OPT, description="Contra-proposta salarial (opcional)"),
+                },
+                "required": ["offer_id", "event_type", "actor"],
+            },
+            handler=_wrap_log_negotiation_event,
+            allowed_agents=["recruiter_assistant", "orchestrator"],
+        ),
+        _G(
+            name="get_benefit_details",
+            description=(
+                "Retorna detalhes e argumentario dos beneficios configurados. "
+                "when_to_use: quais beneficios posso destacar, argumentos para o candidato. "
+                "when_not_to_use: consultar salario ou dados da vaga."
+            ),
+            parameters_schema={
+                "type": "object",
+                "properties": {
+                    "benefit_ids": dict(_LIST_STR_OPT, description="Lista de UUIDs de beneficios (opcional)"),
+                },
+                "required": [],
+            },
+            handler=_wrap_get_benefit_details,
+            allowed_agents=["recruiter_assistant", "orchestrator"],
+        ),
+        _G(
+            name="draft_offer_response",
+            description=(
+                "N3 NEGOCIADOR: Gera rascunho de resposta para enviar ao candidato. "
+                "HITL obrigatorio: recrutador SEMPRE revisa antes do envio. "
+                "when_to_use: redigir mensagem de contra-oferta, aceitar proposta, comunicar limite de rodadas. "
+                "when_not_to_use: consulta de status (use get_offer_status)."
+            ),
+            parameters_schema={
+                "type": "object",
+                "properties": {
+                    "offer_id": dict(_STR, description="UUID da proposta"),
+                    "tone": dict(_STR, description="Tom: accept_counter | decline_final | counter_offer | neutral"),
+                    "counter_salary": dict(_FLOAT_OPT, description="Salario proposto pela empresa (quando counter_offer)"),
+                    "message_context": dict(_STR_OPT, description="Contexto adicional (opcional)"),
+                },
+                "required": ["offer_id"],
+            },
+            handler=_wrap_draft_response_to_candidate,
+            allowed_agents=["recruiter_assistant", "orchestrator"],
+        ),
+        _G(
+            name="get_offer_learning_context",
+            description=(
+                "N3 NEGOCIADOR: Retorna padroes anonimizados de negociacoes anteriores desta empresa. "
+                "Disponivel so apos N>=10 negociacoes (ADR-LGPD-001). "
+                "when_to_use: preparar estrategia de negociacao. "
+                "when_not_to_use: consultas informacionais N2."
+            ),
+            parameters_schema={
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
+            handler=_wrap_get_learning_context,
+            allowed_agents=["recruiter_assistant", "orchestrator"],
+        ),
+    ]
+
+    n = 0
+    for td in offer_tools:
+        _reg.register(td)
+        n += 1
+    return n

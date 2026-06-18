@@ -62,6 +62,8 @@ TOOL_TO_CATEGORY: dict[str, str] = {
     # usa via federacao; domain agents via grant explicito no _get_tools.
     "open_ui": ToolCategory.INTERFACE,
     "apply_table_state": ToolCategory.INTERFACE,
+    # P1-5 (2026-06-18): complemento read-only de apply_table_state
+    "read_table_state": ToolCategory.INTERFACE,
     "select_rows": ToolCategory.INTERFACE,  # Fase 2 surface close
     # ---- VAGAS ----
     "create_job": ToolCategory.VAGAS,
