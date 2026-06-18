@@ -55,9 +55,9 @@ _ANALYTICAL_COMMAND_TYPES = {
 }
 
 INTENT_TO_UI_ACTION: dict[str, str] = {
-    "criar_vaga": "start_job_wizard",
-    "create_job": "start_job_wizard",
-    "nova_vaga": "start_job_wizard",
+    "criar_vaga": "start_wizard_seeded",
+    "create_job": "start_wizard_seeded",
+    "nova_vaga": "start_wizard_seeded",
     "pausar_vaga": "pause_job",
     "fechar_vaga": "close_job",
     "duplicar_vaga": "duplicate_job",
@@ -649,7 +649,7 @@ async def get_jobs_management_intents(company_id: str = Depends(require_company_
                 "id": "criar_vaga",
                 "description": "Criar nova vaga",
                 "keywords": ["criar vaga", "nova vaga", "abrir vaga"],
-                "ui_action": "start_job_wizard",
+                "ui_action": "start_wizard_seeded",
             },
             {
                 "id": "pausar_vaga",

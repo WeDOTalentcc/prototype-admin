@@ -132,7 +132,7 @@ async def get_talent_chat_intents(company_id: str = Depends(require_company_id))
             {"id": "contact_candidate", "description": "Contatar candidatos", "keywords": ["email", "contatar", "whatsapp"], "ui_action": "open_communication_modal"},
             {"id": "schedule_interview", "description": "Agendar entrevistas", "keywords": ["agendar", "entrevista"], "ui_action": "open_schedule_modal"},
             {"id": "wsi_screening", "description": "Triagem WSI", "keywords": ["triagem", "screening", "wsi"], "ui_action": "open_screening_modal"},
-            {"id": "criar_vaga", "description": "Criar nova vaga", "keywords": ["criar vaga", "nova vaga", "abrir vaga"], "ui_action": "start_job_wizard"},
+            {"id": "criar_vaga", "description": "Criar nova vaga", "keywords": ["criar vaga", "nova vaga", "abrir vaga"], "ui_action": "start_wizard_seeded"},
         ],
         "context": "talent_funnel",
     }

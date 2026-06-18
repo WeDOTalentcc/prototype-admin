@@ -123,6 +123,10 @@ _ACTIONABLE_TOOL_UI_ACTIONS: frozenset[str] = frozenset({
     "select_rows",
     "bulk_execute",
     "start_wizard_seeded",
+    # Page/wizard-specific: pass through lia:unhandled_ui_action on FE
+    "suggest_pipeline_template",  # WizardPipelineTemplateCard
+    "move_candidate",              # Kanban stage move
+    "switch_search_mode",          # Talent funnel search mode toggle
 })
 
 

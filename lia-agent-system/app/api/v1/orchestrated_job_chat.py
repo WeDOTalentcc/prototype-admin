@@ -95,8 +95,8 @@ INTENT_TO_UI_ACTION: dict[str, str] = {
     "analise_detalhada": "analyze_profile",
     "analyze_profile": "analyze_profile",
     
-    "create_job_vacancy": "start_job_wizard",
-    "create_job": "start_job_wizard",
+    "create_job_vacancy": "start_wizard_seeded",
+    "create_job": "start_wizard_seeded",
 }
 
 @router.post("/orchestrator/job-chat", response_model=OrchestratedJobChatResponse)
@@ -222,7 +222,7 @@ async def get_job_chat_intents(company_id: str = Depends(require_company_id)):
                 "description": "Criar uma nova vaga de recrutamento",
                 "keywords": ["criar vaga", "nova vaga", "abrir vaga", "nova posição"],
                 "agent": "JobPlanner",
-                "ui_action": "start_job_wizard"
+                "ui_action": "start_wizard_seeded"
             },
             {
                 "id": "ranking_candidatos",

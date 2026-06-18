@@ -55,8 +55,9 @@ async def run(params: dict[str, Any], context: DomainContext) -> dict[str, Any]:
             "body_pre_filled": body_html,
             "variables": variables,
             "message": "Template preparado para envio manual",
-            "ui_action": "open_send_email_modal",
+            "ui_action": "open_modal",
             "ui_action_params": {
+                "modal_id": "send_email_offer",
                 "template_id": str(template_id) if template_id else None,
                 "subject_override": subject,
                 "body_override": body_html,

@@ -215,7 +215,8 @@ async def create_scheduling_link(
                     "Ative em Configuracoes > Politicas de Recrutamento > "
                     "Auto-agendamento, ou agende manualmente."
                 ),
-                "ui_action": "enable_self_scheduling",
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {"section": "auto_agendamento"},
             },
         )
 

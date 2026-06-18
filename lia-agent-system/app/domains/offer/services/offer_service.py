@@ -110,7 +110,7 @@ class NoApproverConfiguredError(OfferPolicyGateError):
       yet; recruiter must trigger the approval workflow.
     - ``NoApproverConfiguredError`` => toggle ON, but the Approver table is
       empty; admin must add at least one approver before any workflow
-      can be triggered. UX response is ``ui_action='prompt_admin_to_configure_approver'``.
+      can be triggered. UX response is ``ui_action='settings_open_tab'`` with ``section='approvers'``.
     """
 
     reason = "no_approver_configured"
