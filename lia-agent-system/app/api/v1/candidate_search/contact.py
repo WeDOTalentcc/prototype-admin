@@ -70,6 +70,7 @@ class RevealContactRequest(WeDoBaseModel):
     candidate_name: str = Field(..., description="Nome do candidato para busca")
     reveal_type: str = Field(..., description="Tipo: 'email' ou 'phone'", pattern="^(email|phone)$")
     linkedin_slug: str | None = Field(None, description="LinkedIn slug para busca mais precisa")
+    pearch_profile_id: str | None = Field(None, description="Pearch docid do perfil para rastreamento")
 
 
 class RevealContactResponse(BaseModel):
@@ -270,9 +271,11 @@ company_id: str = Depends(require_company_id)):
         
         _logger.info("[Reveal] Falling back to Pearch for %s", request.candidate_id)
         
-        search_query = request.candidate_name
+        # LinkedIn URL como query é mais preciso que nome+slug (Pearch reconhece URLs)
         if request.linkedin_slug:
-            search_query = f"{request.candidate_name} linkedin:{request.linkedin_slug}"
+            search_query = f"linkedin.com/in/{request.linkedin_slug}"
+        else:
+            search_query = request.candidate_name
         
         show_emails = request.reveal_type == "email"
         show_phone_numbers = request.reveal_type == "phone"

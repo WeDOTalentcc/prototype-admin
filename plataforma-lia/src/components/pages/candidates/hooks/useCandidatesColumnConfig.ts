@@ -119,7 +119,7 @@ export const CANDIDATES_DEFAULT_COLUMNS = [
   { id: 'updated_at', label: 'Última atualização', visible: false, order: 69, category: 'datas' },
   { id: 'last_contacted_at', label: 'Último contato', visible: false, order: 70, category: 'datas' },
   { id: 'last_activity_at', label: 'Última atividade', visible: false, order: 71, category: 'datas' },
-  { id: 'acoes', label: 'Ações', visible: true, order: 0.5, category: 'basico' },
+  { id: 'acoes', label: 'Ações', visible: true, order: 999, category: 'basico' },
 ]
 
 const DEFAULT_COLUMN_WIDTHS: Record<string, number> = {
