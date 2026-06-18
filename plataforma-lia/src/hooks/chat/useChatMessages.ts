@@ -582,12 +582,22 @@ export function useChatMessages({
       const myToken = ++loadHistoryTokenRef.current;
       setIsFetchingHistory(true);
       try {
-        const res = await fetch(
-          `/api/backend-proxy/conversations/${id}?include_messages=true&message_limit=50`,
-        );
-        if (!res.ok) return [];
+        // Run messages + feedback in parallel — both are needed to restore full
+        // conversation state. Feedback is best-effort; we still return messages
+        // if the feedback call fails.
+        const [res, fbResRaw] = await Promise.allSettled([
+          fetch(
+            `/api/backend-proxy/conversations/${id}?include_messages=true&message_limit=50`,
+            { signal: AbortSignal.timeout(12_000) },
+          ),
+          fetch(
+            `/api/backend-proxy/lia/feedback/by-conversation/${encodeURIComponent(id)}`,
+            { credentials: "include", signal: AbortSignal.timeout(8_000) },
+          ),
+        ]);
+        if (res.status === "rejected" || !res.value.ok) return [];
         if (loadHistoryTokenRef.current !== myToken) return [];
-        const data = (await res.json()) as {
+        const data = (await res.value.json()) as {
           messages?: Array<{
             id: string;
             role: string;
@@ -602,15 +612,10 @@ export function useChatMessages({
           timestamp: formatMessageTime(m.created_at),
         }));
 
-        // Task #570 (audit gap F3): hydrate persisted thumbs/feedback so the
-        // UI restores per-message state across refreshes. Best-effort — if the
-        // feedback endpoint is unreachable we still return the messages.
+        // Hydrate feedback from parallel call result
         try {
-          const fbRes = await fetch(
-            `/api/backend-proxy/lia/feedback/by-conversation/${encodeURIComponent(id)}`,
-            { credentials: "include" },
-          );
-          if (fbRes.ok && loadHistoryTokenRef.current === myToken) {
+          const fbRes = fbResRaw.status === "fulfilled" ? fbResRaw.value : null;
+          if (fbRes && fbRes.ok && loadHistoryTokenRef.current === myToken) {
             const fbData = (await fbRes.json()) as {
               items?: Array<{
                 message_id: string;

@@ -15,8 +15,12 @@
  * passados pelo caller têm precedência sobre os padrões.
  */
 export function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  // Default 20s timeout prevents infinite loading when backend never responds.
+  // Callers can override by passing their own signal in init.
+  const signal = init?.signal ?? AbortSignal.timeout(20_000)
   return fetch(input, {
     credentials: "include",
     ...init,
+    signal,
   })
 }

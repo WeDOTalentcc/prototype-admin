@@ -34,7 +34,7 @@ export function useTasksInterviews(onNavigate?: (page: string) => void) {
       await Promise.all(
         candidateIds.map(async (cid) => {
           try {
-            const cRes = await fetch(`/api/backend-proxy/candidates/${cid}`)
+            const cRes = await fetch(`/api/backend-proxy/candidates/${cid}`, { signal: AbortSignal.timeout(5000) })
             if (cRes.ok) {
               candidateMap[cid!] = await cRes.json()
             }

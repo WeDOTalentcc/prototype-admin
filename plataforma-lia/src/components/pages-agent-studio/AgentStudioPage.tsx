@@ -206,7 +206,7 @@ export default function AgentStudioPage({
             try {
               const summaryRes = await fetch(
                 `/api/backend-proxy/studio-summary?job_id=${encodeURIComponent(firstLive.id)}`,
-                { credentials: "include" }
+                { credentials: "include", signal: AbortSignal.timeout(5000) }
               )
               if (summaryRes.ok) {
                 const summaryData = await summaryRes.json()

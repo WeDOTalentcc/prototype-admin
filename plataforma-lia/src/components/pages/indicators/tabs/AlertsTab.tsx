@@ -28,7 +28,7 @@ function useProactiveHistory() {
   useEffect(() => {
     async function load() {
       try {
-        const r = await fetch("/api/backend-proxy/notifications/proactive-history?limit=20")
+        const r = await fetch("/api/backend-proxy/notifications/proactive-history?limit=20", { signal: AbortSignal.timeout(8000) })
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         const json = await r.json()
         setItems((json.data ?? []) as ProactiveHistoryItem[])

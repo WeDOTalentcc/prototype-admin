@@ -40,7 +40,7 @@ export function LogoUploadField({
     let cancelled = false
     async function fetchProfileId() {
       try {
-        const res = await fetch("/api/backend-proxy/company/profile")
+        const res = await fetch("/api/backend-proxy/company/profile", { signal: AbortSignal.timeout(8000) })
         if (!res.ok) throw new Error(`Profile fetch failed: ${res.status}`)
         const data = await res.json()
         if (!cancelled && data?.id) {

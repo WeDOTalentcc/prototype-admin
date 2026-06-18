@@ -164,7 +164,7 @@ export default function TalentPoolPage({
   // Load pool data
   const loadPool = useCallback(async () => {
     try {
-      const res = await fetch(`/api/backend-proxy/talent-pools/${poolId}`)
+      const res = await fetch(`/api/backend-proxy/talent-pools/${poolId}`, { signal: AbortSignal.timeout(8000) })
       const data = await res.json()
       setPool(data?.data?.attributes || data)
     } catch (err) {
@@ -176,7 +176,7 @@ export default function TalentPoolPage({
     try {
       setIsLoading(true)
       const stageParam = stageFilter ? `?stage=${stageFilter}` :""
-      const res = await fetch(`/api/backend-proxy/talent-pools/${poolId}/candidates${stageParam}`)
+      const res = await fetch(`/api/backend-proxy/talent-pools/${poolId}/candidates${stageParam}`, { signal: AbortSignal.timeout(10000) })
       const data = await res.json()
       setCandidates(data?.data?.map((d: { attributes: PoolCandidate }) => d.attributes) || [])
     } catch (err) {

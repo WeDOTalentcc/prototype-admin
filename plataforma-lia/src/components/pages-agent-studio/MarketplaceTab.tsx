@@ -172,7 +172,7 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
     async function load() {
       setLoadingAgents(true)
       try {
-        const res = await fetch("/api/backend-proxy/custom-agents?agent_type=first_party&status=active")
+        const res = await fetch("/api/backend-proxy/custom-agents?agent_type=first_party&status=active", { signal: AbortSignal.timeout(8000) })
         if (res.ok) {
           const data = await res.json()
           // VoiceScreeningChannel is an inert per-tenant config manifest (max_steps:1, no tools/prompt) —
@@ -483,7 +483,7 @@ function InstalledAgents() {
   const load = useCallback(async () => {
     setIsLoading(true)
     try {
-      const res = await fetch("/api/backend-proxy/agent-marketplace/installations")
+      const res = await fetch("/api/backend-proxy/agent-marketplace/installations", { signal: AbortSignal.timeout(8000) })
       if (res.ok) {
         const data = await res.json()
         setInstallations(data.installations || [])
@@ -600,7 +600,7 @@ function BillingView() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/backend-proxy/agent-marketplace/billing")
+    fetch("/api/backend-proxy/agent-marketplace/billing", { signal: AbortSignal.timeout(8000) })
       .then(r => r.ok ? r.json() : [])
       .then(d => setBilling(Array.isArray(d) ? d : []))
       .catch(() => {})
