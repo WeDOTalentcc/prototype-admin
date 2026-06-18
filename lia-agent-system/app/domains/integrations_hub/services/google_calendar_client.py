@@ -178,7 +178,7 @@ class GoogleCalendarClient:
 
         def _insert():
             return (
-                service.events()
+                service.events() # B3-EXEMPT: OAuth-scoped calendar op, tenant isolation via token
                 .insert(
                     calendarId=calendar_id,
                     body=event_body,
@@ -241,9 +241,9 @@ class GoogleCalendarClient:
 
         def _update():
             event = service.events().get(calendarId=calendar_id, eventId=event_id).execute()
-            event.update(kwargs)
+            event.update(kwargs) # B3-EXEMPT: OAuth-scoped calendar op, tenant isolation via token
             return (
-                service.events()
+                service.events() # B3-EXEMPT: OAuth-scoped calendar op, tenant isolation via token
                 .update(calendarId=calendar_id, eventId=event_id, body=event, sendUpdates="all")
                 .execute()
             )
@@ -259,7 +259,7 @@ class GoogleCalendarClient:
         service = self._get_service()
         try:
             await GOOGLE_CALENDAR_CIRCUIT.call(
-                lambda: service.events().delete(
+                lambda: service.events().delete( # B3-EXEMPT: OAuth-scoped calendar op, tenant isolation via token
                     calendarId=calendar_id, eventId=event_id, sendUpdates="all"
                 ).execute()
             )

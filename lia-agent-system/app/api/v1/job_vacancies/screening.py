@@ -176,6 +176,9 @@ company_id: str = Depends(require_company_id)):
         if not job:
             raise HTTPException(status_code=404, detail=f"Vaga não encontrada: {job_id}")
 
+        # GAP-05-004: Optimistic locking
+        check_optimistic_lock(job.updated_at, config_data.expected_updated_at)
+
         new_config = {}
 
         if config_data.status:

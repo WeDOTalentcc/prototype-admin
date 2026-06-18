@@ -134,7 +134,7 @@ async def update_digest_schedule(
 # DELETE /notifications/digest-schedule — remove per-user override
 # ---------------------------------------------------------------------------
 
-@router.delete("", status_code=status.HTTP_200_OK)
+@router.delete("", status_code=status.HTTP_200_OK) # B3-EXEMPT: schedule delete is DB-only, no calendar write
 async def delete_digest_schedule(
     current_user: User = Depends(get_current_user_or_demo),
     company_id: str = Depends(require_company_id),

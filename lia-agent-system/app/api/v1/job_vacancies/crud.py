@@ -953,6 +953,7 @@ company_id: str = Depends(require_company_id)):
 async def update_job_vacancy_status(
     job_vacancy_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     status: str = ...,
+    expected_updated_at: str | None = None,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user), 
 company_id: str = Depends(require_company_id)):
@@ -977,6 +978,9 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=404, detail="Job vacancy not found")
         # Sprint 7.2 RBAC: mutation gate
         await assert_mutation_allowed(job_vacancy, current_user, resource_label="vaga")
+
+        # GAP-05-004: Optimistic locking
+        check_optimistic_lock(job_vacancy.updated_at, expected_updated_at)
 
         old_status = job_vacancy.status
         job_vacancy.status = status

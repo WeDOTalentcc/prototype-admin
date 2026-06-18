@@ -23,7 +23,7 @@ def _load_shared():
         return sys.modules[_KEY]
     spec = importlib.util.spec_from_file_location(
         _KEY,
-        "lia-agent-system/app/api/v1/job_vacancies/_shared.py",
+        "app/api/v1/job_vacancies/_shared.py",
     )
     mod = importlib.util.module_from_spec(spec)
     sys.modules[_KEY] = mod
