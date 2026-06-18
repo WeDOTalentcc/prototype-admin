@@ -26,13 +26,15 @@ export function useIndicatorsPage() {
   const { companyId: resolvedCompanyId } = useCompanyId()
 
   useEffect(() => {
+    if (!user) return
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8_000)
     const fetchMyMetrics = async () => {
-      if (!user) return
       try {
         const companyId = resolvedCompanyId || ''
         const res = await fetch(
           `${API_BASE}/recruiter-metrics/${user.email}?company_id=${companyId}`,
-          { headers: { "Content-Type": "application/json" } }
+          { headers: { "Content-Type": "application/json" }, signal: controller.signal }
         )
         if (res.ok) {
           const json = await res.json()
@@ -40,13 +42,18 @@ export function useIndicatorsPage() {
             setLiveMetrics(prev => ({ ...prev, [user.email]: json.data }))
           }
         }
-      } catch {
-        // Silently fail — fall back to mock data
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error('[useIndicatorsPage] recruiter-metrics fetch failed, using mock data', err)
+        }
       }
     }
     fetchMyMetrics()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user])
+    return () => {
+      clearTimeout(timeoutId)
+      controller.abort()
+    }
+  }, [user, resolvedCompanyId])
 
   const recruiters = Object.values(recruitersData) as RecruiterData[]
   const departments = [...new Set(recruiters.map((r) => r.department))]

@@ -385,8 +385,10 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
           action: a.suggested_actions?.[0] || "Verificar",
         }))
         if (mountedRef.current) setActiveAlerts(mapped)
-      } catch {
-        // Silencioso: polling e best-effort; erros nao devem perturbar a UI.
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.warn('[use-tasks-core] alert polling failed (best-effort)', err)
+        }
       }
     }
     const intervalId = setInterval(fetchAlertsOnly, ALERTS_REFRESH_MS)

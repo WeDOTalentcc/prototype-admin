@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, useCallback, useEffect } from"react"
+import React, { useState, useMemo, useCallback, useEffect, Suspense } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -49,6 +49,7 @@ const LiaPersonalizacaoHub = dynamic(() => import("@/components/settings/LiaPers
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
+import { HubLoadingState } from"@/components/settings/_shared"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import { SETTINGS_SECTION_ALIASES } from "@/lib/settings/resolve-settings-target"
@@ -521,61 +522,81 @@ export default function SettingsPageEnhanced() {
       case 'minha-empresa':
         return (
           <ErrorBoundarySection>
-            <MinhaEmpresaHub />
+            <Suspense fallback={<HubLoadingState />}>
+              <MinhaEmpresaHub />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'lia-personalizacao':
         return (
           <ErrorBoundarySection>
-            <LiaPersonalizacaoHub activeSubsection={activeSubsection} />
+            <Suspense fallback={<HubLoadingState />}>
+              <LiaPersonalizacaoHub activeSubsection={activeSubsection} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'pipeline':
         return (
           <ErrorBoundarySection>
-            <RecruitmentPipelineTab />
+            <Suspense fallback={<HubLoadingState />}>
+              <RecruitmentPipelineTab />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'screening':
         return (
           <ErrorBoundarySection>
-            <RecruitmentScreeningTab />
+            <Suspense fallback={<HubLoadingState />}>
+              <RecruitmentScreeningTab />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'templates-assinatura':
         return (
           <ErrorBoundarySection>
-            <CommunicationHub visibleTabs={['templates', 'signature']} stacked />
+            <Suspense fallback={<HubLoadingState />}>
+              <CommunicationHub visibleTabs={['templates', 'signature']} stacked />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'comunicacao-alertas':
         return (
           <ErrorBoundarySection>
-            <CommunicationHub activeSubsection="alerts" visibleTabs={['alerts']} />
+            <Suspense fallback={<HubLoadingState />}>
+              <CommunicationHub activeSubsection="alerts" visibleTabs={['alerts']} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'usuarios-departamentos':
         return (
           <ErrorBoundarySection>
-            <UsuariosDepartamentosHub />
+            <Suspense fallback={<HubLoadingState />}>
+              <UsuariosDepartamentosHub />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'integrations':
         return (
           <ErrorBoundarySection>
-            <IntegrationsHub activeSubsection={activeSubsection} />
+            <Suspense fallback={<HubLoadingState />}>
+              <IntegrationsHub activeSubsection={activeSubsection} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'fairness-compliance':
         return (
           <ErrorBoundarySection>
-            <FairnessComplianceHub activeSubsection={activeSubsection || 'fairness'} />
+            <Suspense fallback={<HubLoadingState />}>
+              <FairnessComplianceHub activeSubsection={activeSubsection || 'fairness'} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'consumo':
         return (
           <ErrorBoundarySection>
-            <ConsumoHub />
+            <Suspense fallback={<HubLoadingState />}>
+              <ConsumoHub />
+            </Suspense>
           </ErrorBoundarySection>
         )
       default:
