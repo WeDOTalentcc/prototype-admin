@@ -1,36 +1,40 @@
 # Mapa Completo: Fluxo de Onboarding de Cliente WeDo Talent
 
 > **Documento de Análise e Plano de Melhorias**  
-> Última atualização: Janeiro 2026
+> Última atualização: **Junho 2026** (v3.0 — revisão completa com base no código atual)
 
 ---
 
 ## Resumo Executivo
 
-### O que JÁ EXISTE (Funcional)
+### O que JÁ EXISTE (Funcional) — Estado Real do Código
 
 | Componente | Localização | Status |
 |------------|-------------|--------|
-| Lista de clientes | `/admin/clientes` | ✅ |
-| Criar cliente | `CreateClientDialog` | ✅ |
-| Detalhes do cliente | `/admin/clientes/[id]` | ✅ |
-| Dashboard de onboarding | Checklist visual | ✅ |
-| Gestão de usuários | `/admin/clientes/[id]/usuarios` | ✅ |
-| Convidar usuários | Botão funcional | ✅ |
-| Detecção SCIM | Banner automático | ✅ |
-| Sistema de email | Resend/SendGrid | ✅ |
-| WorkOS SSO | Fluxo completo | ✅ |
-| Setup inicial | Wizard 6 passos | ✅ |
+| CRUD de clientes (backend) | `POST/GET/PUT /v1/clients` | ✅ Completo |
+| WorkOS Organization auto-provisionada | `workos_provisioning_service.py` — chamado no `create_client` | ✅ Implementado |
+| Email de boas-vindas automático | `email_service.send_welcome_email()` — chamado no `create_client` | ✅ Implementado |
+| Email de convite ao convidar usuário | `email_service.send_invite_email()` — chamado em `client_users.py` | ✅ Implementado |
+| Reenvio de convite | `POST /clients/{id}/users/{uid}/resend-invite` | ✅ Completo |
+| Páginas de aceite de convite | `/aceitar-convite` (PT) e `/accept-invitation` (EN) | ✅ Completo |
+| Verificação de email | `/verify-email` + endpoint backend | ✅ Completo |
+| WorkOS SSO | Fluxo completo (sso, callback, session, refresh, magic-link) | ✅ Completo |
+| SCIM Webhooks | 8 eventos processados | ✅ Completo |
+| Onboarding conversacional pós-login | `/onboarding` — chat LIA com 7 seções | ✅ Implementado (novo) |
+| Sync manual HubSpot | GET status, POST sync, PUT onboarding status | ✅ Completo |
+| Email provider | Mailgun (primary) + Resend (fallback) | ✅ Configurado |
+| Portal admin (compliance) | `(staff)/wedo-admin` — fairness + governança | ✅ Parcial |
 
-### O que FALTA (Gaps Identificados)
+### O que FALTA (Gaps Atuais)
 
 | Gap | Impacto | Prioridade |
 |-----|---------|------------|
-| Integração HubSpot ↔ WeDo | Alto | 🔴 Alta |
-| Criar WorkOS Organization automaticamente | Alto | 🔴 Alta |
-| Email automático de boas-vindas | Médio | 🟡 Média |
-| Convite automático do primeiro Admin | Médio | 🟡 Média |
+| Lista/gestão de clientes no frontend | Alto — criação de cliente é via API direta | 🔴 Alta |
+| Webhook HubSpot "deal closed" → auto-criar cliente | Médio — processo ainda manual | 🟡 Média |
 | Dashboard de status de onboarding consolidado | Baixo | 🟢 Baixa |
+| Botão Google SSO na tela de login | Baixo | 🟢 Baixa |
+
+> **Nota v3.0:** O documento v2.0 (Jan 2026) listava como "existente" um frontend admin com lista de clientes em `/admin/clientes`. Isso **não existe** no código atual — o portal `(staff)/wedo-admin` foi construído com foco em compliance/fairness/governança de IA, **não** em gestão comercial de clientes.
 
 ---
 
@@ -39,14 +43,15 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    MAPA DE MATURIDADE                       │
+│                   (atualizado Jun 2026)                     │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  FASE 1: COMERCIAL (HubSpot)     [███░░░░░░░] 30%          │
-│  FASE 2: PROVISIONAMENTO (WeDo)  [███████░░░] 70%          │
+│  FASE 1: COMERCIAL (HubSpot)     [████░░░░░░] 40%          │
+│  FASE 2: PROVISIONAMENTO (WeDo)  [█████████░] 95%          │
 │  FASE 3: CONFIG SSO (WorkOS)     [████████░░] 80%          │
-│  FASE 4: CONVITES                [███████░░░] 70%          │
-│  FASE 5: PRIMEIRO LOGIN          [█████████░] 90%          │
-│  FASE 6: SETUP INICIAL           [█████████░] 90%          │
+│  FASE 4: CONVITES                [█████████░] 95%          │
+│  FASE 5: PRIMEIRO LOGIN          [█████████░] 95%          │
+│  FASE 6: SETUP INICIAL           [█████████░] 95%          │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -62,34 +67,37 @@ HubSpot CRM
     ↓
 Lead qualificado → Demo → Proposta → Contrato
     ↓
-[MANUAL] Time WeDo recria dados no Admin
+[MANUAL] Time WeDo cria cliente via API /v1/clients
+    ↓
+[MANUAL] Admin WeDo acessa portal (quando frontend de clientes existir)
 ```
 
 ### O que JÁ EXISTE
 
 - ✅ HubSpot como CRM comercial
 - ✅ Pipeline de vendas configurado
+- ✅ `GET /clients/{id}/hubspot/status` — status de sync
+- ✅ `POST /clients/{id}/hubspot/sync` — sync manual WeDo → HubSpot
+- ✅ `PUT /clients/{id}/hubspot/onboarding` — atualiza status de onboarding no HubSpot
 
 ### O que FALTA
 
 | Gap | Descrição |
 |-----|-----------|
-| 🔴 **Sync HubSpot → WeDo** | Quando deal fecha, criar cliente automaticamente |
-| 🔴 **Sync WeDo → HubSpot** | Atualizar deal com status de onboarding |
-| 🟡 Webhook HubSpot | Receber eventos de deal closed |
+| 🟡 **Webhook HubSpot "deal closed"** | Receber evento e criar cliente automaticamente |
+| 🟡 **Sync automático bidirecional** | Hoje o sync é manual (POST endpoint) |
 
-### Solução Proposta
+### Solução Proposta (ainda pendente)
 
 ```
 HubSpot (Deal Closed Won)
-    ↓ [Webhook]
+    ↓ [Webhook — endpoint /webhooks/hubspot não existe ainda]
 WeDo Backend
-    ↓ [Automático]
-├── Criar ClientAccount
-├── Criar CompanyWorkOSConfig
-├── Criar Organization no WorkOS
-├── Enviar email de boas-vindas
-└── Atualizar HubSpot com link de acesso
+    ↓ [Já automatizado ao criar cliente:]
+├── ✅ Criar ClientAccount
+├── ✅ Criar Organization no WorkOS
+├── ✅ Enviar email de boas-vindas
+└── ⬜ Atualizar HubSpot com link de acesso (via PUT /hubspot/onboarding)
 ```
 
 ---
@@ -99,40 +107,29 @@ WeDo Backend
 ### Fluxo Atual
 
 ```
-Time WeDo acessa /admin/clientes
+[API ou futuro frontend admin]
     ↓
-Clica "Novo Cliente" → Preenche formulário → Salva
-    ↓
-Cliente criado no banco [ClientAccount]
-    ↓
-[MANUAL] Ir ao WorkOS Dashboard criar Organization
-[MANUAL] Copiar org_id e salvar no WeDo
-[MANUAL] Enviar email ao cliente
+POST /v1/clients  →  ClientAccount criado no banco
+    ↓ [automático — implementado]
+├── provision_workos_organization() → Organization criada no WorkOS
+│   └── organization_id salvo em CompanyWorkOSConfig
+├── send_welcome_email() → Email automático enviado para o admin
+└── hubspot_result = sync_client_to_hubspot() → Sync opcional
 ```
 
 ### O que JÁ EXISTE
 
-- ✅ **CreateClientDialog** - Formulário completo
-- ✅ **Backend /clients POST** - CRUD funcional
-- ✅ **CompanyWorkOSConfig model** - Tabela existe
+- ✅ **Backend `/clients` POST** — CRUD funcional, retorna dados completos
+- ✅ **`provision_workos_organization()`** — chamado automaticamente no `create_client`, salva `workos_organization_id` em `CompanyWorkOSConfig`
+- ✅ **`send_welcome_email()`** — chamado automaticamente no `create_client` via `email_service`
+- ✅ **`workos_organization_created` tracking** — campo no modelo `ClientAccount` rastreia se org foi criada
+- ✅ **Sync HubSpot** — tentado automaticamente no create; falha silenciosa (não bloqueia criação)
 
 ### O que FALTA
 
 | Gap | Descrição |
 |-----|-----------|
-| 🔴 **Criar WorkOS Organization automaticamente** | Chamar API WorkOS ao criar cliente |
-| 🔴 **Salvar organization_id** | Preencher CompanyWorkOSConfig |
-| 🟡 **Enviar email de boas-vindas** | Usar email_service existente |
-
-### Solução Proposta
-
-```python
-# Ao criar cliente, adicionar:
-1. Criar Organization no WorkOS via API
-2. Salvar organization_id em CompanyWorkOSConfig
-3. Gerar link do Admin Portal
-4. Enviar email de boas-vindas com instruções
-```
+| 🔴 **Frontend de gestão de clientes** | Criar cliente hoje exige chamada direta à API — não há tela |
 
 ---
 
@@ -141,9 +138,9 @@ Cliente criado no banco [ClientAccount]
 ### Fluxo Atual
 
 ```
-Cliente recebe email com link Admin Portal
+Cliente recebe email com link Admin Portal (WorkOS)
     ↓
-Acessa WorkOS Admin Portal
+Acessa WorkOS Admin Portal (embedado ou via link)
     ↓
 Configura IdP (Okta/Azure AD/Google)
     ↓
@@ -154,17 +151,17 @@ Testa conexão SSO
 
 ### O que JÁ EXISTE
 
-- ✅ **workos-links.ts** - URLs tenant-specific
-- ✅ **WorkOS Admin Portal embedado** - Modal funcional
-- ✅ **Documentação SSO** - Guia completo em português
-- ✅ **SCIM Webhooks** - 8 eventos processados
-- ✅ **Group-to-Role mapping** - Funcional
+- ✅ **WorkOS Admin Portal** — modal funcional com links tenant-specific
+- ✅ **Documentação SSO** — guia completo em português
+- ✅ **SCIM Webhooks** — 8 eventos processados
+- ✅ **Group-to-Role mapping** — funcional
+- ✅ **JIT provisioning** — se usuário faz SSO e não existe, cria automaticamente
 
 ### O que FALTA
 
 | Gap | Descrição |
 |-----|-----------|
-| 🟡 **Notificação quando SSO ativo** | Webhook do WorkOS ou polling |
+| 🟡 **Notificação quando SSO ativado** | Webhook do WorkOS ou polling para atualizar status |
 | 🟢 **Vídeo tutorial** | Gravação mostrando configuração |
 
 ---
@@ -174,40 +171,30 @@ Testa conexão SSO
 ### Fluxo Atual
 
 ```
-Time WeDo acessa /admin/clientes/[id]/usuarios
+Admin (via API ou futuro frontend)
     ↓
-Clica "Convidar Usuário" → Preenche nome/email/role
+POST /clients/{id}/users  →  ClientUser criado (status=pending)
+    ↓ [automático — implementado]
+send_invite_email()  →  Email enviado com link + token JWT (7 dias)
     ↓
-[PARCIAL] Usuário criado com status "pending"
+Usuário clica link → /aceitar-convite?token=... (PT)
+                  ou /accept-invitation?token=... (EN)
     ↓
-[NÃO IMPLEMENTADO] Email de convite enviado
+Define senha → status = active → pode fazer login
 ```
 
 ### O que JÁ EXISTE
 
-- ✅ **UI de convite** - Modal funcional
-- ✅ **Endpoint POST /clients/:id/users** - Backend existe
-- ✅ **ClientUser model** - status pending/active/inactive
-- ✅ **Email service** - Resend/SendGrid configurados
+- ✅ **`POST /clients/{id}/users`** — cria ClientUser + envia email automaticamente
+- ✅ **`email_service.send_invite_email()`** — chamado no create user
+- ✅ **`POST /{user_id}/resend-invite`** — reenvio funcional
+- ✅ **`/aceitar-convite`** — página PT com validação de token
+- ✅ **`/accept-invitation`** — página EN com setup de senha
+- ✅ **Expiração de token** — JWT de 7 dias validado no backend
 
-### O que FALTA
+### Status: ✅ COMPLETO
 
-| Gap | Descrição |
-|-----|-----------|
-| 🔴 **Enviar email de convite** | Conectar email_service ao convite |
-| 🟡 **Template de convite** | Email bonito com branding |
-| 🟡 **Link de aceite** | Página para aceitar convite |
-| 🟡 **Expiração de convite** | Links expiram em 7 dias |
-
-### Solução Proposta
-
-```python
-# Ao convidar usuário:
-1. Criar ClientUser com status="pending"
-2. Gerar token de convite (JWT 7 dias)
-3. Enviar email usando email_service
-4. Usuário clica link → aceita → status="active"
-```
+> **v3.0:** O documento anterior classificava toda esta fase como "NÃO IMPLEMENTADO". Na realidade, está completamente funcional — email de convite, link de aceite e ativação de conta funcionam.
 
 ---
 
@@ -216,269 +203,223 @@ Clica "Convidar Usuário" → Preenche nome/email/role
 ### Fluxo Atual
 
 ```
-Usuário acessa plataforma
+Usuário acessa plataforma → /login
     ↓
-Clica "Entrar com SSO"
+├── [SSO] Clica "Continuar com Microsoft"
+│       └── WorkOS AuthKit → IdP → Callback → JWT
+└── [Email/senha] Fluxo de 2 etapas (email, depois senha)
     ↓
-WorkOS AuthKit → IdP → Callback
+Backend sync-user → JWT → Animação WelcomeSteps (/login/welcome)
     ↓
-Backend sync-user → JWT → Onboarding 6 slides
+[Se setup incompleto] Redirect para /onboarding
 ```
 
 ### O que JÁ EXISTE
 
-- ✅ **Fluxo SSO completo** - Funcional
-- ✅ **sync-user endpoint** - Cria/atualiza usuário
-- ✅ **Onboarding visual** - 6 slides impactantes
-- ✅ **MFA via AuthKit** - Suportado
+- ✅ **Fluxo SSO Microsoft** — completo (único SSO disponível atualmente)
+- ✅ **Fluxo email/senha** — funcional com JWT, bcrypt
+- ✅ **sync-user endpoint** — cria/atualiza usuário
+- ✅ **Animação WelcomeSteps** — 6 slides em `/login/welcome`
+- ✅ **MFA via AuthKit** — suportado
+- ✅ **Redirect para onboarding** — detecta setup incompleto
 
 ### O que FALTA
 
 | Gap | Descrição |
 |-----|-----------|
-| 🟢 **Fallback email/senha** | Para clientes sem SSO |
-| 🟢 **Detecção de domínio** | Auto-redirect por email |
+| 🟢 **Google SSO** | Botão "Continuar com Google" não existe na tela de login |
+| 🟢 **Detecção de domínio** | Auto-redirect para SSO correto por email (Home Realm Discovery existe mas não é automático) |
 
 ---
 
-## FASE 6: SETUP INICIAL
+## FASE 6: SETUP INICIAL — ONBOARDING CONVERSACIONAL
 
 ### Fluxo Atual
 
 ```
-Cliente completa onboarding visual
+Usuário completa animação WelcomeSteps
     ↓
-Wizard de 3 passos:
-├── Configurar empresa (5 min)
-├── Criar primeira vaga (3 min)
-└── Ativar recrutamento (2 min)
+[Se setup incompleto] Redirect para /onboarding
     ↓
-Dashboard operacional
+Chat com LIA — OnboardingSettingsChat
+    ↓
+7 seções via POST /onboarding/{userId}/chat:
+├── profile      → configure_profile
+├── culture      → configure_culture
+├── tech_stack   → configure_tech_stack
+├── benefits     → configure_benefits
+├── workforce    → configure_workforce
+├── policy       → configure_hiring_policy
+└── lia_persona  → configure_persona
+    ↓
+Setup completo → Dashboard operacional
 ```
 
 ### O que JÁ EXISTE
 
-- ✅ **Setup wizard** - Completo
-- ✅ **Análise de cultura por IA** - Funcional
-- ✅ **Benefícios sugeridos** - Automático
-- ✅ **Criação de vaga assistida** - LIA ajuda
+- ✅ **`/onboarding`** — rota existe (criada 2026-05-24, Sprint 2 FE-3)
+- ✅ **Chat conversacional** — `OnboardingSettingsChat` com endpoint dedicado
+- ✅ **`POST /onboarding/{userId}/chat`** — backend com 7 seções mapeadas
+- ✅ **Análise de cultura por IA** — funcional
+- ✅ **Benefícios sugeridos** — automático via LIA
+
+### Mudança de Abordagem
+
+> **v3.0:** O documento anterior descrevia um "wizard de 3 passos" (configurar empresa, criar primeira vaga, ativar recrutamento). Na prática, o onboarding foi implementado como **chat conversacional com LIA** cobrindo 7 seções. A abordagem é mais rica e alinhada com o princípio "chat é a interface principal".
 
 ### Status: ✅ COMPLETO
 
 ---
 
-## PLANO DE IMPLEMENTAÇÃO
+## PLANO DE IMPLEMENTAÇÃO — Status Atual
 
-### Sprint 1: Integração HubSpot (1-2 semanas)
+### ~~Sprint 1: Integração HubSpot~~ — ⚠️ PARCIALMENTE FEITO
 
-#### 1.1 Webhook HubSpot → WeDo
+| Tarefa | Status |
+|--------|--------|
+| ~~Sync WeDo → HubSpot (manual)~~ | ✅ Feito — endpoints POST/GET/PUT existem |
+| Webhook HubSpot "deal closed" → auto-criar cliente | ❌ Ainda falta |
+| Sync automático bidirecional | ❌ Hoje é manual via POST endpoint |
 
-```
-Objetivo: Quando deal fechar no HubSpot, criar cliente automaticamente
+### ~~Sprint 2: Automação WorkOS~~ — ✅ CONCLUÍDO
 
-Tarefas:
-□ Criar endpoint POST /webhooks/hubspot
-□ Validar assinatura HMAC do HubSpot
-□ Mapear campos HubSpot → ClientAccount
-□ Criar cliente no banco
-□ Criar Organization no WorkOS
-□ Atualizar deal no HubSpot com link de acesso
+| Tarefa | Status |
+|--------|--------|
+| ~~Criar Organization automaticamente ao criar cliente~~ | ✅ `provision_workos_organization()` chamado no create |
+| ~~Salvar organization_id em CompanyWorkOSConfig~~ | ✅ Feito |
+| ~~Email de boas-vindas automático~~ | ✅ `send_welcome_email()` chamado no create |
 
-Arquivos:
-- lia-agent-system/app/api/v1/hubspot_webhooks.py (novo)
-- lia-agent-system/app/services/hubspot_service.py (novo)
-```
+### ~~Sprint 3: Sistema de Convites~~ — ✅ CONCLUÍDO
 
-#### 1.2 Sync WeDo → HubSpot
+| Tarefa | Status |
+|--------|--------|
+| ~~Enviar email de convite ao convidar usuário~~ | ✅ `send_invite_email()` chamado no create user |
+| ~~Template de convite~~ | ✅ Implementado via email_service |
+| ~~Página /aceitar-convite~~ | ✅ Existe (PT + EN) |
+| ~~Expiração de convite (7 dias)~~ | ✅ JWT com expiração validado |
+| ~~Reenviar convite~~ | ✅ Endpoint de resend funcional |
 
-```
-Objetivo: Atualizar HubSpot quando status do cliente mudar
+### Sprint 4: Frontend Gestão de Clientes — ❌ PENDENTE (Renomeado)
 
-Tarefas:
-□ Salvar hubspot_deal_id no ClientAccount
-□ Ao mudar status, chamar API HubSpot
-□ Atualizar propriedade "onboarding_status" no deal
-□ Registrar atividade de timeline
+> O sprint original chamava de "Dashboard de Onboarding". O que realmente falta é a **interface frontend para gestão comercial de clientes**.
 
-Eventos a sincronizar:
-- Cliente criado
-- SSO configurado
-- Primeiro login
-- Onboarding completo
-- Primeira vaga criada
-```
+| Tarefa | Status |
+|--------|--------|
+| Lista de clientes com filtros (status, plano, indústria) | ❌ Falta |
+| Formulário de criação de cliente | ❌ Falta |
+| Detalhe do cliente com abas (dados, setup, usuários, integrações) | ❌ Falta |
+| Setup tracker visual por cliente | ❌ Falta |
+| Gestão de usuários por cliente no frontend | ❌ Falta |
 
-### Sprint 2: Automação WorkOS (1 semana)
-
-#### 2.1 Criar Organization Automaticamente
-
-```
-Objetivo: Ao criar cliente, criar Organization no WorkOS
-
-Tarefas:
-□ Adicionar workos SDK ao backend
-□ No POST /clients, chamar workos.organizations.create()
-□ Salvar organization_id em CompanyWorkOSConfig
-□ Gerar Admin Portal link
-□ Retornar link no response
-
-Código:
-# lia-agent-system/app/services/workos_provisioning_service.py
-async def provision_workos_organization(client: ClientAccount):
-    org = workos.organizations.create(
-        name=client.name,
-        domains=[client.email_domain]
-    )
-    await save_workos_config(client.id, org.id)
-    return org
-```
-
-#### 2.2 Email de Boas-Vindas
-
-```
-Objetivo: Enviar email automático quando cliente é criado
-
-Tarefas:
-□ Criar template "welcome_client" no email_service
-□ Incluir: link Admin Portal, guia SSO PDF, contato suporte
-□ Chamar send_email no fluxo de criação
-□ Registrar envio no histórico
-
-Template:
-- Assunto: "Bem-vindo à WeDo Talent - Próximos Passos"
-- Corpo: Instruções para configurar SSO
-- Anexo: PDF guia de configuração
-```
-
-### Sprint 3: Sistema de Convites (1 semana)
-
-#### 3.1 Envio de Email de Convite
-
-```
-Objetivo: Quando convidar usuário, enviar email automaticamente
-
-Tarefas:
-□ Criar template "invite_user"
-□ Gerar token JWT (7 dias validade)
-□ Enviar email com link de aceite
-□ Criar página /aceitar-convite
-□ Ao aceitar, mudar status para "active"
-
-Fluxo:
-1. Admin convida usuário
-2. Backend cria ClientUser (status=pending)
-3. Backend envia email com token
-4. Usuário clica link
-5. Frontend valida token
-6. Backend atualiza status para active
-7. Usuário pode fazer login
-```
-
-#### 3.2 Gerenciamento de Convites
-
-```
-Objetivo: UI para ver e gerenciar convites pendentes
-
-Tarefas:
-□ Mostrar data de envio e expiração
-□ Botão "Reenviar convite"
-□ Botão "Cancelar convite"
-□ Badge de expirado após 7 dias
-```
-
-### Sprint 4: Dashboard de Onboarding (3-5 dias)
-
-#### 4.1 Status Consolidado
-
-```
-Objetivo: Mostrar progresso de onboarding de todos os clientes
-
-Tarefas:
-□ Criar /admin/onboarding-clientes
-□ Lista de clientes com status de cada etapa
-□ Filtrar por: pendentes, em progresso, completos
-□ Alertas para clientes parados há X dias
-
-Etapas rastreadas:
-1. ☑ Cliente criado
-2. ☐ Email de boas-vindas enviado
-3. ☐ SSO configurado
-4. ☐ Admin convidado
-5. ☐ Admin fez primeiro login
-6. ☐ Setup inicial completo
-7. ☐ Primeira vaga criada
-```
+> **Nota:** O backend para tudo isso está 100% funcional (`/v1/clients` CRUD + setup + users). Falta apenas o frontend.
 
 ---
 
 ## Variáveis de Ambiente Necessárias
 
 ```bash
-# HubSpot
+# HubSpot (para webhook automático — ainda não implementado)
 HUBSPOT_API_KEY=pat-xxx
 HUBSPOT_WEBHOOK_SECRET=xxx
 
-# WorkOS (já existem)
+# WorkOS (já configurado)
 WORKOS_API_KEY=sk_xxx
 WORKOS_CLIENT_ID=client_xxx
 
-# Email (já existem)
+# Email — Mailgun (primary) + Resend (fallback)
+# Nota: o documento anterior mencionava Resend/SendGrid — está desatualizado.
+# Provider atual: Mailgun primary, Resend como fallback
+MAILGUN_API_KEY=key-xxx
+MAILGUN_DOMAIN=xxx
 RESEND_API_KEY=re_xxx
-# ou
-SENDGRID_API_KEY=SG.xxx
 ```
 
 ---
 
-## Arquitetura de Integrações
+## Arquitetura de Integrações — Estado Atual
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      HubSpot CRM                            │
 │  (Comercial: Leads, Deals, Pipeline)                        │
 └─────────────────────┬───────────────────────────────────────┘
-                      │ Webhook: Deal Closed Won
+                      │ sync manual ✅ / webhook automático ❌
                       ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                   WeDo Talent Backend                        │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
-│  │ ClientAccount│  │CompanyWorkOS│  │ ClientUser │         │
-│  │   (Dados)   │  │  Config    │  │ (Usuários) │         │
-│  └─────────────┘  └─────────────┘  └─────────────┘         │
-└───────────┬─────────────────────────────────┬───────────────┘
-            │                                 │
-            ▼                                 ▼
-┌─────────────────────┐           ┌─────────────────────────┐
-│      WorkOS         │           │    Email Service        │
-│  - Organizations    │           │  - Resend/SendGrid      │
-│  - SSO/SCIM        │           │  - Templates            │
-│  - Admin Portal    │           │  - Boas-vindas/Convite  │
-└─────────────────────┘           └─────────────────────────┘
+│  ┌─────────────┐  ┌──────────────────┐  ┌───────────────┐  │
+│  │ ClientAccount│  │ CompanyWorkOS    │  │ ClientUser   │  │
+│  │  (Dados)    │  │  Config          │  │  (Convites)  │  │
+│  └──────┬──────┘  │  org_id ✅       │  │  email ✅    │  │
+│         │         └──────────────────┘  └──────┬───────┘  │
+│         │ auto ao criar:                         │ ao convidar:
+│         ▼                                        ▼          │
+│  ┌──────────────────────┐        ┌──────────────────────┐  │
+│  │ workos_provisioning  │        │   Email Service       │  │
+│  │  create_organization │        │   Mailgun (primary)   │  │
+│  │  save org_id ✅      │        │   Resend (fallback)   │  │
+│  └──────────────────────┘        │   send_welcome ✅     │  │
+│                                  │   send_invite ✅      │  │
+│                                  └──────────────────────┘  │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           │ proxy com auth headers
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Next.js Frontend (src/app/[locale]/)            │
+│                                                             │
+│  ✅ /login (email/senha + SSO Microsoft)                    │
+│  ✅ /register                                               │
+│  ✅ /verify-email                                           │
+│  ✅ /aceitar-convite  /accept-invitation                    │
+│  ✅ /login/welcome (animação WelcomeSteps)                  │
+│  ✅ /onboarding (chat conversacional LIA — 7 seções)        │
+│                                                             │
+│  (staff)/wedo-admin:                                        │
+│  ✅ fairness + bias-audit                                   │
+│  ✅ governança (audit-logs, ai-transparency, etc.)          │
+│  ❌ gestão comercial de clientes (lista, detalhe, criar)    │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Cronograma Sugerido
+## Métricas de Sucesso — Estado Atual
 
-| Sprint | Escopo | Duração | Prioridade |
-|--------|--------|---------|------------|
-| **1** | Integração HubSpot (webhook + sync) | 1-2 semanas | 🔴 Alta |
-| **2** | Automação WorkOS (org + email) | 1 semana | 🔴 Alta |
-| **3** | Sistema de Convites (email + aceite) | 1 semana | 🟡 Média |
-| **4** | Dashboard Onboarding | 3-5 dias | 🟢 Baixa |
-
-**Tempo total estimado: 4-5 semanas**
+| Métrica | Jan 2026 | Jun 2026 | Meta Final |
+|---------|----------|----------|------------|
+| Etapas manuais para criar cliente | 6+ | 2 (criar via API + HubSpot manual) | 1 (criar no HubSpot) |
+| WorkOS Organization automática | ❌ Manual | ✅ Automático | ✅ |
+| Email de boas-vindas automático | ❌ Manual | ✅ Automático | ✅ |
+| Email de convite automático | ❌ Manual | ✅ Automático | ✅ |
+| Onboarding guiado pós-login | ❌ Não existia | ✅ Chat conversacional | ✅ |
+| Frontend gestão de clientes | ❌ | ❌ | 🎯 Próximo sprint |
+| Webhook HubSpot deal closed | ❌ | ❌ | 🎯 Desejável |
 
 ---
 
-## Métricas de Sucesso
+## Arquivos de Referência
 
-| Métrica | Antes | Depois |
-|---------|-------|--------|
-| Tempo para criar cliente | 30-60 min | 5 min |
-| Etapas manuais | 6+ | 1 (criar no HubSpot) |
-| Taxa de erro | Alta | Próxima de zero |
-| Visibilidade de status | Nenhuma | Dashboard completo |
+### Backend
+- `lia-agent-system/app/api/v1/clients/clients_crud.py` — CRUD + provisioning + welcome email no create
+- `lia-agent-system/app/api/v1/clients/clients_setup.py` — Progress de setup (5 seções)
+- `lia-agent-system/app/api/v1/clients/clients_hubspot.py` — Sync manual HubSpot
+- `lia-agent-system/app/api/v1/client_users.py` — Convites + send_invite_email
+- `lia-agent-system/app/api/v1/onboarding.py` — Chat onboarding (7 seções)
+- `lia-agent-system/app/domains/company/services/workos_provisioning_service.py` — Auto-provisioning WorkOS
+- `lia-agent-system/app/domains/communication/services/email_service.py` — Email service (Mailgun + Resend)
+- `lia-agent-system/app/shared/services/hubspot_service.py` — HubSpot service
+
+### Frontend
+- `plataforma-lia/src/app/[locale]/login/LoginClient.tsx` — Login
+- `plataforma-lia/src/app/[locale]/login/welcome/` — Animação pós-login
+- `plataforma-lia/src/app/[locale]/onboarding/page.tsx` — Chat onboarding
+- `plataforma-lia/src/app/[locale]/aceitar-convite/AceitarConviteClient.tsx`
+- `plataforma-lia/src/app/[locale]/accept-invitation/AcceptInvitationClient.tsx`
+- `plataforma-lia/src/app/[locale]/verify-email/VerifyEmailClient.tsx`
+- `plataforma-lia/src/app/[locale]/(staff)/wedo-admin/` — Portal admin (fairness + governança)
+- `plataforma-lia/src/app/[locale]/(staff)/StaffLayoutClient.tsx` — Layout staff
 
 ---
 
@@ -488,4 +429,4 @@ SENDGRID_API_KEY=SG.xxx
 |--------|------|----------|
 | 1.0 | Jan 2026 | Análise inicial |
 | 2.0 | Jan 2026 | Correção: identificado sistema existente, plano atualizado com HubSpot |
-
+| 3.0 | Jun 2026 | Revisão completa com base no código atual: WorkOS auto-provisioning ✅, emails automáticos ✅, convites ✅, onboarding conversacional ✅. Corrigido equívoco: frontend de gestão de clientes nunca foi construído. |
