@@ -1580,14 +1580,23 @@ class DEIInsightsResponse(BaseModel):
     period: str
     total_hired_sample: int = 0
     min_sample_gate: int = 10
+    # Professional attributes
     seniority_distribution: list[DiversityDistributionItem] = []
     location_distribution: list[DiversityDistributionItem] = []
     experience_distribution: list[DiversityDistributionItem] = []
-    # LGPD compliance notice — always surfaced to client
+    # D&I sensitive attributes — LGPD Art. 11 §1 (prevenção de discriminação)
+    # Self-declared by candidate (null = not provided = not included)
+    gender_distribution: list[DiversityDistributionItem] = []
+    race_ethnicity_distribution: list[DiversityDistributionItem] = []
+    disability_distribution: list[DiversityDistributionItem] = []
+    disability_type_distribution: list[DiversityDistributionItem] = []
+    # LGPD + fairness guardrail — always surfaced to client
     lgpd_note: str = (
-        "Somente atributos profissionais (senioridade, localidade, experiência). "
-        "Gênero, raça, deficiência e estado civil excluídos per LGPD Art. 11. "
-        "Células com N<10 suprimidas per LGPD Art. 12 §1 + ANPD Guia Anonimização §3."
+        "Dados auto-declarados pelos candidatos. Processados com base em LGPD Art. 11 §1 "
+        "(prevenção de discriminação e promoção de diversidade). "
+        "Células com N<10 suprimidas per LGPD Art. 12 §1 + ANPD Guia Anonimização §3. "
+        "marital_status e religion excluídos (sem propósito D&I legítimo). "
+        "USO EXCLUSIVO para monitoramento de equidade — NUNCA utilizados em decisões automatizadas de IA."
     )
 
 class DashboardKPIResponse(BaseModel):
@@ -1846,6 +1855,31 @@ async def get_dei_insights(
             for i in raw["location"]
         ]
 
+        GENDER_LABELS: dict[str, str] = {
+            "masculino": "Masculino", "feminino": "Feminino",
+            "nao_binario": "Não-binário", "nao-binario": "Não-binário",
+            "prefiro_nao_informar": "Prefiro não informar",
+            "outro": "Outro",
+        }
+        RACE_LABELS: dict[str, str] = {
+            "branco": "Branco", "pardo": "Pardo", "preto": "Preto",
+            "amarelo": "Amarelo", "indigena": "Indígena",
+            "prefiro_nao_informar": "Prefiro não informar",
+        }
+        DISABILITY_LABELS = {"sim": "Com deficiência", "nao": "Sem deficiência"}
+
+        def label_dist(items: list[dict], labels: dict[str, str]) -> list[DiversityDistributionItem]:
+            tot = sum(i["count"] for i in items) or 1
+            return [
+                DiversityDistributionItem(
+                    key=i["key"],
+                    label=labels.get(i["key"].lower(), i["key"].title()),
+                    count=i["count"],
+                    pct=round(i["count"] / tot * 100, 1),
+                )
+                for i in items
+            ]
+
         return DEIInsightsResponse(
             period=period,
             total_hired_sample=total,
@@ -1853,6 +1887,10 @@ async def get_dei_insights(
             seniority_distribution=build_dist(raw["seniority"]),
             location_distribution=location,
             experience_distribution=experience,
+            gender_distribution=label_dist(raw["gender"], GENDER_LABELS),
+            race_ethnicity_distribution=label_dist(raw["race_ethnicity"], RACE_LABELS),
+            disability_distribution=label_dist(raw["disability"], DISABILITY_LABELS),
+            disability_type_distribution=build_dist(raw["disability_type"]),
         )
 
     except HTTPException:

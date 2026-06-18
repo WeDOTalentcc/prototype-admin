@@ -45,6 +45,10 @@ interface DEIInsights {
   seniority_distribution: DiversityDistributionItem[]
   location_distribution: DiversityDistributionItem[]
   experience_distribution: DiversityDistributionItem[]
+  gender_distribution: DiversityDistributionItem[]
+  race_ethnicity_distribution: DiversityDistributionItem[]
+  disability_distribution: DiversityDistributionItem[]
+  disability_type_distribution: DiversityDistributionItem[]
   lgpd_note: string
 }
 
@@ -341,83 +345,91 @@ function DistTable({
         {items.map((item) => (
           <div key={item.key} className="flex items-center gap-2">
             <span className="text-xs text-gray-700 w-24 shrink-0 truncate">{item.label}</span>
-            <MiniBar pct={item.pct} color={color} />
-            <span className="text-[10px] text-gray-500 tabular-nums w-8 text-right shrink-0">{item.pct}%</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function DiversityPanel({ isEnterprise }: { isEnterprise: boolean }) {
   const { data, isLoading } = useQuery<DEIInsights>({
     queryKey: ["dei-insights"],
-    queryFn: async () => {
-      const resp = await fetch("/api/backend-proxy/job-vacancies/analytics/dei?period=90d")
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-      return resp.json()
-    },
-    staleTime: 120_000,
+    queryFn: () => fetch("/api/backend-proxy/job-vacancies/analytics/dei").then((r) => r.json()),
+    staleTime: 5 * 60_000,
     enabled: isEnterprise,
   })
 
-  const insufficient =
-    !isLoading && data && data.total_hired_sample < data.min_sample_gate
+  const sample = data?.total_hired_sample ?? 0
+  const gate = data?.min_sample_gate ?? 10
 
-  const content = (
-    <div className="bg-white rounded-md shadow-sm border border-gray-200 p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-base font-semibold text-gray-900">Diversidade de Talentos</h2>
-          <p className="text-xs text-gray-400">Candidatos contratados · últimos 90 dias</p>
+  function DistSection({ title, items, tag }: { title: string; items?: DiversityDistributionItem[]; tag?: string }) {
+    if (!items?.length) return null
+    return (
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{title}</p>
+          {tag && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan font-medium">{tag}</span>
+          )}
         </div>
-        <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded font-medium">Enterprise</span>
+        <DistTable items={items} />
       </div>
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />)}
-        </div>
-      ) : insufficient ? (
-        <div className="text-center py-8">
-          <p className="text-sm text-gray-500">Amostra insuficiente</p>
-          <p className="text-xs text-gray-400 mt-1">
-            Necessário N≥{data?.min_sample_gate ?? 10} contratações no período
-          </p>
-        </div>
-      ) : data ? (
-        <div className="space-y-5">
-          <DistTable title="Senioridade" items={data.seniority_distribution} color="bg-violet-400" />
-          <DistTable title="Estado" items={data.location_distribution} color="bg-blue-400" />
-          <DistTable title="Experiência" items={data.experience_distribution} color="bg-emerald-400" />
-          <p className="text-[9px] text-gray-400 border-t border-gray-100 pt-2 leading-relaxed">
-            {data.lgpd_note}
-          </p>
-        </div>
-      ) : (
-        <p className="text-sm text-gray-400 text-center py-6">Sem dados disponíveis.</p>
-      )}
-    </div>
-  )
+    )
+  }
 
-  return isEnterprise ? content : <PremiumLock>{content}</PremiumLock>
+  return (
+    <PremiumLock locked={!isEnterprise} label="D&I Analytics">
+      <div className="rounded-xl border bg-card p-5 space-y-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="font-semibold text-sm text-foreground">Diversidade &amp; Inclusão</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Candidatos contratados · auto-declarado · LGPD Art. 11 §1</p>
+          </div>
+          {sample > 0 && (
+            <span className="text-xs text-muted-foreground whitespace-nowrap">n = {sample.toLocaleString("pt-BR")}</span>
+          )}
+        </div>
+
+        <div className="flex items-start gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3">
+          <span className="text-amber-500 mt-0.5 shrink-0">⚠</span>
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            Dados de identidade (gênero, raça, deficiência) são{" "}
+            <strong>exclusivamente para monitoramento humano de equidade</strong> e{" "}
+            <strong>nunca utilizados em decisões automatizadas de IA</strong>.
+          </p>
+        </div>
+
+        {isLoading && (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-3 rounded bg-muted animate-pulse" style={{ width: `${55 + i * 7}%` }} />
+            ))}
+          </div>
+        )}
+
+        {!isLoading && sample < gate && (
+          <p className="text-xs text-muted-foreground text-center py-4">
+            Amostra insuficiente (N&lt;{gate}). Dados aparecem conforme contratações aumentam.
+          </p>
+        )}
+
+        {!isLoading && sample >= gate && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-5">
+              <DistSection title="Gênero" items={data?.gender_distribution} tag="auto-declarado" />
+              <DistSection title="Raça / Etnia" items={data?.race_ethnicity_distribution} tag="auto-declarado" />
+              <DistSection title="Deficiência" items={data?.disability_distribution} tag="auto-declarado" />
+              {!!data?.disability_type_distribution?.length && (
+                <DistSection title="Tipo de deficiência" items={data.disability_type_distribution} />
+              )}
+            </div>
+            <div className="space-y-5">
+              <DistSection title="Senioridade" items={data?.seniority_distribution} />
+              <DistSection title="Estado" items={data?.location_distribution} />
+              <DistSection title="Anos de experiência" items={data?.experience_distribution} />
+            </div>
+          </div>
+        )}
+      </div>
+    </PremiumLock>
+  )
 }
 
-// PremiumLock — overlay wrapper for Enterprise-gated sections
-// ---------------------------------------------------------------------------
-
-function PremiumLock({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative">
-      <div className="blur-sm pointer-events-none select-none" aria-hidden="true">
-        {children}
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center bg-white/95 px-6 py-4 rounded-xl shadow-md border border-gray-200">
-          <Lock className="w-5 h-5 text-violet-400 mx-auto mb-1.5" />
-          <p className="text-sm font-semibold text-gray-900">Plano Enterprise</p>
-          <p className="text-xs text-gray-500 mt-0.5 mb-3">Disponível com upgrade</p>
-          <button className="text-xs bg-violet-600 text-white px-3 py-1.5 rounded-md hover:bg-violet-700 transition-colors">
+g-violet-700 transition-colors">
             Upgrade →
           </button>
         </div>

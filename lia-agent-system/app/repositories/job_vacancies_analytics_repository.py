@@ -509,25 +509,25 @@ class JobVacanciesAnalyticsRepository:
     async def get_diversity_distribution_for_company(
         self, company_id: str, period_days: int = 90
     ) -> dict:
-        """Aggregate hired-candidate distributions for DEI analytics.
+        """Aggregate hired-candidate distributions for DEI dashboard.
 
         LGPD compliance:
-        - Art. 11: Only professional attributes (seniority, location, experience).
-          gender / diversity_race_ethnicity / diversity_disability / marital_status
-          are NEVER queried here.
-        - Art. 12 §1 + ANPD Guia Anonimização §3: N>=10 gate per cell suppresses
-          cells with insufficient samples (same pattern as BigFive ADR-LGPD-001).
-        - Multi-tenancy: VacancyCandidate.company_id == company_id (never trusted
-          from payload — enforced by Depends(require_company_id) upstream).
+        - Art. 11 §1: Sensitive data (gender, race, disability) processed for
+          "prevenção de discriminação" — legitimate DEI monitoring purpose.
+        - Data is self-declared (nullable = candidate did not provide).
+        - Art. 12 §1 + ANPD Guia Anonimização §3: N>=10 gate per cell.
+        - marital_status and religion are NOT included — no legitimate D&I purpose.
+        - These aggregates MUST NOT be used in AI scoring/ranking.
+          They are for human equity monitoring ONLY.
+        - Multi-tenancy: VacancyCandidate.company_id == company_id (never payload).
         """
-        MIN_CELL = 10  # ADR-LGPD-001 anonymisation gate
-
+        MIN_CELL = 10
         cutoff = datetime.utcnow() - timedelta(days=period_days)
         hired_stages = ["hired", "contratado"]
 
         try:
-            # Base subquery: hired VacancyCandidate rows in period for this company
-            base_q = (
+            # Hired candidate_ids for this company in period
+            hired_ids_q = (
                 select(VacancyCandidate.candidate_id)
                 .where(
                     and_(
@@ -539,112 +539,92 @@ class JobVacanciesAnalyticsRepository:
                 .scalar_subquery()
             )
 
-            # Total sample (for pct calculation)
-            total_result = await self.db.execute(
+            # Total sample
+            total_r = await self.db.execute(
                 select(func.count()).select_from(
-                    select(VacancyCandidate.candidate_id)
-                    .where(
+                    select(VacancyCandidate.candidate_id).where(
                         and_(
                             VacancyCandidate.company_id == company_id,
                             VacancyCandidate.stage.in_(hired_stages),
                             VacancyCandidate.updated_at >= cutoff,
                         )
-                    )
-                    .subquery()
+                    ).subquery()
                 )
             )
-            total = int(total_result.scalar() or 0)
+            total = int(total_r.scalar() or 0)
 
             if total < MIN_CELL:
-                return {"total": total, "min_cell": MIN_CELL, "seniority": [], "location": [], "experience": []}
+                return {
+                    "total": total, "min_cell": MIN_CELL,
+                    "seniority": [], "location": [], "experience": [],
+                    "gender": [], "race_ethnicity": [],
+                    "disability": [], "disability_type": [],
+                }
 
-            # Seniority distribution
-            sen_result = await self.db.execute(
+            async def _group_by(col):
+                r = await self.db.execute(
+                    select(col, func.count(Candidate.id).label("cnt"))
+                    .where(and_(Candidate.id.in_(hired_ids_q), col.is_not(None), col != ""))
+                    .group_by(col)
+                    .order_by(func.count(Candidate.id).desc())
+                )
+                return [
+                    {"key": str(row[0]), "count": int(row.cnt)}
+                    for row in r.all() if int(row.cnt) >= MIN_CELL
+                ]
+
+            seniority = await _group_by(Candidate.seniority_level)
+            location  = (await _group_by(Candidate.location_state))[:8]
+            gender    = await _group_by(Candidate.gender)
+
+            # Race/ethnicity — LGPD Art. 11 §1 (prevenção de discriminação)
+            race = await _group_by(Candidate.diversity_race_ethnicity)
+
+            # Disability: boolean first (Sim/Não), then type breakdown
+            dis_r = await self.db.execute(
                 select(
-                    Candidate.seniority_level,
+                    Candidate.diversity_disability,
                     func.count(Candidate.id).label("cnt"),
                 )
                 .where(
                     and_(
-                        Candidate.id.in_(base_q),
-                        Candidate.seniority_level.is_not(None),
-                        Candidate.seniority_level != "",
+                        Candidate.id.in_(hired_ids_q),
+                        Candidate.diversity_disability.is_not(None),
                     )
                 )
-                .group_by(Candidate.seniority_level)
-                .order_by(func.count(Candidate.id).desc())
+                .group_by(Candidate.diversity_disability)
             )
-            seniority = [
-                {"key": r.seniority_level, "count": int(r.cnt)}
-                for r in sen_result.all()
-                if int(r.cnt) >= MIN_CELL  # suppress cells < 10
+            disability = [
+                {"key": "sim" if row.diversity_disability else "nao", "count": int(row.cnt)}
+                for row in dis_r.all() if int(row.cnt) >= MIN_CELL
             ]
 
-            # Location (state) distribution — top 8
-            loc_result = await self.db.execute(
-                select(
-                    Candidate.location_state,
-                    func.count(Candidate.id).label("cnt"),
-                )
-                .where(
-                    and_(
-                        Candidate.id.in_(base_q),
-                        Candidate.location_state.is_not(None),
-                        Candidate.location_state != "",
-                    )
-                )
-                .group_by(Candidate.location_state)
-                .order_by(func.count(Candidate.id).desc())
-                .limit(8)
-            )
-            location = [
-                {"key": r.location_state, "count": int(r.cnt)}
-                for r in loc_result.all()
-                if int(r.cnt) >= MIN_CELL
-            ]
+            dis_type = await _group_by(Candidate.diversity_disability_type)
 
-            # Experience range buckets
-            exp_result = await self.db.execute(
-                select(
-                    Candidate.years_of_experience,
-                    func.count(Candidate.id).label("cnt"),
-                )
-                .where(
-                    and_(
-                        Candidate.id.in_(base_q),
-                        Candidate.years_of_experience.is_not(None),
-                    )
-                )
+            # Experience buckets
+            exp_r = await self.db.execute(
+                select(Candidate.years_of_experience, func.count(Candidate.id).label("cnt"))
+                .where(and_(Candidate.id.in_(hired_ids_q), Candidate.years_of_experience.is_not(None)))
                 .group_by(Candidate.years_of_experience)
             )
-            raw_exp: dict[int, int] = {}
-            for r in exp_result.all():
-                raw_exp[int(r.years_of_experience or 0)] = int(r.cnt)
-
-            # Bucket into ranges
             buckets: dict[str, int] = {"0-2": 0, "3-5": 0, "6-10": 0, "11+": 0}
-            for yrs, cnt in raw_exp.items():
-                if yrs <= 2:
-                    buckets["0-2"] += cnt
-                elif yrs <= 5:
-                    buckets["3-5"] += cnt
-                elif yrs <= 10:
-                    buckets["6-10"] += cnt
-                else:
-                    buckets["11+"] += cnt
-            experience = [
-                {"key": k, "count": v}
-                for k, v in buckets.items()
-                if v >= MIN_CELL
-            ]
+            for row in exp_r.all():
+                yrs = int(row.years_of_experience or 0)
+                k = "0-2" if yrs <= 2 else "3-5" if yrs <= 5 else "6-10" if yrs <= 10 else "11+"
+                buckets[k] += int(row.cnt)
+            experience = [{"key": k, "count": v} for k, v in buckets.items() if v >= MIN_CELL]
 
             return {
-                "total": total,
-                "min_cell": MIN_CELL,
-                "seniority": seniority,
-                "location": location,
-                "experience": experience,
+                "total": total, "min_cell": MIN_CELL,
+                "seniority": seniority, "location": location, "experience": experience,
+                "gender": gender, "race_ethnicity": race,
+                "disability": disability, "disability_type": dis_type,
             }
 
         except Exception:
-            return {"total": 0, "min_cell": MIN_CELL, "seniority": [], "location": [], "experience": []}
+            return {
+                "total": 0, "min_cell": MIN_CELL,
+                "seniority": [], "location": [], "experience": [],
+                "gender": [], "race_ethnicity": [],
+                "disability": [], "disability_type": [],
+            }
