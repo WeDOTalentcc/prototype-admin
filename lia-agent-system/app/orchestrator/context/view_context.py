@@ -98,9 +98,19 @@ def format_view_context(view_context: dict[str, Any] | None) -> str:
     if isinstance(entity_focus, dict) and entity_focus.get("id"):
         _etype = entity_focus.get("type", "candidate")
         _label = entity_focus.get("label") or entity_focus.get("id", "")
-        _label_pt = "Candidato em foco" if _etype == "candidate" else "Vaga em foco"
         _id_str = entity_focus["id"]
-        lines.append(f"- {_label_pt}: {_label} (ID: {_id_str})")
+        _focus_mode = entity_focus.get("mode", "active")  # [Fix P1 focus-mode]
+        if _etype == "candidate":
+            lines.append(f"- Candidato em foco: {_label} (ID: {_id_str})")
+        elif _focus_mode == "background":
+            # Vaga disponível como contexto — usuário não está navegando nela agora
+            lines.append(
+                f"- Vaga disponível como contexto (usuário não está navegando nela agora): "
+                f"{_label} (ID: {_id_str})"
+            )
+        else:
+            # active ou qualquer outro valor — comportamento original
+            lines.append(f"- Vaga em foco: {_label} (ID: {_id_str})")
 
     # GAP-02-001: pagination awareness — agent knows which page recruiter is on
     pagination = view_context.get("pagination_state")

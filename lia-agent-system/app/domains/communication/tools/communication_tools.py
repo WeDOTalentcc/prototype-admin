@@ -15,6 +15,9 @@ from app.tools.registry import ToolDefinition, tool_registry
 
 logger = logging.getLogger(__name__)
 
+# P1-3 (2026-06-18): defense-in-depth company_id filter
+from app.middleware.auth_enforcement import _current_company_id as _cid_ctx
+
 
 async def send_email(
     candidate_id: str,
@@ -55,14 +58,14 @@ async def send_email(
             try:
                 from app.models.candidate import Candidate
                 
-                # TENANT-EXEMPT: tool handler is invoked via tool_registry.execute()
-                # which validates tenant context server-side. Postgres RLS (Task #1143)
-                # enforces tenant boundary at DB level via app_current_company_id().
-                # TODO(harness): refactor to accept company_id via **kwargs and pass
-                # to Candidate.company_id filter (defense-in-depth).
+                # P1-3 (2026-06-18): defense-in-depth — filter by company_id from
+                # ContextVar if available (RLS remains primary boundary per TENANT-EXEMPT).
+                _cid = _cid_ctx.get(None)
+                _cand_filter = [Candidate.id == UUID(candidate_id)]
+                if _cid:
+                    _cand_filter.append(Candidate.company_id == _cid)
                 result = await db.execute(
-                # TENANT-EXEMPT: see above — RLS + tool_registry tenant context.
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
+                    select(Candidate).where(*_cand_filter)
                 )
                 candidate = result.scalar_one_or_none()
                 
@@ -157,14 +160,14 @@ async def send_whatsapp(
             try:
                 from app.models.candidate import Candidate
                 
-                # TENANT-EXEMPT: tool handler is invoked via tool_registry.execute()
-                # which validates tenant context server-side. Postgres RLS (Task #1143)
-                # enforces tenant boundary at DB level via app_current_company_id().
-                # TODO(harness): refactor to accept company_id via **kwargs and pass
-                # to Candidate.company_id filter (defense-in-depth).
+                # P1-3 (2026-06-18): defense-in-depth — filter by company_id from
+                # ContextVar if available (RLS remains primary boundary per TENANT-EXEMPT).
+                _cid = _cid_ctx.get(None)
+                _cand_filter = [Candidate.id == UUID(candidate_id)]
+                if _cid:
+                    _cand_filter.append(Candidate.company_id == _cid)
                 result = await db.execute(
-                # TENANT-EXEMPT: see above — RLS + tool_registry tenant context.
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
+                    select(Candidate).where(*_cand_filter)
                 )
                 candidate = result.scalar_one_or_none()
                 
@@ -286,11 +289,13 @@ async def schedule_interview(
                 from app.models.candidate import Candidate
                 from app.models.job_vacancy import JobVacancy
                 
-                # TENANT-EXEMPT: tool handler invoked via tool_registry.execute();
-                # tenant boundary enforced by Postgres RLS (Task #1143).
-                # TODO(harness): pass company_id from tool_handler kwargs.
+                # P1-3 (2026-06-18): defense-in-depth — filter by company_id from ContextVar.
+                _cid = _cid_ctx.get(None)
+                _cand_filter = [Candidate.id == UUID(candidate_id)]
+                if _cid:
+                    _cand_filter.append(Candidate.company_id == _cid)
                 cand_result = await db.execute(
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
+                    select(Candidate).where(*_cand_filter)
                 )
                 candidate = cand_result.scalar_one_or_none()
 
@@ -477,14 +482,14 @@ async def send_feedback(
             try:
                 from app.models.candidate import Candidate
                 
-                # TENANT-EXEMPT: tool handler is invoked via tool_registry.execute()
-                # which validates tenant context server-side. Postgres RLS (Task #1143)
-                # enforces tenant boundary at DB level via app_current_company_id().
-                # TODO(harness): refactor to accept company_id via **kwargs and pass
-                # to Candidate.company_id filter (defense-in-depth).
+                # P1-3 (2026-06-18): defense-in-depth — filter by company_id from
+                # ContextVar if available (RLS remains primary boundary per TENANT-EXEMPT).
+                _cid = _cid_ctx.get(None)
+                _cand_filter = [Candidate.id == UUID(candidate_id)]
+                if _cid:
+                    _cand_filter.append(Candidate.company_id == _cid)
                 result = await db.execute(
-                # TENANT-EXEMPT: see above — RLS + tool_registry tenant context.
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
+                    select(Candidate).where(*_cand_filter)
                 )
                 candidate = result.scalar_one_or_none()
                 

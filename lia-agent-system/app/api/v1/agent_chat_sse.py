@@ -149,6 +149,7 @@ class SSEChatRequest(WeDoBaseModel):
     # active job and sends its ID here so LIA can prioritize that job.
     # Multi-tenancy enforced via get_vacancy_by_id_and_company (company_id from JWT).
     focused_job_id: str | None = None
+    focused_job_mode: str | None = None  # "active"|"background" [Fix P1 focus-mode]
 
     class Config:
         from_attributes = True
@@ -584,6 +585,12 @@ company_id: str = Depends(require_company_id)):
                         _fj_id, company_id, _fj_db
                     )
                     if _fj_snippet:
+                        # [Fix P1 focus-mode] modo background: sem auto-briefing
+                        if req.focused_job_mode == "background":
+                            _fj_snippet += (
+                                "\n(Nota: usuario NAO esta na pagina desta vaga agora"
+                                " - disponivel como referencia. Nao auto-briefing.)"
+                            )
                         context["focused_job_snippet"] = _fj_snippet
                         logger.info(
                             "[SSEChat] focused_job injected id=%s", _fj_id

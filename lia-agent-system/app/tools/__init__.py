@@ -187,6 +187,12 @@ def initialize_tools() -> None:
     register_communication_global()
     register_sourcing_global()
 
+    # P1-2 (2026-06-18): talent pool CRUD globalmente acessível via chat
+    from app.domains.talent_pool.agents.talent_pool_tool_registry import (
+        register_talent_pool_global,
+    )
+    register_talent_pool_global()
+
     _INITIALIZED = True
 
 

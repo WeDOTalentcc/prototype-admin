@@ -22,4 +22,11 @@ _CONTEXT_TOOL_NAMES: list[str] = [
 
 def get_pipeline_context_tools() -> list[ToolDefinition]:
     """Return the 7 read-only context tools for PipelineContextAgent."""
-    return [_TOOL_MAP[name] for name in _CONTEXT_TOOL_NAMES if name in _TOOL_MAP]
+    # P1-1 sentinel (2026-06-18): fail-fast if spec names missing from parent map
+        missing = [n for n in _CONTEXT_TOOL_NAMES if n not in _TOOL_MAP]
+    if missing:
+        raise RuntimeError(
+            f"[P1-1] {__name__}: tools {missing} absent from parent _TOOL_MAP. "
+            "Implement in parent registry or remove from spec."
+        )
+    return [_TOOL_MAP[name] for name in _CONTEXT_TOOL_NAMES]
