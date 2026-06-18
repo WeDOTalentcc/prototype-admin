@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 export interface CreditConfirmationDialogProps {
   open: boolean
@@ -30,6 +31,7 @@ const searchTypeTexts: Record<string, string> = {
 }
 
 export function CreditConfirmationDialog({
+  useLiaModalTracking('credit-confirmation-dialog', open)
   open,
   onOpenChange,
   onConfirm,

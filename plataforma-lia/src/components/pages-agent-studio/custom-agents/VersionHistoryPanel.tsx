@@ -23,6 +23,7 @@ export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: Ver
 
   // Sprint B QW#4 audit 2026-05-22: state-driven confirm via shadcn AlertDialog
   const [revertTargetVersion, setRevertTargetVersion] = useState<number | null>(null)
+  useLiaModalTracking('version-history-revert-confirm', revertTargetVersion !== null)
 
   const handleRevert = (version: number) => {
     setRevertTargetVersion(version)

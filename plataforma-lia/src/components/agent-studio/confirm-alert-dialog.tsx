@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { cn } from "@/lib/utils"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 /**
  * Canonical confirm dialog helper for Agent Studio.
@@ -46,6 +47,7 @@ export interface ConfirmAlertDialogProps {
 }
 
 export function ConfirmAlertDialog({
+  useLiaModalTracking('confirm-alert-dialog', open)
   open,
   onOpenChange,
   title,

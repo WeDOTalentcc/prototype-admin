@@ -66,6 +66,20 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
     onSetReactivateScreeningJobs,
     onSetReactivateEndDate,
   } = props
+  useLiaModalTracking('jobs-report', showReport)
+  useLiaModalTracking('jobs-compare', showCompareModal)
+  useLiaModalTracking('jobs-publish', showPublishModal)
+  useLiaModalTracking('jobs-unpublish', showUnpublishModal)
+  useLiaModalTracking('jobs-insights', showInsightsModal)
+  useLiaModalTracking('jobs-duplicate', showDuplicateModal)
+  useLiaModalTracking('jobs-status', showStatusModal)
+  useLiaModalTracking('jobs-assign-recruiter', showAssignRecruiterModal)
+  useLiaModalTracking('jobs-create', showCreateJobModal)
+  useLiaModalTracking('jobs-screening-channels', showScreeningChannelsModal)
+  useLiaModalTracking('jobs-screening-settings', showScreeningSettingsModal)
+  useLiaModalTracking('jobs-screening-scheduling', showScreeningSchedulingModal)
+  useLiaModalTracking('jobs-reactivate-screening', showReactivateScreeningDialog)
+  useLiaModalTracking('jobs-wsi-tutorial', showWSITutorialModal)
 
   const {
     handlePublish, handlePublishUnpublish, handlePublishCommunication,

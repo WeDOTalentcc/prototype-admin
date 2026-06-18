@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { buttonVariants } from "@/components/ui/button"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 interface Props {
   mode: ChatMode
@@ -63,6 +64,7 @@ interface Props {
 }
 
 export function UnifiedChatHeader({
+  useLiaModalTracking('unified-chat-delete-dialog', showDeleteDialog)
   mode,
   onModeChange,
   onClose,

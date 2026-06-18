@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 interface Archetype {
   id: string
   name: string
@@ -27,6 +28,7 @@ interface DeleteArchetypeModalProps {
 
 export function DeleteArchetypeModal({ archetypeToDelete, onClose, onDeleted }: DeleteArchetypeModalProps) {
   const t = useTranslations('candidates.modals')
+  useLiaModalTracking('delete-archetype', !!archetypeToDelete)
   const [isDeletingArchetype, setIsDeletingArchetype] = useState(false)
 const handleDelete = async () => {
     if (!archetypeToDelete) return

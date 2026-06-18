@@ -21,6 +21,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from"@/components/ui/alert-dialog"
 import { JobProcessStageCard } from"./JobProcessStageCard"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 export interface Stage {
   name?: string
@@ -62,6 +63,7 @@ interface JobProcessSectionProps {
 }
 
 export function JobProcessSection({
+  useLiaModalTracking('job-process-apply-template', pendingTemplateId !== null)
   stages,
   rawStages,
   loadingCompanyPipeline,

@@ -171,8 +171,10 @@ export const SEARCH_SUGGESTIONS = [
 
 import { useSmartSearchCore } from './hooks/useSmartSearchCore'
 import { SSIModeContent } from './SSIModeContent'
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 export function SmartSearchInput(props: SmartSearchInputProps) {
+  useLiaModalTracking('source-change-modal', showSourceChangeModal)
   const core = useSmartSearchCore(props)
   const {
     activeFiltersCount, canSubmit, className, confirmSourceChange, containerRef,

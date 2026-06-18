@@ -27,6 +27,7 @@ import {
 } from"lucide-react"
 import type { Benefit } from"@/hooks/company/useCompanyBenefits"
 import { BenefitDetailsSheet } from"./BenefitDetailsSheet"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 export const BENEFIT_CATEGORIES: {
   id: string
@@ -83,6 +84,7 @@ function getWaitingPeriodLabel(days: number): string {
 }
 
 export function BenefitBadgeList({
+  useLiaModalTracking('benefit-details-sheet', showSheet)
   benefits,
   maxVisible = 5,
   showCategory = true,

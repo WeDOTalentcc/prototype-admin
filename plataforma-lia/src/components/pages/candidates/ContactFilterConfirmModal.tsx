@@ -12,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 interface ContactFilterConfirmModalProps {
   open: boolean
@@ -29,6 +30,7 @@ export function ContactFilterConfirmModal({
   onConfirm,
 }: ContactFilterConfirmModalProps) {
   const t = useTranslations('candidates.modals')
+  useLiaModalTracking('contact-filter-confirm', open)
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent data-testid="contact-filter-modal" className="max-w-md border border-lia-border-subtle dark:border-lia-border-subtle">

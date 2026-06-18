@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import type { ModalPearchSearchOptions, ModalCreditEstimate } from "./CandidatesPageModals.types"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 interface CreditConfirmationModalProps {
   open: boolean
@@ -34,6 +35,7 @@ export function CreditConfirmationModal({
   onConfirm,
 }: CreditConfirmationModalProps) {
   const t = useTranslations('candidates.modals')
+  useLiaModalTracking('credit-confirmation', open)
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent data-testid="credit-confirmation-modal" className="max-w-md">

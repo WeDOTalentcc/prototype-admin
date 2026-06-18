@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 interface Archetype {
   id: string
@@ -55,6 +56,7 @@ export function SaveAsArchetypeModal({
   onSave,
 }: SaveAsArchetypeModalProps) {
   const t = useTranslations('candidates.modals')
+  useLiaModalTracking('save-as-archetype', open)
   const [nameInput, setNameInput] = useState('')
   const [emojiInput, setEmojiInput] = useState('🎯')
 
