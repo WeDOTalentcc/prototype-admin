@@ -170,6 +170,139 @@ def _classify_permission(state: JobCreationState, resume_msg: str):
         )
 
 
+# ---------------------------------------------------------------------------
+# Sub-estado 1.5 helpers -- criacao de departamento inline (2026-06-18)
+# ---------------------------------------------------------------------------
+
+def _build_dept_creation_message(
+    dept_candidate: str,
+    existing_departments=None,
+) -> str:
+    """Monta mensagem propondo criacao do departamento nao encontrado."""
+    lines = [
+        "O departamento **{}** nao esta cadastrado na sua empresa.".format(dept_candidate),
+        "",
+        "Posso cria-lo agora. Confirme o nome e informe o que souber:",
+        "* **Codigo** (ex: RH, TI, MKT) -- opcional",
+        "* **Descricao** -- o que este departamento faz",
+        "* **Localizacao** -- qual escritorio",
+        "* **Headcount** -- quantas pessoas hoje",
+        "* **Centro de custo** -- codigo financeiro",
+        "* **Prioridade de contratacao** -- normal / alta / critica",
+        "",
+        "_O gestor informado nesta vaga sera vinculado automaticamente ao departamento._",
+        "",
+    ]
+    if existing_departments:
+        depts_str = ", ".join(list(existing_departments)[:8])
+        lines.append("Ou escolha um dos departamentos cadastrados: {}".format(depts_str))
+        lines.append("")
+    lines.append(
+        'Responda "sim" (+ campos opcionais) para criar **{}**, '
+        "ou informe o nome de um departamento existente.".format(dept_candidate)
+    )
+    return "\n".join(lines)
+
+
+def _execute_dept_creation_sync(dept_candidate, parsed, state):
+    """Executa criacao de departamento em threadpool (intake_gate e sync)."""
+    from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+
+    company_id = str(state.get("company_id") or state.get("workspace_id") or "")
+    if not company_id:
+        logger.warning("[DeptCreation] company_id not in state -- skip creation")
+        return {"department_creation_done": True}
+
+    manager_name = state.get("parsed_manager_name")
+    manager_email = state.get("parsed_manager_email")
+
+    async def _do_create():
+        from app.core.database import AsyncSessionLocal
+        from app.domains.job_creation.services.department_wizard_service import (
+            create_department_for_wizard,
+        )
+        async with AsyncSessionLocal() as db:
+            return await create_department_for_wizard(
+                name=parsed.get("name", dept_candidate),
+                company_id=company_id,
+                db=db,
+                code=parsed.get("code"),
+                description=parsed.get("description"),
+                location=parsed.get("location"),
+                headcount=parsed.get("headcount"),
+                cost_center=parsed.get("cost_center"),
+                hiring_priority=parsed.get("hiring_priority", "normal"),
+                manager_name=manager_name,
+                manager_email=manager_email,
+            )
+
+    try:
+        result = run_coro_in_threadpool(_do_create, timeout=15.0)
+        logger.info("[DeptCreation] created dept=%s id=%s company=%s", result["name"], result["id"], company_id)
+        mgr_msg = ""
+        if manager_name:
+            mgr_msg = " Gestor **{}** vinculado.".format(manager_name)
+        return {
+            "parsed_department": result["name"],
+            "department_created_id": result["id"],
+            "department_creation_done": True,
+            "dept_creation_confirmation_msg": (
+                "Departamento **{}** criado com sucesso!{} "
+                "Continuando a criacao da vaga...".format(result["name"], mgr_msg)
+            ),
+        }
+    except Exception as exc:
+        logger.error("[DeptCreation] failed: %s -- recruiter must choose manually", exc)
+        return {"department_creation_done": True}
+
+
+def _handle_department_creation_subflow(state, dept_candidate, _uq, _is_fresh, _is_initial):
+    """Sub-estado 1.5: propoe criar dept nao encontrado, aguarda confirmacao.
+
+    Returns dict of state updates, or None (interrupt emitted in runtime -- next
+    invocation will have _is_fresh_dept=True with the recruiter response).
+    """
+    from app.domains.job_creation.services.department_wizard_service import (
+        parse_dept_creation_response,
+    )
+
+    existing_depts = list(state.get("existing_departments") or [])
+    _dept_seen = state.get("intake_gate_seen_user_query") or ""
+    _is_fresh_dept = bool(_uq) and _uq != _dept_seen and not _is_initial
+
+    if _is_fresh_dept and not (state.get("intake_salary_suggested") or state.get("intake_approved")):
+        parsed = parse_dept_creation_response(_uq, dept_candidate)
+
+        if parsed["confirmed"]:
+            return _execute_dept_creation_sync(dept_candidate, parsed, state)
+
+        elif parsed.get("chosen_existing"):
+            chosen = parsed["chosen_existing"]
+            return {
+                "parsed_department": chosen,
+                "department_creation_done": True,
+                "dept_creation_confirmation_msg": "Departamento **{}** selecionado. Continuando...".format(chosen),
+            }
+
+    # Primeira vez (ou resposta ambigua): emite prompt
+    dept_msg = _build_dept_creation_message(dept_candidate, existing_depts)
+
+    if _in_graph_runtime():
+        from langgraph.types import interrupt  # type: ignore[import]
+        interrupt({
+            "type": "department_creation",
+            "stage": "intake",
+            "data": {
+                "message": dept_msg,
+                "dept_candidate": dept_candidate,
+                "existing_departments": existing_depts,
+            },
+        })
+        return None
+    else:
+        return {"dept_creation_prompt_sent": True, "dept_creation_message": dept_msg}
+
+
 def _get_missing(title: Optional[str], seniority: Optional[str], model: Optional[str]) -> List[str]:
     missing = []
     if not title:
@@ -550,6 +683,23 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
                 "parsed_model": parsed_model,
                 "intake_gate_seen_user_query": _uq,
             })
+
+    # ═══ Sub-estado 1.5: Departamento não encontrado — criar inline ═══════════
+    dept_candidate = state.get("department_candidate_from_title")
+    dept_creation_done = state.get("department_creation_done", False)
+    if (
+        state.get("parsed_department") is None
+        and dept_candidate
+        and not dept_creation_done
+    ):
+        _dept_result = _handle_department_creation_subflow(
+            state, dept_candidate, _uq, _is_fresh, _is_initial,
+        )
+        if _dept_result is not None:
+            # Sub-fluxo retornou: pode ser interrupt (runtime) ou dict de updates.
+            # Se dict, merge e continua; se None, sub-fluxo emitiu interrupt (runtime).
+            state = {**state, **_dept_result}
+            parsed_department = state.get("parsed_department")
 
     # ═══ Sub-estado 2: Sugestão de salário + permissão ══════════════════════
     if not intake_salary_suggested:

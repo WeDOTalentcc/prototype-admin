@@ -292,6 +292,14 @@ class JobCreationState(TypedDict, total=False):
     intake_salary_suggested: Optional[bool]      # True após sugestão salarial emitida
     intake_gate_seen_user_query: Optional[str]   # evita re-processar mesma msg (anti-loop)
 
+    # --- Sub-estado 1.5: criação de departamento inline (2026-06-18) ---
+    # OBRIGATÓRIO declarar aqui: LangGraph descarta keys não-declaradas no merge
+    # (mesma razão que gate_seen_user_query e company_id acima).
+    department_candidate_from_title: Optional[str]  # nome inferido do título (não existe no DB)
+    existing_departments: List[str]                  # top-10 depts ativos do tenant (lista para o recruiter)
+    department_creation_done: Optional[bool]         # True = sub-fluxo encerrado (criou ou escolheu existente)
+    department_created_id: Optional[str]             # UUID do dept criado inline (para audit trail)
+
     # --- Fase 3 (2026-05-30): confirmação assistida de competências ---
     # intake_gate sugere competências (via CompetencyBenchmarkService, Fase 2),
     # dimensionadas pelo modo; recruiter confirma/edita via painel (Fase 5).
