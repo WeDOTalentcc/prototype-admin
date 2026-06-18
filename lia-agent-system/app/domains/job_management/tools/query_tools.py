@@ -887,7 +887,7 @@ def register_job_management_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "job_id": {"type": "string", "description": "UUID da vaga"},
+                "job_id": {"type": "string", "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo da vaga como ID."},
                 "include_candidates": {"type": "boolean", "default": True, "description": "Incluir lista de candidatos"},
                 "include_funnel": {"type": "boolean", "default": True, "description": "Incluir estatísticas do funil"}
             },
@@ -903,7 +903,7 @@ def register_job_management_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "job_id": {"type": "string", "description": "UUID da vaga (obrigatório)"}
+                "job_id": {"type": "string", "description": "UUID da vaga (obrigatorio) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."}
             },
             "required": ["job_id"]
         },
@@ -917,7 +917,7 @@ def register_job_management_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "job_id": {"type": "string", "description": "UUID da vaga (obrigatório)"}
+                "job_id": {"type": "string", "description": "UUID da vaga (obrigatorio) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."}
             },
             "required": ["job_id"]
         },

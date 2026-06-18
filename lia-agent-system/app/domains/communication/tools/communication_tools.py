@@ -561,7 +561,7 @@ SEND_EMAIL_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to email"
+            "description": "UUID do candidato para enviar email - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "template_id": {
             "type": "string",
@@ -577,7 +577,7 @@ SEND_EMAIL_SCHEMA = {
         },
         "job_id": {
             "type": "string",
-            "description": "Optional job vacancy ID for context"
+            "description": "UUID da vaga para contexto (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "cc": {
             "type": "array",
@@ -598,7 +598,7 @@ SEND_WHATSAPP_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "message": {
             "type": "string",
@@ -610,7 +610,7 @@ SEND_WHATSAPP_SCHEMA = {
         },
         "job_id": {
             "type": "string",
-            "description": "Optional job vacancy ID for context"
+            "description": "UUID da vaga para contexto (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         }
     },
     "required": ["candidate_id", "message"]
@@ -621,11 +621,11 @@ SCHEDULE_INTERVIEW_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "interview_type": {
             "type": "string",
@@ -673,7 +673,7 @@ SEND_BULK_EMAIL_SCHEMA = {
         "candidate_ids": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "List of candidate UUIDs"
+            "description": "Lista de UUIDs de candidatos - cada item deve ser o campo id retornado por search_candidates. Nunca use nomes como IDs."
         },
         "template_id": {
             "type": "string",
@@ -681,7 +681,7 @@ SEND_BULK_EMAIL_SCHEMA = {
         },
         "job_id": {
             "type": "string",
-            "description": "Optional job vacancy ID for context"
+            "description": "UUID da vaga para contexto (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "custom_variables": {
             "type": "object",
@@ -696,11 +696,11 @@ SEND_FEEDBACK_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "feedback_type": {
             "type": "string",

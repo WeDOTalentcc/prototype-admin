@@ -1437,7 +1437,7 @@ def register_sourcing_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "candidate_id": {"type": "string", "description": "UUID do candidato"},
+                "candidate_id": {"type": "string", "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."},
                 "include_vacancies": {"type": "boolean", "default": True, "description": "Incluir vagas do candidato"},
                 "include_evaluations": {"type": "boolean", "default": True, "description": "Incluir avaliações WSI"}
             },
@@ -1453,7 +1453,7 @@ def register_sourcing_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "job_id": {"type": "string", "description": "UUID da vaga para filtrar candidatos"},
+                "job_id": {"type": "string", "description": "UUID da vaga para filtrar candidatos - use o campo id retornado por search_jobs. Nunca use o titulo como ID."},
                 "period": {"type": "string", "enum": ["week", "month", "quarter"], "default": "month", "description": "Período de análise"}
             }
         },
@@ -1467,8 +1467,8 @@ def register_sourcing_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "candidate_id": {"type": "string", "description": "UUID do candidato para ver histórico individual (opcional)"},
-                "job_id": {"type": "string", "description": "UUID da vaga para analisar histórico dos candidatos dessa vaga (opcional)"}
+                "candidate_id": {"type": "string", "description": "UUID do candidato para ver historico (opcional) - use o campo id retornado por search_candidates. Nunca use o nome como ID."},
+                "job_id": {"type": "string", "description": "UUID da vaga para analisar historico (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."}
             }
         },
         handler=_wrap_get_candidate_history,
@@ -1519,7 +1519,7 @@ def register_sourcing_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "job_id": {"type": "string", "description": "UUID da vaga para filtrar candidatos (opcional)"},
+                "job_id": {"type": "string", "description": "UUID da vaga para filtrar candidatos (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."},
                 "period": {"type": "string", "enum": ["month", "quarter", "year"], "default": "month", "description": "Período de análise"}
             }
         },

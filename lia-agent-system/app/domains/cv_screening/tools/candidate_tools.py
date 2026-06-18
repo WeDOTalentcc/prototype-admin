@@ -1251,7 +1251,7 @@ UPDATE_CANDIDATE_STAGE_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to move"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome do candidato como ID."
         },
         "target_stage": {
             "type": "string",
@@ -1259,7 +1259,7 @@ UPDATE_CANDIDATE_STAGE_SCHEMA = {
         },
         "job_id": {
             "type": "string",
-            "description": "Optional UUID of the job vacancy"
+            "description": "UUID da vaga (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo da vaga como ID."
         },
         "notes": {
             "type": "string",
@@ -1278,11 +1278,11 @@ ADD_CANDIDATE_TO_VACANCY_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "initial_stage": {
             "type": "string",
@@ -1306,11 +1306,11 @@ REJECT_CANDIDATE_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to reject"
+            "description": "UUID do candidato a reprovar - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "reason": {
             "type": "string",
@@ -1334,11 +1334,11 @@ SHORTLIST_CANDIDATE_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "priority": {
             "type": "string",
@@ -1360,7 +1360,7 @@ BULK_UPDATE_CANDIDATES_STAGE_SCHEMA = {
         "candidate_ids": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "List of candidate UUIDs to move"
+            "description": "Lista de UUIDs de candidatos - cada item deve ser o campo id retornado por search_candidates. Nunca use nomes como IDs."
         },
         "target_stage": {
             "type": "string",
@@ -1368,7 +1368,7 @@ BULK_UPDATE_CANDIDATES_STAGE_SCHEMA = {
         },
         "job_id": {
             "type": "string",
-            "description": "Optional job vacancy ID"
+            "description": "UUID da vaga (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "notes": {
             "type": "string",
@@ -1383,7 +1383,7 @@ ADD_TO_LIST_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to add to the list"
+            "description": "UUID do candidato a adicionar a lista - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "list_id": {
             "type": "string",
@@ -1402,11 +1402,11 @@ WSI_SCREENING_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to screen"
+            "description": "UUID do candidato para triagem - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "screening_type": {
             "type": "string",
@@ -1434,11 +1434,11 @@ HIDE_CANDIDATE_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to hide"
+            "description": "UUID do candidato a ocultar - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy (required if hide_globally is False)"
+            "description": "UUID da vaga (obrigatorio se hide_globally=False) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "reason": {
             "type": "string",
