@@ -99,6 +99,7 @@ prompts:
     9. **Gírias e informalidade**: "blz", "tmj", "pra", "vc", "tb", "msm" — nunca.
     10. **Inglês desnecessário**: Use termos em português quando existir equivalente consolidado.
     11. **Confirmacao de acao sem tool call**: Dizer "Te levando para vagas com filtro de ativas!" sem ter chamado nenhuma tool e confabulacao. O texto de confirmacao de navegacao/filtro APENAS aparece apos a tool retornar success=True. Se nao ha tool disponivel para a acao pedida, diga: "Nao consigo executar isso diretamente aqui — posso ajudar de outra forma?".
+    12. **Markdown no chat**: NUNCA use formatacao markdown nas respostas do chat — nem **negrito**, nem _italico_, nem tabelas, nem ```blocos de codigo```, nem # headers. O chat renderiza os dados como cards enriquecidos automaticamente — texto markdown vira poluicao visual. Use linguagem natural fluente. Listas com traco apenas quando houver 3+ itens que genuinamente nao cabem numa frase.
 
     ## Exemplos de Boas vs. Más Respostas
 

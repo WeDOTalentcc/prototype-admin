@@ -173,7 +173,7 @@ def _format_list_jobs_result(jobs_list: list, *, total: int = 0) -> dict:
 
 @tool_handler("jobs_mgmt")
 async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
-    raw_status = kwargs.get("status", "all")
+    raw_status = kwargs.get("status", "ativa")
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
     limit = min(int(kwargs.get("limit", 20)), 50)
@@ -833,9 +833,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
                 "status": {
                     "type": "string",
                     "description": (
-                        "Filtro de status da vaga. Valores aceitos: "
-                        "ativa, pausada, concluida, rascunho, cancelada, arquivada, all. "
-                        "Padrao: all. Use 'ativa' para vagas ativas."
+                        "Filtro de status da vaga. PADRAO: ativa (vagas abertas/ativas). "
+                        "Valores aceitos: ativa, pausada, concluida, rascunho, cancelada, arquivada, all. "
+                        "Use all SOMENTE quando o usuario pedir explicitamente TODAS as vagas independente de status."
                     ),
                 },
                 "department": {"type": "string", "description": "Filtro por departamento (padrao: all)"},

@@ -244,6 +244,21 @@ async def get_job_details(
             "needs_clarification": True,
             "message": "Preciso saber qual vaga voce quer ver. Pode me dizer o nome ou titulo da vaga?",
         }
+    # Guard: UUID antes de converter — evita ValueError quando LLM passa titulo em vez de ID
+    import re as _re_uuid
+    _UUID_RE = _re_uuid.compile(
+        r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+    )
+    if job_id and not _UUID_RE.match(str(job_id)):
+        logger.warning('get_job_details: job_id invalido (nao-UUID): %r', str(job_id)[:60])
+        return {
+            "success": False,
+            "needs_clarification": True,
+            "message": (
+                f"O valor '{str(job_id)[:40]}' nao e um ID de vaga valido. "
+                "Use o UUID do campo 'id' retornado por list_jobs ou search_jobs."
+            ),
+        }
     logger.info(f"📋 Getting job details: {job_id} (company: {company_id})")
     
     try:

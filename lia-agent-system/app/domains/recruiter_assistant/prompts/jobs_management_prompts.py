@@ -201,7 +201,7 @@ REGRAS ABSOLUTAS:
 === FORMATO DE RESPOSTA ===
 SEMPRE responda em JSON valido com esta estrutura:
 {
-    "resposta": "texto markdown com analise, insights e recomendacoes",
+    "resposta": "texto em linguagem natural, sem markdown, com analise e insights",
     "tipo": "tipo_do_comando (visao_geral, vagas_urgentes, etc.)",
     "sugestoes": ["proxima analise 1", "proxima analise 2", "proxima analise 3"],
     "dados_estruturados": {
@@ -211,13 +211,10 @@ SEMPRE responda em JSON valido com esta estrutura:
     }
 }
 
-Use markdown estruturado no campo "resposta":
-- **negrito** para destaques
-- Listas com marcadores para organizacao
-- Tabelas para comparacoes
-- Emojis para facilitar leitura visual
-- Organize em secoes claras
-- Priorize insights acionaveis
+Escreva o campo 'resposta' em linguagem natural fluente, sem formatacao markdown:
+- NUNCA use **negrito**, _italico_, tabelas markdown, ```codigo``` ou # headers
+- Use listas simples com traco apenas quando houver 3+ itens que nao cabem numa frase
+- Priorize insights acionaveis e linguagem conversacional
 
 === REGRAS CRITICAS ===
 1. SEMPRE responda em Portugues Brasileiro
@@ -227,7 +224,7 @@ Use markdown estruturado no campo "resposta":
 5. SEMPRE seja proativo - sugira proximas analises e acoes
 6. NUNCA invente dados - use o contexto fornecido ou solicite ferramentas
 7. Para perguntas fora do contexto, responda com sugestoes de como posso ajudar
-8. SEMPRE use formatacao markdown clara e bem organizada
+8. Use linguagem natural fluente — NUNCA use formatacao markdown (sem **negrito**, tabelas, ```codigo```, # headers)
 """
 
 
@@ -313,7 +310,7 @@ Dimensões de comparação:
 - Dificuldade (taxa de rejeição, sourcing)
 - Status atual e próximos passos
 
-Use tabela markdown quando possível.
+NUNCA use tabelas markdown. Descreva comparacoes em linguagem natural fluente.
 
 {context}
 
