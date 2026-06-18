@@ -151,7 +151,9 @@ export function TalentPoolInsightsModal({
         { credentials: "include" }
       )
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-      return resp.json() as Promise<TalentPoolData>
+      const json = await resp.json()
+      // Backend wraps in {success, data} -- unwrap same as other analytics endpoints
+      return (json?.data ?? json) as TalentPoolData
     },
     enabled: isOpen && Boolean(jobId),
     staleTime: 60_000,
@@ -216,14 +218,14 @@ export function TalentPoolInsightsModal({
               <div className="space-y-3">
                 <KPICard
                   icon={<TrendingUp className="w-4 h-4" />}
-                  label="Probabilidade de Contratação"
+                  label="Estimativa de Contratação"
                   value={`${data.hiring_probability.probability.toFixed(0)}%`}
                   badge={<ConfidenceBadge level={data.hiring_probability.confidence} />}
                 />
 
                 <KPICard
                   icon={<Target className="w-4 h-4" />}
-                  label="Probabilidade de Fechamento"
+                  label="Estimativa de Fechamento"
                   value={`${data.pipeline_prediction.closure_probability.toFixed(0)}%`}
                   badge={<ConfidenceBadge level={data.pipeline_prediction.confidence_level} />}
                 />

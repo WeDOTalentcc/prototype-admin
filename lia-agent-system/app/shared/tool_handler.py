@@ -199,6 +199,7 @@ def tool_handler(domain: str, *, require_company: bool = True, module: Optional[
                 return {"success": False, "data": {}, "message": str(exc)}
 
         wrapper._module_gated = module
+        wrapper._tool_handler_wrapped = True
         return wrapper
 
     return decorator
