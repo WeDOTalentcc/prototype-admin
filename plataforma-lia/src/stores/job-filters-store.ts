@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import { setLiaFilters } from '@/lib/lia-context-store'
+import { jobFiltersToLia } from '@/lib/lia-context-utils'
 import { devtools, persist } from 'zustand/middleware'
 
 export interface JobFiltersState {
@@ -82,8 +84,12 @@ export const useJobFiltersStore = create<JobFiltersStore>()(
         filtersState: createDefaultFiltersState(),
         savedSearches: [],
 
-        setFiltersState: (state) =>
-          set({ filtersState: state }, false, 'jobFilters/setFiltersState'),
+        setFiltersState: (state) => {
+          set({ filtersState: state }, false, 'jobFilters/setFiltersState')
+          // P0-2 (2026-06-18): keep LIA aware of active job filters
+          const liaFilters = jobFiltersToLia(state)
+          setLiaFilters(liaFilters.length ? liaFilters : null)
+        },
 
         updateFilter: (key, value) =>
           set(

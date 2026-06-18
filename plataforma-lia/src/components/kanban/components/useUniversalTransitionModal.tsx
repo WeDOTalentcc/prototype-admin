@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from 'react'
+import { setLiaModal } from '@/lib/lia-context-store'
 import { useTransitionChat, type ChatMessage } from '@/hooks/shared/use-transition-chat'
 import { useTransitionContext, type CandidateContext, type JobContext } from '@/hooks/recruitment/use-transition-context'
 import { useRecruitmentStages } from '@/hooks/recruitment/use-recruitment-stages'
@@ -160,6 +161,13 @@ export function useUniversalTransitionModal({
       setShowStageSelector(false)
     }
   }, [isOpen, toStage, toStageDisplayName, actionBehavior, subStatusOptions])
+
+  // P0-2 (2026-06-18): inform LIA which modal is currently open.
+  // Cleanup returns null so LIA knows the modal closed if component unmounts.
+  useEffect(() => {
+    setLiaModal(isOpen ? 'kanban-transition' : null)
+    return () => setLiaModal(null)
+  }, [isOpen])
 
   const handleStageSelect = (stage: AvailableStage) => {
     setSelectedToStage(stage.id)

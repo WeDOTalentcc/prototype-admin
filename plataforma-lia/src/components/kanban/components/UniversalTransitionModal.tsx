@@ -1,4 +1,5 @@
 "use client"
+// lia-context: setLiaModal managed by useUniversalTransitionModal hook
 import NextImage from "next/image"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
