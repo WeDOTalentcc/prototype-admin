@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import useSWR from "swr"
+import { useQuery } from "@tanstack/react-query"
 import { Search, CheckCircle2, BarChart3, DollarSign } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-const jsonFetcher = (url: string) => fetch(url).then(r => r.json())
+import { useState } from "react"
+import { HubLoadingState, HubErrorState } from "@/components/settings/_shared"
+import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
 
 interface PearchConsumption {
   company_id: string
@@ -27,30 +27,31 @@ const PERIOD_OPTIONS = [
 export function PearchTab() {
   const [days, setDays] = useState<7 | 30 | 90>(30)
 
-  const { data, isLoading, error } =
-    useSWR<PearchConsumption>(`/api/backend-proxy/consumo/pearch?days=${days}`, jsonFetcher)
+  const { data, isLoading, error, refetch } = useQuery<PearchConsumption>({
+    queryKey: ["pearch-consumption", days] as const,
+    queryFn: async () => {
+      const res = await fetch(`/api/backend-proxy/consumo/pearch?days=${days}`)
+      if (!res.ok) throw new Error("Erro ao carregar dados do Pearch")
+      return res.json()
+    },
+    staleTime: 30_000,
+  })
 
-  if (isLoading) {
+  if (isLoading) return <HubLoadingState />
+  if (error) return <HubErrorState onRetry={refetch} />
+  if (!data)
     return (
       <div className="flex h-64 items-center justify-center text-sm text-lia-text-tertiary">
-        Carregando dados do Pearch...
+        Nenhum dado disponível
       </div>
     )
-  }
 
-  if (error) {
-    return (
-      <div className="flex h-64 items-center justify-center text-sm text-status-error">
-        Erro ao carregar dados. Tente novamente.
-      </div>
-    )
-  }
-
-  const totalSearches = data?.total_searches ?? 0
-  const creditsUsed = data?.total_credits_consumed ?? 0
-  const successfulSearches = data?.successful_searches ?? 0
-  const costBrl = data?.estimated_cost_brl ?? 0
-  const successRate = totalSearches > 0 ? Math.round((successfulSearches / totalSearches) * 100) : null
+  const totalSearches = data.total_searches ?? 0
+  const creditsUsed = data.total_credits_consumed ?? 0
+  const successfulSearches = data.successful_searches ?? 0
+  const costBrl = data.estimated_cost_brl ?? 0
+  const successRate =
+    totalSearches > 0 ? Math.round((successfulSearches / totalSearches) * 100) : null
 
   return (
     <div className="space-y-5">
@@ -67,7 +68,7 @@ export function PearchTab() {
                 "rounded px-2.5 py-1 text-xs font-medium transition-colors",
                 days === value
                   ? "bg-lia-bg-elevated text-lia-text-primary shadow-sm"
-                  : "text-lia-text-tertiary hover:text-lia-text-secondary"
+                  : "text-lia-text-tertiary hover:text-lia-text-secondary",
               )}
             >
               {label}
@@ -78,7 +79,7 @@ export function PearchTab() {
 
       {totalSearches === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Search className="w-8 h-8 text-lia-text-tertiary mb-3" />
+          <Search className="h-8 w-8 text-lia-text-tertiary mb-3" />
           <p className="text-sm font-medium text-lia-text-secondary">Nenhuma busca registrada</p>
           <p className="text-xs text-lia-text-tertiary mt-1">
             Nenhuma busca Pearch nos últimos {days} dias.
@@ -90,7 +91,7 @@ export function PearchTab() {
             <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-lia-text-tertiary">Buscas realizadas</p>
-                <Search className="w-3.5 h-3.5 text-lia-text-muted" />
+                <Search className="h-3.5 w-3.5 text-lia-text-muted" />
               </div>
               <p className="text-2xl font-semibold text-lia-text-primary tabular-nums">
                 {totalSearches.toLocaleString("pt-BR")}
@@ -101,7 +102,7 @@ export function PearchTab() {
             <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-lia-text-tertiary">Créditos utilizados</p>
-                <BarChart3 className="w-3.5 h-3.5 text-lia-text-muted" />
+                <BarChart3 className="h-3.5 w-3.5 text-lia-text-muted" />
               </div>
               <p className="text-2xl font-semibold text-lia-text-primary tabular-nums">
                 {creditsUsed.toLocaleString("pt-BR")}
@@ -112,7 +113,7 @@ export function PearchTab() {
             <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-lia-text-tertiary">Taxa de sucesso</p>
-                <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-muted" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-lia-text-muted" />
               </div>
               {successRate !== null ? (
                 <>
@@ -135,7 +136,7 @@ export function PearchTab() {
               <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs text-lia-text-tertiary">Custo estimado</p>
-                  <DollarSign className="w-3.5 h-3.5 text-lia-text-muted" />
+                  <DollarSign className="h-3.5 w-3.5 text-lia-text-muted" />
                 </div>
                 <p className="text-2xl font-semibold text-lia-text-primary tabular-nums">
                   {costBrl.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
@@ -147,7 +148,8 @@ export function PearchTab() {
 
           {successRate !== null && (
             <p className="text-xs text-lia-text-tertiary">
-              {successfulSearches.toLocaleString("pt-BR")} de {totalSearches.toLocaleString("pt-BR")} buscas retornaram candidatos.
+              {successfulSearches.toLocaleString("pt-BR")} de{" "}
+              {totalSearches.toLocaleString("pt-BR")} buscas retornaram candidatos.
             </p>
           )}
         </>
