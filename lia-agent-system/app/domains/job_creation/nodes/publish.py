@@ -205,6 +205,9 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 ),
                 "department": state.get("parsed_department", ""),
                 "location": state.get("parsed_location", ""),
+                # Fase 2 (2026-06-18): filial/CNPJ propagado do dept.subsidiary_*
+                "subsidiary": state.get("parsed_subsidiary") or "",
+                "subsidiary_cnpj": state.get("parsed_subsidiary_cnpj") or "",
                 "work_model": to_canonical_work_model(_work_model or ""),
                 # P0-A: regime de contratação (coluna employment_type já existe).
                 "employment_type": to_canonical_employment_type(_emp_type),

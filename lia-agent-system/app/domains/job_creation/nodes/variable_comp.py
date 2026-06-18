@@ -128,10 +128,9 @@ def variable_comp_node(state: JobCreationState) -> JobCreationState:
     seniority = state.get("seniority_resolved") or state.get("parsed_seniority") or None
     department = state.get("parsed_department") or None
     contract_type = state.get("parsed_employment_type") or None
-    # Subsidiary info: not yet on JobVacancy model (Fase 2 -- migration pendente).
-    # Quando o campo for adicionado ao modelo, passar aqui.
-    subsidiary = None
-    subsidiary_cnpj = None
+    # Fase 2 (2026-06-18): subsidiary propagado via intake.py -> dept.subsidiary_cnpj
+    subsidiary = state.get("parsed_subsidiary") or None
+    subsidiary_cnpj = state.get("parsed_subsidiary_cnpj") or None
 
     matched_comps = _fetch_comp_matching(
         company_id, seniority, department, contract_type, subsidiary, subsidiary_cnpj,

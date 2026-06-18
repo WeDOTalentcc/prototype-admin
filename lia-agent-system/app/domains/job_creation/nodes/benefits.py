@@ -39,6 +39,8 @@ def _fetch_benefits_matching(
     seniority: str | None,
     department: str | None,
     contract_type: str | None,
+    subsidiary: str | None = None,
+    subsidiary_cnpj: str | None = None,
 ) -> List[Dict[str, Any]]:
     """Chama CompanyBenefitRepository.list_matching em threadpool.
 
@@ -56,6 +58,8 @@ def _fetch_benefits_matching(
                 seniority_level=seniority,
                 department=department,
                 contract_type=contract_type,
+                subsidiary=subsidiary,
+                subsidiary_cnpj=subsidiary_cnpj,
             )
             result = []
             for benefit, matches in pairs:
@@ -131,7 +135,9 @@ def benefits_node(state: JobCreationState) -> JobCreationState:
     department = state.get("parsed_department") or None
     contract_type = state.get("parsed_employment_type") or None
 
-    matched_benefits = _fetch_benefits_matching(company_id, seniority, department, contract_type)
+    subsidiary = state.get("parsed_subsidiary") or None
+    subsidiary_cnpj = state.get("parsed_subsidiary_cnpj") or None
+    matched_benefits = _fetch_benefits_matching(company_id, seniority, department, contract_type, subsidiary, subsidiary_cnpj)
 
     # Separa sugeridos (alta confianca) de catalogados (media/baixa)
     suggested = [b for b in matched_benefits if b["confidence"] >= 0.80]

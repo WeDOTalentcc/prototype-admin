@@ -320,18 +320,36 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                         rows = await DepartmentRepository(_db).list_active_for_company(
                             UUID(_company_id)
                         )
-                        return [r.name for r in rows if getattr(r, "name", None)]
+                        # Retorna (name, subsidiary_name, subsidiary_cnpj) para
+                        # propagacao da dimensao de filial ao estado da vaga
+                        # (Fase 2 matching 2026-06-18).
+                        return [
+                            (
+                                r.name,
+                                getattr(r, "subsidiary_name", None),
+                                getattr(r, "subsidiary_cnpj", None),
+                            )
+                            for r in rows if getattr(r, "name", None)
+                        ]
 
-                _dept_names = run_coro_in_threadpool(
+                _dept_data = run_coro_in_threadpool(
                     _load_company_departments, timeout=2.0
                 ) or []
+                _dept_names = [d[0] for d in _dept_data]
+                _dept_subsidiary_map = {d[0]: (d[1], d[2]) for d in _dept_data}
                 _matched_dept = _match_department(parsed_title, _dept_names)
                 if _matched_dept:
                     parsed_department = _matched_dept
                     department_inferred_from_title = True
+                    # Propaga filial/CNPJ do departamento para o estado
+                    _sub_name, _sub_cnpj = _dept_subsidiary_map.get(_matched_dept, (None, None))
+                    if _sub_name or _sub_cnpj:
+                        state = dict(state)
+                        state["parsed_subsidiary"] = _sub_name
+                        state["parsed_subsidiary_cnpj"] = _sub_cnpj
                     logger.info(
                         "[JobCreation:intake] departamento deduzido do titulo "
-                        "%s -> %s (match tenant-aware)", parsed_title, _matched_dept,
+                        "%s -> %s (match tenant-aware, subsidiary=%s)", parsed_title, _matched_dept, _sub_name,
                     )
             except Exception as _dept_exc:
                 logger.warning(
@@ -429,6 +447,8 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         "department_inferred_from_title": department_inferred_from_title,
         "department_candidate_from_title": _department_candidate_from_title,
         "existing_departments": _existing_departments_for_state,
+        "parsed_subsidiary": state.get("parsed_subsidiary"),
+        "parsed_subsidiary_cnpj": state.get("parsed_subsidiary_cnpj"),
         "is_affirmative": is_affirmative_detected or state.get("is_affirmative", False),
         "affirmative_criteria_primary": affirmative_criteria_detected or state.get("affirmative_criteria_primary"),
         "affirmative_description": affirmative_description_detected or state.get("affirmative_description"),

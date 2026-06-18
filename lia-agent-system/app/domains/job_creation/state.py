@@ -311,6 +311,14 @@ class JobCreationState(TypedDict, total=False):
     variable_comp_suggested: Optional[bool]         # True apos sugestao de var comp emitida
     confirmed_variable_compensation: List[Dict[str, Any]]  # [{kind, target_pct, frequency, ...}]
 
+    # --- Fase 2: subsidiary / CNPJ propagado do dept.defaults para matching (2026-06-18) ---
+    # Fonte: Department.defaults["subsidiary_name"] + ["subsidiary_cnpj"].
+    # Propagado em intake.py apos _match_department() para que benefits_node e
+    # variable_comp_node possam filtrar elegibilidade por filial (5a dimensao).
+    parsed_subsidiary: Optional[str]          # nome da filial/subsidiaria (ex: "Filial SP")
+    parsed_subsidiary_cnpj: Optional[str]     # CNPJ da filial (ex: "12.345.678/0001-90")
+
+
 
     # --- Fase 3 (2026-05-30): confirmação assistida de competências ---
     # intake_gate sugere competências (via CompetencyBenchmarkService, Fase 2),

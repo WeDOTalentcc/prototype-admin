@@ -174,7 +174,11 @@ class Department(Base):
     # resolve departamento.defaults[campo] > empresa. JSONB extensivel sem
     # migration por campo (FASE 1, audit 2026-06-06).
     defaults = Column(JSONB, nullable=False, server_default="{}", default=dict)
-    
+
+    # Filial / subsidiaria (Fase 2 matching 2026-06-18) -- migration 293.
+    subsidiary_name = Column(String(255), nullable=True)
+    subsidiary_cnpj = Column(String(18), nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

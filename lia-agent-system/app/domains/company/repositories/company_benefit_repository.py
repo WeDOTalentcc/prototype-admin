@@ -15,7 +15,7 @@ from app.domains.job_creation.helpers.vacancy_vocab import (
     to_match_contract_key,
     to_match_seniority_key,
 )
-from app.shared.eligibility_matching import matches_department, matches_dimension_list
+from app.shared.eligibility_matching import matches_department, matches_dimension_list, matches_subsidiaries
 
 logger = logging.getLogger(__name__)
 
@@ -104,13 +104,16 @@ class CompanyBenefitRepository:
         seniority_level: str | None = None,
         department: str | None = None,
         contract_type: str | None = None,
+        subsidiary: str | None = None,
+        subsidiary_cnpj: str | None = None,
         active_only: bool = True,
     ) -> list[tuple[CompanyBenefit, bool]]:
         """Lista beneficios ativos da empresa com flag `matches_vaga` por item.
 
         Nao remove os nao-compativeis (a vaga exibe o catalogo inteiro agrupado
         por categoria; compativeis vem pre-marcados). matches_vaga = AND de todas
-        as dimensoes informadas. ADR-001: filtro vive no repo, nao na API.
+        as dimensoes informadas (5a dimensao: subsidiary adicionada 2026-06-18).
+        ADR-001: filtro vive no repo, nao na API.
         """
         benefits = await self.list_for_company(company_id, active_only=active_only)
         sen_key = to_match_seniority_key(seniority_level) if seniority_level else ""
@@ -121,6 +124,11 @@ class CompanyBenefitRepository:
                 self._matches_dimension_list(b.seniority_levels, sen_key, to_match_seniority_key)
                 and self._matches_dimension_list(b.contract_types, con_key, to_match_contract_key)
                 and self._matches_department(b.departments, department)
+                and matches_subsidiaries(
+                    getattr(b, "subsidiaries", None) or [],
+                    subsidiary,
+                    subsidiary_cnpj,
+                )
             )
             out.append((b, matches))
         return out
