@@ -4,14 +4,18 @@ import React, { useState, useEffect, useCallback } from"react"
 import {
   Users, Search, Bot, Settings, Plus, ArrowRight, Heart,
   Eye, Mail, MoreHorizontal, ChevronDown, Filter,
-  Briefcase, Pause, Play, Archive
+  Briefcase, Pause, Play, Archive, Pencil, Trash2, Check, X
 } from"lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from"@/components/ui/chip"
 import { Button } from"@/components/ui/button"
+import { Input } from"@/components/ui/input"
 import { Progress } from"@/components/ui/progress"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from"@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from"@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from"@/components/ui/dropdown-menu"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles,
   tabStyles, actionButtonStyles
@@ -141,6 +145,7 @@ export default function TalentPoolPage({
   const [isLoading, setIsLoading] = useState(true)
   const [showMoveModal, setShowMoveModal] = useState(false)
   const [isCreatingJob, setIsCreatingJob] = useState(false)
+  const [showArchiveModal, setShowArchiveModal] = useState(false)
 
   // Fase 2 F2 — ponte in-page para LIA via apply_table_state surface=talent_pool.
   useEffect(() => {
@@ -269,6 +274,27 @@ export default function TalentPoolPage({
                 {isCreatingJob ?"Criando..." :"Criar Vaga"}
               </Button>
             )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className={buttonStyles.outline} title="Mais opções">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => setActiveTab("config")}>
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Editar banco
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600 focus:text-red-600"
+                  onClick={() => setShowArchiveModal(true)}
+                >
+                  <Archive className="w-4 h-4 mr-2" />
+                  Arquivar banco
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -366,6 +392,20 @@ export default function TalentPoolPage({
             loadCandidates()
             loadPool()
             if (onNavigateToJob) onNavigateToJob(jobId)
+          }}
+        />
+      )}
+
+      {/* Archive Confirmation Modal */}
+      {showArchiveModal && (
+        <ArchivePoolModal
+          poolName={pool.name}
+          poolId={poolId}
+          onClose={() => setShowArchiveModal(false)}
+          onArchived={() => {
+            setShowArchiveModal(false)
+            window.dispatchEvent(new CustomEvent("lia:talent-pool-archived", { detail: { poolId } }))
+            window.history.back()
           }}
         />
       )}
@@ -559,32 +599,251 @@ function AgentsTabWrapper({ pool }: { pool: TalentPool }) {
   return <PoolAgentsTab poolId={pool.id} />
 }
 
-// ---------- Config Tab (placeholder — populated in 6.2) ----------
+// ---------- Config Tab ----------
 
 function ConfigTab({ pool, onUpdate }: { pool: TalentPool; onUpdate: () => void }) {
+  const [name, setName] = useState(pool.name)
+  const [description, setDescription] = useState(pool.description || "")
+  const [archetypes, setArchetypes] = useState<Array<{ id: string; name: string; seniority_level: string | null }>>([])
+  const [selectedArchetypeId, setSelectedArchetypeId] = useState<string | null>(pool.ideal_profile_id)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [isLoadingArchetypes, setIsLoadingArchetypes] = useState(true)
+
+  // Sync local state when pool prop changes (e.g. after external refresh)
+  useEffect(() => {
+    setName(pool.name)
+    setDescription(pool.description || "")
+    setSelectedArchetypeId(pool.ideal_profile_id)
+  }, [pool.id])
+
+  useEffect(() => {
+    fetch("/api/backend-proxy/search/archetypes")
+      .then(res => res.json())
+      .then(data => {
+        const mapped = (data?.archetypes || data?.data || []).map(
+          (a: { id: string; name?: string; attributes?: { name: string; seniority_level?: string } }) => ({
+            id: a.id,
+            name: a.attributes?.name || a.name || "Sem nome",
+            seniority_level: a.attributes?.seniority_level || null,
+          })
+        )
+        setArchetypes(mapped)
+      })
+      .catch(() => {/* silently degrade — archetype select shows empty */})
+      .finally(() => setIsLoadingArchetypes(false))
+  }, [])
+
+  const isDirty =
+    name.trim() !== pool.name ||
+    (description.trim() || "") !== (pool.description || "") ||
+    selectedArchetypeId !== pool.ideal_profile_id
+
+  const handleSave = async () => {
+    if (!name.trim()) return
+    setIsSaving(true)
+    setSaveError(null)
+    setSaveSuccess(false)
+    try {
+      const res = await fetch(`/api/backend-proxy/talent-pools/${pool.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          talent_pool: {
+            name: name.trim(),
+            description: description.trim() || null,
+            ideal_profile_id: selectedArchetypeId,
+          },
+        }),
+      })
+      if (!res.ok) throw new Error("Erro ao salvar")
+      setSaveSuccess(true)
+      onUpdate()
+      setTimeout(() => setSaveSuccess(false), 2500)
+    } catch {
+      setSaveError("Não foi possível salvar. Tente novamente.")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleReset = () => {
+    setName(pool.name)
+    setDescription(pool.description || "")
+    setSelectedArchetypeId(pool.ideal_profile_id)
+    setSaveError(null)
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 max-w-xl">
+      {/* Informações básicas */}
       <Card className={cardStyles.default}>
         <CardHeader>
-          <CardTitle className={textStyles.h4}>Arquétipo</CardTitle>
+          <CardTitle className={textStyles.h4}>Informações do banco</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className={textStyles.body}>
-            {pool.ideal_profile_name ||"Nenhum arquétipo vinculado"}
-          </p>
+        <CardContent className="space-y-4">
+          <div>
+            <label className={`${textStyles.label} block mb-1`}>Nome *</label>
+            <Input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Ex: Backend Sênior SP"
+              maxLength={80}
+            />
+          </div>
+          <div>
+            <label className={`${textStyles.label} block mb-1`}>Descrição</label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Objetivo deste banco de talentos..."
+              rows={3}
+              className="w-full border border-lia-border-default rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-400 bg-transparent"
+            />
+          </div>
         </CardContent>
       </Card>
+
+      {/* Arquétipo */}
+      <Card className={cardStyles.default}>
+        <CardHeader>
+          <CardTitle className={textStyles.h4}>Arquétipo vinculado</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className={`${textStyles.caption} mb-3`}>
+            O arquétipo gera automaticamente perguntas de triagem e critérios de avaliação WSI.
+          </p>
+          {isLoadingArchetypes ? (
+            <p className={textStyles.caption}>Carregando arquétipos...</p>
+          ) : (
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              <label className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-lia-bg-secondary">
+                <input
+                  type="radio"
+                  name="cfg-archetype"
+                  checked={selectedArchetypeId === null}
+                  onChange={() => setSelectedArchetypeId(null)}
+                  className="rounded-full border-lia-border-default"
+                />
+                <span className={textStyles.body}>Sem arquétipo</span>
+              </label>
+              {archetypes.map(a => (
+                <label
+                  key={a.id}
+                  className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-lia-bg-secondary"
+                >
+                  <input
+                    type="radio"
+                    name="cfg-archetype"
+                    checked={selectedArchetypeId === a.id}
+                    onChange={() => setSelectedArchetypeId(a.id)}
+                    className="rounded-full border-lia-border-default"
+                  />
+                  <span className={textStyles.body}>{a.name}</span>
+                  {a.seniority_level && (
+                    <Chip variant="success">{a.seniority_level}</Chip>
+                  )}
+                </label>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Perguntas de triagem — read-only (gerenciado pelo agente) */}
       <Card className={cardStyles.default}>
         <CardHeader>
           <CardTitle className={textStyles.h4}>Perguntas de Triagem</CardTitle>
         </CardHeader>
         <CardContent>
           <p className={textStyles.body}>
-            {pool.screening_approved ?"Aprovadas" :"Pendente de aprovação"}
+            {pool.screening_approved ? "Aprovadas" : "Pendente de aprovação"}
+          </p>
+          <p className={`${textStyles.caption} mt-1`}>
+            As perguntas são geradas automaticamente com base no arquétipo vinculado.
           </p>
         </CardContent>
       </Card>
+
+      {/* Save bar */}
+      {saveError && (
+        <p className="text-sm text-red-600">{saveError}</p>
+      )}
+      <div className="flex items-center gap-3 pt-1">
+        <Button
+          className={buttonStyles.primary}
+          onClick={handleSave}
+          disabled={!isDirty || !name.trim() || isSaving}
+        >
+          {isSaving ? "Salvando..." : saveSuccess ? (
+            <><Check className="w-4 h-4 mr-1" />Salvo</>
+          ) : "Salvar alterações"}
+        </Button>
+        {isDirty && !isSaving && (
+          <Button className={buttonStyles.secondary} onClick={handleReset}>
+            <X className="w-4 h-4 mr-1" />
+            Descartar
+          </Button>
+        )}
+      </div>
     </div>
+  )
+}
+
+// ---------- Archive Pool Modal ----------
+
+interface ArchivePoolModalProps {
+  poolName: string
+  poolId: string
+  onClose: () => void
+  onArchived: () => void
+}
+
+function ArchivePoolModal({ poolName, poolId, onClose, onArchived }: ArchivePoolModalProps) {
+  const [isArchiving, setIsArchiving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleArchive = async () => {
+    setIsArchiving(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/backend-proxy/talent-pools/${poolId}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) throw new Error("Erro ao arquivar")
+      onArchived()
+    } catch {
+      setError("Não foi possível arquivar. Tente novamente.")
+      setIsArchiving(false)
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className={textStyles.h3}>Arquivar banco</DialogTitle>
+          <DialogDescription className={`${textStyles.body} mt-1`}>
+            O banco <strong>{poolName}</strong> será arquivado. Os candidatos e histórico são preservados, mas o banco não aparecerá mais como ativo.
+          </DialogDescription>
+        </DialogHeader>
+        {error && <p className="text-sm text-red-600 px-1">{error}</p>}
+        <DialogFooter>
+          <Button className={buttonStyles.secondary} onClick={onClose} disabled={isArchiving}>
+            Cancelar
+          </Button>
+          <Button
+            className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-4 py-2 text-sm font-medium"
+            onClick={handleArchive}
+            disabled={isArchiving}
+          >
+            <Archive className="w-4 h-4 mr-1" />
+            {isArchiving ? "Arquivando..." : "Arquivar banco"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
