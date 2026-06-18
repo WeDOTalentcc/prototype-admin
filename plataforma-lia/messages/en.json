@@ -1779,7 +1779,8 @@
     "sortOrderDesc": "Descending",
     "sortLabel": "Sort by",
     "scheduleMessage": "Schedule message",
-    "indicators": "Indicators"
+    "indicators": "Indicators",
+    "moveTo": "Move to"
   },
   "pipeline": {
     "title": "Talent Pipeline",

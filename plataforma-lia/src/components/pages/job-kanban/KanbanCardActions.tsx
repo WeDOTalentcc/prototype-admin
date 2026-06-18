@@ -8,6 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
   MoreVertical,
@@ -19,8 +22,17 @@ import {
   Bookmark,
   Heart,
   Clock,
+  ArrowRight,
 } from "lucide-react"
 import { useScheduleMessageStore } from "@/stores/schedule-message-store"
+
+interface MoveStage {
+  id: string
+  displayName: string
+  color: string
+  isRejection?: boolean
+  isHired?: boolean
+}
 
 interface KanbanCardActionsProps {
   candidate: {
@@ -38,6 +50,9 @@ interface KanbanCardActionsProps {
   onSendFeedback: (candidate: unknown) => void
   onToggleShortList: (candidateId: string) => void
   onToggleFavorite: (candidateId: string) => void
+  allStages?: MoveStage[]
+  currentStageId?: string
+  onMoveTo?: (candidate: unknown, toStage: string) => void
 }
 
 export function KanbanCardActions({
@@ -52,9 +67,16 @@ export function KanbanCardActions({
   onSendFeedback,
   onToggleShortList,
   onToggleFavorite,
+  allStages,
+  currentStageId,
+  onMoveTo,
 }: KanbanCardActionsProps) {
   const t = useTranslations('kanban')
   const openScheduleModal = useScheduleMessageStore((s) => s.openScheduleModal)
+
+  const moveableStages = allStages?.filter(
+    (s) => s.id !== currentStageId && !s.isHired
+  ) ?? []
 
   return (
     <>
@@ -73,6 +95,35 @@ export function KanbanCardActions({
       </button>
     </DropdownMenuTrigger>
     <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-48">
+      {moveableStages.length > 0 && onMoveTo && (
+        <>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="text-xs text-lia-text-primary cursor-pointer">
+              <ArrowRight className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
+              {t('moveTo')}
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="max-h-64 overflow-y-auto min-w-[180px]">
+              {moveableStages.map((stage) => (
+                <DropdownMenuItem
+                  key={stage.id}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onMoveTo(candidate, stage.id)
+                  }}
+                  className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
+                >
+                  <div
+                    className="w-2 h-2 rounded-full flex-shrink-0 mr-2"
+                    style={{ backgroundColor: stage.color }}
+                  />
+                  {stage.displayName}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuSeparator />
+        </>
+      )}
       <DropdownMenuItem
         onClick={(e) => {
           e.stopPropagation()
