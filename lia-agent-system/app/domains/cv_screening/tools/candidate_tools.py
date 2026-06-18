@@ -23,6 +23,7 @@ from app.tools.context_helpers import (
     require_company_id_from_context,
     require_company_id_from_obj,
 )
+from app.shared.tool_guards import validate_uuid_params
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -78,6 +79,10 @@ async def update_candidate_stage(
     )
     if _hitl_block is not None:
         return _hitl_block
+
+    err = validate_uuid_params(candidate_id=candidate_id, **({} if job_id is None else {"job_id": job_id}))
+    if err:
+        return err
 
     context = context_or_raise(kwargs, "update_candidate_stage")
 
@@ -220,6 +225,10 @@ async def add_candidate_to_vacancy(
     Returns:
         Result with success status and message
     """
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
+
     context = context_or_raise(kwargs, "add_candidate_to_vacancy")
 
     company_id = require_company_id_from_obj(context, "add_candidate_to_vacancy")
@@ -526,6 +535,11 @@ async def reject_candidate(
     _hitl_block = hitl_preflight(tool="reject_candidate", domain="cv_screening", data={"candidate_id": candidate_id, "job_id": job_id, "reason": reason})
     if _hitl_block is not None:
         return _hitl_block
+
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
+
     logger.info(f"❌ Rejecting candidate {candidate_id} from job {job_id}")
     
     fg_implicit = []
@@ -683,6 +697,10 @@ async def shortlist_candidate(
     Returns:
         Result with success status and message
     """
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
+
     logger.info(f"⭐ Shortlisting candidate {candidate_id} for job {job_id}")
     
     try:
@@ -851,6 +869,10 @@ async def add_to_list(
     Returns:
         Result with success status and message
     """
+    err = validate_uuid_params(candidate_id=candidate_id, list_id=list_id)
+    if err:
+        return err
+
     context = context_or_raise(kwargs, "add_to_list")
 
     company_id = require_company_id_from_obj(context, "add_to_list")
@@ -935,6 +957,10 @@ async def wsi_screening(
     Returns:
         Result with success status and screening session details
     """
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
+
     context = context_or_raise(kwargs, "wsi_screening")
 
     company_id = require_company_id_from_obj(context, "wsi_screening")
@@ -1069,6 +1095,10 @@ async def hide_candidate(
     Returns:
         Result with success status and message
     """
+    err = validate_uuid_params(candidate_id=candidate_id, **({} if job_id is None else {"job_id": job_id}))
+    if err:
+        return err
+
     context = context_or_raise(kwargs, "hide_candidate")
 
     company_id = require_company_id_from_obj(context, "hide_candidate")
