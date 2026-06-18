@@ -19,9 +19,9 @@ from app.domains.job_management.repositories.job_vacancy_crud_repository import 
 class TestResolveSortClause:
     """Allowlist enforcement + defaults for the pure sort resolver."""
 
-    def test_default_is_created_at_desc(self):
+    def test_default_is_updated_at_desc(self):
         col, direction = resolve_sort_clause(None, "desc")
-        assert col.key == "created_at"
+        assert col.key == "updated_at"
         assert direction == "desc"
 
     def test_explicit_created_at_asc(self):
