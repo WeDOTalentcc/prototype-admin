@@ -356,8 +356,8 @@ function DistTable({
             <MiniBar pct={item.pct} color={color} />
             <span className="text-[10px] text-gray-500 tabular-nums w-8 text-right shrink-0">{item.pct}%</span>
           </div>
-        ))
-      }
+        ))}
+        </div>
     </div>
   )
 }
