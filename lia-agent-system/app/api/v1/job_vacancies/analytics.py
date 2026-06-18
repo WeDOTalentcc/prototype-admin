@@ -1538,3 +1538,165 @@ company_id: str = Depends(require_company_id)):
         ))
 
     return JobLifecycleOverviewResponse(stages=stages, total_vacancies=len(jobs))
+
+
+# ─── G6 Analytics Dashboard ──────────────────────────────────────────────────
+
+class StageFunnelItem(BaseModel):
+    stage: str
+    label: str
+    count: int
+    pct_of_total: float = 0.0
+    pct_from_prev: float | None = None
+
+
+class DashboardKPIResponse(BaseModel):
+    period: str
+    active_candidates: int = 0
+    open_vacancies: int = 0
+    avg_time_to_fill_days: float | None = None
+    conversion_rate: float = 0.0
+    offer_acceptance_rate: float | None = None
+    sla_at_risk: int = 0
+    hired_in_period: int = 0
+    weekly_trend: list[WeeklyTrend] = []
+    stage_funnel: list[StageFunnelItem] = []
+    insights: list[Insight] = []
+
+
+@router.get("/job-vacancies/analytics/dashboard", response_model=DashboardKPIResponse)
+async def get_analytics_dashboard(
+    period: str = Query("30d"),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
+    company_id: str = Depends(require_company_id),
+) -> DashboardKPIResponse:
+    """G6 free-tier KPI cards aggregated for /indicadores page."""
+    try:
+        now = datetime.utcnow()
+        period_days = {"30d": 30, "90d": 90, "180d": 180}.get(period, 30)
+        cutoff = now - timedelta(days=period_days)
+
+        all_jobs = await repo.get_all_company_jobs(company_id)
+        try:
+            live_counts = await repo.get_candidate_counts_by_vacancy_for_company(company_id)
+        except Exception as _e:
+            logger.warning("Dashboard: could not fetch live candidate counts: %s", _e)
+            live_counts = {}
+
+        active_jobs = [j for j in all_jobs if j.status == "Ativa"]
+        completed_in_period = [
+            j for j in all_jobs
+            if j.status in ("Concluída", "Encerrada")
+            and j.closed_at is not None
+            and j.closed_at >= cutoff
+        ]
+
+        # Active candidates — real live count
+        active_candidates = sum(live_counts.get(str(j.id), 0) for j in active_jobs)
+
+        # TTF from completed_in_period with valid open/close dates
+        ttf_jobs = [j for j in completed_in_period if j.open_date and j.closed_at]
+        avg_ttf: float | None = None
+        if ttf_jobs:
+            avg_ttf = round(
+                sum(_calculate_days_between(j.open_date, j.closed_at) for j in ttf_jobs)
+                / len(ttf_jobs),
+                1,
+            )
+
+        # Funnel aggregation across active + completed_in_period
+        total_apps = total_screening = total_interview = total_offer = total_hired = 0
+        for j in active_jobs + completed_in_period:
+            total_apps += live_counts.get(str(j.id), 0)
+            fd = j.funnel_data or {}
+            total_screening += (fd.get("screening") or 0) + (fd.get("triagem") or 0) + (fd.get("initial") or 0)
+            total_interview += (
+                (fd.get("interview") or 0)
+                + (fd.get("entrevista") or 0)
+                + (fd.get("interview_1") or 0)
+                + (fd.get("interview_2") or 0)
+            )
+            total_offer += (fd.get("offer") or 0) + (fd.get("proposta") or 0)
+            total_hired += (fd.get("hired") or 0) + (fd.get("contratado") or 0)
+
+        # Supplement hired from completed_in_period count (more reliable than funnel_data cache)
+        hired_in_period = len(completed_in_period)
+        total_hired = max(total_hired, hired_in_period)
+
+        conversion_rate = round(total_hired / total_apps * 100, 1) if total_apps > 0 else 0.0
+        oar: float | None = round(total_hired / total_offer * 100, 1) if total_offer > 0 else None
+
+        sla_at_risk = sum(
+            1 for j in active_jobs
+            if j.deadline is not None and 0 <= (j.deadline - now).days < 5
+        )
+
+        # Stage funnel for display
+        funnel_base = total_apps or 1
+        stage_funnel: list[StageFunnelItem] = [
+            StageFunnelItem(stage="aplicacoes", label="Aplicações", count=total_apps, pct_of_total=100.0),
+            StageFunnelItem(
+                stage="triagem", label="Triagem", count=total_screening,
+                pct_of_total=round(total_screening / funnel_base * 100, 1),
+                pct_from_prev=round(total_screening / funnel_base * 100, 1) if total_apps > 0 else None,
+            ),
+            StageFunnelItem(
+                stage="entrevista", label="Entrevista", count=total_interview,
+                pct_of_total=round(total_interview / funnel_base * 100, 1),
+                pct_from_prev=round(total_interview / total_screening * 100, 1) if total_screening > 0 else None,
+            ),
+            StageFunnelItem(
+                stage="oferta", label="Oferta", count=total_offer,
+                pct_of_total=round(total_offer / funnel_base * 100, 1),
+                pct_from_prev=round(total_offer / total_interview * 100, 1) if total_interview > 0 else None,
+            ),
+            StageFunnelItem(
+                stage="contratado", label="Contratado", count=total_hired,
+                pct_of_total=round(total_hired / funnel_base * 100, 1),
+                pct_from_prev=round(total_hired / total_offer * 100, 1) if total_offer > 0 else None,
+            ),
+        ]
+
+        # Weekly trend scaled to period
+        num_weeks = max(4, period_days // 7)
+        completed_all = [j for j in all_jobs if j.status in ("Concluída", "Encerrada")]
+        trend_weeks: list[WeeklyTrend] = []
+        for weeks_ago in range(num_weeks - 1, -1, -1):
+            ws = now - timedelta(weeks=weeks_ago + 1)
+            we = now - timedelta(weeks=weeks_ago)
+            trend_weeks.append(WeeklyTrend(
+                week=ws.strftime("%d/%m"),
+                hired=sum(1 for j in completed_all if j.closed_at and ws <= j.closed_at < we),
+                opened=sum(1 for j in all_jobs if j.created_at and ws <= j.created_at < we),
+            ))
+
+        insights = _generate_insights(
+            my_jobs_list=active_jobs,
+            active_jobs_list=active_jobs,
+            completed_jobs_90d=completed_in_period,
+            stats={"conversion_rate": conversion_rate, "time_to_fill_avg_90d": avg_ttf or 0.0, "success_rate": oar or 0.0},
+            now=now,
+        )
+
+        logger.info("Analytics dashboard: company=%s period=%s active=%d completed=%d",
+                    company_id, period, len(active_jobs), hired_in_period)
+
+        return DashboardKPIResponse(
+            period=period,
+            active_candidates=active_candidates,
+            open_vacancies=len(active_jobs),
+            avg_time_to_fill_days=avg_ttf,
+            conversion_rate=conversion_rate,
+            offer_acceptance_rate=oar,
+            sla_at_risk=sla_at_risk,
+            hired_in_period=hired_in_period,
+            weekly_trend=trend_weeks,
+            stage_funnel=stage_funnel,
+            insights=insights,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error fetching analytics dashboard: %s", e, exc_info=True)
+        raise LIAError(message="Erro interno do servidor")

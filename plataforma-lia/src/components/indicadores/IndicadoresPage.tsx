@@ -1,15 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { TrendingUp, TrendingDown, Users, Briefcase, Clock, AlertTriangle, BarChart3, LineChart, Lock } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 import {
-  CHART_LIA,
-  CHART_SUCCESS,
-  CHART_WARNING,
-  CHART_NEUTRAL,
-  CHART_AXIS,
-  CHART_GRID,
-} from "@/lib/chart-colors"
+  TrendingUp, TrendingDown, Users, Briefcase, Clock,
+  AlertTriangle, BarChart3, LineChart, Lock, CheckCircle,
+} from "lucide-react"
+import { CHART_LIA, CHART_GRID } from "@/lib/chart-colors"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -17,10 +14,38 @@ import {
 
 type Period = "30d" | "90d" | "180d"
 
+interface WeeklyTrend {
+  week: string
+  hired: number
+  opened: number
+}
+
+interface StageFunnelItem {
+  stage: string
+  label: string
+  count: number
+  pct_of_total: number
+  pct_from_prev: number | null
+}
+
+interface DashboardKPIs {
+  period: string
+  active_candidates: number
+  open_vacancies: number
+  avg_time_to_fill_days: number | null
+  conversion_rate: number
+  offer_acceptance_rate: number | null
+  sla_at_risk: number
+  hired_in_period: number
+  weekly_trend: WeeklyTrend[]
+  stage_funnel: StageFunnelItem[]
+  insights: { type: string; message: string; severity?: string; action?: string }[]
+}
+
 interface KpiCardProps {
   label: string
   value: string
-  trend?: number /** positive = up, negative = down, undefined = no trend */
+  trend?: number
   trendLabel?: string
   icon: React.ReactNode
   loading?: boolean
@@ -59,7 +84,6 @@ function KpiCard({ label, value, trend, trendLabel, icon, loading }: KpiCardProp
   )
 }
 
-// Simple SVG bar chart (no chart.js dep — avoids bundle bloat for simple bars)
 function BarChartSimple({ data }: { data: { label: string; value: number }[] }) {
   const max = Math.max(...data.map((d) => d.value), 1)
   return (
@@ -81,44 +105,28 @@ function BarChartSimple({ data }: { data: { label: string; value: number }[] }) 
   )
 }
 
-// Simple SVG line chart
 function LineChartSimple({ data }: { data: { label: string; value: number }[] }) {
   const max = Math.max(...data.map((d) => d.value), 1)
   const w = 300
   const h = 100
   const pts = data.map((d, i) => {
-    const x = (i / (data.length - 1)) * w
+    const x = (i / Math.max(data.length - 1, 1)) * w
     const y = h - (d.value / max) * (h - 8)
     return `${x},${y}`
   })
   return (
     <div className="relative h-32 pt-2">
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" preserveAspectRatio="none">
-        {/* grid lines */}
         {[0.25, 0.5, 0.75].map((f) => (
-          <line
-            key={f}
-            x1="0" y1={h * (1 - f)} x2={w} y2={h * (1 - f)}
-            stroke={CHART_GRID}
-            strokeWidth="1"
-          />
+          <line key={f} x1="0" y1={h * (1 - f)} x2={w} y2={h * (1 - f)} stroke={CHART_GRID} strokeWidth="1" />
         ))}
-        {/* area fill */}
         <path
           d={`M ${pts[0]} ${pts.slice(1).map((p) => `L ${p}`).join(" ")} L ${w},${h} L 0,${h} Z`}
           fill={CHART_LIA}
           fillOpacity={0.12}
         />
-        {/* line */}
-        <polyline
-          points={pts.join(" ")}
-          fill="none"
-          stroke={CHART_LIA}
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
+        <polyline points={pts.join(" ")} fill="none" stroke={CHART_LIA} strokeWidth="2" strokeLinejoin="round" />
       </svg>
-      {/* x-axis labels */}
       <div className="flex justify-between mt-1">
         {data.map((d) => (
           <span key={d.label} className="text-[9px] text-gray-400">{d.label}</span>
@@ -126,42 +134,6 @@ function LineChartSimple({ data }: { data: { label: string; value: number }[] })
       </div>
     </div>
   )
-}
-
-// ---------------------------------------------------------------------------
-// Static mock data helpers
-// ---------------------------------------------------------------------------
-
-function getMockKpis(period: Period) {
-  // Values vary slightly per period for visual interest
-  const scale = period === "30d" ? 1 : period === "90d" ? 2.8 : 5.4
-  return {
-    activeCandidates: Math.round(47 * scale),
-    hiringProbability: 68,
-    avgTimeToFill: 24,
-    conversionRate: 4.2,
-    openVacancies: 12,
-    slaAtRisk: 3,
-  }
-}
-
-function getBarData(period: Period) {
-  const labels = period === "30d"
-    ? ["S1", "S2", "S3", "S4"]
-    : period === "90d"
-    ? ["Jan", "Fev", "Mar"]
-    : ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"]
-  return labels.map((l, i) => ({ label: l, value: 10 + i * 7 + Math.round(Math.random() * 8) }))
-}
-
-function getLineData(period: Period) {
-  const labels = period === "30d"
-    ? ["Sem 1", "Sem 2", "Sem 3", "Sem 4"]
-    : period === "90d"
-    ? ["Jan", "Fev", "Mar"]
-    : ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"]
-  const base = [12, 19, 14, 22, 18, 27]
-  return labels.map((l, i) => ({ label: l, value: base[i % base.length] }))
 }
 
 // ---------------------------------------------------------------------------
@@ -185,15 +157,9 @@ function PremiumLockedSection() {
         </span>
       </div>
       <div className="relative">
-        <div
-          className="opacity-30 pointer-events-none grid grid-cols-2 gap-4"
-          aria-hidden="true"
-        >
+        <div className="opacity-30 pointer-events-none grid grid-cols-2 gap-4" aria-hidden="true">
           {PREMIUM_CARDS.map((name) => (
-            <div
-              key={name}
-              className="bg-gray-50 rounded-md border border-gray-200 p-4 h-28 flex items-center justify-center"
-            >
+            <div key={name} className="bg-gray-50 rounded-md border border-gray-200 p-4 h-28 flex items-center justify-center">
               <span className="text-xs text-gray-400">{name}</span>
             </div>
           ))}
@@ -221,18 +187,27 @@ function PremiumLockedSection() {
 // Main component
 // ---------------------------------------------------------------------------
 
+const PERIOD_OPTIONS: { value: Period; label: string }[] = [
+  { value: "30d", label: "Últimos 30 dias" },
+  { value: "90d", label: "Últimos 90 dias" },
+  { value: "180d", label: "Últimos 6 meses" },
+]
+
 export function IndicadoresPage() {
   const [period, setPeriod] = useState<Period>("30d")
 
-  const kpis = getMockKpis(period)
-  const barData = getBarData(period)
-  const lineData = getLineData(period)
+  const { data, isLoading, error } = useQuery<DashboardKPIs>({
+    queryKey: ["analytics-dashboard", period],
+    queryFn: async () => {
+      const resp = await fetch(`/api/backend-proxy/job-vacancies/analytics/dashboard?period=${period}`)
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+      return resp.json()
+    },
+    staleTime: 60_000,
+  })
 
-  const PERIOD_OPTIONS: { value: Period; label: string }[] = [
-    { value: "30d", label: "Últimos 30 dias" },
-    { value: "90d", label: "Últimos 90 dias" },
-    { value: "180d", label: "Últimos 6 meses" },
-  ]
+  const barData = (data?.weekly_trend ?? []).map((t) => ({ label: t.week, value: t.hired }))
+  const lineData = (data?.weekly_trend ?? []).map((t) => ({ label: t.week, value: t.opened }))
 
   return (
     <div className="p-6 space-y-6 overflow-y-auto h-full">
@@ -240,11 +215,11 @@ export function IndicadoresPage() {
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Indicadores</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Análise preditiva do seu pipeline de recrutamento
+          Análise do seu pipeline de recrutamento
         </p>
       </div>
 
-      {/* Filters Row — Apollo pattern */}
+      {/* Filters Row */}
       <div className="flex flex-wrap gap-3 items-center">
         <select
           value={period}
@@ -253,75 +228,82 @@ export function IndicadoresPage() {
           aria-label="Período"
         >
           {PERIOD_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
+            <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
+        {error && (
+          <span className="text-xs text-rose-600">Erro ao carregar dados — tente novamente</span>
+        )}
       </div>
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <KpiCard
           label="Candidatos Ativos"
-          value={String(kpis.activeCandidates)}
-          trend={12}
-          trendLabel="vs. período anterior"
+          value={String(data?.active_candidates ?? 0)}
           icon={<Users className="w-4 h-4" />}
+          loading={isLoading}
         />
         <KpiCard
-          label="Prob. Média de Contratação"
-          value={`${kpis.hiringProbability}%`}
-          trend={3}
-          trendLabel="vs. período anterior"
-          icon={<TrendingUp className="w-4 h-4" />}
+          label="Taxa de Aceitação de Ofertas"
+          value={data?.offer_acceptance_rate != null ? `${data.offer_acceptance_rate}%` : "—"}
+          icon={<CheckCircle className="w-4 h-4" />}
+          loading={isLoading}
         />
         <KpiCard
           label="Tempo Médio para Preencher"
-          value={`${kpis.avgTimeToFill}d`}
-          trend={-5}
-          trendLabel="vs. período anterior"
+          value={data?.avg_time_to_fill_days != null ? `${data.avg_time_to_fill_days}d` : "—"}
           icon={<Clock className="w-4 h-4" />}
+          loading={isLoading}
         />
         <KpiCard
           label="Taxa de Conversão"
-          value={`${kpis.conversionRate}%`}
-          trend={8}
-          trendLabel="vs. período anterior"
+          value={`${data?.conversion_rate ?? 0}%`}
           icon={<BarChart3 className="w-4 h-4" />}
+          loading={isLoading}
         />
         <KpiCard
           label="Vagas Abertas"
-          value={String(kpis.openVacancies)}
+          value={String(data?.open_vacancies ?? 0)}
           icon={<Briefcase className="w-4 h-4" />}
+          loading={isLoading}
         />
         <KpiCard
           label="SLA em Risco"
-          value={String(kpis.slaAtRisk)}
-          trend={kpis.slaAtRisk > 0 ? -10 : 0}
-          trendLabel="vagas"
+          value={String(data?.sla_at_risk ?? 0)}
           icon={<AlertTriangle className="w-4 h-4" />}
+          loading={isLoading}
         />
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pipeline Forecast */}
         <div className="bg-white rounded-md shadow-sm border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-900">Previsão do Pipeline</h2>
+            <h2 className="text-base font-semibold text-gray-900">Contratações por Semana</h2>
             <BarChart3 className="w-4 h-4 text-gray-400" />
           </div>
-          <BarChartSimple data={barData} />
+          {isLoading ? (
+            <div className="h-32 bg-gray-50 rounded animate-pulse" />
+          ) : barData.length > 0 ? (
+            <BarChartSimple data={barData} />
+          ) : (
+            <div className="h-32 flex items-center justify-center text-sm text-gray-400">Sem dados no período</div>
+          )}
         </div>
 
-        {/* Applications Trend */}
         <div className="bg-white rounded-md shadow-sm border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-900">Trend de Aplicações</h2>
+            <h2 className="text-base font-semibold text-gray-900">Vagas Abertas por Semana</h2>
             <LineChart className="w-4 h-4 text-gray-400" />
           </div>
-          <LineChartSimple data={lineData} />
+          {isLoading ? (
+            <div className="h-32 bg-gray-50 rounded animate-pulse" />
+          ) : lineData.length > 0 ? (
+            <LineChartSimple data={lineData} />
+          ) : (
+            <div className="h-32 flex items-center justify-center text-sm text-gray-400">Sem dados no período</div>
+          )}
         </div>
       </div>
 
