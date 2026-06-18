@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import {
   TrendingUp, TrendingDown, Users, Briefcase, Clock,
   AlertTriangle, BarChart3, LineChart, Lock, CheckCircle,
+  Lightbulb, Info,
 } from "lucide-react"
 import { CHART_LIA, CHART_GRID } from "@/lib/chart-colors"
 
@@ -14,18 +15,15 @@ import { CHART_LIA, CHART_GRID } from "@/lib/chart-colors"
 
 type Period = "30d" | "90d" | "180d"
 
-interface WeeklyTrend {
-  week: string
-  hired: number
-  opened: number
-}
+interface WeeklyTrend { week: string; hired: number; opened: number }
 
 interface StageFunnelItem {
-  stage: string
-  label: string
-  count: number
-  pct_of_total: number
-  pct_from_prev: number | null
+  stage: string; label: string; count: number
+  pct_of_total: number; pct_from_prev: number | null
+}
+
+interface DashboardInsight {
+  type: string; message: string; severity?: string; action?: string
 }
 
 interface DashboardKPIs {
@@ -39,21 +37,17 @@ interface DashboardKPIs {
   hired_in_period: number
   weekly_trend: WeeklyTrend[]
   stage_funnel: StageFunnelItem[]
-  insights: { type: string; message: string; severity?: string; action?: string }[]
+  insights: DashboardInsight[]
 }
+
+// ---------------------------------------------------------------------------
+// KpiCard
+// ---------------------------------------------------------------------------
 
 interface KpiCardProps {
-  label: string
-  value: string
-  trend?: number
-  trendLabel?: string
-  icon: React.ReactNode
-  loading?: boolean
+  label: string; value: string; trend?: number; trendLabel?: string
+  icon: React.ReactNode; loading?: boolean
 }
-
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
 
 function KpiCard({ label, value, trend, trendLabel, icon, loading }: KpiCardProps) {
   return (
@@ -62,18 +56,16 @@ function KpiCard({ label, value, trend, trendLabel, icon, loading }: KpiCardProp
         <span className="text-sm text-gray-500">{label}</span>
         <span className="text-gray-400">{icon}</span>
       </div>
-      {loading ? (
-        <div className="h-8 w-24 bg-gray-100 rounded animate-pulse" />
-      ) : (
-        <span className="text-3xl font-bold text-gray-900 font-['Inter'] tabular-nums">{value}</span>
-      )}
+      {loading
+        ? <div className="h-8 w-24 bg-gray-100 rounded animate-pulse" />
+        : <span className="text-3xl font-bold text-gray-900 font-['Inter'] tabular-nums">{value}</span>
+      }
       {trend !== undefined && (
         <div className="flex items-center gap-1">
-          {trend >= 0 ? (
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-          ) : (
-            <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
-          )}
+          {trend >= 0
+            ? <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+            : <TrendingDown className="w-3.5 h-3.5 text-rose-500" />
+          }
           <span className={`text-xs ${trend >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
             {trend >= 0 ? "+" : ""}{trend}%
           </span>
@@ -84,48 +76,65 @@ function KpiCard({ label, value, trend, trendLabel, icon, loading }: KpiCardProp
   )
 }
 
+// ---------------------------------------------------------------------------
+// BarChartSimple — with value labels
+// ---------------------------------------------------------------------------
+
 function BarChartSimple({ data }: { data: { label: string; value: number }[] }) {
   const max = Math.max(...data.map((d) => d.value), 1)
   return (
-    <div className="flex items-end gap-2 h-32 pt-2">
-      {data.map((d) => (
-        <div key={d.label} className="flex-1 flex flex-col items-center gap-1">
-          <div
-            className="w-full rounded-t-sm"
-            style={{
-              height: `${Math.round((d.value / max) * 100)}%`,
-              backgroundColor: CHART_LIA,
-              minHeight: d.value > 0 ? "4px" : "0",
-            }}
-          />
-          <span className="text-[10px] text-gray-400 truncate w-full text-center">{d.label}</span>
-        </div>
-      ))}
+    <div className="flex items-end gap-2 h-36 pt-4">
+      {data.map((d) => {
+        const barH = Math.round((d.value / max) * 100)
+        return (
+          <div key={d.label} className="flex-1 flex flex-col items-center gap-0.5">
+            {d.value > 0 && (
+              <span className="text-[9px] font-medium text-gray-600 tabular-nums">{d.value}</span>
+            )}
+            <div
+              className="w-full rounded-t-sm transition-all duration-300"
+              style={{
+                height: `${barH}%`,
+                backgroundColor: CHART_LIA,
+                minHeight: d.value > 0 ? "4px" : "0",
+              }}
+            />
+            <span className="text-[9px] text-gray-400 truncate w-full text-center mt-0.5">{d.label}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }
 
+// ---------------------------------------------------------------------------
+// LineChartSimple — with dot on last point
+// ---------------------------------------------------------------------------
+
 function LineChartSimple({ data }: { data: { label: string; value: number }[] }) {
   const max = Math.max(...data.map((d) => d.value), 1)
-  const w = 300
-  const h = 100
-  const pts = data.map((d, i) => {
-    const x = (i / Math.max(data.length - 1, 1)) * w
-    const y = h - (d.value / max) * (h - 8)
-    return `${x},${y}`
-  })
+  const w = 300; const h = 100
+  const pts = data.map((d, i) => ({
+    x: (i / Math.max(data.length - 1, 1)) * w,
+    y: h - (d.value / max) * (h - 8),
+  }))
+  const polyPts = pts.map((p) => `${p.x},${p.y}`).join(" ")
+  const last = pts[pts.length - 1]
+
   return (
-    <div className="relative h-32 pt-2">
+    <div className="relative h-36 pt-2">
       <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" preserveAspectRatio="none">
         {[0.25, 0.5, 0.75].map((f) => (
           <line key={f} x1="0" y1={h * (1 - f)} x2={w} y2={h * (1 - f)} stroke={CHART_GRID} strokeWidth="1" />
         ))}
         <path
-          d={`M ${pts[0]} ${pts.slice(1).map((p) => `L ${p}`).join(" ")} L ${w},${h} L 0,${h} Z`}
-          fill={CHART_LIA}
-          fillOpacity={0.12}
+          d={`M ${pts[0].x},${pts[0].y} ${pts.slice(1).map((p) => `L ${p.x},${p.y}`).join(" ")} L ${w},${h} L 0,${h} Z`}
+          fill={CHART_LIA} fillOpacity={0.1}
         />
-        <polyline points={pts.join(" ")} fill="none" stroke={CHART_LIA} strokeWidth="2" strokeLinejoin="round" />
+        <polyline points={polyPts} fill="none" stroke={CHART_LIA} strokeWidth="2" strokeLinejoin="round" />
+        {last && (
+          <circle cx={last.x} cy={last.y} r="3" fill={CHART_LIA} />
+        )}
       </svg>
       <div className="flex justify-between mt-1">
         {data.map((d) => (
@@ -137,14 +146,157 @@ function LineChartSimple({ data }: { data: { label: string; value: number }[] })
 }
 
 // ---------------------------------------------------------------------------
-// Premium locked section
+// FunnelTable — aggregate funnel with stage-to-stage conversion
+// ---------------------------------------------------------------------------
+
+function convBadge(pct: number | null) {
+  if (pct === null) return null
+  const color =
+    pct >= 50 ? "text-emerald-700 bg-emerald-50 border-emerald-200" :
+    pct >= 25 ? "text-amber-700 bg-amber-50 border-amber-200" :
+                "text-rose-700 bg-rose-50 border-rose-200"
+  return (
+    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${color} tabular-nums`}>
+      ↓ {pct.toFixed(1)}%
+    </span>
+  )
+}
+
+function FunnelTable({
+  stages, loading,
+}: {
+  stages: StageFunnelItem[]
+  loading: boolean
+}) {
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="h-8 bg-gray-100 rounded animate-pulse" />
+        ))}
+      </div>
+    )
+  }
+
+  if (stages.length === 0) {
+    return (
+      <p className="text-sm text-gray-400 text-center py-6">
+        Sem dados de funil no período selecionado.
+      </p>
+    )
+  }
+
+  const maxCount = stages[0]?.count ?? 1
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm border-collapse">
+        <thead>
+          <tr className="border-b border-gray-200">
+            <th className="text-left text-xs font-medium text-gray-500 pb-2 pr-3 w-28">Estágio</th>
+            <th className="text-right text-xs font-medium text-gray-500 pb-2 pr-3 w-20">Candidatos</th>
+            <th className="text-left text-xs font-medium text-gray-500 pb-2 pr-4 min-w-[100px]">% do Total</th>
+            <th className="text-center text-xs font-medium text-gray-500 pb-2 w-24">Conv. Stage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {stages.map((s, idx) => {
+            const isHired = s.stage === "contratado" || s.stage === "hired"
+            const barPct = maxCount > 0 ? Math.round((s.count / maxCount) * 100) : 0
+
+            return (
+              <tr
+                key={s.stage}
+                className={`border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors ${
+                  isHired ? "bg-emerald-50/40" : ""
+                }`}
+              >
+                <td className="py-2.5 pr-3">
+                  <span className={`text-xs font-medium ${isHired ? "text-emerald-700" : "text-gray-700"}`}>
+                    {s.label}
+                  </span>
+                </td>
+                <td className="py-2.5 pr-3 text-right">
+                  <span className={`text-sm font-semibold tabular-nums ${isHired ? "text-emerald-700" : "text-gray-900"}`}>
+                    {s.count.toLocaleString("pt-BR")}
+                  </span>
+                </td>
+                <td className="py-2.5 pr-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden min-w-[60px]">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isHired ? "bg-emerald-400" : "bg-blue-400"
+                        }`}
+                        style={{ width: `${barPct}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-gray-500 tabular-nums w-8 text-right shrink-0">
+                      {s.pct_of_total.toFixed(1)}%
+                    </span>
+                  </div>
+                </td>
+                <td className="py-2.5 text-center">
+                  {idx === 0 ? (
+                    <span className="text-[10px] text-gray-400">—</span>
+                  ) : (
+                    convBadge(s.pct_from_prev)
+                  )}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// InsightsPanel — only renders when there are insights
+// ---------------------------------------------------------------------------
+
+function InsightsPanel({ insights }: { insights: DashboardInsight[] }) {
+  if (insights.length === 0) return null
+
+  return (
+    <div className="bg-white rounded-md shadow-sm border border-gray-200 p-5">
+      <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+        <Lightbulb className="w-4 h-4 text-amber-400" />
+        Insights
+      </h2>
+      <div className="space-y-2">
+        {insights.map((ins, i) => {
+          const isAlert = ins.type === "alert" || ins.severity === "warning"
+          return (
+            <div
+              key={i}
+              className={`flex items-start gap-2 text-xs p-2.5 rounded-md border ${
+                isAlert
+                  ? "bg-amber-50 border-amber-200 text-amber-800"
+                  : "bg-blue-50 border-blue-200 text-blue-800"
+              }`}
+            >
+              {isAlert
+                ? <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                : <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+              }
+              <span>{ins.message}</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// PremiumLockedSection
 // ---------------------------------------------------------------------------
 
 const PREMIUM_CARDS = [
-  "Benchmark Salarial",
-  "Insights de Empregadores",
-  "Distribuição de Educação",
-  "Score de Efetividade",
+  "Benchmark Salarial", "Insights de Empregadores",
+  "Distribuição de Educação", "Score de Efetividade",
 ]
 
 function PremiumLockedSection() {
@@ -152,9 +304,7 @@ function PremiumLockedSection() {
     <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">Análise Avançada</h2>
-        <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded font-medium">
-          Enterprise
-        </span>
+        <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded font-medium">Enterprise</span>
       </div>
       <div className="relative">
         <div className="opacity-30 pointer-events-none grid grid-cols-2 gap-4" aria-hidden="true">
@@ -167,12 +317,8 @@ function PremiumLockedSection() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center bg-white/95 p-6 rounded-xl shadow border border-gray-100">
             <Lock className="w-6 h-6 text-violet-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-900 mb-1">
-              Disponível no plano Enterprise
-            </p>
-            <p className="text-xs text-gray-500 mb-3">
-              Acesse 14+ indicadores preditivos avançados
-            </p>
+            <p className="text-sm font-medium text-gray-900 mb-1">Disponível no plano Enterprise</p>
+            <p className="text-xs text-gray-500 mb-3">Acesse 14+ indicadores preditivos avançados</p>
             <button className="text-sm bg-violet-600 text-white px-4 py-2 rounded-md hover:bg-violet-700 transition-colors">
               Upgrade Plan →
             </button>
@@ -208,15 +354,16 @@ export function IndicadoresPage() {
 
   const barData = (data?.weekly_trend ?? []).map((t) => ({ label: t.week, value: t.hired }))
   const lineData = (data?.weekly_trend ?? []).map((t) => ({ label: t.week, value: t.opened }))
+  const stageFunnel = data?.stage_funnel ?? []
+  const insights = data?.insights ?? []
 
   return (
     <div className="p-6 space-y-6 overflow-y-auto h-full">
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Indicadores</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Análise do seu pipeline de recrutamento
-        </p>
+        <p className="text-sm text-gray-500 mt-1">Análise do seu pipeline de recrutamento</p>
       </div>
 
       {/* Filters Row */}
@@ -231,6 +378,11 @@ export function IndicadoresPage() {
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
+        {data && !isLoading && (
+          <span className="text-xs text-gray-400">
+            {data.hired_in_period} contratação{data.hired_in_period !== 1 ? "s" : ""} no período
+          </span>
+        )}
         {error && (
           <span className="text-xs text-rose-600">Erro ao carregar dados — tente novamente</span>
         )}
@@ -276,36 +428,57 @@ export function IndicadoresPage() {
         />
       </div>
 
-      {/* Charts Section */}
+      {/* Charts — Trend */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-md shadow-sm border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-900">Contratações por Semana</h2>
-            <BarChart3 className="w-4 h-4 text-gray-400" />
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">Contratações</h2>
+              <p className="text-xs text-gray-400">por semana no período</p>
+            </div>
+            <BarChart3 className="w-4 h-4 text-gray-300" />
           </div>
-          {isLoading ? (
-            <div className="h-32 bg-gray-50 rounded animate-pulse" />
-          ) : barData.length > 0 ? (
-            <BarChartSimple data={barData} />
-          ) : (
-            <div className="h-32 flex items-center justify-center text-sm text-gray-400">Sem dados no período</div>
-          )}
+          {isLoading
+            ? <div className="h-36 bg-gray-50 rounded animate-pulse" />
+            : barData.some((d) => d.value > 0)
+              ? <BarChartSimple data={barData} />
+              : <div className="h-36 flex items-center justify-center text-sm text-gray-400">Sem contratações no período</div>
+          }
         </div>
 
         <div className="bg-white rounded-md shadow-sm border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-900">Vagas Abertas por Semana</h2>
-            <LineChart className="w-4 h-4 text-gray-400" />
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">Vagas Abertas</h2>
+              <p className="text-xs text-gray-400">novas por semana</p>
+            </div>
+            <LineChart className="w-4 h-4 text-gray-300" />
           </div>
-          {isLoading ? (
-            <div className="h-32 bg-gray-50 rounded animate-pulse" />
-          ) : lineData.length > 0 ? (
-            <LineChartSimple data={lineData} />
-          ) : (
-            <div className="h-32 flex items-center justify-center text-sm text-gray-400">Sem dados no período</div>
-          )}
+          {isLoading
+            ? <div className="h-36 bg-gray-50 rounded animate-pulse" />
+            : lineData.some((d) => d.value > 0)
+              ? <LineChartSimple data={lineData} />
+              : <div className="h-36 flex items-center justify-center text-sm text-gray-400">Sem vagas abertas no período</div>
+          }
         </div>
       </div>
+
+      {/* Funil Agregado */}
+      <div className="bg-white rounded-md shadow-sm border border-gray-200 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900">Funil de Recrutamento</h2>
+            <p className="text-xs text-gray-400">
+              {isLoading ? "Calculando..." : `Agregado · ${PERIOD_OPTIONS.find((o) => o.value === period)?.label}`}
+            </p>
+          </div>
+          <BarChart3 className="w-4 h-4 text-gray-300" />
+        </div>
+        <FunnelTable stages={stageFunnel} loading={isLoading} />
+      </div>
+
+      {/* Insights — only when data has them */}
+      {!isLoading && insights.length > 0 && <InsightsPanel insights={insights} />}
 
       {/* Premium Locked Section */}
       <PremiumLockedSection />
