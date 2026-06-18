@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,9 @@ export function ReactivateScreeningDialog({
   onClose,
   onReactivate,
 }: ReactivateScreeningDialogProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('reactivate-screening', open)
+
   if (!open || jobs.length === 0) return null
 
   return (

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useCallback } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthenticatedUserId } from "@/hooks/shared/use-authenticated-user-id"
@@ -44,6 +45,9 @@ interface TopBarProps {
 }
 
 export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('topbar-password', showPasswordModal)
+
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [currentPassword, setCurrentPassword] = useState("")

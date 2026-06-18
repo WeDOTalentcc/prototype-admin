@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState } from "react"
 import Link from "next/link"
 import { Bot, Link2, Zap, Calendar, MousePointer, GitBranch, MapPin, Loader2, Copy, Pencil, Activity } from "lucide-react"
@@ -42,6 +43,9 @@ interface AgentDetailsPanelProps {
 }
 
 export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest, onActivate }: AgentDetailsPanelProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('agent-details', open)
+
   const t = useTranslations('agents.customAgents')
   const tStatus = useTranslations('agents.status')
   // White-label canonical: persona como fallback do nome do agente no header.

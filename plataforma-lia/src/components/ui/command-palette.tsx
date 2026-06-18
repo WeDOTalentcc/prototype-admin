@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Search, Calendar, Mail, MessageCircle, Users, Zap, BarChart3, FileText, Settings, User } from 'lucide-react'
 import {
@@ -31,6 +32,9 @@ export function CommandPalette({
   commands,
   placeholder = "Buscar ação ou digitar comando..."
 }: CommandPaletteProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('command-palette', isOpen)
+
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)

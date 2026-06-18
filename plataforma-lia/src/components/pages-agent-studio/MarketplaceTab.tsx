@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect, useCallback } from "react"
 import { toast } from "@/lib/toast"
 import { ConfirmAlertDialog } from "@/components/agent-studio/confirm-alert-dialog"
@@ -148,6 +149,9 @@ interface FirstPartyAgent {
 }
 
 function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory }: { onInstallSuccess?: () => void; initialCategory?: string }) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('marketplace-template-preview', previewTemplate)
+
   const t = useTranslations("agents.marketplace")
   const [search, setSearch] = React.useState("")
 

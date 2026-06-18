@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect, useRef } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
@@ -113,6 +114,9 @@ export function WSITextScreeningModal({
   eligibilityResults,
   onComplete
 }: WSITextScreeningModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('wsi-text-screening', isOpen)
+
   const t = useTranslations('screening.wsi')
 
   const BLOOM_NAMES: Record<number, string> = {

@@ -18,6 +18,7 @@
 //   - CTA "Ativar agente" depois que o recrutador valida o comportamento
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Send, Loader2, FlaskConical, Mail, ArrowRightLeft, Pencil, Zap, ShieldCheck } from "lucide-react"
@@ -373,6 +374,9 @@ export function AgentSandboxInline({ agent, onActivate }: AgentSandboxInlineProp
  * Surfaces novas devem preferir <AgentSandboxInline> sem nesting de modal.
  */
 export function AgentSandboxPanel({ agent, open, onClose, onActivate }: AgentSandboxPanelProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('agent-sandbox', open)
+
   const t = useTranslations("agents.studio.sandbox")
   const { persona: aiPersona } = useAiPersona()
 

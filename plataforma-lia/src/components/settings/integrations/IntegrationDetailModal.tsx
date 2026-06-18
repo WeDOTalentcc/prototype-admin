@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useCallback, useState, useEffect } from "react"
 import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
@@ -79,6 +80,9 @@ export function IntegrationDetailModal({
   llmConfig,
   onConfigSaved,
 }: IntegrationDetailModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('integration-detail', open)
+
   const [teamsWebhookInput, setTeamsWebhookInput] = useState("")
   const [teamsWebhookMasked, setTeamsWebhookMasked] = useState<string | null>(null)
   const [teamsWebhookSource, setTeamsWebhookSource] = useState<"db" | "env" | "none">("none")

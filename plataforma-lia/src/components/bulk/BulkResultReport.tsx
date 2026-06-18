@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react"
 import { CheckCircle2, AlertTriangle, Copy } from "lucide-react"
 import {
@@ -29,6 +30,9 @@ export function BulkResultReport({
   results,
   actionLabel,
 }: BulkResultReportProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('bulk-result-report', isOpen)
+
   if (!isOpen) return null
 
   const succeeded = results.filter((r) => r.ok)

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,9 @@ export function JobInsightsModal({
   bottlenecks,
   insights,
 }: JobInsightsModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-insights', isOpen)
+
   const {
     aggregateMetrics,
     funnelData,

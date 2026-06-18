@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useCallback } from "react"
 import {
   Dialog,
@@ -50,6 +51,9 @@ export function ProfileModal({
   onNavigateToSettings,
   onProfileUpdated,
 }: ProfileModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('profile', open)
+
   const [editName, setEditName] = useState(user.name)
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)

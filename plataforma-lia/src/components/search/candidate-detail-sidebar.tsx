@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from"react"
 import { getScoreBadgeClasses } from"@/lib/score-utils"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from"@/components/ui/sheet"
@@ -87,6 +88,9 @@ export function CandidateDetailSidebar({
   onSendMessage,
   onSaveToBase
 }: CandidateDetailSidebarProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('candidate-detail-sidebar', open)
+
   if (!candidate) return null
 
   const getInitials = (name: string) => {

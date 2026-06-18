@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,9 @@ export function TemplatePreviewModal({
   onOpenChange,
   onConfirm,
 }: TemplatePreviewModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('template-preview', open)
+
   const t = useTranslations("agents.customAgents")
   const [customName, setCustomName] = useState("")
   const [isCreating, setIsCreating] = useState(false)

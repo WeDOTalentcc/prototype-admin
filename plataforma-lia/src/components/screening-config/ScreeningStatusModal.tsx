@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState } from"react"
 import {
   Dialog,
@@ -73,6 +74,9 @@ export function ScreeningStatusModal({
   onStatusChange,
   onNavigateToJob,
 }: ScreeningStatusModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('screening-status', isOpen)
+
   const [isUpdating, setIsUpdating] = useState(false)
   const [showPauseForm, setShowPauseForm] = useState(false)
   const [pauseReason, setPauseReason] = useState('')

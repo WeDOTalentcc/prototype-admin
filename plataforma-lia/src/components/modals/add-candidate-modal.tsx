@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState } from"react"
 import { DEMO_VALUES } from"@/lib/pricing"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from"@/components/ui/dialog"
@@ -41,6 +42,9 @@ interface LIAAnalysis {
 
 
 export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('add-candidate', isOpen)
+
   const [activeTab, setActiveTab] = useState("basic")
   const [liaAnalysis] = useState<LIAAnalysis | null>(null)
   const [skills, setSkills] = useState<string[]>([])

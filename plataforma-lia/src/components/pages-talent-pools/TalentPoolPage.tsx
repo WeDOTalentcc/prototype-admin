@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from"react"
 import {
   Users, Search, Bot, Settings, Plus, ArrowRight, Heart,
   Eye, Mail, MoreHorizontal, ChevronDown, Filter,
-  Briefcase, Pause, Play, Archive, Pencil, Trash2, Check, X
+  Briefcase, Pause, Play, Archive, Pencil, Trash2, Check, X, Loader2
 } from"lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from"@/components/ui/chip"
@@ -776,6 +776,7 @@ function ConfigTab({ pool, onUpdate }: { pool: TalentPool; onUpdate: () => void 
           onClick={handleSave}
           disabled={!isDirty || !name.trim() || isSaving}
         >
+          {isSaving && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
           {isSaving ? "Salvando..." : saveSuccess ? (
             <><Check className="w-4 h-4 mr-1" />Salvo</>
           ) : "Salvar alterações"}
@@ -834,11 +835,13 @@ function ArchivePoolModal({ poolName, poolId, onClose, onArchived }: ArchivePool
             Cancelar
           </Button>
           <Button
-            className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-4 py-2 text-sm font-medium"
+            className={buttonStyles.destructive}
             onClick={handleArchive}
             disabled={isArchiving}
           >
-            <Archive className="w-4 h-4 mr-1" />
+            {isArchiving
+              ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              : <Archive className="w-4 h-4 mr-1" />}
             {isArchiving ? "Arquivando..." : "Arquivar banco"}
           </Button>
         </DialogFooter>

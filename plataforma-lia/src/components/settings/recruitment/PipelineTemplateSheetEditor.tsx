@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useCallback, useEffect } from "react"
 import { ChevronDown, ChevronRight, Loader2, Pencil, Save, Trash2, Upload, X } from "lucide-react"
 import { toast } from "sonner"
@@ -109,6 +110,9 @@ export function PipelineTemplateSheetEditor({
   onOpenChange,
   onSaved,
 }: PipelineTemplateSheetEditorProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('pipeline-template-sheet-editor', open)
+
   const { templates, updateTemplate, deleteTemplate } = usePipelineTemplates()
   const template = templates.find((t) => t.id === templateId) ?? null
 

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import type { MenuItemType, JobFilterItemType, SidebarProps } from "@/lib/sidebar/sidebar.types"
 import { useSidebarState } from "@/lib/sidebar/useSidebarState"
@@ -650,6 +651,9 @@ const FocusedJobSection = React.memo(({
 FocusedJobSection.displayName = 'FocusedJobSection'
 
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch, notificationOpen, onNotificationToggle }: SidebarProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('sidebar-password', showPasswordModal)
+
   const t = useTranslations('sidebar')
   const { agents, pools } = useSidebarDynamicItems()
   const { focusedJob, clearFocusedJob } = useFocusedJobStore()

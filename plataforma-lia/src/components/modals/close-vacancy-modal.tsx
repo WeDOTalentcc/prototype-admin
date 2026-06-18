@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect, useCallback, useMemo } from"react"
 import {
   Dialog,
@@ -113,6 +114,9 @@ export function CloseVacancyModal({
   onConfirm,
   closeWithoutHire = false,
 }: CloseVacancyModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('close-vacancy', isOpen)
+
   const { user } = useAuth()
   const { companyId: resolvedCompanyId } = useCompanyId()
 

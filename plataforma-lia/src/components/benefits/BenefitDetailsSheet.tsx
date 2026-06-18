@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { formatBRL } from"@/lib/pricing"
 
 import React from"react"
@@ -123,6 +124,9 @@ export function BenefitDetailsSheet({
   benefits,
   title ="Benefícios da Empresa",
 }: BenefitDetailsSheetProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('benefit-details', open)
+
   const groupedBenefits = groupBenefitsByCategory(benefits)
   const highlightedBenefits = benefits.filter(b => b.is_highlighted && b.is_active)
   const totalBenefits = benefits.filter(b => b.is_active).length

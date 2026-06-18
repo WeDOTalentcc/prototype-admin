@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * AutomationLogsView — Sprint C canonical impeccable + Sprint C.5 CSV export.
  *
@@ -113,6 +114,9 @@ export function exportLogsToCsv(
 }
 
 export function AutomationLogsView() {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('automation-log-detail', selectedLog)
+
   const t = useTranslations("settings.recruitment.automationsTab")
   const { data: automations = [] } = useAutomationsList()
   const [selectedAutomationId, setSelectedAutomationId] = useState<string | "all">("all")

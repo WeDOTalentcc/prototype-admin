@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from"react"
 import { liaApi, JobVacancy } from"@/services/lia-api"
 import { formatJobLocation } from "@/lib/jobs/location"
@@ -39,6 +40,9 @@ export function AddListToVacanciesModal({
   selectedCandidateIds, 
   onSuccess 
 }: AddListToVacanciesModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('add-list-to-vacancies', isOpen)
+
 const [vacancies, setVacancies] = useState<JobVacancy[]>([])
   const [selectedVacancyIds, setSelectedVacancyIds] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState('')

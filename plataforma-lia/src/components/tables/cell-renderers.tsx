@@ -1,4 +1,5 @@
 "use client"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import NextImage from"next/image"
 
 import React, { useState, lazy, Suspense } from"react"
@@ -537,6 +538,9 @@ export function InteractiveStageCell({
   onStageChange,
   onTransitionRequest
 }: InteractiveStageCellProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('interactive-stage', open)
+
   const [open, setOpen] = useState(false)
   const [selectedStage, setSelectedStage] = useState<string>('')
 

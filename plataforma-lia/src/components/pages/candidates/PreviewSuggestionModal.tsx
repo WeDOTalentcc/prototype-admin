@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from"react"
 import { useTranslations } from "next-intl"
 import { Brain, X, Plus, Loader2, Edit, Bookmark, Search } from"lucide-react"
@@ -49,6 +50,9 @@ export function PreviewSuggestionModal({
   onSetLiaPromptValue,
   onSetActiveSearchTab,
 }: PreviewSuggestionModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('preview-suggestion', previewSuggestion)
+
   const t = useTranslations('candidates.modals')
 const [previewTags, setPreviewTags] = useState<string[]>([])
   const [newPreviewTag, setNewPreviewTag] = useState("")

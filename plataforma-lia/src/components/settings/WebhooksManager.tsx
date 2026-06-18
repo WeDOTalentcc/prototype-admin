@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState } from "react"
 import { useTranslations } from "next-intl"
 import { HubHeader, HubLoadingState } from "./_shared"
@@ -20,6 +21,10 @@ import { apiFetch } from "@/lib/api/api-fetch"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 export function WebhooksManager() {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('webhook-create', creating)
+  useLiaModalTracking('webhook-secret', showSecret)
+
   const t = useTranslations("settings.webhooks")
   const { webhooks, isLoading, mutate } = useWebhooks()
   // Sprint 5 catalogos dinamicos: substituiu WEBHOOK_EVENTS hardcoded.

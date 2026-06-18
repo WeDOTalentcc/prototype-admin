@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { SearchResultsHeader } from "./SearchResultsHeader"
@@ -274,6 +275,9 @@ export function CandidateSearchResultsView({
   error,
   onRetry,
 }: CandidateSearchResultsViewProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('tag-dialog', showTagDialog)
+
   const t = useTranslations('candidates')
   const [showTagDialog, setShowTagDialog] = useState<'add' | 'remove' | null>(null)
   const [tagInput, setTagInput] = useState('')

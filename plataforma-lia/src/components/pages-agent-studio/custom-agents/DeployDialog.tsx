@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState } from "react"
 import { Briefcase, Database, GitBranch, List, Zap, Calendar, MousePointer } from "lucide-react"
 import { useTranslations } from "next-intl"
@@ -33,6 +34,9 @@ interface DeployDialogProps {
 }
 
 export function DeployDialog({ agent, open, onClose, onDeployed }: DeployDialogProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('deploy-agent', open)
+
   const t = useTranslations('agents.customAgents')
   const [targetType, setTargetType] = useState<DeploymentTargetType>("job")
   const [targetId, setTargetId] = useState("")

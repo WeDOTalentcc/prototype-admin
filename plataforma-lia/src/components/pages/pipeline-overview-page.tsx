@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { cn } from "@/lib/utils"
 import {
@@ -366,6 +367,10 @@ function calculateGeneralScore(candidate: CandidateItem): number | null {
 type ModalType = "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5" | "twin" | null
 
 export function PipelineOverviewPage() {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('stage-agent-trigger', stageAgentModalStageId)
+  useLiaModalTracking('dispatch-dialog', showDispatchDialog)
+
   const tOverview = useTranslations("pipelineOverview")
   const mode = useUIPreferencesStore((s) => s.pipelineOverviewMode)
   const setMode = useUIPreferencesStore((s) => s.setPipelineOverviewMode)

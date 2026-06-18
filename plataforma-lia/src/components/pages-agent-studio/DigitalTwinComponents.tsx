@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
@@ -98,6 +99,9 @@ type ScanPreview = {
 }
 
 export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDigitalTwinModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('create-digital-twin', isOpen)
+
   const t = useTranslations("agents.studio.twins.createModal")
   const [step, setStep] = useState<"select" | "scanning" | "preview">("select")
   const [specialists, setSpecialists] = useState<Array<{ id: string; name: string; email: string; role: string }>>([])
@@ -443,6 +447,9 @@ export function EvaluateWithTwinModal({
   isOpen,
   onClose,
 }: EvaluateWithTwinModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('evaluate-with-twin', open)
+
   const t = useTranslations("agents.digitalTwin")
   const [evaluation, setEvaluation] = useState<TwinEvaluation | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -680,6 +687,9 @@ interface EvaluateCandidateWithTwinModalProps {
 export function EvaluateCandidateWithTwinModal({
   isOpen, onClose, candidateName, candidateProfile, jobContext,
 }: EvaluateCandidateWithTwinModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('evaluate-candidate-with-twin', isOpen)
+
   const t = useTranslations("agents.studio.twins.evaluateCandidate")
   const [twins, setTwins] = useState<Array<{ id: string; twin_name: string }>>([])
   const [twinId, setTwinId] = useState("")

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import NextImage from "next/image"
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
@@ -60,6 +61,9 @@ export function DataBlockingModal({
   onResendRequest,
   onProceedAnyway
 }: DataBlockingModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('data-blocking', isOpen)
+
   const [isResending, setIsResending] = useState(false)
   const [isProceeding, setIsProceeding] = useState(false)
 

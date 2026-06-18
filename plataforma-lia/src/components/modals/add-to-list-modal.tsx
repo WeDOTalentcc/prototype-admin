@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import { liaApi, CandidateList } from "@/services/lia-api"
 import { Button } from "@/components/ui/button"
@@ -43,6 +44,9 @@ export function AddToListModal({
   candidateNames, 
   onSuccess 
 }: AddToListModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('add-to-list', isOpen)
+
 const [lists, setLists] = useState<CandidateList[]>([])
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [isCreatingNew, setIsCreatingNew] = useState(false)

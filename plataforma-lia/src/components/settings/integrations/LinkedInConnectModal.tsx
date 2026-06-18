@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * LinkedInConnectModal — modal for configuring LinkedIn integration credentials.
  *
@@ -48,6 +49,9 @@ export function LinkedInConnectModal({
   onClose,
   onConnected,
 }: LinkedInConnectModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('linkedin-connect', isOpen)
+
   // ── All hooks before any conditional return (Rules of Hooks) ──────────────
   const [status, setStatus] = useState<LinkedInStatus | null>(null)
   const [loadingStatus, setLoadingStatus] = useState(true)

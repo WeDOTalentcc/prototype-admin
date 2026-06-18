@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState } from "react"
 import {
   Users, FileSearch, BarChart3, Mail, TrendingUp, Brain,
@@ -71,6 +72,9 @@ interface CreateJobModalProps {
 }
 
 export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('create-job', open)
+
   const [jobType, setJobType] = useState<string>('')
   const [jobName, setJobName] = useState('')
   const [scheduleType, setScheduleType] = useState('now')

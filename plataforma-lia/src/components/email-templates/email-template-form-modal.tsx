@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect, useMemo, useRef, useCallback } from"react"
 import { useTranslations } from"next-intl"
 import { DEMO_VALUES } from"@/lib/pricing"
@@ -84,6 +85,9 @@ export function EmailTemplateFormModal({
   onSuccess,
   template,
 }: EmailTemplateFormModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('email-template-form', isOpen)
+
   const t = useTranslations("settings.communication.templates")
   const [activeTab, setActiveTab] = useState("editor")
   const [saving, setSaving] = useState(false)

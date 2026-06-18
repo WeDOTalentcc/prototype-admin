@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -75,6 +76,9 @@ export function BusinessRuleFormModal({
   onSubmit,
   initialData,
 }: BusinessRuleFormModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('business-rule-form', open)
+
   // Hooks SEMPRE no topo (Rules-of-Hooks discipline)
   const [form, setForm] = useState<BusinessRuleInput>(emptyInput())
   const [conditionsText, setConditionsText] = useState<string>("{}")

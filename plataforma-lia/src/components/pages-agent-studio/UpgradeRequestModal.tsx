@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * UpgradeRequestModal — substitui mailto: como CTA "Falar com Account Manager"
  * no modelo pay-first sales-led canonical WeDOTalent.
@@ -49,6 +50,9 @@ export interface UpgradeRequestModalProps {
 const PLAN_OPTIONS = ["starter", "pro", "business", "enterprise"] as const
 
 export function UpgradeRequestModal({ isOpen, onClose, context }: UpgradeRequestModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('upgrade-request', isOpen)
+
   const t = useTranslations("agents.studio.upgradeRequest")
   const [requestedPlan, setRequestedPlan] = useState<string>("")
   const [notes, setNotes] = useState("")

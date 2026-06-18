@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect, useMemo, useCallback } from"react"
 import { Button } from"@/components/ui/button"
 import { Chip } from"@/components/ui/chip"
@@ -52,6 +53,9 @@ export function SharedSearchDetailsModal({
   onAddToJob,
   onCreateJob
 }: SharedSearchDetailsModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('shared-search-details', open)
+
 const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')

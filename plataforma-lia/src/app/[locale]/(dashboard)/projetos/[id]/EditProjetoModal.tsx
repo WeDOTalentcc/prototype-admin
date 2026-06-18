@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect } from "react"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,9 @@ const AUTOMATION_OPTIONS = [
 ]
 
 export function EditProjetoModal({ project, open, onClose, onSaved }: Props) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('edit-projeto', open)
+
   const { persona } = useAiPersona()
   const personaName = persona?.name ?? "IA"
   const [name, setName] = useState(project.name)

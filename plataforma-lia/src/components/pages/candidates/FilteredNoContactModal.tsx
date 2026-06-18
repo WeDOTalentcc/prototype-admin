@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -48,6 +49,9 @@ export function FilteredNoContactModal({
   candidates,
   onCandidateEnriched,
 }: FilteredNoContactModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('filtered-no-contact', open)
+
   const t = useTranslations('candidates')
   const [rowStates, setRowStates] = React.useState<Record<string, RowState>>({})
   const [bulkRunning, setBulkRunning] = React.useState(false)

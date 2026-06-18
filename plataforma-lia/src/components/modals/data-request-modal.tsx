@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -82,6 +83,9 @@ export function DataRequestModal({
   jobTitle,
   onSubmit
 }: DataRequestModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('data-request', isOpen)
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<string>('basic')
   const [selectedFields, setSelectedFields] = useState<Set<string>>(new Set(['full_name', 'email', 'phone']))

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from"react"
 import { useTranslations } from "next-intl"
 import { textStyles } from"@/lib/design-tokens"
@@ -80,6 +81,9 @@ export function BenefitTemplateModal({
   onSelectTemplate,
   onOpenBenefitModal,
 }: BenefitTemplateModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('benefit-template', open)
+
   const t = useTranslations("settings.benefits")
 
   const BENEFIT_CATEGORIES = [

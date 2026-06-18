@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState } from"react"
 import { formatRelativeTime } from"@/lib/format-utils"
 import { Button } from"@/components/ui/button"
@@ -125,6 +126,9 @@ export function HistoryTab({
   onDeleteItem,
   onClearAll
 }: HistoryTabProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('history-save-search', showSaveModal)
+
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [selectedItem, setSelectedItem] = useState<SearchHistoryItem | null>(null)

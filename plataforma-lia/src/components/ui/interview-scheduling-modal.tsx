@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect } from"react"
 import {
   Dialog,
@@ -45,6 +46,9 @@ export function InterviewSchedulingModal({
   userName,
   userEmail,
 }: InterviewSchedulingModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('interview-scheduling', open)
+
   const [isGeneratingEmail, setIsGeneratingEmail] = useState(false)
   const [isScheduling, setIsScheduling] = useState(false)
   const [emailTemplate, setEmailTemplate] = useState<{

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import {
   Dialog,
@@ -79,6 +80,9 @@ export function JobDuplicateModal({
   recruiters = [],
   onDuplicate,
 }: JobDuplicateModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-duplicate', isOpen)
+
   const [newTitle, setNewTitle] = useState("")
   const [deadlineShortlist, setDeadlineShortlist] = useState("")
   const [deadlineScreening, setDeadlineScreening] = useState("")

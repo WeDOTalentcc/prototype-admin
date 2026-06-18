@@ -1,5 +1,6 @@
 "use client";
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Chip } from "@/components/ui/chip";
@@ -38,6 +39,9 @@ export function OrgChartDialog({
   loadingOrgChart,
   setOrgChartDepartment,
 }: OrgChartDialogProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('org-chart', orgChartDepartment)
+
   const t = useTranslations('settings.departments');
 
   return (

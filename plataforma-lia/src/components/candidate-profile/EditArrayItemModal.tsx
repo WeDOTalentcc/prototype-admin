@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -53,6 +54,9 @@ export function EditArrayItemModal<T extends Record<string, unknown>>({
   description,
   onSave,
 }: EditArrayItemModalProps<T>) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('edit-array-item', open)
+
   const [values, setValues] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)

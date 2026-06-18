@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import {
@@ -628,6 +629,9 @@ function canAdvance(step: number, data: WizardData): boolean {
 }
 
 export function NovoProjetoWizard({ open, onClose }: { open: boolean; onClose: () => void }) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('novo-projeto-wizard', open)
+
   const { persona } = useAiPersona()
   const personaName = persona?.name ?? "IA"
   const router = useRouter()

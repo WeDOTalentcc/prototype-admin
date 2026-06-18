@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * Onda 4 Agent E (2026-05-29) — AssignAgentModal generico canonical.
  *
@@ -90,6 +91,9 @@ export function AssignAgentModal({
   onAssigned,
   testIdPrefix = "assign-agent",
 }: AssignAgentModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('assign-agent', open)
+
   const t = useTranslations("agents.assignModal")
   const tRoot = useTranslations()
   const {

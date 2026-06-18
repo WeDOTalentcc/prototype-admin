@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
 import { Bot, Brain, Briefcase, ChevronRight, Copy, Database, Edit3, ExternalLink, Loader2, MoreVertical, Pause, Play, Settings, Sliders, Store, TestTube2, Trash2 } from "lucide-react"
@@ -340,6 +341,9 @@ export function CreateCustomAgentModal({
   sourcingCreate?: boolean
   initialTemplate?: { id: string; display_name: string } | null
 }) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('create-custom-agent', open)
+
   const t = useTranslations('agents.customAgents')
   const isEditing = !!agent
   const isSourcing = agent?.category === "sourcing" || !!sourcingCreate
@@ -847,6 +851,9 @@ export function CreateCustomAgentModal({
 }
 
 function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () => void }) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('test-agent', open)
+
   const t = useTranslations('agents.customAgents')
   // White-label canonical: fallback do nome no título do modal de teste.
   const { persona: aiPersona } = useAiPersona()

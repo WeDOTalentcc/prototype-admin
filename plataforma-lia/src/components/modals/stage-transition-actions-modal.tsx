@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react"
 import {
   Dialog,
@@ -26,6 +27,9 @@ import { StageTransitionRightPanel } from "./stage-transition-right-panel"
 export type { TransitionActionType }
 
 export function StageTransitionActionsModal(props: StageTransitionActionsModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('stage-transition-actions', isOpen)
+
   const {
     isOpen,
     onClose,

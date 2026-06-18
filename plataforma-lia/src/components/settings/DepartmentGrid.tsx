@@ -1,5 +1,6 @@
 "use client";
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,6 +47,9 @@ export function DepartmentGrid({
   handleDeleteDepartment,
   handleOpenOrgChart,
 }: DepartmentGridProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('department-delete-confirm', departmentToDelete)
+
   const t = useTranslations('settings.departments');
 
   return (

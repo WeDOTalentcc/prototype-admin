@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * TalentPoolInsightsModal — Juicybox 2-column pattern
  *
@@ -137,6 +138,9 @@ export function TalentPoolInsightsModal({
   jobId,
   jobTitle,
 }: TalentPoolInsightsModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('talent-pool-insights', isOpen)
+
   const router = useRouter()
 
   const { data, isLoading, error, refetch } = useQuery<TalentPoolData>({

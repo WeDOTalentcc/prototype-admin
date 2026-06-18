@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * Fase 1 Nível 1 — B3b (2026-06-09): HiringPolicyConfigModal
  *
@@ -29,6 +30,9 @@ interface HiringPolicyConfigModalProps {
 }
 
 export function HiringPolicyConfigModal({ isOpen, onClose }: HiringPolicyConfigModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('hiring-policy-config', isOpen)
+
   const { persona } = useAiPersona()
   const personaName = persona?.name ?? "IA"
   return (

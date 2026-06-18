@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * BenefitFormModal — cadastro/edicao de beneficio da empresa.
  *
@@ -121,6 +122,9 @@ export function BenefitFormModal({
   history,
   historyLoading,
 }: BenefitFormModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('benefit-form', open)
+
   const t = useTranslations("settings.benefits")
   const { departments: companyDepartments, loading: deptsLoading } = useDepartmentsList()
   const {

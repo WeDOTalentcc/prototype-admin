@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * Task #1180 — Modal pré-análise (form-only).
  *
@@ -68,6 +69,9 @@ export function AnalyzeWebsiteModal({
   initial,
   onProposed,
 }: AnalyzeWebsiteModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('analyze-website', open)
+
   const [stage, setStage] = React.useState<Stage>("form")
   const [companyName, setCompanyName] = React.useState(initial.companyName ?? "")
   const [websiteUrl, setWebsiteUrl] = React.useState(initial.websiteUrl ?? "")

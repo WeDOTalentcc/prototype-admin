@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useMemo } from "react"
 import {
   Dialog,
@@ -65,6 +66,9 @@ export function JobAssignRecruiterModal({
   recruiters,
   onAssign,
 }: JobAssignRecruiterModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-assign-recruiter', isOpen)
+
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedRecruiterId, setSelectedRecruiterId] = useState<string | null>(null)
   const [notifyRecruiter, setNotifyRecruiter] = useState(true)

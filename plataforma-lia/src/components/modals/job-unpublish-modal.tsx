@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -68,6 +69,9 @@ export interface UnpublishData {
 }
 
 export function JobUnpublishModal(props: JobUnpublishModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-unpublish', props.isOpen)
+
   const hook = useJobUnpublish(props)
 
   const {

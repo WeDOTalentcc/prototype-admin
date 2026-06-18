@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react"
 import {
   Dialog,
@@ -75,6 +76,9 @@ export function JobStatusModal({
   onStatusChange,
   onNavigateToJobWithCommunication
 }: JobStatusModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-status', isOpen)
+
   const state = useJobStatusModal({
     isOpen,
     onClose,

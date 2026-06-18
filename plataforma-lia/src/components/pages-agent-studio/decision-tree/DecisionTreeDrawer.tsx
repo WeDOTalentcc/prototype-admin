@@ -17,6 +17,7 @@
 // exclusivo da assistente da plataforma quando ELA age, fora do Studio.
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import * as React from "react"
 import { useTranslations } from "next-intl"
 import { Brain, Check, ChevronDown, Database, FileLock2, Loader2, X } from "lucide-react"
@@ -353,6 +354,9 @@ export function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBo
 }
 
 export function DecisionTreeDrawer({ executionId, onClose }: DecisionTreeDrawerProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('decision-tree-drawer', open)
+
   const t = useTranslations("agents.studio.decisionTree")
   const { persona } = useAiPersona()
   const { data, isLoading, isError, isLegacy } = useExecutionReasoning(executionId)

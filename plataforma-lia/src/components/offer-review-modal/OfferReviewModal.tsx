@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * OfferReviewModal — 2-column modal for reviewing and sending offer letters.
  *
@@ -29,6 +30,9 @@ import { OfferStatusTracker } from "@/components/offer/OfferStatusTracker"
 const DEBOUNCE_MS = 600
 
 export function OfferReviewModal() {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('offer-review', isOpen)
+
   const { draft, isSaving, salaryWarnings, updateField, prepareManual, cancel, clearDraft } =
     useOfferDraftStore()
 

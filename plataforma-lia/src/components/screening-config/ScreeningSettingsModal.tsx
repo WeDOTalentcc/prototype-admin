@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import {
   Dialog,
@@ -30,6 +31,9 @@ export function ScreeningSettingsModal({
   config,
   updateConfig,
 }: ScreeningSettingsModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('screening-settings', isOpen)
+
   const [minScore, setMinScore] = useState(config?.settings?.min_score ?? 70)
   const [responseTimeout, setResponseTimeout] = useState(config?.settings?.response_timeout_hours ?? 48)
   const [maxRetries, setMaxRetries] = useState(config?.settings?.max_retries ?? 2)

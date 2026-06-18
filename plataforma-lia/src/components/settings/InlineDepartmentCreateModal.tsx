@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * InlineDepartmentCreateModal — Sprint 2 RBAC Phase 2.5 (2026-05-25)
  *
@@ -66,6 +67,9 @@ export function InlineDepartmentCreateModal({
   onCreated,
   onSave,
 }: InlineDepartmentCreateModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('inline-department-create', open)
+
   const t = useTranslations("settings.users")
   const [name, setName] = useState("")
   const [code, setCode] = useState("")

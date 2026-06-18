@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -88,6 +89,9 @@ export function ColumnConfigurationModal({
   onLoadView,
   onDeleteView
 }: ColumnConfigurationModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('column-configuration', isOpen)
+
   const [columns, setColumns] = useState<ColumnConfig[]>(currentColumns)
   const [searchTerm, setSearchTerm] = useState("")
   const [draggedItem, setDraggedItem] = useState<ColumnConfig | null>(null)

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState } from"react"
 import { formatRelativeTime } from"@/lib/format-utils"
 import { Button } from"@/components/ui/button"
@@ -102,6 +103,10 @@ export function SavedSearchesTab({
   onToggleFavorite,
   onNavigateToSearch
 }: SavedSearchesTabProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('saved-search-create', showCreateModal)
+  useLiaModalTracking('saved-search-edit', showEditModal)
+
   const [searchFilter, setSearchFilter] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)

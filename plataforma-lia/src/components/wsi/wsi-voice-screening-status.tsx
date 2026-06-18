@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect, useCallback } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
@@ -60,6 +61,9 @@ export function WSIVoiceScreeningStatus({
   autoStart = false,
   voipSessionId,
 }: WSIVoiceScreeningStatusProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('wsi-voice-screening-status', isOpen)
+
   const t = useTranslations('screening.wsi')
   const isVoipMode = Boolean(voipSessionId)
   const [status, setStatus] = useState<VoiceStatus>(

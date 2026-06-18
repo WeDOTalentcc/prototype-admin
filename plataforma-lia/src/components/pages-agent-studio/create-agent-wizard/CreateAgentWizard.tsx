@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * CreateAgentWizard — unified goal-first entry-point for agent creation.
  *
@@ -213,6 +214,9 @@ export function CreateAgentWizard({
   initialGoal,
   initialConfig,
 }: CreateAgentWizardProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('create-agent-wizard', open)
+
   const { templates: AGENT_TEMPLATES } = useLegacyAgentTemplates()
   const initial = deriveInitialState(initialGoal, initialConfig)
   const [step, setStep] = useState(initial.step)

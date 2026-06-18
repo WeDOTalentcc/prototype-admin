@@ -1,3 +1,4 @@
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
@@ -86,6 +87,9 @@ export function DataRequestDetailsModal({
   open,
   onClose,
 }: DataRequestDetailsModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('data-request-details', open)
+
   const [details, setDetails] = useState<DataRequestDetails | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

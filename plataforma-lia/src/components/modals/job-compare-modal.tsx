@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import {
   Dialog,
   DialogContent,
@@ -62,6 +63,9 @@ interface JobCompareModalProps {
 }
 
 export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-compare', isOpen)
+
   const {
     selectedDimensions,
     toggleDimension,

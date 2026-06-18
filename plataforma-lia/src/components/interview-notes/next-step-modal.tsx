@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import * as React from "react"
 import { useState, useEffect } from "react"
 import {
@@ -56,6 +57,9 @@ export function NextStepModal({
   availableStages,
   onConfirm,
 }: NextStepModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('next-step', isOpen)
+
   const { persona } = useAiPersona()
   const personaName = persona?.name ?? "IA"
   const [decisionType, setDecisionType] = useState<DecisionType | null>(null)

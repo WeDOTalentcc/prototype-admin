@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -98,6 +99,10 @@ export function JobPublishModal({
   onUnpublish,
   onOpenCommunicationModal
 }: JobPublishModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-publish', isOpen)
+  useLiaModalTracking('job-publish-channel-info', channelInfoModal)
+
   const { persona } = useAiPersona()
   const personaName = persona?.name ?? "IA"
   const [selectedChannels, setSelectedChannels] = useState<Set<string>>(new Set())

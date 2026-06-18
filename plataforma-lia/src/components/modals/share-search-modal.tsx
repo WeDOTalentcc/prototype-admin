@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect, useMemo } from"react"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
@@ -86,6 +87,9 @@ export function ShareSearchModal({
   sourceListId,
   onSuccess
 }: ShareSearchModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('share-search', open)
+
   const { user } = useAuth()
 const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shareType)
   const [recipients, setRecipients] = useState<Recipient[]>([])

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Archive, Copy, Layers, Loader2, Maximize2, Plus, Sparkles, Trash2 } from "lucide-react"
@@ -50,6 +51,10 @@ function ConfirmDialog({ open, title, description, confirmLabel, cancelLabel, de
 // ─── PipelineTemplatesTab ─────────────────────────────────────────────────────
 
 export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: (changed: boolean) => void }) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('pipeline-template-confirm-archive', confirmArchive)
+  useLiaModalTracking('pipeline-template-confirm-delete', confirmDelete)
+
   const t       = useTranslations("settings.recruitment.pipelineTemplates")
   const tEmpty  = useTranslations("settings.recruitment.pipelineTemplates.empty")
   const tHints  = useTranslations("settings.recruitment.pipelineTemplates.hints")

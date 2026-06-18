@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import {
   Dialog,
@@ -29,6 +30,9 @@ export function ScreeningChannelsModal({
   config,
   updateConfig,
 }: ScreeningChannelsModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('screening-channels', isOpen)
+
   const [masterEnabled, setMasterEnabled] = useState(config?.channels_master_enabled ?? true)
   const [whatsappEnabled, setWhatsappEnabled] = useState(config?.channels?.whatsapp?.enabled ?? true)
   const [chatWebEnabled, setChatWebEnabled] = useState(config?.channels?.chat_web?.enabled ?? true)

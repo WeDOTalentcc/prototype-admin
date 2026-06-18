@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Send, Loader2, Wrench, BarChart3, ShieldCheck, DollarSign } from "lucide-react"
@@ -31,6 +32,9 @@ interface TestDebugPanelProps {
 }
 
 export function TestDebugPanel({ agent, open, onClose }: TestDebugPanelProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('test-debug', open)
+
   const t = useTranslations('agents.customAgents')
   // White-label canonical: persona como fallback do nome do agente no header.
   const { persona: aiPersona } = useAiPersona()

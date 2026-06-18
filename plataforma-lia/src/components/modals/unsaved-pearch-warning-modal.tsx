@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { AlertTriangle, Database, X, Mail, Phone, Coins, CheckCircle2 } from "lucide-react"
 import {
   AlertDialog,
@@ -43,6 +44,9 @@ export function UnsavedPearchWarningModal({
   unsavedCandidates = [],
   isSaving = false
 }: UnsavedPearchWarningModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('unsaved-search-warning', isOpen)
+
   const candidatesWithEmail = unsavedCandidates.filter(c => 
     c.email || c.best_personal_email || c.best_business_email || 
     (c.personal_emails && c.personal_emails.length > 0) || 
