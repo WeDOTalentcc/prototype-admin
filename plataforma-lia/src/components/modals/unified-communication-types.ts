@@ -73,12 +73,12 @@ export const PIPELINE_STAGES = [
   { value: 'oferta', label: 'Oferta' }
 ]
 
-export const interviewTypes = [
+export const interviewTypes: Array<{ id: string; name: string; description: string; icon: React.ElementType; disabled?: boolean }> = [
   { id: 'funcional', name: 'Funcional', description: 'Avaliação de competências da função', icon: Briefcase },
-  { id: 'tecnica', name: 'Técnica', description: 'Avaliação de skills técnicos', icon: FileText },
-  { id: 'completa', name: 'Completa', description: 'Avaliação abrangente', icon: Users },
-  { id: 'cultural', name: 'Cultural', description: 'Fit cultural e valores', icon: Building }
-] as const
+  { id: 'tecnica', name: 'Técnica', description: 'Avaliação de skills técnicos', icon: FileText, disabled: true },
+  { id: 'completa', name: 'Completa', description: 'Avaliação abrangente', icon: Users, disabled: true },
+  { id: 'cultural', name: 'Cultural', description: 'Fit cultural e valores', icon: Building, disabled: true },
+]
 
 export const platforms = [
   { id: 'zoom', name: 'Zoom', icon: Video },
