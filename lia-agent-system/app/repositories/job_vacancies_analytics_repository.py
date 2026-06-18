@@ -3,10 +3,10 @@ JobVacanciesAnalyticsRepository — session-in-constructor pattern.
 Covers all DB operations for job vacancies analytics routes.
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import and_, func, select, text
+from sqlalchemy import and_, case, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.candidate import Candidate, VacancyCandidate
@@ -437,3 +437,71 @@ class JobVacanciesAnalyticsRepository:
             {"co": company_id, "limit": candidates_per_stage},
         )
         return result.fetchall()
+
+    # ─── Company-level Premium Analytics ─────────────────────────────────────
+
+    async def get_pipeline_velocity_for_company(
+        self, company_id: str, period_days: int = 90
+    ) -> list[dict]:
+        """Avg days per stage using CandidateStageHistory.time_in_previous_stage_hours.
+        Multi-tenancy: CandidateStageHistory.company_id == company_id (direct filter).
+        """
+        cutoff = datetime.utcnow() - timedelta(days=period_days)
+        try:
+            result = await self.db.execute(
+                select(
+                    CandidateStageHistory.from_stage_name,
+                    func.avg(CandidateStageHistory.time_in_previous_stage_hours).label("avg_hours"),
+                    func.count(CandidateStageHistory.id).label("sample_count"),
+                )
+                .where(
+                    and_(
+                        CandidateStageHistory.company_id == company_id,
+                        CandidateStageHistory.created_at >= cutoff,
+                        CandidateStageHistory.time_in_previous_stage_hours.is_not(None),
+                        CandidateStageHistory.time_in_previous_stage_hours > 0,
+                    )
+                )
+                .group_by(CandidateStageHistory.from_stage_name)
+                .order_by(func.avg(CandidateStageHistory.time_in_previous_stage_hours).asc())
+            )
+            return [
+                {"stage": row.from_stage_name, "avg_hours": float(row.avg_hours), "samples": int(row.sample_count)}
+                for row in result.all()
+            ]
+        except Exception:
+            return []
+
+    async def get_source_quality_for_company(
+        self, company_id: str, period_days: int = 90
+    ) -> list[dict]:
+        """Conversion rate (hired/total) by source. Multi-tenancy via JOIN to JobVacancy.company_id."""
+        cutoff = datetime.utcnow() - timedelta(days=period_days)
+        try:
+            result = await self.db.execute(
+                select(
+                    VacancyCandidate.source,
+                    func.count(VacancyCandidate.id).label("total"),
+                    func.sum(
+                        case(
+                            (VacancyCandidate.stage.in_(["hired", "contratado"]), 1),
+                            else_=0,
+                        )
+                    ).label("hired"),
+                )
+                .join(JobVacancy, JobVacancy.id == VacancyCandidate.vacancy_id)
+                .where(
+                    and_(
+                        JobVacancy.company_id == company_id,
+                        VacancyCandidate.created_at >= cutoff,
+                    )
+                )
+                .group_by(VacancyCandidate.source)
+                .order_by(func.count(VacancyCandidate.id).desc())
+            )
+            return [
+                {"source": row.source or "unknown", "total": int(row.total), "hired": int(row.hired or 0)}
+                for row in result.all()
+            ]
+        except Exception:
+            return []

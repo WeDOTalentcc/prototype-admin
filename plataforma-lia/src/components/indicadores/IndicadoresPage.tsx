@@ -26,6 +26,14 @@ interface DashboardInsight {
   type: string; message: string; severity?: string; action?: string
 }
 
+interface StageVelocityItem {
+  stage: string; label: string; avg_days: number; sample_count: number
+}
+
+interface SourceQualityItem {
+  source: string; label: string; total: number; hired: number; conversion_rate: number
+}
+
 interface DashboardKPIs {
   period: string
   active_candidates: number
@@ -38,6 +46,8 @@ interface DashboardKPIs {
   weekly_trend: WeeklyTrend[]
   stage_funnel: StageFunnelItem[]
   insights: DashboardInsight[]
+  pipeline_velocity: StageVelocityItem[]
+  source_quality: SourceQualityItem[]
 }
 
 // ---------------------------------------------------------------------------
@@ -291,42 +301,157 @@ function InsightsPanel({ insights }: { insights: DashboardInsight[] }) {
 }
 
 // ---------------------------------------------------------------------------
-// PremiumLockedSection
+// PremiumLock — overlay wrapper for Enterprise-gated sections
 // ---------------------------------------------------------------------------
 
-const PREMIUM_CARDS = [
-  "Benchmark Salarial", "Insights de Empregadores",
-  "Distribuição de Educação", "Score de Efetividade",
-]
-
-function PremiumLockedSection() {
+function PremiumLock({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-md shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Análise Avançada</h2>
-        <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded font-medium">Enterprise</span>
+    <div className="relative">
+      <div className="blur-sm pointer-events-none select-none" aria-hidden="true">
+        {children}
       </div>
-      <div className="relative">
-        <div className="opacity-30 pointer-events-none grid grid-cols-2 gap-4" aria-hidden="true">
-          {PREMIUM_CARDS.map((name) => (
-            <div key={name} className="bg-gray-50 rounded-md border border-gray-200 p-4 h-28 flex items-center justify-center">
-              <span className="text-xs text-gray-400">{name}</span>
-            </div>
-          ))}
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center bg-white/95 p-6 rounded-xl shadow border border-gray-100">
-            <Lock className="w-6 h-6 text-violet-400 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-900 mb-1">Disponível no plano Enterprise</p>
-            <p className="text-xs text-gray-500 mb-3">Acesse 14+ indicadores preditivos avançados</p>
-            <button className="text-sm bg-violet-600 text-white px-4 py-2 rounded-md hover:bg-violet-700 transition-colors">
-              Upgrade Plan →
-            </button>
-          </div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-center bg-white/95 px-6 py-4 rounded-xl shadow-md border border-gray-200">
+          <Lock className="w-5 h-5 text-violet-400 mx-auto mb-1.5" />
+          <p className="text-sm font-semibold text-gray-900">Plano Enterprise</p>
+          <p className="text-xs text-gray-500 mt-0.5 mb-3">Disponível com upgrade</p>
+          <button className="text-xs bg-violet-600 text-white px-3 py-1.5 rounded-md hover:bg-violet-700 transition-colors">
+            Upgrade →
+          </button>
         </div>
       </div>
     </div>
   )
+}
+
+// PipelineVelocityPanel
+// ---------------------------------------------------------------------------
+
+function PipelineVelocityPanel({
+  velocity, loading, isEnterprise,
+}: {
+  velocity: StageVelocityItem[]
+  loading: boolean
+  isEnterprise: boolean
+}) {
+  const content = (
+    <div className="bg-white rounded-md shadow-sm border border-gray-200 p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">Velocidade do Pipeline</h2>
+          <p className="text-xs text-gray-400">Tempo médio em cada estágio</p>
+        </div>
+        <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded font-medium">Enterprise</span>
+      </div>
+      {loading ? (
+        <div className="space-y-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-8 bg-gray-100 rounded animate-pulse" />
+          ))}
+        </div>
+      ) : velocity.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-6">Sem dados suficientes de transição de estágio.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left text-xs font-medium text-gray-500 pb-2 pr-4">Estágio</th>
+                <th className="text-right text-xs font-medium text-gray-500 pb-2 pr-4">Média (dias)</th>
+                <th className="text-right text-xs font-medium text-gray-500 pb-2">Amostras</th>
+              </tr>
+            </thead>
+            <tbody>
+              {velocity.map((v) => (
+                <tr key={v.stage} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                  <td className="py-2.5 pr-4 text-xs font-medium text-gray-700">{v.label}</td>
+                  <td className="py-2.5 pr-4 text-right">
+                    <span className={`text-sm font-semibold tabular-nums ${v.avg_days <= 3 ? "text-emerald-600" : v.avg_days <= 7 ? "text-amber-600" : "text-rose-600"}`}>
+                      {v.avg_days}d
+                    </span>
+                  </td>
+                  <td className="py-2.5 text-right text-xs text-gray-400 tabular-nums">{v.sample_count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+  return isEnterprise ? content : <PremiumLock>{content}</PremiumLock>
+}
+
+// SourceQualityPanel
+// ---------------------------------------------------------------------------
+
+function SourceQualityPanel({
+  sources, loading, isEnterprise,
+}: {
+  sources: SourceQualityItem[]
+  loading: boolean
+  isEnterprise: boolean
+}) {
+  const maxTotal = Math.max(...sources.map((s) => s.total), 1)
+
+  const content = (
+    <div className="bg-white rounded-md shadow-sm border border-gray-200 p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">Qualidade por Fonte</h2>
+          <p className="text-xs text-gray-400">Taxa de contratação por canal</p>
+        </div>
+        <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded font-medium">Enterprise</span>
+      </div>
+      {loading ? (
+        <div className="space-y-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-8 bg-gray-100 rounded animate-pulse" />
+          ))}
+        </div>
+      ) : sources.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-6">Sem dados suficientes por fonte no período.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left text-xs font-medium text-gray-500 pb-2 pr-3 w-28">Fonte</th>
+                <th className="text-left text-xs font-medium text-gray-500 pb-2 pr-4">Volume</th>
+                <th className="text-right text-xs font-medium text-gray-500 pb-2 pr-3">Contratados</th>
+                <th className="text-right text-xs font-medium text-gray-500 pb-2">Conv.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sources.map((s) => {
+                const barPct = Math.round((s.total / maxTotal) * 100)
+                return (
+                  <tr key={s.source} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                    <td className="py-2.5 pr-3 text-xs font-medium text-gray-700">{s.label}</td>
+                    <td className="py-2.5 pr-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-400 rounded-full" style={{ width: `${barPct}%` }} />
+                        </div>
+                        <span className="text-xs text-gray-600 tabular-nums">{s.total}</span>
+                      </div>
+                    </td>
+                    <td className="py-2.5 pr-3 text-right text-xs text-gray-600 tabular-nums">{s.hired}</td>
+                    <td className="py-2.5 text-right">
+                      <span className={`text-xs font-medium tabular-nums ${s.conversion_rate >= 15 ? "text-emerald-600" : s.conversion_rate >= 5 ? "text-amber-600" : "text-gray-500"}`}>
+                        {s.conversion_rate.toFixed(1)}%
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+  return isEnterprise ? content : <PremiumLock>{content}</PremiumLock>
 }
 
 // ---------------------------------------------------------------------------
@@ -480,8 +605,19 @@ export function IndicadoresPage() {
       {/* Insights — only when data has them */}
       {!isLoading && insights.length > 0 && <InsightsPanel insights={insights} />}
 
-      {/* Premium Locked Section */}
-      <PremiumLockedSection />
+      {/* Premium Analytics — Pipeline Velocity + Source Quality */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PipelineVelocityPanel
+          velocity={data?.pipeline_velocity ?? []}
+          loading={isLoading}
+          isEnterprise={false}
+        />
+        <SourceQualityPanel
+          sources={data?.source_quality ?? []}
+          loading={isLoading}
+          isEnterprise={false}
+        />
+      </div>
     </div>
   )
 }

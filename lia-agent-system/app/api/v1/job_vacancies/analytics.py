@@ -1551,6 +1551,22 @@ class StageFunnelItem(BaseModel):
     pct_from_prev: float | None = None
 
 
+
+
+class StageVelocityItem(BaseModel):
+    stage: str
+    label: str
+    avg_days: float
+    sample_count: int
+
+
+class SourceQualityItem(BaseModel):
+    source: str
+    label: str
+    total: int
+    hired: int
+    conversion_rate: float  # hired / total * 100
+
 class DashboardKPIResponse(BaseModel):
     period: str
     active_candidates: int = 0
@@ -1563,6 +1579,8 @@ class DashboardKPIResponse(BaseModel):
     weekly_trend: list[WeeklyTrend] = []
     stage_funnel: list[StageFunnelItem] = []
     insights: list[Insight] = []
+    pipeline_velocity: list[StageVelocityItem] = []
+    source_quality: list[SourceQualityItem] = []
 
 
 @router.get("/job-vacancies/analytics/dashboard", response_model=DashboardKPIResponse)
@@ -1682,6 +1700,47 @@ async def get_analytics_dashboard(
         logger.info("Analytics dashboard: company=%s period=%s active=%d completed=%d",
                     company_id, period, len(active_jobs), hired_in_period)
 
+
+        # ── Pipeline Velocity (Premium) ──────────────────────────────────────
+        STAGE_VELOCITY_LABELS: dict[str, str] = {
+            "initial": "Sourcing", "sourcing": "Sourcing",
+            "screening": "Triagem", "triagem": "Triagem",
+            "interview": "Entrevista", "entrevista": "Entrevista",
+            "offer": "Oferta", "proposta": "Oferta",
+            "hired": "Contratado", "contratado": "Contratado",
+        }
+        raw_velocity = await repo.get_pipeline_velocity_for_company(company_id, period_days)
+        pipeline_velocity: list[StageVelocityItem] = [
+            StageVelocityItem(
+                stage=item["stage"],
+                label=STAGE_VELOCITY_LABELS.get(item["stage"], item["stage"].title()),
+                avg_days=round(item["avg_hours"] / 24, 1),
+                sample_count=item["samples"],
+            )
+            for item in raw_velocity
+            if item["samples"] >= 3
+        ]
+
+        # ── Source Quality (Premium) ──────────────────────────────────────────
+        SOURCE_LABELS: dict[str, str] = {
+            "local": "Plataforma", "linkedin": "LinkedIn", "indeed": "Indeed",
+            "referral": "Indicação", "indicacao": "Indicação",
+            "ats_import": "ATS Import", "email": "E-mail",
+            "whatsapp": "WhatsApp", "unknown": "Outros",
+        }
+        raw_sources = await repo.get_source_quality_for_company(company_id, period_days)
+        source_quality: list[SourceQualityItem] = [
+            SourceQualityItem(
+                source=item["source"],
+                label=SOURCE_LABELS.get(item["source"], item["source"].title()),
+                total=item["total"],
+                hired=item["hired"],
+                conversion_rate=round(item["hired"] / item["total"] * 100, 1) if item["total"] > 0 else 0.0,
+            )
+            for item in raw_sources
+            if item["total"] >= 2
+        ][:8]
+
         return DashboardKPIResponse(
             period=period,
             active_candidates=active_candidates,
@@ -1694,6 +1753,8 @@ async def get_analytics_dashboard(
             weekly_trend=trend_weeks,
             stage_funnel=stage_funnel,
             insights=insights,
+            pipeline_velocity=pipeline_velocity,
+            source_quality=source_quality,
         )
 
     except HTTPException:
