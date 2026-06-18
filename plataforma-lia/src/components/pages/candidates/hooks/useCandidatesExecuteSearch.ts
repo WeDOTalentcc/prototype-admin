@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { liaApi, CandidateLocal } from "@/services/lia-api"
 import {
   searchCandidates as searchCandidatesHybrid,
@@ -169,6 +170,39 @@ export function mapCandidateToInternal(c: Record<string, unknown>): Candidate {
   } as unknown as Candidate
 }
 
+interface SearchSnapshot {
+  candidates: Record<string, unknown>[]
+  total_count: number
+  pearch_count: number
+}
+
+interface SearchSimilarPayload {
+  linkedin_url: string
+  limit: number
+  search_pearch: boolean
+  pearch_type: string
+}
+
+interface SearchByJdPayload {
+  job_description: string
+  limit: number
+  search_pearch: boolean
+  pearch_type: string
+}
+
+interface SearchArchetypesPayload {
+  limit: number
+  search_pearch: boolean
+  pearch_type: string
+}
+
+interface AnalyzePayload {
+  query: string
+  candidates: Record<string, unknown>[]
+  local_count: number
+  global_count: number
+}
+
 export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
   const {
     searchSource, pearchSearchOptions, searchThreadId, setSearchThreadId,
@@ -190,6 +224,108 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
     setRetryInfo({ attempt, maxAttempts, reason })
   }, [])
 
+  // Query: Snapshot
+  const { data: snapshotData } = useQuery({
+    queryKey: ['candidates-snapshot'],
+    queryFn: async () => {
+      // Placeholder — will be called conditionally in executeSearch
+      return null
+    },
+    enabled: false,
+  })
+
+  // Mutation: Snapshot fetch (conditional within executeSearch)
+  const snapshotMutation = useMutation({
+    mutationFn: async (fingerprint: string) => {
+      const res = await fetch(
+        `/api/backend-proxy/candidates/search/snapshot?fingerprint=${encodeURIComponent(fingerprint)}`,
+        { signal: AbortSignal.timeout(8000) }
+      )
+      if (!res.ok) throw new Error(`Snapshot fetch failed: ${res.status}`)
+      return res.json() as Promise<SearchSnapshot>
+    },
+  })
+
+  // Mutation: Similar search
+  const similarSearchMutation = useMutation({
+    mutationFn: async (payload: SearchSimilarPayload) => {
+      const response = await fetchWithRetry('/api/backend-proxy/search/candidates/similar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500], onRetry })
+
+      if (!response.ok) {
+        throw new Error(`Busca por perfil similar falhou (${response.status})`)
+      }
+      return response.json()
+    },
+  })
+
+  // Mutation: Job description search
+  const jdSearchMutation = useMutation({
+    mutationFn: async (payload: SearchByJdPayload) => {
+      const response = await fetchWithRetry('/api/backend-proxy/search/candidates/by-job-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500], onRetry })
+
+      if (!response.ok) {
+        throw new Error(`Busca por descrição de vaga falhou (${response.status})`)
+      }
+      return response.json()
+    },
+  })
+
+  // Mutation: Archetype search
+  const archetypeSearchMutation = useMutation({
+    mutationFn: async (payload: { vacancyId: string; body: SearchArchetypesPayload }) => {
+      const response = await fetchWithRetry(
+        `/api/backend-proxy/search/archetypes/${payload.vacancyId}/search`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload.body),
+        },
+        { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500], onRetry }
+      )
+
+      if (!response.ok) {
+        throw new Error(`Busca por arquétipo falhou (${response.status})`)
+      }
+      return response.json()
+    },
+  })
+
+  // Mutation: Feedback fetch
+  const feedbackMutation = useMutation({
+    mutationFn: async (fingerprint: string) => {
+      const res = await fetch(
+        `/api/backend-proxy/search/feedback/by-search?fingerprint=${encodeURIComponent(fingerprint)}`,
+        { signal: AbortSignal.timeout(8000) }
+      )
+      if (!res.ok) throw new Error(`Feedback fetch failed: ${res.status}`)
+      return res.json()
+    },
+    retry: false, // Best-effort operation
+  })
+
+  // Mutation: Analyze (insights)
+  const analyzeMutation = useMutation({
+    mutationFn: async (payload: AnalyzePayload) => {
+      const res = await fetch('/api/backend-proxy/search/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(8000),
+      })
+      if (!res.ok) throw new Error(`Analytics failed: ${res.status}`)
+      return res.json()
+    },
+    retry: false, // Best-effort operation
+  })
+
   const executeSearch = async (
     query: string,
     entities?: ParsedEntities,
@@ -200,7 +336,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
   ) => {
     setIsLoading(true)
     setFairnessError(null)
-    setCanLoadMore(false) // reset on new search — prevents stale canLoadMore=true from prev search
+    setCanLoadMore(false)
     setIsSearchActive(true)
     setSearchResults(prev => ({ ...prev, isLoading: true, query }))
 
@@ -213,13 +349,9 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       let localCount = 0
       let pearchCount = 0
       let isEnrichingContacts = false
-      // Task #394: candidatos descartados pelo backend após enriquecimento Apify por
-      // continuarem sem email/telefone. Usado para mostrar aviso no Funil.
       let filteredNoContact = 0
       let enrichmentAttempted = 0
       let filteredCandidates: DiscardedCandidate[] = []
-      // Task #403: id da execução salva no backend — propagado para o histórico
-      // para que possamos recarregar a lista de descartados após refresh.
       let persistedSearchId: string | null = null
 
       // Fase 4-D: snapshot path — carrega resultados persistidos sem re-rodar Pearch
@@ -227,124 +359,150 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       const _snapshotFp = (searchSpecOverride?._snapshot_fingerprint as string) || undefined
       if (_snapshotFp) {
         _responseFp = _snapshotFp
-        const _snapResp = await fetch(
-          `/api/backend-proxy/candidates/search/snapshot?fingerprint=${encodeURIComponent(_snapshotFp)}`
-        )
-        if (_snapResp.ok) {
-          const _snapData = await _snapResp.json()
+        try {
+          const _snapData = await snapshotMutation.mutateAsync(_snapshotFp)
           if (Array.isArray(_snapData?.candidates) && _snapData.candidates.length > 0) {
             mappedCandidates = _snapData.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
             creditsUsed = 0
             totalCount = _snapData.total_count || mappedCandidates.length
             pearchCount = _snapData.pearch_count || mappedCandidates.length
           }
+        } catch (e) {
+          console.error('[useCandidatesExecuteSearch] snapshot fetch failed:', e)
         }
         setSearchFingerprint(_snapshotFp)
       } else if (mode === 'similar' && metadata) {
         const similarUrl = metadata.similarProfileUrl || metadata.similarProfileUrls?.[0]
         if (similarUrl) {
-          const response = await fetchWithRetry('/api/backend-proxy/search/candidates/similar', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ linkedin_url: similarUrl, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
-          }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500], onRetry })
-          if (!response.ok) {
-            throw new Error(`Busca por perfil similar falhou (${response.status})`)
-          }
-          if (response.ok) {
-            const data = await response.json()
-            totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
-            if (data.is_enriching_contacts) isEnrichingContacts = true
-            filteredNoContact = data.filtered_no_contact || 0
-            enrichmentAttempted = data.enrichment_attempted || 0
-            filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
-            persistedSearchId = (data.search_id as string | null) ?? null
-            if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
-            if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
+          const data = await similarSearchMutation.mutateAsync({
+            linkedin_url: similarUrl,
+            limit: 20,
+            search_pearch: shouldUsePearch || shouldUseHybrid,
+            pearch_type: pearchSearchOptions.searchType,
+          })
+
+          totalCount = data.total_count || 0
+          localCount = data.local_count || 0
+          pearchCount = data.pearch_count || 0
+          creditsUsed = data.credits_used
+
+          if (data.is_enriching_contacts) isEnrichingContacts = true
+          filteredNoContact = data.filtered_no_contact || 0
+          enrichmentAttempted = data.enrichment_attempted || 0
+          filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
+          persistedSearchId = (data.search_id as string | null) ?? null
+
+          if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
+          if (data.candidates?.length > 0) {
+            mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
           }
         }
       } else if (mode === 'jd' && metadata?.jobDescription) {
-        const response = await fetchWithRetry('/api/backend-proxy/search/candidates/by-job-description', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ job_description: metadata.jobDescription, limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
-        }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500], onRetry })
-        if (!response.ok) {
-          throw new Error(`Busca por descrição de vaga falhou (${response.status})`)
-        }
-        if (response.ok) {
-          const data = await response.json()
-          totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
-          if (data.is_enriching_contacts) isEnrichingContacts = true
-          filteredNoContact = data.filtered_no_contact || 0
-          enrichmentAttempted = data.enrichment_attempted || 0
-          filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
-          persistedSearchId = (data.search_id as string | null) ?? null
-          if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
-          if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
+        const data = await jdSearchMutation.mutateAsync({
+          job_description: metadata.jobDescription,
+          limit: 20,
+          search_pearch: shouldUsePearch || shouldUseHybrid,
+          pearch_type: pearchSearchOptions.searchType,
+        })
+
+        totalCount = data.total_count || 0
+        localCount = data.local_count || 0
+        pearchCount = data.pearch_count || 0
+        creditsUsed = data.credits_used
+
+        if (data.is_enriching_contacts) isEnrichingContacts = true
+        filteredNoContact = data.filtered_no_contact || 0
+        enrichmentAttempted = data.enrichment_attempted || 0
+        filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
+        persistedSearchId = (data.search_id as string | null) ?? null
+
+        if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
+        if (data.candidates?.length > 0) {
+          mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
       } else if (mode === 'archetypes' && metadata?.archetypeVacancyId) {
-        const response = await fetchWithRetry(`/api/backend-proxy/search/archetypes/${metadata.archetypeVacancyId}/search`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ limit: 20, search_pearch: shouldUsePearch || shouldUseHybrid, pearch_type: pearchSearchOptions.searchType }),
-        }, { attempts: 2, timeoutMs: 30000, retryDelaysMs: [0, 1500], onRetry })
-        if (!response.ok) {
-          throw new Error(`Busca por arquétipo falhou (${response.status})`)
-        }
-        if (response.ok) {
-          const data = await response.json()
-          totalCount = data.total_count || 0; localCount = data.local_count || 0; pearchCount = data.pearch_count || 0; creditsUsed = data.credits_used
-          if (data.is_enriching_contacts) isEnrichingContacts = true
-          filteredNoContact = data.filtered_no_contact || 0
-          enrichmentAttempted = data.enrichment_attempted || 0
-          filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
-          persistedSearchId = (data.search_id as string | null) ?? null
-          if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
-          if (data.candidates?.length > 0) mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
+        const data = await archetypeSearchMutation.mutateAsync({
+          vacancyId: metadata.archetypeVacancyId,
+          body: {
+            limit: 20,
+            search_pearch: shouldUsePearch || shouldUseHybrid,
+            pearch_type: pearchSearchOptions.searchType,
+          },
+        })
+
+        totalCount = data.total_count || 0
+        localCount = data.local_count || 0
+        pearchCount = data.pearch_count || 0
+        creditsUsed = data.credits_used
+
+        if (data.is_enriching_contacts) isEnrichingContacts = true
+        filteredNoContact = data.filtered_no_contact || 0
+        enrichmentAttempted = data.enrichment_attempted || 0
+        filteredCandidates = (data.filtered_candidates || []) as DiscardedCandidate[]
+        persistedSearchId = (data.search_id as string | null) ?? null
+
+        if (data.credits_remaining !== undefined) setCreditsRemaining(() => data.credits_remaining)
+        if (data.candidates?.length > 0) {
+          mappedCandidates = data.candidates.map((c: Record<string, unknown>) => mapCandidateToInternal(c))
         }
       } else {
-        // Fase 3b: merge filtros (searchSpecOverride) sobre o spec das entities da query.
+        // Fase 3b: merge filtros
         const _entitySpec = entities ? {
-          location: entities.location, job_title: entities.job_title, seniority: entities.seniority,
-          years_experience: entities.years_experience, skills: entities.skills || [],
-          industry: entities.industry, company: entities.company
+          location: entities.location,
+          job_title: entities.job_title,
+          seniority: entities.seniority,
+          years_experience: entities.years_experience,
+          skills: entities.skills || [],
+          industry: entities.industry,
+          company: entities.company,
         } : {}
         const _mergedSpec = { ..._entitySpec, ...(searchSpecOverride || {}) }
         const searchSpec = Object.keys(_mergedSpec).length > 0 ? _mergedSpec : undefined
+
         const searchResponse = await searchCandidatesHybrid({
-          query, thread_id: searchThreadId, search_spec: searchSpec,
-          search_local: true, search_pearch: shouldUsePearch || shouldUseHybrid,
-          pearch_type: pearchSearchOptions.searchType, local_limit: 50,
+          query,
+          thread_id: searchThreadId,
+          search_spec: searchSpec,
+          search_local: true,
+          search_pearch: shouldUsePearch || shouldUseHybrid,
+          pearch_type: pearchSearchOptions.searchType,
+          local_limit: 50,
           pearch_limit: shouldUsePearch || shouldUseHybrid ? pearchSearchOptions.limit : 0,
           show_emails: pearchSearchOptions.showEmails,
-          show_phone_numbers: pearchSearchOptions.showPhoneNumbers, high_freshness: pearchSearchOptions.highFreshness,
-          require_emails: pearchSearchOptions.requireEmails, require_phone_numbers: pearchSearchOptions.requirePhoneNumbers
+          show_phone_numbers: pearchSearchOptions.showPhoneNumbers,
+          high_freshness: pearchSearchOptions.highFreshness,
+          require_emails: pearchSearchOptions.requireEmails,
+          require_phone_numbers: pearchSearchOptions.requirePhoneNumbers,
         }, { onRetry })
+
         if (searchResponse.thread_id) setSearchThreadId(searchResponse.thread_id)
         setCanLoadMore(searchResponse.can_load_more ?? false)
-        // Fase 2: ancora (provider) + re-hidrata feedback pelos criterios desta busca
+
+        // Fase 2: ancora (provider) + re-hidrata feedback
         if (searchResponse.search_fingerprint) {
           _responseFp = searchResponse.search_fingerprint
           setSearchFingerprint(searchResponse.search_fingerprint)
+
           try {
-            const _fbResp = await fetch(
-              `/api/backend-proxy/search/feedback/by-search?fingerprint=${encodeURIComponent(searchResponse.search_fingerprint)}`
-            )
-            if (_fbResp.ok) {
-              const _fbData = await _fbResp.json()
-              if (_fbData?.feedbacks && Object.keys(_fbData.feedbacks).length > 0) {
-                setSearchFeedbacks(_fbData.feedbacks as Record<string, 'like' | 'dislike'>)
-              }
+            const _fbData = await feedbackMutation.mutateAsync(searchResponse.search_fingerprint)
+            if (_fbData?.feedbacks && Object.keys(_fbData.feedbacks).length > 0) {
+              setSearchFeedbacks(_fbData.feedbacks as Record<string, 'like' | 'dislike'>)
             }
           } catch (_e) {
             console.warn('[search] re-hidratacao de feedback falhou (best-effort):', _e)
           }
         }
+
         creditsUsed = searchResponse.credits_used
         if (searchResponse.is_enriching_contacts) isEnrichingContacts = true
         filteredNoContact = (searchResponse as { filtered_no_contact?: number }).filtered_no_contact || 0
         enrichmentAttempted = (searchResponse as { enrichment_attempted?: number }).enrichment_attempted || 0
         filteredCandidates = ((searchResponse as { filtered_candidates?: DiscardedCandidate[] }).filtered_candidates || [])
         persistedSearchId = (searchResponse as { search_id?: string | null }).search_id ?? null
-        totalCount = searchResponse.total_count || 0; localCount = searchResponse.local_count || 0; pearchCount = searchResponse.pearch_count || 0
+        totalCount = searchResponse.total_count || 0
+        localCount = searchResponse.local_count || 0
+        pearchCount = searchResponse.pearch_count || 0
+
         if (searchResponse.credits_remaining !== undefined && searchResponse.credits_remaining !== null) {
           setCreditsRemaining(() => searchResponse.credits_remaining as number)
         }
@@ -372,8 +530,6 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         entities,
         metadata,
         resultsCount: mappedCandidates.length,
-        // Task #403 — guarda o id da execução e a contagem de descartados para
-        // permitir reidratação na página /candidates após refresh.
         searchId: persistedSearchId,
         discardedCount: filteredCandidates.length,
         fingerprint: _responseFp,
@@ -400,10 +556,13 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
 
       setSearchResults(prev => ({
         ...prev,
-        local: localCandidates, global: globalCandidates,
+        local: localCandidates,
+        global: globalCandidates,
         localCount: localCount > 0 ? localCount : localCandidates.length,
         globalCount: pearchCount > 0 ? pearchCount : globalCandidates.length,
-        query, isLoading: false, showGlobalResults: shouldAutoShowGlobal,
+        query,
+        isLoading: false,
+        showGlobalResults: shouldAutoShowGlobal,
         globalDismissed: prev.globalDismissed,
         isEnrichingContacts,
         filteredNoContact,
@@ -414,46 +573,51 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
       setLastSuccessfulQuery(query)
       setShowExpandGlobalOption(!shouldUsePearch && !shouldUseHybrid)
 
+      // BUG #275: chamada `/search/analyze` é best-effort (insight analytics)
+      // com timeout de 8s para não bloquear o search.
       if (mappedCandidates.length > 0) {
-        // BUG #275: a chamada `/search/analyze` é best-effort (insight analytics).
-        // Antes rodava sem timeout dentro do mesmo try do search — se ela
-        // travasse, `isSearchActive` ficava true até terminar (porque o
-        // finally do try/catch só dispara depois dela). Isto mantinha o
-        // "LIA está buscando..." preso. Adiciona timeout de 8s.
         try {
-          const analyzeResponse = await fetch('/api/backend-proxy/search/analyze', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              query,
-              candidates: mappedCandidates.slice(0, 50).map(c => ({
-                id: c.id, name: c.name, current_title: c.current_title || c.position,
-                current_company: c.current_company, location: c.location || c.location_city,
-                skills: c.skills || c.technical_skills, years_experience: c.experience || c.years_of_experience,
-                lia_score: c.liaAnalysis?.score || c.score, seniority_level: c.seniority_level,
-                work_model: c.workModel, email: c.email, phone: c.phone || c.mobile_phone,
-                linkedin_url: c.linkedin_url, source: c.source,
-              })),
-              local_count: localCount, global_count: pearchCount,
-            }),
-            signal: AbortSignal.timeout(8000),
+          const analyticsData = await analyzeMutation.mutateAsync({
+            query,
+            candidates: mappedCandidates.slice(0, 50).map(c => ({
+              id: c.id,
+              name: c.name,
+              current_title: c.current_title || c.position,
+              current_company: c.current_company,
+              location: c.location || c.location_city,
+              skills: c.skills || c.technical_skills,
+              years_experience: c.experience || c.years_of_experience,
+              lia_score: c.liaAnalysis?.score || c.score,
+              seniority_level: c.seniority_level,
+              work_model: c.workModel,
+              email: c.email,
+              phone: c.phone || c.mobile_phone,
+              linkedin_url: c.linkedin_url,
+              source: c.source,
+            })),
+            local_count: localCount,
+            global_count: pearchCount,
           })
-          if (analyzeResponse.ok) {
-            const analyticsData = await analyzeResponse.json()
-            setChatMessages(prev => [...prev, {
-              id: `proactive-insight-${Date.now()}`, type: 'proactive_insight',
-              content: '', timestamp: new Date(), analytics: analyticsData,
-            }])
-          }
-        } catch {}
+
+          setChatMessages(prev => [...prev, {
+            id: `proactive-insight-${Date.now()}`,
+            type: 'proactive_insight',
+            content: '',
+            timestamp: new Date(),
+            analytics: analyticsData,
+          }])
+        } catch {
+          // Best-effort — analytics failure does not break search
+        }
       }
     } catch (err) {
       // FairnessGuard: HTTP 400 com detail.error === 'fairness_blocked'
       const _errBody = (err as { status?: number; body?: unknown }).body as Record<string, unknown> | undefined
       const _errDetail = _errBody?.detail as Record<string, unknown> | undefined
-      // Suporta corpo flat ({error: 'fairness_blocked'}) e aninhado ({detail: {error: 'fairness_blocked'}})
       const _isFairnessBlocked =
         (err as { status?: number }).status === 400 &&
         (_errBody?.error === 'fairness_blocked' || _errDetail?.error === 'fairness_blocked' || !!_errBody?.fairness_blocked)
+
       if (_isFairnessBlocked) {
         const educationalMsg =
           (_errBody?.educational_message as string) ||
@@ -470,9 +634,8 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
         setIsSearchActive(false)
         return
       }
-      // BUG #274: cobre tanto AbortSignal.timeout (DOMException TimeoutError)
-      // quanto erros de rede intermitentes (TypeError: Failed to fetch) e 5xx
-      // que esgotaram o retry do fetchWithRetry.
+
+      // BUG #274: timeout ou erros de rede
       const isTimeout = err instanceof DOMException && err.name === 'TimeoutError'
       const isNetwork = err instanceof TypeError && /fetch/i.test(err.message)
       const message = isTimeout
@@ -482,6 +645,7 @@ export function useCandidatesExecuteSearch(deps: ExecuteSearchDeps) {
           : err instanceof Error
             ? `Não foi possível completar a busca: ${err.message}`
             : 'Não foi possível completar a busca. Tente novamente.'
+
       console.error('[useCandidatesExecuteSearch] search failed:', err)
       setChatMessages(prev => [...prev, {
         id: `search-error-${Date.now()}`,
