@@ -1891,6 +1891,15 @@ async def get_my_plan_summary(
         except Exception:
             pass
 
+        # Desconto ALFA — per-company override, admin-only. Only include if active.
+        desconto_pct = float(getattr(subscription, "desconto_pct", 0) or 0)
+        desconto_validade = getattr(subscription, "desconto_validade", None)
+        if desconto_pct > 0:
+            plan_data["desconto"] = {
+                "pct": desconto_pct,
+                "validade": desconto_validade.isoformat() if desconto_validade else None,
+            }
+
         return {"success": True, "data": plan_data}
 
     except HTTPException:

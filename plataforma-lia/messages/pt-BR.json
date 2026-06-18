@@ -7614,7 +7614,10 @@
         "failed": "Falhou"
       },
       "fiscalData": "Dados fiscais",
-      "fiscalDataComing": "Configuração de dados fiscais (CNPJ, razão social, endereço de cobrança) disponível em breve via painel administrativo."
+      "fiscalDataComing": "Configuração de dados fiscais (CNPJ, razão social, endereço de cobrança) disponível em breve via painel administrativo.",
+      "descontoAlfa": "Desconto ALFA",
+      "descontoValidade": "Válido até",
+      "descontoLabel": "{pct}% de desconto no plano (ALFA)"
     }
   },
   "publicJob": {

@@ -7614,7 +7614,10 @@
         "failed": "Failed"
       },
       "fiscalData": "Fiscal data",
-      "fiscalDataComing": "Fiscal data configuration (CNPJ, company name, billing address) will be available soon through the admin panel."
+      "fiscalDataComing": "Fiscal data configuration (CNPJ, company name, billing address) will be available soon through the admin panel.",
+      "descontoAlfa": "ALFA Discount",
+      "descontoValidade": "Valid until",
+      "descontoLabel": "{pct}% plan discount (ALFA)"
     }
   },
   "publicJob": {

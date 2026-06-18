@@ -17,7 +17,7 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -419,3 +419,68 @@ async def change_plan(
         "old_plan": old_plan,
         "new_plan": body.plan_code,
     }
+
+
+class DiscountRequest(BaseModel):
+    """Admin-only request to set ALFA discount on a subscription."""
+    model_config = ConfigDict(extra="forbid")
+    desconto_pct: float = Field(ge=0, le=100, description="Discount percentage (0 = remove discount)")
+    desconto_validade: str | None = Field(None, description="Discount expiry (ISO 8601 datetime or null)")
+
+
+@router.patch(
+    "/subscription/{company_id}/discount",
+    summary="Set ALFA discount on a subscription (admin-only)",
+    tags=["admin-integration"],
+)
+async def set_subscription_discount(
+    company_id: str,
+    payload: DiscountRequest,
+    _token: str = Depends(require_internal_token),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Set a per-company ALFA discount on the active subscription.
+
+    - desconto_pct=0 removes any existing discount.
+    - desconto_validade=null means the discount has no expiry.
+    - This endpoint is admin-only (INTERNAL_API_TOKEN required).
+    - The discount is visible in GET /billing/my-plan-summary under data.desconto.
+    """
+    from sqlalchemy import select, and_
+    from app.models.billing import Subscription
+    from decimal import Decimal
+    from datetime import datetime
+
+    sub_result = await db.execute(
+        select(Subscription).where(
+            and_(
+                Subscription.client_id == company_id,
+                Subscription.status.in_(["active", "trialing", "past_due"]),
+            )
+        ).order_by(Subscription.created_at.desc()).limit(1)
+    )
+    subscription = sub_result.scalar_one_or_none()
+
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Active subscription not found for company")
+
+    subscription.desconto_pct = Decimal(str(payload.desconto_pct))
+    if payload.desconto_validade:
+        try:
+            subscription.desconto_validade = datetime.fromisoformat(payload.desconto_validade)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="desconto_validade must be ISO 8601 datetime")
+    else:
+        subscription.desconto_validade = None
+
+    await db.commit()
+    await db.refresh(subscription)
+
+    return {
+        "success": True,
+        "company_id": company_id,
+        "desconto_pct": float(subscription.desconto_pct),
+        "desconto_validade": subscription.desconto_validade.isoformat() if subscription.desconto_validade else None,
+    }
+
