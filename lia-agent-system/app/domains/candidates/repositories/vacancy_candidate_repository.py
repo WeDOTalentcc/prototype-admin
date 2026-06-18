@@ -303,6 +303,7 @@ class VacancyCandidateRepository:
                 SELECT vc.candidate_id::text, vc.id::text, vc.lia_score, vc.source
                 FROM vacancy_candidates vc
                 WHERE vc.vacancy_id::text = :vid AND vc.company_id = :cid
+                ORDER BY vc.updated_at DESC
                 """
             ),
             {"vid": vacancy_id, "cid": cid},

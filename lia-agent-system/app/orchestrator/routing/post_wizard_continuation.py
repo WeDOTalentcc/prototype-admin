@@ -48,6 +48,7 @@ CONTINUATION_TTL_MINUTES = 60  # wizard can take a while — longer than the 5-m
 _CONTINUATION_DISPATCH: dict[str, tuple[str, str, str]] = {
     "publish_job": ("ats_integration", "sync_job", "publicar a vaga no ATS"),
     "sync_job": ("ats_integration", "sync_job", "sincronizar a vaga com o ATS"),
+    "interview_scheduling": ("interview_scheduling", "schedule_interviews", "agendar entrevistas com candidatos"),
 }
 
 

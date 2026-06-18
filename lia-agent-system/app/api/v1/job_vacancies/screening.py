@@ -22,6 +22,7 @@ from app.domains.job_management.dependencies import get_job_vacancy_screening_re
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 from app.shared.errors import LIAError
+from app.shared.optimistic_lock import check_optimistic_lock
 
 router = APIRouter()
 
@@ -82,6 +83,8 @@ class ScreeningConfigRequest(WeDoBaseModel):
     scheduling: ScreeningConfigScheduling | None = None
     feedback_templates: ScreeningConfigFeedback | None = None
     wsi_skills: list[str] | None = []
+    # GAP-05-004: Optimistic locking control field
+    expected_updated_at: datetime | None = None
 
 
 class ScreeningConfigResponse(BaseModel):
@@ -102,6 +105,8 @@ class ScreeningStatusUpdateRequest(WeDoBaseModel):
     screening_status: str
     pause_reason: str | None = None
     scheduled_end_date: str | None = None
+    # GAP-05-004: Optimistic locking control field
+    expected_updated_at: datetime | None = None
 
 
 # ─── Routes ──────────────────────────────────────────────────────────────────

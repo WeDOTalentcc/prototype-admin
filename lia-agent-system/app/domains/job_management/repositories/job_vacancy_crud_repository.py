@@ -28,7 +28,7 @@ def resolve_sort_clause(sort_by: str | None, sort_order: str):
     if sort_order not in ("asc", "desc"):
         raise ValueError(f"sort_order must be asc or desc, got {sort_order!r}")
 
-    field_name = (sort_by or "created_at").lower().strip()
+    field_name = (sort_by or "updated_at").lower().strip()
     if field_name not in ALLOWED_SORT_FIELDS:
         raise ValueError(
             f"sort_by={field_name!r} not allowed. "
