@@ -1,6 +1,12 @@
 "use client"
 
 import { usePlan } from "@/hooks/billing/use-plan"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
@@ -347,6 +353,8 @@ function DistTable({
         {items.map((item) => (
           <div key={item.key} className="flex items-center gap-2">
             <span className="text-xs text-gray-700 w-24 shrink-0 truncate">{item.label}</span>
+            <MiniBar pct={item.pct} color={color} />
+            <span className="text-[10px] text-gray-500 tabular-nums w-8 text-right shrink-0">{item.pct}%</span>
 function DiversityPanel({ isEnterprise }: { isEnterprise: boolean }) {
   const { data, isLoading } = useQuery<DEIInsights>({
     queryKey: ["dei-insights"],
@@ -358,8 +366,33 @@ function DiversityPanel({ isEnterprise }: { isEnterprise: boolean }) {
   const sample = data?.total_hired_sample ?? 0
   const gate = data?.min_sample_gate ?? 10
 
-  function DistSection({ title, items, tag }: { title: string; items?: DiversityDistributionItem[]; tag?: string }) {
-    if (!items?.length) return null
+  function DistSection({
+    title,
+    items,
+    tag,
+    sensitive,
+  }: {
+    title: string
+    items?: DiversityDistributionItem[]
+    tag?: string
+    sensitive?: boolean
+  }) {
+    if (!items?.length) {
+      if (!sensitive) return null
+      return (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{title}</p>
+            {tag && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan font-medium">{tag}</span>
+            )}
+          </div>
+          <p className="text-[11px] text-muted-foreground italic">
+            Categorias ocultadas — amostra por grupo insuficiente (N&lt;10) para exibição segura.
+          </p>
+        </div>
+      )
+    }
     return (
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">
@@ -378,7 +411,27 @@ function DiversityPanel({ isEnterprise }: { isEnterprise: boolean }) {
       <div className="rounded-xl border bg-card p-5 space-y-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-sm text-foreground">Diversidade &amp; Inclusão</h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-semibold text-sm text-foreground">Diversidade &amp; Inclusão</h3>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Sobre este painel">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-xs text-xs leading-relaxed">
+                    <p className="font-medium mb-1">Como funciona este painel</p>
+                    <p>Exibe a distribuição de candidatos <strong>contratados</strong> por atributos de identidade e profissionais.</p>
+                    <p className="mt-1.5"><strong>Auto-declarado:</strong> só aparece o que o candidato preencheu voluntariamente no perfil.</p>
+                    <p className="mt-1.5"><strong>Regra de privacidade (N≥10):</strong> grupos com menos de 10 pessoas são ocultados automaticamente — ninguém pode ser identificado individualmente.</p>
+                    <p className="mt-1.5 text-muted-foreground">Base legal: LGPD Art. 11 §1 — prevenção de discriminação.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5">Candidatos contratados · auto-declarado · LGPD Art. 11 §1</p>
           </div>
           {sample > 0 && (
@@ -412,9 +465,9 @@ function DiversityPanel({ isEnterprise }: { isEnterprise: boolean }) {
         {!isLoading && sample >= gate && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-5">
-              <DistSection title="Gênero" items={data?.gender_distribution} tag="auto-declarado" />
-              <DistSection title="Raça / Etnia" items={data?.race_ethnicity_distribution} tag="auto-declarado" />
-              <DistSection title="Deficiência" items={data?.disability_distribution} tag="auto-declarado" />
+              <DistSection title="Gênero" items={data?.gender_distribution} tag="auto-declarado" sensitive />
+              <DistSection title="Raça / Etnia" items={data?.race_ethnicity_distribution} tag="auto-declarado" sensitive />
+              <DistSection title="Deficiência" items={data?.disability_distribution} tag="auto-declarado" sensitive />
               {!!data?.disability_type_distribution?.length && (
                 <DistSection title="Tipo de deficiência" items={data.disability_type_distribution} />
               )}
