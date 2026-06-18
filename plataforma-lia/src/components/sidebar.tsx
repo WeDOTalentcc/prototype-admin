@@ -651,8 +651,6 @@ const FocusedJobSection = React.memo(({
 FocusedJobSection.displayName = 'FocusedJobSection'
 
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch, notificationOpen, onNotificationToggle }: SidebarProps) {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('sidebar-password', showPasswordModal)
 
   const t = useTranslations('sidebar')
   const { agents, pools } = useSidebarDynamicItems()
@@ -671,6 +669,9 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   const [passwordError, setPasswordError] = useState("")
   const [passwordSuccess, setPasswordSuccess] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
+
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking("sidebar-password", showPasswordModal)
 
   const handleNotificationClick = useCallback((notification: AppNotification) => {
     // talent_pool_insight: navigate to Indicadores for pool-level metrics
