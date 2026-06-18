@@ -93,7 +93,7 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
     queryFn: () =>
       fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history`)
         .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json() }),
-    enabled: candidateIsLocal && activeTab === opinions,
+    enabled: candidateIsLocal && activeTab === "opinions",
     staleTime: 60_000,
   })
 

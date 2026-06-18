@@ -428,7 +428,7 @@ company_id: str = Depends(require_company_id)):
     _is_reconnect = bool(last_event_id)
     try:
         from app.core.redis_client import get_redis
-        _redis = get_redis()
+        _redis = await get_redis()
         if _redis:
             _already = _redis.get(_dedup_key)
             if _already and _is_reconnect:
@@ -684,13 +684,16 @@ company_id: str = Depends(require_company_id)):
                 pass
 
         _setup_ka_task = asyncio.create_task(_setup_ka_loop())
-        _gather_task = asyncio.create_task(asyncio.gather(
-            _check_budget_async(),
-            _route_domain_async(),
-            _b2_setup_async(),
-            _inject_tenant_context_async(),
-            _inject_focused_job_async(),
-        ))
+        # uvloop fix: gather() returns a Future, not a coroutine — wrap in async def
+        async def _run_parallel_setups():
+            return await asyncio.gather(
+                _check_budget_async(),
+                _route_domain_async(),
+                _b2_setup_async(),
+                _inject_tenant_context_async(),
+                _inject_focused_job_async(),
+            )
+        _gather_task = asyncio.create_task(_run_parallel_setups())
         try:
             while not _gather_task.done():
                 try:
