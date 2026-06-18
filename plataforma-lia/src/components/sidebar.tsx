@@ -579,14 +579,14 @@ const FocusedJobSection = React.memo(({
 
   return (
     <div className="mb-1 px-1">
-      <div className="rounded-lg bg-blue-50 border border-blue-100 p-2">
+      <div className="rounded-lg bg-wedo-cyan/10 border border-wedo-cyan/20 p-2">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-[0.18em] uppercase opacity-70">
             {t('focusedJob.label')}
           </span>
           <button
             onClick={onClear}
-            className="p-0.5 rounded hover:bg-blue-100 text-lia-text-muted hover:text-lia-text-secondary"
+            className="p-0.5 rounded hover:bg-wedo-cyan/15 text-lia-text-muted hover:text-lia-text-secondary"
             title={t('focusedJob.dismiss')}
             aria-label={t('focusedJob.dismiss')}
           >
@@ -600,12 +600,12 @@ const FocusedJobSection = React.memo(({
         <div className="space-y-0.5">
           <button
             onClick={() => router.push(jobUrl)}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-wedo-cyan/15 text-lia-text-secondary min-h-8"
           >
             <Users className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="text-sm-ui flex-1">{t('focusedJob.candidates')}</span>
             {job.candidateCount > 0 && (
-              <span className="text-micro bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
+              <span className="text-micro bg-wedo-cyan/20 text-wedo-cyan px-1.5 py-0.5 rounded-full">
                 {job.candidateCount}
               </span>
             )}
@@ -613,30 +613,30 @@ const FocusedJobSection = React.memo(({
           {job.todayInterviewCount > 0 && (
             <button
               onClick={() => router.push(jobUrl)}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-wedo-cyan/15 text-lia-text-secondary min-h-8"
             >
               <Eye className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="text-sm-ui flex-1">{t('focusedJob.interviews')}</span>
-              <span className="text-micro bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
+              <span className="text-micro bg-wedo-cyan/20 text-wedo-cyan px-1.5 py-0.5 rounded-full">
                 {job.todayInterviewCount} {t('focusedJob.today')}
               </span>
             </button>
           )}
           <button
             onClick={() => router.push(`${jobUrl}?tab=agents`)}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-wedo-cyan/15 text-lia-text-secondary min-h-8"
           >
             <Bot className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="text-sm-ui flex-1">{t('focusedJob.agents')}</span>
             {activeAgentCount > 0 && (
-              <span className="text-micro bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
+              <span className="text-micro bg-wedo-cyan/20 text-wedo-cyan px-1.5 py-0.5 rounded-full">
                 {activeAgentCount}
               </span>
             )}
           </button>
           <button
             onClick={() => router.push(`${jobUrl}?tab=edit&section=configuracoes`)}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-blue-100 text-lia-text-secondary min-h-8"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-wedo-cyan/15 text-lia-text-secondary min-h-8"
           >
             <Settings className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="text-sm-ui">{t('focusedJob.configure')}</span>
