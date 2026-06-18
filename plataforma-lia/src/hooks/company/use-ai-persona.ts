@@ -120,6 +120,7 @@ export function useAiPersonaOptions(): UseAiPersonaOptionsResult {
       return (await res.json()) as AiPersonaOptions
     },
     staleTime: 5 * 60_000,
+    retry: false,  // fetchWithRetry already handles retries; React Query retry doubles the wait time
   })
   return {
     options: data ?? null,
@@ -165,6 +166,8 @@ export function useAiPersona(): UseAiPersonaResult {
     refetch,
   } = useQuery<AiPersona>({
     queryKey: ["company-ai-persona"],
+    staleTime: 5 * 60_000,  // cache for 5 min; prevents refetch on every JDEvalResultsPanel mount
+    retry: false,            // fetchWithRetry already handles retries internally
     queryFn: async () => {
       const res = await fetchWithRetry("/api/backend-proxy/company-ai-persona")
       if (!res.ok) {

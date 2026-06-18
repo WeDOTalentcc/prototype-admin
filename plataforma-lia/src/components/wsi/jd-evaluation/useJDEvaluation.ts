@@ -103,7 +103,7 @@ export function useJDEvaluation(props: {
   // para o painel mostrar mensagem específica (auth/rede/servidor) em vez de
   // ficar mudo quando evaluation=null.
   const [evaluationError, setEvaluationError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)  // start loading immediately to prevent JDEvalResultsPanel flash before fetchEvaluation runs
   const [isEditing, setIsEditing] = useState(false)
   const [editDescription, setEditDescription] = useState(description || '')
   const [editResponsibilities, setEditResponsibilities] = useState<string[]>(responsibilities)
@@ -308,7 +308,7 @@ export function useJDEvaluation(props: {
     const evalTech = overrides?.technicalSkills ?? technicalSkills
     const evalBehav = overrides?.behavioralCompetencies ?? behavioralCompetencies
     const evalDesc = overrides?.description ?? description
-    if (!jobTitle) return
+    if (!jobTitle) { setIsLoading(false); return }
     setIsLoading(true)
     try {
       const response = await fetch("/api/backend-proxy/wsi/jd-evaluate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_title: jobTitle, responsibilities: evalResp, technical_skills: evalTech, behavioral_competencies: evalBehav, seniority: seniority || null, department: department || null, description: evalDesc || null }) })
