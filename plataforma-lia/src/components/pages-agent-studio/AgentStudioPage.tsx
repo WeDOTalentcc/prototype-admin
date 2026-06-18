@@ -157,13 +157,6 @@ export default function AgentStudioPage({
     router.replace(`?${sp.toString()}`, { scroll: false })
   }
   const { total: pendingApprovals } = usePendingApprovals()
-  useLiaModalTracking('studio-create-agent', showCreateModal)
-  useLiaModalTracking('studio-create-twin', showCreateTwinModal)
-  useLiaModalTracking('studio-evaluate-twin', !!evaluatingTwinId)
-  useLiaModalTracking('studio-deploy-agent', !!deployAgent)
-  useLiaModalTracking('studio-test-agent', !!testAgent)
-  useLiaModalTracking('studio-agent-details', !!detailsAgent)
-  useLiaModalTracking('studio-template-preview', !!previewTemplate)
   const [onboardingDismissed, setOnboardingDismissed] = useState(true)
 
   useEffect(() => {

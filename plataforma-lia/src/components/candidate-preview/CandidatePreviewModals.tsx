@@ -132,12 +132,6 @@ export function CandidatePreviewModals({
   bigFiveModalCandidate,
   setBigFiveModalCandidate,
 }: CandidatePreviewModalsProps) {
-  useLiaModalTracking('candidate-lia-chat', showLiaModal)
-  useLiaModalTracking('candidate-update-opinion-alert', showUpdateOpinionAlert)
-  useLiaModalTracking('candidate-insufficient-data', showInsufficientDataModal)
-  useLiaModalTracking('candidate-screening-media', screeningModalOpen)
-  useLiaModalTracking('candidate-disc-assessment', discModalOpen)
-  useLiaModalTracking('candidate-big-five', bigFiveModalOpen)
   return (
     <>
       <LiaChatModal

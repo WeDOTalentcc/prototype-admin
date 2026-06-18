@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl"
 import { Globe, AlertCircle, Zap } from "lucide-react"
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { textStyles } from "@/lib/design-tokens"
-import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 interface SourceChangeConfirmModalProps {
   open: boolean
@@ -22,7 +21,6 @@ export function SourceChangeConfirmModal({
   onConfirm,
 }: SourceChangeConfirmModalProps) {
   const t = useTranslations('candidates.modals')
-  useLiaModalTracking('source-change-confirm', open)
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent data-testid="source-change-confirm-modal" className="sm:max-w-[320px] w-[85vw] p-4 border border-lia-border-subtle dark:border-lia-border-subtle">

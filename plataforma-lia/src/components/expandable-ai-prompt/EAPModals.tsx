@@ -20,7 +20,6 @@ import { AdvancedFiltersModal, type SearchFilters } from"@/components/search/adv
 import { TemplateSuggestionToast } from"@/components/template-suggestion-toast"
 import { SaveArchetypeModal } from"@/components/search/save-archetype-modal"
 import type { SearchSpec } from"@/lib/api/candidate-search"
-import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 interface ArchetypeData {
   id: string
@@ -85,10 +84,6 @@ interface EAPModalsProps {
 }
 
 export function EAPModals({
-  useLiaModalTracking('eap-advanced-filters', showAdvancedFiltersModal)
-  useLiaModalTracking('eap-delete-archetype', showDeleteArchetypeDialog)
-  useLiaModalTracking('eap-source-change', showSourceChangeModal)
-  useLiaModalTracking('eap-save-archetype', showSaveArchetypeModal)
   suggestionQueue,
   templateSuggestions,
   showAdvancedFiltersModal,

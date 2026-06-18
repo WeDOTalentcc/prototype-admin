@@ -13,7 +13,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 interface RevealCreditsModalProps {
   isOpen: boolean
@@ -25,7 +24,6 @@ interface RevealCreditsModalProps {
 }
 
 export function RevealCreditsModal({
-  useLiaModalTracking('reveal-credits-modal', isOpen)
   isOpen,
   onClose,
   onConfirm,

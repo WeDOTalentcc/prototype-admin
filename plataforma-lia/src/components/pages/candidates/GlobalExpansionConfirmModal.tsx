@@ -12,7 +12,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 interface GlobalExpansionConfirmModalProps {
   open: boolean
@@ -34,7 +33,6 @@ export function GlobalExpansionConfirmModal({
   onConfirm,
 }: GlobalExpansionConfirmModalProps) {
   const t = useTranslations('candidates.modals')
-  useLiaModalTracking('global-expansion-confirm', open)
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent data-testid="global-expansion-confirm-modal" className="max-w-md">

@@ -122,7 +122,7 @@ export function PearchTab() {
                   </p>
                   <div className="mt-2 h-1.5 rounded-full bg-lia-bg-tertiary overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-forest-green transition-all duration-500"
+                      className="h-full rounded-full bg-forest-green transition-[width] duration-500"
                       style={{ width: `${successRate}%` }}
                     />
                   </div>

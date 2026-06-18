@@ -42,7 +42,6 @@ import {
 } from "./filter-sections"
 
 import { useAdvancedFiltersCore } from "./hooks/useAdvancedFiltersCore"
-import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 interface AdvancedFiltersModalProps {
   isOpen: boolean
@@ -58,8 +57,6 @@ interface AdvancedFiltersModalProps {
 }
 
 export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
-  useLiaModalTracking('advanced-filters-modal', isOpen)
-  useLiaModalTracking('advanced-filters-credit-confirm', showCreditConfirm)
   const { isOpen } = props
   const {
     activeSection, addToArray, candidateLimit, creditEstimate, filters, getActiveFiltersCount, handleApply, handleConfirmSearch,

@@ -85,7 +85,6 @@ import {
   defaultFloatingPosition,
   type Point,
 } from "./floating-position";
-import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 const DEFINIR_REGEX = /^\/(?:definir|glossario|glossário)(?:\s+(.+))?$/i;
 
@@ -234,7 +233,6 @@ export function mergeCollectedData(
 }
 
 export function UnifiedChat({
-  useLiaModalTracking('unified-chat-wizard-confirm', wizardConfirm?.open ?? false)
   renderMode = "overlay",
   initialMode,
   className,
