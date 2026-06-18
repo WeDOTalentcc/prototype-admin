@@ -59,6 +59,7 @@ interface DynamicStageItem {
   name: string
   displayName: string
   color?: string
+  subStatuses?: Array<{ name: string; display_name: string }>
 }
 
 interface SaturationData {
@@ -259,6 +260,15 @@ export function KanbanTableView({
     openTransition,
     onTransitionRequired,
     onStatusChange,
+    onDirectTransition: async (candidate, toStage, subStatus, jvId) => {
+      const id = candidate.id
+      await fetch(`/api/backend-proxy/candidates/${encodeURIComponent(id)}/stage`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: toStage, sub_status: subStatus, job_vacancy_id: jvId || jobVacancyId }),
+      })
+      onTransitionRequired([candidate], (candidate.stageId as string | undefined) || (candidate.stage as string | undefined) || '', toStage)
+    },
     onCandidateClick,
   }) as unknown as KanbanTableCellRendererProps)
   return (
