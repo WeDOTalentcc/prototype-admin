@@ -1945,6 +1945,7 @@
       "openEnrichment": "Continue enrichment",
       "openWsi": "Configure WSI",
       "openApproval": "Review approval",
+      "viewApprovalStatus": "View approval status",
       "openPublish": "Publish job",
       "openStatus": "Manage status",
       "openKanban": "Open kanban",

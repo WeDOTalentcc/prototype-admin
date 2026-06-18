@@ -1191,6 +1191,7 @@ export function PipelineOverviewPage() {
                             stageKey={selectedLifecycleStageData!.stage}
                             stageColor={selectedLifecycleStageData!.color || "#2D2D2D"}
                             onOpenPreview={handleOpenVacancyPreview}
+                            onAction={handleVacancyAction}
                           />
                         ))}
                       </div>
