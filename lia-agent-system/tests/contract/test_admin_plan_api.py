@@ -136,3 +136,142 @@ class TestNoHardcodedToken:
             src = f.read()
         assert "INTERNAL_API_TOKEN" in src, \
             "Auth must read INTERNAL_API_TOKEN from environment"
+
+
+# ---------------------------------------------------------------------------
+# PATCH /discount — Desconto ALFA contract tests
+# ---------------------------------------------------------------------------
+
+class TestDiscountEndpoint:
+    """PATCH /subscription/{company_id}/discount — B6 Desconto ALFA."""
+
+    CID = "00000000-0000-0000-0000-000000000001"
+    PATH = f"/api/v1/admin-api/subscription/{CID}/discount"
+
+    @pytest.fixture(autouse=True)
+    def set_token(self, monkeypatch):
+        monkeypatch.setenv("INTERNAL_API_TOKEN", "test-secret-token")
+
+    def test_no_token_returns_401(self):
+        client = _make_app()
+        resp = client.patch(self.PATH, json={"desconto_pct": 15.0})
+        assert resp.status_code == 401
+
+    def test_wrong_token_returns_401(self):
+        client = _make_app()
+        resp = client.patch(
+            self.PATH,
+            json={"desconto_pct": 15.0},
+            headers={"Authorization": "Bearer wrong"},
+        )
+        assert resp.status_code == 401
+
+    def test_pct_above_100_returns_422(self):
+        """desconto_pct > 100 must be rejected (ge=0 le=100)."""
+        client = _make_app()
+        headers = {"Authorization": "Bearer test-secret-token"}
+        resp = client.patch(self.PATH, json={"desconto_pct": 101.0}, headers=headers)
+        assert resp.status_code == 422, f"pct=101 should be 422, got {resp.status_code}"
+
+    def test_negative_pct_returns_422(self):
+        """desconto_pct < 0 must be rejected."""
+        client = _make_app()
+        headers = {"Authorization": "Bearer test-secret-token"}
+        resp = client.patch(self.PATH, json={"desconto_pct": -1.0}, headers=headers)
+        assert resp.status_code == 422, f"pct=-1 should be 422, got {resp.status_code}"
+
+    def test_extra_field_returns_422(self):
+        """WeDoBaseModel extra=forbid must reject unknown fields."""
+        client = _make_app()
+        headers = {"Authorization": "Bearer test-secret-token"}
+        resp = client.patch(
+            self.PATH,
+            json={"desconto_pct": 10.0, "unknown_field": "bad"},
+            headers=headers,
+        )
+        assert resp.status_code in (422, 401, 404), \
+            f"Extra fields should be rejected, got {resp.status_code}"
+
+    def test_unknown_company_returns_404(self):
+        """No active subscription → 404. Uses dependency_overrides (generator-safe)."""
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        from app.api.v1.admin_plan_api import router
+        from app.core.database import get_db
+
+        app = FastAPI()
+        app.include_router(router, prefix="/api/v1")
+
+        async def mock_get_db():
+            mock_session = AsyncMock()
+            mock_result = MagicMock()
+            mock_result.scalar_one_or_none = MagicMock(return_value=None)
+            mock_session.execute = AsyncMock(return_value=mock_result)
+            mock_session.commit = AsyncMock()
+            yield mock_session
+
+        app.dependency_overrides[get_db] = mock_get_db
+        client = TestClient(app)
+        headers = {"Authorization": "Bearer test-secret-token"}
+        resp = client.patch(
+            "/api/v1/admin-api/subscription/00000000-dead-dead-dead-000000000000/discount",
+            json={"desconto_pct": 10.0},
+            headers=headers,
+        )
+        assert resp.status_code in (404, 422), \
+            f"Unknown company should 404, got {resp.status_code}: {resp.text}"
+
+    def test_discount_endpoint_in_openapi_schema(self):
+        """PATCH /discount must appear in OpenAPI schema."""
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        from app.api.v1.admin_plan_api import router
+        app = FastAPI()
+        app.include_router(router, prefix="/api/v1")
+        client = TestClient(app)
+        schema = client.get("/openapi.json").json()
+        paths = schema.get("paths", {})
+        patch_path = "/api/v1/admin-api/subscription/{company_id}/discount"
+        assert patch_path in paths, f"PATCH /discount missing from OpenAPI"
+        assert "patch" in paths[patch_path], "PATCH method missing"
+
+    def test_discount_responses_documented(self):
+        """PATCH /discount must document 401 and 404 responses in OpenAPI."""
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        from app.api.v1.admin_plan_api import router
+        app = FastAPI()
+        app.include_router(router, prefix="/api/v1")
+        client = TestClient(app)
+        schema = client.get("/openapi.json").json()
+        patch_path = "/api/v1/admin-api/subscription/{company_id}/discount"
+        responses = schema["paths"][patch_path]["patch"].get("responses", {})
+        assert "401" in responses, "401 not documented on PATCH /discount"
+        assert "404" in responses, "404 not documented on PATCH /discount"
+
+
+# ---------------------------------------------------------------------------
+# All 5 endpoints require auth (including PATCH /discount)
+# ---------------------------------------------------------------------------
+
+class TestAllEndpointsRequireAuth:
+    """All 5 endpoints enforce INTERNAL_API_TOKEN."""
+
+    ENDPOINTS = [
+        ("GET",   "/api/v1/admin-api/subscription/00000000-0000-0000-0000-000000000001"),
+        ("GET",   "/api/v1/admin-api/usage/00000000-0000-0000-0000-000000000001"),
+        ("POST",  "/api/v1/admin-api/usage/00000000-0000-0000-0000-000000000001/record"),
+        ("PUT",   "/api/v1/admin-api/subscription/00000000-0000-0000-0000-000000000001/plan"),
+        ("PATCH", "/api/v1/admin-api/subscription/00000000-0000-0000-0000-000000000001/discount"),
+    ]
+
+    @pytest.fixture(autouse=True)
+    def set_token(self, monkeypatch):
+        monkeypatch.setenv("INTERNAL_API_TOKEN", "test-secret-token")
+
+    def test_all_five_endpoints_require_token(self):
+        client = _make_app()
+        for method, path in self.ENDPOINTS:
+            resp = getattr(client, method.lower())(path)
+            assert resp.status_code == 401, \
+                f"{method} {path} should be 401 without token, got {resp.status_code}"

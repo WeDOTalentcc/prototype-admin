@@ -158,6 +158,12 @@ async def _get_plan_config(plan_code: str, db: AsyncSession):
     summary="Get company subscription details",
     description="Returns plan, features, quotas and overrides for a company.",
     dependencies=[Depends(require_internal_token)],
+    responses={
+        200: {"description": "Active subscription with plan details"},
+        401: {"description": "Missing or invalid INTERNAL_API_TOKEN"},
+        404: {"description": "Company or active subscription not found"},
+        503: {"description": "INTERNAL_API_TOKEN env var not configured"},
+    },
 )
 async def get_subscription(company_id: str, db: AsyncSession = Depends(get_db)):
     company = await _get_company_or_404(company_id, db)
@@ -232,8 +238,14 @@ async def get_subscription(company_id: str, db: AsyncSession = Depends(get_db)):
     "/usage/{company_id}",
     response_model=UsageResponse,
     summary="Get company usage for current period",
-    description="Returns token/credit consumption for the current billing period.",
+    description="Returns token/credit consumption for the current billing period. Use ?month=YYYY-MM to query past periods.",
     dependencies=[Depends(require_internal_token)],
+    responses={
+        200: {"description": "Token and credit usage for the billing period"},
+        401: {"description": "Missing or invalid INTERNAL_API_TOKEN"},
+        404: {"description": "Company not found"},
+        503: {"description": "INTERNAL_API_TOKEN env var not configured"},
+    },
 )
 async def get_usage(
     company_id: str,
@@ -319,8 +331,16 @@ async def get_usage(
 @router.post(
     "/usage/{company_id}/record",
     summary="Record external metering",
-    description="Record consumption from external systems (admin panel).",
+    description="Record consumption from external systems (admin panel). Idempotency: caller must deduplicate.",
     dependencies=[Depends(require_internal_token)],
+    responses={
+        200: {"description": "Usage recorded"},
+        400: {"description": "action_type required when meter_type=action"},
+        401: {"description": "Missing or invalid INTERNAL_API_TOKEN"},
+        404: {"description": "Company not found"},
+        422: {"description": "Invalid meter_type or amount <= 0"},
+        500: {"description": "Credit service error"},
+    },
 )
 async def record_usage(
     company_id: str,
@@ -354,8 +374,15 @@ async def record_usage(
 @router.put(
     "/subscription/{company_id}/plan",
     summary="Change company plan",
-    description="Updates subscription plan_code and invalidates caches.",
+    description="Updates subscription plan_code and invalidates token budget / quota caches. Logs plan change in credit_transactions.",
     dependencies=[Depends(require_internal_token)],
+    responses={
+        200: {"description": "Plan changed successfully"},
+        400: {"description": "Unknown plan_code"},
+        401: {"description": "Missing or invalid INTERNAL_API_TOKEN"},
+        404: {"description": "Company or active subscription not found"},
+        422: {"description": "Validation error"},
+    },
 )
 async def change_plan(
     company_id: str,
@@ -431,7 +458,14 @@ class DiscountRequest(BaseModel):
 @router.patch(
     "/subscription/{company_id}/discount",
     summary="Set ALFA discount on a subscription (admin-only)",
+    description="Sets per-company ALFA discount. desconto_pct=0 removes discount. Visible in GET /billing/my-plan-summary under data.desconto.",
     tags=["admin-integration"],
+    responses={
+        200: {"description": "Discount applied"},
+        401: {"description": "Missing or invalid INTERNAL_API_TOKEN"},
+        404: {"description": "Active subscription not found"},
+        422: {"description": "desconto_pct out of range [0,100] or invalid desconto_validade"},
+    },
 )
 async def set_subscription_discount(
     company_id: str,
