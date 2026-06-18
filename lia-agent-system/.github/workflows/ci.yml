@@ -622,6 +622,24 @@ jobs:
         run: python3 scripts/check_agent_base_class.py
 
   # ──────────────────────────────────────────────────────────────────────
+      # B1: optimistic locking coverage in UPDATE endpoints
+      # Baseline 0 (BLOCKING). Every PUT/PATCH must return expected_updated_at
+      # to enable retry with optimistic locking (race condition detection).
+      - name: "B1: expected_updated_at coverage in UPDATE endpoints (BLOCKING)"
+        run: python3 scripts/check_expected_updated_at_in_updates.py --warn-only
+
+      # B2: deterministic ordering in list methods
+      # Baseline 0 (BLOCKING). Every list query must have ORDER BY to ensure
+      # deterministic pagination across calls (not undefined order).
+      - name: "B2: deterministic ordering in list methods (BLOCKING)"
+        run: python3 scripts/check_list_methods_have_order_by.py --warn-only
+
+      # B3: calendar integration safety (GAP-03-006)
+      # Baseline 0 (BLOCKING). Validates interview scheduling wiring:
+      # continuation dispatch registered, no hardcoded credentials, tool docstrings.
+      - name: "B3: calendar integration safety (BLOCKING)"
+        run: python3 scripts/check_calendar_integration_safety.py
+
   # E2E persistence smoke (Configurações > Minha Empresa / Learning Loops /
   # Schedule). Gap original Paulo 2026-05-21 — round-trip browser-level
   # complementa sensors estáticos (ADR-001, lint scripts, contract tests).
