@@ -305,6 +305,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     # veio, casa o título contra os departamentos REAIS do cliente (DB, guardado
     # por timeout + fail-open). Nunca inventa um depto que o cliente não tem.
     department_inferred_from_title = False
+    _dept_names: list = []  # [FIX P2] inicializado antes do try para dept-suggestion
     if not parsed_department and parsed_title:
         _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
         if _company_id:
@@ -335,6 +336,20 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             except Exception as _dept_exc:
                 logger.warning(
                     "[JobCreation:intake] dept inference fail-open: %s", _dept_exc,
+                )
+
+    # [FIX P2 dept-suggestion] Quando nao ha match, surfacar candidato do titulo
+    # para o wizard oferecer sugestao de criacao ou escolha de dept existente.
+    _department_candidate_from_title: str | None = None
+    _existing_departments_for_state: list = []
+    if not parsed_department and parsed_title:
+        _candidate_dept_names = _dept_names  # set by DB lookup above, or [] if not reached
+        if _candidate_dept_names:
+            _existing_departments_for_state = list(_candidate_dept_names[:10])
+            _title_toks = _dept_tokens(parsed_title, drop_seniority=True)
+            if _title_toks:
+                _department_candidate_from_title = " ".join(
+                    t.capitalize() for t in _title_toks[:3]
                 )
 
     # WT-2022 P0.C: LGPD Art. 20 audit trail para decisao automatizada de
@@ -412,6 +427,8 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         "seniority_inferred_from_title": seniority_inferred_from_title,
         "manager_name_suggested_from_email": manager_name_suggested_from_email,
         "department_inferred_from_title": department_inferred_from_title,
+        "department_candidate_from_title": _department_candidate_from_title,
+        "existing_departments": _existing_departments_for_state,
         "is_affirmative": is_affirmative_detected or state.get("is_affirmative", False),
         "affirmative_criteria_primary": affirmative_criteria_detected or state.get("affirmative_criteria_primary"),
         "affirmative_description": affirmative_description_detected or state.get("affirmative_description"),
