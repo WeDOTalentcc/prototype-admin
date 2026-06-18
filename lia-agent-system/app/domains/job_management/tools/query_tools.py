@@ -103,7 +103,7 @@ async def search_jobs(
     Search job vacancies with various filters.
     
     Args:
-        status: Job status (Ativa, Pausada, Fechada, Rascunho)
+        status: Job status canonical (Ativa, Pausada, Concluída, Rascunho, Cancelada, Arquivada)
         department: Department filter
         seniority: Seniority level filter
         work_model: Work model (Remoto, Híbrido, Presencial)
@@ -452,7 +452,7 @@ async def get_job_velocity(
                 select(JobVacancy).where(
                     and_(
                         JobVacancy.company_id == company_id,
-                        JobVacancy.status == "Fechada",
+                        JobVacancy.status == "Concluída",
                         JobVacancy.department == job.department
                     )
                 ).limit(20)
@@ -697,7 +697,7 @@ async def get_job_benchmark(
             
             similar_conditions = [
                 JobVacancy.company_id == company_id,
-                JobVacancy.status == 'Fechada',
+                JobVacancy.status == 'Concluída',
                 JobVacancy.id != UUID(job_id)
             ]
             
@@ -866,7 +866,7 @@ def register_job_management_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "status": {"type": "string", "enum": ["Ativa", "Pausada", "Fechada", "Rascunho"], "description": "Status da vaga"},
+                "status": {"type": "string", "enum": ["Ativa", "Pausada", "Concluída", "Rascunho", "Cancelada", "Arquivada"], "description": "Status da vaga (canonical DB). Use Concluída para vagas encerradas/fechadas."},
                 "department": {"type": "string", "description": "Departamento"},
                 "seniority": {"type": "string", "description": "Nível de senioridade"},
                 "work_model": {"type": "string", "enum": ["Remoto", "Híbrido", "Presencial"], "description": "Modelo de trabalho"},

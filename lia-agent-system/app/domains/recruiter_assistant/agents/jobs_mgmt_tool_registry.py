@@ -178,14 +178,28 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     limit = min(int(kwargs.get("limit", 20)), 50)
     query: str | None = kwargs.get("query") or kwargs.get("title_query") or None
+    # status_map: normaliza input do LLM (EN/PT/sinônimos de intent) → valor canonical do DB
     status_map = {
-        "active": "Ativa", "ativa": "Ativa",
-        "paused": "Pausada", "pausada": "Pausada",
-        "closed": "Concluída", "concluida": "Concluída", "concluída": "Concluída",
-        "draft": "Rascunho", "rascunho": "Rascunho",
-        "cancelled": "Cancelada", "cancelada": "Cancelada",
-        "archived": "Arquivada", "arquivada": "Arquivada",
-        "all": "all",
+        # Ativa — vagas abertas / em andamento
+        "ativa": "Ativa", "active": "Ativa", "open": "Ativa",
+        "abertas": "Ativa", "abertas/em": "Ativa", "em andamento": "Ativa",
+        "em aberto": "Ativa", "publicada": "Ativa", "ao vivo": "Ativa",
+        # Pausada
+        "pausada": "Pausada", "paused": "Pausada", "em pausa": "Pausada",
+        # Concluída — encerradas / fechadas / finalizadas / contratadas
+        "concluida": "Concluída", "concluída": "Concluída", "closed": "Concluída",
+        "encerrada": "Concluída", "encerradas": "Concluída",
+        "fechada": "Concluída", "fechadas": "Concluída",
+        "finalizada": "Concluída", "finalizadas": "Concluída",
+        "filled": "Concluída", "hired": "Concluída",
+        # Rascunho
+        "rascunho": "Rascunho", "draft": "Rascunho", "em rascunho": "Rascunho",
+        # Cancelada
+        "cancelada": "Cancelada", "cancelled": "Cancelada", "canceled": "Cancelada",
+        # Arquivada
+        "arquivada": "Arquivada", "archived": "Arquivada",
+        # Todas
+        "all": "all", "todas": "all", "todos": "all",
     }
     status = status_map.get(raw_status.lower(), raw_status) if raw_status else "all"
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -833,9 +847,14 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
                 "status": {
                     "type": "string",
                     "description": (
-                        "Filtro de status da vaga. PADRAO: ativa (vagas abertas/ativas). "
-                        "Valores aceitos: ativa, pausada, concluida, rascunho, cancelada, arquivada, all. "
-                        "Use all SOMENTE quando o usuario pedir explicitamente TODAS as vagas independente de status."
+                        "Filtro de status da vaga. PADRAO: ativa. "
+                        "Mapeamento de intencao do usuario: "
+                        "'abertas'/'em andamento'/'em aberto'/'publicadas' → ativa; "
+                        "'encerradas'/'fechadas'/'finalizadas'/'concluidas' → concluida; "
+                        "'pausadas'/'em pausa' → pausada; "
+                        "'rascunho' → rascunho; 'canceladas' → cancelada; 'arquivadas' → arquivada; "
+                        "'todas'/'qualquer status' → all. "
+                        "Use all SOMENTE quando o usuario pedir explicitamente TODAS as vagas."
                     ),
                 },
                 "department": {"type": "string", "description": "Filtro por departamento (padrao: all)"},
