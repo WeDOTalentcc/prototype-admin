@@ -1210,7 +1210,10 @@
           "generic": "Falha ao acoplar agente. Tente novamente."
         }
       }
-    }
+    },
+    "emptyAtsTitle": "Nenhuma vaga importada do ATS",
+    "emptyAtsDescription": "Importe vagas do seu ATS (Gupy, Greenhouse ou planilha) para gerenciá-las aqui.",
+    "emptyAtsAction": "Importar vagas"
   },
   "kanban": {
     "loading": "Carregando...",

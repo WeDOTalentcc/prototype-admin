@@ -1210,7 +1210,10 @@
           "generic": "Failed to attach agent. Try again."
         }
       }
-    }
+    },
+    "emptyAtsTitle": "No ATS-imported jobs yet",
+    "emptyAtsDescription": "Import jobs from your ATS (Gupy, Greenhouse or spreadsheet) to manage them here.",
+    "emptyAtsAction": "Import jobs"
   },
   "kanban": {
     "loading": "Loading...",

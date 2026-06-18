@@ -16,8 +16,6 @@ import { TableFiltersPanel } from"@/components/pages/jobs/TableFiltersPanel"
 import { JobPreviewPanel } from"@/components/pages/jobs/JobPreviewPanel"
 import { JobsCompactTableView } from"@/components/pages/jobs/JobsCompactTableView"
 import { JobsKanbanView } from"@/components/pages/jobs/JobsKanbanView"
-// Phase 4H — ATS empty state
-import { AtsImportSuggestionCard } from "@/components/jobs/AtsImportSuggestionCard"
 import { ColumnConfigPanel } from"@/components/pages/jobs/ColumnConfigPanel"
 import { toast } from"sonner"
 import type { Job } from"@/components/jobs"
@@ -305,11 +303,13 @@ export function JobsListContent(props: JobsListContentProps) {
                     </div>
                   </div>
                 ) : filteredJobs.length === 0 ? (
-                  // Phase 4H — ATS empty state takes priority over generic
+                  // C7 fix: AtsImportSuggestionCard canonical location is pipeline-overview-page
+                  // (ats_importada stage panel). JobsListContent uses EmptyState + BulkImportModal
+                  // trigger here to avoid duplicate render across the two SPA pages.
                   activeFilter === 'ats' ? (
-                    <AtsImportSuggestionCard
-                      onImport={() => setShowBulkImportModal?.(true)}
-                    />
+                    <EmptyState icon={<Briefcase />} title={t('emptyAtsTitle')}
+                      description={t('emptyAtsDescription')}
+                      action={{ label: t('emptyAtsAction'), onClick: () => setShowBulkImportModal?.(true) }} className="h-64" />
                   ) : (
                     <EmptyState icon={<Briefcase />} title={t('emptyTitle')}
                       description={t('emptyDescription')}
