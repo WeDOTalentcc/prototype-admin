@@ -115,17 +115,17 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   // user-driven tab changes go through setActiveTab as usual.
   // See .planning/vacancy-pipeline-plan.md > Phase A.4.
   const _searchParams = useSearchParams()
+
+  // activeTab excluded from deps intentionally: including it caused the URL
+  // param to lock the tab forever — every user tab-click re-ran this effect
+  // and snapped the active tab back to the URL value (all tabs unresponsive).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const requested = _searchParams?.get("tab")
     if (requested === "edit" || requested === "management" || requested === "agents") {
-      if (requested !== activeTab) {
-        setActiveTab(requested)
-      }
+      setActiveTab(requested)
     }
-    // We intentionally only sync when job changes — eslint-disable-next-line
-    // is unnecessary because `_searchParams` and `activeTab` are stable across
-    // renders for the same URL/store state, but we list them all.
-  }, [job?.id, _searchParams, activeTab, setActiveTab])
+  }, [job?.id, _searchParams, setActiveTab])
   const selectedCandidate = useKanbanStore((s) => s.selectedCandidate)
   const setSelectedCandidate = useKanbanStore((s) => s.setSelectedCandidate)
   const [selectedTriagemCandidate, setSelectedTriagemCandidate] = useState<Record<string, unknown> | null>(null)
