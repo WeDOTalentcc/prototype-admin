@@ -89,16 +89,22 @@ export function useJobsData(): UseJobsDataReturn {
         setJobsError(null)
 
         console.debug('[useJobsData] fetching job vacancies...')
-        const response = await liaApi.listJobVacancies(undefined, 0, 50)
-        console.debug('[useJobsData] response received, items:', response?.items?.length ?? 'none')
+        // Run jobs + overview in parallel — eliminates the two-phase render (layout shift).
+        const [response, overviewDataRaw] = await Promise.allSettled([
+          liaApi.listJobVacancies(undefined, 0, 50),
+          liaApi.getJobVacanciesOverview(),
+        ])
+        const jobsResult = response.status === 'fulfilled' ? response.value : null
+        const overviewResult = overviewDataRaw.status === 'fulfilled' ? overviewDataRaw.value : null
+        console.debug('[useJobsData] responses received, jobs items:', jobsResult?.items?.length ?? 'none')
 
       if (!mountedRef.current) return
 
-      if (!response || !response.items) {
+      if (!jobsResult || !jobsResult.items) {
         throw new Error('Invalid response format')
       }
 
-      setIsExternalSourceFallback(response.source === 'local-fallback')
+      setIsExternalSourceFallback(jobsResult.source === 'local-fallback')
 
       const stageMapping: Record<string, Job['stage']> = {
         'Planejamento': 'Planejamento',
@@ -109,7 +115,7 @@ export function useJobsData(): UseJobsDataReturn {
         'Finalização': 'Finalização',
         'Encerrada': 'Encerrada'
       }
-      const convertedJobs: Job[] = response.items.map((jv_raw, index: number) => { try { const jv = jv_raw as unknown as Record<string, unknown>
+      const convertedJobs: Job[] = jobsResult.items.map((jv_raw, index: number) => { try { const jv = jv_raw as unknown as Record<string, unknown>
         const funnelData = (jv.funnel_data as Record<string, number>) || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
         return {
           id: index + 1,
@@ -205,10 +211,9 @@ export function useJobsData(): UseJobsDataReturn {
 
       console.debug('[useJobsData] transform complete, valid jobs:', convertedJobs.length)
       setBackendJobs(convertedJobs)
-      setIsLoadingJobs(false)
 
       try {
-        const overviewData = await liaApi.getJobVacanciesOverview()
+        const overviewData = overviewResult
         if (!mountedRef.current) return
         const stats = {
           total: overviewData.active_jobs.total + (overviewData.all_jobs.hired_last_90d || 0),
@@ -231,6 +236,7 @@ export function useJobsData(): UseJobsDataReturn {
         }
         setDashboardStats(stats)
         setIsLoadingStats(false)
+        setIsLoadingJobs(false)
       } catch {
         if (!mountedRef.current) return
         const stats = {
@@ -254,6 +260,7 @@ export function useJobsData(): UseJobsDataReturn {
         }
         setDashboardStats(stats)
         setIsLoadingStats(false)
+        setIsLoadingJobs(false)
       }
       } catch (error) {
         if (!mountedRef.current) return
