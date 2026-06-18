@@ -64,6 +64,9 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
 
   const lastFetchedHistoryCandidateRef = useRef<string | null>(null)
   const candidateId = candidate?.id as string | undefined
+  // Pearch candidates have non-UUID ids. Opinions endpoints expect internal DB UUIDs.
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const candidateIsLocal = !!candidateId && UUID_RE.test(candidateId)
 
   // Fix 1: React Query v5 — opinions summary
   const {
@@ -75,7 +78,7 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
     queryFn: () =>
       fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary`)
         .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json() }),
-    enabled: !!candidateId,
+    enabled: candidateIsLocal,
     staleTime: 60_000,
   })
 
@@ -90,7 +93,7 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
     queryFn: () =>
       fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history`)
         .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json() }),
-    enabled: !!candidateId && activeTab === 'opinions',
+    enabled: candidateIsLocal && activeTab === opinions,
     staleTime: 60_000,
   })
 

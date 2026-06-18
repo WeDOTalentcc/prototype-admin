@@ -138,9 +138,11 @@ export function QualificationMatrixCard({
   searchCriteria,
   jobId,
 }: QualificationMatrixCardProps) {
-  const shouldFetchSearch = !matrix && !!searchCriteria && !!candidateId && !!companyId
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const candidateIsLocal = UUID_RE.test(candidateId)
+  const shouldFetchSearch = !matrix && !!searchCriteria && candidateIsLocal && !!companyId
   // Deriva on-the-fly da vaga quando não há parecer salvo (ou parecer antigo sem matrix).
-  const shouldFetchJob = !matrix && !searchCriteria && !!jobId && !!candidateId && !!companyId
+  const shouldFetchJob = !matrix && !searchCriteria && !!jobId && candidateIsLocal && !!companyId
   const shouldFetch = shouldFetchSearch || shouldFetchJob
 
   const queryKey = shouldFetchJob
