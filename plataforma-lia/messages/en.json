@@ -6752,14 +6752,14 @@
       "ariaLabel": "Activate onboarding with IA"
     },
     "consumo": {
-      "title": "Consumption",
-      "description": "Track your platform credit and service usage.",
-      "sidebarLabel": "Consumption",
+      "title": "Plan & Billing",
+      "description": "Contracted plan, credit consumption, invoices, and billing details.",
+      "sidebarLabel": "Plan & Billing",
       "tabs": {
-        "ia": "AI Credits",
-        "pearch": "Pearch",
-        "agentes": "Agents",
-        "billing": "Billing"
+        "plano": "Plan",
+        "consumo": "Consumption",
+        "faturas": "Invoices",
+        "cobranca": "Billing"
       },
       "pearch": {
         "description": "Credits consumed in global candidate searches via Pearch.",
@@ -7612,7 +7612,9 @@
         "pending": "Pending",
         "overdue": "Overdue",
         "failed": "Failed"
-      }
+      },
+      "fiscalData": "Fiscal data",
+      "fiscalDataComing": "Fiscal data configuration (CNPJ, company name, billing address) will be available soon through the admin panel."
     }
   },
   "publicJob": {
