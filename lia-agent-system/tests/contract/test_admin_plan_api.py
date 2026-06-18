@@ -275,3 +275,31 @@ class TestAllEndpointsRequireAuth:
             resp = getattr(client, method.lower())(path)
             assert resp.status_code == 401, \
                 f"{method} {path} should be 401 without token, got {resp.status_code}"
+
+
+# ---------------------------------------------------------------------------
+# A3 — apify_enrichment credit cost is non-zero
+# ---------------------------------------------------------------------------
+
+class TestApifyEnrichmentCost:
+    """Sentinel: apify_enrichment must cost >= 1 credit (A3 fix 2026-06-18)."""
+
+    def test_apify_enrichment_cost_nonzero(self):
+        from app.domains.credits.services.credit_service import ACTION_CREDIT_COSTS
+        cost = ACTION_CREDIT_COSTS.get("apify_enrichment", 0)
+        assert cost >= 1, (
+            f"apify_enrichment must cost >= 1 credit, got {cost}. "
+            "Each Apify profile enrichment ($0.01 USD) must deduct 1 WeDOTalent credit."
+        )
+
+    def test_apify_enrichment_tracking_records_credits(self):
+        """record_apify_call must write credits_consumed >= 1 in ExternalApiConsumption."""
+        import inspect
+        from app.domains.billing.services.consumption_tracking_service import ConsumptionTrackingService
+        src = inspect.getsource(ConsumptionTrackingService.record_apify_call)
+        assert "credits_consumed=0" not in src, (
+            "record_apify_call still writes credits_consumed=0. Fix: credits_consumed=1."
+        )
+        assert "credits_consumed=1" in src, (
+            "record_apify_call must write credits_consumed=1 for quota deduction."
+        )

@@ -505,3 +505,146 @@ class JobVacanciesAnalyticsRepository:
             ]
         except Exception:
             return []
+
+    async def get_diversity_distribution_for_company(
+        self, company_id: str, period_days: int = 90
+    ) -> dict:
+        """Aggregate hired-candidate distributions for DEI analytics.
+
+        LGPD compliance:
+        - Art. 11: Only professional attributes (seniority, location, experience).
+          gender / diversity_race_ethnicity / diversity_disability / marital_status
+          are NEVER queried here.
+        - Art. 12 §1 + ANPD Guia Anonimização §3: N>=10 gate per cell suppresses
+          cells with insufficient samples (same pattern as BigFive ADR-LGPD-001).
+        - Multi-tenancy: VacancyCandidate.company_id == company_id (never trusted
+          from payload — enforced by Depends(require_company_id) upstream).
+        """
+        MIN_CELL = 10  # ADR-LGPD-001 anonymisation gate
+
+        cutoff = datetime.utcnow() - timedelta(days=period_days)
+        hired_stages = ["hired", "contratado"]
+
+        try:
+            # Base subquery: hired VacancyCandidate rows in period for this company
+            base_q = (
+                select(VacancyCandidate.candidate_id)
+                .where(
+                    and_(
+                        VacancyCandidate.company_id == company_id,
+                        VacancyCandidate.stage.in_(hired_stages),
+                        VacancyCandidate.updated_at >= cutoff,
+                    )
+                )
+                .scalar_subquery()
+            )
+
+            # Total sample (for pct calculation)
+            total_result = await self.db.execute(
+                select(func.count()).select_from(
+                    select(VacancyCandidate.candidate_id)
+                    .where(
+                        and_(
+                            VacancyCandidate.company_id == company_id,
+                            VacancyCandidate.stage.in_(hired_stages),
+                            VacancyCandidate.updated_at >= cutoff,
+                        )
+                    )
+                    .subquery()
+                )
+            )
+            total = int(total_result.scalar() or 0)
+
+            if total < MIN_CELL:
+                return {"total": total, "min_cell": MIN_CELL, "seniority": [], "location": [], "experience": []}
+
+            # Seniority distribution
+            sen_result = await self.db.execute(
+                select(
+                    Candidate.seniority_level,
+                    func.count(Candidate.id).label("cnt"),
+                )
+                .where(
+                    and_(
+                        Candidate.id.in_(base_q),
+                        Candidate.seniority_level.is_not(None),
+                        Candidate.seniority_level != "",
+                    )
+                )
+                .group_by(Candidate.seniority_level)
+                .order_by(func.count(Candidate.id).desc())
+            )
+            seniority = [
+                {"key": r.seniority_level, "count": int(r.cnt)}
+                for r in sen_result.all()
+                if int(r.cnt) >= MIN_CELL  # suppress cells < 10
+            ]
+
+            # Location (state) distribution — top 8
+            loc_result = await self.db.execute(
+                select(
+                    Candidate.location_state,
+                    func.count(Candidate.id).label("cnt"),
+                )
+                .where(
+                    and_(
+                        Candidate.id.in_(base_q),
+                        Candidate.location_state.is_not(None),
+                        Candidate.location_state != "",
+                    )
+                )
+                .group_by(Candidate.location_state)
+                .order_by(func.count(Candidate.id).desc())
+                .limit(8)
+            )
+            location = [
+                {"key": r.location_state, "count": int(r.cnt)}
+                for r in loc_result.all()
+                if int(r.cnt) >= MIN_CELL
+            ]
+
+            # Experience range buckets
+            exp_result = await self.db.execute(
+                select(
+                    Candidate.years_of_experience,
+                    func.count(Candidate.id).label("cnt"),
+                )
+                .where(
+                    and_(
+                        Candidate.id.in_(base_q),
+                        Candidate.years_of_experience.is_not(None),
+                    )
+                )
+                .group_by(Candidate.years_of_experience)
+            )
+            raw_exp: dict[int, int] = {}
+            for r in exp_result.all():
+                raw_exp[int(r.years_of_experience or 0)] = int(r.cnt)
+
+            # Bucket into ranges
+            buckets: dict[str, int] = {"0-2": 0, "3-5": 0, "6-10": 0, "11+": 0}
+            for yrs, cnt in raw_exp.items():
+                if yrs <= 2:
+                    buckets["0-2"] += cnt
+                elif yrs <= 5:
+                    buckets["3-5"] += cnt
+                elif yrs <= 10:
+                    buckets["6-10"] += cnt
+                else:
+                    buckets["11+"] += cnt
+            experience = [
+                {"key": k, "count": v}
+                for k, v in buckets.items()
+                if v >= MIN_CELL
+            ]
+
+            return {
+                "total": total,
+                "min_cell": MIN_CELL,
+                "seniority": seniority,
+                "location": location,
+                "experience": experience,
+            }
+
+        except Exception:
+            return {"total": 0, "min_cell": MIN_CELL, "seniority": [], "location": [], "experience": []}

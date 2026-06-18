@@ -34,6 +34,20 @@ interface SourceQualityItem {
   source: string; label: string; total: number; hired: number; conversion_rate: number
 }
 
+interface DiversityDistributionItem {
+  key: string; label: string; count: number; pct: number
+}
+
+interface DEIInsights {
+  period: string
+  total_hired_sample: number
+  min_sample_gate: number
+  seniority_distribution: DiversityDistributionItem[]
+  location_distribution: DiversityDistributionItem[]
+  experience_distribution: DiversityDistributionItem[]
+  lgpd_note: string
+}
+
 interface DashboardKPIs {
   period: string
   active_candidates: number
@@ -301,6 +315,94 @@ function InsightsPanel({ insights }: { insights: DashboardInsight[] }) {
 }
 
 // ---------------------------------------------------------------------------
+// DiversityPanel — LGPD-safe hired-candidate distribution
+// ---------------------------------------------------------------------------
+
+function MiniBar({ pct, color = "bg-blue-400" }: { pct: number; color?: string }) {
+  return (
+    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden min-w-[40px]">
+      <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+    </div>
+  )
+}
+
+function DistTable({
+  title, items, color,
+}: {
+  title: string
+  items: DiversityDistributionItem[]
+  color: string
+}) {
+  if (items.length === 0) return null
+  return (
+    <div>
+      <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">{title}</p>
+      <div className="space-y-1.5">
+        {items.map((item) => (
+          <div key={item.key} className="flex items-center gap-2">
+            <span className="text-xs text-gray-700 w-24 shrink-0 truncate">{item.label}</span>
+            <MiniBar pct={item.pct} color={color} />
+            <span className="text-[10px] text-gray-500 tabular-nums w-8 text-right shrink-0">{item.pct}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function DiversityPanel({ isEnterprise }: { isEnterprise: boolean }) {
+  const { data, isLoading } = useQuery<DEIInsights>({
+    queryKey: ["dei-insights"],
+    queryFn: async () => {
+      const resp = await fetch("/api/backend-proxy/job-vacancies/analytics/dei?period=90d")
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+      return resp.json()
+    },
+    staleTime: 120_000,
+    enabled: isEnterprise,
+  })
+
+  const insufficient =
+    !isLoading && data && data.total_hired_sample < data.min_sample_gate
+
+  const content = (
+    <div className="bg-white rounded-md shadow-sm border border-gray-200 p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">Diversidade de Talentos</h2>
+          <p className="text-xs text-gray-400">Candidatos contratados · últimos 90 dias</p>
+        </div>
+        <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded font-medium">Enterprise</span>
+      </div>
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />)}
+        </div>
+      ) : insufficient ? (
+        <div className="text-center py-8">
+          <p className="text-sm text-gray-500">Amostra insuficiente</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Necessário N≥{data?.min_sample_gate ?? 10} contratações no período
+          </p>
+        </div>
+      ) : data ? (
+        <div className="space-y-5">
+          <DistTable title="Senioridade" items={data.seniority_distribution} color="bg-violet-400" />
+          <DistTable title="Estado" items={data.location_distribution} color="bg-blue-400" />
+          <DistTable title="Experiência" items={data.experience_distribution} color="bg-emerald-400" />
+          <p className="text-[9px] text-gray-400 border-t border-gray-100 pt-2 leading-relaxed">
+            {data.lgpd_note}
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-gray-400 text-center py-6">Sem dados disponíveis.</p>
+      )}
+    </div>
+  )
+
+  return isEnterprise ? content : <PremiumLock>{content}</PremiumLock>
+}
+
 // PremiumLock — overlay wrapper for Enterprise-gated sections
 // ---------------------------------------------------------------------------
 
@@ -618,6 +720,7 @@ export function IndicadoresPage() {
           isEnterprise={false}
         />
       </div>
+      <DiversityPanel isEnterprise={false} />
     </div>
   )
 }

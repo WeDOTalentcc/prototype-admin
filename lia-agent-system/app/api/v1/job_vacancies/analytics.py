@@ -1567,6 +1567,29 @@ class SourceQualityItem(BaseModel):
     hired: int
     conversion_rate: float  # hired / total * 100
 
+
+
+class DiversityDistributionItem(BaseModel):
+    key: str
+    label: str
+    count: int
+    pct: float
+
+
+class DEIInsightsResponse(BaseModel):
+    period: str
+    total_hired_sample: int = 0
+    min_sample_gate: int = 10
+    seniority_distribution: list[DiversityDistributionItem] = []
+    location_distribution: list[DiversityDistributionItem] = []
+    experience_distribution: list[DiversityDistributionItem] = []
+    # LGPD compliance notice — always surfaced to client
+    lgpd_note: str = (
+        "Somente atributos profissionais (senioridade, localidade, experiência). "
+        "Gênero, raça, deficiência e estado civil excluídos per LGPD Art. 11. "
+        "Células com N<10 suprimidas per LGPD Art. 12 §1 + ANPD Guia Anonimização §3."
+    )
+
 class DashboardKPIResponse(BaseModel):
     period: str
     active_candidates: int = 0
@@ -1762,3 +1785,79 @@ async def get_analytics_dashboard(
     except Exception as e:
         logger.error("Error fetching analytics dashboard: %s", e, exc_info=True)
         raise LIAError(message="Erro interno do servidor")
+
+
+@router.get("/job-vacancies/analytics/dei-insights", response_model=DEIInsightsResponse)
+async def get_dei_insights(
+    period: str = Query("90d"),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
+    company_id: str = Depends(require_company_id),
+) -> DEIInsightsResponse:
+    """Diversity distribution for hired candidates — LGPD-safe aggregate.
+
+    Only professional attributes (seniority, location, experience).
+    N>=10 gate per cell (ADR-LGPD-001 anonymisation pattern).
+    Sensitive fields (gender, race, disability, marital_status) never queried.
+    """
+    try:
+        period_days = {"30d": 30, "90d": 90, "180d": 180, "365d": 365}.get(period, 90)
+
+        SENIORITY_LABELS: dict[str, str] = {
+            "junior": "Júnior", "junior": "Júnior", "pleno": "Pleno",
+            "senior": "Sênior", "especialista": "Especialista",
+            "estagio": "Estágio", "estagiario": "Estagiário",
+            "lideranca": "Liderança", "gerencia": "Gerência",
+        }
+
+        raw = await repo.get_diversity_distribution_for_company(company_id, period_days)
+        total = raw["total"]
+
+        def build_dist(items: list[dict]) -> list[DiversityDistributionItem]:
+            tot = sum(i["count"] for i in items) or 1
+            return [
+                DiversityDistributionItem(
+                    key=i["key"],
+                    label=SENIORITY_LABELS.get(i["key"].lower(), i["key"].title()),
+                    count=i["count"],
+                    pct=round(i["count"] / tot * 100, 1),
+                )
+                for i in items
+            ]
+
+        EXP_LABELS = {"0-2": "0–2 anos", "3-5": "3–5 anos", "6-10": "6–10 anos", "11+": "11+ anos"}
+        experience = [
+            DiversityDistributionItem(
+                key=i["key"],
+                label=EXP_LABELS.get(i["key"], i["key"]),
+                count=i["count"],
+                pct=round(i["count"] / (sum(x["count"] for x in raw["experience"]) or 1) * 100, 1),
+            )
+            for i in raw["experience"]
+        ]
+
+        # Location labels — state abbreviation uppercase (already stored as "SP", "MG", etc.)
+        location = [
+            DiversityDistributionItem(
+                key=i["key"],
+                label=i["key"].upper() if len(i["key"]) == 2 else i["key"].title(),
+                count=i["count"],
+                pct=round(i["count"] / (sum(x["count"] for x in raw["location"]) or 1) * 100, 1),
+            )
+            for i in raw["location"]
+        ]
+
+        return DEIInsightsResponse(
+            period=period,
+            total_hired_sample=total,
+            min_sample_gate=raw["min_cell"],
+            seniority_distribution=build_dist(raw["seniority"]),
+            location_distribution=location,
+            experience_distribution=experience,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error fetching DEI insights: %s", e, exc_info=True)
+        raise LIAError(message="Erro interno do servidor")
+
