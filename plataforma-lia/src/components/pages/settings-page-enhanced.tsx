@@ -216,8 +216,8 @@ const getDefaultSections = (): SettingsSection[] => [
   },
   {
     id: 'consumo',
-    title: 'Consumo',
-    description: 'Créditos IA, Pearch, agentes e billing',
+    title: 'Plano e Cobrança',
+    description: 'Plano contratado, consumo de créditos, faturas e dados de cobrança.',
     icon: BarChart3,
     status: 'incomplete',
     priority: 'low',
