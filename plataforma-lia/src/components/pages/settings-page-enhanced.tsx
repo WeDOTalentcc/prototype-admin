@@ -36,6 +36,8 @@ const SECTION_ICON_COLORS: Record<string, string> = {
 import dynamic from"next/dynamic"
 import { useSearchParams } from"next/navigation"
 import { LoadingFallback } from"@/components/ui/loading"
+import { useQuery } from "@tanstack/react-query"
+
 const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
 const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <LoadingFallback text="Carregando pipeline..." /> })
 const RecruitmentScreeningTab = dynamic(() => import("@/components/settings/RecruitmentScreeningTab").then(m => ({ default: m.RecruitmentScreeningTab })), { ssr: false, loading: () => <LoadingFallback text="Carregando screening..." /> })
@@ -103,6 +105,12 @@ interface SectionProgress {
   completed: number
   total: number
   percentage: number
+}
+
+interface SettingsProgressResponse {
+  overall: number
+  sections?: Record<string, number>
+  subsections?: Record<string, boolean>
 }
 
 const getDefaultSections = (): SettingsSection[] => [
@@ -359,7 +367,6 @@ export default function SettingsPageEnhanced() {
   const [subsectionCompletion, setSubsectionCompletion] = useState<Record<string, boolean>>({})
 
   const [overallProgress, setOverallProgress] = useState<number>(0)
-  const [progressLoading, setProgressLoading] = useState<boolean>(true)
   
   // `isCollapsed` é a PREFERÊNCIA EXPLÍCITA de repouso da barra: expandida
   // (fixa) vs. trilho congelado só de ícones. É a única coisa que persiste e o
@@ -395,57 +402,57 @@ export default function SettingsPageEnhanced() {
     })
   }, [])
 
+  // useQuery canonical pattern for settings progress
+  const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useQuery<SettingsProgressResponse>({
+    queryKey: ['settings-progress'],
+    queryFn: async () => {
+      const res = await fetch('/api/backend-proxy/settings/progress/', {
+        signal: AbortSignal.timeout(8000)
+      })
+      
+      if (!res.ok) {
+        throw new Error(`Erro ao carregar progresso: ${res.status}`)
+      }
+      
+      return res.json()
+    },
+    staleTime: 120_000, // 2 minutes
+    retry: 1,
+  })
 
-
-  const fetchProgress = useCallback(async () => {
-    try {
-      setProgressLoading(true)
-      const response = await fetch('/api/backend-proxy/settings/progress/')
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      
-      if (data.overall !== undefined) {
-        setOverallProgress(data.overall)
-      }
-      
-      if (data.sections) {
-        setSectionCompletion(prev => ({
-          ...prev,
-          // P0-4: all 9 canonical sidebar section IDs mapped to backend keys
-          'minha-empresa': data.sections['minha-empresa'] ?? prev['minha-empresa'],
-          // pipeline/screening/templates share recrutamento-lia score (no dedicated backend key yet)
-          'pipeline': data.sections['pipeline'] ?? data.sections['recrutamento-lia'] ?? prev['pipeline'],
-          'screening': data.sections['screening'] ?? data.sections['recrutamento-lia'] ?? prev['screening'],
-          'templates-assinatura': data.sections['templates-assinatura'] ?? data.sections['recrutamento-lia'] ?? prev['templates-assinatura'],
-          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
-          'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
-          'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
-          'fairness-compliance': data.sections['fairness-compliance'] ?? prev['fairness-compliance'],
-          'consumo': data.sections['ai-credits'] ?? data.sections['consumo'] ?? prev['consumo'],
-          'lia-personalizacao': data.sections['lia-personalizacao'] ?? prev['lia-personalizacao'],
-        }))
-      }
-      
-      if (data.subsections) {
-        setSubsectionCompletion(prev => ({
-          ...prev,
-          ...data.subsections
-        }))
-      }
-    } catch (error) {
-    } finally {
-      setProgressLoading(false)
-    }
-  }, [])
-
+  // Sync progressData to local state when loaded
   useEffect(() => {
-    fetchProgress()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    if (!progressData) return
+    
+    if (progressData.overall !== undefined) {
+      setOverallProgress(progressData.overall)
+    }
+    
+    if (progressData.sections) {
+      setSectionCompletion(prev => ({
+        ...prev,
+        // P0-4: all 9 canonical sidebar section IDs mapped to backend keys
+        'minha-empresa': progressData.sections?.['minha-empresa'] ?? prev['minha-empresa'],
+        // pipeline/screening/templates share recrutamento-lia score (no dedicated backend key yet)
+        'pipeline': progressData.sections?.['pipeline'] ?? progressData.sections?.['recrutamento-lia'] ?? prev['pipeline'],
+        'screening': progressData.sections?.['screening'] ?? progressData.sections?.['recrutamento-lia'] ?? prev['screening'],
+        'templates-assinatura': progressData.sections?.['templates-assinatura'] ?? progressData.sections?.['recrutamento-lia'] ?? prev['templates-assinatura'],
+        'comunicacao-alertas': progressData.sections?.['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
+        'usuarios-departamentos': progressData.sections?.['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
+        'integrations': progressData.sections?.['integracoes'] ?? progressData.sections?.['integrations'] ?? prev['integrations'],
+        'fairness-compliance': progressData.sections?.['fairness-compliance'] ?? prev['fairness-compliance'],
+        'consumo': progressData.sections?.['ai-credits'] ?? progressData.sections?.['consumo'] ?? prev['consumo'],
+        'lia-personalizacao': progressData.sections?.['lia-personalizacao'] ?? prev['lia-personalizacao'],
+      }))
+    }
+    
+    if (progressData.subsections) {
+      setSubsectionCompletion(prev => ({
+        ...prev,
+        ...progressData.subsections
+      }))
+    }
+  }, [progressData])
 
   const handleSectionCompletionUpdate = useCallback((sectionId: string, completion: number) => {
     setSectionCompletion(prev => ({ ...prev, [sectionId]: completion }))

@@ -176,7 +176,11 @@ def serialize_message(
         payload["response_blocks"] = response_blocks
     # FIX-NAVIGATE-LEAK (Fase 0): contrato de navegacao do FE = ui_action/
     # ui_action_params (useChatSocket/useChatMessages PR-D). Paridade c/ orquestrador.
+    # H-6 normalization: navigate_page is an internal YAML field name, NOT a FE ui_action type.
+    # FE only knows "navigate_to". Normalize silently so producers never leak internal names.
     if ui_action:
+        if ui_action == "navigate_page":
+            ui_action = "navigate_to"
         payload["ui_action"] = ui_action
     if ui_action_params:
         payload["ui_action_params"] = ui_action_params
