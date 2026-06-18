@@ -76,6 +76,7 @@ function QuotaSummary() {
     queryKey: SETTINGS_QUERY_KEYS.billing(),
     queryFn: async () => {
       const res = await fetch("/api/backend-proxy/billing/plan-summary")
+      if (res.status === 404) return null
       if (!res.ok) throw new Error(t("errors.loadPlan"))
       return res.json()
     },
@@ -86,6 +87,7 @@ function QuotaSummary() {
     queryKey: SETTINGS_QUERY_KEYS.billingUsage(),
     queryFn: async () => {
       const res = await fetch("/api/backend-proxy/billing/usage-summary")
+      if (res.status === 404) return null
       if (!res.ok) throw new Error(t("errors.loadUsage"))
       return res.json()
     },

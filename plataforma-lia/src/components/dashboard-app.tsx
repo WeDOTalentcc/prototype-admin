@@ -556,7 +556,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
       <main id="main-content" className="flex-1 flex flex-col overflow-hidden relative" aria-label={currentPage}>
         <div className="flex-1 min-h-0 overflow-hidden flex">
           <div className="flex-1 min-w-0 overflow-hidden">
-            {children ?? renderCurrentPage()}
+            {pathFromLabel(currentPage as string) !== undefined ? (children ?? renderCurrentPage()) : renderCurrentPage()}
           </div>
           {splitView.active && (
             <LiaSplitPanel onNavigate={page => {

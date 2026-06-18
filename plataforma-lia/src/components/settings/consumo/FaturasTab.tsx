@@ -30,6 +30,7 @@ export function FaturasTab() {
     queryKey: SETTINGS_QUERY_KEYS.billingInvoices(),
     queryFn: async () => {
       const res = await fetch("/api/backend-proxy/billing/invoices?limit=6")
+      if (res.status === 404) return { invoices: [] }
       if (!res.ok) throw new Error(t("errors.loadInvoices"))
       return res.json()
     },

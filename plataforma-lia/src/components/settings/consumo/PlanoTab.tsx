@@ -30,6 +30,7 @@ export function PlanoTab() {
     queryKey: SETTINGS_QUERY_KEYS.billing(),
     queryFn: async () => {
       const res = await fetch("/api/backend-proxy/billing/plan-summary")
+      if (res.status === 404) return null
       if (!res.ok) throw new Error(t("errors.loadPlan"))
       return res.json()
     },
@@ -38,7 +39,13 @@ export function PlanoTab() {
 
   if (isLoading) return <HubLoadingState />
   if (error) return <HubErrorState onRetry={refetch} />
-  if (!data) return null
+  if (!data) return (
+    <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-8 text-center space-y-2">
+      <Crown className="h-6 w-6 text-lia-text-muted mx-auto" aria-hidden="true" />
+      <p className="text-sm font-medium text-lia-text-secondary">Sem plano contratado</p>
+      <p className="text-xs text-lia-text-tertiary">Entre em contato com a WeDOTalent para ativar sua assinatura.</p>
+    </div>
+  )
 
   const features: string[] = data.features_enabled || []
   const desconto = data.desconto as { pct: number; validade: string | null } | undefined
