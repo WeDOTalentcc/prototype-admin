@@ -1,5 +1,7 @@
 "use client"
 
+import { usePlan } from "@/hooks/billing/use-plan"
+
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import {
@@ -579,6 +581,7 @@ const PERIOD_OPTIONS: { value: Period; label: string }[] = [
 ]
 
 export function IndicadoresPage() {
+  const { isEnterprise } = usePlan()
   const [period, setPeriod] = useState<Period>("30d")
 
   const { data, isLoading, error } = useQuery<DashboardKPIs>({
@@ -724,15 +727,15 @@ export function IndicadoresPage() {
         <PipelineVelocityPanel
           velocity={data?.pipeline_velocity ?? []}
           loading={isLoading}
-          isEnterprise={false}
+          isEnterprise={isEnterprise}
         />
         <SourceQualityPanel
           sources={data?.source_quality ?? []}
           loading={isLoading}
-          isEnterprise={false}
+          isEnterprise={isEnterprise}
         />
       </div>
-      <DiversityPanel isEnterprise={false} />
+      <DiversityPanel isEnterprise={isEnterprise} />
     </div>
   )
 }
