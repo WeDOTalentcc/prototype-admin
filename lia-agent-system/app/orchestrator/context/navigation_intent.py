@@ -232,6 +232,26 @@ _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
         "Quer que eu abra a Visão Global de recrutamento?",
     ),
 
+    # 7. Plano e Cobrança — billing boundary
+    # Palavras-chave que indicam intenção de ver/gerenciar plano, fatura ou créditos.
+    # NavigationIntent detecta e propõe navegação antes do LLM processar —
+    # complementar ao billing_boundary em lia_persona.yaml.
+    (
+        [("plano e cobran", 1.0), ("plano e cobranca", 1.0),
+         ("fatura", 1.0), ("faturas", 1.0),
+         ("cobran", 0.9), ("cobrança", 0.9), ("cobranca", 0.9),
+         ("meu plano", 1.0), ("ver meu plano", 1.0), ("meu plano atual", 1.0),
+         ("cancelar plano", 1.0), ("upgrade de plano", 1.0), ("mudar plano", 1.0),
+         ("consumo de créditos", 1.0), ("consumo de creditos", 1.0),
+         ("créditos disponíveis", 1.0), ("creditos disponiveis", 1.0),
+         ("dados de pagamento", 1.0), ("método de pagamento", 1.0), ("metodo de pagamento", 1.0),
+         ("forma de pagamento", 1.0), ("cartão de crédito", 0.9), ("cartao de credito", 0.9),
+         ("nota fiscal", 1.0), ("boleto", 0.9), ("assinatura", 0.7),
+         ("período de trial", 1.0), ("periodo de trial", 1.0), ("vencimento", 0.7)],
+        "Plano e Cobrança",
+        "Quer que eu abra Configurações > Plano e Cobrança?",
+    ),
+
     # 6. Painel de Controle
     (
         [("painel de controle", 1.0), ("dashboard", 0.7), ("tarefas pendentes", 1.0),

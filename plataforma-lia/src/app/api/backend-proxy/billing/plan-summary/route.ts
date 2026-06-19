@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     const json = await response.json()
-    return NextResponse.json(json?.data || json)
+    return NextResponse.json(json?.data ?? null)
   } catch {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },

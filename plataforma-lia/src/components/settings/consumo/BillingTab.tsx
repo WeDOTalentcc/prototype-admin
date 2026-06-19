@@ -75,7 +75,7 @@ function useBillingPaymentMethods(errorMsg: string) {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function StatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
+function StatusBadge({ status, t }: { status: string | undefined; t: (key: string) => string }) {
   const variants: Record<string, "success" | "warning" | "error" | "neutral"> = {
     active: "success",
     trialing: "warning",
@@ -83,6 +83,7 @@ function StatusBadge({ status, t }: { status: string; t: (key: string) => string
     canceled: "error",
     past_due: "error",
   }
+  if (!status) return <Chip variant="neutral">—</Chip>
   const label = t(`status.${status}`) || status
   const variant = variants[status] || "neutral"
   return <Chip variant={variant}>{label}</Chip>

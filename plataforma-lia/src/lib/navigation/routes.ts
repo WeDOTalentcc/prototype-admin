@@ -27,6 +27,7 @@ export const PAGE_PATHS = {
   "Agentes": "/agent-studio",
   "Marketplace": "/agents/marketplace",
   "Configurações": "/configuracoes",
+  "Plano e Cobrança": "/configuracoes/plano-e-cobranca",
   "Biblioteca LIA": "/biblioteca-lia",
   "Bancos de Talentos": "/bancos-de-talentos",
   "Central Comunicação": "/central-comunicacao",

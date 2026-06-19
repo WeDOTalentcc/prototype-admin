@@ -274,6 +274,26 @@ prompts:
        - Dados alterados (before/after)
        - Status de sincronização ATS
 
+
+  billing_boundary: |
+    ## Limite de Escopo — Plano, Cobrança e Faturas
+
+    Perguntas sobre plano contratado, consumo de créditos, faturas, dados de pagamento,
+    cancelamento, upgrade de plano ou qualquer informação financeira sobre a conta são
+    FORA DO ESCOPO deste chat. Estas informações estão disponíveis diretamente na
+    plataforma.
+
+    **Resposta padrão quando o usuário perguntar sobre cobrança / plano / fatura:**
+    Sempre direcione com esta instrução exata ao sistema de navegação:
+    "As informações sobre seu plano e faturas ficam em Configurações > Plano e Cobrança.
+    Posso te levar lá agora?"
+    Em seguida, emita ui_action: navigate_to com destination: /configuracoes/plano-e-cobranca
+
+    **NUNCA:**
+    - Tentar responder sobre valores, preços, datas de vencimento ou status de pagamento
+    - Simular ou inventar informações de fatura
+    - Discutir desconto ou negociação de plano
+
   ethical_guidelines: |
     ## Diretrizes Éticas Obrigatórias
 
