@@ -250,6 +250,7 @@ class AgenticLoop:
         session_id: str | None = None,
         provider: str = "claude",
         max_iterations: int | None = None,
+        tools_override: list[str] | None = None,
     ) -> dict:
         """
         Run the agentic loop.
@@ -302,6 +303,12 @@ class AgenticLoop:
 
         max_iter = max_iterations or MAX_TOOL_ITERATIONS
         tool_schemas = self.get_tool_schemas(provider)
+
+        # tools_override: caller (ex: MainOrchestrator via supervisor path) injeta
+        # subset escopado por page_type. None = todos os tools (backward compat).
+        if tools_override:
+            _override_set = set(tools_override)
+            tool_schemas = [s for s in tool_schemas if s.get("name") in _override_set]
 
         if not tool_schemas:
             logger.debug("[LIA-A04] No tools registered -- skipping agentic loop")

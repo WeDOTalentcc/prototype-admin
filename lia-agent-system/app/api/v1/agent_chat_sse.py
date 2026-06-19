@@ -1229,6 +1229,110 @@ company_id: str = Depends(require_company_id)):
                         set_hitl_approved,
                     )
                     set_hitl_approved(True)
+
+                # /planejar: paridade com _run_agent (fail-open: excecao cai pro supervisor).
+                import re as _re_plan_sv
+                _PLANEJAR_RE_SV = _re_plan_sv.compile(r"^/planejar\s*(.*)", _re_plan_sv.IGNORECASE)
+                _planejar_match_sv = _PLANEJAR_RE_SV.match((_eff_content or "").strip())
+                if _planejar_match_sv:
+                    _task_desc_sv = _planejar_match_sv.group(1).strip()
+                    if _task_desc_sv:
+                        try:
+                            from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
+                            from app.shared.execution import PlanExecutor
+                            from app.shared.execution.plan_detector import ExecutionPlan, AgentTask
+                            _auto_sv = AutomationReActAgent()
+                            _decomp_sv = await _auto_sv.decompose_task(
+                                task_description=_task_desc_sv,
+                                company_id=str(company_id or ""),
+                                user_id=str(user_id or "system"),
+                                persist=False,
+                            )
+                            _subtasks_sv = _decomp_sv.get("subtasks", []) if isinstance(_decomp_sv, dict) else []
+                            if _subtasks_sv and len(_subtasks_sv) >= 2:
+                                _AGENT_TYPE_TO_DOMAIN_SV = {
+                                    "sourcing": "sourcing", "cv_screening": "cv_screening",
+                                    "interviewer": "cv_screening", "wsi_evaluator": "cv_screening",
+                                    "job_planner": "job_management", "scheduling": "communication",
+                                    "analyst_feedback": "communication", "communication": "communication",
+                                    "automation": "automation",
+                                }
+                                _DOMAIN_DEFAULT_ACTION_SV = {
+                                    "sourcing": "search_candidates", "cv_screening": "score_candidates",
+                                    "communication": "send_notification", "job_management": "generate_jd",
+                                    "automation": "move_candidate_stage",
+                                }
+                                _agent_tasks_sv = []
+                                for i, st in enumerate(_subtasks_sv):
+                                    _rd = st.get("domain_id") or _AGENT_TYPE_TO_DOMAIN_SV.get(st.get("agent_type", ""), "automation")
+                                    _ra = st.get("action_id") or _DOMAIN_DEFAULT_ACTION_SV.get(_rd, "generic_step")
+                                    _agent_tasks_sv.append(AgentTask(
+                                        task_id=st.get("id", st.get("task_id", f"t{i}")),
+                                        domain_id=_rd, action_id=_ra,
+                                        description=st.get("description", ""),
+                                        depends_on=st.get("depends_on", []),
+                                        is_critical=st.get("is_critical", True),
+                                        context_mappings=st.get("context_mappings", {}),
+                                    ))
+                                _plan_sv = ExecutionPlan(
+                                    plan_id=f"planejar-{_cid[:8]}",
+                                    detected_pattern=f"/planejar {_task_desc_sv[:40]}",
+                                    tasks=_agent_tasks_sv,
+                                )
+
+                                async def _sse_planejar_sv_cb(event_type: str, data: dict) -> None:
+                                    try:
+                                        _ev = {"type": "plan_progress"}
+                                        if event_type in ("step_running", "step_completed", "step_skipped"):
+                                            _ev["event"] = event_type
+                                            if event_type == "step_completed":
+                                                _ev["status"] = data.get("status", "completed")
+                                        elif event_type in ("plan_started", "plan_completed"):
+                                            return
+                                        else:
+                                            return
+                                        _ev["task_id"] = data.get("task_id", "")
+                                        _ev["action_id"] = data.get("action_id", "")
+                                        _ev["domain_id"] = data.get("domain_id", "")
+                                        await sse_queue.put(_ev)
+                                    except Exception:
+                                        pass
+
+                                await sse_queue.put({
+                                    "type": "plan_progress", "event": "plan_started",
+                                    "plan_id": _plan_sv.plan_id,
+                                    "total_tasks": len(_agent_tasks_sv),
+                                    "tasks": [{"task_id": t.task_id, "action_id": t.action_id, "domain_id": t.domain_id} for t in _agent_tasks_sv],
+                                })
+                                _plan_exec_sv = PlanExecutor()
+                                _exec_result_sv = await asyncio.wait_for(
+                                    _plan_exec_sv.execute(
+                                        plan=_plan_sv, user_id=user_id, session_id=_cid,
+                                        tenant_id=company_id,
+                                        base_context={"company_id": company_id, "user_id": user_id},
+                                        progress_callback=_sse_planejar_sv_cb,
+                                    ),
+                                    timeout=_AGENT_TIMEOUT,
+                                )
+                                await sse_queue.put({
+                                    "type": "plan_progress", "event": "plan_completed",
+                                    "plan_id": _plan_sv.plan_id, "status": "completed",
+                                })
+                                _consolidated_sv = _plan_exec_sv.build_consolidated_response(_exec_result_sv)
+                                from types import SimpleNamespace as _NS_SV
+                                await sse_queue.put({"_done": True, "_output": _NS_SV(
+                                    message=_consolidated_sv.message or "Plano executado.",
+                                    confidence=getattr(_consolidated_sv, "confidence", 0.9),
+                                    actions=[], navigation=None, state_updates=None,
+                                    metadata=getattr(_consolidated_sv, "metadata", {}) or {},
+                                )})
+                                logger.info("[SSEChat/supervisor] /planejar executado: %d tasks", len(_agent_tasks_sv))
+                                return
+                            else:
+                                logger.info("[SSEChat/supervisor] /planejar < 2 subtasks, fallthrough supervisor")
+                        except Exception as _pe_sv:
+                            logger.warning("[SSEChat/supervisor] /planejar (fail-open): %s", _pe_sv)
+
                 from app.api.v1.chat import _build_supervisor_context
                 from app.core.database import AsyncSessionLocal
                 from app.orchestrator.execution.main_orchestrator import (

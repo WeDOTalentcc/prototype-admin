@@ -1696,6 +1696,29 @@ class MainOrchestrator:
                         except Exception:
                             pass
 
+                    # Supervisor tool scoping (paridade com agente federado):
+                    # deriva scope via page_type do view_context que o SSE ja popula.
+                    # Fail-open: scope indefinido ou GLOBAL -> tools_override=None
+                    # -> agentic_loop usa todos os tools (comportamento anterior).
+                    _tools_override: list[str] | None = None
+                    try:
+                        from app.tools.scope_config import (
+                            scope_for_context,
+                            get_tools_for_scope,
+                            PromptScope,
+                        )
+                        _vc = getattr(ctx, "view_context", None) or {}
+                        _pt = _vc.get("page_type") if isinstance(_vc, dict) else None
+                        _scope = scope_for_context(_pt, None)
+                        if _scope != PromptScope.GLOBAL:
+                            _scoped = get_tools_for_scope(_scope)
+                            if _scoped:
+                                _tools_override = list(_scoped)
+                    except Exception as _scope_exc:
+                        logger.debug(
+                            "[MainOrchestrator] tool scope (fail-open): %s", _scope_exc
+                        )
+
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
                         system_prompt=_phase15_system_prompt,
@@ -1704,6 +1727,7 @@ class MainOrchestrator:
                         user_id=getattr(ctx, "user_id", None),
                         session_id=conv_id,
                         provider=_agentic_provider,
+                        tools_override=_tools_override,
                     )
 
                     # Step C (2026-06-04): consome a diretiva surfaçada por um
