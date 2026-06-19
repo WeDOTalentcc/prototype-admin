@@ -25,8 +25,9 @@ class JobVacanciesAnalyticsRepository:
     async def get_job_by_id_and_company(
         self, job_id: str | UUID, company_id: str
     ) -> JobVacancy | None:
-        """Dual-ID lookup: accepts UUID string/obj (PK) or integer string (Rails bigint).
-        Integer IDs are looked up via job_vacancies.job_id column (String FK from Rails).
+        """Dual-ID lookup: accepts UUID string, UUID object, or integer-like string.
+        FastAPI path params are always str; this coerces to UUID for the PK lookup.
+        Integer strings fall back to the job_vacancies.job_id column.
         """
         import uuid as _uuid
         # Try UUID lookup (fast path — most calls are UUID)
@@ -43,7 +44,7 @@ class JobVacanciesAnalyticsRepository:
             return result.scalar_one_or_none()
         except (ValueError, AttributeError):
             pass
-        # Integer fallback — look up via rails job_id column (String "123")
+        # Integer/non-UUID fallback — look up via job_vacancies.job_id column
         result = await self.db.execute(
             select(JobVacancy).where(
                 and_(

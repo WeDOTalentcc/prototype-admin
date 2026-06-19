@@ -230,7 +230,7 @@ company_id: str = Depends(require_company_id)):
         job = await repo.get_job_by_id_and_company(job_id, company_id)
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
-        job_id = job.id  # resolve to UUID PK (handles integer IDs from Rails)
+        job_id = job.id  # resolve str path param → UUID object for subsequent queries
 
         vacancy_candidates = await repo.get_all_vacancy_candidates(job_id)
         total_candidates = len(vacancy_candidates)

@@ -353,7 +353,7 @@ company_id: str = Depends(require_company_id)):
         try:
             _job_uuid = uuid.UUID(job_id)
         except (ValueError, AttributeError):
-            # Integer ID (Rails bigint) — look up via job_vacancies.job_id column
+            # Non-UUID fallback — look up via job_vacancies.job_id column
             from sqlalchemy import select as _sa_select, and_ as _sa_and_
             from app.models.job_vacancy import JobVacancy as _JV
             _res = await stage_repo.db.execute(
