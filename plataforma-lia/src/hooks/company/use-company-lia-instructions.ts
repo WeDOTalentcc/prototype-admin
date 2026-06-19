@@ -103,6 +103,11 @@ export const LIA_FIELD_DEFINITIONS = {
   headcount_planning: { label: 'Planejamento Headcount', category: 'Planejamento', location: 'Planejamento → Workforce' },
   leadership_style: { label: 'Estilo de Liderança', category: 'Cultura & Identidade', location: 'Dados da Empresa → Cultura' },
   team_dynamics: { label: 'Dinâmica de Equipe', category: 'Cultura & Identidade', location: 'Dados da Empresa → Cultura' },
+  variable_compensation: { label: 'Remuneração Variável', category: 'EVP', location: 'Dados da Empresa → Remuneração' },
+  compensation_policies: { label: 'Políticas de Remuneração', category: 'EVP', location: 'Dados da Empresa → Remuneração' },
+  company_description: { label: 'Descrição da Empresa', category: 'Informações da Empresa', location: 'Dados da Empresa → Geral' },
+  headquarters: { label: 'Sede da Empresa', category: 'Informações da Empresa', location: 'Dados da Empresa → Geral' },
+  policy_instructions: { label: 'Instruções de Política', category: 'Recrutamento', location: 'Configurações → Políticas' },
 } as const
 
 export type LiaFieldKey = keyof typeof LIA_FIELD_DEFINITIONS
