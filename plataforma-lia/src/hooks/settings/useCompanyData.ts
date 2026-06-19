@@ -67,8 +67,11 @@ async function fetchCultureProfile(companyId: string) {
   return data && data.notFound ? null : data;
 }
 
-async function fetchDepartments(): Promise<Department[]> {
-  const res = await fetch("/api/backend-proxy/company/departments");
+async function fetchDepartments(companyId?: string): Promise<Department[]> {
+  const url = companyId
+    ? `/api/backend-proxy/company/departments?company_id=${encodeURIComponent(companyId)}`
+    : "/api/backend-proxy/company/departments";
+  const res = await fetch(url);
   if (!res.ok) return [];
   const data = await res.json();
   if (!Array.isArray(data)) return [];
@@ -95,8 +98,11 @@ async function fetchDepartments(): Promise<Department[]> {
   }));
 }
 
-async function fetchApprovers(): Promise<Approver[]> {
-  const res = await fetch("/api/backend-proxy/company/approvers");
+async function fetchApprovers(companyId?: string): Promise<Approver[]> {
+  const url = companyId
+    ? `/api/backend-proxy/company/approvers?company_id=${encodeURIComponent(companyId)}`
+    : "/api/backend-proxy/company/approvers";
+  const res = await fetch(url);
   if (!res.ok) return [];
   const data = await res.json();
   if (!Array.isArray(data)) return [];
@@ -233,14 +239,16 @@ export function useCompanyData(): UseCompanyDataResult {
   });
 
   const { data: departmentsData, isLoading: departmentsLoading } = useQuery({
-    queryKey: ["company-departments"],
-    queryFn: fetchDepartments,
+    queryKey: ["company-departments", apiCompanyId],
+    queryFn: () => fetchDepartments(apiCompanyId ?? undefined),
+    enabled: !!apiCompanyId,
     staleTime: 60_000,
   });
 
   const { data: approversData, isLoading: approversLoading } = useQuery({
-    queryKey: ["company-approvers"],
-    queryFn: fetchApprovers,
+    queryKey: ["company-approvers", apiCompanyId],
+    queryFn: () => fetchApprovers(apiCompanyId ?? undefined),
+    enabled: !!apiCompanyId,
     staleTime: 60_000,
   });
 
