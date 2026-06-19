@@ -176,6 +176,8 @@ FIELD_LABELS = {
     "headcount_planning": "Planejamento Headcount",
     "leadership_style": "Estilo de Liderança",
     "team_dynamics": "Dinâmica de Equipe",
+    "variable_compensation": "Remuneração Variável",
+    "compensation_policies": "Políticas de Remuneração",
 }
 
 

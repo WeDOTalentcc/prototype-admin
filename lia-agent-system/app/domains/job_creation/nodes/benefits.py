@@ -34,6 +34,44 @@ logger = logging.getLogger(__name__)
 _TIMEOUT_S = 12.0
 
 
+
+def _benefits_toggle_active(state) -> bool:
+    """Respeita o toggle 'benefits' das Instruções da LIA (Configurações).
+
+    Mesmo padrão de salary.py: is_active=False => skip painel de benefícios,
+    wizard passa direto com confirmed_benefits=[]. Ausente (sem row) ou True
+    => ativo. Fail-open para não bloquear em caso de erro de DB.
+    """
+    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+    if not company_id or company_id in ("default", "unknown"):
+        return True
+
+    async def _read():
+        import uuid as _uuid
+        from sqlalchemy import select as _select
+        from app.core.database import AsyncSessionLocal
+        from app.models.lia_field_toggles import LiaFieldToggle
+        try:
+            _cid = _uuid.UUID(company_id)
+        except ValueError:
+            return True
+        async with AsyncSessionLocal() as _db:
+            val = (
+                await _db.execute(
+                    _select(LiaFieldToggle.is_active).where(
+                        LiaFieldToggle.company_id == _cid,
+                        LiaFieldToggle.field_key == "benefits",
+                    )
+                )
+            ).scalar_one_or_none()
+        return val is not False  # None (sem row) ou True => ativo
+
+    try:
+        return run_coro_in_threadpool(_read, timeout=_TIMEOUT_S)
+    except Exception:
+        return True  # fail-open
+
+
 def _fetch_benefits_matching(
     company_id: str,
     seniority: str | None,
@@ -130,6 +168,11 @@ def benefits_node(state: JobCreationState) -> JobCreationState:
             "confirmed_benefits": [],
         }
         return {**state, **updates}
+
+    # Toggle gate: 'benefits' OFF => skip painel, wizard passa direto
+    if not _benefits_toggle_active(state):
+        logger.info("[BenefitsNode] toggle 'benefits' OFF — skip painel")
+        return {**state, "benefits_suggested": True, "confirmed_benefits": []}
 
     seniority = state.get("seniority_resolved") or state.get("parsed_seniority") or None
     department = state.get("parsed_department") or None

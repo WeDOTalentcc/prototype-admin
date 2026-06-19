@@ -33,6 +33,43 @@ logger = logging.getLogger(__name__)
 _TIMEOUT_S = 12.0
 
 
+
+def _variable_comp_toggle_active(state) -> bool:
+    """Respeita o toggle 'variable_compensation' das Instruções da LIA.
+
+    is_active=False => skip painel de remuneração variável, wizard passa direto
+    com confirmed_variable_compensation=[]. Fail-open em caso de erro.
+    """
+    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+    if not company_id or company_id in ("default", "unknown"):
+        return True
+
+    async def _read():
+        import uuid as _uuid
+        from sqlalchemy import select as _select
+        from app.core.database import AsyncSessionLocal
+        from app.models.lia_field_toggles import LiaFieldToggle
+        try:
+            _cid = _uuid.UUID(company_id)
+        except ValueError:
+            return True
+        async with AsyncSessionLocal() as _db:
+            val = (
+                await _db.execute(
+                    _select(LiaFieldToggle.is_active).where(
+                        LiaFieldToggle.company_id == _cid,
+                        LiaFieldToggle.field_key == "variable_compensation",
+                    )
+                )
+            ).scalar_one_or_none()
+        return val is not False  # None (sem row) ou True => ativo
+
+    try:
+        return run_coro_in_threadpool(_read, timeout=_TIMEOUT_S)
+    except Exception:
+        return True  # fail-open
+
+
 def _fetch_comp_matching(
     company_id: str,
     seniority: str | None,
@@ -124,6 +161,11 @@ def variable_comp_node(state: JobCreationState) -> JobCreationState:
             "confirmed_variable_compensation": [],
         }
         return {**state, **updates}
+
+    # Toggle gate: 'variable_compensation' OFF => skip painel
+    if not _variable_comp_toggle_active(state):
+        logger.info("[VariableCompNode] toggle 'variable_compensation' OFF — skip painel")
+        return {**state, "variable_comp_suggested": True, "confirmed_variable_compensation": []}
 
     seniority = state.get("seniority_resolved") or state.get("parsed_seniority") or None
     department = state.get("parsed_department") or None
