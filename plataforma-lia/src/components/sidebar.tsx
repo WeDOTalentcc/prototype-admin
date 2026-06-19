@@ -310,6 +310,7 @@ const MenuItem = React.memo(({
   // collapse state — the chevron is hidden since there is nothing to toggle.
   const expanded = item.alwaysExpanded || isExpanded
 
+  const isIASidebarTrigger = item.navKey === "__ia-sidebar__"
   const isActive = currentPage === item.label || (hasSubItems && item.subItems?.some(sub => sub.label === currentPage))
 
   return (
@@ -319,14 +320,18 @@ const MenuItem = React.memo(({
         aria-current={isActive && canAccess ? "page" : undefined}
         className={cn(
  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
-          isLocked
+          isIASidebarTrigger
+            ? "bg-zinc-900 text-white hover:bg-zinc-800 font-medium"
+            : isLocked
             ? "text-lia-text-primary cursor-default opacity-60"
             : "hover:bg-lia-interactive-hover",
-          isActive && canAccess
+          !isIASidebarTrigger && isActive && canAccess
             ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
-            : canAccess
+            : !isIASidebarTrigger && canAccess
             ? "text-lia-text-primary font-normal"
-            : "text-lia-text-primary font-normal",
+            : !isIASidebarTrigger
+            ? "text-lia-text-primary font-normal"
+            : "",
           isCollapsed && !shouldShowContent ? "justify-center px-1.5" : "",
           item.isFuturo ? "opacity-40 pointer-events-none" : ""
         )}
@@ -334,7 +339,7 @@ const MenuItem = React.memo(({
         disabled={isLocked || false}
       >
         <div className="flex items-center gap-1">
-          <item.icon className="w-4 h-4 flex-shrink-0" />
+          <item.icon className={cn("w-4 h-4 flex-shrink-0", isIASidebarTrigger && "text-wedo-cyan")} />
           {isLocked && <Lock className="w-2 h-2" />}
         </div>
         {shouldShowContent && (
