@@ -41,7 +41,6 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(jobId)
   const [surveys, setSurveys] = useState<Survey[]>([])
   const [loading, setLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [email, setEmail] = useState("")
@@ -53,7 +52,7 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
   }, [jobId, selectedJobId])
 
   const queryClient = useQueryClient()
-  const { data: surveysData, isLoading, error, refetch } = useQuery({
+  const { data: surveysData, isLoading, error: queryError, refetch } = useQuery({
     queryKey: ["hiring-nps", selectedJobId],
     queryFn: async () => {
       if (!selectedJobId) return []

@@ -29,7 +29,6 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
   const [selectedJobId, setSelectedJobId] = useState<string | null>(jobId)
   const [alignment, setAlignment] = useState<AlignmentState | null>(null)
   const [loading, setLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
