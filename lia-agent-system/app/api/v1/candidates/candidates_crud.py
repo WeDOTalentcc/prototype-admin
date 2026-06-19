@@ -785,6 +785,9 @@ async def update_candidate_stage(
                 },
             )
 
+        # P-GUARD: fairness gate — defense-in-depth (belt+suspenders).
+        # Canonical gate: pipeline_stage_service.transition_candidate (R1 chain).
+        # Path B keeps its own gate because this endpoint writes directly (not via service).
         if is_rejection and stage_data.sub_status:
             fg_rejection = check_rejection_reason(
                 reason=stage_data.sub_status,

@@ -778,6 +778,8 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     moved = 0
     try:
         async with AsyncSessionLocal() as session:
+            # ADR-001-EXEMPT: kanban batch move via RecruiterMetricsRepository (path D3).
+            # TODO R1: migrate to pipeline_stage_service per-candidate loop (like _batch_move_candidates).
             repo = RecruiterMetricsRepository(session)
             moved = await repo.bulk_update_candidate_stage(
                 vacancy_id=vacancy_id, company_id=company_id,

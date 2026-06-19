@@ -139,6 +139,8 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
                 action_type="move_candidate",
             )
 
+        # ADR-001-EXEMPT: action_handler single-candidate move (path D2, pre-service);
+        # TODO R1: migrate to pipeline_stage_service.transition_candidate like _batch_move_candidates.
         async with AsyncSessionLocal() as db:
             result = await db.execute(text("""
                 UPDATE vacancy_candidates
@@ -418,6 +420,8 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                     logger.warning(f"start_screening: candidate {cid_str} not found in pipeline for company/job")
                     continue
 
+                # ADR-001-EXEMPT: start_screening sets stage=Triagem as bootstrap — pre-service.
+                # TODO R1: migrate to pipeline_stage_service.transition_candidate with force=True.
                 update_result = await db.execute(
                     text("""
                         UPDATE vacancy_candidates
@@ -626,9 +630,6 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
 async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from sqlalchemy import text
-
-        from app.core.database import AsyncSessionLocal
         from app.orchestrator.action_handlers._handler_hooks import log_action_audit
 
         candidate_ids = params.get("candidate_ids", [])
@@ -656,25 +657,36 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
                 error_detail="company_id missing from context — tenant fail-closed (P-TENANT, SEV2-C3-05)",
                 action_type="batch_move_candidates",
             )
-        async with AsyncSessionLocal() as db:
-            moved = 0
-            for cid in candidate_ids:
-                # ADR-001-EXEMPT: action_handler inline SQL (path D1 pre-repo);
-                # migrar RecruiterMetricsRepository.bulk_update_candidate_stage em R1.
-                # company_id sempre no WHERE (fail-closed garantido pelo guard acima).
-                update_sql = """
-                    UPDATE vacancy_candidates
-                    SET stage = :to_stage, status = 'active', updated_at = NOW()
-                    WHERE (id = CAST(:cid AS uuid) OR candidate_id = CAST(:cid AS uuid))
-                      AND company_id = :co
-                """
-                bind: dict[str, Any] = {"to_stage": to_stage, "cid": str(cid), "co": str(company_id)}
-                result = await db.execute(text(update_sql), bind)
-                moved += result.rowcount
-            await db.commit()
+        # R1: delegate to canonical pipeline_stage_service (removes inline SQL / ADR-001 exempt)
+        # Fairness gate + audit log + idempotency are now handled by the service.
+        from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+            pipeline_stage_service as _stage_svc,
+            FairnessBlockedError as _FairnessBlockedError,
+        )
 
+        moved = 0
+        failed = []
         for cid in candidate_ids:
-            await log_action_audit("move_stage", company_id, candidate_id=str(cid))
+            try:
+                await _stage_svc.transition_candidate(
+                    vacancy_candidate_id=str(cid),
+                    to_stage=to_stage,
+                    triggered_by="batch_move_agent",
+                    source_agent="candidate_actions",
+                    reason=f"Batch move: {from_stage} → {to_stage}",
+                    context={"company_id": company_id, "job_vacancy_id": job_id},
+                )
+                moved += 1
+                await log_action_audit("move_stage", company_id, candidate_id=str(cid))
+            except _FairnessBlockedError as _fb:
+                logger.warning(f"[D1-FAIRNESS] Candidate {cid} batch move blocked: {_fb.message}")
+                failed.append({"candidate_id": str(cid), "reason": "fairness_blocked", "message": _fb.message})
+            except PermissionError as _pe:
+                logger.warning(f"[D1-TENANT] Candidate {cid} cross-tenant rejected: {_pe}")
+                failed.append({"candidate_id": str(cid), "reason": "permission_error"})
+            except Exception as _ex:
+                logger.warning(f"[D1-PARTIAL] Candidate {cid} move failed: {_ex}")
+                failed.append({"candidate_id": str(cid), "reason": str(_ex)})
     except Exception as e:
         logger.warning(f"batch_move_candidates failed: {e}")
         from app.orchestrator.action_executor import ActionResult
