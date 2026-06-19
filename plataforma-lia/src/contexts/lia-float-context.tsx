@@ -393,12 +393,15 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     if (label) {
       setState((prev) => {
         const needsPageChange = prev.contextPage !== label;
-        const needsEntityClear = prev.entityContext !== null;
-        if (!needsPageChange && !needsEntityClear) return prev;
+        // Do NOT clear entityContext here. Its lifecycle is managed
+        // exclusively by lia:set-vacancy-context events and explicit
+        // setEntityContext(null) on preview close / hard reset.
+        // Clearing on every pathname change causes the wizard to lose
+        // vacancy_id on any sidebar navigation (P0 #1, fixed 2026-06-19).
+        if (!needsPageChange) return prev;
         return {
           ...prev,
-          ...(needsPageChange ? { contextPage: label } : {}),
-          ...(needsEntityClear ? { entityContext: null } : {}),
+          contextPage: label,
         };
       });
     }
