@@ -797,6 +797,54 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                         candidate_id,
                         wsi_final,
                     )
+
+                    # W2-E: auto_schedule notification when scheduling.auto_enabled=True
+                    try:
+                        _sc_sched = (_sc or {}).get("scheduling") or {}
+                        _auto_sched_enabled = bool(_sc_sched.get("auto_enabled", False))
+                        _min_score_auto = float(_sc_sched.get("min_score_for_auto") or 76) / 20.0
+                        if _auto_sched_enabled and wsi_final >= _min_score_auto:
+                            _duration_min = int(_sc_sched.get("interview_duration_min") or 45)
+                            _avail_hours = _sc_sched.get("available_hours") or "9h-18h"
+                            _recruiter_result = await db.execute(
+                                __import__("sqlalchemy", fromlist=["text"]).text(
+                                    "SELECT created_by FROM job_vacancies WHERE id = :jid LIMIT 1"
+                                ),
+                                {"jid": vacancy_id},
+                            )
+                            _recruiter_row = _recruiter_result.fetchone()
+                            if _recruiter_row and _recruiter_row.created_by:
+                                from app.services.notification_service import notification_service
+                                await notification_service.create_notification(
+                                    user_id=str(_recruiter_row.created_by),
+                                    title="Agendar entrevista — candidato aprovado (auto-schedule ativo)",
+                                    message=(
+                                        f"Candidato aprovado com WSI {wsi_final * 20:.0f}/100 "
+                                        f"(acima do mínimo de auto-agendamento). "
+                                        f"Entrevista sugerida: {_duration_min}min no horário {_avail_hours}."
+                                    ),
+                                    category="interview_scheduling",
+                                    source_trigger="wsi_auto_schedule_request",
+                                    related_candidate_id=candidate_id,
+                                    related_job_id=str(vacancy_id),
+                                    channels=["bell"],
+                                    metadata={
+                                        "auto_schedule_triggered": True,
+                                        "wsi_score": round(wsi_final * 20, 1),
+                                        "interview_duration_min": _duration_min,
+                                        "available_hours": _avail_hours,
+                                        "vacancy_id": str(vacancy_id),
+                                    },
+                                    db=db,
+                                )
+                                logger.info(
+                                    "[EventHandler] W2-E auto_schedule notification dispatched "
+                                    "candidate=%s vaga=%s score=%.2f duration=%dmin",
+                                    candidate_id, vacancy_id, wsi_final, _duration_min,
+                                )
+                    except Exception as _sched_exc:
+                        logger.warning("[EventHandler] W2-E auto_schedule notify error (fail-soft): %s", _sched_exc)
+
                 except Exception as exc:
                     logger.warning("[EventHandler] Auto-advance failed: %s", exc)
 

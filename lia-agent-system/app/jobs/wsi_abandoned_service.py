@@ -44,8 +44,10 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
                 s.candidate_id    AS candidate_id,
                 s.job_vacancy_id  AS job_vacancy_id,
                 COALESCE(s.updated_at, s.created_at) AS last_activity,
-                COALESCE(s.voice_session_state->>'reminder_count', '0')::int AS reminder_count
+                COALESCE(s.voice_session_state->>'reminder_count', '0')::int AS reminder_count,
+                COALESCE(jv.screening_config, '{}')::jsonb AS screening_config
             FROM wsi_sessions s
+            LEFT JOIN job_vacancies jv ON jv.id = s.job_vacancy_id
             WHERE s.status = 'in_progress'
               AND COALESCE(s.updated_at, s.created_at) < :cutoff_first
         """), {"cutoff_first": cutoff_first})
@@ -64,36 +66,48 @@ async def check_abandoned_sessions(db: AsyncSession) -> dict[str, int]:
             last_activity = last_activity.replace(tzinfo=UTC)
         age_hours = (now - last_activity).total_seconds() / 3600
 
+        # W2-E: per-job timeout/retries from screening_config (fail-open → defaults)
+        _job_sc = row.screening_config if isinstance(row.screening_config, dict) else {}
+        _job_sc_settings = _job_sc.get("settings") or {}
+        job_timeout_hours: int = int(_job_sc_settings.get("response_timeout_hours") or FIRST_REMINDER_HOURS)
+        job_max_retries: int = max(1, int(_job_sc_settings.get("max_retries") or 2))
+        job_second_reminder_h: int = job_timeout_hours * 2
+        job_escalation_h: int = int(job_timeout_hours * 2.5)
+
         try:
-            if reminder_count >= 3:
+            # W2-E: use per-job thresholds (fail-open → constants above)
+            max_count = job_max_retries + 1  # e.g. max_retries=2 → cap at count==3
+            if reminder_count >= max_count:
                 continue
 
-            if age_hours >= CONSULTANT_ALERT_HOURS and reminder_count == 2:
+            if age_hours >= job_escalation_h and reminder_count == job_max_retries:
                 await _notify_consultant_escalation(db, candidate_id, job_vacancy_id, session_id)
-                await _increment_reminder_count(db, session_id, 3)
+                await _increment_reminder_count(db, session_id, max_count)
                 consultant_alerts += 1
                 logger.info(
-                    "[wsi-abandoned] consultor escalado session=%s candidate=%s", session_id, candidate_id
+                    "[wsi-abandoned] consultor escalado (job_timeout=%dh max_retries=%d) session=%s candidate=%s",
+                    job_timeout_hours, job_max_retries, session_id, candidate_id,
                 )
                 continue
 
-            if age_hours >= SECOND_REMINDER_HOURS and reminder_count < 2:
+            if age_hours >= job_second_reminder_h and reminder_count < job_max_retries:
                 await _send_candidate_reminder(db, candidate_id, job_vacancy_id, session_id, reminder_num=2)
                 await _notify_recruiter_abandoned(db, candidate_id, job_vacancy_id, session_id)
                 await _send_teams_timeout_notification(candidate_id, job_vacancy_id, session_id, age_hours)
-                await _increment_reminder_count(db, session_id, 2)
+                await _increment_reminder_count(db, session_id, job_max_retries)
                 second_reminders += 1
                 logger.info(
-                    "[wsi-abandoned] 2º lembrete + Teams timeout session=%s candidate=%s", session_id, candidate_id
+                    "[wsi-abandoned] 2º lembrete (job_timeout=%dh) session=%s candidate=%s",
+                    job_timeout_hours, session_id, candidate_id,
                 )
 
-            elif age_hours >= FIRST_REMINDER_HOURS and reminder_count < 1:
-                # 1º lembrete: apenas candidato
+            elif age_hours >= job_timeout_hours and reminder_count < 1:
                 await _send_candidate_reminder(db, candidate_id, job_vacancy_id, session_id, reminder_num=1)
                 await _increment_reminder_count(db, session_id, 1)
                 first_reminders += 1
                 logger.info(
-                    "[wsi-abandoned] 1º lembrete session=%s candidate=%s", session_id, candidate_id
+                    "[wsi-abandoned] 1º lembrete (job_timeout=%dh) session=%s candidate=%s",
+                    job_timeout_hours, session_id, candidate_id,
                 )
 
         except Exception as exc:
