@@ -372,7 +372,7 @@ function FunnelView({ block }: { block: FunnelBlock }) {
       </div>
       <div className="mt-2 flex justify-between border-t border-lia-border-subtle pt-2 text-xs text-lia-text-tertiary">
         <span>{t("funnelTotal", { count: block.total })}</span>
-        <span>{t("funnelConversion", { pct: block.conversion_rate })}</span>
+        <span>{t("funnelConversion", { pct: String(block.conversion_rate) })}</span>
       </div>
     </div>
   );

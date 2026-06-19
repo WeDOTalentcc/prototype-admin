@@ -133,7 +133,7 @@ export function ABTestingTab() {
 
     const totalTraffic = form.variants.reduce((sum, v) => sum + Number(v.traffic_percentage), 0)
     if (Math.abs(totalTraffic - 100) > 0.1) {
-      setCreateError(t("trafficSumError", { total: totalTraffic }))
+      setCreateError(t("trafficSumError", { total: String(totalTraffic) }))
       return
     }
 

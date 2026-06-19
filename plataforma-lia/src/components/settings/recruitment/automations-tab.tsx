@@ -579,7 +579,7 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
   const summaryParts = [
     t("summaryActive", { active: activeCount, total: workflows.length }),
     t("summaryExecs", { count: totalExecs }),
-    ...(avgSuccess !== null ? [t("summarySuccess", { pct: avgSuccess })] : []),
+    ...(avgSuccess !== null ? [t("summarySuccess", { pct: String(avgSuccess) })] : []),
   ]
 
   const TAB_ITEMS: { id: ViewTab; label: string; icon: React.ElementType }[] = [

@@ -119,7 +119,7 @@ export function StudioComplianceView() {
               <span className="text-xs text-lia-text-secondary">{t("blocked")}</span>
             </div>
             <p className={cn(textStyles.kpi, "text-status-warning")}>{blockedExecutions}</p>
-            <p className="text-[10px] text-lia-text-muted mt-0.5">{t("blockedPctOfTotal", { pct: blockRatePct })}</p>
+            <p className="text-[10px] text-lia-text-muted mt-0.5">{t("blockedPctOfTotal", { pct: String(blockRatePct) })}</p>
           </CardContent>
         </Card>
 

@@ -249,22 +249,22 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
               label={t("cards.approved")}
               value={formatNumber(bucket.candidates_approved)}
               subtitle={t("cards.approvedPct", {
-                pct: Math.round(
+                pct: String(Math.round(
                   (bucket.candidates_approved /
                     Math.max(1, bucket.candidates_processed)) *
                     100,
-                ),
+                )),
               })}
             />
             <KpiCard
               label={t("cards.rejected")}
               value={formatNumber(bucket.candidates_rejected)}
               subtitle={t("cards.rejectedPct", {
-                pct: Math.round(
+                pct: String(Math.round(
                   (bucket.candidates_rejected /
                     Math.max(1, bucket.candidates_processed)) *
                     100,
-                ),
+                )),
               })}
             />
           </>
@@ -293,7 +293,7 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
         <ToolBreakdownCard
           title={t("tools.title")}
           successRateLabel={(rate: number) =>
-            t("tools.successRate", { rate: Math.round(rate * 100) })
+            t("tools.successRate", { rate: String(Math.round(rate * 100)) })
           }
           data={tool_breakdown}
         />

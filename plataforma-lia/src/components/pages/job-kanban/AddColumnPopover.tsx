@@ -225,7 +225,7 @@ export function AddColumnPopover({
                 {inferredBehavior.suggested_behavior}
               </span>
               <span className="text-micro text-lia-text-muted">
-                {t('confidenceLabel', { percent: Math.round(inferredBehavior.confidence * 100) })}
+                {t('confidenceLabel', { percent: String(Math.round(inferredBehavior.confidence * 100)) })}
               </span>
             </div>
           )}

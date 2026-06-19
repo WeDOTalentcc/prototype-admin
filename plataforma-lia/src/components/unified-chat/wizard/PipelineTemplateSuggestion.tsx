@@ -157,7 +157,7 @@ export function PipelineTemplateSuggestion({
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-status-success/10 px-2 py-0.5 text-[11px] font-medium text-status-success">
                       <Sparkle className="h-3 w-3" aria-hidden="true" />
-                      {t("matchPercent", { percent })}
+                      {t("matchPercent", { percent: String(percent) })}
                     </span>
                   </div>
                 </div>

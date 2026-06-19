@@ -104,7 +104,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <span className="text-xs text-lia-text-primary">{t('testHistory.totalApplications')}</span>
               </div>
               <p className="text-sm font-semibold text-lia-text-primary">2,547</p>
-              <p className="text-xs text-lia-text-primary mt-1">{t('testHistory.upThisMonth', { percent: 12 })}</p>
+              <p className="text-xs text-lia-text-primary mt-1">{t('testHistory.upThisMonth', { percent: "12" })}</p>
             </div>
 
             <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl p-4">
@@ -170,7 +170,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                     </span>
                     <span className="flex items-center gap-1">
                       <Target className="w-3 h-3" />
-                      {t('testHistory.approvalRate', { percent: 82 })}
+                      {t('testHistory.approvalRate', { percent: "82" })}
                     </span>
                     <span className="flex items-center gap-1">
                       <Trophy className="w-3 h-3 text-lia-text-primary" />
@@ -225,7 +225,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                     </span>
                     <span className="flex items-center gap-1">
                       <Target className="w-3 h-3" />
-                      {t('testHistory.approvalRate', { percent: 75 })}
+                      {t('testHistory.approvalRate', { percent: "75" })}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3 text-lia-text-primary" />
@@ -280,7 +280,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                     </span>
                     <span className="flex items-center gap-1">
                       <Target className="w-3 h-3" />
-                      {t('testHistory.approvalRate', { percent: 65 })}
+                      {t('testHistory.approvalRate', { percent: "65" })}
                     </span>
                     <span className="flex items-center gap-1">
                       <XCircle className="w-3 h-3 text-lia-text-secondary" />

@@ -109,7 +109,7 @@ export function BudgetAlertsList({ onViewExecutions }: BudgetAlertsListProps) {
       <ul className="space-y-2">
         {data!.alerts.map((alert, idx) => {
           const cls = SEVERITY_CLASS[alert.severity]
-          const pct = Math.round(alert.used_pct * 100)
+          const pct = String(Math.round(alert.used_pct * 100))
           const projectionDays = alert.days_remaining
           const limitTokens = resolveBudgetLimitTokens(alert)
 

@@ -128,7 +128,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                 {t('testLibrary.designUXTests')}
               </h3>
               <p className="text-sm text-lia-text-secondary">
-                {t('testLibrary.testsAvailableApproval', { count: 18, percent: 85 })}
+                {t('testLibrary.testsAvailableApproval', { count: 18, percent: "85" })}
               </p>
             </div>
 
@@ -511,7 +511,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </span>
               <span className="flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
-                {t('testLibrary.successRateFooter', { percent: 87 })}
+                {t('testLibrary.successRateFooter', { percent: "87" })}
               </span>
             </div>
             <div className="flex gap-2">

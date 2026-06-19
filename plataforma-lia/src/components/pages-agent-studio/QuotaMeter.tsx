@@ -136,7 +136,7 @@ export function QuotaMeter({ compact = true, className, defaultOpen = false }: Q
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-[11px] text-lia-text-secondary truncate">
             {hasAnyLimit
-              ? t("collapsed.summary", { percent: summaryPercent })
+              ? t("collapsed.summary", { percent: String(summaryPercent) })
               : t("collapsed.noLimit")}
           </span>
           <span className="text-[10px] text-lia-text-muted hidden sm:inline">
