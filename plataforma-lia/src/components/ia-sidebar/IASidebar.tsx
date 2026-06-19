@@ -307,9 +307,10 @@ interface IASidebarProps {
   onOpenConversation?: (id: string) => void
   onNewConversation?: () => void
   activeNoteConversationId?: string | null
+  sidebarOffset?: number  // pixel width of left sidebar (Apollo-style positioning)
 }
 
-export function IASidebar({ onOpenConversation, onNewConversation, activeNoteConversationId }: IASidebarProps) {
+export function IASidebar({ onOpenConversation, onNewConversation, activeNoteConversationId, sidebarOffset = 64 }: IASidebarProps) {
   const { isIASidebarOpen, closeIASidebar, activeConversationId, setActiveConversation, localUnreadCounts } =
     useIASessionStore()
   const { open: openLiaChat } = useLiaFloat()
@@ -401,20 +402,22 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
 
   return (
     <>
-      {/* Overlay — click outside to close */}
+      {/* Overlay — covers only content area to the right of sidebar (Apollo-style) */}
       <div
-        className="fixed inset-0 z-30"
+        className="fixed top-0 bottom-0 right-0 z-30"
+        style={{ left: sidebarOffset }}
         onClick={closeIASidebar}
         aria-hidden="true"
       />
 
-      {/* Panel */}
+      {/* Panel — positioned adjacent to sidebar (Apollo-style) */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 h-full w-72 bg-lia-bg-primary border-r border-lia-border-subtle",
+          "fixed top-0 z-40 h-full w-72 bg-lia-bg-primary border-r border-lia-border-subtle",
           "flex flex-col shadow-lg",
           "transform transition-transform duration-200 ease-out"
         )}
+        style={{ left: sidebarOffset }}
         aria-label="Histórico de conversas com a LIA"
       >
         {/* Header */}
