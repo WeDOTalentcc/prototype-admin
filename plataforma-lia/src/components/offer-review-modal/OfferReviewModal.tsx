@@ -30,11 +30,14 @@ import { OfferStatusTracker } from "@/components/offer/OfferStatusTracker"
 const DEBOUNCE_MS = 600
 
 export function OfferReviewModal() {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('offer-review', isOpen)
-
   const { draft, isSaving, salaryWarnings, updateField, prepareManual, cancel, clearDraft } =
     useOfferDraftStore()
+
+  // isOpen must be derived before useLiaModalTracking to avoid TDZ (hooks-rules: no early ref)
+  const isOpen = draft !== null && draft.status === "draft"
+
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('offer-review', isOpen)
 
   const [confirmState, setConfirmState] = useState<ConfirmState>("idle")
   const [isSending, setIsSending] = useState(false)
@@ -43,8 +46,6 @@ export function OfferReviewModal() {
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingUpdates = useRef<OfferDraftUpdate>({})
-
-  const isOpen = draft !== null && draft.status === "draft"
 
   // Debounced save: accumulate updates, flush after DEBOUNCE_MS of inactivity
   const handleChange = useCallback(
