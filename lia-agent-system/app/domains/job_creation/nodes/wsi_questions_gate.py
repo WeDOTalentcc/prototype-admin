@@ -287,12 +287,31 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
             _added = []
             if _gen is not None and _enr is not None:
                 try:
-                    _missing = _gen.generate_missing_questions(
-                        enriched=_enr, seniority=_sen,
-                        existing_questions=current_questions,
-                        screening_mode=_mode, trait_rankings=_tr,
+                    import concurrent.futures as _cf_gate
+                    _gate_timeout_s = float(
+                        __import__("os").environ.get("LIA_WSI_QUESTIONS_TIMEOUT_S", "120")
                     )
-                    _added = [m.model_dump() for m in _missing]
+                    _ex_gate = _cf_gate.ThreadPoolExecutor(max_workers=1)
+                    try:
+                        _fut_gate = _ex_gate.submit(
+                            _gen.generate_missing_questions,
+                            enriched=_enr, seniority=_sen,
+                            existing_questions=current_questions,
+                            screening_mode=_mode, trait_rankings=_tr,
+                        )
+                        _missing = _fut_gate.result(timeout=_gate_timeout_s)
+                        _added = [m.model_dump() for m in _missing]
+                    except _cf_gate.TimeoutError:
+                        logger.warning(
+                            "[wsi_questions_gate] generate_missing_questions timeout after %.1fs"
+                            " — falling back to deterministic questions (Bug D fix)",
+                            _gate_timeout_s,
+                        )
+                        _needed = _min_total - total_q
+                        _fallback = _gen._fallback_questions("technical", _needed)
+                        _added = [m.model_dump() for m in _fallback]
+                    finally:
+                        _ex_gate.shutdown(wait=False)
                 except Exception as _ac_exc:  # noqa: BLE001 — fail-soft
                     logger.warning("[wsi_questions_gate] auto-complete failed: %s", _ac_exc)
             if _added:

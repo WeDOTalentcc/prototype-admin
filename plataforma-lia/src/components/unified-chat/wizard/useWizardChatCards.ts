@@ -326,8 +326,9 @@ export function useWizardChatCards(options: UseWizardChatCardsOptions): void {
       }
 
       if (idx === -1) {
-        // No card for current stage — inject new one
-        if (stageCardInsertedRef.current) return base
+        // No card for this stage in messages — inject (or re-inject after
+        // messages reset on reconnect; functional updater prevents duplicates
+        // since the second call's `prev` will already have the card).
         stageCardInsertedRef.current = true
         const msg: LiaChatMessage = {
           id: WIZARD_STAGE_CARD_MESSAGE_ID,

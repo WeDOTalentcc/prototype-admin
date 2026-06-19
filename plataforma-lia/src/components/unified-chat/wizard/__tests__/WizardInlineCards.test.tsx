@@ -50,7 +50,7 @@ function useHarness(initial: HookProps) {
     wizardStageData: props.wizardStageData,
     setChatMessages: setMessages,
   })
-  return { messages, setProps }
+  return { messages, setProps, resetMessages: () => setMessages([]) }
 }
 
 // ── T1: Stage card injection ───────────────────────────────────────────────────
@@ -149,6 +149,41 @@ describe("useWizardChatCards — stage card injection", () => {
       expect(stageCard, `stage card must exist for stage '${stage}'`).toBeDefined()
       expect(stageCard?.metadata?.wizardStage).toBe(stage)
     }
+  })
+
+  it("re-injects stage card after messages are cleared (Bug A reconnect regression)", () => {
+    // Simulates: after WebSocket reconnect, chatMessages are reset but
+    // wizardStage stays "wsi_questions". Hydration GETs checkpoint and
+    // calls handleStagePayload → new object reference for stageData.
+    // The effect re-fires because stageData ref changed; without the latch
+    // guard on idx===-1, the card is re-injected.
+    const stageData1 = { questions: [{ question: "Q1", block: "technical" }] }
+    // Hydration returns a new object (same content, different reference)
+    const stageData2 = { questions: [{ question: "Q1", block: "technical" }] }
+    const { result } = renderHook(() =>
+      useHarness({ wizardStage: "wsi_questions", wizardStageData: stageData1 }),
+    )
+    // 1. Initial mount: card injected, latch set to true
+    expect(
+      result.current.messages.find((m) => m.id === WIZARD_STAGE_CARD_MESSAGE_ID),
+    ).toBeDefined()
+
+    // 2. Simulate reconnect: messages cleared (non-persisted cards evicted)
+    act(() => {
+      result.current.resetMessages()
+    })
+    expect(result.current.messages).toHaveLength(0)
+
+    // 3. Hydration fires with new stageData reference → effect re-fires
+    // Card MUST be re-injected even though latch was set from before reset
+    act(() => {
+      result.current.setProps({ wizardStage: "wsi_questions", wizardStageData: stageData2 })
+    })
+    const reinjected = result.current.messages.find(
+      (m) => m.id === WIZARD_STAGE_CARD_MESSAGE_ID,
+    )
+    expect(reinjected).toBeDefined()
+    expect(reinjected?.metadata?.wizardStage).toBe("wsi_questions")
   })
 })
 
