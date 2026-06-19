@@ -9,6 +9,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useIASessionStore } from "@/stores/ia-session-store"
+import { useLiaFloat } from "@/contexts/lia-float-context"
 import {
   useIASessions,
   useUpdateSession,
@@ -311,6 +312,7 @@ interface IASidebarProps {
 export function IASidebar({ onOpenConversation, onNewConversation, activeNoteConversationId }: IASidebarProps) {
   const { isIASidebarOpen, closeIASidebar, activeConversationId, setActiveConversation, localUnreadCounts } =
     useIASessionStore()
+  const { open: openLiaChat } = useLiaFloat()
   const [searchQuery, setSearchQuery] = useState("")
   const { data: sessions = [], isLoading } = useIASessions()
   const updateSession = useUpdateSession()
@@ -322,9 +324,12 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
     (id: string) => {
       setActiveConversation(id)
       markRead.mutate(id)
+      // Open the conversation in LIA chat panel
+      openLiaChat(id)
       onOpenConversation?.(id)
+      closeIASidebar()
     },
-    [setActiveConversation, markRead, onOpenConversation]
+    [setActiveConversation, markRead, openLiaChat, closeIASidebar, onOpenConversation]
   )
 
   // Client-side search filter
