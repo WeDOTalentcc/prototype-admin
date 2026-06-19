@@ -41,9 +41,9 @@ def _get_chat_adapter():
 # envolvia o orquestrador em asyncio.wait_for (_AGENT_TIMEOUT); o REST nao, e
 # uma chamada pendurada (resume re-rodando classifier/regeneracao) virava 502
 # OPACO do gateway da plataforma ("Erro do servidor HTTP 502"). Configuravel
-# via env; default 90s (abaixo do timeout tipico de gateway -> 504 estruturado
-# chega ao usuario antes do 502).
-_CHAT_ORCH_TIMEOUT_S = float(os.getenv("LIA_CHAT_ORCH_TIMEOUT_SECONDS", "90"))
+# via env; default 110s. Hierarquia canonical: agentic_llm(90s) < rest_orch(110s)
+# < sse_outer(120s). 110s garante 504 estruturado antes do 502 opaco do gateway.
+_CHAT_ORCH_TIMEOUT_S = float(os.getenv("LIA_CHAT_ORCH_TIMEOUT_SECONDS", "110"))
 
 from app.repositories.chat_repository import ChatRepository
 from app.orchestrator.action_executor import (

@@ -62,3 +62,38 @@ describe("BUG-8: AbortSignal.timeout must have compat wrapper", () => {
     expect(src).toContain("new AbortController()");
   });
 });
+
+describe("BUG-7 — _lastSentMsRef residual event guard", () => {
+  it("useChatSocket.ts declares _lastSentMsRef", () => {
+    const src = require("fs").readFileSync(
+      require("path").resolve(
+        __dirname,
+        "../useChatSocket.ts",
+      ),
+      "utf8",
+    );
+    expect(src).toContain("_lastSentMsRef");
+    expect(src).toContain("_lastSentMsRef.current = Date.now()");
+  });
+
+  it("wsSend sets _lastSentMsRef before turnClosedRef", () => {
+    const src = require("fs").readFileSync(
+      require("path").resolve(__dirname, "../useChatSocket.ts"),
+      "utf8",
+    );
+    const wsSendIdx = src.indexOf("const wsSend = useCallback");
+    const lastSentIdx = src.indexOf("_lastSentMsRef.current = Date.now()", wsSendIdx);
+    const turnClosedIdx = src.indexOf("turnClosedRef.current = true", wsSendIdx);
+    expect(lastSentIdx).toBeGreaterThan(wsSendIdx);
+    expect(lastSentIdx).toBeLessThan(turnClosedIdx);
+  });
+
+  it("thinking case has 150ms residual guard", () => {
+    const src = require("fs").readFileSync(
+      require("path").resolve(__dirname, "../useChatSocket.ts"),
+      "utf8",
+    );
+    expect(src).toContain("Date.now() - _lastSentMsRef.current < 150");
+  });
+});
+

@@ -49,16 +49,17 @@ async def _emit_phase(key: str) -> None:
 
 
 # Sprint 9.2 (NS-5 latency fix, 2026-05-24): agentic LLM timeout configurable.
-# Default 60s (was 30s — too tight for Claude API with full tool schema in
-# slow-network periods). Env override LIA_AGENTIC_LLM_TIMEOUT_SECONDS for
-# ops tuning. Cap at 120s to avoid infinite hang.
+# Default 90s (was 60s/30s). 60s was too tight for complex wizard LLM calls
+# (JD enrichment / WSI generation ~60-80s). Canonical hierarchy:
+# agentic_llm(90s) < rest_orch(110s) < sse_outer(LLM_TIMEOUT_SECONDS=120s).
+# Env override LIA_AGENTIC_LLM_TIMEOUT_SECONDS. Cap at 120s.
 def _resolve_agentic_llm_timeout() -> float:
     import os
-    raw = os.environ.get("LIA_AGENTIC_LLM_TIMEOUT_SECONDS", "60")
+    raw = os.environ.get("LIA_AGENTIC_LLM_TIMEOUT_SECONDS", "90")
     try:
         v = float(raw)
     except (TypeError, ValueError):
-        v = 60.0
+        v = 90.0
     return max(5.0, min(120.0, v))
 
 

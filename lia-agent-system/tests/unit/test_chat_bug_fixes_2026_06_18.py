@@ -104,3 +104,53 @@ class TestBug4EventGeneratorSetupError:
             "BUG-4 REGRESSION: 'setup_error' error code not found in agent_chat_sse.py.\n"
             "The error event must include error_code='setup_error' for frontend telemetry."
         )
+
+
+class TestBug6TimeoutHierarchy:
+    """BUG-6: Three timeout constants must form strict ascending hierarchy.
+
+    agentic_llm(90s) < rest_orch(110s) < sse_outer(120s)
+    Wizard LLM calls (90s) must not hit SSE outer (120s) prematurely.
+    REST orch (110s) exposes 504 before gateway 502 opaco.
+    """
+
+    def test_agentic_llm_default_is_90s(self):
+        """Current module value must be 90s (default when env var not set)."""
+        from app.orchestrator.execution.agentic_loop import _AGENTIC_LLM_TIMEOUT_SECONDS
+        assert _AGENTIC_LLM_TIMEOUT_SECONDS == 90.0, (
+            f"Expected 90s default, got {_AGENTIC_LLM_TIMEOUT_SECONDS}"
+        )
+
+    def test_hierarchy_satisfied(self):
+        """agentic_llm(90) < rest_orch(110) < sse_outer(120)."""
+        from app.orchestrator.execution.agentic_loop import _AGENTIC_LLM_TIMEOUT_SECONDS
+        # rest_orch default — read from source constant
+        import re
+        with open("app/api/v1/chat.py") as f:
+            chat_src = f.read()
+        m = re.search(r'LIA_CHAT_ORCH_TIMEOUT_SECONDS",\s*"(\d+)"', chat_src)
+        rest_orch = float(m.group(1)) if m else 90.0
+        # sse_outer default
+        from libs.config.lia_config.config import settings
+        sse_outer = settings.LLM_TIMEOUT_SECONDS
+        assert _AGENTIC_LLM_TIMEOUT_SECONDS < rest_orch < sse_outer, (
+            f"Hierarchy broken: agentic={_AGENTIC_LLM_TIMEOUT_SECONDS}s "
+            f"rest_orch={rest_orch}s sse_outer={sse_outer}s"
+        )
+
+    def test_resolve_fn_with_env_override(self):
+        """_resolve_agentic_llm_timeout must honor env var."""
+        import os
+        from unittest.mock import patch
+        from app.orchestrator.execution.agentic_loop import _resolve_agentic_llm_timeout
+        with patch.dict(os.environ, {"LIA_AGENTIC_LLM_TIMEOUT_SECONDS": "45"}):
+            assert _resolve_agentic_llm_timeout() == 45.0
+
+    def test_resolve_fn_cap_at_120s(self):
+        """Cap must prevent values > 120s to avoid infinite hang."""
+        import os
+        from unittest.mock import patch
+        from app.orchestrator.execution.agentic_loop import _resolve_agentic_llm_timeout
+        with patch.dict(os.environ, {"LIA_AGENTIC_LLM_TIMEOUT_SECONDS": "999"}):
+            assert _resolve_agentic_llm_timeout() == 120.0, "Cap must be 120s"
+

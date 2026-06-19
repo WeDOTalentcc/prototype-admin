@@ -110,6 +110,8 @@ export function useChatSocket({
   // volta a `true` no `message`/`error`. Não limpamos no fim do turno para o
   // card persistir durante o hand-off gracioso até o próximo turno começar.
   const turnClosedRef = useRef(true);
+  // BUG-7: track last wsSend timestamp to discard residual WS events (< 150ms)
+  const _lastSentMsRef = useRef(0);
   const [isThinking, setIsThinking] = useState(false);
   const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([]);
   const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTaskEvent[]>(
@@ -210,6 +212,8 @@ export function useChatSocket({
         setIsThinking(true);
         if (event.content) {
           const _content = event.content as string;
+          // BUG-7: discard residual events from prior WS turn (within 150ms of wsSend)
+          if (turnClosedRef.current && Date.now() - _lastSentMsRef.current < 150) break;
           const _reset = turnClosedRef.current;
           if (_reset) turnClosedRef.current = false;
           setThinkingSteps((prev) => {
@@ -392,6 +396,8 @@ export function useChatSocket({
         // Reset no 1º passo de um novo turno + dedupe: o agentic_loop reemite
         // a mesma fase ("understanding"/"composing") a cada iteração; sem isto
         // o card mostrava as fases repetidas N vezes e acumuladas entre turnos.
+        // BUG-7: discard residual events from prior WS turn (within 150ms of wsSend)
+        if (turnClosedRef.current && Date.now() - _lastSentMsRef.current < 150) break;
         const _resetTurn = turnClosedRef.current;
         if (_resetTurn) turnClosedRef.current = false;
         setThinkingSteps((prev) => {
@@ -593,6 +599,7 @@ export function useChatSocket({
   // via turnClosedRef no fim do turno SSE nao era confiavel). Produtor unico.
   const wsSend = useCallback(
     (content: string, context: Record<string, unknown>, domain: string) => {
+      _lastSentMsRef.current = Date.now();
       setThinkingSteps([]);
       agentActivityBufferRef.current = [];
       turnClosedRef.current = true;
@@ -608,6 +615,7 @@ export function useChatSocket({
       context?: Record<string, unknown>,
       conversationId?: string | null,
     ) => {
+      _lastSentMsRef.current = Date.now();
       setThinkingSteps([]);
       agentActivityBufferRef.current = [];
       turnClosedRef.current = true;
