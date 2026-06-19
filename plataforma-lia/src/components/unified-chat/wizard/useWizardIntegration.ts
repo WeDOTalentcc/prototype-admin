@@ -258,6 +258,12 @@ export function useWizardIntegration({
       sendMessage(`Adicionar do banco pergunta id=${questionId}`)
     }
 
+    // W2-C: avançar estágio — WizardCalibrationCard botão "Avançar" emite
+    // lia:wizard-advance; orphan desde a criação do card (2026-06-18 fix).
+    function handleAdvance() {
+      sendMessage("Avançar: etapa de calibração concluída")
+    }
+
     const c1 = onCustomEvent("lia:wizard-edit-question", handleEditQuestion)
     const c2 = onCustomEvent("lia:wizard-regenerate-question", handleRegenerateQuestion)
     const c3 = onCustomEvent("lia:wizard-remove-question", handleRemoveQuestion)
@@ -265,7 +271,8 @@ export function useWizardIntegration({
     const c5 = onCustomEvent("lia:wizard-retry-stage", handleRetryStage)
     const c6 = onCustomEvent("lia:wizard-regenerate-all", handleRegenerateAll)
     const c7 = onCustomEvent("lia:wizard-add-bank-question", handleAddBankQuestion)
-    return () => { c1(); c2(); c3(); c4(); c5(); c6(); c7() }
+    const c8 = onCustomEvent("lia:wizard-advance", handleAdvance)
+    return () => { c1(); c2(); c3(); c4(); c5(); c6(); c7(); c8() }
   }, [isWizardActive, sendMessage])
 
   // Prefill message listener (used by DonePanel "Criar outra vaga")

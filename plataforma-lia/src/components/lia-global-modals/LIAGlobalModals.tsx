@@ -12,6 +12,8 @@ import { LiaEntityModalHost } from "@/components/lia-global-modals/LiaEntityModa
 import { LiaTableStateBridge } from "@/components/lia-global-modals/LiaTableStateBridge"
 import { HiringPolicyConfigModal } from "@/components/modals/hiring-policy-config-modal"
 import { TalentPoolInsightsModal } from "@/components/talent-pool-insights/TalentPoolInsightsModal"
+import { SendEmailModal } from "@/components/email-templates"
+import { ConfirmStageDeleteModal } from "@/components/modals/confirm-stage-delete-modal"
 
 /**
  * LIAGlobalModals — listens for `lia:open_modal` events (dispatched by useUIAction)
@@ -71,6 +73,22 @@ export function LIAGlobalModals() {
     job_title?: string
   }>("talent_pool_insights")
 
+  // 2026-06-18: send_email_offer — backend prepare_offer_manual_send emits
+  // open_modal + modal_id="send_email_offer". OfferReviewModal also normalised to
+  // this path (was lia:open_send_email_modal orphan — H-6 class bug).
+  const sendEmailOffer = useModalOpenListener<{
+    template_id?: string
+    subject_pre_filled?: string
+    body_pre_filled?: string
+    offer_id?: string
+  }>("send_email_offer")
+
+  // 2026-06-18: confirm_stage_delete — pipeline_tools emits when stage has
+  // candidates; informs recruiter to reply in chat with destination stage.
+  const confirmStageDelete = useModalOpenListener<{
+    candidate_count?: number
+  }>("confirm_stage_delete")
+
   // PR-B Trigger A: Rail A Card 5.1 sends ui_action="open_offer_review".
   // useUIAction dispatches `lia:open_offer_review` CustomEvent — handled here
   // so the modal works from any page (chat home, lateral, floating).
@@ -115,6 +133,8 @@ export function LIAGlobalModals() {
     hiring_policy_config: hiringPolicyConfig.close,
     offer_review: offerReview.close,
     talent_pool_insights: talentPoolInsights.close,
+    send_email_offer: sendEmailOffer.close,
+    confirm_stage_delete: confirmStageDelete.close,
   }
 
   // GAP-04-004: selective close — modal_id targets one modal, omission closes all
@@ -202,6 +222,21 @@ export function LIAGlobalModals() {
           jobTitle={talentPoolInsights.data.job_title}
         />
       )}
+
+      {/* 2026-06-18: send_email_offer — canonical global path for offer email send.
+          Data carries pre-filled subject/body from backend preparation when available. */}
+      <SendEmailModal
+        isOpen={sendEmailOffer.isOpen}
+        onClose={sendEmailOffer.close}
+      />
+
+      {/* 2026-06-18: confirm_stage_delete — informa recrutador que a etapa tem
+          candidatos e pede que responda no chat para qual etapa movê-los. */}
+      <ConfirmStageDeleteModal
+        isOpen={confirmStageDelete.isOpen}
+        onClose={confirmStageDelete.close}
+        candidateCount={confirmStageDelete.data.candidate_count}
+      />
 
       {/* Fase B3: modais que precisam do objeto completo (candidato/vaga)
           abertos pela LIA via open_ui — resolve id→objeto e monta. */}

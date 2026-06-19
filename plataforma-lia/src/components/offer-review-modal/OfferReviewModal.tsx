@@ -108,7 +108,8 @@ export function OfferReviewModal() {
     await flushPendingUpdates()
     const prepared = await prepareManual()
     if (prepared) {
-      window.dispatchEvent(new CustomEvent("lia:open_send_email_modal", { detail: prepared }))
+      // Canonical: use lia:open_modal so LIAGlobalModals handles it globally
+      window.dispatchEvent(new CustomEvent("lia:open_modal", { detail: { modal_id: "send_email_offer", ...prepared } }))
       clearDraft()
     }
   }, [flushPendingUpdates, prepareManual, clearDraft])
