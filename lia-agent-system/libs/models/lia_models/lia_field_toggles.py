@@ -91,6 +91,9 @@ FIELD_FALLBACK_CONFIG = {
     "team_dynamics": ["skip"],
     "variable_compensation": ["job_history", "market_benchmark"],
     "compensation_policies": ["job_history", "skip"],
+    "company_description": ["skip"],
+    "headquarters": ["skip"],
+    "policy_instructions": ["skip"],
 }
 
 
@@ -131,4 +134,7 @@ DEFAULT_FIELD_TOGGLES = [
     {"field_key": "team_dynamics", "is_active": True},
     {"field_key": "variable_compensation", "is_active": True},
     {"field_key": "compensation_policies", "is_active": True},
+    {"field_key": "company_description", "is_active": True},
+    {"field_key": "headquarters", "is_active": True},
+    {"field_key": "policy_instructions", "is_active": True},
 ]

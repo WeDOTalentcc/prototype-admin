@@ -178,6 +178,9 @@ FIELD_LABELS = {
     "team_dynamics": "Dinâmica de Equipe",
     "variable_compensation": "Remuneração Variável",
     "compensation_policies": "Políticas de Remuneração",
+    "company_description": "Descrição da Empresa",
+    "headquarters": "Sede da Empresa",
+    "policy_instructions": "Instruções de Política",
 }
 
 
@@ -236,6 +239,8 @@ class LiaFieldConfigService:
         culture_profile = await self._load_culture_profile(company_uuid)
         department_profile = await self._load_department(company_uuid, job_context)
         job_history = await self._load_job_history(company_id)
+        hiring_policy = await self._load_hiring_policy(company_uuid)
+        self._current_hiring_policy = hiring_policy
         
         all_fields: dict[str, FieldConfig] = {}
         active_fields: dict[str, FieldConfig] = {}
@@ -360,6 +365,19 @@ class LiaFieldConfigService:
         val = defaults.get(field_key)
         return val if val else None
     
+    async def _load_hiring_policy(self, company_uuid):
+        """Carrega CompanyHiringPolicy para injetar policy_instructions no contexto IA."""
+        try:
+            from app.models.company_hiring_policy import CompanyHiringPolicy as _HP
+            from sqlalchemy import select as _sel
+            result = await self.db.execute(
+                _sel(_HP).where(_HP.company_id == company_uuid)
+            )
+            return result.scalars().first()
+        except Exception as e:
+            logger.warning("[LiaFieldConfigService] _load_hiring_policy failed: %s", e)
+            return None
+
     async def _load_job_history(self, company_id: str, limit: int = 20) -> list[dict[str, Any]]:
         """Load recent job history for pattern analysis."""
         jobs = await LiaFieldConfigRepository(self.db).list_recent_jobs_for_company(
@@ -422,6 +440,23 @@ class LiaFieldConfigService:
         if profile is not None and profile.additional_data and field_key in profile.additional_data:
             return profile.additional_data[field_key]
         
+        # Computed / cross-table fields — handled before field_mapping lookup
+        if field_key == "headquarters":
+            city = getattr(profile, "headquarters_city", None) if profile else None
+            state_val = getattr(profile, "headquarters_state", None) if profile else None
+            parts = [p for p in [city, state_val] if p]
+            return ", ".join(parts) if parts else None
+
+        if field_key == "policy_instructions":
+            hp = getattr(self, "_current_hiring_policy", None)
+            if hp is None:
+                return None
+            pi = getattr(hp, "policy_instructions", None) or {}
+            if not pi or not isinstance(pi, dict):
+                return None
+            lines = [f"- {k}: {v}" for k, v in pi.items() if v]
+            return "\n".join(lines) if lines else None
+
         field_mapping = {
             "trade_name": "trading_name",
             "industry": "industry",
@@ -429,6 +464,7 @@ class LiaFieldConfigService:
             "linkedin_url": "linkedin_url",
             "company_size": "company_size",
             "employee_count": "employee_count",
+            "company_description": "description",
             "mission": "mission",
             "vision": "vision",
             "values": "values",
@@ -456,6 +492,7 @@ class LiaFieldConfigService:
         if culture is None:
             return None
         culture_map = {
+            "company_description": "description",
             "mission": "mission",
             "vision": "vision",
             "values": "values",
