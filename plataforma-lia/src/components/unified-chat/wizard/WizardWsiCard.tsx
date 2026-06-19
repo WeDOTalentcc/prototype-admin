@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { useToolSurface } from "@/contexts/ToolSurfaceContext"
 
 interface WsiQuestion {
-  text: string
+  question: string
   block?: string
   wsi_block?: number
   difficulty?: string
@@ -124,7 +124,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
                   expandedQ === i ? "" : "line-clamp-2",
                 )}
               >
-                {q.text}
+                {q.question}
               </p>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {q.needs_manual_review && (
@@ -166,7 +166,7 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
                       expandedQ === i ? "" : "line-clamp-2",
                     )}
                   >
-                    {q.text}
+                    {q.question}
                   </p>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     {q.needs_manual_review && (

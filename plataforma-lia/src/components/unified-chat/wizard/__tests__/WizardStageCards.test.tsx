@@ -32,7 +32,7 @@ import { WizardJdCard } from "../WizardJdCard"
 describe("WizardWsiCard — payload determinístico", () => {
   function makeQuestions(n: number, needsReview = false) {
     return Array.from({ length: n }, (_, i) => ({
-      text: "Pergunta de triagem número " + String(i + 1),
+      question: "Pergunta de triagem número " + String(i + 1),
       block: i % 2 === 0 ? "technical" : "behavioral",
       needs_manual_review: needsReview && i === 0,
     }))
