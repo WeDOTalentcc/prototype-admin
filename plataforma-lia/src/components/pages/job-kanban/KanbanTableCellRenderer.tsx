@@ -215,7 +215,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
             currentStage={candidateStageId}
             candidateName={candidate.name as string}
             subFlyoutSide="right"
-            onTransitionDone={() => { /* parent refresh via direct transition */ }}
+            onMoveRequested={(toStage) => openTransition([candidate], candidateStageId || "", toStage)}
             trigger={
               <button className="inline-flex items-center gap-1 group/stage" onClick={(e) => e.stopPropagation()}>
                 <Chip variant="neutral" muted

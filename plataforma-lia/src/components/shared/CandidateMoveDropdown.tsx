@@ -28,6 +28,7 @@ interface CandidateMoveDropdownProps {
   /** Direção do sub-flyout de sub-status: left (padrão) ou right */
   subFlyoutSide?: "left" | "right"
   onTransitionDone?: () => void
+  onMoveRequested?: (toStage: string, subStatus?: string) => void
 }
 
 /**
@@ -44,6 +45,7 @@ export function CandidateMoveDropdown({
   trigger,
   subFlyoutSide = "left",
   onTransitionDone,
+  onMoveRequested,
 }: CandidateMoveDropdownProps) {
   const { companyId } = useCurrentCompany()
   const [open, setOpen] = useState(false)
@@ -88,6 +90,10 @@ export function CandidateMoveDropdown({
   const handleTransition = useCallback(async (toStage: string, subStatus?: string) => {
     setOpen(false)
     setHoveredStageIdx(null)
+    if (onMoveRequested) {
+      onMoveRequested(toStage, subStatus)
+      return
+    }
     if (!canTransition) {
       toast.error("Candidato sem vínculo com vaga", {
         description: "Não é possível mover este candidato.",
@@ -138,7 +144,7 @@ export function CandidateMoveDropdown({
     } finally {
       setIsProcessing(false)
     }
-  }, [canTransition, vacancyCandidateId, canonicalStage, jobId, candidateName, pipeline, onTransitionDone])
+  }, [canTransition, vacancyCandidateId, canonicalStage, jobId, candidateName, pipeline, onTransitionDone, onMoveRequested])
 
   const stagesFiltered = pipeline.filter(s => {
     const sName = s.name.toLowerCase()

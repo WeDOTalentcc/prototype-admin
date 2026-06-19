@@ -47,6 +47,7 @@ interface KanbanCardActionsProps {
   /** Etapa atual do candidato */
   currentStage?: string
   onTransitionDone?: () => void
+  onMoveRequested?: (toStage: string, subStatus?: string) => void
 }
 
 export function KanbanCardActions({
@@ -65,6 +66,7 @@ export function KanbanCardActions({
   vacancyCandidateId,
   currentStage,
   onTransitionDone,
+  onMoveRequested,
 }: KanbanCardActionsProps) {
   const t = useTranslations('kanban')
   const openScheduleModal = useScheduleMessageStore((s) => s.openScheduleModal)
@@ -82,7 +84,7 @@ export function KanbanCardActions({
       currentStage={currentStage}
       candidateName={candidate.name}
       subFlyoutSide="left"
-      onTransitionDone={onTransitionDone}
+      onMoveRequested={onMoveRequested}
       trigger={
         <button
           className="p-1 hover:bg-lia-bg-tertiary rounded-xl transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80"

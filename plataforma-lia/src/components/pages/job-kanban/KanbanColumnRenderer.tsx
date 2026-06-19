@@ -475,7 +475,7 @@ export function KanbanColumnRenderer({
                 jobId={String(currentJob?.backendId || currentJob?.id || "")}
                 vacancyCandidateId={(candidate as Record<string, unknown>).vacancy_candidate_id as string | undefined}
                 currentStage={stageId}
-                onTransitionDone={() => openTransition([], stageId, stageId)}
+                onMoveRequested={(toStage) => openTransition([candidate], stageId, toStage)}
               />
 
               {/* Header do Card - Checkbox, Avatar, Nome */}
