@@ -13,7 +13,6 @@ from ._shared import (  # noqa: F401
     _calculate_days_between,
     _is_job_at_risk,
     get_current_user_or_demo,
-    get_user_company_id,
     User,
     get_db,
     Depends,
@@ -79,7 +78,6 @@ async def get_job_vacancy_metrics(
 company_id: str = Depends(require_company_id)):
     """Get performance metrics for a specific job vacancy."""
     try:
-        company_id = get_user_company_id(current_user)
 
         job = await repo.get_job_by_id_and_company(job_vacancy_id, company_id)
         if not job:
@@ -227,7 +225,6 @@ async def get_job_analytics(
 company_id: str = Depends(require_company_id)):
     """Returns detailed analytics for a job vacancy."""
     try:
-        company_id = get_user_company_id(current_user)
 
         job = await repo.get_job_by_id_and_company(job_id, company_id)
         if not job:
@@ -460,7 +457,6 @@ company_id: str = Depends(require_company_id)):
     from fastapi import Request
 
     try:
-        company_id = get_user_company_id(current_user)
         offset = (page - 1) * page_size
 
         job = await repo.get_job_by_id_and_company(job_id, company_id)
@@ -654,7 +650,6 @@ async def get_job_vacancies_stats_overview(
 company_id: str = Depends(require_company_id)):
     """Get aggregated metrics for the job vacancies dashboard."""
     try:
-        company_id = get_user_company_id(current_user)
         now = datetime.utcnow()
         logger.info(f"Fetching job vacancies stats overview for company: {company_id}")
 
@@ -899,7 +894,6 @@ company_id: str = Depends(require_company_id)):
         from app.repositories.job_vacancies_analytics_repository import JobVacanciesAnalyticsRepository as _JVAR
         repo = _JVAR(db)
     """Returns JSON data for the JobReportModal."""
-    company_id = get_user_company_id(current_user)
 
     job = await repo.get_job_by_id_and_company(job_id, company_id)
     if not job:
@@ -1464,7 +1458,6 @@ company_id: str = Depends(require_company_id)):
     Companion to `/pipeline-overview` (candidate side). Powers the
     "Vagas|Candidatos" toggle in the Visão do Pipeline page.
     """
-    company_id = get_user_company_id(current_user)
     if not company_id:
         raise HTTPException(status_code=403, detail="Company not associated with user")
 
