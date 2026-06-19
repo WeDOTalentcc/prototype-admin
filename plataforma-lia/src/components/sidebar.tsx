@@ -74,6 +74,9 @@ import { NotificationSystem } from "@/components/notification-system"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { AgentsQuotaBadge } from "@/components/pages-agent-studio/AgentsQuotaBadge"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
+import { IASidebar } from "@/components/ia-sidebar/IASidebar"
+import { useIASessionStore } from "@/stores/ia-session-store"
+import { useIASessions } from "@/hooks/ia-sessions/useIASessions"
 import { ProfileModal } from "@/components/modals/profile-modal"
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthenticatedUserId } from "@/hooks/shared/use-authenticated-user-id"
@@ -655,6 +658,9 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   const t = useTranslations('sidebar')
   const { agents, pools } = useSidebarDynamicItems()
   const { focusedJob, clearFocusedJob } = useFocusedJobStore()
+  const { isIASidebarOpen, toggleIASidebar } = useIASessionStore()
+  const { data: iaSessions = [] } = useIASessions()
+  const totalUnread = iaSessions.reduce((sum, s) => sum + (s.unread_count ?? 0), 0)
   const { user: authUser, refreshUser } = useAuth()
   const { userId: authenticatedUserId, isReady: isAuthReady } = useAuthenticatedUserId()
 
@@ -1125,10 +1131,31 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             <HelpCircle className="w-3 h-3" />
           </Button>
 
+          {/* Brain icon — opens IASidebar (⌘+B) */}
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleIASidebar}
+              className="h-6 w-6 p-0 text-wedo-cyan hover:text-wedo-cyan/80 hover:bg-wedo-cyan/10"
+              title="Histórico de conversas (⌘ + B)"
+            >
+              <Brain className="w-3 h-3" />
+            </Button>
+            {totalUnread > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-wedo-cyan text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                {totalUnread > 9 ? "9+" : totalUnread}
+              </span>
+            )}
+          </div>
+
           {isMounted && <HitlPendingBadge />}
 
         </div>
       </div>
+
+      {/* IASidebar — history panel */}
+      <IASidebar />
 
       {/* Resize Handle */}
       {shouldShowContent && !isTemporaryExpanded && (
