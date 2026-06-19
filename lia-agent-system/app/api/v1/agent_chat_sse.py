@@ -702,7 +702,20 @@ company_id: str = Depends(require_company_id)):
                 except asyncio.QueueEmpty:
                     pass
                 await asyncio.sleep(0.1)
-            _gather_results = await _gather_task
+            try:
+                _gather_results = await _gather_task
+            except Exception as _setup_gather_exc:
+                # BUG-4 fix: if parallel setup fails (budget/router/context error),
+                # emit terminal error event so frontend does NOT show "Resposta incompleta".
+                logger.error("[SSEChat] Parallel setup failed: %s", _setup_gather_exc, exc_info=True)
+                yield format_sse_event(
+                    serialize_error(
+                        "Erro ao inicializar o assistente. Tente novamente.",
+                        "setup_error",
+                    ),
+                    next_id(),
+                )
+                return
         finally:
             _setup_ka_stop.set()
             _setup_ka_task.cancel()

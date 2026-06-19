@@ -40,6 +40,7 @@ from lia_pii.masking import (
     reset_chat_pii_mask_identity,
     set_chat_pii_mask_identity,
     strip_pii_for_llm_prompt,
+    strip_pii_for_llm_prompt_async,
 )
 
 __all__ = [

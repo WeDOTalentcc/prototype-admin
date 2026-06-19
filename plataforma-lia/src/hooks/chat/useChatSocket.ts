@@ -573,8 +573,14 @@ export function useChatSocket({
     sendMessageViaSSE: _sendViaSSERaw,
   } = useAgentStreaming(sessionId, { authToken: wsAuthToken }, handleEvent);
 
+  // BUG-3 fix: isConnected from useAgentStreaming is stale in wsAuthToken effect closure.
+  // Use a ref that stays current without triggering the effect on every isConnected change.
+  const _isConnectedForReconnRef = useRef(isConnected);
   useEffect(() => {
-    if (wsAuthToken && isConnected) {
+    _isConnectedForReconnRef.current = isConnected;
+  });
+  useEffect(() => {
+    if (wsAuthToken && _isConnectedForReconnRef.current) {
       disconnect();
       setTimeout(() => connect(), 50);
     }

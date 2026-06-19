@@ -101,7 +101,11 @@ export function useChatMessages({
   // (sendApproval re-envia ela com approve_pending_id no transporte SSE).
   const lastUserMessageRef = useRef<string>("");
 
-  const onCompleteRef = { current: onMessageComplete };
+  // BUG-1 fix: useRef keeps callback stable across re-renders (object literal creates stale closure)
+  const onCompleteRef = useRef(onMessageComplete);
+  useEffect(() => {
+    onCompleteRef.current = onMessageComplete;
+  }, [onMessageComplete]);
 
   // Sync conversationId from WS events
   useEffect(() => {
@@ -585,14 +589,21 @@ export function useChatMessages({
         // Run messages + feedback in parallel — both are needed to restore full
         // conversation state. Feedback is best-effort; we still return messages
         // if the feedback call fails.
+        // BUG-8 fix: AbortSignal.timeout requires Chrome 103+/Safari 16+/Firefox 100+
+        const _abortTimeout = (ms: number): AbortSignal => {
+          if (typeof AbortSignal.timeout === "function") return AbortSignal.timeout(ms);
+          const ctrl = new AbortController();
+          setTimeout(() => ctrl.abort(), ms);
+          return ctrl.signal;
+        };
         const [res, fbResRaw] = await Promise.allSettled([
           fetch(
             `/api/backend-proxy/conversations/${id}?include_messages=true&message_limit=50`,
-            { signal: AbortSignal.timeout(12_000) },
+            { signal: _abortTimeout(12_000) },
           ),
           fetch(
             `/api/backend-proxy/lia/feedback/by-conversation/${encodeURIComponent(id)}`,
-            { credentials: "include", signal: AbortSignal.timeout(8_000) },
+            { credentials: "include", signal: _abortTimeout(8_000) },
           ),
         ]);
         if (res.status === "rejected" || !res.value.ok) return [];

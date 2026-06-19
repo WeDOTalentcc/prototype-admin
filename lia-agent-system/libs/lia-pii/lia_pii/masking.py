@@ -501,3 +501,20 @@ def _presidio_layer4_strip(text: str) -> str:
         else:
             log.error("[PII-L4] Presidio strip falhou novamente em runtime: %s", exc)
         return text
+
+
+async def strip_pii_for_llm_prompt_async(text: str, mask_names: bool = True) -> str:
+    """Async wrapper — runs Presidio+regex CPU work in thread pool.
+
+    Prevents blocking the asyncio event loop when Presidio NER is enabled
+    (LLM_PROMPT_PRESIDIO_ENABLED=true defaults to true). Use in all async
+    LLM call paths (generate_with_tools, generate, generate_structured, etc.)
+    to avoid 50-200ms event loop stalls per call under spaCy pt_core_news_sm.
+
+    Harness: BUG-5 fix 2026-06-18 — canonical producer is this wrapper,
+    consumers are llm.py async methods. DO NOT call sync version in async paths.
+    """
+    import asyncio
+    if not _LLM_PROMPT_PII_STRIPPING_ENABLED or not text:
+        return text
+    return await asyncio.to_thread(strip_pii_for_llm_prompt, text, mask_names)
