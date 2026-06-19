@@ -8,7 +8,6 @@ import { useToolSurface } from "@/contexts/ToolSurfaceContext"
 
 interface WizardJdCardProps {
   data: Record<string, unknown>
-  onOpenPanel?: () => void
 }
 
 /**
@@ -18,7 +17,7 @@ interface WizardJdCardProps {
  * F4: accordion AnimatePresence com height animado.
  * adaptive-surface: sem truncamentos e auto-expandido em surface=panel.
  */
-export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
+export function WizardJdCard({ data }: WizardJdCardProps) {
   const surface = useToolSurface()
   const [expanded, setExpanded] = useState(surface === "panel")
 
@@ -36,6 +35,7 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
      String(r)) as string
   ).filter(Boolean)
   const skills = (enriched?.skills_obrigatorias as Array<{ skill: string }>) ?? []
+  const behavioral = (enriched?.competencias_comportamentais as Array<{ competencia: string }>) ?? []
 
   const scoreColor =
     score >= 70
@@ -136,15 +136,22 @@ export function WizardJdCard({ data, onOpenPanel }: WizardJdCardProps) {
               </div>
             )}
 
-            {onOpenPanel && (
-              <button
-                type="button"
-                onClick={onOpenPanel}
-                className="flex items-center gap-1.5 text-[11px] text-lia-text-muted hover:underline"
-              >
-                <ExternalLink className="w-3 h-3" aria-hidden="true" />
-                Abrir no painel
-              </button>
+            {behavioral.length > 0 && (
+              <div>
+                <p className="text-[11px] font-medium text-lia-text-tertiary uppercase tracking-wide mb-1.5">
+                  Competências ({behavioral.length})
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {behavioral.map((b, i) => (
+                    <span
+                      key={i}
+                      className="text-[11px] px-2 py-0.5 rounded bg-lia-bg-primary border border-amber-200 text-lia-text-secondary"
+                    >
+                      {b.competencia}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
           </motion.div>
         )}
