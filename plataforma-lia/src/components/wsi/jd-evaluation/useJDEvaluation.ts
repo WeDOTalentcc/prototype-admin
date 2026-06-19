@@ -60,6 +60,7 @@ export interface JDEvaluationPanelProps {
   onSaveEnrichedJD?: (enrichedJd: EnrichedJD) => Promise<void>
   onUpdateOfficialJD?: (updates: { description?: string; responsibilities?: string[]; requirements?: string[]; technicalSkills?: string[]; behavioralCompetencies?: string[] }) => Promise<void>
   onUpdateJobDescription?: (jdText: string) => Promise<void>
+  onSaveDefinitiva?: (enrichedJd: EnrichedJD, updates: { description?: string; responsibilities?: string[]; requirements?: string[]; technicalSkills?: string[]; behavioralCompetencies?: string[] }) => Promise<void>
   enrichedJd?: EnrichedJD
   isGenerating?: boolean
   className?: string
@@ -91,8 +92,9 @@ export function useJDEvaluation(props: {
   onSaveEnrichedJD?: JDEvaluationPanelProps['onSaveEnrichedJD']
   onUpdateOfficialJD?: JDEvaluationPanelProps['onUpdateOfficialJD']
   onUpdateJobDescription?: JDEvaluationPanelProps['onUpdateJobDescription']
+  onSaveDefinitiva?: JDEvaluationPanelProps['onSaveDefinitiva']
 }) {
-  const { jobTitle, responsibilities, technicalSkills, behavioralCompetencies, seniority, department, description, hasQuestions, enrichedJd, companyId, companyName, companyDescription, companyIndustry, benefits = [], interviewStages = [], onSaveJDInline, onSaveEnrichedJD, onUpdateOfficialJD, onUpdateJobDescription } = props
+  const { jobTitle, responsibilities, technicalSkills, behavioralCompetencies, seniority, department, description, hasQuestions, enrichedJd, companyId, companyName, companyDescription, companyIndustry, benefits = [], interviewStages = [], onSaveJDInline, onSaveEnrichedJD, onUpdateOfficialJD, onUpdateJobDescription, onSaveDefinitiva } = props
 
   // Cultura & EVP --- carrega dados da empresa para enriquecer o JD gerado
   const { culture } = useCompanyCulture()
@@ -403,9 +405,16 @@ export function useJDEvaluation(props: {
     setIsSavingDefinitive(true); setSaveError(false)
     try {
       const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD?.full_description || undefined, updated_at: new Date().toISOString() }
-      if (onSaveEnrichedJD) { await onSaveEnrichedJD(enrichedData) }
-      if (onUpdateOfficialJD) { await onUpdateOfficialJD({ description: editDescription, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }) }
-      else if (onSaveJDInline) { await onSaveJDInline({ description: editDescription, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }) }
+      const officialUpdates = { description: editDescription, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }
+      if (onSaveDefinitiva) {
+        // P1-1: 1 PUT atômico com enriched_jd + campos canônicos
+        await onSaveDefinitiva(enrichedData, officialUpdates)
+      } else {
+        // Fallback: 2 PUTs independentes (legado)
+        if (onSaveEnrichedJD) { await onSaveEnrichedJD(enrichedData) }
+        if (onUpdateOfficialJD) { await onUpdateOfficialJD(officialUpdates) }
+        else if (onSaveJDInline) { await onSaveJDInline(officialUpdates) }
+      }
       setIsEditing(false)
       await fetchEvaluation({ responsibilities: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies, description: editDescription })
     } catch { setSaveError(true) } finally { setIsSavingDefinitive(false) }

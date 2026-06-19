@@ -705,6 +705,26 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
         except Exception as _w2c_exc:
             logger.warning("[EventHandler] W2-C screening_config read error (fail-open): %s", _w2c_exc)
 
+        # W2-D: override WSI decision thresholds with per-job min_score.
+        # min_score stored on /100 scale (84 = 8.4/10). Internal WSI scale is /5.
+        if _sc_settings.get("min_score") is not None:
+            try:
+                _job_min_score = int(_sc_settings["min_score"])
+                approved_threshold = _job_min_score / 20.0
+                review_threshold = max(approved_threshold * 0.8, WSI_CUTOFFS["review_min"])
+                if wsi_final >= approved_threshold:
+                    decision = "approved"
+                elif wsi_final >= review_threshold:
+                    decision = "review"
+                else:
+                    decision = "rejected"
+                logger.info(
+                    "[EventHandler] W2-D WSI thresholds from job config: score=%.2f approved>=%.2f review>=%.2f decision=%s vaga=%s",
+                    wsi_final, approved_threshold, review_threshold, decision, vacancy_id,
+                )
+            except (ValueError, TypeError) as _thresh_exc:
+                logger.warning("[EventHandler] W2-D could not parse min_score (fail-open): %s", _thresh_exc)
+
 
         from app.domains.automation.services.automation_handlers import (
             handle_screening_completed,

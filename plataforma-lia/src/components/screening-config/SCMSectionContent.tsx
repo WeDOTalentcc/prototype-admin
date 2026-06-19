@@ -124,21 +124,32 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               onSaveEnrichedJD={async (enrichedData) => {
                 if (!job) return
                 const jobId = job.backendId || job.jobId || String(job.id)
+                if (!jobId || jobId === 'undefined') { console.error('[onSaveEnrichedJD] jobId inválido', job); throw new Error('ID da vaga inválido. Recarregue a página.') }
                 await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enriched_jd: enrichedData }) })
                 onJobUpdate?.({ ...job, enrichedJd: enrichedData })
               }}
               onUpdateOfficialJD={async (updates) => {
                 if (!job) return
                 const jobId = job.backendId || job.jobId || String(job.id)
+                if (!jobId || jobId === 'undefined') { console.error('[onUpdateOfficialJD] jobId inválido', job); throw new Error('ID da vaga inválido. Recarregue a página.') }
                 // T-1166 — JDArrayEditor edits `responsibilities` as the
                 // duties list. We MUST send it to the dedicated backend column
                 // (migration 132) instead of overloading `requirements`.
                 await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: updates.description, responsibilities: updates.responsibilities, requirements: updates.requirements, technical_requirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })), behavioral_competencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) }) })
                 onJobUpdate?.({ ...job, description: updates.description || job.description, responsibilities: updates.responsibilities || job.responsibilities, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
               }}
+              onSaveDefinitiva={async (enrichedData, updates) => {
+                if (!job) return
+                const jobId = job.backendId || job.jobId || String(job.id)
+                if (!jobId || jobId === 'undefined') { console.error('[onSaveDefinitiva] jobId inválido', job); throw new Error('ID da vaga inválido. Recarregue a página.') }
+                // P1-1 fix: 1 PUT atômico com enriched_jd + campos canônicos
+                await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enriched_jd: enrichedData, description: updates.description, responsibilities: updates.responsibilities, requirements: updates.requirements, technical_requirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })), behavioral_competencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) }) })
+                onJobUpdate?.({ ...job, enrichedJd: enrichedData, description: updates.description || job.description, responsibilities: updates.responsibilities || job.responsibilities, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
+              }}
               onSaveJDInline={async (updates) => {
                 if (!job) return
                 const jobId = job.backendId || job.jobId || String(job.id)
+                if (!jobId || jobId === 'undefined') { console.error('[onSaveJDInline] jobId inválido', job); throw new Error('ID da vaga inválido. Recarregue a página.') }
                 // T-1166 — same as onUpdateOfficialJD: persist responsibilities separately.
                 await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: updates.description, responsibilities: updates.responsibilities, requirements: updates.requirements, technical_requirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })), behavioral_competencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) }) })
                 onJobUpdate?.({ ...job, description: updates.description || job.description, responsibilities: updates.responsibilities || job.responsibilities, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })

@@ -36,6 +36,7 @@ export function JDEvaluationPanel({
   onSaveEnrichedJD,
   onUpdateOfficialJD,
   onUpdateJobDescription,
+  onSaveDefinitiva,
   enrichedJd,
   isGenerating = false,
   className,
@@ -51,7 +52,7 @@ export function JDEvaluationPanel({
     seniority, department, description, hasQuestions, enrichedJd,
     companyId, companyName, companyDescription, companyIndustry,
     benefits, interviewStages,
-    onSaveJDInline, onSaveEnrichedJD, onUpdateOfficialJD, onUpdateJobDescription,
+    onSaveJDInline, onSaveEnrichedJD, onUpdateOfficialJD, onUpdateJobDescription, onSaveDefinitiva,
   })
 
   const {

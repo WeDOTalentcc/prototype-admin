@@ -28,6 +28,7 @@ from app.models.company_hiring_policy import (
     PIPELINE_RULES_DEFAULTS,
     SCHEDULING_RULES_DEFAULTS,
     SCREENING_RULES_DEFAULTS,
+    SCREENING_CONFIG_DEFAULTS,
 )
 from app.schemas.company_hiring_policy import (
     PolicyBlockValidationError,
@@ -386,5 +387,48 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         all_completed=result.get("all_completed", False),
         session_id=session_id,
     )
+
+
+# ─── Screening Config Defaults (company-level) ───────────────────────────────
+
+@router.get("/{company_id}/screening-config-defaults")
+async def get_screening_config_defaults(
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    db: AsyncSession = Depends(get_db),
+    _company_gate: str = Depends(require_company_id_strict_match("path.company_id")),
+):
+    """GET company-level screening config defaults (base for new jobs and wizard)."""
+    repo = HiringPolicyRepository(db)
+    policy = await repo.get_by_company(company_id)
+    defaults = (policy.screening_config_defaults if policy else None) or SCREENING_CONFIG_DEFAULTS
+    return {"screening_config_defaults": defaults}
+
+
+@router.put("/{company_id}/screening-config-defaults")
+async def put_screening_config_defaults(
+    payload: dict,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    user_id: str | None = Query(None),
+    db: AsyncSession = Depends(get_tenant_db),
+    _company_gate: str = Depends(require_company_id_strict_match("path.company_id")),
+):
+    """PUT company-level screening config defaults. Merges with existing."""
+    repo = HiringPolicyRepository(db)
+    policy = await repo.get_by_company(company_id)
+    if not policy:
+        raise HTTPException(status_code=404, detail="Company policy not found")
+    current = dict(policy.screening_config_defaults or SCREENING_CONFIG_DEFAULTS)
+    for key, val in payload.items():
+        if isinstance(val, dict) and isinstance(current.get(key), dict):
+            current[key] = {**current[key], **val}
+        else:
+            current[key] = val
+    policy.screening_config_defaults = current
+    policy.updated_at = datetime.utcnow()
+    policy.updated_by = user_id or "ui"
+    await db.flush()
+    logger.info("[HiringPolicy] screening_config_defaults updated for company=%s", company_id)
+    return {"screening_config_defaults": current}
+
 
 reorder_collection_before_item(router)

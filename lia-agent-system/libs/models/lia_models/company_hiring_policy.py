@@ -62,6 +62,37 @@ SCREENING_RULES_DEFAULTS = {
     "sector": None,                   # setor da empresa (tech/varejo/financeiro/saude/logistica/rpo)
 }
 
+SCREENING_CONFIG_DEFAULTS = {
+    "settings": {
+        "min_score": 76,
+        "min_score_preset": "recommended",
+        "response_timeout_hours": 48,
+        "max_retries": 2,
+        "auto_approval_limit": 10,
+        "auto_approval_preset": "recommended",
+        "auto_approvals_count": 0,
+        "auto_approval_paused": False,
+    },
+    "channels": {
+        "chat_web": {"enabled": True, "label": "Chat Web"},
+        "whatsapp": {"enabled": True, "label": "WhatsApp"},
+        "phone_pstn": {"enabled": False, "label": "Ligacao (PSTN)"},
+        "voice_web": {"enabled": False, "label": "Voz no Navegador"},
+    },
+    "screening_channels": {
+        "primary_channel": "chat_web",
+        "fallback_order": ["whatsapp"],
+    },
+    "scheduling": {
+        "auto_enabled": False,
+        "min_score_for_auto": 76,
+        "min_score_for_auto_preset": "recommended",
+        "calendar_provider": "Microsoft",
+        "available_hours": "9h-18h",
+        "interview_duration_min": 45,
+    },
+}
+
 AUTOMATION_RULES_DEFAULTS = {
     "auto_screening": False,
     "auto_scheduling": False,
@@ -98,6 +129,7 @@ ALL_DEFAULTS = {
     "offer_rules": OFFER_RULES_DEFAULTS,
     "pipeline_templates": [],
     "learned_patterns": [],
+    "screening_config_defaults": None,
 }
 
 
@@ -126,6 +158,9 @@ class CompanyHiringPolicy(Base):
     # política (texto livre que orienta a LIA). SEPARADO dos 5 blocos de gate —
     # nunca alimenta um if/gate, só o system prompt. Invariante de segurança.
     policy_instructions = Column(JSON, default=lambda: {})
+
+    # Company-level defaults inherited by new jobs and wizard (Fase triagem 2026-06-19)
+    screening_config_defaults = Column(JSONB, nullable=True, default=lambda: SCREENING_CONFIG_DEFAULTS.copy())
 
     pipeline_templates = Column(JSON, default=lambda: [])
     learned_patterns = Column(JSON, default=lambda: [])
@@ -161,6 +196,7 @@ class CompanyHiringPolicy(Base):
             "learned_patterns": self.learned_patterns or [],
             "answered_questions": self.answered_questions or [],
             "offer_rules": self.offer_rules or OFFER_RULES_DEFAULTS,
+            "screening_config_defaults": self.screening_config_defaults or SCREENING_CONFIG_DEFAULTS,
             "setup_progress": self.setup_progress or 0,
             "setup_completed_at": self.setup_completed_at.isoformat() if self.setup_completed_at else None,
             "created_by": self.created_by,

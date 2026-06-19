@@ -567,14 +567,11 @@ Retorne APENAS JSON válido:
     ) -> tuple:
         """F1.C → WSI bridge: converte EnrichedJobDescription em competências WSI.
 
-        Extrai de enriched_jd:
-        - skills_obrigatorias → Competency(type="technical") com is_critical nos top 3
-        - competencias_comportamentais → Competency(type="behavioral") com big_five_mapping preenchido
-        - about_role + responsabilidades → texto de contexto para F2.5
-
-        Args:
-            enriched_jd: dict output de JdEnrichmentService (EnrichedJobDescription serializado)
-            seniority: nível para seniority_level das competências geradas
+        Suporta múltiplos formatos do blob enriched_jd:
+        - Formato novo flat (frontend/wizard): technical_skills / behavioral_competencies
+        - Formato SectionSuggestions (wizard EnrichedJobDescription): dict com
+          detected_items + suggestions[{value, ...}]
+        - Formato legado: skills_obrigatorias / competencias_comportamentais
 
         Returns:
             Tuple[List[Competency], str] — (competências com big_five_mapping, jd_context para F2.5)
@@ -582,14 +579,45 @@ Retorne APENAS JSON válido:
         seniority_level = _normalize_seniority_for_kernel(seniority)
         competencies: list = []
 
-        # --- Técnicas: de skills_obrigatorias ---
-        skills_raw = enriched_jd.get("skills_obrigatorias", [])
+        def _extract_str_list(blob: dict, *keys: str) -> list:
+            """Tenta as chaves em ordem; normaliza para list[str | dict].
+
+            Aceita:
+            - list → retorna diretamente
+            - dict com detected_items + suggestions (formato SectionSuggestions)
+            """
+            for key in keys:
+                val = blob.get(key)
+                if val is None:
+                    continue
+                if isinstance(val, list) and val:
+                    return val
+                if isinstance(val, dict):
+                    items: list = list(val.get("detected_items") or [])
+                    for sug in val.get("suggestions") or []:
+                        if isinstance(sug, dict):
+                            v = sug.get("value")
+                            if v and v not in items:
+                                items.append(v)
+                        elif isinstance(sug, str) and sug not in items:
+                            items.append(sug)
+                    if items:
+                        return items
+            return []
+
+        # --- Técnicas: tenta technical_skills (novo) → skills_obrigatorias (legado) ---
+        skills_raw = _extract_str_list(enriched_jd, "technical_skills", "skills_obrigatorias")
         n_skills = max(len(skills_raw), 1)
         for i, skill_entry in enumerate(skills_raw):
             if isinstance(skill_entry, str):
                 skill_name = skill_entry
             elif isinstance(skill_entry, dict):
-                skill_name = skill_entry.get("skill") or skill_entry.get("value") or str(skill_entry)
+                skill_name = (
+                    skill_entry.get("skill")
+                    or skill_entry.get("value")
+                    or skill_entry.get("name")
+                    or str(skill_entry)
+                )
             else:
                 continue
             competencies.append(Competency(
@@ -600,8 +628,8 @@ Retorne APENAS JSON válido:
                 is_critical=(i < 2),  # F6-5: máximo 2 skills críticas por triagem (spec §6.5)
             ))
 
-        # --- Comportamentais: de competencias_comportamentais com trait pré-mapeado ---
-        behavioral_raw = enriched_jd.get("competencias_comportamentais", [])
+        # --- Comportamentais: tenta behavioral_competencies (novo) → competencias_comportamentais (legado) ---
+        behavioral_raw = _extract_str_list(enriched_jd, "behavioral_competencies", "competencias_comportamentais")
         n_behavioral = max(len(behavioral_raw), 1)
         for comp_entry in behavioral_raw:
             if isinstance(comp_entry, str):
@@ -626,12 +654,10 @@ Retorne APENAS JSON válido:
             ))
 
         # --- Texto de contexto para F2.5 ---
-        about = enriched_jd.get("about_role", "")
-        resps = enriched_jd.get("responsabilidades", [])
-        if isinstance(resps, list):
-            resps_text = " ".join(resps)
-        else:
-            resps_text = str(resps)
+        # tenta description (novo) → about_role (legado)
+        about = enriched_jd.get("description") or enriched_jd.get("about_role") or ""
+        resps_raw = _extract_str_list(enriched_jd, "responsibilities", "responsabilidades")
+        resps_text = " ".join(r if isinstance(r, str) else str(r) for r in resps_raw)
         jd_context = f"{about}\n\n{resps_text}".strip()
 
         return competencies, jd_context

@@ -96,18 +96,23 @@ export const LIA_FIELD_DEFINITIONS = {
   social_impact: { label: 'Impacto Social', category: 'ESG & Impacto', location: 'Dados da Empresa → Cultura' },
   evp_bullets: { label: 'EVP (Proposta de Valor)', category: 'Cultura & Identidade', location: 'Dados da Empresa → Cultura' },
   tech_stack: { label: 'Tech Stack', category: 'Tecnologia', location: 'Dados da Empresa → Tecnologia' },
-  benefits: { label: 'Benefícios', category: 'EVP', location: 'Dados da Empresa → Benefícios' },
+  benefits: { label: 'Benefícios', category: 'Remuneração e Benefícios', location: 'Dados da Empresa → Benefícios' },
   locations: { label: 'Localizações', category: 'Estrutura Organizacional', location: 'Dados da Empresa → Geral' },
   pipeline: { label: 'Pipeline', category: 'Recrutamento', location: 'Recrutamento → Pipeline' },
   eligibility_questions: { label: 'Perguntas de Elegibilidade', category: 'Recrutamento', location: 'Recrutamento → Elegibilidade' },
   headcount_planning: { label: 'Planejamento Headcount', category: 'Planejamento', location: 'Planejamento → Workforce' },
   leadership_style: { label: 'Estilo de Liderança', category: 'Cultura & Identidade', location: 'Dados da Empresa → Cultura' },
   team_dynamics: { label: 'Dinâmica de Equipe', category: 'Cultura & Identidade', location: 'Dados da Empresa → Cultura' },
-  variable_compensation: { label: 'Remuneração Variável', category: 'EVP', location: 'Dados da Empresa → Remuneração' },
-  compensation_policies: { label: 'Políticas de Remuneração', category: 'EVP', location: 'Dados da Empresa → Remuneração' },
+  variable_compensation: { label: 'Remuneração Variável', category: 'Remuneração e Benefícios', location: 'Dados da Empresa → Remuneração' },
+  compensation_policies: { label: 'Políticas de Remuneração', category: 'Remuneração e Benefícios', location: 'Dados da Empresa → Remuneração' },
   company_description: { label: 'Descrição da Empresa', category: 'Informações da Empresa', location: 'Dados da Empresa → Geral' },
   headquarters: { label: 'Sede da Empresa', category: 'Informações da Empresa', location: 'Dados da Empresa → Geral' },
   policy_instructions: { label: 'Instruções de Política', category: 'Recrutamento', location: 'Configurações → Políticas' },
+  // Per-channel screening AI toggles — control whether IA triagem is active per channel
+  screening_channel_chat_web: { label: 'IA via Chat Web', category: 'Triagem por Canal', location: 'Configurações → Triagem' },
+  screening_channel_whatsapp: { label: 'IA via WhatsApp', category: 'Triagem por Canal', location: 'Configurações → Triagem' },
+  screening_channel_phone_pstn: { label: 'IA via Ligação (PSTN)', category: 'Triagem por Canal', location: 'Configurações → Triagem' },
+  screening_channel_voice_web: { label: 'IA via Voz no Navegador', category: 'Triagem por Canal', location: 'Configurações → Triagem' },
 } as const
 
 export type LiaFieldKey = keyof typeof LIA_FIELD_DEFINITIONS
