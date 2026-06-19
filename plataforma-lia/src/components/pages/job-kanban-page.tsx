@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback } from "react"
+import React, { useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
 import { useKanbanPageCore } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
 import { KanbanJobHeader } from "@/components/pages/job-kanban/KanbanJobHeader"
@@ -34,6 +34,16 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
   const handleCandidatesAdded = useCallback(() => {
     state.router?.refresh()
   }, [state.router])
+  const initialQuery = useMemo(() => {
+    const title = (state.currentJob?.title as string) || ""
+    const level = (state.currentJob?.level as string) || ""
+    const skills = (state.currentJob?.required_skills as string[] | undefined) || []
+    const parts: string[] = []
+    if (title) parts.push(title)
+    if (level) parts.push(level)
+    if (skills.length > 0) parts.push(skills.slice(0, 4).join(", "))
+    return parts.join(", ")
+  }, [state.currentJob?.title, state.currentJob?.level, state.currentJob?.required_skills])
   const vs = useVacancySearch(vacancyId, enrichedJD, handleCandidatesAdded)
 
   if (!state.isClient) {
@@ -123,6 +133,8 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         onAutoConfigChange={vs.setAutoConfig}
         onSubmit={vs.handleSearchSubmit}
         creditEstimate={vs.creditEstimate}
+        initialQuery={initialQuery}
+        initialJdContent={enrichedJD}
       />
 
       <VacancyCandidateSearchResults

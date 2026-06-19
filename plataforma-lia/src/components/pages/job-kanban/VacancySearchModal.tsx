@@ -42,6 +42,8 @@ interface VacancySearchModalProps {
   onAutoConfigChange: (c: AutoConfig) => void
   onSubmit: (query: string, entities: ParsedEntities, mode: SearchMode, metadata: SearchMetadata) => void
   creditEstimate: CreditEstimate
+  initialQuery?: string
+  initialJdContent?: string
 }
 
 const COST_LEVEL_COLORS: Record<string, string> = {
@@ -60,13 +62,15 @@ export function VacancySearchModal({
   autoConfig, onAutoConfigChange,
   onSubmit,
   creditEstimate,
+  initialQuery,
+  initialJdContent,
 }: VacancySearchModalProps) {
   const t = useTranslations("vacancySearch")
   const [value, setValue] = useState("")
 
   useEffect(() => {
-    if (isOpen) setValue("")
-  }, [isOpen])
+    if (isOpen) setValue(initialQuery || "")
+  }, [isOpen, initialQuery])
 
   if (!isOpen) return null
 
@@ -211,6 +215,7 @@ export function VacancySearchModal({
             onRequireEmailsChange={onRequireEmailsChange}
             requirePhoneNumbers={requirePhoneNumbers}
             onRequirePhoneNumbersChange={onRequirePhoneNumbersChange}
+            initialJdContent={initialJdContent}
           />
         </div>
 

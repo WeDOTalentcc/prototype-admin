@@ -67,6 +67,7 @@ export interface SmartSearchInputProps {
   onRequireEmailsChange?: (value: boolean) => void
   requirePhoneNumbers?: boolean
   onRequirePhoneNumbersChange?: (value: boolean) => void
+  initialJdContent?: string
 }
 
 export type SearchMode ="natural" |"similar" |"jd" |"boolean" |"archetypes"

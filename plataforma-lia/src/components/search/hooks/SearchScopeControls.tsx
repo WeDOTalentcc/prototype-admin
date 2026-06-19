@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Globe, Home, Loader2, Mail, Phone, Search, Zap } from "lucide-react"
+import { AlertTriangle, Globe, Home, Loader2, Mail, Phone, Search, Zap } from "lucide-react"
 import type { SearchSource } from "./smartSearchConstants"
 
 interface SearchScopeControlsProps {
@@ -168,6 +168,12 @@ export function SearchScopeControls({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          {!requireEmails && (
+            <div className="flex items-center gap-1 px-2 py-1 bg-status-warning/10 border border-status-warning/30 rounded-md ml-1">
+              <AlertTriangle className="w-3 h-3 text-status-warning flex-shrink-0" />
+              <span className="text-[10px] text-status-warning whitespace-nowrap">Sem email: sem contato</span>
+            </div>
+          )}
         </>
       )}
       
