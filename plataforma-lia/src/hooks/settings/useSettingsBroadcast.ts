@@ -37,6 +37,7 @@ export const SETTINGS_QUERY_KEYS = {
   billingPaymentMethods: () => ["billing-payment-methods"] as const,
   departments: (companyId: string) => ["departments", companyId] as const,
   benefitTaxonomy: () => ["benefit-taxonomy"] as const,
+  screeningDefaults: (companyId: string) => ["screening-defaults", companyId] as const,
 } as const
 
 export type SettingsBroadcastDetail = {

@@ -13,6 +13,7 @@ import { CultureApprovalBanner } from "@/components/settings/CultureApprovalBann
 import { LearningLoopsPanel } from "@/components/settings/LearningLoopsPanel"
 import { LiaFieldsConfigPanel } from "@/components/settings/LiaFieldsConfigPanel"
 import { ContratacaoHub } from "@/components/settings/ContratacaoHub"
+import { CompanyScreeningConfigHub } from "@/components/settings/CompanyScreeningConfigHub"
 import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import type { ProposedSaves } from "@/lib/website-proposal-mapper"
@@ -168,6 +169,10 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
 
   if (activeSubsection === "contratacao") {
     return <ContratacaoHub />
+  }
+
+  if (activeSubsection === "configuracoes-triagem") {
+    return <CompanyScreeningConfigHub />
   }
 
   // ─── LOADING STATE ────────────────────────────────────────────

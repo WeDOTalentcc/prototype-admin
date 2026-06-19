@@ -48,6 +48,108 @@ function QBadge({ block }: { block?: string }) {
  * F4: AnimatePresence nas perguntas extras (slice(3+)).
  * adaptive-surface: auto-expandido e sem botão "Ver todas" em surface=panel.
  */
+// ─── TriagemConfigSection ─────────────────────────────────────────────────────
+function TriagemConfigSection({ jobId }: { jobId?: string }) {
+  const [open, setOpen] = React.useState(false)
+  const [score, setScore] = React.useState<number>(76)
+  const [timeout, setTimeout] = React.useState<number>(48)
+  const [chatWeb, setChatWeb] = React.useState(true)
+  const [whatsapp, setWhatsapp] = React.useState(true)
+  const [saving, setSaving] = React.useState(false)
+  const [loaded, setLoaded] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!open || loaded) return
+    fetch("/api/backend-proxy/company/screening-config-defaults")
+      .then((r) => r.json())
+      .then((d) => {
+        const s = d?.screening_config_defaults?.settings ?? d?.settings ?? {}
+        const ch = d?.screening_config_defaults?.channels ?? d?.channels ?? {}
+        if (s.min_score != null) setScore(Number(s.min_score))
+        if (s.response_timeout_hours != null) setTimeout(Number(s.response_timeout_hours))
+        if (ch.chat_web?.enabled != null) setChatWeb(Boolean(ch.chat_web.enabled))
+        if (ch.whatsapp?.enabled != null) setWhatsapp(Boolean(ch.whatsapp.enabled))
+        setLoaded(true)
+      })
+      .catch(() => setLoaded(true))
+  }, [open, loaded])
+
+  const handleSave = async () => {
+    if (!jobId) return
+    setSaving(true)
+    try {
+      await fetch(`/api/backend-proxy/job-vacancies/${jobId}/screening-config`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          settings: { min_score: score, response_timeout_hours: timeout },
+          channels: { chat_web: { enabled: chatWeb }, whatsapp: { enabled: whatsapp } },
+        }),
+      })
+    } catch {}
+    setSaving(false)
+  }
+
+  return (
+    <div className="border-b border-lia-border-subtle">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-lia-interactive-hover transition-colors"
+        aria-expanded={open}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-lia-text-secondary font-medium">Configurações de Triagem</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-muted">
+            Score: {score}/100 · {timeout}h
+          </span>
+        </div>
+        <span className="text-lia-text-tertiary text-xs">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="px-4 pb-3 space-y-3 bg-lia-bg-secondary/30">
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="space-y-1">
+              <label className="text-[10px] font-medium text-lia-text-secondary block">Score mínimo (/100)</label>
+              <input
+                type="number" min={0} max={100} value={score}
+                onChange={(e) => setScore(Math.max(0, Math.min(100, Number(e.target.value))))}
+                className="w-full h-7 px-2 text-sm rounded border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:border-wedo-cyan"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-medium text-lia-text-secondary block">Prazo de resposta (h)</label>
+              <input
+                type="number" min={1} max={168} value={timeout}
+                onChange={(e) => setTimeout(Math.max(1, Math.min(168, Number(e.target.value))))}
+                className="w-full h-7 px-2 text-sm rounded border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:border-wedo-cyan"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" checked={chatWeb} onChange={(e) => setChatWeb(e.target.checked)} className="accent-wedo-cyan" />
+              <span className="text-xs text-lia-text-secondary">Chat Web</span>
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" checked={whatsapp} onChange={(e) => setWhatsapp(e.target.checked)} className="accent-wedo-cyan" />
+              <span className="text-xs text-lia-text-secondary">WhatsApp</span>
+            </label>
+          </div>
+          {jobId && (
+            <button
+              onClick={handleSave} disabled={saving}
+              className="text-[10px] px-2.5 py-1 rounded bg-wedo-cyan text-white hover:bg-wedo-cyan/90 transition-colors disabled:opacity-50"
+            >
+              {saving ? "Salvando..." : "Salvar para esta vaga"}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+
 export function WizardWsiCard({ data }: WizardWsiCardProps) {
   const surface = useToolSurface()
   const [expanded, setExpanded] = useState(surface === "panel")
@@ -58,6 +160,7 @@ export function WizardWsiCard({ data }: WizardWsiCardProps) {
     | { technical?: number; behavioral?: number }
     | undefined
   const needsReview = questions.filter((q) => q.needs_manual_review).length
+  const jobId = (data.job_id as string | undefined) ?? (data.job_vacancy_id as string | undefined)
 
   if (questions.length === 0) return null
 
@@ -104,6 +207,7 @@ export function WizardWsiCard({ data }: WizardWsiCardProps) {
         />
       </button>
 
+      <TriagemConfigSection jobId={jobId} />
       {/* Lista de perguntas */}
       <div className="border-t border-lia-border-subtle divide-y divide-lia-border-subtle">
         {/* Primeiras 3 sempre visíveis */}

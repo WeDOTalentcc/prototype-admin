@@ -250,6 +250,46 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         <Save className="w-3.5 h-3.5" />
                         Salvar
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs rounded-md gap-1 text-lia-text-secondary hover:text-lia-text-primary"
+                        title="Carregar padrões de triagem configurados em Dados da Empresa"
+                        onClick={async () => {
+                          try {
+                            const res = await fetch("/api/backend-proxy/company/screening-config-defaults")
+                            if (!res.ok) return
+                            const d = await res.json()
+                            const cfg = d?.screening_config_defaults ?? d
+                            const s = cfg?.settings ?? {}
+                            const ch = cfg?.channels ?? {}
+                            if (s.min_score != null) {
+                              setEditMinScorePreset(s.min_score_preset ?? "custom")
+                            }
+                            if (s.response_timeout_hours != null) setEditTimeoutHours(Number(s.response_timeout_hours))
+                            if (s.max_retries != null) setEditMaxRetries(Number(s.max_retries))
+                            if (Object.keys(ch).length > 0) {
+                              setEditChannels({
+                                whatsapp: ch.whatsapp?.enabled ?? true,
+                                chat_web: ch.chat_web?.enabled ?? true,
+                                phone_pstn: ch.phone_pstn?.enabled ?? false,
+                                voice_web: ch.voice_web?.enabled ?? false,
+                              })
+                            }
+                            const sched = cfg?.scheduling ?? {}
+                            if (sched.auto_enabled != null) setEditSchedulingEnabled(Boolean(sched.auto_enabled))
+                            if (sched.interview_duration_min != null) setEditInterviewDuration(Number(sched.interview_duration_min))
+                            if (typeof window !== "undefined") {
+                              import("sonner").then(({ toast }) =>
+                                toast.success("Padrões da empresa carregados. Revise e salve.")
+                              )
+                            }
+                          } catch {}
+                        }}
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        Restaurar padrão
+                      </Button>
                     </div>
                   )}
                 </>
