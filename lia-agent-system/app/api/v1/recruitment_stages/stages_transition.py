@@ -44,6 +44,10 @@ from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from app.services.cache.context_cache import get_context_cache as _get_ctx_cache
+from app.api.v1.candidates._shared import REJECTION_STAGES  # P-GUARD SEV1-C3-01
+from app.shared.compliance.fairness_guard_middleware import (  # P-GUARD SEV1-C3-01
+    check_rejection_reason,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -330,6 +334,32 @@ company_id: str = Depends(require_company_id)):
                     )
             except Exception as pred_err:
                 logger.warning(f"[PIPELINE] SubStatus prediction failed (fallback to no sub-status): {pred_err}")
+
+        # P-GUARD (SEV1-C3-01): gate de fairness ANTES da escrita irreversível.
+        # Compliance: Lei 9.029/95 (Art. 1°), CLT Art. 373-A.
+        # Padrão canônico: ver candidates_crud.py:789.
+        _effective_sub = request.sub_status or predicted_sub_status or ""
+        _is_rejection = any(rej in (request.to_stage or "").lower() for rej in REJECTION_STAGES)
+        if _is_rejection and _effective_sub:
+            _fg = check_rejection_reason(
+                reason=_effective_sub,
+                candidate_name="",
+                company_id=company_id,
+            )
+            if _fg.is_blocked:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "fairness_blocked",
+                        "message": (
+                            _fg.blocked_result.educational_message
+                            if _fg.blocked_result
+                            else "Viés detectado no motivo da rejeição."
+                        ),
+                        "category": _fg.blocked_result.category if _fg.blocked_result else None,
+                        "compliance": ["Lei 9.029/95", "CLT Art. 373-A"],
+                    },
+                )
 
         stmt = (
             sa_update(VacancyCandidate)
