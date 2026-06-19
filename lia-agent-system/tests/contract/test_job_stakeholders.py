@@ -244,3 +244,37 @@ class TestNotifyStakeholdersReadsVacancy:
         source = inspect.getsource(CommunicationDomain._handle_notify_stakeholders)
         assert "vacancy_stakeholders" in source, "notify_stakeholders does not read vacancy stakeholders"
         assert "Fallback" in source or "fallback" in source.lower(), "notify_stakeholders has no fallback path"
+
+
+class TestNewStakeholderRoles:
+    """Novos roles canonicos devem ser aceitos; roles legados continuam validos."""
+
+    def test_new_roles_accepted(self):
+        from app.api.v1.job_vacancies._shared import JobVacancyCreate
+        for role in ("ta_lead", "area_manager", "area_director", "technical_interviewer"):
+            obj = JobVacancyCreate(
+                title="Dev",
+                stakeholders=[{"name": "Ana", "email": "ana@co.com", "role": role}],
+            )
+            assert obj.stakeholders[0]["role"] == role, f"role {role} nao foi aceito"
+
+    def test_legacy_roles_still_valid(self):
+        from app.api.v1.job_vacancies._shared import JobVacancyCreate
+        for role in ("dept_head", "interviewer"):
+            obj = JobVacancyCreate(
+                title="Dev",
+                stakeholders=[{"name": "Ana", "email": "ana@co.com", "role": role}],
+            )
+            assert obj.stakeholders[0]["role"] == role, f"role legado {role} nao deve ser rejeitado (backward compat)"
+
+    def test_total_valid_roles_count(self):
+        from app.api.v1.job_vacancies._shared import _VALID_STAKEHOLDER_ROLES
+        expected = {
+            "ta_lead", "area_manager", "area_director", "technical_interviewer",
+            "hr_bp", "dept_head", "committee_member", "interviewer", "other",
+        }
+        assert expected == _VALID_STAKEHOLDER_ROLES, (
+            f"Set de roles divergiu do esperado. "
+            f"Adicionados: {_VALID_STAKEHOLDER_ROLES - expected}, "
+            f"Faltando: {expected - _VALID_STAKEHOLDER_ROLES}"
+        )

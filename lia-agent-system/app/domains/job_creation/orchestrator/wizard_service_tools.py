@@ -2704,7 +2704,10 @@ INFER_DEPARTMENT = WizardTool(
 # ---------------------------------------------------------------------------
 
 _EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-_VALID_STAKEHOLDER_ROLES = {"hr_bp", "dept_head", "committee_member", "interviewer", "other"}
+_VALID_STAKEHOLDER_ROLES = {
+    "ta_lead", "area_manager", "area_director", "technical_interviewer",
+    "hr_bp", "dept_head", "committee_member", "interviewer", "other",
+}
 
 
 def _handle_set_stakeholders(
@@ -2767,6 +2770,10 @@ def _handle_set_stakeholders(
 
     # Build confirmation message
     role_labels = {
+        "ta_lead": "Lider de Recrutamento",
+        "area_manager": "Gestor da Area",
+        "area_director": "Diretor da Area",
+        "technical_interviewer": "Entrevistador Tecnico",
         "hr_bp": "HRBP",
         "dept_head": "Lider de Area",
         "committee_member": "Comite",
@@ -2809,8 +2816,8 @@ SET_STAKEHOLDERS = WizardTool(
                         "email": {"type": "string", "description": "Email profissional"},
                         "role": {
                             "type": "string",
-                            "enum": ["hr_bp", "dept_head", "committee_member", "interviewer", "other"],
-                            "description": "Papel: hr_bp (HRBP), dept_head (Lider de Area), committee_member (Comite), interviewer (Entrevistador), other (Outro)",
+                            "enum": ["ta_lead", "area_manager", "area_director", "technical_interviewer", "hr_bp", "dept_head", "committee_member", "interviewer", "other"],
+                            "description": "Papel: ta_lead (Lider de Recrutamento), area_manager (Gestor da Area), area_director (Diretor da Area), technical_interviewer (Entrevistador Tecnico), hr_bp (HRBP), committee_member (Comite), other (Outro)",
                         },
                     },
                     "required": ["name", "email"],

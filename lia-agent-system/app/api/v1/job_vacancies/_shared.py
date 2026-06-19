@@ -216,7 +216,12 @@ def generate_slug(title: str, company_name: str = "") -> str:
 import re as _re_mod
 
 _EMAIL_RE = _re_mod.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-_VALID_STAKEHOLDER_ROLES = {"hr_bp", "dept_head", "committee_member", "interviewer", "other"}
+_VALID_STAKEHOLDER_ROLES = {
+    # roles novos (canonical)
+    "ta_lead", "area_manager", "area_director", "technical_interviewer",
+    # roles legados mantidos como alias (backward compat)
+    "hr_bp", "dept_head", "committee_member", "interviewer", "other",
+}
 
 
 def _validate_stakeholders_list(v: list[dict] | None) -> list[dict] | None:

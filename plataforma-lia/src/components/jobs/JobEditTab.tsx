@@ -325,11 +325,16 @@ export function JobEditTab({
                                   }}
                                   disabled={!isEditing}
                                 >
+                                  <option value="ta_lead">Lider de Recrutamento</option>
                                   <option value="hr_bp">HRBP</option>
-                                  <option value="dept_head">Lider de Area</option>
+                                  <option value="area_manager">Gestor da Area</option>
+                                  <option value="area_director">Diretor da Area</option>
+                                  <option value="technical_interviewer">Entrevistador Tecnico</option>
                                   <option value="committee_member">Membro do Comite</option>
-                                  <option value="interviewer">Entrevistador</option>
                                   <option value="other">Outro</option>
+                                  {/* legados — mantidos para backward compat */}
+                                  <option value="dept_head" style={{display:"none"}}>Lider de Area</option>
+                                  <option value="interviewer" style={{display:"none"}}>Entrevistador</option>
                                 </select>
                               </div>
                             </div>
