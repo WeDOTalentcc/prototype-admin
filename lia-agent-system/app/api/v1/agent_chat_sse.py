@@ -430,7 +430,7 @@ company_id: str = Depends(require_company_id)):
         from app.core.redis_client import get_redis
         _redis = await get_redis()
         if _redis:
-            _already = _redis.get(_dedup_key)
+            _already = await _redis.get(_dedup_key)
             if _already and _is_reconnect:
                 logger.info(
                     "[SSE-dedup] Reconnect detected session=%s last_event_id=%s — skipping re-processing",
@@ -462,7 +462,7 @@ company_id: str = Depends(require_company_id)):
                     session_id,
                 )
             else:
-                _redis.set(_dedup_key, "1", ex=120, nx=True)
+                await _redis.set(_dedup_key, "1", ex=120, nx=True)
     except Exception as _dedup_exc:
         logger.debug("[SSE-dedup] Redis dedup check failed (fail-open): %s", _dedup_exc)
     # ── end dedup guard ─────────────────────────────────────────────

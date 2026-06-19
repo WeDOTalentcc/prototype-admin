@@ -514,6 +514,10 @@ export function useChatTransport(
         sseAbortRef.current.abort()
       }
 
+      // Reset Last-Event-ID on each new message so new turns are not mis-identified
+      // as reconnects of the previous turn by the server-side dedup guard.
+      lastEventIdRef.current = ""
+
       const controller = new AbortController()
       sseAbortRef.current = controller
 
@@ -559,7 +563,7 @@ export function useChatTransport(
             return
           }
         }
-        if (event.type === "message" || event.type === "clarification" || event.type === "error") {
+        if (event.type === "message" || event.type === "clarification" || event.type === "error" || event.type === "done") {
           receivedTerminal = true
         }
         // GAP-09-002: mark turn as completed on terminal event (prevents re-processing on reconnect)
