@@ -780,8 +780,19 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     # R1-D2: per-candidate loop via pipeline_stage_service (fairness gate + audit + history).
     # Raw SQL bypass removed on 2026-06-19. SEV1 P-GUARD closed.
     # SEV1 P-GUARD closed: target_stage now passes through fairness gate on every transition.
+    MAX_BULK_CANDIDATES = 50  # N sequential service calls — cap to avoid unbounded latency
+    if len(candidate_ids) > MAX_BULK_CANDIDATES:
+        return {
+            "success": False,
+            "data": {},
+            "message": (
+                f"Limite de {MAX_BULK_CANDIDATES} candidatos por operacao bulk. "
+                f"Enviados: {len(candidate_ids)}. Divida em lotes menores."
+            ),
+        }
+
     moved = 0
-    _failed_ids: set[str] = set()
+    _failed_ids: dict[str, str] = {}  # id -> reason text (educational_message or error context)
     for cid in candidate_ids:
         try:
             await pipeline_stage_service.transition_candidate(
@@ -794,24 +805,23 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
             )
             moved += 1
         except FairnessBlockedError as _fb:
-            # pii-logs ok: nome de entidade/config (nao PII per LGPD Art.5 V - pessoa natural)
+            # P-FAILLOUD: propagate educational_message verbatim so recruiter sees WHY
             logger.warning(f"[kanban_tools] batch_move FAIRNESS blocked cid={cid}: {_fb}")
-            _failed_ids.add(str(cid))
+            _failed_ids[str(cid)] = _fb.message or "Rejeicao bloqueada por criterio de fairness (Lei 9.029/95)"
         except PermissionError as _pe:
             logger.warning(f"[kanban_tools] batch_move PERMISSION denied cid={cid}: {_pe}")
-            _failed_ids.add(str(cid))
+            _failed_ids[str(cid)] = "Sem permissao para mover este candidato"
         except Exception as _ex:
             logger.warning(f"[kanban_tools] batch_move partial failure cid={cid}: {_ex}")
-            _failed_ids.add(str(cid))
+            _failed_ids[str(cid)] = f"Erro interno: {type(_ex).__name__} — {str(_ex)[:80]}"
     # F5 bulk_execute producer: emite ui_action para FE abrir BulkResultReport.
-    # Per-candidate tracking: ok=True only if not in _failed_ids.
     _name_map = await _fetch_candidate_name_map(candidate_ids, company_id)
     _ui_results = [
         {
             "id": cid,
             "name": _name_map.get(cid, cid),
             "ok": cid not in _failed_ids,
-            **({"reason": "Bloqueado (fairness/permissao)"} if cid in _failed_ids else {}),
+            **({"reason": _failed_ids[cid]} if cid in _failed_ids else {}),
         }
         for cid in candidate_ids
     ]

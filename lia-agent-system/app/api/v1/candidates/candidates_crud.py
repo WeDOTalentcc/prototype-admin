@@ -806,29 +806,43 @@ async def update_candidate_stage(
                 )
 
         previous_stage = vacancy_candidate.stage or "unknown"
-        lia_score_at_transition = vacancy_candidate.lia_score
-        vacancy_candidate.stage = stage_data.stage
-        # Task #1306: also persist the structural stage link so the SLA detector
-        # can join by id instead of fragile name matching.
-        from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
-        vacancy_candidate.recruitment_stage_id = await resolve_recruitment_stage_id(
-            vc_repo.db, str(vacancy_candidate.company_id), stage_data.stage
+        lia_score_at_transition = vacancy_candidate.lia_score  # capture before service write
+
+        # R1 P-SSOT: delegate write + chain 1-6 to canonical service.
+        # Service handles: idempotency + FSM validation + fairness-on-rejection +
+        # CandidateStageHistory + STAGE_CHANGED + AuditService.log_decision + automation hooks.
+        # Endpoint keeps: LGPD consent erasure, calibration feedback, kanban broadcast.
+        # Lazy import to avoid circular dependency (pipeline_stage_service → _shared → candidates_crud)
+        from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+            pipeline_stage_service,
+            FairnessBlockedError,
         )
-        if is_rejection:
-            vacancy_candidate.rejected_by_human = True
-            vacancy_candidate.human_reviewer_id = stage_data.user_id
-        if stage_data.sub_status:
-            from app.services.state_machines.candidate_fsm import validate_stage_transition
-            validate_stage_transition(
-                from_stage=vacancy_candidate.status,
-                to_stage=stage_data.sub_status,
+        try:
+            await pipeline_stage_service.transition_candidate(
+                vacancy_candidate_id=str(vacancy_candidate.id),
+                to_stage=stage_data.stage,
+                to_sub_status=stage_data.sub_status,
+                triggered_by="patch_stage_endpoint",
+                triggered_by_user_id=str(current_user.id) if current_user else None,
+                source_agent=None,
+                reason=stage_data.sub_status or stage_data.stage,
+                context={
+                    "company_id": str(company_id),
+                    "human_reviewer_id": str(stage_data.user_id) if is_rejection and stage_data.user_id else None,
+                },
             )
-            vacancy_candidate.status = stage_data.sub_status
-        vacancy_candidate.updated_at = datetime.utcnow()
-        vacancy_candidate = await vc_repo.update(vacancy_candidate)
+        except FairnessBlockedError as _fb:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "fairness_blocked",
+                    "message": _fb.message,
+                    "compliance": ["Lei 9.029/95", "CLT Art. 373-A"],
+                },
+            )
         logger.info(
-            f"Candidate {candidate_id} stage updated for vacancy {vacancy_candidate.vacancy_id}: "
-            f"{previous_stage} -> {stage_data.stage}"
+            "Candidate %s stage updated via canonical service: %s -> %s",
+            candidate_id, previous_stage, stage_data.stage,
         )
 
         # LGPD Art. 18 II — se candidato rejeitado tem consent revocation pendente, disparar erasure
@@ -931,41 +945,12 @@ async def update_candidate_stage(
             except Exception as calibration_error:
                 logger.warning(f"Failed to record implicit feedback: {calibration_error}")
 
-        # Agent Studio Fase 2.5 — Onda C1.3: emite stage_changed no
-        # platform.events para o motor event-driven. Cobre os trigger_modes
-        # on_enter_stage / on_exit_stage / on_stage_change (o consumer C1.2
-        # faz o match from_stage/to_stage). on_stuck_in_stage e detectado por
-        # scheduler, fora do escopo deste evento.
-        # REGRA 4: fail-soft mas LOUD. Multi-tenancy: company_id vem de
-        # vacancy_candidate.company_id (row do tenant), NUNCA do request.
-        if previous_stage != vacancy_candidate.stage:
-            try:
-                from lia_events.schemas import StageChangedEvent
-                from app.shared.messaging.events_outbox_service import get_events_outbox_service
-                from lia_config.database import AsyncSessionLocal
-                _evt_company_id = str(getattr(vacancy_candidate, "company_id", "") or company_id)
-                _evt = StageChangedEvent(
-                    company_id=_evt_company_id,
-                    payload={
-                        "candidate_id": str(candidate.id),
-                        "vacancy_id": str(vacancy_candidate.vacancy_id),
-                        "from_stage": previous_stage,
-                        "to_stage": vacancy_candidate.stage,
-                    },
-                    source_api="lia-agent-system",
-                )
-                async with AsyncSessionLocal() as _evt_db:
-                    await get_events_outbox_service().publish_via_outbox(_evt, _evt_db)
-                    await _evt_db.commit()
-            except Exception as _evt_err:  # noqa: BLE001
-                logger.error(
-                    "[C1.3] publish stage_changed failed (transicao prossegue): %s",
-                    _evt_err,
-                    exc_info=True,
-                )
+        # NOTE: StageChangedEvent (C1.3) now emitted by pipeline_stage_service (R1 chain step 4).
+        # Removed from endpoint layer to prevent double-emit after P-SSOT delegation (2026-06-19).
 
         # GAP-09-001: Real-time kanban broadcast via Redis pub/sub → SSE
-        if previous_stage != vacancy_candidate.stage:
+        # Note: use stage_data.stage (not vacancy_candidate.stage) — vc object is stale after service delegation.
+        if previous_stage != stage_data.stage:
             try:
                 from app.api.v1.kanban_broadcast import publish_candidate_stage_change
                 background_tasks.add_task(
@@ -975,8 +960,8 @@ async def update_candidate_stage(
                     candidate_name=candidate.name or "",
                     vacancy_id=str(vacancy_candidate.vacancy_id),
                     from_stage=previous_stage,
-                    to_stage=vacancy_candidate.stage,
-                    sub_status=vacancy_candidate.status,
+                    to_stage=stage_data.stage,
+                    sub_status=stage_data.sub_status or "default",
                     moved_by_user_id=str(current_user.id) if current_user else "",
                 )
             except Exception as _bc_err:
@@ -985,11 +970,11 @@ async def update_candidate_stage(
         return {
             "id": str(candidate.id),
             "name": candidate.name,
-            "stage": vacancy_candidate.stage,
+            "stage": stage_data.stage,
             "previous_stage": previous_stage,
-            "sub_status": vacancy_candidate.status,
-            "vacancy_id": vacancy_candidate.vacancy_id,
-            "updated_at": vacancy_candidate.updated_at.isoformat() if vacancy_candidate.updated_at else None,
+            "sub_status": stage_data.sub_status,
+            "vacancy_id": str(vacancy_candidate.vacancy_id),
+            "updated_at": datetime.utcnow().isoformat(),
             "message": "Candidate stage updated successfully",
             "feedback_recorded": feedback_action if feedback_action != "neutral" else None,
         }

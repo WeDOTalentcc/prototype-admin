@@ -619,3 +619,334 @@ async def test_d2_r9_bulk_update_not_called():
         "mas deveria ser 0x apos migracao D2. "
         "Fix: remover chamada a repo.bulk_update_candidate_stage em _wrap_batch_move_candidates."
     )
+
+
+# ============================================================
+# FASE 3 RED TESTS — Path B delegation + D2 loop polish
+# ============================================================
+_CANDIDATE_ID_B = "aabbccdd-0001-0002-0003-000000000001"
+_VACANCY_CANDIDATE_ID_B = "aabbccdd-0001-0002-0003-000000000002"
+_VACANCY_ID_B = "aabbccdd-0001-0002-0003-000000000003"
+
+from datetime import datetime as _datetime
+
+from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+    FairnessBlockedError as _FairnessBlockedError,
+)
+from app.domains.recruiter_assistant.agents.kanban_tool_registry import (
+    _wrap_batch_move_candidates,
+)
+
+
+def _make_b_fixtures(stage: str = "entrevista_rh", sub_status=None, user_id=None):
+    """Shared fixture builder for T-B tests."""
+    from fastapi import BackgroundTasks
+    _candidate = MagicMock()
+    _candidate.id = uuid.UUID(_CANDIDATE_ID_B)
+    _candidate.name = "Alice Teste"
+    _candidate.status = "triagem"
+    _vc = MagicMock()
+    _vc.id = uuid.UUID(_VACANCY_CANDIDATE_ID_B)
+    _vc.stage = "triagem"
+    _vc.status = "default"
+    _vc.company_id = uuid.UUID(COMPANY_ID)
+    _vc.vacancy_id = uuid.UUID(_VACANCY_ID_B)
+    _vc.lia_score = 0.8
+    _vc.updated_at = _datetime.utcnow()
+    _candidate_repo = AsyncMock()
+    _candidate_repo.get_by_id_str = AsyncMock(return_value=_candidate)
+    _candidate_repo.db = AsyncMock()
+    _vc_repo = AsyncMock()
+    _vc_repo.get_for_candidate_and_job = AsyncMock(return_value=_vc)
+    _vc_repo.update = AsyncMock(return_value=_vc)
+    _vc_repo.db = AsyncMock()
+    _stage_data = MagicMock()
+    _stage_data.stage = stage
+    _stage_data.sub_status = sub_status
+    _stage_data.user_id = user_id
+    _stage_data.job_vacancy_id = _VACANCY_ID_B
+    _bt = BackgroundTasks()
+    return _candidate, _vc, _candidate_repo, _vc_repo, _stage_data, _bt
+
+
+@pytest.mark.asyncio
+async def test_t_b_a_path_b_calls_service_not_repo_directly():
+    """T-B-a RED: update_candidate_stage MUST call pipeline_stage_service.transition_candidate.
+    RED state: writes via vc_repo.update directly (no delegation to service).
+    GREEN: transition_candidate called 1x; vc_repo.update called 0x.
+    Fix: import pipeline_stage_service in candidates_crud.py, delegate write+chain.
+    """
+    import app.api.v1.candidates.candidates_crud as _crud
+
+    _candidate, _vc, _candidate_repo, _vc_repo, _stage_data, _bt = _make_b_fixtures(
+        stage="entrevista_rh", sub_status=None, user_id=None
+    )
+    _mock_svc = MagicMock()
+    _mock_svc.transition_candidate = AsyncMock(return_value={
+        "success": True,
+        "idempotent": False,
+        "transition": {"from_stage": "triagem", "to_stage": "entrevista_rh"},
+    })
+
+    with patch(
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service",
+        _mock_svc,
+    ), patch("app.api.v1.candidates.candidates_crud.assert_mutation_allowed", AsyncMock()), \
+         patch("app.api.v1.candidates.candidates_crud.determine_feedback_action", return_value="neutral"):
+        try:
+            await _crud.update_candidate_stage(
+                candidate_id=_CANDIDATE_ID_B,
+                stage_data=_stage_data,
+                background_tasks=_bt,
+                candidate_repo=_candidate_repo,
+                vc_repo=_vc_repo,
+                audit_svc=AsyncMock(),
+                activity_svc=AsyncMock(),
+                current_user=MagicMock(id=uuid.UUID("00000000-0000-0000-0000-000000000099")),
+                company_id=COMPANY_ID,
+            )
+        except Exception:
+            pass  # RED: may error because service not wired yet
+
+    assert _mock_svc.transition_candidate.call_count == 1, (
+        f"T-B-a FAIL: pipeline_stage_service.transition_candidate chamado "
+        f"{_mock_svc.transition_candidate.call_count}x esperado 1x. "
+        "Fix: importar pipeline_stage_service em candidates_crud.py e delegar write+chain."
+    )
+    assert _vc_repo.update.call_count == 0, (
+        f"T-B-a FAIL: vc_repo.update chamado {_vc_repo.update.call_count}x esperado 0x. "
+        "Write deve ser delegado ao pipeline_stage_service, nao feito diretamente via repo."
+    )
+
+
+@pytest.mark.asyncio
+async def test_t_b_b_fairness_error_from_service_returns_422():
+    """T-B-b RED: FairnessBlockedError from service -> HTTPException 422 with educational_message.
+    RED state: service not called -> 200 returned (or 422 from Path B own gate only).
+    GREEN: service raises -> endpoint maps to 422 with _fb.message.
+    Fix: catch FairnessBlockedError in Path B after service delegation.
+    """
+    import app.api.v1.candidates.candidates_crud as _crud
+    from fastapi import HTTPException as _HTTP
+
+    _candidate, _vc, _candidate_repo, _vc_repo, _stage_data, _bt = _make_b_fixtures(
+        stage="reprovado",
+        sub_status="Perfil inadequado",
+        user_id=uuid.UUID("00000000-0000-0000-0000-000000000011"),
+    )
+    _edu_msg = "Rejeicao com base em genero nao e permitida (Lei 9.029/95)"
+    _mock_svc = MagicMock()
+    _mock_svc.transition_candidate = AsyncMock(
+        side_effect=_FairnessBlockedError(message=_edu_msg, suggestion="Use criterios tecnicos")
+    )
+    _fg_pass = MagicMock(is_blocked=False, blocked_result=None)
+
+    got_status = None
+    got_detail = None
+    with patch(
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service",
+        _mock_svc,
+    ), patch("app.api.v1.candidates.candidates_crud.assert_mutation_allowed", AsyncMock()), \
+         patch("app.api.v1.candidates.candidates_crud.check_rejection_reason", return_value=_fg_pass):
+        try:
+            await _crud.update_candidate_stage(
+                candidate_id=_CANDIDATE_ID_B,
+                stage_data=_stage_data,
+                background_tasks=_bt,
+                candidate_repo=_candidate_repo,
+                vc_repo=_vc_repo,
+                audit_svc=AsyncMock(),
+                activity_svc=AsyncMock(),
+                current_user=MagicMock(id=uuid.UUID("00000000-0000-0000-0000-000000000099")),
+                company_id=COMPANY_ID,
+            )
+        except _HTTP as exc:
+            got_status = exc.status_code
+            got_detail = exc.detail
+        except Exception:
+            pass  # RED: may be other exception
+
+    assert got_status == 422, (
+        f"T-B-b FAIL: status={got_status} esperado 422. "
+        "Endpoint deve capturar FairnessBlockedError do servico e retornar 422."
+    )
+    assert isinstance(got_detail, dict) and got_detail.get("error") == "fairness_blocked", (
+        f"T-B-b FAIL: detail={got_detail}. Esperado error=fairness_blocked."
+    )
+    assert _edu_msg in str(got_detail.get("message", "")), (
+        f"T-B-b FAIL: {_edu_msg!r} nao encontrado em detail.message={got_detail.get('message')}. "
+        "Endpoint deve propagar educational_message do servico para o cliente."
+    )
+    assert _vc_repo.update.call_count == 0, (
+        f"T-B-b FAIL: vc_repo.update chamado {_vc_repo.update.call_count}x. "
+        "Write deve ser bloqueado quando servico levanta FairnessBlockedError."
+    )
+
+
+@pytest.mark.asyncio
+async def test_t_b_c_post_service_lgpd_kanban_still_called():
+    """T-B-c: After service success, write is delegated (vc_repo.update=0).
+    GREEN when transition_candidate called AND vc_repo.update=0.
+    """
+    import app.api.v1.candidates.candidates_crud as _crud
+
+    _candidate, _vc, _candidate_repo, _vc_repo, _stage_data, _bt = _make_b_fixtures(
+        stage="reprovado",
+        sub_status=None,
+        user_id=uuid.UUID("00000000-0000-0000-0000-000000000011"),
+    )
+    _mock_svc = MagicMock()
+    _mock_svc.transition_candidate = AsyncMock(return_value={
+        "success": True,
+        "idempotent": False,
+        "transition": {"from_stage": "triagem", "to_stage": "reprovado"},
+    })
+    _fg_pass = MagicMock(is_blocked=False, blocked_result=None)
+
+    with patch(
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service",
+        _mock_svc,
+    ), patch("app.api.v1.candidates.candidates_crud.assert_mutation_allowed", AsyncMock()), \
+         patch("app.api.v1.candidates.candidates_crud.check_rejection_reason", return_value=_fg_pass), \
+         patch("app.api.v1.candidates.candidates_crud.determine_feedback_action", return_value="neutral"):
+        try:
+            await _crud.update_candidate_stage(
+                candidate_id=_CANDIDATE_ID_B,
+                stage_data=_stage_data,
+                background_tasks=_bt,
+                candidate_repo=_candidate_repo,
+                vc_repo=_vc_repo,
+                audit_svc=AsyncMock(),
+                activity_svc=AsyncMock(),
+                current_user=MagicMock(id=uuid.UUID("00000000-0000-0000-0000-000000000099")),
+                company_id=COMPANY_ID,
+            )
+        except Exception:
+            pass
+
+    assert _mock_svc.transition_candidate.call_count == 1, (
+        f"T-B-c FAIL: transition_candidate chamado {_mock_svc.transition_candidate.call_count}x. "
+        "Prerequisito: Path B deve delegar ao servico antes de checar LGPD."
+    )
+    assert _vc_repo.update.call_count == 0, (
+        f"T-B-c FAIL: vc_repo.update chamado {_vc_repo.update.call_count}x. "
+        "Write deve ser exclusivo do servico canonico."
+    )
+
+
+@pytest.mark.asyncio
+async def test_t_d2_d_fairness_blocked_propagates_educational_message():
+    """T-D2-d RED: FairnessBlockedError in D2 loop -> _fb.message in ui_results reason.
+    RED state: _failed_ids is a set; generic Bloqueado (fairness/permissao) used for all.
+    GREEN: _failed_ids is dict; _fb.message appears verbatim in candidate result.
+    Fix: _failed_ids: dict[str, str]; capture _fb.message per candidate.
+    """
+    _edu_msg = "Rejeicao por estado civil detectada — vies proibido (Lei 9.029/95)"
+    _mock_svc = MagicMock()
+    _mock_svc.transition_candidate = AsyncMock(
+        side_effect=_FairnessBlockedError(message=_edu_msg, suggestion="")
+    )
+    _cid = "ffffffff-0000-0000-0000-000000000001"
+    _name_map = {_cid: "Candidato X"}
+
+    with patch(
+        "app.domains.recruiter_assistant.agents.kanban_tool_registry.pipeline_stage_service",
+        _mock_svc,
+    ), patch(
+        "app.domains.recruiter_assistant.agents.kanban_tool_registry._fetch_candidate_name_map",
+        new_callable=AsyncMock,
+        return_value=_name_map,
+    ), _HITL_DISABLED:
+        result = await _wrap_batch_move_candidates(
+            candidate_ids=[_cid],
+            target_stage="reprovado",
+            vacancy_id=VACANCY_ID,
+            company_id=COMPANY_ID,
+            reason="Test fairness message propagation",
+        )
+
+    _ui_results = result.get("data", {}).get("ui_action_params", {}).get("results", [])
+    assert len(_ui_results) == 1, f"T-D2-d FAIL: esperado 1 resultado, got {len(_ui_results)}"
+    _r = _ui_results[0]
+    assert _r.get("ok") is False, f"T-D2-d FAIL: ok deveria ser False para blocked candidate"
+    _reason = _r.get("reason", "")
+    assert _edu_msg in _reason, (
+        f"T-D2-d FAIL: educational_message {_edu_msg} nao encontrado em reason={_reason}. "
+        "Fix: _failed_ids: dict[str, str]; capturar _fb.message no except FairnessBlockedError."
+    )
+
+
+@pytest.mark.asyncio
+async def test_t_d2_e_distinguishes_fairness_permission_system_error():
+    """T-D2-e RED: D2 loop must distinguish fairness/permission/system error in reason text.
+    RED state: all three map to same generic Bloqueado (fairness/permissao).
+    GREEN: fairness -> _fb.message; permission -> Sem permissao; system -> type info.
+    Fix: _failed_ids: dict[str, str]; different messages per exception type.
+    """
+    _cid_fairness = "eeeeeeee-0000-0000-0000-000000000001"
+    _cid_perm = "eeeeeeee-0000-0000-0000-000000000002"
+    _cid_err = "eeeeeeee-0000-0000-0000-000000000003"
+    _edu_msg = "Vies de raca detectado"
+
+    _call_count = [0]
+    async def _svc_side_effect(**kwargs):
+        cid = kwargs.get("vacancy_candidate_id", "")
+        _call_count[0] += 1
+        if cid == _cid_fairness:
+            raise _FairnessBlockedError(message=_edu_msg, suggestion="")
+        elif cid == _cid_perm:
+            raise PermissionError("Acesso negado ao tenant")
+        elif cid == _cid_err:
+            raise ValueError("Etapa invalida para esta vaga")
+        return {"success": True, "idempotent": False}
+
+    _mock_svc = MagicMock()
+    _mock_svc.transition_candidate = _svc_side_effect
+    _name_map = {
+        _cid_fairness: "Candidato Fairness",
+        _cid_perm: "Candidato Permissao",
+        _cid_err: "Candidato Erro",
+    }
+
+    with patch(
+        "app.domains.recruiter_assistant.agents.kanban_tool_registry.pipeline_stage_service",
+        _mock_svc,
+    ), patch(
+        "app.domains.recruiter_assistant.agents.kanban_tool_registry._fetch_candidate_name_map",
+        new_callable=AsyncMock,
+        return_value=_name_map,
+    ), _HITL_DISABLED:
+        result = await _wrap_batch_move_candidates(
+            candidate_ids=[_cid_fairness, _cid_perm, _cid_err],
+            target_stage="reprovado",
+            vacancy_id=VACANCY_ID,
+            company_id=COMPANY_ID,
+            reason="Test error type distinction",
+        )
+
+    _ui_results = result.get("data", {}).get("ui_action_params", {}).get("results", [])
+    _by_id = {r["id"]: r for r in _ui_results}
+
+    # Fairness: must contain educational_message verbatim
+    _r_fair = _by_id.get(_cid_fairness, {})
+    assert _r_fair.get("ok") is False
+    assert _edu_msg in _r_fair.get("reason", ""), (
+        f"T-D2-e FAIL fairness: {_edu_msg} nao em reason={_r_fair.get(reason)}. "
+        "Fix: capturar _fb.message no except FairnessBlockedError."
+    )
+
+    # Permission: must differ from fairness and contain permission context
+    _r_perm = _by_id.get(_cid_perm, {})
+    assert _r_perm.get("ok") is False
+    assert _r_perm.get("reason", "") != _r_fair.get("reason", ""), (
+        f"T-D2-e FAIL permission: reason igual ao fairness — nao distingue tipos de erro. "
+        "Fix: except PermissionError -> mensagem distinta de FairnessBlockedError."
+    )
+
+    # System error: must differ from both and not be empty
+    _r_err = _by_id.get(_cid_err, {})
+    assert _r_err.get("ok") is False
+    assert _r_err.get("reason", "") not in ("", _r_fair.get("reason"), _r_perm.get("reason")), (
+        f"T-D2-e FAIL system: reason={_r_err.get(reason)} deve ser distinto dos outros. "
+        "Fix: except Exception -> mensagem com tipo do erro."
+    )

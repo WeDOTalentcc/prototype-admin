@@ -268,6 +268,17 @@ class PipelineStageService:
             vacancy_candidate.updated_at = datetime.utcnow()
             if from_stage != to_stage:
                 vacancy_candidate.stage_entered_at = datetime.utcnow()
+
+            # Human reviewer annotation: delegated from endpoint layer via context (R1 Path-B)
+            if context and context.get("human_reviewer_id"):
+                try:
+                    vacancy_candidate.human_reviewer_id = uuid.UUID(str(context["human_reviewer_id"]))
+                    vacancy_candidate.rejected_by_human = True
+                except (ValueError, AttributeError):
+                    logger.warning(
+                        "[pipeline_stage] invalid human_reviewer_id in context: %s",
+                        context.get("human_reviewer_id"),
+                    )
             
             from_stage_obj = next((s for s in stages if s.name == from_stage), None) if from_stage else None
             from_sub_status_obj = None
