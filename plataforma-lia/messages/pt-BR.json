@@ -2781,7 +2781,9 @@
       "sectionRoadmap": "Em breve",
       "roadmapSubtitle": "Recursos da plataforma em desenvolvimento",
       "roadmapBadge": "Em breve",
-      "activate": "Ativar"
+      "activate": "Ativar",
+      "uninstallSuccess": "Agente desinstalado com sucesso",
+      "uninstallError": "Erro ao desinstalar agente"
     },
     "calibration": {
       "completed": "Calibração concluída",

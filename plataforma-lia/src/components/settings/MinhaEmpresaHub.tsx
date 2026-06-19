@@ -217,7 +217,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
               <RefreshCw className="w-4 h-4 text-lia-text-secondary" />
             </button>
             <span className={`${textStyles.metricSmall} flex-shrink-0`}>
-              {t("configuredSuffix", { progress: overallProgress })}
+              {t("configuredSuffix", { progress: String(Math.round(overallProgress)) })}
             </span>
             {overallProgress >= 80 && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success border border-status-success/30 flex-shrink-0">
@@ -242,7 +242,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
         >
           <div className="flex items-center justify-between mb-1.5">
             <p className={`${textStyles.captionBold} text-lia-text-primary`}>
-              {t("profileCompletePending", { progress: overallProgress, count: totalPendingFields })}
+              {t("profileCompletePending", { progress: String(Math.round(overallProgress)), count: totalPendingFields })}
             </p>
             <span className="text-micro text-lia-text-tertiary">
               {t("sectionsToReview", { count: pendingSections.length })}

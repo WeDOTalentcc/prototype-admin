@@ -2781,7 +2781,9 @@
       "sectionRoadmap": "Coming soon",
       "roadmapSubtitle": "Platform features in development",
       "roadmapBadge": "Coming soon",
-      "activate": "Activate"
+      "activate": "Activate",
+      "uninstallSuccess": "Agent uninstalled successfully",
+      "uninstallError": "Error uninstalling agent"
     },
     "calibration": {
       "completed": "Calibration completed",
