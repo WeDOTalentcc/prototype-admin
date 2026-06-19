@@ -413,3 +413,209 @@ def test_r6_candidates_crud_imports_fairness():
         "R6-FAIL: candidates_crud.py não importa check_rejection_reason — "
         "Path B fairness gate ausente."
     )
+
+# ─── Tests D2 (kanban _wrap_batch_move_candidates → pipeline_stage_service) ───
+
+"""
+D2 tests verify that _wrap_batch_move_candidates in kanban_tool_registry.py
+calls pipeline_stage_service.transition_candidate per-candidate instead of
+bulk_update_candidate_stage (the raw-SQL repository bypass, SEV1 P-GUARD).
+
+RED: These tests FAIL before the migration (bulk_update called, service not called).
+GREEN: After migration, service is called per-candidate, fairness/audit enforced.
+
+Note: tests mock hitl_gate_enabled→False to disable the HITL dormancy gate so
+the function body is exercised regardless of LIA_HITL_GATE env var.
+"""
+
+import pytest
+from unittest.mock import AsyncMock, MagicMock, patch, call
+
+# Shared HITL bypass: disables the dormancy gate so tests reach the loop body
+_HITL_DISABLED = patch(
+    "app.shared.hitl.hitl_approval_context.hitl_gate_enabled",
+    return_value=False,
+)
+
+
+# ─── D2 Test 7: service called per-candidate (RED until migration) ──────────────
+
+@pytest.mark.asyncio
+async def test_d2_r7_service_called_per_candidate():
+    """
+    RED → GREEN: _wrap_batch_move_candidates must call
+    pipeline_stage_service.transition_candidate once per candidate_id,
+    NOT bulk_update_candidate_stage.
+
+    Before migration: service NOT called → test FAILS.
+    After migration:  service called len(candidate_ids) times → test PASSES.
+    """
+    from app.domains.recruiter_assistant.agents.kanban_tool_registry import (
+        _wrap_batch_move_candidates,
+    )
+    from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+        FairnessBlockedError,
+    )
+
+    candidate_ids = [
+        "eeeeeeee-0000-0000-0000-000000000011",
+        "ffffffff-0000-0000-0000-000000000022",
+        "00000000-aaaa-0000-0000-000000000033",
+    ]
+
+    mock_svc = MagicMock()
+    mock_svc.transition_candidate = AsyncMock(return_value={"ok": True, "to_stage": "entrevista_rh"})
+
+    with _HITL_DISABLED, patch(
+        "app.domains.recruiter_assistant.agents.kanban_tool_registry.pipeline_stage_service",
+        mock_svc,
+    ), patch(
+        "app.domains.recruiter_assistant.agents.kanban_tool_registry._fetch_candidate_name_map",
+        new_callable=AsyncMock,
+        return_value={cid: f"Candidate {i}" for i, cid in enumerate(candidate_ids)},
+    ):
+        result = await _wrap_batch_move_candidates(
+            candidate_ids=candidate_ids,
+            target_stage="entrevista_rh",
+            vacancy_id=VACANCY_ID,
+            company_id=COMPANY_ID,
+            reason="Batch move test D2",
+        )
+
+    # D2-R7: service must be called once per candidate
+    assert mock_svc.transition_candidate.call_count == len(candidate_ids), (
+        f"D2-R7-FAIL: transition_candidate chamado {mock_svc.transition_candidate.call_count}x "
+        f"mas deveria ser {len(candidate_ids)}x (um por candidato). "
+        "Fix: substituir bulk_update_candidate_stage por loop per-candidate."
+    )
+    assert result["success"] is True, f"D2-R7-FAIL: esperado success=True, got: {result}"
+    assert result["data"]["moved_count"] == len(candidate_ids), (
+        f"D2-R7-FAIL: moved_count={result['data']['moved_count']} mas esperado {len(candidate_ids)}"
+    )
+
+
+# ─── D2 Test 8: FairnessBlockedError per-candidate is tracked (RED until migration) ──
+
+@pytest.mark.asyncio
+async def test_d2_r8_fairness_block_tracked_per_candidate():
+    """
+    RED → GREEN: When pipeline_stage_service raises FairnessBlockedError for
+    one candidate, that candidate must appear in the results with ok=False,
+    while others succeed.
+
+    Before migration: bulk_update ignores fairness → test FAILS.
+    After migration:  per-candidate loop handles FairnessBlockedError → test PASSES.
+    """
+    from app.domains.recruiter_assistant.agents.kanban_tool_registry import (
+        _wrap_batch_move_candidates,
+    )
+    from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+        FairnessBlockedError,
+    )
+
+    candidate_ids = [
+        "eeeeeeee-0000-0000-0000-000000000011",
+        "ffffffff-0000-0000-0000-000000000022",
+    ]
+    blocked_id = candidate_ids[0]
+
+    fairness_error = FairnessBlockedError("Vies detectado: criterio proibido por Lei 9.029/95")
+
+    call_counter = {"n": 0}
+
+    async def _side_effect(**kwargs):
+        cid = kwargs.get("vacancy_candidate_id", "")
+        call_counter["n"] += 1
+        if cid == blocked_id:
+            raise fairness_error
+        return {"ok": True, "to_stage": "entrevista_rh"}
+
+    mock_svc = MagicMock()
+    mock_svc.transition_candidate = AsyncMock(side_effect=_side_effect)
+
+    with _HITL_DISABLED, patch(
+        "app.domains.recruiter_assistant.agents.kanban_tool_registry.pipeline_stage_service",
+        mock_svc,
+    ), patch(
+        "app.domains.recruiter_assistant.agents.kanban_tool_registry._fetch_candidate_name_map",
+        new_callable=AsyncMock,
+        return_value={cid: f"Candidate {i}" for i, cid in enumerate(candidate_ids)},
+    ):
+        result = await _wrap_batch_move_candidates(
+            candidate_ids=candidate_ids,
+            target_stage="entrevista_rh",
+            vacancy_id=VACANCY_ID,
+            company_id=COMPANY_ID,
+            reason="Batch fairness test D2",
+        )
+
+    # D2-R8: call count must equal total candidates (fairness block does not skip iteration)
+    assert call_counter["n"] == len(candidate_ids), (
+        f"D2-R8-FAIL: transition_candidate chamado {call_counter['n']}x "
+        f"mas deveria ser {len(candidate_ids)}x. "
+        "Fix: per-candidate loop deve continuar apos FairnessBlockedError."
+    )
+    # D2-R8: 1 succeeded, 1 blocked → moved_count = 1
+    assert result["success"] is True, f"D2-R8-FAIL: resultado deve ser success=True, got: {result}"
+    assert result["data"]["moved_count"] == 1, (
+        f"D2-R8-FAIL: moved_count={result['data']['moved_count']} mas esperado 1 "
+        "(1 candidato bloqueado por fairness)."
+    )
+    # The blocked candidate must be ok=False in results
+    results_list = result["data"]["ui_action_params"]["results"]
+    blocked_result = next((r for r in results_list if r["id"] == blocked_id), None)
+    assert blocked_result is not None, "D2-R8-FAIL: candidato bloqueado nao aparece nos results"
+    assert blocked_result["ok"] is False, (
+        f"D2-R8-FAIL: candidato bloqueado deveria ter ok=False, got: {blocked_result}"
+    )
+
+
+# ─── D2 Test 9: bulk_update_candidate_stage NOT called (regression guard) ──────
+
+@pytest.mark.asyncio
+async def test_d2_r9_bulk_update_not_called():
+    """
+    GREEN after migration: bulk_update_candidate_stage must NOT be called by
+    _wrap_batch_move_candidates. This is the regression guard that locks D2.
+
+    Before migration: bulk_update IS called → test FAILS.
+    After migration:  bulk_update NOT called → test PASSES.
+    """
+    from app.domains.recruiter_assistant.agents.kanban_tool_registry import (
+        _wrap_batch_move_candidates,
+    )
+
+    candidate_ids = ["eeeeeeee-0000-0000-0000-000000000011"]
+
+    mock_svc = MagicMock()
+    mock_svc.transition_candidate = AsyncMock(return_value={"ok": True, "to_stage": "entrevista_rh"})
+
+    mock_repo = MagicMock()
+    mock_repo.bulk_update_candidate_stage = AsyncMock(return_value=1)
+
+    with _HITL_DISABLED, patch(
+        "app.domains.recruiter_assistant.agents.kanban_tool_registry.pipeline_stage_service",
+        mock_svc,
+    ), patch(
+        "app.domains.recruiter_assistant.agents.kanban_tool_registry._fetch_candidate_name_map",
+        new_callable=AsyncMock,
+        return_value={candidate_ids[0]: "Candidate A"},
+    ):
+        # Also patch RecruiterMetricsRepository to detect if it gets called
+        with patch(
+            "app.domains.recruiter_assistant.repositories.recruiter_metrics_repository.RecruiterMetricsRepository",
+            return_value=mock_repo,
+        ):
+            await _wrap_batch_move_candidates(
+                candidate_ids=candidate_ids,
+                target_stage="entrevista_rh",
+                vacancy_id=VACANCY_ID,
+                company_id=COMPANY_ID,
+                reason="Regression guard test D2",
+            )
+
+    assert mock_repo.bulk_update_candidate_stage.call_count == 0, (
+        f"D2-R9-FAIL: bulk_update_candidate_stage chamado {mock_repo.bulk_update_candidate_stage.call_count}x "
+        "mas deveria ser 0x apos migracao D2. "
+        "Fix: remover chamada a repo.bulk_update_candidate_stage em _wrap_batch_move_candidates."
+    )

@@ -15,6 +15,10 @@ from lia_agents_core.tool_adapter import ToolOutput
 from app.core.database import AsyncSessionLocal
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
+from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+    pipeline_stage_service,
+    FairnessBlockedError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -750,12 +754,10 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
 
 @tool_handler("kanban")
 async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
-    """Move multiple candidates to a target stage (real DB UPDATE)."""
-    # W1-004-B (2026-05-23): SQL inline → RecruiterMetricsRepository (ADR-001).
-    from app.domains.recruiter_assistant.repositories.recruiter_metrics_repository import (
-        RecruiterMetricsRepository,
-    )
-
+    """Move multiple candidates to a target stage via pipeline_stage_service (D2, 2026-06-19)."""
+    # R1-D2 (2026-06-19): migrated from RecruiterMetricsRepository (repo bypass method)
+    # (raw-SQL P-GUARD bypass) to pipeline_stage_service per-candidate loop.
+    # Fairness gate + audit + history + STAGE_CHANGED event enforced per-candidate.
     candidate_ids = kwargs.get("candidate_ids", [])
     target_stage = kwargs.get("target_stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -775,32 +777,44 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[kanban_tools] batch_move_candidates called: candidates={len(candidate_ids)} target={target_stage}")
     if not candidate_ids or not target_stage:
         return {"success": False, "data": {}, "message": "Parametros 'candidate_ids' e 'target_stage' sao obrigatorios."}
+    # R1-D2: per-candidate loop via pipeline_stage_service (fairness gate + audit + history).
+    # Raw SQL bypass removed on 2026-06-19. SEV1 P-GUARD closed.
+    # SEV1 P-GUARD closed: target_stage now passes through fairness gate on every transition.
     moved = 0
-    try:
-        async with AsyncSessionLocal() as session:
-            # ADR-001-EXEMPT: kanban batch move via RecruiterMetricsRepository (path D3).
-            # TODO R1: migrate to pipeline_stage_service per-candidate loop (like _batch_move_candidates).
-            repo = RecruiterMetricsRepository(session)
-            moved = await repo.bulk_update_candidate_stage(
-                vacancy_id=vacancy_id, company_id=company_id,
-                candidate_ids=candidate_ids, new_stage=target_stage
+    _failed_ids: set[str] = set()
+    for cid in candidate_ids:
+        try:
+            await pipeline_stage_service.transition_candidate(
+                vacancy_candidate_id=str(cid),
+                to_stage=target_stage,
+                triggered_by="batch_move_kanban_tool",
+                source_agent="kanban_tool_registry",
+                reason=reason or f"Batch move → {target_stage}",
+                context={"company_id": company_id, "job_vacancy_id": vacancy_id},
             )
-    except Exception as e:
-        # rollback handled automatically by `async with AsyncSessionLocal()`
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-        logger.error(f"[kanban_tools] batch_move_candidates error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": "Erro ao mover candidatos em lote."}
+            moved += 1
+        except FairnessBlockedError as _fb:
+            # pii-logs ok: nome de entidade/config (nao PII per LGPD Art.5 V - pessoa natural)
+            logger.warning(f"[kanban_tools] batch_move FAIRNESS blocked cid={cid}: {_fb}")
+            _failed_ids.add(str(cid))
+        except PermissionError as _pe:
+            logger.warning(f"[kanban_tools] batch_move PERMISSION denied cid={cid}: {_pe}")
+            _failed_ids.add(str(cid))
+        except Exception as _ex:
+            logger.warning(f"[kanban_tools] batch_move partial failure cid={cid}: {_ex}")
+            _failed_ids.add(str(cid))
     # F5 bulk_execute producer: emite ui_action para FE abrir BulkResultReport.
-    # Honesto: bulk SQL retorna só o count; per-item ok apenas quando moved==total.
+    # Per-candidate tracking: ok=True only if not in _failed_ids.
     _name_map = await _fetch_candidate_name_map(candidate_ids, company_id)
-    _ui_results = (
-        [{"id": cid, "name": _name_map.get(cid, cid), "ok": True} for cid in candidate_ids]
-        if moved == len(candidate_ids)
-        else (
-            [{"id": cid, "name": _name_map.get(cid, cid), "ok": True} for cid in candidate_ids[:moved]]
-            + [{"id": cid, "name": _name_map.get(cid, cid), "ok": False, "reason": "Não confirmado"} for cid in candidate_ids[moved:]]
-        )
-    )
+    _ui_results = [
+        {
+            "id": cid,
+            "name": _name_map.get(cid, cid),
+            "ok": cid not in _failed_ids,
+            **({"reason": "Bloqueado (fairness/permissao)"} if cid in _failed_ids else {}),
+        }
+        for cid in candidate_ids
+    ]
     return {
         "success": True,
         "data": {
