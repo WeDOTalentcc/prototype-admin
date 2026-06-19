@@ -583,8 +583,9 @@ Retorne APENAS JSON válido:
             """Tenta as chaves em ordem; normaliza para list[str | dict].
 
             Aceita:
-            - list → retorna diretamente
-            - dict com detected_items + suggestions (formato SectionSuggestions)
+            - list → retorna diretamente (items podem ser str ou dict)
+            - dict com detected_items + suggestions (formato SectionSuggestions):
+              preserva dicts das suggestions para manter big_five_mapping e metadados
             """
             for key in keys:
                 val = blob.get(key)
@@ -593,14 +594,22 @@ Retorne APENAS JSON válido:
                 if isinstance(val, list) and val:
                     return val
                 if isinstance(val, dict):
-                    items: list = list(val.get("detected_items") or [])
+                    items: list = []
+                    seen_values: set = set()
+                    for item in val.get("detected_items") or []:
+                        if isinstance(item, str) and item not in seen_values:
+                            items.append(item)
+                            seen_values.add(item)
                     for sug in val.get("suggestions") or []:
                         if isinstance(sug, dict):
                             v = sug.get("value")
-                            if v and v not in items:
-                                items.append(v)
-                        elif isinstance(sug, str) and sug not in items:
+                            if v and v not in seen_values:
+                                # Preserva dict completo para manter big_five_mapping
+                                items.append(sug)
+                                seen_values.add(v)
+                        elif isinstance(sug, str) and sug not in seen_values:
                             items.append(sug)
+                            seen_values.add(sug)
                     if items:
                         return items
             return []
