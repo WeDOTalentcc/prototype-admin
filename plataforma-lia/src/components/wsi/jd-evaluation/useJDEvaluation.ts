@@ -117,6 +117,8 @@ export function useJDEvaluation(props: {
   const [aiBehavSuggestions, setAiBehavSuggestions] = useState<{name: string, key: string}[]>([])
   const [isLoadingTechSuggestions, setIsLoadingTechSuggestions] = useState(false)
   const [isLoadingBehavSuggestions, setIsLoadingBehavSuggestions] = useState(false)
+  const [aiRespSuggestions, setAiRespSuggestions] = useState<string[]>([])
+  const [isLoadingRespSuggestions, setIsLoadingRespSuggestions] = useState(false)
   const [generatedJD, setGeneratedJD] = useState<{full_description: string, sections: Record<string, string>, summary: string, tags: string[]} | null>(null)
   const [isGeneratingJD, setIsGeneratingJD] = useState(false)
   const [copiedJD, setCopiedJD] = useState(false)
@@ -149,8 +151,8 @@ export function useJDEvaluation(props: {
 
   useEffect(() => {
     if (!isEditing) {
-      setAiTechSuggestions([]); setAiBehavSuggestions([]); setGeneratedJD(null)
-      setIsLoadingTechSuggestions(false); setIsLoadingBehavSuggestions(false)
+      setAiTechSuggestions([]); setAiBehavSuggestions([]); setAiRespSuggestions([]); setGeneratedJD(null)
+      setIsLoadingTechSuggestions(false); setIsLoadingBehavSuggestions(false); setIsLoadingRespSuggestions(false)
       setIsGeneratingJD(false); setCopiedJD(false)
     }
   }, [isEditing])
@@ -208,6 +210,31 @@ export function useJDEvaluation(props: {
       }
     } catch { setAiBehavSuggestions(FALLBACK_BEHAV_COMPETENCIES.filter(c => !editBehavCompetencies.includes(c.name))) }
     finally { setIsLoadingBehavSuggestions(false) }
+  }
+
+
+  const fetchResponsibilitiesSuggestions = async () => {
+    setIsLoadingRespSuggestions(true)
+    try {
+      const response = await fetch("/api/backend-proxy/jd/suggest-responsibilities", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          job_title: jobTitle,
+          seniority: seniority || undefined,
+          department: department || undefined,
+          description: editDescription || undefined,
+          existing_responsibilities: editResponsibilities,
+        })
+      })
+      const data = await response.json() as { success?: boolean; responsibilities?: string[] }
+      if (data.responsibilities && data.responsibilities.length > 0) {
+        const existing = new Set(editResponsibilities.map(r => r.toLowerCase().trim()))
+        setAiRespSuggestions(data.responsibilities.filter(r => !existing.has(r.toLowerCase().trim())))
+      } else {
+        setAiRespSuggestions([])
+      }
+    } catch { setAiRespSuggestions([]) }
+    finally { setIsLoadingRespSuggestions(false) }
   }
 
   const generateJD = async () => {
@@ -415,11 +442,11 @@ export function useJDEvaluation(props: {
     editTechSkills, setEditTechSkills, editBehavCompetencies, setEditBehavCompetencies,
     isSavingInline, newItem, setNewItem, editingField, setEditingField, saveError,
     aiTechSuggestions, setAiTechSuggestions, aiBehavSuggestions, setAiBehavSuggestions,
-    isLoadingTechSuggestions, isLoadingBehavSuggestions,
+    isLoadingTechSuggestions, isLoadingBehavSuggestions, aiRespSuggestions, setAiRespSuggestions, isLoadingRespSuggestions,
     generatedJD, isGeneratingJD, copiedJD, isSavingDefinitive, isSavingWithJD,
     showFullDescription, setShowFullDescription,
     jdTypedMessage, jdDynamicMessage, jdGenerationStep, jdGenerationError,
-    fetchTechSuggestions, fetchBehavSuggestions, generateJD, handleCopyJD,
+    fetchTechSuggestions, fetchBehavSuggestions, fetchResponsibilitiesSuggestions, generateJD, handleCopyJD,
     fetchEvaluation, handleSaveRascunho, handleSaveDefinitiva, handleSaveAndUpdateJD, handleCancel,
     // T-1167 (Bug #3) — extração de campos do JD colado
     isExtracting, extractError, extractFromText,

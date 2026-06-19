@@ -348,3 +348,62 @@ company_id: str = Depends(require_company_id)):
         except Exception as e2:
             logger.error(f"Fallback JD generation also failed: {e2}")
             return {"success": False, "error": str(e)}
+
+
+class SuggestResponsibilitiesRequest(WeDoBaseModel):
+    """Sugere responsabilidades adicionais para uma vaga usando IA.
+    company_id vem do JWT via Depends(require_company_id) — body NÃO carrega tenant."""
+    job_title: str
+    seniority: str | None = None
+    department: str | None = None
+    description: str | None = None
+    existing_responsibilities: list[str] = []
+
+
+class SuggestResponsibilitiesResponse(BaseModel):
+    success: bool
+    responsibilities: list[str] = []
+
+
+def _parse_responsibilities_from_markdown(content: str) -> list[str]:
+    """Extrai itens de bullet list markdown como lista de strings."""
+    lines = []
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(("- ", "* ", "• ")):
+            item = stripped[2:].strip()
+            if item:
+                lines.append(item)
+        elif stripped and stripped[0].isdigit() and ". " in stripped:
+            item = stripped.split(". ", 1)[1].strip()
+            if item:
+                lines.append(item)
+    return lines
+
+
+@router.post("/suggest-responsibilities", response_model=SuggestResponsibilitiesResponse)
+async def suggest_responsibilities(
+    request: SuggestResponsibilitiesRequest,
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
+    """Sugere responsabilidades adicionais com base no contexto da vaga (título, senioridade,
+    departamento) usando jd_generator_service.generate_section("responsibilities").
+    Filtra sugestões já presentes em existing_responsibilities (case-insensitive)."""
+    job_data: dict = {
+        "title": request.job_title,
+        "seniority": request.seniority,
+        "department": request.department,
+        "description": request.description,
+        "company_id": company_id,
+    }
+    try:
+        result = await jd_generator_service.generate_section(job_data, "responsibilities")
+        content: str = result.get("content", "") if isinstance(result, dict) else ""
+        suggested = _parse_responsibilities_from_markdown(content)
+        existing_lower = {r.lower().strip() for r in request.existing_responsibilities}
+        filtered = [r for r in suggested if r.lower().strip() not in existing_lower]
+        return SuggestResponsibilitiesResponse(success=True, responsibilities=filtered)
+    except Exception as exc:
+        logger.exception("[suggest_responsibilities] generation failed")
+        return SuggestResponsibilitiesResponse(success=False, responsibilities=[])

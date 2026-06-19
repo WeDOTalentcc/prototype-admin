@@ -60,10 +60,10 @@ export function JDEvaluationPanel({
     editTechSkills, setEditTechSkills, editBehavCompetencies, setEditBehavCompetencies,
     isSavingInline, newItem, setNewItem, editingField, setEditingField, saveError,
     aiTechSuggestions, setAiTechSuggestions, aiBehavSuggestions, setAiBehavSuggestions,
-    isLoadingTechSuggestions, isLoadingBehavSuggestions,
+    isLoadingTechSuggestions, isLoadingBehavSuggestions, aiRespSuggestions, setAiRespSuggestions, isLoadingRespSuggestions,
     generatedJD, isGeneratingJD, copiedJD, isSavingDefinitive, isSavingWithJD,
     jdTypedMessage, jdDynamicMessage, jdGenerationStep, jdGenerationError,
-    fetchTechSuggestions, fetchBehavSuggestions, generateJD, handleCopyJD,
+    fetchTechSuggestions, fetchBehavSuggestions, fetchResponsibilitiesSuggestions, generateJD, handleCopyJD,
     fetchEvaluation, handleSaveRascunho, handleSaveDefinitiva, handleSaveAndUpdateJD, handleCancel,
     isExtracting, extractError, extractFromText,
   } = hook
@@ -211,6 +211,15 @@ export function JDEvaluationPanel({
                         onNewItemChange={setNewItem}
                         onStartEditing={setEditingField}
                         onStopEditing={() => setEditingField(null)}
+                        aiSuggestions={aiRespSuggestions.map(r => ({ label: r, key: r }))}
+                        isLoadingAI={isLoadingRespSuggestions}
+                        onFetchAI={fetchResponsibilitiesSuggestions}
+                        onAcceptSuggestion={(key) => {
+                          if (!editResponsibilities.includes(key)) {
+                            setEditResponsibilities(prev => [...prev, key])
+                          }
+                          setAiRespSuggestions(prev => prev.filter(r => r !== key))
+                        }}
                       />
 
                       <JDArrayEditor
