@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -495,12 +495,13 @@ function useHoverIntent() {
     }
   }, []);
 
-  const handleReelLeave = useCallback(() => {
+  const handleReelLeave = useCallback((onClose: () => void) => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
     sessionActiveRef.current = false;
+    onClose();
   }, []);
 
   return { handleNodeEnter, handleNodeLeave, handleReelLeave };
@@ -528,7 +529,6 @@ export function ChatWorkflowReels({
   const [activeStageId, setActiveStageId] = useState<string | null>(
     firstWithSuggestions,
   );
-  const [isMinimized, setIsMinimized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<(HTMLElement | null)[]>([]);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -593,31 +593,12 @@ export function ChatWorkflowReels({
   let nodeIndex = 0;
 
   return (
-    <div className="w-full">
-      {/* Minimize toggle — always visible */}
-      <div className="flex justify-end mb-1">
-        <button
-          onClick={() => setIsMinimized((v) => !v)}
-          className="flex items-center gap-1 text-lia-text-tertiary hover:text-lia-text-secondary transition-colors rounded px-1.5 py-0.5 hover:bg-lia-bg-tertiary"
-          title={isMinimized ? "Expandir menu rápido" : "Minimizar menu rápido"}
-          aria-expanded={!isMinimized}
-          aria-label={isMinimized ? "Expandir menu rápido" : "Minimizar menu rápido"}
-        >
-          {isMinimized ? (
-            <ChevronDown className="w-3 h-3" />
-          ) : (
-            <ChevronUp className="w-3 h-3" />
-          )}
-        </button>
-      </div>
-
-      {isMinimized ? null : (
-        <div
-          className="space-y-5"
-          onMouseLeave={handleReelLeave}
-        >
-          <div className="relative" style={{ overflow: "visible" }}>
-            {canScrollLeft && (
+    <div
+      className="w-full space-y-5"
+      onMouseLeave={() => handleReelLeave(() => setActiveStageId(null))}
+    >
+      <div className="relative" style={{ overflow: "visible" }}>
+        {canScrollLeft && (
               <button
                 onClick={() => scroll("left")}
                 className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 z-10 w-6 h-6 rounded-full flex items-center justify-center bg-lia-bg-primary/80 border border-lia-border-subtle shadow-sm hover:bg-lia-bg-tertiary transition-colors opacity-60 hover:opacity-100"
@@ -818,8 +799,6 @@ export function ChatWorkflowReels({
             </div>
           )}
         </div>
-      )}
-    </div>
   );
 }
 
@@ -951,7 +930,6 @@ function CompactReels({
   const nodeRefs = useRef<(HTMLElement | null)[]>([]);
   const { handleMouseMove, handleMouseLeave, getScale } = useDockMagnifier(containerRef);
   const { handleNodeEnter, handleNodeLeave, handleReelLeave } = useHoverIntent();
-  const [isMinimized, setIsMinimized] = useState(false);
   const setNodeRef = (index: number) => (el: HTMLElement | null) => {
     nodeRefs.current[index] = el;
   };
@@ -969,26 +947,10 @@ function CompactReels({
   };
 
   return (
-    <div className="space-y-2">
-      {/* Minimize toggle */}
-      <div className="flex justify-end">
-        <button
-          onClick={() => setIsMinimized((v) => !v)}
-          className="text-lia-text-tertiary hover:text-lia-text-secondary transition-colors rounded p-0.5 hover:bg-lia-bg-tertiary"
-          title={isMinimized ? "Expandir menu rápido" : "Minimizar menu rápido"}
-          aria-expanded={!isMinimized}
-          aria-label={isMinimized ? "Expandir menu rápido" : "Minimizar menu rápido"}
-        >
-          {isMinimized ? (
-            <ChevronDown className="w-3 h-3" />
-          ) : (
-            <ChevronUp className="w-3 h-3" />
-          )}
-        </button>
-      </div>
-
-      {!isMinimized && (
-        <div onMouseLeave={handleReelLeave}>
+    <div
+        className="space-y-2"
+        onMouseLeave={() => handleReelLeave(() => setActiveStageId(null))}
+      >
           <div
             ref={containerRef}
             className="flex items-center gap-1 overflow-x-auto scrollbar-none py-1"
@@ -1123,8 +1085,6 @@ function CompactReels({
             </div>
           )}
         </div>
-      )}
-    </div>
   );
 }
 
