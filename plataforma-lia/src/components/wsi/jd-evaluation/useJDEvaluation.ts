@@ -248,7 +248,7 @@ export function useJDEvaluation(props: {
       setJdDynamicMessage('Gerando descrição com base na metodologia WSI...')
       const response = await fetch("/api/backend-proxy/jd/generate", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_title: jobTitle, department: department || undefined, seniority: seniority || undefined, description: editDescription || undefined, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, company_id: companyId || "", company_name: companyName || undefined, company_description: companyDescription || undefined, company_industry: companyIndustry || undefined, benefits: benefits.length > 0 ? benefits : undefined, interview_stages: interviewStages.length > 0 ? interviewStages : undefined, // Cultura & EVP --- injetados quando disponíveis, campos opcionais no backend
+        body: JSON.stringify({ job_title: jobTitle, department: department || undefined, seniority: seniority || undefined, description: editDescription || undefined, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, company_name: companyName || undefined, company_description: companyDescription || undefined, company_industry: companyIndustry || undefined, benefits: benefits.length > 0 ? benefits : undefined, interview_stages: interviewStages.length > 0 ? interviewStages : undefined, // Cultura & EVP --- injetados quando disponíveis, campos opcionais no backend
         mission: culture?.mission || undefined, vision: culture?.vision || undefined, evp_bullets: culture?.evpBullets && culture.evpBullets.length > 0 ? culture.evpBullets : undefined })
       })
       if (!response.ok) {
@@ -291,7 +291,7 @@ export function useJDEvaluation(props: {
       const response = await fetch('/api/backend-proxy/jd/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: editDescription, company_id: companyId || '' }),
+        body: JSON.stringify({ text: editDescription }),
       })
       if (!response.ok) {
         const errPayload = await response.json().catch(() => null) as { detail?: { message?: string } | string; message?: string } | null

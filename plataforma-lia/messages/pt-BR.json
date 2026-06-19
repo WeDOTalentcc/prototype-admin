@@ -6032,7 +6032,8 @@
         "resetToCompanyDefault": "Usar padrão da empresa",
         "activeCount": "{active} de {total} ativos",
         "activeCountAria": "{active} de {total} alertas ativos",
-        "viewHistory": "Ver histórico de notificações"
+        "viewHistory": "Ver histórico de notificações",
+        "comingSoon": "Em breve"
       },
       "dataChannel": {
         "title": "Canal de Coleta de Dados",

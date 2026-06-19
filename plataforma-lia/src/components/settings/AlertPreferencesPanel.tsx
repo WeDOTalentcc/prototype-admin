@@ -31,7 +31,7 @@
  */
 "use client"
 
-import React, { useMemo, useState } from "react"
+import React, { useMemo, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   AlertCircle,
@@ -172,6 +172,10 @@ export function AlertPreferencesPanel() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [successFor, setSuccessFor] = useState<string | null>(null)
 
+  // Bug 3 fix debounce threshold/cooldown inputs (500ms) to avoid API call per keystroke
+  const thresholdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // B1+B2: briefing frequency + digest toggle (Rules of Hooks: top, before any if/return)
   const {
     briefingFrequency,
@@ -241,6 +245,7 @@ export function AlertPreferencesPanel() {
             role="switch"
             aria-checked={pref.is_enabled}
             aria-label={t("alertPreferences.toggleAria", { type: pref.alert_type })}
+            data-testid={`alert-pref-toggle-${pref.alert_type}`}
             disabled={isSaving}
             onClick={() => handleUpdate(pref, { is_enabled: !pref.is_enabled })}
             className={`relative inline-flex h-4 w-7 shrink-0 mt-0.5 items-center rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 ${
@@ -276,7 +281,10 @@ export function AlertPreferencesPanel() {
                 value={pref.threshold ?? 0}
                 onChange={(e) => {
                   const val = parseInt(e.target.value, 10)
-                  if (!isNaN(val)) handleUpdate(pref, { threshold: val })
+                  if (!isNaN(val)) {
+                    if (thresholdTimerRef.current) clearTimeout(thresholdTimerRef.current)
+                    thresholdTimerRef.current = setTimeout(() => handleUpdate(pref, { threshold: val }), 500)
+                  }
                 }}
                 disabled={isSaving}
                 aria-label={t("alertPreferences.thresholdAria", { type: pref.alert_type })}
@@ -294,7 +302,10 @@ export function AlertPreferencesPanel() {
                 value={pref.cooldown_hours}
                 onChange={(e) => {
                   const val = parseInt(e.target.value, 10)
-                  if (!isNaN(val) && val >= 1) handleUpdate(pref, { cooldown_hours: val })
+                  if (!isNaN(val) && val >= 1) {
+                    if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current)
+                    cooldownTimerRef.current = setTimeout(() => handleUpdate(pref, { cooldown_hours: val }), 500)
+                  }
                 }}
                 disabled={isSaving}
                 aria-label={t("alertPreferences.cooldownAria", { type: pref.alert_type })}
@@ -457,7 +468,7 @@ export function AlertPreferencesPanel() {
                       aria-pressed={briefingFrequency === freq}
                       className={`text-micro rounded-full px-2.5 py-0.5 border transition-colors disabled:opacity-60 ${
                         briefingFrequency === freq
-                          ? "bg-lia-accent text-white border-lia-accent"
+                          ? "bg-lia-accent text-lia-text-primary border-lia-accent"
                           : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle"
                       }`}
                     >
@@ -537,7 +548,7 @@ export function AlertPreferencesPanel() {
                       aria-pressed={userFrequency === freq}
                       className={`text-micro rounded-full px-2.5 py-0.5 border transition-colors disabled:opacity-60 ${
                         userFrequency === freq
-                          ? "bg-lia-accent text-white border-lia-accent"
+                          ? "bg-lia-accent text-lia-text-primary border-lia-accent"
                           : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle"
                       }`}
                     >
@@ -598,14 +609,17 @@ export function AlertPreferencesPanel() {
           {/* Fatia 3 — link de atalho ao histórico de notificações (Indicadores > Alertas) */}
           {!isLoading && preferences.length > 0 && (
             <div className="pt-2 border-t border-lia-border-subtle/40">
-              <a
-                href="/pt/indicadores?tab=alerts"
-                className="inline-flex items-center gap-1.5 text-micro text-lia-text-secondary hover:text-lia-accent transition-colors"
+              {/* Bug 1 fix: /pt/indicadores?tab=alerts nao existe ainda */}
+              <span
+                className="inline-flex items-center gap-1.5 text-micro text-lia-text-disabled cursor-not-allowed"
+                title="Em breve"
+                aria-disabled="true"
                 data-testid="notifications-history-link"
               >
                 <Bell className="w-3 h-3" />
                 {t("alertPreferences.viewHistory")}
-              </a>
+                <span className="ml-0.5 text-micro text-lia-text-muted">({t("alertPreferences.comingSoon")})</span>
+              </span>
             </div>
           )}
         </CardContent>
