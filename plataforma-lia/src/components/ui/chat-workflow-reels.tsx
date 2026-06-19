@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Minimize2, LayoutGrid } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -507,6 +507,63 @@ function useHoverIntent() {
   return { handleNodeEnter, handleNodeLeave, handleReelLeave };
 }
 
+/**
+ * FAB draggável (position: fixed na viewport).
+ * initPos: chama 1× quando colapsando para posicionar perto do reel.
+ * Clique (sem drag) → onExpand.
+ */
+function useDraggableFAB() {
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const dragging = useRef(false);
+  const startMouse = useRef({ x: 0, y: 0 });
+  const startPos = useRef({ left: 0, top: 0 });
+  const moved = useRef(false);
+
+  const initPos = useCallback((rect: DOMRect) => {
+    setPos((prev) =>
+      prev === null ? { left: Math.max(8, rect.right - 52), top: rect.top } : prev,
+    );
+  }, []);
+
+  const onFABMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (!pos) return;
+      dragging.current = true;
+      moved.current = false;
+      startMouse.current = { x: e.clientX, y: e.clientY };
+      startPos.current = { ...pos };
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    [pos],
+  );
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!dragging.current) return;
+      const dx = e.clientX - startMouse.current.x;
+      const dy = e.clientY - startMouse.current.y;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved.current = true;
+      setPos({
+        left: Math.max(8, startPos.current.left + dx),
+        top: Math.max(8, startPos.current.top + dy),
+      });
+    };
+    const onUp = () => { dragging.current = false; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, []);
+
+  const wasDragging = useCallback(() => moved.current, []);
+  const resetPos    = useCallback(() => setPos(null), []);
+
+  return { pos, initPos, onFABMouseDown, wasDragging, resetPos };
+}
+
 export function ChatWorkflowReels({
   onSelect,
   compact = false,
@@ -540,6 +597,29 @@ export function ChatWorkflowReels({
     useDockMagnifier(scrollRef);
   const { onMouseDown, grabbing, wasDragging } = useDragToScroll(scrollRef);
   const { handleNodeEnter, handleNodeLeave, handleReelLeave } = useHoverIntent();
+
+  const reelContainerRef = useRef<HTMLDivElement>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const {
+    pos: fabPos,
+    initPos: initFabPos,
+    onFABMouseDown,
+    wasDragging: fabWasDragging,
+    resetPos: resetFabPos,
+  } = useDraggableFAB();
+
+  const handleCollapse = useCallback(() => {
+    if (reelContainerRef.current) {
+      initFabPos(reelContainerRef.current.getBoundingClientRect());
+    }
+    setIsCollapsed(true);
+    setActiveStageId(null);
+  }, [initFabPos]);
+
+  const handleExpand = useCallback(() => {
+    setIsCollapsed(false);
+    resetFabPos();
+  }, [resetFabPos]);
 
   const handleNodeClick = (nodeId: string, hasSuggestions: boolean) => {
     if (wasDragging()) return;
@@ -594,9 +674,25 @@ export function ChatWorkflowReels({
 
   return (
     <div
-      className="w-full space-y-5"
+      ref={reelContainerRef}
+      className="w-full space-y-5 group"
       onMouseLeave={() => handleReelLeave(() => setActiveStageId(null))}
     >
+      {/* ── FAB draggável (reel minimizado) ─────────────────────── */}
+      {isCollapsed && fabPos && (
+        <div
+          style={{ position: "fixed", left: fabPos.left, top: fabPos.top, zIndex: 9999 }}
+          onMouseDown={onFABMouseDown}
+          onClick={() => { if (!fabWasDragging()) handleExpand(); }}
+          title="Expandir atalhos rápidos"
+          className="cursor-grab active:cursor-grabbing w-10 h-10 rounded-full bg-lia-bg-primary border border-lia-border-default shadow-lg hover:shadow-xl flex items-center justify-center transition-shadow select-none"
+        >
+          <LayoutGrid className="w-4 h-4 text-lia-text-secondary" />
+        </div>
+      )}
+
+      {/* ── Reel expandido ───────────────────────────────────────── */}
+      <div className={isCollapsed ? "hidden" : ""}>
       <div className="relative" style={{ overflow: "visible" }}>
         {canScrollLeft && (
               <button
@@ -617,6 +713,14 @@ export function ChatWorkflowReels({
               </button>
             )}
 
+          {/* Colapso — aparece ao hover */}
+          <button
+            onClick={handleCollapse}
+            className="absolute right-0 top-0 z-20 w-7 h-7 rounded-full flex items-center justify-center text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-all opacity-0 group-hover:opacity-100"
+            title="Minimizar atalhos rápidos"
+          >
+            <Minimize2 className="w-3.5 h-3.5" />
+          </button>
             <div
               ref={scrollRef}
               className="overflow-x-auto scrollbar-none"
@@ -798,6 +902,7 @@ export function ChatWorkflowReels({
               </div>
             </div>
           )}
+      </div>
         </div>
   );
 }
