@@ -635,6 +635,7 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
         to_stage = params.get("to_stage", "")
         from_stage = params.get("from_stage", "")
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        company_id = context.get("company_id") if context else None
 
         if not candidate_ids or not to_stage:
             return ActionResult(
@@ -644,20 +645,30 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
                 action_type="batch_move_candidates",
             )
 
-        company_id = context.get("company_id") if context else None
 
+        # P-TENANT fail-closed (SEV2-C3-05): recusar ANTES de abrir sessao de banco.
+        # company_id vem de UniversalContext (JWT via chat.py:254). Se ausente,
+        # query rodaria sem filtro de tenant — nao degradar silenciosamente.
+        if not company_id:
+            return ActionResult(
+                status="error",
+                message="Contexto de empresa nao disponivel para mover candidatos.",
+                error_detail="company_id missing from context — tenant fail-closed (P-TENANT, SEV2-C3-05)",
+                action_type="batch_move_candidates",
+            )
         async with AsyncSessionLocal() as db:
             moved = 0
             for cid in candidate_ids:
+                # ADR-001-EXEMPT: action_handler inline SQL (path D1 pre-repo);
+                # migrar RecruiterMetricsRepository.bulk_update_candidate_stage em R1.
+                # company_id sempre no WHERE (fail-closed garantido pelo guard acima).
                 update_sql = """
                     UPDATE vacancy_candidates
                     SET stage = :to_stage, status = 'active', updated_at = NOW()
                     WHERE (id = CAST(:cid AS uuid) OR candidate_id = CAST(:cid AS uuid))
+                      AND company_id = :co
                 """
-                bind: dict[str, Any] = {"to_stage": to_stage, "cid": str(cid)}
-                if company_id:
-                    update_sql += " AND company_id = :co"
-                    bind["co"] = str(company_id)
+                bind: dict[str, Any] = {"to_stage": to_stage, "cid": str(cid), "co": str(company_id)}
                 result = await db.execute(text(update_sql), bind)
                 moved += result.rowcount
             await db.commit()
