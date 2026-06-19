@@ -5560,7 +5560,6 @@
       "hiringPolicies": {
         "loading": "Loading policies...",
         "title": "Hiring Policies",
-        "configured": "{pct}% configured",
         "complete": "Complete",
         "pending": "Pending",
         "configuredStatus": "Configured",
@@ -5604,7 +5603,6 @@
         "trigger": "Trigger: {value}",
         "actions": "{count} actions",
         "executions": "{count} executions",
-        "successPct": "{pct}% success",
         "statusActive": "Active",
         "statusPaused": "Paused",
         "edit": "Edit",
@@ -6170,7 +6168,6 @@
         "executions": "Executions",
         "approved": "Approved",
         "blocked": "Blocked",
-        "ofTotal": "{pct}% of total",
         "activeAgents": "Active agents",
         "avgConfidence": "Average confidence: {pct}%",
         "executionsPerDay": "Executions per day",

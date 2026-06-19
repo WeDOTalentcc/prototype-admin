@@ -5560,7 +5560,6 @@
       "hiringPolicies": {
         "loading": "Carregando políticas...",
         "title": "Políticas de Contratação",
-        "configured": "{pct}% configured",
         "complete": "Completo",
         "pending": "Pendente",
         "configuredStatus": "Configurado",
@@ -5604,7 +5603,6 @@
         "trigger": "Gatilho: {value}",
         "actions": "{count} actions",
         "executions": "{count} executions",
-        "successPct": "{pct}% success",
         "statusActive": "Ativo",
         "statusPaused": "Pausado",
         "edit": "Editar",
@@ -6170,7 +6168,6 @@
         "executions": "Executions",
         "approved": "Aprovado",
         "blocked": "Bloqueado",
-        "ofTotal": "{pct}% of total",
         "activeAgents": "Agentes ativos",
         "avgConfidence": "Confiança média: {pct}%",
         "executionsPerDay": "Executions per day",
