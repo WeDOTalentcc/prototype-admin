@@ -2015,7 +2015,7 @@ def _handle_suggest_benefits(
     emp_type    = state.get("employment_type") or state.get("parsed_employment_type") or ""
 
     async def _fetch():
-        from app.shared.database import AsyncSessionLocal
+        from app.core.database import AsyncSessionLocal
         from app.domains.company.repositories.benefit_repository import BenefitRepository
         from uuid import UUID
         async with AsyncSessionLocal() as db:
@@ -2026,6 +2026,7 @@ def _handle_suggest_benefits(
                 return []
             return await repo.list_active_for_company(cid)
 
+    from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool  # noqa: PLC0415
     try:
         benefits_orm = run_coro_in_threadpool(lambda: _fetch(), timeout=10)
     except Exception as exc:
@@ -2035,7 +2036,7 @@ def _handle_suggest_benefits(
                 "Não consegui carregar o catálogo de benefícios agora. "
                 "Oriente o recrutador a informar os benefícios manualmente."
             ),
-            error=False,
+            error=True,
         )
 
     if not benefits_orm:
@@ -2112,7 +2113,7 @@ def _handle_suggest_variable_compensation(
     emp_type      = state.get("employment_type") or state.get("parsed_employment_type") or None
 
     async def _fetch():
-        from app.shared.database import AsyncSessionLocal
+        from app.core.database import AsyncSessionLocal
         from app.domains.company.repositories.compensation_component_repository import (
             CompensationComponentRepository,
         )
@@ -2125,6 +2126,7 @@ def _handle_suggest_variable_compensation(
                 contract_type=emp_type,
             )
 
+    from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool  # noqa: PLC0415
     try:
         matched = run_coro_in_threadpool(lambda: _fetch(), timeout=10)
     except Exception as exc:
@@ -2134,7 +2136,7 @@ def _handle_suggest_variable_compensation(
                 "Não consegui carregar o catálogo de verbas variáveis agora. "
                 "Oriente o recrutador a informar os componentes manualmente."
             ),
-            error=False,
+            error=True,
         )
 
     if not matched:
