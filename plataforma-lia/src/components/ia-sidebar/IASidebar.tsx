@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import {
   Brain, Plus, Pin, PinOff, Edit3, StickyNote, Archive, Trash2,
@@ -331,6 +331,50 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
     },
     [setActiveConversation, markRead, openLiaChat, closeIASidebar, onOpenConversation]
   )
+
+  // Keyboard shortcuts: P=pin, N=new, A=archive, Del=delete, Esc=close
+  // Scoped to sidebar open + focus NOT in a text field
+  useEffect(() => {
+    if (!isIASidebarOpen) return
+    const handler = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable) return
+      const target = sessions.find((s) => s.id === activeConversationId)
+      switch (e.key) {
+        case "n":
+        case "N":
+          e.preventDefault()
+          onNewConversation?.()
+          closeIASidebar()
+          break
+        case "p":
+        case "P":
+          if (!target) return
+          e.preventDefault()
+          updateSession.mutate({ id: target.id, is_pinned: !target.is_pinned })
+          break
+        case "a":
+        case "A":
+          if (!target) return
+          e.preventDefault()
+          archiveSession.mutate(target.id)
+          break
+        case "Delete":
+          if (!target) return
+          e.preventDefault()
+          if (window.confirm(`Excluir conversa "${target.title ?? "sem título"}"?`)) {
+            deleteSession.mutate(target.id)
+          }
+          break
+        case "Escape":
+          e.preventDefault()
+          closeIASidebar()
+          break
+      }
+    }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [isIASidebarOpen, activeConversationId, sessions, updateSession, archiveSession, deleteSession, closeIASidebar, onNewConversation])
 
   // Client-side search filter
   const filteredSessions = useMemo(() => {
