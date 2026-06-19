@@ -38,6 +38,10 @@ from lia_models.recruitment_stages import (
     RecruitmentSubStatus,
 )
 
+from app.api.v1.candidates._shared import REJECTION_STAGES
+from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
+from app.shared.compliance.audit_service import AuditService
+
 logger = logging.getLogger(__name__)
 
 _fsm_validate = None
@@ -62,6 +66,14 @@ def get_event_dispatcher():
         from app.shared.services.event_dispatcher import event_dispatcher
         _event_dispatcher = event_dispatcher
     return _event_dispatcher
+
+
+class FairnessBlockedError(ValueError):
+    """Raised when a candidate rejection reason fails the fairness gate."""
+    def __init__(self, message: str, suggestion: str = ""):
+        self.message = message
+        self.suggestion = suggestion
+        super().__init__(message)
 
 
 class TransitionError(Exception):
@@ -206,6 +218,22 @@ class PipelineStageService:
                         "O candidato deve preencher os dados solicitados antes de avancar."
                     )
 
+            # Step R1-A: Fairness gate — rejection reason must pass compliance check (P-GUARD)
+            # Compliance: Lei 9.029/95 (Art. 1°), CLT Art. 373-A
+            _to_stage_lower = (to_stage or "").lower()
+            if any(rej in _to_stage_lower for rej in REJECTION_STAGES):
+                _fairness_reason = reason or to_sub_status or ""
+                if _fairness_reason:
+                    _fg = check_rejection_reason(
+                        reason=_fairness_reason,
+                        company_id=str(company_id),
+                    )
+                    if _fg.is_blocked:
+                        raise FairnessBlockedError(
+                            message=_fg.blocked_result.educational_message if _fg.blocked_result else "Rejection reason failed fairness check",
+                            suggestion=getattr(_fg, "suggestion", ""),
+                        )
+
             to_sub_status_obj = None
             if to_sub_status:
                 sub_statuses = await self._get_stage_sub_statuses(db, str(to_stage_obj.id))
@@ -214,7 +242,24 @@ class PipelineStageService:
             if not to_sub_status_obj:
                 sub_statuses = await self._get_stage_sub_statuses(db, str(to_stage_obj.id))
                 to_sub_status_obj = next((s for s in sub_statuses if s.is_default), None)
-            
+
+            # Step R1-B: Idempotency — if candidate is already in the target stage, return early
+            if vacancy_candidate.stage == to_stage:
+                logger.info(f"[IDEMPOTENT] Candidate already in stage {to_stage}, skipping transition write")
+                return {
+                    "success": True,
+                    "idempotent": True,
+                    "vacancy_candidate_id": vacancy_candidate_id,
+                    "transition": {
+                        "from_stage": from_stage,
+                        "from_sub_status": from_sub_status,
+                        "to_stage": to_stage,
+                        "to_sub_status": None,
+                    },
+                    "history_id": None,
+                    "message": f"Candidate already in stage {to_stage}",
+                }
+
             vacancy_candidate.stage = to_stage
             # Task #1303: persist the structural stage link so the SLA detector
             # can join by id instead of fragile name matching.
@@ -297,7 +342,28 @@ class PipelineStageService:
                     history_entry.ats_sync_details = {"error": str(e)}
             
             await db.commit()
-            
+
+            # Step R1-C: Audit log — unified trail for every transition (fail-soft)
+            try:
+                _audit_svc = AuditService()
+                await _audit_svc.log_decision(
+                    company_id=str(company_id),
+                    agent_name=source_agent or "stage_service",
+                    decision_type="stage_transition",
+                    action="transition_candidate",
+                    decision=f"{from_stage} → {to_stage}",
+                    reasoning=[
+                        reason or "Stage transition",
+                        f"triggered_by={triggered_by}",
+                    ],
+                    criteria_used=["stage_fsm", "tenant_check", "fairness_gate"],
+                    candidate_id=str(vacancy_candidate.candidate_id) if hasattr(vacancy_candidate, "candidate_id") else None,
+                    job_vacancy_id=str(vacancy_candidate.vacancy_id) if hasattr(vacancy_candidate, "vacancy_id") else None,
+                    actor_user_id=triggered_by_user_id,
+                )
+            except Exception as _audit_err:
+                logger.warning(f"[AUDIT-SOFT] AuditService.log_decision failed (non-blocking): {_audit_err}")
+
             logger.info(
                 f"✅ Stage transition: {from_stage} → {to_stage} "
                 f"(candidate={vacancy_candidate.candidate_id}, agent={source_agent})"
