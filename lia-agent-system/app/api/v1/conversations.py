@@ -147,6 +147,19 @@ def _build_conversation_response(c) -> "ConversationResponse":
 
 
 # Domain tag keywords (D9 decision: 5 keywords/tag, run on first user message, fallback=Geral)
+def _truncate_to_title(text: str, max_chars: int = 50) -> str:
+    """Extract concise title from user message (first 50 chars at word boundary)."""
+    text = (text or "").strip()
+    if not text:
+        return "Nova conversa"
+    if len(text) <= max_chars:
+        return text.rstrip(".,;:!?")
+    truncated = text[:max_chars]
+    last_space = truncated.rfind(" ")
+    title = truncated[:last_space] if last_space > 15 else truncated
+    return title.rstrip(".,;:!?") + "\u2026"
+
+
 _DOMAIN_TAG_KEYWORDS: dict[str, list[str]] = {
     "Vagas": ["vaga", "cargo", "job", "posição", "jd", "descrição de cargo", "contratação"],
     "Candidatos": ["candidato", "candidate", "curriculo", "triagem", "cv", "entrevista", "screening"],
@@ -365,6 +378,35 @@ company_id: str = Depends(require_company_id)):
                 {"conv_id": conversation_id, "company_id": company_id},
             )
             await db.commit()
+
+            # Auto-generate title from first user message when title is None (IASidebar: T8)
+            from lia_models.conversation import Conversation as _Conv, Message as _Msg
+            from sqlalchemy import select as _sel, update as _upd
+            _title_q = await db.execute(
+                _sel(_Conv.title, _Conv.message_count).where(
+                    _Conv.id == conversation_id,
+                    _Conv.company_id == company_id,
+                )
+            )
+            _title_row = _title_q.first()
+            if _title_row and _title_row.title is None and (_title_row.message_count or 0) <= 3:
+                _first_user = await db.execute(
+                    _sel(_Msg.content).where(
+                        _Msg.conversation_id == conversation_id,
+                        _Msg.role == "user",
+                    ).order_by(_Msg.created_at).limit(1)
+                )
+                _user_row = _first_user.first()
+                if _user_row and _user_row.content:
+                    _auto_title = _truncate_to_title(_user_row.content)
+                    await db.execute(
+                        _upd(_Conv).where(
+                            _Conv.id == conversation_id,
+                            _Conv.company_id == company_id,
+                            _Conv.title.is_(None),  # guard: only if still None
+                        ).values(title=_auto_title)
+                    )
+                    await db.commit()
 
         # Auto-infer domain_tag on first user message (D9 decision)
         if request.role == "user":
