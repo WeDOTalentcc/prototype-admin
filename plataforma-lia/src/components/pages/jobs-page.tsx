@@ -280,7 +280,7 @@ export function JobsPage(props: JobsPageProps) {
           onSetReactivateScreeningJobs={setReactivateScreeningJobs as unknown as (jobs: Job[]) => void}
           onSetReactivateEndDate={setReactivateEndDate}
           jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
-            id: String(job.id),
+            id: job.backendId,
             code: job.jobId,
             title: job.title,
             status: job.status,

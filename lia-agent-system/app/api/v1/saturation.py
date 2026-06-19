@@ -1,3 +1,4 @@
+import uuid as _uuid
 import logging
 from datetime import datetime, timedelta
 from uuid import UUID
@@ -205,7 +206,11 @@ async def update_saturation_settings(
 @router.get("/job-vacancies/{job_id}/saturation-status", response_model=SaturationStatusResponse, tags=["saturation"])
 async def get_saturation_status(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
+    try:
+        _job_uuid = _uuid.UUID(str(job_id))
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=404, detail="Job vacancy not found")
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == _job_uuid))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
     if not vacancy:
         raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -368,7 +373,11 @@ class ProcessQueueResponse(BaseModel):
 @router.get("/job-vacancies/{job_id}/screening-queue", response_model=QueueStatusResponse, tags=["saturation"])
 async def get_screening_queue(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
+    try:
+        _job_uuid = _uuid.UUID(str(job_id))
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=404, detail="Job vacancy not found")
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == _job_uuid))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
     if not vacancy:
         raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -405,7 +414,11 @@ async def get_screening_queue(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_P
 @router.post("/job-vacancies/{job_id}/process-queue", response_model=ProcessQueueResponse, tags=["saturation"])
 async def process_queue(job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)], request: ProcessQueueRequest, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
+    try:
+        _job_uuid = _uuid.UUID(str(job_id))
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=404, detail="Job vacancy not found")
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == _job_uuid))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
     if not vacancy:
         raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -439,7 +452,11 @@ async def unlock_pipeline(
     company_id: str = Depends(require_company_id),
 ):
     # multi-tenancy: company_id vem do JWT via require_company_id (canonical)
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
+    try:
+        _job_uuid = _uuid.UUID(str(job_id))
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=404, detail="Job vacancy not found")
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == _job_uuid))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
     if not vacancy:
         raise HTTPException(status_code=404, detail="Job vacancy not found")

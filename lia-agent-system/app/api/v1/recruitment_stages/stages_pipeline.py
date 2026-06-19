@@ -6,7 +6,7 @@ Pipeline management endpoints:
 - Job pipeline GET/PUT
 - Pipeline inheritance status, copy-from-company, mark-customized
 """
-import uuid
+import uuid as _uuid
 import logging
 from datetime import datetime
 
@@ -517,8 +517,12 @@ company_id: str = Depends(require_company_id)):
 
         effective_company_id = get_user_company_id(current_user)
 
+        try:
+            _job_uuid = _uuid.UUID(str(job_id))
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=404, detail="Job not found")
         result = await stage_repo.db.execute(
-            sa_select(JobVacancy).where(JobVacancy.id == job_id)
+            sa_select(JobVacancy).where(JobVacancy.id == _job_uuid)
         )
         job = result.scalars().first()
         if not job:
@@ -553,8 +557,12 @@ company_id: str = Depends(require_company_id)):
 
         from app.models.job_vacancy import JobVacancy
 
+        try:
+            _job_uuid = _uuid.UUID(str(job_id))
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=404, detail="Job not found")
         job_result = await stage_repo.db.execute(
-            sa_select(JobVacancy).where(JobVacancy.id == job_id)
+            sa_select(JobVacancy).where(JobVacancy.id == _job_uuid)
         )
         job = job_result.scalars().first()
         if not job:
@@ -584,9 +592,13 @@ company_id: str = Depends(require_company_id)):
                 "default_channel": getattr(stage, 'default_channel', 'email') or "email",
             })
 
+        try:
+            _job_uuid = _uuid.UUID(str(job_id))
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=404, detail="Job not found")
         stmt = (
             sa_update(JobVacancy)
-            .where(JobVacancy.id == job_id)
+            .where(JobVacancy.id == _job_uuid)
             .values(
                 pipeline_config=pipeline_config,
                 is_pipeline_customized=False,
@@ -634,10 +646,14 @@ company_id: str = Depends(require_company_id)):
 
         from app.models.job_vacancy import JobVacancy
 
+        try:
+            _job_uuid = _uuid.UUID(str(job_id))
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=404, detail="Job not found")
         stmt = (
             sa_update(JobVacancy)
             .where(
-                JobVacancy.id == job_id,
+                JobVacancy.id == _job_uuid,
                 JobVacancy.company_id == company_id,
             )
             .values(

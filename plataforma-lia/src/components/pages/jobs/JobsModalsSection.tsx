@@ -96,7 +96,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showCompareModal}
         onClose={onCloseCompareModal}
         jobs={selectedJobs.map((job) => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           department: job.department,
@@ -119,7 +119,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showPublishModal}
         onClose={onClosePublishModal}
         jobs={selectedJobs.map(job => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           status: job.status,
@@ -135,7 +135,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showUnpublishModal}
         onClose={onCloseUnpublishModal}
         jobs={selectedJobs.filter(job => job.is_published).map(job => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           status: job.status,
@@ -153,7 +153,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         onClose={onCloseInsightsModal}
         onSendEmail={handleInsightsSendEmail}
         jobs={selectedJobs.map(job => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           status: job.status,
@@ -192,7 +192,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showStatusModal}
         onClose={onCloseStatusModal}
         jobs={selectedJobs.map(job => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           status: job.status,
@@ -214,7 +214,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showAssignRecruiterModal}
         onClose={onCloseAssignRecruiterModal}
         jobs={selectedJobs.map(job => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           recruiter: job.recruiter
