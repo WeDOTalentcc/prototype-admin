@@ -30,6 +30,43 @@ from app.domains.job_creation.helpers.llm_exceptions import (
 logger = logging.getLogger(__name__)
 
 
+
+def _bigfive_toggle_active(state) -> bool:
+    """Respeita o toggle 'company_big_five' das Instrucoes LIA (Configuracoes).
+
+    is_active=False => skip painel, wizard passa direto. Fail-open em caso de erro.
+    """
+    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+    if not company_id or company_id in ("default", "unknown"):
+        return True
+
+    async def _read():
+        import uuid as _uuid
+        from sqlalchemy import select as _select
+        from app.core.database import AsyncSessionLocal
+        from app.models.lia_field_toggles import LiaFieldToggle
+        try:
+            _cid = _uuid.UUID(company_id)
+        except ValueError:
+            return True
+        async with AsyncSessionLocal() as _db:
+            val = (
+                await _db.execute(
+                    _select(LiaFieldToggle.is_active).where(
+                        LiaFieldToggle.company_id == _cid,
+                        LiaFieldToggle.field_key == "company_big_five",
+                    )
+                )
+            ).scalar_one_or_none()
+        return val is not False
+
+    _TG_TIMEOUT_S = float(__import__("os").environ.get("LIA_BIGFIVE_TOGGLE_TIMEOUT_S", "5"))
+    try:
+        return run_coro_in_threadpool(_read, timeout=_TG_TIMEOUT_S)
+    except Exception:
+        return True
+
+
 def bigfive_node(state: JobCreationState) -> JobCreationState:
     """F2+F3: Extract Big Five profile from enriched JD + rank traits.
 
@@ -45,6 +82,19 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
         emit_policy_block_audit,
         evaluate_wizard_policy,
     )
+
+    # Toggle gate: company_big_five OFF => skip BigFive panel
+    if not _bigfive_toggle_active(state):
+        logger.info("[BigfiveNode] toggle 'company_big_five' OFF — skip painel")
+        return {
+            **state,
+            "bigfive_suggested": True,
+            "bigfive_profile": {},
+            "trait_rankings": [],
+            "bigfive_used_fallback": False,
+            "dept_blended": False,
+            "dept_blend_method": "toggle_off",
+        }
 
     t0 = time.time()
     logger.info("[JobCreation:bigfive] Starting F2+F3")

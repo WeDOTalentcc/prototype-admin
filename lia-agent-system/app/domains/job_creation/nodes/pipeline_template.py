@@ -60,6 +60,40 @@ def _derive_chronogram(interview_stages: list) -> list:
         return []
 
 
+
+def _pipeline_toggle_active(state) -> bool:
+    """Respeita o toggle 'pipeline' das Instrucoes LIA (Configuracoes). Fail-open."""
+    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+    if not company_id or company_id in ("default", "unknown"):
+        return True
+
+    async def _read():
+        import uuid as _uuid
+        from sqlalchemy import select as _select
+        from app.core.database import AsyncSessionLocal
+        from app.models.lia_field_toggles import LiaFieldToggle
+        try:
+            _cid = _uuid.UUID(company_id)
+        except ValueError:
+            return True
+        async with AsyncSessionLocal() as _db:
+            val = (
+                await _db.execute(
+                    _select(LiaFieldToggle.is_active).where(
+                        LiaFieldToggle.company_id == _cid,
+                        LiaFieldToggle.field_key == "pipeline",
+                    )
+                )
+            ).scalar_one_or_none()
+        return val is not False
+
+    _TG_TIMEOUT_S = float(__import__("os").environ.get("LIA_PIPELINE_TOGGLE_TIMEOUT_S", "5"))
+    try:
+        return run_coro_in_threadpool(_read, timeout=_TG_TIMEOUT_S)
+    except Exception:
+        return True
+
+
 def pipeline_template_node(state: JobCreationState) -> JobCreationState:
     """HITL stage canonical — sugere pipeline template ou permite skip.
 
@@ -83,6 +117,15 @@ def pipeline_template_node(state: JobCreationState) -> JobCreationState:
     )
 
     import re as _re
+
+    # Toggle gate: pipeline OFF => skip sugestao de templates, wizard passa direto
+    if not _pipeline_toggle_active(state):
+        logger.info("[PipelineTemplateNode] toggle 'pipeline' OFF — skip painel")
+        return {
+            **state,
+            "pipeline_template_suggested": True,
+            "interview_stages": state.get("interview_stages") or [],
+        }
 
     t0 = time.time()
 
