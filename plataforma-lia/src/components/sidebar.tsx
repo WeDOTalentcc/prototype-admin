@@ -295,16 +295,16 @@ const MenuItem = React.memo(({
     }
 
     if (hasSubItems && item.navigateOnClick) {
-      if (canAccess) onNavigate(item.label)
+      if (canAccess) onNavigate(item.navKey || item.label)
       setIsExpanded(true)
     } else if (hasSubItems) {
       setIsExpanded(prev => !prev)
     } else if (canAccess) {
-      onNavigate(item.label)
+      onNavigate(item.navKey || item.label)
     } else {
       onNavigate(`upgrade-${item.moduleId}`)
     }
-  }, [hasSubItems, canAccess, onNavigate, item.label, item.moduleId, item.navigateOnClick])
+  }, [hasSubItems, canAccess, onNavigate, item.label, item.navKey, item.moduleId, item.navigateOnClick])
 
   // When alwaysExpanded is set, sub-items stay visible regardless of the
   // collapse state — the chevron is hidden since there is nothing to toggle.
