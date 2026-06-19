@@ -105,16 +105,32 @@ async def update_global_search_settings(
 @router.get("/users", response_model=list[UserManagementResponse])
 async def list_users(
     company_id: str = Depends(require_company_id),
-    user_repo: UserRepository = Depends(get_user_repo)):
+    user_repo: UserRepository = Depends(get_user_repo),
+    dept_repo: DepartmentRepository = Depends(get_department_repo)):
     # multi-tenancy: company_id JWT-only via Depends(require_company_id)
     """List all users for a company.
 
     Audit Wave 3 (2026-05-21) — P1.A cleanup: removido dead-code branch
     de cross-tenant recovery. require_company_id_strict_match já enforça
     query=JWT antes do handler executar (HTTP 403 retornado pelo gate).
+    B4 fix (2026-06-19): enrich with department_name via dept batch lookup.
     """
     try:
-        return await user_repo.list_for_company(company_id, is_active=None)
+        users = await user_repo.list_for_company(company_id, is_active=None)
+        import uuid as _uuid
+        try:
+            depts = await dept_repo.list_for_company(_uuid.UUID(company_id))
+            dept_map = {str(d.id): d.name for d in depts}
+        except Exception:
+            dept_map = {}
+        result = []
+        for u in users:
+            resp = UserManagementResponse.model_validate(u)
+            if u.department_id:
+                resp.department_id = str(u.department_id)
+                resp.department_name = dept_map.get(str(u.department_id))
+            result.append(resp)
+        return result
     except HTTPException:
         raise
     except Exception as e:

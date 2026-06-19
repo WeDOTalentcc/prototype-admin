@@ -168,6 +168,7 @@ class Department(Base):
     order = Column(Integer, default=0)
     
     hiring_priority = Column(String(50), default="normal")
+    color = Column(String(100), nullable=True)
 
     # Defaults/template por departamento (work_model, pipeline_template_id,
     # tech_stack, employment_types, ...). Cadeia de heranca: a criacao de vaga

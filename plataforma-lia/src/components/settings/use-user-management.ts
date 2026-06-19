@@ -76,7 +76,7 @@ export function useUserManagement() {
         phone: '',
         whatsapp: '',
         role: u.role === 'admin' ? t('users.roleAdmin') : u.role === 'recruiter' ? t('users.roleRecruiter') : u.role === 'manager' ? t('users.roleManager') : t('users.roleViewer'),
-        department: 'Talent Acquisition',
+        department: (u.department_name as string) || '',
         position: u.role,
         status: u.status === 'active' || !u.status ? 'active' : u.status === 'inactive' ? 'inactive' : 'pending',
         permissions: Array.isArray(u.permissions) && (u.permissions as unknown[]).length > 0 ? u.permissions as string[] : [],

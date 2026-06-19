@@ -25,6 +25,7 @@ class DepartmentBase(BaseModel):
     location: str | None = None
     hiring_priority: str | None = "normal"
     order: int | None = 0
+    color: str | None = None
 
 
 class DepartmentCreate(DepartmentBase):
