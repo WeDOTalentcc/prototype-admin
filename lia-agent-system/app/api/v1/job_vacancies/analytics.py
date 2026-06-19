@@ -82,6 +82,7 @@ company_id: str = Depends(require_company_id)):
         job = await repo.get_job_by_id_and_company(job_vacancy_id, company_id)
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
+        job_vacancy_id = job.id  # resolve to UUID PK
 
         stage_counts = await repo.get_stage_counts_for_vacancy(job_vacancy_id)
         total_candidates = await repo.get_total_candidates_for_vacancy(job_vacancy_id)
@@ -229,6 +230,7 @@ company_id: str = Depends(require_company_id)):
         job = await repo.get_job_by_id_and_company(job_id, company_id)
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
+        job_id = job.id  # resolve to UUID PK (handles integer IDs from Rails)
 
         vacancy_candidates = await repo.get_all_vacancy_candidates(job_id)
         total_candidates = len(vacancy_candidates)
@@ -462,6 +464,7 @@ company_id: str = Depends(require_company_id)):
         job = await repo.get_job_by_id_and_company(job_id, company_id)
         if not job:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
+        job_id = job.id  # resolve to UUID PK
 
         history = await job_audit_service.get_history(
             job_id=str(job_id),
@@ -898,6 +901,7 @@ company_id: str = Depends(require_company_id)):
     job = await repo.get_job_by_id_and_company(job_id, company_id)
     if not job:
         raise HTTPException(status_code=404, detail="Vaga não encontrada")
+    job_id = job.id  # resolve to UUID PK
 
     vacancy_candidates = await repo.get_all_vacancy_candidates(job_id)
     total = len(vacancy_candidates)

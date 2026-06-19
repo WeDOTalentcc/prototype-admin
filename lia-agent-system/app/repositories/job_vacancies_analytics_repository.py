@@ -23,12 +23,31 @@ class JobVacanciesAnalyticsRepository:
     # ─── Shared: fetch a single job by id + company ──────────────────────────
 
     async def get_job_by_id_and_company(
-        self, job_id: UUID, company_id: str
+        self, job_id: str | UUID, company_id: str
     ) -> JobVacancy | None:
+        """Dual-ID lookup: accepts UUID string/obj (PK) or integer string (Rails bigint).
+        Integer IDs are looked up via job_vacancies.job_id column (String FK from Rails).
+        """
+        import uuid as _uuid
+        # Try UUID lookup (fast path — most calls are UUID)
+        try:
+            uuid_id = _uuid.UUID(str(job_id))
+            result = await self.db.execute(
+                select(JobVacancy).where(
+                    and_(
+                        JobVacancy.id == uuid_id,
+                        JobVacancy.company_id == company_id,
+                    )
+                )
+            )
+            return result.scalar_one_or_none()
+        except (ValueError, AttributeError):
+            pass
+        # Integer fallback — look up via rails job_id column (String "123")
         result = await self.db.execute(
             select(JobVacancy).where(
                 and_(
-                    JobVacancy.id == job_id,
+                    JobVacancy.job_id == str(job_id),
                     JobVacancy.company_id == company_id,
                 )
             )

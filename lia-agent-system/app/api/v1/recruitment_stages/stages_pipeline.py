@@ -350,7 +350,22 @@ company_id: str = Depends(require_company_id)):
 
         effective_company_id = get_user_company_id(current_user)
 
-        job = await stage_repo.db.get(JobVacancy, uuid.UUID(job_id))
+        try:
+            _job_uuid = uuid.UUID(job_id)
+        except (ValueError, AttributeError):
+            # Integer ID (Rails bigint) — look up via job_vacancies.job_id column
+            from sqlalchemy import select as _sa_select, and_ as _sa_and_
+            from app.models.job_vacancy import JobVacancy as _JV
+            _res = await stage_repo.db.execute(
+                _sa_select(_JV).where(
+                    _sa_and_(_JV.job_id == str(job_id), _JV.company_id == effective_company_id)
+                )
+            )
+            _fallback = _res.scalar_one_or_none()
+            if not _fallback:
+                raise HTTPException(status_code=404, detail="Job not found")
+            _job_uuid = _fallback.id
+        job = await stage_repo.db.get(JobVacancy, _job_uuid)
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
         if str(job.company_id) != effective_company_id:
@@ -413,7 +428,21 @@ company_id: str = Depends(require_company_id)):
 
         effective_company_id = get_user_company_id(current_user)
 
-        job = await stage_repo.db.get(JobVacancy, uuid.UUID(job_id))
+        try:
+            _job_uuid2 = uuid.UUID(job_id)
+        except (ValueError, AttributeError):
+            from sqlalchemy import select as _sa_select2, and_ as _sa_and2_
+            from app.models.job_vacancy import JobVacancy as _JV2
+            _res2 = await stage_repo.db.execute(
+                _sa_select2(_JV2).where(
+                    _sa_and2_(_JV2.job_id == str(job_id), _JV2.company_id == effective_company_id)
+                )
+            )
+            _fb2 = _res2.scalar_one_or_none()
+            if not _fb2:
+                raise HTTPException(status_code=404, detail="Job not found")
+            _job_uuid2 = _fb2.id
+        job = await stage_repo.db.get(JobVacancy, _job_uuid2)
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
         if str(job.company_id) != effective_company_id:
