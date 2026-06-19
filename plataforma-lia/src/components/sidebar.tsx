@@ -924,6 +924,23 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               onExternalToggle={onNotificationToggle}
             />
           ) : null}
+
+          {/* Brain — histórico de conversas (Apollo-style) */}
+          <div className="relative flex-shrink-0">
+            <button
+              type="button"
+              onClick={toggleIASidebar}
+              title="Histórico de conversas (⌘ + B)"
+              className="flex items-center justify-center w-7 h-7 rounded-lg text-lia-text-secondary hover:text-wedo-cyan hover:bg-wedo-cyan/10 transition-colors"
+            >
+              <Brain className="w-4 h-4" />
+            </button>
+            {totalUnread > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-0.5 bg-wedo-cyan text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                {totalUnread > 9 ? "9+" : totalUnread}
+              </span>
+            )}
+          </div>
         </div>
       )}
       {/* Bell only — collapsed sidebar */}
@@ -936,6 +953,25 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             externalIsOpen={notificationOpen}
             onExternalToggle={onNotificationToggle}
           />
+        </div>
+      )}
+
+      {/* Brain — collapsed sidebar (icon-only) */}
+      {!shouldShowContent && (
+        <div className="flex justify-center pb-1 relative">
+          <button
+            type="button"
+            onClick={toggleIASidebar}
+            title="Histórico de conversas"
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-lia-text-secondary hover:text-wedo-cyan hover:bg-wedo-cyan/10 transition-colors"
+          >
+            <Brain className="w-4 h-4" />
+          </button>
+          {totalUnread > 0 && (
+            <span className="absolute top-0 right-4 min-w-[14px] h-3.5 px-0.5 bg-wedo-cyan text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+              {totalUnread > 9 ? "9+" : totalUnread}
+            </span>
+          )}
         </div>
       )}
 
@@ -1130,24 +1166,6 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           >
             <HelpCircle className="w-3 h-3" />
           </Button>
-
-          {/* Brain icon — opens IASidebar (⌘+B) */}
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleIASidebar}
-              className="h-6 w-6 p-0 text-wedo-cyan hover:text-wedo-cyan/80 hover:bg-wedo-cyan/10"
-              title="Histórico de conversas (⌘ + B)"
-            >
-              <Brain className="w-3 h-3" />
-            </Button>
-            {totalUnread > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-wedo-cyan text-white text-[8px] font-bold rounded-full flex items-center justify-center">
-                {totalUnread > 9 ? "9+" : totalUnread}
-              </span>
-            )}
-          </div>
 
           {isMounted && <HitlPendingBadge />}
 
