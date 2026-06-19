@@ -375,8 +375,6 @@ type ModalType = "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5" | "twi
 
 export function PipelineOverviewPage() {
   // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('stage-agent-trigger', stageAgentModalStageId)
-  useLiaModalTracking('dispatch-dialog', showDispatchDialog)
 
   const tOverview = useTranslations("pipelineOverview")
   const mode = useUIPreferencesStore((s) => s.pipelineOverviewMode)
@@ -503,6 +501,8 @@ export function PipelineOverviewPage() {
   // vacancy.imported_from_ats (ATS-imported vagas already have candidates,
   // so 'imported_untriaged' is the right default; greenfield uses 'new_only').
   const [showDispatchDialog, setShowDispatchDialog] = useState(false)
+  useLiaModalTracking('stage-agent-trigger', stageAgentModalStageId)
+  useLiaModalTracking('dispatch-dialog', showDispatchDialog)
   const [dispatchVacancyId, setDispatchVacancyId] = useState<string | null>(null)
   const [dispatchAudience, setDispatchAudience] = useState<"new_only" | "imported_untriaged" | "manual_selection">("new_only")
   const [isDispatching, setIsDispatching] = useState(false)
