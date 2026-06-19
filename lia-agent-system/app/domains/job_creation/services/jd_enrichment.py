@@ -180,8 +180,11 @@ def _build_enrichment_prompt(
         )
 
     _company_block = (
-        "\n\nCONTEXTO DA EMPRESA (use para a secao \"about_company\" e para ancorar o "
-        "tom do JD; NUNCA invente dados que nao estejam aqui):\n" + company_context + "\n"
+        "\n\nCONTEXTO DA EMPRESA (use APENAS para a secao \"about_company\" e o TOM do JD."
+        " ATENCAO: o tech_stack listado aqui e o stack da EMPRESA, NAO as habilidades"
+        " exigidas PELO CARGO. Para skills_obrigatorias e skills_desejaveis, use o TITULO"
+        " e SENIORIDADE do cargo; ignore o tech_stack da empresa para inferir skills."
+        "\n" + company_context + "\n"
         if company_context else ""
     )
     return f"""Voce e um especialista em recrutamento. Analise o JD (Job Description) abaixo e produza uma versao enriquecida e estruturada.
