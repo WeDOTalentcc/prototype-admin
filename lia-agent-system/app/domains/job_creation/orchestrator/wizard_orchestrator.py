@@ -384,9 +384,11 @@ class WizardOrchestrator:
         *,
         tools: Optional[tuple[WizardTool, ...]] = None,
         model: Optional[str] = None,
+        service_tools_degraded: bool = False,
     ) -> None:
         self._registry = build_tool_registry(tools or ())
         self._model = model or _DEFAULT_MODEL
+        self._service_tools_degraded = service_tools_degraded
 
     # ── LLM client (produção) ──────────────────────────────────────────
     @staticmethod
@@ -476,11 +478,20 @@ class WizardOrchestrator:
             logger.debug("[WizardOrchestrator] creation modes block skipped: %s", type(exc).__name__)
         # Recruiter identity — explicit so LLM never guesses the name
         recruiter_name = str(state.get("parsed_recruiter_name") or "").strip()
+        recruiter_email = str(state.get("parsed_recruiter_email") or "").strip()
         recruiter_block = (
             f"\n\n## Recrutador desta sessão\nVocê está auxiliando **{recruiter_name}**."
             f" Use este nome ao se referir ao recrutador — nunca use outro nome."
+            f" NÃO pergunte o nome nem o e-mail do recrutador nesta sessão — o recrutador logado é **{recruiter_name}** ({recruiter_email if recruiter_email else 'e-mail não disponível'})."
             if recruiter_name
             else ""
+        )
+        degraded_block = (
+            "\n\n## ⚠️ Dados de serviço indisponíveis\n"
+            "As ferramentas de acesso a departamentos, benefícios, gestores e competências não puderam ser carregadas nesta sessão. "
+            "Informe ao recrutador que os dados não estão disponíveis e peça as informações manualmente quando necessário. "
+            "NUNCA invente departamentos, gestores, benefícios ou competências."
+            if self._service_tools_degraded else ""
         )
         return (
             f"{_SYSTEM_PROMPT_BASE}"
@@ -488,6 +499,7 @@ class WizardOrchestrator:
             f"## Estado real da vaga (ficha viva)\n{ficha}"
             f"{tenant_block}"
             f"{recruiter_block}"
+            f"{degraded_block}"
         )
 
     # ── Loop principal ─────────────────────────────────────────────────
@@ -738,5 +750,8 @@ def get_wizard_orchestrator() -> WizardOrchestrator:
                 "[WizardOrchestrator] service tools indisponíveis: %s", exc
             )
             SERVICE_TOOLS = ()
-        _default_orchestrator = WizardOrchestrator(tools=SERVICE_TOOLS)
+        _default_orchestrator = WizardOrchestrator(
+            tools=SERVICE_TOOLS,
+            service_tools_degraded=(len(SERVICE_TOOLS) == 0),
+        )
     return _default_orchestrator
