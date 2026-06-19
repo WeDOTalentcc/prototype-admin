@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import { useQuery } from "@tanstack/react-query"
 import {
   TrendingUp, TrendingDown, Users, Briefcase, Clock,
@@ -77,12 +77,46 @@ interface DashboardKPIs {
 }
 
 // ---------------------------------------------------------------------------
+// PremiumLock — overlay wrapper for Enterprise-gated sections
+// ---------------------------------------------------------------------------
+
+interface PremiumLockProps {
+  children: ReactNode
+  locked?: boolean
+  label?: string
+}
+
+function PremiumLock({ children, locked = true, label }: PremiumLockProps) {
+  if (!locked) return <>{children}</>
+  return (
+    <div className="relative overflow-hidden rounded-xl">
+      <div className="pointer-events-none select-none blur-sm opacity-40 saturate-0">
+        {children}
+      </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/60 backdrop-blur-sm rounded-xl z-10">
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted border">
+          <Lock className="w-5 h-5 text-muted-foreground" />
+        </div>
+        <div className="text-center px-4">
+          <p className="text-sm font-semibold text-foreground">
+            {label ? label + " — recurso Enterprise" : "Recurso Enterprise"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Disponível nos planos Professional e Enterprise.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // KpiCard
 // ---------------------------------------------------------------------------
 
 interface KpiCardProps {
   label: string; value: string; trend?: number; trendLabel?: string
-  icon: React.ReactNode; loading?: boolean
+  icon: ReactNode; loading?: boolean
 }
 
 function KpiCard({ label, value, trend, trendLabel, icon, loading }: KpiCardProps) {
@@ -488,15 +522,6 @@ function DiversityPanel({ isEnterprise }: { isEnterprise: boolean }) {
         )}
       </div>
     </PremiumLock>
-  )
-}
-
-g-violet-700 transition-colors">
-            Upgrade →
-          </button>
-        </div>
-      </div>
-    </div>
   )
 }
 
