@@ -472,9 +472,10 @@ export function KanbanColumnRenderer({
                 onSendFeedback={onSendFeedback as (c: unknown) => void}
                 onToggleShortList={onToggleShortList}
                 onToggleFavorite={onToggleFavorite}
-                allStages={dynamicStages.map(s => ({ id: s.id, displayName: s.displayName, color: s.color, isRejection: s.isRejection, isHired: s.isHired }))}
-                currentStageId={stageId}
-                onMoveTo={(c, toStage) => openTransition([c as KanbanCandidate], stageId, toStage)}
+                jobId={String(currentJob?.backendId || currentJob?.id || "")}
+                vacancyCandidateId={(candidate as Record<string, unknown>).vacancy_candidate_id as string | undefined}
+                currentStage={stageId}
+                onTransitionDone={() => openTransition([], stageId, stageId)}
               />
 
               {/* Header do Card - Checkbox, Avatar, Nome */}

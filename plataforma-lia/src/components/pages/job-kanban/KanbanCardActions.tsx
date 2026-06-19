@@ -8,9 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
   MoreVertical,
@@ -25,14 +22,7 @@ import {
   ArrowRight,
 } from "lucide-react"
 import { useScheduleMessageStore } from "@/stores/schedule-message-store"
-
-interface MoveStage {
-  id: string
-  displayName: string
-  color: string
-  isRejection?: boolean
-  isHired?: boolean
-}
+import { CandidateMoveDropdown } from "@/components/shared/CandidateMoveDropdown"
 
 interface KanbanCardActionsProps {
   candidate: {
@@ -50,9 +40,13 @@ interface KanbanCardActionsProps {
   onSendFeedback: (candidate: unknown) => void
   onToggleShortList: (candidateId: string) => void
   onToggleFavorite: (candidateId: string) => void
-  allStages?: MoveStage[]
-  currentStageId?: string
-  onMoveTo?: (candidate: unknown, toStage: string) => void
+  /** ID da vaga — para buscar pipeline e executar transição */
+  jobId?: string
+  /** ID do vínculo candidato-vaga (vacancy_candidate_id) */
+  vacancyCandidateId?: string
+  /** Etapa atual do candidato */
+  currentStage?: string
+  onTransitionDone?: () => void
 }
 
 export function KanbanCardActions({
@@ -67,22 +61,41 @@ export function KanbanCardActions({
   onSendFeedback,
   onToggleShortList,
   onToggleFavorite,
-  allStages,
-  currentStageId,
-  onMoveTo,
+  jobId,
+  vacancyCandidateId,
+  currentStage,
+  onTransitionDone,
 }: KanbanCardActionsProps) {
   const t = useTranslations('kanban')
   const openScheduleModal = useScheduleMessageStore((s) => s.openScheduleModal)
-
-  const moveableStages = allStages?.filter(
-    (s) => s.id !== currentStageId && !s.isHired
-  ) ?? []
 
   return (
     <>
 {/* Ações rápidas - Posicionadas no canto direito */}
 <div className="absolute right-2 top-8 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none z-10">
-  {/* Menu de opções - Primeiro */}
+  {/* Botão "Mover para" — mesmo componente do preview do candidato */}
+  {!!jobId && (
+    <CandidateMoveDropdown
+      jobId={jobId}
+      candidateId={candidate.id}
+      vacancyCandidateId={vacancyCandidateId}
+      currentStage={currentStage}
+      candidateName={candidate.name}
+      subFlyoutSide="left"
+      onTransitionDone={onTransitionDone}
+      trigger={
+        <button
+          className="p-1 hover:bg-lia-bg-tertiary rounded-xl transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80"
+          title={t('moveTo')}
+          aria-label={`Mover ${candidate.name} para outra etapa`}
+        >
+          <ArrowRight className="w-3 h-3 text-lia-text-secondary" aria-hidden="true" />
+        </button>
+      }
+    />
+  )}
+
+  {/* Menu de opções */}
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <button
@@ -95,35 +108,6 @@ export function KanbanCardActions({
       </button>
     </DropdownMenuTrigger>
     <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-48">
-      {moveableStages.length > 0 && onMoveTo && (
-        <>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="text-xs text-lia-text-primary cursor-pointer">
-              <ArrowRight className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
-              {t('moveTo')}
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="max-h-64 overflow-y-auto min-w-[180px]">
-              {moveableStages.map((stage) => (
-                <DropdownMenuItem
-                  key={stage.id}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onMoveTo(candidate, stage.id)
-                  }}
-                  className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
-                >
-                  <div
-                    className="w-2 h-2 rounded-full flex-shrink-0 mr-2"
-                    style={{ backgroundColor: stage.color }}
-                  />
-                  {stage.displayName}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-          <DropdownMenuSeparator />
-        </>
-      )}
       <DropdownMenuItem
         onClick={(e) => {
           e.stopPropagation()

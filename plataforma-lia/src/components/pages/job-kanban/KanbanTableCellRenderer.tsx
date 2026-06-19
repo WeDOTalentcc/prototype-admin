@@ -20,6 +20,7 @@ import {
   ChevronRight, MoreVertical, Video, BrainCircuit,
 } from"lucide-react"
 import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
+import { CandidateMoveDropdown } from "@/components/shared/CandidateMoveDropdown"
 import { renderScoreCell } from"./KanbanScoreCells"
 import { renderPearchCell } from"./KanbanPearchCells"
 import type {
@@ -205,15 +206,27 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
       case 'stage': {
         const candidateStageId = (candidate.stageId as string | undefined) || (candidate.stage as string | undefined)
         const currentStageObj = dynamicStages.find(s => s.id === candidateStageId)
+        const vcId = (candidate as Record<string, unknown>).vacancy_candidate_id as string | undefined
         return (
-          <StageDropdown
-            candidate={candidate}
-            dynamicStages={dynamicStages}
-            currentStageId={candidateStageId}
-            currentStageObj={currentStageObj}
-            jobVacancyId={jobVacancyId}
-            onTransitionRequired={onTransitionRequired}
-            onDirectTransition={onDirectTransition}
+          <CandidateMoveDropdown
+            jobId={jobVacancyId || ""}
+            candidateId={candidate.id as string}
+            vacancyCandidateId={vcId}
+            currentStage={candidateStageId}
+            candidateName={candidate.name as string}
+            subFlyoutSide="right"
+            onTransitionDone={() => { /* parent refresh via direct transition */ }}
+            trigger={
+              <button className="inline-flex items-center gap-1 group/stage" onClick={(e) => e.stopPropagation()}>
+                <Chip variant="neutral" muted
+                  className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary cursor-pointer"
+                  style={{ backgroundColor: currentStageObj?.color || "var(--lia-border-subtle)" }}
+                >
+                  {currentStageObj?.displayName || candidateStageId}
+                </Chip>
+                <ChevronDown className="w-3 h-3 text-lia-text-muted group-hover/stage:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
+              </button>
+            }
           />
         )
       }
@@ -373,108 +386,4 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
         return null
     }
   }
-}
-
-// StageDropdown — two-level Popover: stage (→ modal) + sub-statuses (→ direct PATCH)
-function StageDropdown({
-  candidate,
-  dynamicStages,
-  currentStageId,
-  currentStageObj,
-  jobVacancyId,
-  onTransitionRequired,
-  onDirectTransition,
-}: {
-  candidate: import("./KanbanTableCellRenderer.types").KanbanCandidate
-  dynamicStages: import("./KanbanTableCellRenderer.types").DynamicStageItem[]
-  currentStageId: string | undefined
-  currentStageObj: import("./KanbanTableCellRenderer.types").DynamicStageItem | undefined
-  jobVacancyId?: string
-  onTransitionRequired: (candidates: import("./KanbanTableCellRenderer.types").KanbanCandidate[], fromStage: string, toStage: string) => void
-  onDirectTransition?: (candidate: import("./KanbanTableCellRenderer.types").KanbanCandidate, toStage: string, subStatus: string, jobVacancyId?: string) => Promise<void>
-}) {
-  const [expandedStageId, setExpandedStageId] = React.useState<string | null>(null)
-  const [open, setOpen] = React.useState(false)
-
-  return (
-    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setExpandedStageId(null) }}>
-      <PopoverTrigger asChild>
-        <button className="inline-flex items-center gap-1 group/stage" onClick={(e) => e.stopPropagation()}>
-          <Chip variant="neutral" muted
-            className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary cursor-pointer"
-            style={{ backgroundColor: currentStageObj?.color || 'var(--lia-border-subtle)' }}
-          >
-            {currentStageObj?.displayName || currentStageId}
-          </Chip>
-          <ChevronDown className="w-3 h-3 text-lia-text-muted group-hover/stage:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-48 p-1.5" align="start" sideOffset={4}>
-        <div className="space-y-0.5">
-          {dynamicStages.map((stage) => {
-            const isCurrent = stage.id === currentStageId
-            const hasSubStatuses = !!stage.subStatuses?.length
-            const isExpanded = expandedStageId === stage.id
-            return (
-              <div key={stage.id}>
-                <button
-                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors motion-reduce:transition-none ${
-                    isCurrent
-                      ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary font-bold'
-                      : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50'
-                  }`}
-                  onClick={() => {
-                    if (isCurrent) return
-                    if (hasSubStatuses) {
-                      setExpandedStageId(prev => prev === stage.id ? null : stage.id)
-                    } else {
-                      setOpen(false)
-                      onTransitionRequired([candidate], currentStageId || '', stage.id)
-                    }
-                  }}
-                >
-                  <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: stage.color }} />
-                  <span className="flex-1 text-left text-lia-text-primary truncate">{stage.displayName}</span>
-                  {isCurrent && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan-text flex-shrink-0" />}
-                  {!isCurrent && hasSubStatuses && (
-                    <ChevronRight className={`w-3 h-3 text-lia-text-tertiary flex-shrink-0 transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-90' : ''}`} />
-                  )}
-                </button>
-
-                {isExpanded && hasSubStatuses && (
-                  <div className="ml-4 mt-0.5 space-y-0.5 border-l border-lia-border-subtle pl-2">
-                    <button
-                      className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-xs italic text-lia-text-tertiary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
-                      onClick={() => {
-                        setOpen(false)
-                        onTransitionRequired([candidate], currentStageId || '', stage.id)
-                      }}
-                    >
-                      Mover sem sub-status
-                    </button>
-                    {stage.subStatuses!.map((sub) => (
-                      <button
-                        key={sub.name}
-                        className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-xs text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
-                        onClick={async () => {
-                          setOpen(false)
-                          if (onDirectTransition) {
-                            await onDirectTransition(candidate, stage.id, sub.name, jobVacancyId)
-                          } else {
-                            onTransitionRequired([candidate], currentStageId || '', stage.id)
-                          }
-                        }}
-                      >
-                        {sub.display_name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
 }
