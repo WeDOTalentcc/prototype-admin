@@ -14,10 +14,9 @@ interface IntakeField {
 
 interface WizardIntakeCardProps {
   data: Record<string, unknown>
-  onOpenPanel?: () => void
 }
 
-export function WizardIntakeCard({ data, onOpenPanel }: WizardIntakeCardProps) {
+export function WizardIntakeCard({ data }: WizardIntakeCardProps) {
   const surface = useToolSurface()
   const [expanded, setExpanded] = useState(surface === "panel")
 
@@ -104,17 +103,6 @@ export function WizardIntakeCard({ data, onOpenPanel }: WizardIntakeCardProps) {
                   </span>
                 )}
               </div>
-            )}
-
-            {onOpenPanel && (
-              <button
-                type="button"
-                onClick={onOpenPanel}
-                className="flex items-center gap-1.5 text-[11px] text-lia-text-muted hover:underline mt-1"
-              >
-                <ExternalLink className="w-3 h-3" aria-hidden="true" />
-                Abrir no painel
-              </button>
             )}
           </motion.div>
         )}

@@ -15,7 +15,6 @@ interface CompetencyItem {
 
 interface WizardCompetencyCardProps {
   data: Record<string, unknown>
-  onOpenPanel?: () => void
 }
 
 function BlockBadge({ block }: { block?: string }) {
@@ -32,7 +31,7 @@ function BlockBadge({ block }: { block?: string }) {
   )
 }
 
-export function WizardCompetencyCard({ data, onOpenPanel }: WizardCompetencyCardProps) {
+export function WizardCompetencyCard({ data }: WizardCompetencyCardProps) {
   const surface = useToolSurface()
   const [expanded, setExpanded] = useState(surface === "panel")
 
@@ -127,18 +126,6 @@ export function WizardCompetencyCard({ data, onOpenPanel }: WizardCompetencyCard
           </button>
         )}
 
-        {onOpenPanel && (
-          <div className="px-3 py-2">
-            <button
-              type="button"
-              onClick={onOpenPanel}
-              className="flex items-center gap-1.5 text-[11px] text-lia-text-muted hover:underline"
-            >
-              <ExternalLink className="w-3 h-3" aria-hidden="true" />
-              Abrir no painel
-            </button>
-          </div>
-        )}
       </div>
     </div>
   )

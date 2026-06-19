@@ -16,7 +16,6 @@ interface WsiQuestion {
 
 interface WizardWsiCardProps {
   data: Record<string, unknown>
-  onOpenPanel?: () => void
 }
 
 function QBadge({ block }: { block?: string }) {
@@ -49,7 +48,7 @@ function QBadge({ block }: { block?: string }) {
  * F4: AnimatePresence nas perguntas extras (slice(3+)).
  * adaptive-surface: auto-expandido e sem botão "Ver todas" em surface=panel.
  */
-export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
+export function WizardWsiCard({ data }: WizardWsiCardProps) {
   const surface = useToolSurface()
   const [expanded, setExpanded] = useState(surface === "panel")
   const [expandedQ, setExpandedQ] = useState<number | null>(null)
@@ -193,17 +192,6 @@ export function WizardWsiCard({ data, onOpenPanel }: WizardWsiCardProps) {
           </button>
         )}
 
-        {onOpenPanel && (
-          <div className="px-3 py-2">
-            <button
-              type="button"
-              onClick={onOpenPanel}
-              className="text-[11px] text-lia-text-muted hover:underline"
-            >
-              Abrir no painel
-            </button>
-          </div>
-        )}
       </div>
     </div>
   )

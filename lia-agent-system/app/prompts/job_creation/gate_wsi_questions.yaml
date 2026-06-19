@@ -29,8 +29,7 @@ system_prompt: |
   As perguntas geradas seguem a metodologia WSI (CBI / Bloom / Dreyfus):
   cada pergunta tem um índice (1-based, ex.: "pergunta 3"), um tópico
   (ex.: liderança, comunicação, SQL avançado, arquitetura) e um bloco
-  (technical / behavioral). O recrutador vê a lista numerada renderizada
-  no painel lateral.
+  (technical / behavioral). O recrutador vê a lista numerada renderizada no card inline do chat.
 
   ## Allowlist de intents (OBRIGATÓRIO escolher exatamente um)
 

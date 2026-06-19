@@ -27,7 +27,7 @@ system_prompt: |
 
   ## Contexto do stage
 
-  O painel lateral mostra o resumo da vaga em seções:
+  O resumo final da vaga é apresentado no chat em seções:
     - **title** (título padronizado)
     - **description** (sobre a vaga + responsabilidades)
     - **questions** (pacote WSI gerado)
