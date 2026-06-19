@@ -270,8 +270,11 @@ function mapDepartmentFromApi(d: {
   };
 }
 
-async function fetchDepartments(): Promise<Department[]> {
-  const res = await fetch("/api/backend-proxy/company/departments");
+async function fetchDepartments(companyId?: string): Promise<Department[]> {
+  const url = companyId
+    ? `/api/backend-proxy/company/departments?company_id=${encodeURIComponent(companyId)}`
+    : "/api/backend-proxy/company/departments";
+  const res = await fetch(url);
   if (!res.ok) throw new Error("Falha ao carregar departamentos");
   const data = await res.json();
   return Array.isArray(data) ? data.map(mapDepartmentFromApi) : [];
@@ -304,8 +307,8 @@ export function useDepartmentManagement({
 
   // ── React Query: departments list ──────────────────────────────────────────
   const { data: queriedDepartments = [] } = useQuery<Department[]>({
-    queryKey: ["departments"],
-    queryFn: fetchDepartments,
+    queryKey: ["departments", companyId],
+    queryFn: () => fetchDepartments(companyId),
     staleTime: 30_000,
     initialData: initialDepartments.length > 0 ? initialDepartments : undefined,
   });
@@ -474,7 +477,7 @@ export function useDepartmentManagement({
 
   async function loadDepartments() {
     try {
-      const data = await fetchDepartments();
+      const data = await fetchDepartments(companyId);
       dispatch({ type: "SET_DEPTS_OVERRIDE", payload: data });
     } catch (err) {
       console.error("[Departments] loadDepartments failed:", err);
