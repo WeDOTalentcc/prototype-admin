@@ -67,7 +67,7 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
   if (activeTab === 'agents') {
     return (
       <JobAgentsTab
-        jobId={String(currentJob?.id || jobData?.id || '')}
+        jobId={String((currentJob?.backendId as string | undefined) || (currentJob?.id as string | undefined) || (jobData?.backendId as string | undefined) || (jobData?.id as string | undefined) || '')}
         jobTitle={(currentJob?.title || jobData?.title) as string | undefined}
       />
     )
@@ -77,7 +77,7 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
     return (
       <div className="flex-1 overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary">
         <div className="px-4 py-4 pb-12">
-          <VacancyAnalyticsTab jobId={String(currentJob?.id || jobData?.id || '')} />
+          <VacancyAnalyticsTab jobId={String((currentJob?.backendId as string | undefined) || (currentJob?.id as string | undefined) || (jobData?.backendId as string | undefined) || (jobData?.id as string | undefined) || '')} />
         </div>
       </div>
     )
