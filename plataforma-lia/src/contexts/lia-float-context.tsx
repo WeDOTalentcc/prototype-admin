@@ -473,7 +473,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       // popular msg.metadata para que UnifiedMessageList renderize o card inline.
       const _wsp = extras?.ws_stage_payload;
       if (_wsp) {
-        const _CARD_STAGES = ["jd_enrichment", "wsi_questions", "publish", "done"]
+        const _CARD_STAGES = ["publish", "done"]
         if (_CARD_STAGES.includes(_wsp.stage)) {
           msg.metadata = {
             ...(msg.metadata ?? {}),
