@@ -21,13 +21,19 @@ from unittest.mock import patch
 import pytest
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(REPO_ROOT))
-
-from scripts.check_tool_registry_sync import (
-    format_report,
-    main,
-    run_sync_check,
+# Use spec_from_file_location to avoid scripts/ namespace collision
+# (workspace root also has scripts/ — causing ModuleNotFoundError via pkg resolution)
+import importlib.util as _ilu
+_spec = _ilu.spec_from_file_location(
+    "check_tool_registry_sync",
+    str(REPO_ROOT / "scripts" / "check_tool_registry_sync.py"),
 )
+_mod = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+format_report = _mod.format_report
+main = _mod.main
+run_sync_check = _mod.run_sync_check
+del _ilu, _spec, _mod
 
 
 class TestRunSyncCheckStructure:
