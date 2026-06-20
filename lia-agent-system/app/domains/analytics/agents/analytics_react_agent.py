@@ -29,18 +29,12 @@ logger = logging.getLogger(__name__)
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 @register_agent("analytics")
 class AnalyticsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     # W4-032 (2026-05-23): exports + sharing trazem risco de data leak.
     # Read-only queries continuam sem gate (passthrough action_type).
-    _HITL_ACTION_TYPES = frozenset({
-        "export_report",
-        "share_dashboard",
-        "send_report_email",
-        "export_candidates_csv",
-        "schedule_recurring_export",
-    })
 
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="analytics",
@@ -182,7 +176,7 @@ class AnalyticsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAge
         _hitl_response = await maybe_request_hitl_approval(
             agent_input=input,
             domain=self.domain_name,
-            action_types=self._HITL_ACTION_TYPES,
+            action_types=HITL_REQUIRED_ACTIONS,
             agent_name="analytics_react_agent",
             description_template=(
                 "Confirmar **{action_type}** de dados analytics. "

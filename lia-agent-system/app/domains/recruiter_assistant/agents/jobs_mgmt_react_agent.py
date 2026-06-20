@@ -38,17 +38,11 @@ _CONFIRMATION_WORDS = {
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 @register_agent("job_management", aliases=['jobs_management', 'jobs_mgmt'])
 class JobsManagementReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     # W4-032 (2026-05-23): publish/unpublish e bulk job ops requerem HITL.
-    _HITL_ACTION_TYPES = frozenset({
-        "publish_vacancy",
-        "unpublish_vacancy",
-        "duplicate_vacancy",
-        "bulk_vacancy_status_change",
-        "delete_vacancy",
-    })
 
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="jobs_mgmt",
@@ -215,7 +209,7 @@ class JobsManagementReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanc
         _hitl_response = await maybe_request_hitl_approval(
             agent_input=input,
             domain=self.domain_name,
-            action_types=self._HITL_ACTION_TYPES,
+            action_types=HITL_REQUIRED_ACTIONS,
             agent_name="jobs_mgmt_react_agent",
             description_template=(
                 "Confirmar **{action_type}** na vaga. "

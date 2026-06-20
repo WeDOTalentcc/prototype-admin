@@ -30,6 +30,7 @@ from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
 from app.shared.services.confidence_policy_service import confidence_policy_service
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 logger = logging.getLogger(__name__)
 
@@ -191,15 +192,6 @@ class RecruiterCopilotReActAgent(
     """Agente global federado: vagas + candidatos + pipeline numa superficie."""
 
     # Acoes de escrita exigem HITL (confirmacao humana) antes de efetivar.
-    _HITL_ACTION_TYPES = frozenset({
-        "batch_move_candidates",
-        "bulk_candidate_move",
-        "send_batch_communication",
-        "pause_job",
-        "reopen_job",
-        "publish_vacancy",
-        "unpublish_vacancy",
-    })
 
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="recruiter_assistant",
@@ -380,7 +372,7 @@ class RecruiterCopilotReActAgent(
         _hitl_response = await maybe_request_hitl_approval(
             agent_input=input,
             domain=self.domain_name,
-            action_types=self._HITL_ACTION_TYPES,
+            action_types=HITL_REQUIRED_ACTIONS,
             agent_name="recruiter_copilot_react_agent",
             description_template=(
                 "Confirmar **{action_type}**. Acoes de escrita (mover candidatos, "

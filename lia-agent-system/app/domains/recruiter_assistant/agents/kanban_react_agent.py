@@ -38,18 +38,12 @@ _CONFIRMATION_WORDS = {
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 @register_agent("kanban")
 class KanbanReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     # W4-032 (2026-05-23): bulk operations + reject candidato exigem HITL.
     # Most-used recruiter surface, single point of side-effect concentration.
-    _HITL_ACTION_TYPES = frozenset({
-        "move_candidate",
-        "bulk_move",
-        "bulk_reject",
-        "bulk_advance",
-        "reject_candidate",
-    })
 
     """Autonomous agent for strategic pipeline analysis via LangGraph nativo."""
 
@@ -237,7 +231,7 @@ class KanbanReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentM
         hitl_response = await maybe_request_hitl_approval(
             agent_input=input,
             domain=self.domain_name,
-            action_types=self._HITL_ACTION_TYPES,
+            action_types=HITL_REQUIRED_ACTIONS,
             agent_name="kanban_react_agent",
             description_template=(
                 "Confirmar **{action_type}** no kanban. "

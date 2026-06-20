@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import re
 import json
 import sys
 from pathlib import Path
@@ -270,6 +271,40 @@ def scan(root: Path, canonical: frozenset[str]) -> list[dict]:
     return violations
 
 
+
+def check_no_local_hitl_frozensets(root: Path) -> list[tuple[str, int, str]]:
+    """
+    Detect agent files that still declare their own _HITL_ACTION_TYPES /
+    _HITL_MESSAGE_TYPES frozenset instead of importing from hitl_canonical_actions.
+
+    After R4 Phase 4 migration (2026-06-20), zero agent files should declare
+    their own local HITL frozenset. Any new local declaration diverges from the
+    P-SSOT and creates the exact gap this migration was designed to close.
+    """
+    violations = []
+    SUSPECT_NAMES = {"_HITL_ACTION_TYPES", "_HITL_MESSAGE_TYPES", "_HITL_TYPES"}
+    # Exempt: canonical source file and the agent_gate docstring (illustrative example)
+    EXEMPT_FILES = {"hitl_canonical_actions.py", "agent_gate.py", "check_hitl"}
+
+    for pyfile in sorted(root.rglob("*.py")):
+        if any(exc in str(pyfile) for exc in ("test", "__pycache__", *EXEMPT_FILES)):
+            continue
+        try:
+            lines = pyfile.read_text(encoding="utf-8").splitlines()
+        except Exception:
+            continue
+        for i, line in enumerate(lines, 1):
+            for name in SUSPECT_NAMES:
+                if re.search(rf"\b{re.escape(name)}\b\s*=\s*frozenset", line):
+                    rel = str(pyfile.relative_to(root.parent))
+                    violations.append((
+                        rel,
+                        i,
+                        f"{name} local frozenset — migrate to: "
+                        f"from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS"
+                    ))
+    return violations
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--blocking", action="store_true", help="Exit 1 if violations found.")
@@ -289,6 +324,16 @@ def main() -> int:
 
     root = Path(args.root).resolve()
     violations = scan(root, canonical)
+
+    # Check 2: no local frozensets in agent files (P-SSOT enforcement)
+    local_fs_violations = check_no_local_hitl_frozensets(root)
+    for fpath_str, lineno, msg in local_fs_violations:
+        print(f"\n❌ [{fpath_str}:{lineno}] LOCAL_FROZENSET")
+        print(f"   → Fix: {msg}")
+    violations = violations + [{
+        "file": fpath_str, "line": lineno, "constant": "LOCAL_FROZENSET",
+        "missing_from_canonical": [], "reason": msg, "fix": msg
+    } for fpath_str, lineno, msg in local_fs_violations]
 
     if args.json_output:
         print(json.dumps({

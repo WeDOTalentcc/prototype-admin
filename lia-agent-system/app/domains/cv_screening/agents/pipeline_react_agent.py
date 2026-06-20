@@ -37,17 +37,11 @@ _CONFIRMATION_WORDS = {
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 @register_agent("pipeline", aliases=['cv_screening'])
 class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     # W4-032 (2026-05-23): bulk pipeline ops + auto-screen rejection requerem HITL.
-    _HITL_ACTION_TYPES = frozenset({
-        "bulk_move_candidates",
-        "bulk_reject_candidates",
-        "auto_advance_stage",
-        "auto_reject_low_score",
-        "pipeline_transition",
-    })
 
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="cv_screening_pipeline",
@@ -203,7 +197,7 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
         _hitl_response = await maybe_request_hitl_approval(
             agent_input=input,
             domain=self.domain_name,
-            action_types=self._HITL_ACTION_TYPES,
+            action_types=HITL_REQUIRED_ACTIONS,
             agent_name="pipeline_react_agent",
             description_template=(
                 "Confirmar **{action_type}**. "

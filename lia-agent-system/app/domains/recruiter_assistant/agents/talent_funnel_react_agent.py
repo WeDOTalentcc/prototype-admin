@@ -38,17 +38,11 @@ _CONFIRMATION_WORDS = {
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 @register_agent("talent_funnel", aliases=["talent"])  # talent alias for legacy callers (test_context_type_routing_contracts)
 class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     # W4-032 (2026-05-23): bulk shortlist + sourcing outbound requerem HITL.
-    _HITL_ACTION_TYPES = frozenset({
-        "bulk_shortlist",
-        "bulk_sourcing_outreach",
-        "import_external_candidates",
-        "talent_pool_assignment",
-        "auto_reject_funnel",
-    })
 
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="talent",
@@ -215,7 +209,7 @@ class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanced
         _hitl_response = await maybe_request_hitl_approval(
             agent_input=input,
             domain=self.domain_name,
-            action_types=self._HITL_ACTION_TYPES,
+            action_types=HITL_REQUIRED_ACTIONS,
             agent_name="talent_funnel_react_agent",
             description_template=(
                 "Confirmar **{action_type}** no talent pool. "

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import os
 from contextvars import ContextVar, Token
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS  # P-GATE: canonical action registry
 
 _hitl_approved: ContextVar[bool] = ContextVar("_hitl_approved", default=False)
 
