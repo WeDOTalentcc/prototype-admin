@@ -41,6 +41,7 @@ def _make_vacancy_candidate():
     vc.rejected_by_human = False
     vc.human_reviewer_id = None
     vc.updated_at = None
+    vc.vacancy_id = "eeeeeeee-0000-4000-e000-000000000005"
     return vc
 
 
@@ -75,12 +76,12 @@ def _patch_ct():
     cand_result = MagicMock()
     cand_result.scalar_one_or_none.return_value = candidate
 
+    call_count = 0
+
     async def fake_execute(query, *args, **kwargs):
-        # first call returns candidate, second returns vc
-        if not hasattr(fake_execute, "_calls"):
-            fake_execute._calls = 0
-        fake_execute._calls += 1
-        if fake_execute._calls == 1:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
             return cand_result
         return vc_result
 
@@ -98,22 +99,25 @@ async def test_ct_a_rejection_stage_fairness_blocked():
     Fails now because raw write happens with no FairnessBlockedError raised."""
     vc, candidate, db = _patch_ct()
 
+    from app.domains.recruiter_assistant.services.pipeline_stage_service import FairnessBlockedError
+
     with (
         patch("app.core.database.AsyncSessionLocal") as mock_session_cls,
         patch("app.domains.cv_screening.tools.candidate_tools.context_or_raise") as mock_ctx,
         patch("app.domains.cv_screening.tools.candidate_tools.require_company_id_from_obj", return_value=_COMPANY_ID),
         patch("app.domains.cv_screening.tools.candidate_tools.validate_uuid_params", return_value=None),
-        patch("app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service") as mock_svc,
+        # hitl_preflight is a lazy import inside the function; patch at source module to disable gate
+        patch("app.shared.hitl.hitl_approval_context.hitl_preflight", return_value=None),
+        # patch transition_candidate on the singleton instance (lazy import binds to the object)
+        patch(
+            "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service.transition_candidate",
+            new_callable=AsyncMock,
+            side_effect=FairnessBlockedError(message="Viés detectado: motivo de rejeição discriminatório"),
+        ) as mock_transition,
     ):
         mock_ctx.return_value = _make_context()
         mock_session_cls.return_value.__aenter__ = AsyncMock(return_value=db)
         mock_session_cls.return_value.__aexit__ = AsyncMock(return_value=False)
-
-        # Service raises FairnessBlockedError for rejection stage
-        from app.domains.recruiter_assistant.services.pipeline_stage_service import FairnessBlockedError
-        mock_svc.transition_candidate = AsyncMock(
-            side_effect=FairnessBlockedError(message="Viés detectado: motivo de rejeição discriminatório")
-        )
 
         from app.domains.cv_screening.tools.candidate_tools import update_candidate_stage
         result = await update_candidate_stage(
@@ -127,7 +131,7 @@ async def test_ct_a_rejection_stage_fairness_blocked():
     )
     assert "success" in result and result["success"] is False
     # Service MUST have been called (not raw write)
-    mock_svc.transition_candidate.assert_called_once()
+    mock_transition.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -141,12 +145,18 @@ async def test_ct_b_valid_stage_routes_through_service():
         patch("app.domains.cv_screening.tools.candidate_tools.context_or_raise") as mock_ctx,
         patch("app.domains.cv_screening.tools.candidate_tools.require_company_id_from_obj", return_value=_COMPANY_ID),
         patch("app.domains.cv_screening.tools.candidate_tools.validate_uuid_params", return_value=None),
-        patch("app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service") as mock_svc,
+        # hitl_preflight is a lazy import inside the function; patch at source module to disable gate
+        patch("app.shared.hitl.hitl_approval_context.hitl_preflight", return_value=None),
+        # patch transition_candidate on the singleton instance
+        patch(
+            "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service.transition_candidate",
+            new_callable=AsyncMock,
+            return_value={"success": True},
+        ) as mock_transition,
     ):
         mock_ctx.return_value = _make_context()
         mock_session_cls.return_value.__aenter__ = AsyncMock(return_value=db)
         mock_session_cls.return_value.__aexit__ = AsyncMock(return_value=False)
-        mock_svc.transition_candidate = AsyncMock(return_value={"success": True})
 
         from app.domains.cv_screening.tools.candidate_tools import update_candidate_stage
         result = await update_candidate_stage(
@@ -156,8 +166,8 @@ async def test_ct_b_valid_stage_routes_through_service():
         )
 
     # transition_candidate MUST have been called
-    mock_svc.transition_candidate.assert_called_once()
-    call_kwargs = mock_svc.transition_candidate.call_args
+    mock_transition.assert_called_once()
+    call_kwargs = mock_transition.call_args
     # to_stage must be the target
     assert call_kwargs.kwargs.get("to_stage") == "Entrevista" or (
         len(call_kwargs.args) > 1 and call_kwargs.args[1] == "Entrevista"
@@ -177,12 +187,16 @@ async def test_ct_c_tenant_isolation_company_id_from_context():
         patch("app.domains.cv_screening.tools.candidate_tools.context_or_raise") as mock_ctx,
         patch("app.domains.cv_screening.tools.candidate_tools.require_company_id_from_obj", return_value=expected_company),
         patch("app.domains.cv_screening.tools.candidate_tools.validate_uuid_params", return_value=None),
-        patch("app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service") as mock_svc,
+        patch("app.shared.hitl.hitl_approval_context.hitl_preflight", return_value=None),
+        patch(
+            "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service.transition_candidate",
+            new_callable=AsyncMock,
+            return_value={"success": True},
+        ),
     ):
         mock_ctx.return_value = _make_context()
         mock_session_cls.return_value.__aenter__ = AsyncMock(return_value=db)
         mock_session_cls.return_value.__aexit__ = AsyncMock(return_value=False)
-        mock_svc.transition_candidate = AsyncMock(return_value={"success": True})
 
         from app.domains.cv_screening.tools.candidate_tools import update_candidate_stage
         await update_candidate_stage(
@@ -210,12 +224,22 @@ async def test_cm_a_rejection_fairness_blocked_raises_http422():
 
     vc = _make_vacancy_candidate()
 
+    # vc_repo must have get_for_candidate_and_job as AsyncMock returning vc
     vc_repo = MagicMock()
     vc_repo.db = AsyncMock()
     vc_repo.db.refresh = AsyncMock()
     vc_repo.update = AsyncMock()
+    vc_repo.get_for_candidate_and_job = AsyncMock(return_value=vc)
 
+    # candidate_repo must have get_by_id_str as AsyncMock returning candidate
+    candidate = MagicMock()
+    candidate.name = "Test User"
+    candidate.email = "test@example.com"
+    candidate.phone = "11999999999"
     candidate_repo = MagicMock()
+    candidate_repo.get_by_id_str = AsyncMock(return_value=candidate)
+    candidate_repo.update = AsyncMock()
+
     audit_svc = MagicMock()
     audit_svc.log_decision = AsyncMock()
     activity_svc = MagicMock()
@@ -224,21 +248,20 @@ async def test_cm_a_rejection_fairness_blocked_raises_http422():
     request = MagicMock()
     request.decision = "rejected"
     request.reason = None  # No reason — bypasses the early check_rejection_reason guard
-    request.reviewer_id = _USER_ID
+    request.reviewer_id = _USER_ID  # reviewer_id required for rejection
     request.job_id = "job-001"
-
-    candidate = MagicMock()
-    candidate.name = "Test User"
 
     with (
         patch("app.api.v1.candidates.candidates_metadata.check_rejection_reason") as mock_fg,
-        patch("app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service") as mock_svc,
+        # patch transition_candidate on the singleton instance
+        patch(
+            "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service.transition_candidate",
+            new_callable=AsyncMock,
+            side_effect=FairnessBlockedError(message="Stage is a rejection stage requiring fairness review"),
+        ) as mock_transition,
     ):
         # reason=None so early check is skipped; FairnessBlockedError comes from service
         mock_fg.return_value = MagicMock(is_blocked=False)
-        mock_svc.transition_candidate = AsyncMock(
-            side_effect=FairnessBlockedError(message="Stage is a rejection stage requiring fairness review")
-        )
 
         from app.api.v1.candidates.candidates_metadata import screening_decision
 
@@ -255,6 +278,7 @@ async def test_cm_a_rejection_fairness_blocked_raises_http422():
 
     assert exc_info.value.status_code == 422
     assert exc_info.value.detail.get("error") == "fairness_blocked"
+    mock_transition.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -262,16 +286,22 @@ async def test_cm_b_approved_routes_through_service():
     """T-cm-b RED: screening_decision approved → transition_candidate called.
     Fails now because raw write, no service call."""
     vc = _make_vacancy_candidate()
+    vc.status = "screening"  # not awaiting_screening — skip override branch
 
+    # vc_repo must have get_for_candidate_and_job as AsyncMock returning vc
     vc_repo = MagicMock()
     vc_repo.db = AsyncMock()
     vc_repo.db.refresh = AsyncMock()
     vc_repo.update = AsyncMock()
+    vc_repo.get_for_candidate_and_job = AsyncMock(return_value=vc)
 
-    candidate_repo = MagicMock()
     candidate = MagicMock()
     candidate.name = "Test User"
+    candidate.email = "test@example.com"
+    candidate.phone = "11999999999"
     candidate.status = "screening"
+    candidate_repo = MagicMock()
+    candidate_repo.get_by_id_str = AsyncMock(return_value=candidate)
     candidate_repo.update = AsyncMock()
 
     audit_svc = MagicMock()
@@ -287,15 +317,16 @@ async def test_cm_b_approved_routes_through_service():
 
     with (
         patch("app.api.v1.candidates.candidates_metadata.check_rejection_reason") as mock_fg,
-        patch("app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service") as mock_svc,
+        patch(
+            "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service.transition_candidate",
+            new_callable=AsyncMock,
+            return_value={"success": True},
+        ) as mock_transition,
     ):
         mock_fg.return_value = MagicMock(is_blocked=False)
-        mock_svc.transition_candidate = AsyncMock(return_value={"success": True})
 
         from app.api.v1.candidates.candidates_metadata import screening_decision
 
-        # This may raise AttributeError if function tries to access candidate or vc from repo
-        # We will see — the key assertion is that transition_candidate is called
         try:
             await screening_decision(
                 candidate_id=_CAND_ID,
@@ -309,4 +340,4 @@ async def test_cm_b_approved_routes_through_service():
         except Exception:
             pass  # May fail due to incomplete mocks; key is the service was called
 
-    mock_svc.transition_candidate.assert_called_once()
+    mock_transition.assert_called_once()
