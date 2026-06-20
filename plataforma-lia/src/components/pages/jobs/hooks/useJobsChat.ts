@@ -350,14 +350,23 @@ export function useJobsChat({
         }
         if (response.suggested_prompts?.length)
           setOrchestratorSuggestions(response.suggested_prompts);
-        if (response.ui_action === "start_job_wizard") {
+        // C10-05 (2026-06-20): start_job_wizard, filter_jobs, compare_jobs are NOT in the
+        // backend canonical allowlist (app/shared/ui_action_canonical.py) and are dropped
+        // at gate 1 (agentic_loop.py) before reaching the frontend. This dead code branch
+        // will never execute. Do not add these strings to the backend without a canonical entry.
+        // eslint-disable-next-line no-constant-condition
+        if (false && response.ui_action === "start_job_wizard") {
           openJobCreationChat(response.ui_action_params?.initial_message || "");
         } else if (
-          response.ui_action === "filter_jobs" &&
+          // eslint-disable-next-line no-constant-condition
+          false && response.ui_action === "filter_jobs" &&
           response.ui_action_params?.filter
         ) {
           setActiveFilter?.(response.ui_action_params.filter);
-        } else if (response.ui_action === "compare_jobs") {
+        } else if (
+          // eslint-disable-next-line no-constant-condition
+          false && response.ui_action === "compare_jobs"
+        ) {
           const ids = response.ui_action_params?.job_ids;
           openCompareModal?.(Array.isArray(ids) ? ids : undefined);
         }
