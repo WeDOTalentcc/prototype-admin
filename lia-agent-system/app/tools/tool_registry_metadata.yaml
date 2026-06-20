@@ -173,6 +173,56 @@ tools:
         fields: {type: object}
         tone: {type: string}
 
+
+  # ── Wizard Calibration Tools (Bug 13, 2026-06-20) ─────────────────────────
+  - name: calibration_action
+    description: >
+      Registra a decisão do recrutador sobre um candidato na etapa de
+      calibração pós-publish. Acionado pela mensagem estruturada
+      [calibration_action candidate_id=ID signal=SIGNAL].
+      signal: like=aprovar (conta), dislike=rejeitar (conta), skip=pular
+      (NÃO conta para o threshold). Atualiza calibration_candidates e
+      can_advance no state do wizard.
+    allowed_agents: [job_wizard, orchestrator]
+    scope: JOB_TABLE
+    version: "1.0"
+    module: wizard_service_tools
+    parameters:
+      type: object
+      required: [candidate_id, signal]
+      properties:
+        candidate_id: {type: string, description: "ID do candidato (extrair EXATAMENTE do marcador)"}
+        signal: {type: string, enum: [like, dislike, skip], description: "like=aprovar, dislike=rejeitar, skip=pular"}
+        reason: {type: string, description: "Motivo da decisão (opcional)"}
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
+  - name: advance_calibration
+    description: >
+      Confirma conclusão da etapa de calibração e avança o wizard para
+      handoff. Acionado pela mensagem estruturada [calibration_complete].
+      Único setter de calibration_complete=True — separa o nudge
+      (can_advance) da ejeção (calibration_complete). NÃO chamar sem
+      confirmação explícita do recrutador.
+    allowed_agents: [job_wizard, orchestrator]
+    scope: JOB_TABLE
+    version: "1.0"
+    module: wizard_service_tools
+    parameters:
+      type: object
+      properties: {}
+      additionalProperties: false
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   # ── Candidate Tools ────────────────────────────────────────────────────────
     returns:
       type: object
