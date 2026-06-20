@@ -5,7 +5,7 @@ import { createPortal } from "react-dom"
 import { useTranslations } from "next-intl"
 import {
   Brain, Plus, Pin, PinOff, Edit3, StickyNote, Archive, Trash2,
-  X, Search, MessageSquare, ChevronDown, ChevronsLeft,
+  X, Search, MessageSquare, MoreHorizontal, ChevronsLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -101,6 +101,7 @@ function SessionContextMenu({
 
   return (
     <div
+      data-session-menu
       style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999 }}
       className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg shadow-lg py-1 min-w-[160px]"
       onClick={(e) => e.stopPropagation()}
@@ -173,6 +174,17 @@ function SessionItem({
   const [addingNote, setAddingNote] = useState(false)
   const [noteValue, setNoteValue] = useState(session.note ?? "")
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (!(e.target as Element).closest("[data-session-menu]")) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [menuOpen])
 
   const totalUnread = (session.unread_count ?? 0) + localUnread
 
@@ -251,27 +263,24 @@ function SessionItem({
               <Pin className="w-2.5 h-2.5 flex-shrink-0 text-lia-text-muted" />
             )}
           </div>
-          <div className="flex items-center gap-1.5 min-w-0">
-            {session.domain_tag && <DomainTagChip tag={session.domain_tag} />}
-            <span className="text-[10px] text-lia-text-muted">
-              {session.updated_at
-                ? new Date(session.updated_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })
-                : ""}
-            </span>
-          </div>
+          {session.domain_tag && (
+            <div className="flex items-center gap-1.5 min-w-0">
+              <DomainTagChip tag={session.domain_tag} />
+            </div>
+          )}
         </button>
       )}
 
       {/* "..." hover menu trigger */}
       {!renaming && !addingNote && (
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+        <div data-session-menu className={cn("absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100", menuOpen && "!opacity-100")}>
           <button
             ref={menuButtonRef}
             onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v) }}
             className="p-1 rounded hover:bg-lia-bg-elevated text-lia-text-muted hover:text-lia-text-secondary"
             aria-label={t("aria.sessionOptions")}
           >
-            <ChevronDown className="w-3 h-3" />
+            <MoreHorizontal className="w-3 h-3" />
           </button>
           {menuOpen && (
             <SessionContextMenu
@@ -502,7 +511,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
         aria-label={t("aria.historyPanel")}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle">
+        <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4 text-wedo-cyan" />
             <span className="text-sm font-semibold text-lia-text-primary">{t("header")}</span>
@@ -519,10 +528,10 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
         </div>
 
         {/* Nova conversa CTA */}
-        <div className="px-3 py-2 border-b border-lia-border-subtle">
+        <div className="px-3 py-2">
           <button
             onClick={() => { openLiaChat(); closeIASidebar() }}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-wedo-cyan/10 hover:bg-wedo-cyan/15 text-wedo-cyan text-sm font-medium transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-lia-bg-inverse hover:bg-lia-bg-inverse/90 text-lia-text-on-inverse text-sm font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
             {t("newConversation")}
