@@ -441,7 +441,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
         {/* Nova conversa CTA */}
         <div className="px-3 py-2 border-b border-lia-border-subtle">
           <button
-            onClick={() => { onNewConversation?.(); closeIASidebar() }}
+            onClick={() => { openLiaChat(); closeIASidebar() }}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-wedo-cyan/10 hover:bg-wedo-cyan/15 text-wedo-cyan text-sm font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />

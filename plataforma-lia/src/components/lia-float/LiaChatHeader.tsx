@@ -8,6 +8,7 @@ import {
   type LucideIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useIASessionStore } from "@/stores/ia-session-store"
 import type { ActionType } from "@/hooks/shared/use-action-intent"
 import type { EntityContext } from "@/contexts/lia-float-context"
 
@@ -48,6 +49,7 @@ export function LiaChatHeader({
   handleNewChat, handleClear, handleToggleHistory, handleExpand, close,
   setActiveActionType, setActionLabel, onSwitchTask,
 }: LiaChatHeaderProps) {
+  const { toggleIASidebar, isIASidebarOpen } = useIASessionStore()
   const ContextIcon = contextPage ? (CONTEXT_PAGE_ICONS[contextPage] || null) : null
   const entityLabel = entityContext?.name
     ? `${entityContext.type === "candidate" ? "Candidato" : "Vaga"}: ${entityContext.name}`
@@ -104,16 +106,16 @@ export function LiaChatHeader({
             </button>
           )}
           <button
-            onClick={handleToggleHistory}
+            onClick={toggleIASidebar}
             className={cn(
               "p-1.5 rounded-md transition-colors",
-              showHistory
+              isIASidebarOpen
                 ? "text-wedo-cyan-text bg-lia-bg-tertiary"
                 : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
             )}
             title="Histórico de conversas"
             aria-label="Ver histórico de conversas"
-            aria-expanded={showHistory}
+            aria-expanded={isIASidebarOpen}
           >
             <History className="w-3.5 h-3.5" />
           </button>
