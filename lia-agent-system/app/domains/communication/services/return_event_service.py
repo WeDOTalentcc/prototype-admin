@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from lia_models.activity_feed import ActivityFeed
 from lia_models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import notification_service
+from app.domains.recruiter_assistant.services.pipeline_stage_service import pipeline_stage_service
 
 logger = logging.getLogger(__name__)
 
@@ -207,7 +208,8 @@ class ReturnEventService:
             new_stage = event_config.get("stage")
 
             updated = await self._update_candidate_status(
-                vacancy_candidate_id, sub_status, new_stage
+                vacancy_candidate_id, sub_status, new_stage,
+                triggered_by=triggered_by,
             )
             if not updated:
                 logger.error(
@@ -316,16 +318,51 @@ class ReturnEventService:
         vacancy_candidate_id: str,
         sub_status: str,
         stage: str | None = None,
+        triggered_by: str | None = None,
     ) -> bool:
-        """Update VacancyCandidate status and optionally stage."""
+        """Update VacancyCandidate status and optionally stage.
+
+        Item11 SEV1 FIX (P-GUARD): when the event moves the candidate to a
+        new stage, route through pipeline_stage_service.transition_candidate()
+        instead of raw sa_update(VacancyCandidate). This ensures:
+          - Fairness gate fires for rejection stages
+          - STAGE_CHANGED event is published
+          - AuditService.log_decision is written
+          - Candidate history entry is created
+        For events with stage=None (sub_status only), sa_update is still used
+        because no stage transition occurs.
+        """
         try:
+            if stage is not None:
+                # P-GUARD: route through canonical transition service.
+                # transition_candidate resolves company_id from the VacancyCandidate
+                # record (no cross-tenant risk) and enforces FSM + fairness gate.
+                transition_result = await pipeline_stage_service.transition_candidate(
+                    vacancy_candidate_id=vacancy_candidate_id,
+                    to_stage=stage,
+                    to_sub_status=sub_status,
+                    triggered_by=triggered_by or "return_event_service",
+                    source_agent="return_event_service",
+                    db=self.db,
+                )
+                success = transition_result.get("success", False)
+                if not success:
+                    logger.warning(
+                        "[ReturnEventService] transition_candidate failure: vc=%s stage=%s result=%s",
+                        vacancy_candidate_id, stage, transition_result,
+                    )
+                    return False
+                logger.info(
+                    "[ReturnEventService] transition_candidate succeeded: vc=%s stage=%s sub=%s",
+                    vacancy_candidate_id, stage, sub_status,
+                )
+                return True
+
+            # No stage change: sub_status update only (sa_update acceptable here).
             values: dict[str, Any] = {
                 "status": sub_status,
                 "updated_at": datetime.utcnow(),
             }
-            if stage is not None:
-                values["stage"] = stage
-
             stmt = (
                 sa_update(VacancyCandidate)
                 .where(VacancyCandidate.id == vacancy_candidate_id)
@@ -336,19 +373,20 @@ class ReturnEventService:
 
             if getattr(result, 'rowcount', 0) == 0:  # type: ignore[union-attr]
                 logger.warning(
-                    f"No rows updated for vacancy_candidate_id={vacancy_candidate_id}"
+                    "[ReturnEventService] No rows updated for vc=%s",
+                    vacancy_candidate_id,
                 )
                 return False
 
             logger.info(
-                f"Updated VacancyCandidate {vacancy_candidate_id}: "
-                f"status={sub_status}, stage={stage}"
+                "[ReturnEventService] Sub-status updated: vc=%s sub_status=%s",
+                vacancy_candidate_id, sub_status,
             )
             return True
 
         except Exception as e:
             logger.error(
-                f"Error updating candidate status: {e}", exc_info=True
+                "[ReturnEventService] Error updating candidate status: %s", e, exc_info=True
             )
             try:
                 await self.db.rollback()

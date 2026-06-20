@@ -48,12 +48,6 @@
     "snippet": "vc.status = \"rejected\""
   },
   {
-    "file": "app/domains/communication/services/return_event_service.py",
-    "line": 330,
-    "pattern": "P3-core-update",
-    "snippet": "sa_update(VacancyCandidate)"
-  },
-  {
     "file": "app/domains/cv_screening/agents/pipeline_tool_registry.py",
     "line": 703,
     "pattern": "P4-orm-assign(.stage)",
