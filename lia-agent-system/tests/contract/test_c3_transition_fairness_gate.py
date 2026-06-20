@@ -1,24 +1,24 @@
 """
-SEV1-C3-01 — execute_transition deve aplicar gate de fairness ANTES da escrita.
+SEV1-C3-01 — transition_candidate deve aplicar gate de fairness ANTES da escrita.
 
-Auditoria C3 (Execução de Transição de Candidato) encontrou que o endpoint
-POST /transition/execute (Path A — modal UI) não chama check_rejection_reason
-antes do UPDATE no banco, permitindo que rejeições discriminatórias persistam
-sem validação de fairness.
+Redireccionado de execute_transition (Path C, deletado) para o serviço canônico
+PipelineStageService.transition_candidate que implementa o P-GUARD correto.
 
 Princípio: P-GUARD — gate de política ANTES do efeito irreversível.
 Compliance: Lei 9.029/95 (Art. 1°), CLT Art. 373-A.
 Raiz: SEV1-C3-01 — fairness bypass on rejection via UI modal.
 
-TDD RED: test_rejection_with_discriminatory_sub_status_is_blocked FALHA antes
-do fix porque stages_transition.py::execute_transition não importa nem chama
-check_rejection_reason — mock_check.called será False.
-
-TDD GREEN: após fix, a função chama check_rejection_reason antes do stmt =
-sa_update(...), o mock retorna is_blocked=True e HTTPException(422) é levantada.
+O serviço canônico aplica o gate em R1-A (linha ~224 de pipeline_stage_service.py):
+    if any(rej in _to_stage_lower for rej in REJECTION_STAGES):
+        _fairness_reason = reason or to_sub_status or ""
+        if _fairness_reason:
+            _fg = check_rejection_reason(...)
+            if _fg.is_blocked:
+                raise FairnessBlockedError(...)
 """
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -26,34 +26,31 @@ import pytest
 
 # ─── Fixtures helpers ─────────────────────────────────────────────────────────
 
-def _make_request(**kwargs):
-    from app.api.v1.recruitment_stages._shared import TransitionExecuteRequest
-    defaults = dict(
-        vacancy_candidate_id="cand-aaa-001",
-        to_stage="reprovado",
-        sub_status="estado civil",
-        action="just_move",
-    )
-    defaults.update(kwargs)
-    return TransitionExecuteRequest(**defaults)
+_VC_UUID = "00000000-0000-0000-0000-000000000001"
+_COMPANY_ID = "co-ccc-003"
 
 
-def _make_user():
-    u = MagicMock()
-    u.id = "user-bbb-002"
-    return u
+def _make_vacancy_candidate(stage="triagem", company_id=_COMPANY_ID):
+    vc = MagicMock()
+    vc.id = _VC_UUID
+    vc.candidate_id = "cand-aaa-001"
+    vc.vacancy_id = "vac-111"
+    vc.company_id = company_id
+    vc.stage = stage
+    vc.status = "in_review"
+    vc.previous_status = "in_review"
+    return vc
 
 
-def _make_stage_repo(rowcount: int = 1):
-    repo = MagicMock()
-    db = AsyncMock()
-    exec_result = MagicMock()
-    exec_result.rowcount = rowcount
-    db.execute = AsyncMock(return_value=exec_result)
-    db.commit = AsyncMock()
-    db.rollback = AsyncMock()
-    repo.db = db
-    return repo
+def _make_stage_obj(name, company_id=_COMPANY_ID):
+    s = MagicMock()
+    s.id = "stage-uuid-001"
+    s.name = name
+    s.display_name = name
+    s.is_active = True
+    s.company_id = company_id
+    s.stage_order = 1
+    return s
 
 
 def _blocked_fairness_output():
@@ -75,86 +72,108 @@ def _clean_fairness_output():
     return FairnessCheckOutput()  # is_blocked=False por padrão
 
 
-# ─── RED test — prova o defeito SEV1-C3-01 ───────────────────────────────────
+def _make_db_mock(vc, stage_obj):
+    """AsyncSession mock: db.get returns vc; db.execute returns stage scalars."""
+    db = AsyncMock()
+    db.get = AsyncMock(return_value=vc)
+
+    scalars_mock = MagicMock()
+    scalars_mock.all = MagicMock(return_value=[stage_obj])
+    exec_result = MagicMock()
+    exec_result.scalars = MagicMock(return_value=scalars_mock)
+    db.execute = AsyncMock(return_value=exec_result)
+
+    db.commit = AsyncMock()
+    db.rollback = AsyncMock()
+    db.add = MagicMock()
+    db.flush = AsyncMock()
+    db.__aenter__ = AsyncMock(return_value=db)
+    db.__aexit__ = AsyncMock(return_value=False)
+    return db
+
+
+# ─── Tests ────────────────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_rejection_with_discriminatory_sub_status_is_blocked():
+async def test_rejection_with_discriminatory_sub_status_raises_fairness_blocked():
     """
-    RED: stages_transition.py não chama check_rejection_reason →
-         mock_check.called=False e HTTPException(422) não é levantada → FALHA.
+    transition_candidate para estágio de rejeição com sub_status discriminatório
+    deve chamar check_rejection_reason e levantar FairnessBlockedError.
 
-    GREEN (após fix): check_rejection_reason é chamado ANTES de sa_update →
-                      mock retorna is_blocked=True → HTTPException(422) →
-                      PASSA.
+    GREEN: pipeline_stage_service.py implementa R1-A gate.
+    Compliance: Lei 9.029/95, CLT Art. 373-A.
     """
-    from app.api.v1.recruitment_stages.stages_transition import execute_transition
-    from fastapi import HTTPException
+    from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+        FairnessBlockedError,
+        PipelineStageService,
+    )
+
+    COMPANY_ID = _COMPANY_ID
+    stage_obj = _make_stage_obj("reprovado", COMPANY_ID)
+    vc = _make_vacancy_candidate(stage="triagem", company_id=COMPANY_ID)
+    db = _make_db_mock(vc, stage_obj)
+
+    service = PipelineStageService()
 
     with patch(
-        "app.api.v1.recruitment_stages.stages_transition.check_rejection_reason",
-        create=True,  # cria o atributo mesmo antes da importação existir (RED state)
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.derive_company_from_context",
+        new_callable=AsyncMock,
+        return_value=COMPANY_ID,
+    ), patch(
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.check_rejection_reason",
         return_value=_blocked_fairness_output(),
-    ) as mock_check, patch(
-        "app.api.v1.recruitment_stages.stages_transition.settings"
-    ) as mock_settings:
-        mock_settings.ENABLE_LLM_SUBSTATUS_PREDICTION = False
-        mock_settings.ENABLE_LLM_DISPATCH_PERSONALIZATION = False
+    ) as mock_check:
 
-        raised_fairness_block = False
-        try:
-            await execute_transition(
-                request=_make_request(to_stage="reprovado", sub_status="estado civil"),
-                current_user=_make_user(),
-                stage_repo=_make_stage_repo(rowcount=1),
-                company_id="co-ccc-003",
+        with pytest.raises(FairnessBlockedError):
+            await service.transition_candidate(
+                vacancy_candidate_id=_VC_UUID,
+                to_stage="reprovado",
+                to_sub_status="estado civil",
+                reason="estado civil",
+                triggered_by="test",
+                force=True,  # skip FSM/data_request_service to isolate fairness gate
+                db=db,
             )
-        except HTTPException as exc:
-            if exc.status_code == 422 and isinstance(exc.detail, dict):
-                if exc.detail.get("error") == "fairness_blocked":
-                    raised_fairness_block = True
-        except Exception:
-            pass  # outros erros não comprovam o gate
 
-    # ── Assertions (ambas FALHAM no estado RED) ──
     assert mock_check.called, (
-        "[RED] check_rejection_reason não foi chamado.\n"
-        "execute_transition deve verificar fairness ANTES de escrever no banco "
-        "(P-GUARD, SEV1-C3-01). Importar check_rejection_reason e chamá-la "
-        "quando to_stage ∈ REJECTION_STAGES e sub_status não é vazio."
-    )
-    assert raised_fairness_block, (
-        "[RED] HTTPException(422, error=fairness_blocked) não foi levantada.\n"
-        "Compliance: Lei 9.029/95, CLT Art. 373-A. "
-        "Ver candidatos_crud.py:789 para o padrão canônico."
+        "check_rejection_reason deve ser chamado quando to_stage ∈ REJECTION_STAGES "
+        "e há reason/sub_status (P-GUARD, SEV1-C3-01)."
     )
 
-
-# ─── Boundary tests (GREEN) ───────────────────────────────────────────────────
 
 @pytest.mark.asyncio
 async def test_rejection_without_sub_status_skips_fairness_check():
     """
-    Rejeição SEM sub_status → check_rejection_reason NÃO deve ser chamado.
-    Não há motivo para checar texto discriminatório se não há texto.
+    Rejeição SEM reason E SEM sub_status → check_rejection_reason NÃO deve ser chamado.
+    Não há texto discriminatório para checar.
     """
-    from app.api.v1.recruitment_stages.stages_transition import execute_transition
+    from app.domains.recruiter_assistant.services.pipeline_stage_service import PipelineStageService
+
+    COMPANY_ID = _COMPANY_ID
+    stage_obj = _make_stage_obj("reprovado", COMPANY_ID)
+    vc = _make_vacancy_candidate(stage="triagem", company_id=COMPANY_ID)
+    db = _make_db_mock(vc, stage_obj)
+
+    service = PipelineStageService()
 
     with patch(
-        "app.api.v1.recruitment_stages.stages_transition.check_rejection_reason",
-        create=True,
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.derive_company_from_context",
+        new_callable=AsyncMock,
+        return_value=COMPANY_ID,
+    ), patch(
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.check_rejection_reason",
         return_value=_blocked_fairness_output(),  # retornaria blocked SE chamado
-    ) as mock_check, patch(
-        "app.api.v1.recruitment_stages.stages_transition.settings"
-    ) as mock_settings:
-        mock_settings.ENABLE_LLM_SUBSTATUS_PREDICTION = False
-        mock_settings.ENABLE_LLM_DISPATCH_PERSONALIZATION = False
+    ) as mock_check:
 
         try:
-            await execute_transition(
-                request=_make_request(to_stage="reprovado", sub_status=None),
-                current_user=_make_user(),
-                stage_repo=_make_stage_repo(rowcount=1),
-                company_id="co-ccc-003",
+            await service.transition_candidate(
+                vacancy_candidate_id=_VC_UUID,
+                to_stage="reprovado",
+                to_sub_status=None,
+                reason=None,
+                triggered_by="test",
+                force=True,
+                db=db,
             )
         except Exception:
             pass  # outros erros são irrelevantes para este boundary test
@@ -165,28 +184,36 @@ async def test_rejection_without_sub_status_skips_fairness_check():
 @pytest.mark.asyncio
 async def test_non_rejection_stage_skips_fairness_check():
     """
-    Transição para estágio NÃO-rejeição → check_rejection_reason NÃO deve
-    ser chamado mesmo com sub_status discriminatório.
+    Transição para estágio NÃO-rejeição → check_rejection_reason NÃO deve ser
+    chamado mesmo com reason discriminatório.
     """
-    from app.api.v1.recruitment_stages.stages_transition import execute_transition
+    from app.domains.recruiter_assistant.services.pipeline_stage_service import PipelineStageService
+
+    COMPANY_ID = _COMPANY_ID
+    stage_obj = _make_stage_obj("entrevista", COMPANY_ID)
+    vc = _make_vacancy_candidate(stage="triagem", company_id=COMPANY_ID)
+    db = _make_db_mock(vc, stage_obj)
+
+    service = PipelineStageService()
 
     with patch(
-        "app.api.v1.recruitment_stages.stages_transition.check_rejection_reason",
-        create=True,
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.derive_company_from_context",
+        new_callable=AsyncMock,
+        return_value=COMPANY_ID,
+    ), patch(
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.check_rejection_reason",
         return_value=_blocked_fairness_output(),  # retornaria blocked SE chamado
-    ) as mock_check, patch(
-        "app.api.v1.recruitment_stages.stages_transition.settings"
-    ) as mock_settings:
-        mock_settings.ENABLE_LLM_SUBSTATUS_PREDICTION = False
-        mock_settings.ENABLE_LLM_DISPATCH_PERSONALIZATION = False
+    ) as mock_check:
 
         try:
-            await execute_transition(
-                # "entrevista" não está em REJECTION_STAGES → fairness skip
-                request=_make_request(to_stage="entrevista", sub_status="estado civil"),
-                current_user=_make_user(),
-                stage_repo=_make_stage_repo(rowcount=1),
-                company_id="co-ccc-003",
+            await service.transition_candidate(
+                vacancy_candidate_id=_VC_UUID,
+                to_stage="entrevista",
+                to_sub_status="estado civil",
+                reason="estado civil",
+                triggered_by="test",
+                force=True,
+                db=db,
             )
         except Exception:
             pass
@@ -197,41 +224,49 @@ async def test_non_rejection_stage_skips_fairness_check():
 @pytest.mark.asyncio
 async def test_rejection_with_valid_sub_status_passes():
     """
-    Rejeição com sub_status técnico válido → check é chamado, não bloqueia.
+    Rejeição com reason técnico válido → check é chamado, não bloqueia,
+    FairnessBlockedError NÃO é levantada.
     """
-    from app.api.v1.recruitment_stages.stages_transition import execute_transition
-    from fastapi import HTTPException
+    from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+        FairnessBlockedError,
+        PipelineStageService,
+    )
+
+    COMPANY_ID = _COMPANY_ID
+    stage_obj = _make_stage_obj("reprovado", COMPANY_ID)
+    vc = _make_vacancy_candidate(stage="triagem", company_id=COMPANY_ID)
+    db = _make_db_mock(vc, stage_obj)
+
+    service = PipelineStageService()
 
     with patch(
-        "app.api.v1.recruitment_stages.stages_transition.check_rejection_reason",
-        create=True,
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.derive_company_from_context",
+        new_callable=AsyncMock,
+        return_value=COMPANY_ID,
+    ), patch(
+        "app.domains.recruiter_assistant.services.pipeline_stage_service.check_rejection_reason",
         return_value=_clean_fairness_output(),  # is_blocked=False
-    ) as mock_check, patch(
-        "app.api.v1.recruitment_stages.stages_transition.settings"
-    ) as mock_settings:
-        mock_settings.ENABLE_LLM_SUBSTATUS_PREDICTION = False
-        mock_settings.ENABLE_LLM_DISPATCH_PERSONALIZATION = False
+    ) as mock_check:
 
-        raised_fairness_block = False
+        fairness_raised = False
         try:
-            await execute_transition(
-                request=_make_request(
-                    to_stage="reprovado",
-                    sub_status="perfil técnico incompatível com os requisitos da vaga",
-                ),
-                current_user=_make_user(),
-                stage_repo=_make_stage_repo(rowcount=1),
-                company_id="co-ccc-003",
+            await service.transition_candidate(
+                vacancy_candidate_id=_VC_UUID,
+                to_stage="reprovado",
+                to_sub_status="perfil técnico incompatível com os requisitos da vaga",
+                reason="perfil técnico incompatível com os requisitos da vaga",
+                triggered_by="test",
+                force=True,
+                db=db,
             )
-        except HTTPException as exc:
-            if exc.status_code == 422 and isinstance(exc.detail, dict):
-                if exc.detail.get("error") == "fairness_blocked":
-                    raised_fairness_block = True
+        except FairnessBlockedError:
+            fairness_raised = True
         except Exception:
-            pass
+            pass  # outros erros são irrelevantes para este boundary test
 
-    # Check foi chamado mas NÃO bloqueou (sub_status é técnico, não discriminatório)
-    mock_check.assert_called_once()
-    assert not raised_fairness_block, (
+    assert mock_check.called, (
+        "check_rejection_reason deve ser chamado mesmo com sub_status técnico."
+    )
+    assert not fairness_raised, (
         "sub_status técnico não deve ser bloqueado pelo fairness gate."
     )

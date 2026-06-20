@@ -488,6 +488,7 @@ async def delete_pipeline_stage(
                     from sqlalchemy import update as sa_update
 
                     from app.models.vacancy_candidates import VacancyCandidate
+                    # R1-EXEMPT: updates stage_id FK (not stage string) during stage-definition deletion — bulk move preserves tenant isolation; tracked for pipeline_stage_service migration in <card>
                     await db.execute(
                         sa_update(VacancyCandidate)
                         .where(

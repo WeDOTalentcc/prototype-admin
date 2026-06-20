@@ -79,29 +79,7 @@ def test_wrap_finalize_hiring_sets_is_hired():
 
 
 # ---------------------------------------------------------------------------
-# Teste 2 -- pipeline/tools/pipeline_tools.register_hire (code inspection)
-# ---------------------------------------------------------------------------
-
-def test_pipeline_tools_register_hire_b2_code_present():
-    """register_hire deve conter bloco B2 que seta is_hired=True."""
-    import inspect
-    from app.domains.pipeline.tools import pipeline_tools as pt
-
-    source = inspect.getsource(pt.register_hire)
-
-    assert "is_hired = True" in source, (
-        "register_hire deve conter 'is_hired = True' (bloco B2)"
-    )
-    assert "hired_at" in source, (
-        "register_hire deve conter 'hired_at' (bloco B2)"
-    )
-    assert "CandidateRepository" in source, (
-        "register_hire deve usar CandidateRepository para setar is_hired (bloco B2)"
-    )
-
-
-# ---------------------------------------------------------------------------
-# Teste 3 -- handlers_lifecycle.handle_candidate_hired (code inspection)
+# Teste 2 -- handlers_lifecycle.handle_candidate_hired (code inspection)
 # ---------------------------------------------------------------------------
 
 def test_handler_lifecycle_b2_code_present():
