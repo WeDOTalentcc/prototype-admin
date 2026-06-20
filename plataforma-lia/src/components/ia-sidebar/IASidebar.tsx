@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo, useCallback, useEffect, useRef } from "react"
+import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from "react"
+import { createPortal } from "react-dom"
 import { useTranslations } from "next-intl"
 import {
   Brain, Plus, Pin, PinOff, Edit3, StickyNote, Archive, Trash2,
@@ -75,6 +76,7 @@ interface ContextMenuProps {
   onNote: () => void
   onArchive: () => void
   onDelete: () => void
+  triggerRef: React.RefObject<HTMLButtonElement>
 }
 
 function SessionContextMenu({
@@ -85,11 +87,22 @@ function SessionContextMenu({
   onNote,
   onArchive,
   onDelete,
+  triggerRef,
 }: ContextMenuProps) {
   const t = useTranslations("iaSidebar")
+  const [pos, setPos] = useState({ top: 0, right: 0 })
+
+  useLayoutEffect(() => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      setPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+    }
+  }, [triggerRef])
+
   return (
     <div
-      className="absolute right-0 top-6 z-50 bg-lia-bg-primary border border-lia-border-subtle rounded-lg shadow-lg py-1 min-w-[160px]"
+      style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999 }}
+      className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg shadow-lg py-1 min-w-[160px]"
       onClick={(e) => e.stopPropagation()}
     >
       <button
@@ -159,6 +172,7 @@ function SessionItem({
   const [renameValue, setRenameValue] = useState(session.title ?? "")
   const [addingNote, setAddingNote] = useState(false)
   const [noteValue, setNoteValue] = useState(session.note ?? "")
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
 
   const totalUnread = (session.unread_count ?? 0) + localUnread
 
@@ -252,6 +266,7 @@ function SessionItem({
       {!renaming && !addingNote && (
         <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
           <button
+            ref={menuButtonRef}
             onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v) }}
             className="p-1 rounded hover:bg-lia-bg-elevated text-lia-text-muted hover:text-lia-text-secondary"
             aria-label={t("aria.sessionOptions")}
@@ -261,6 +276,7 @@ function SessionItem({
           {menuOpen && (
             <SessionContextMenu
               session={session}
+              triggerRef={menuButtonRef}
               onClose={() => setMenuOpen(false)}
               onPin={() => onUpdate({ id: session.id, is_pinned: !session.is_pinned })}
               onRename={() => { setRenameValue(session.title ?? ""); setRenaming(true) }}
@@ -464,8 +480,9 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
   const activeNote = activeSession?.note ?? null
 
   if (!isIASidebarOpen) return null
+  if (typeof document === "undefined") return null
 
-  return (
+  return createPortal(
     <>
       {/* Overlay — covers only content area to the right of sidebar (Apollo-style) */}
       <div
@@ -649,6 +666,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
           aria-hidden="true"
         />
       </aside>
-    </>
+    </>,
+    document.body
   )
 }

@@ -55,7 +55,7 @@ async function fetchSessions(filters: ListFilters = {}): Promise<IASession[]> {
   const res = await fetch(url, { credentials: "include" })
   if (!res.ok) throw new Error(`Failed to fetch sessions: ${res.status}`)
   const data: SessionListResponse = await res.json()
-  return data.conversations
+  return data.conversations ?? []
 }
 
 export function useIASessions(filters: ListFilters = {}) {
