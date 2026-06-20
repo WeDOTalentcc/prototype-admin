@@ -131,15 +131,29 @@ async def update_candidate_stage(
                 
                 if vacancy_candidate:
                     previous_stage = vacancy_candidate.stage or "N/A"
-                    vacancy_candidate.stage = target_stage
-                    vacancy_candidate.status = target_stage.lower().replace(" ", "_")
-                    # Task #1306: also persist the structural stage link so the
-                    # SLA detector can join by id instead of fragile name match.
-                    from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
-                    vacancy_candidate.recruitment_stage_id = await resolve_recruitment_stage_id(
-                        db, str(vacancy_candidate.company_id), target_stage
+                    # R1-canonical: route stage write through pipeline_stage_service (P-SSOT + P-GUARD).
+                    # Lazy import avoids circular dependency.
+                    from app.domains.recruiter_assistant.services.pipeline_stage_service import (  # noqa: PLC0415
+                        FairnessBlockedError as _FairnessBlockedError,
+                        pipeline_stage_service as _pss,
                     )
-                    vacancy_candidate.updated_at = datetime.utcnow()
+                    try:
+                        await _pss.transition_candidate(
+                            vacancy_candidate_id=str(vacancy_candidate.id),
+                            to_stage=target_stage,
+                            triggered_by="llm_tool",
+                            triggered_by_user_id=user_id,
+                            reason=notes,
+                            source_agent="update_candidate_stage",
+                        )
+                    except _FairnessBlockedError as _fb:
+                        return {
+                            "success": False,
+                            "error": "fairness_blocked",
+                            "message": _fb.message,
+                            "educational_message": _fb.message,
+                            "compliance": ["Lei 9.029/95", "CLT Art. 373-A"],
+                        }
                 else:
                     # TENANT-EXEMPT: INTENTIONAL cross-tenant probe. After the
                     # tenant-scoped query above returned None, this checks whether

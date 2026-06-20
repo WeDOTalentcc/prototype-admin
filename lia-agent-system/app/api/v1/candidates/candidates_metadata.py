@@ -526,51 +526,40 @@ company_id: str = Depends(require_company_id)):
                 activity_description += f". Motivo: {request.reason}"
 
         if vacancy_candidate:
-            vacancy_candidate.stage = new_stage
-            vacancy_candidate.status = new_status
-            # Task #1306: also persist the structural stage link so the SLA
-            # detector can join by id instead of fragile name matching.
-            from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
-            vacancy_candidate.recruitment_stage_id = await resolve_recruitment_stage_id(
-                vc_repo.db, str(vacancy_candidate.company_id), new_stage
+            # R1-canonical: route stage write through pipeline_stage_service (P-SSOT + P-GUARD).
+            # StageChangedEvent emitted by service (chain step 4 — see candidates_crud.py:948).
+            # Lazy import avoids circular dependency (service -> _shared -> candidates_crud).
+            from app.domains.recruiter_assistant.services.pipeline_stage_service import (  # noqa: PLC0415
+                FairnessBlockedError as _FairnessBlockedError,
+                pipeline_stage_service as _pss,
             )
-            vacancy_candidate.updated_at = datetime.utcnow()
-            if request.reason:
-                vacancy_candidate.notes = (vacancy_candidate.notes or "") + f"\n[Triagem] {request.reason}"
+            try:
+                await _pss.transition_candidate(
+                    vacancy_candidate_id=str(vacancy_candidate.id),
+                    to_stage=new_stage,
+                    to_sub_status=new_status,
+                    triggered_by="human_reviewer",
+                    triggered_by_user_id=str(request.reviewer_id) if request.reviewer_id else None,
+                    reason=request.reason,
+                    source_agent="screening_decision",
+                )
+            except _FairnessBlockedError as _fb:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "fairness_blocked",
+                        "message": _fb.message,
+                        "compliance": ["Lei 9.029/95", "CLT Art. 373-A"],
+                    },
+                )
+            # Extra LGPD/compliance fields not managed by canonical service.
+            await vc_repo.db.refresh(vacancy_candidate)
             if request.decision == "rejected":
                 vacancy_candidate.rejected_by_human = True
                 vacancy_candidate.human_reviewer_id = request.reviewer_id
+            if request.reason:
+                vacancy_candidate.notes = (vacancy_candidate.notes or "") + f"\n[Triagem] {request.reason}"
             await vc_repo.update(vacancy_candidate)
-
-            # Agent Studio Fase 2.5 — Onda C1.3: emite stage_changed no
-            # platform.events (decisao de triagem move o candidato de stage).
-            # REGRA 4: fail-soft mas LOUD. Multi-tenancy: company_id de
-            # vacancy_candidate.company_id (row do tenant), NUNCA do request.
-            if current_stage != new_stage:
-                try:
-                    from lia_events.schemas import StageChangedEvent
-                    from app.shared.messaging.events_outbox_service import get_events_outbox_service
-                    _evt_company_id = str(
-                        getattr(vacancy_candidate, "company_id", "") or company_id
-                    )
-                    _evt = StageChangedEvent(
-                        company_id=_evt_company_id,
-                        payload={
-                            "candidate_id": str(candidate_id),
-                            "vacancy_id": str(vacancy_candidate.vacancy_id),
-                            "from_stage": current_stage or "unknown",
-                            "to_stage": new_stage,
-                        },
-                        source_api="lia-agent-system",
-                    )
-                    await get_events_outbox_service().publish_via_outbox(_evt, candidate_repo.db)
-                except Exception as _evt_err:  # noqa: BLE001
-                    logger.error(
-                        "[C1.3] publish stage_changed (screening) failed "
-                        "(decisao prossegue): %s",
-                        _evt_err,
-                        exc_info=True,
-                    )
 
         candidate.status = new_status
         await candidate_repo.update(candidate)
