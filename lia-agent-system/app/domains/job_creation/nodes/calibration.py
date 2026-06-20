@@ -106,6 +106,9 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
     updates: Dict[str, Any] = {
         "current_stage": "calibration",
         "calibration_complete": complete,
+        # Bug A fix: persiste candidatos no state (era somente em ws_stage_payload).
+        # Sem isso _derive_wizard_stage via get() retorna [] (falsy) → "handoff".
+        "calibration_candidates": candidates,
         "stage_history": _stage_history + ["calibration"],
         "completeness": calculate_completeness("calibration"),
         "requires_approval": False,

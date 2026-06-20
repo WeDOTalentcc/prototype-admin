@@ -75,8 +75,11 @@ def _derive_wizard_stage(state: dict) -> str:
     # Bug 13: calibração pós-publish — candidatos em calibração + vaga publicada
     # + calibração NÃO concluída → manter no stage de calibração.
     # guard not calibration_complete para cair em handoff após advance_calibration.
+    # Bug B fix: isinstance(list) em vez de truthiness — [] (0 candidatos Rails)
+    # também sinaliza "fase de calibração iniciada". None/ausente = não iniciada.
+    _calib_cands = state.get("calibration_candidates")
     if (
-        state.get("calibration_candidates")
+        isinstance(_calib_cands, list)
         and state.get("job_id")
         and not state.get("calibration_complete")
     ):

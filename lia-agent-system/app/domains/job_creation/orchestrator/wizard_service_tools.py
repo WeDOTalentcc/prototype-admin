@@ -573,7 +573,15 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
 
         await db.commit()
 
-    return {"job_id": job_id, "share_link": f"/pt/jobs/{job_id}"}
+    # Bug C fix: sinaliza início da fase de calibração no orchestrator path
+    # (LIA_WIZARD_ORCHESTRATOR=1). O calibration_node do graph faz isso
+    # automaticamente, mas o path FastAPI bypassa o graph. Com calibration_candidates=[]
+    # + job_id presente, _derive_wizard_stage retorna "calibration" (não "handoff").
+    return {
+        "job_id": job_id,
+        "share_link": f"/pt/jobs/{job_id}",
+        "calibration_candidates": [],
+    }
 
 
 
