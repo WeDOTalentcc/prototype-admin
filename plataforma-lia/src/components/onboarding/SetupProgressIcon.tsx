@@ -58,7 +58,7 @@ function ProgressRing({ progress, size = 28 }: { progress: number; size?: number
       <circle
         cx={size / 2} cy={size / 2} r={r}
         fill="none" stroke="currentColor" strokeWidth="2"
-        className="text-lia-border-medium opacity-30"
+        className="text-lia-text-muted"
       />
       <circle
         cx={size / 2} cy={size / 2} r={r}
