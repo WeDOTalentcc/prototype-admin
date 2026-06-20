@@ -72,15 +72,18 @@ def _derive_wizard_stage(state: dict) -> str:
     painel lateral é stage-driven. Derivamos o stage do conteúdo do estado
     para o painel transicionar naturalmente (ficha → JD → publicado).
     """
-    # Bug 13: calibração pós-publish — candidatos em calibração + vaga publicada
-    # + calibração NÃO concluída → manter no stage de calibração.
-    # guard not calibration_complete para cair em handoff após advance_calibration.
-    # Bug B fix: isinstance(list) em vez de truthiness — [] (0 candidatos Rails)
-    # também sinaliza "fase de calibração iniciada". None/ausente = não iniciada.
-    _calib_cands = state.get("calibration_candidates")
+    # Bug B fix (2026-06-20): read current_stage directly from state.
+    # The PREVIOUS fix read ws_stage_payload.stage which is built AFTER
+    # _derive_wizard_stage is called (circular dependency). First calibration
+    # turn never showed candidates because no previous ws_stage_payload existed
+    # (calibration_node had not run yet), so this block never matched.
+    # Fix: _handle_calibration in domain.py sets current_stage="calibration"
+    # explicitly BEFORE calling graph.resume(), making it a reliable signal.
+    # calibration_complete guard preserved for post-advance_calibration handoff.
+    #
+    # Sensor: tests/contract/test_wizard_calibration_stage.py T-b (RED→GREEN)
     if (
-        isinstance(_calib_cands, list)
-        and state.get("job_id")
+        state.get("current_stage") == "calibration"
         and not state.get("calibration_complete")
     ):
         return "calibration"

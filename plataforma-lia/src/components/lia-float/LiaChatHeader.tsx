@@ -62,17 +62,14 @@ export function LiaChatHeader({
           <div className="w-7 h-7 rounded-full flex items-center justify-center">
             <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
           </div>
-          <div className="flex flex-col">
-            <span className="text-base-ui font-bold text-lia-text-primary leading-tight">LIA</span>
-            {(entityLabel || (contextPage && contextPage !== "Conversar")) && (
-              <span className="inline-flex items-center gap-1 text-xs text-lia-text-tertiary leading-tight">
-                {ContextIcon && <ContextIcon className="w-3 h-3" />}
-                <span className="truncate max-w-[180px]">
-                  {entityLabel || contextPage}
-                </span>
+          {(entityLabel || (contextPage && contextPage !== "Conversar")) && (
+            <span className="inline-flex items-center gap-1 text-xs text-lia-text-tertiary leading-tight">
+              {ContextIcon && <ContextIcon className="w-3 h-3" />}
+              <span className="truncate max-w-[180px]">
+                {entityLabel || contextPage}
               </span>
-            )}
-          </div>
+            </span>
+          )}
           {isConnected && (
             <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title="Conectado" />
           )}
