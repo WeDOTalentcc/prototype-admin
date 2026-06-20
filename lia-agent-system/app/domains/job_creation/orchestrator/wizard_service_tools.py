@@ -524,6 +524,7 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
             manager_email=state.get("parsed_manager_email") or "",
             stakeholders=state.get("parsed_stakeholders") or [],
             created_by=_uid if _uid not in ("", "anonymous") else None,
+            eligibility_questions=state.get("eligibility_questions") or [],
         )
         vacancy = await repo.create_vacancy(vacancy)
         job_id = str(vacancy.id)
