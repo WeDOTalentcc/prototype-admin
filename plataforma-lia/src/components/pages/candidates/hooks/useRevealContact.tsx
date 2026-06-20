@@ -41,6 +41,10 @@ export function useRevealContact({
         })
       })
 
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
       const data = await response.json()
 
       if (data.success) {
@@ -89,10 +93,13 @@ export function useRevealContact({
           }
         }
       } else {
-        toast.error("Contato não disponível", { description: data.message || 'Não foi possível revelar o contato', duration: 5000 })
+        const noDataTitle =
+          revealType === 'email' ? 'Sem email disponível' : 'Sem telefone disponível'
+        const noDataDesc = data.message || 'Este candidato não possui o contato nas bases consultadas. Não há cobrança.'
+        toast.warning(noDataTitle, { description: noDataDesc, duration: 6000 })
       }
     } catch {
-      toast.error("Erro ao revelar contato", { description: "Ocorreu um erro. Tente novamente.", duration: 5000 })
+      toast.error("Erro ao revelar contato", { description: "Falha de comunicação com o servidor. Tente novamente em instantes.", duration: 5000 })
     } finally {
       setIsRevealing(false)
     }

@@ -20,6 +20,7 @@ from ._shared import (
 from app.domains.sourcing.services.contact_enrichment_service import ContactEnrichmentService
 from app.domains.candidates.repositories.candidate_filter_repository import CandidateFilterRepository
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -297,11 +298,12 @@ company_id: str = Depends(require_company_id)):
         
         if not result.search_results:
             await _track_pearch_reveal(db, _company_id, f"reveal_{request.reveal_type}", 0, False, result_status="no_contact")
+            contact_label = "email" if request.reveal_type == "email" else "telefone"
             return RevealContactResponse(
                 success=False,
                 candidate_id=request.candidate_id,
                 reveal_type=request.reveal_type,
-                message=f"Candidato não encontrado ou sem {request.reveal_type} disponível",
+                message=f"Este candidato não possui {contact_label} disponível nas bases consultadas",
                 credits_remaining=result.credits_remaining
             )
         
