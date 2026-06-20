@@ -6,7 +6,6 @@ import { useMemo } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { DashboardApp } from "@/components/dashboard-app"
 import { labelFromPath } from "@/lib/navigation/routes"
-import { OnboardingChatBanner } from "@/components/onboarding/OnboardingChatBanner"
 import { AutomationFromChatBridge } from "@/components/settings/recruitment/AutomationFromChatBridge"
 import { useEffect, useState as useStateAlias } from "react"
 import { useIsFetching } from "@tanstack/react-query"
@@ -75,10 +74,6 @@ export default function DashboardLayoutClient({
       <LoadingWatchdogBridge />
       <DashboardApp initialPage={initialPage}>
         <div className="flex h-full min-h-0 flex-col">
-          <OnboardingChatBanner
-            className="shrink-0"
-            onOpenChat={() => window.dispatchEvent(new CustomEvent("lia:open-onboarding-chat", { detail: {} }))}
-          />
           <AutomationFromChatBridge />
           <Breadcrumbs className="shrink-0 px-6 pt-3 pb-0" />
           <div className="min-h-0 flex-1 overflow-hidden">

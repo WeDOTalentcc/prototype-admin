@@ -74,6 +74,7 @@ import { NotificationSystem } from "@/components/notification-system"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { AgentsQuotaBadge } from "@/components/pages-agent-studio/AgentsQuotaBadge"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
+import { SetupProgressIcon } from "@/components/onboarding/SetupProgressIcon"
 import { IASidebar } from "@/components/ia-sidebar/IASidebar"
 import { useIASessionStore } from "@/stores/ia-session-store"
 import { useIASessions } from "@/hooks/ia-sessions/useIASessions"
@@ -326,7 +327,7 @@ const MenuItem = React.memo(({
             ? "text-lia-text-primary cursor-default opacity-60"
             : "hover:bg-lia-interactive-hover",
           !isIASidebarTrigger && isActive && canAccess
-            ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
+            ? "bg-lia-interactive-active text-lia-text-primary font-semibold"
             : !isIASidebarTrigger && canAccess
             ? "text-lia-text-primary font-normal"
             : !isIASidebarTrigger
@@ -423,7 +424,7 @@ const MenuItem = React.memo(({
                     : "hover:bg-lia-interactive-hover",
                   subItem.isFuturo ? "opacity-40 pointer-events-none" : "",
                   currentPage === subItem.label && subCanAccess
-                    ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
+                    ? "bg-lia-interactive-active text-lia-text-primary font-semibold"
                     : subCanAccess
                     ? "text-lia-text-secondary font-normal"
                     : "text-lia-text-secondary font-normal"
@@ -492,7 +493,7 @@ const JobFilterItem = React.memo(({
  "w-full flex items-center gap-2 px-2 py-1.5 rounded-full text-left transition-colors duration-200 text-xs leading-tight min-h-[36px]",
         "hover:bg-lia-interactive-hover",
         isActive
-          ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
+          ? "bg-lia-interactive-active text-lia-text-primary font-semibold"
           : "text-lia-text-primary font-normal",
         isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
       )}
@@ -1144,6 +1145,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             <HelpCircle className="w-3 h-3" />
           </Button>
 
+          {isMounted && <SetupProgressIcon />}
           {isMounted && <HitlPendingBadge />}
 
         </div>
