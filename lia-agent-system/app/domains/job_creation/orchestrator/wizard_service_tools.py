@@ -574,14 +574,114 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
 
         await db.commit()
 
-    # Bug C fix: sinaliza início da fase de calibração no orchestrator path
-    # (LIA_WIZARD_ORCHESTRATOR=1). O calibration_node do graph faz isso
-    # automaticamente, mas o path FastAPI bypassa o graph. Com calibration_candidates=[]
-    # + job_id presente, _derive_wizard_stage retorna "calibration" (não "handoff").
+    # ── Fase A — calibration sourcing ──────────────────────────────────────
+    # Executado FORA do async with (db já fechado); sourcing abre _src_db próprio.
+    # _tenant_container NÃO propaga pelo run_coro_in_threadpool (ThreadPoolExecutor
+    # + asyncio.run cria contexto isolado — confirmado empiricamente 2026-06-20).
+    # LLM proibido neste path; query determinística rica é a primária.
+    # V2: mover síntese LLM para acima do threadpool com copy_context().
+    _cal_candidates: list = []
+    _cal_fingerprint: str = ""
+    _sourcing_ok: bool = False
+    try:
+        from app.domains.sourcing.services.pearch_service import (
+            pearch_service as _pearch_svc,
+        )
+        from app.api.v1.candidate_search._shared import _generate_search_fingerprint
+        from libs.models.lia_models.pearch import HybridSearchRequest as _HybridReq
+
+        # A2 — query determinística rica: título + senioridade + skills + resps + work_model
+        _jd_title = jd.get("titulo_padronizado") or state.get("parsed_title") or ""
+        _jd_seniority = (
+            state.get("seniority_resolved") or state.get("parsed_seniority") or ""
+        )
+        _jd_work_model = state.get("parsed_work_model") or ""
+        _jd_skills = [
+            (x.get("skill", "") if isinstance(x, dict) else str(x))
+            for x in (jd.get("skills_obrigatorias") or [])
+            if x
+        ]
+        _jd_resps = [
+            (r if isinstance(r, str) else str(r))
+            for r in (jd.get("responsabilidades") or [])
+        ]
+        _q_parts = (
+            [_jd_title, _jd_seniority]
+            + _jd_skills[:5]
+            + [r[:80] for r in _jd_resps[:2]]
+            + ([_jd_work_model] if _jd_work_model else [])
+        )
+        _search_query = ", ".join(p for p in _q_parts if p) or "profissional"
+
+        # A4 — fingerprint: mesmo _generate_search_fingerprint de candidate_search._shared
+        # que apply_feedback_boost usa -> boost da Fase C funciona com este fingerprint
+        _cal_fingerprint = _generate_search_fingerprint(
+            _search_query, {"job_id": job_id, "source": "wizard_calibration_v1"}
+        )
+
+        # A1 — sourcing_mode: "local" (default) -> include_pearch=False
+        _sourcing_mode = state.get("sourcing_mode") or "local"
+        _include_pearch = _sourcing_mode != "local"
+
+        # A3 — busca real: 5 candidatos (amostra de calibração; sample 3-10)
+        async with AsyncSessionLocal() as _src_db:
+            _search_req = _HybridReq(
+                query=_search_query,
+                search_local_first=True,
+                include_pearch=_include_pearch,
+                local_limit=5,
+                pearch_limit=5 if _include_pearch else 0,
+                require_emails=True,
+                show_emails=False,
+                exclude_candidate_ids=[],
+            )
+            _search_resp = await _pearch_svc.hybrid_search(_src_db, _search_req)
+
+        # A5 — adapter CandidateProfile -> CalibrationCandidate + extras FE
+        _cal_candidates = [
+            {
+                "id": p.docid or "",
+                "name": (
+                    p.name
+                    or f"{p.first_name or ''} {p.last_name or ''}".strip()
+                    or ""
+                ),
+                "current_title": p.current_title or getattr(p, "title", "") or "",
+                "current_company": p.current_company or "",
+                "match_score": p.get_score_percentage(),
+                "match_criteria": [{"skill": s} for s in (p.skills or [])[:5]],
+                "decision": None,
+                "reason": None,
+                "avatar_url": p.picture_url or None,
+                "auto_tags": list((p.skills or p.expertise or [])[:3]),
+                "has_email": True,
+                "snapshot_skills": list(p.skills or []),
+            }
+            for p in _search_resp.get_all_candidates()
+            if (p.docid or "").strip()
+        ]
+        _sourcing_ok = True
+        logger.info(
+            "[publish_fastapi] calibration sourcing ok: query=%r mode=%s total=%d (local=%d pearch=%d)",
+            _search_query,
+            _sourcing_mode,
+            len(_cal_candidates),
+            _search_resp.local_count,
+            _search_resp.pearch_count,
+        )
+    except Exception as _src_err:
+        logger.error(
+            "[publish_fastapi] calibration sourcing FALHOU — candidates=[]: %s",
+            _src_err,
+            exc_info=True,
+        )
+
     return {
         "job_id": job_id,
         "share_link": f"/pt/jobs/{job_id}",
-        "calibration_candidates": [],
+        "calibration_candidates": _cal_candidates,
+        "calibration_search_fingerprint": _cal_fingerprint,
+        "sourcing_ok": _sourcing_ok,
     }
 
 
@@ -674,20 +774,26 @@ def _handle_publish_job(
             error=True,
         )
 
-    share_part = f" Link de compartilhamento: {share_link}." if share_link else ""
+    _sourcing_note = (
+        " (Não foi possível buscar candidatos automaticamente — "
+        "o painel de calibração estará vazio.)"
+        if not result.get("sourcing_ok", True)
+        else ""
+    )
+    share_part = f" Link: {share_link}." if share_link else ""
     return ToolResult(
         llm_message=(
-            f"Vaga publicada com sucesso! ID {job_id}.{share_part} "
-            "Avise o recrutador e ofereça explicitamente as 3 opções: "
-            "(1) ir para a página da vaga (navigate_to_jobs), (2) criar outra "
-            "vaga, ou (3) continuar por aqui no chat (close_panel se ele "
-            "preferir minimizar o painel)."
+            f"Vaga publicada! ID {job_id}.{share_part}{_sourcing_note} "
+            "Oriente o recrutador a avaliar os candidatos no painel de "
+            "calibração que abriu ao lado — ele pode aprovar, rejeitar ou pular cada um."
         ),
         state_updates={
             "job_id": job_id,
             "job_uid": result.get("job_uid"),
             "share_link": share_link,
-            "current_stage": "done",
+            "current_stage": "calibration",
+            "calibration_candidates": result.get("calibration_candidates") or [],
+            "calibration_search_fingerprint": result.get("calibration_search_fingerprint") or "",
             "policy_confirmed_publish": True,
             "error": None,
         },

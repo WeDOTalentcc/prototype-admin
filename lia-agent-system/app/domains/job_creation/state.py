@@ -280,6 +280,7 @@ class JobCreationState(TypedDict, total=False):
     calibration_candidates: List[CalibrationCandidate]
     calibration_threshold: int  # default 3
     calibration_complete: bool
+    calibration_search_fingerprint: Optional[str]  # fingerprint da busca inicial (Fase A/B/C)
 
     # --- Handoff ---
     handoff_url: Optional[str]  # URL to the job page
