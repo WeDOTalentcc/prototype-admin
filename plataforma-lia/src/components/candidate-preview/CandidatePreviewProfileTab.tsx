@@ -7,21 +7,9 @@ import { QualificationMatrixCard, type QualificationMatrixData } from './Qualifi
 import { ProfileSkillsMapCard } from './ProfileSkillsMapCard'
 import { ProfileExperienceCards } from './ProfileExperienceCards'
 import { ProfileInfoCards } from './ProfileInfoCards'
-import { EligibilityResultsSection, type EligibilityResultItem } from '@/components/wsi/eligibility-results-section'
+import { EligibilityResultsSection } from '@/components/wsi/eligibility-results-section'
+import { extractEligibilityResults } from '@/lib/eligibility-utils'
 import type { LanguageEntry, OpinionsData } from './ProfileTabTypes'
-
-function extractEligibilityResults(candidate: Record<string, unknown>): EligibilityResultItem[] | undefined {
-  const raw = candidate?.eligibility_results
-  if (!Array.isArray(raw) || raw.length === 0) return undefined
-  return (raw as Record<string, unknown>[]).map((r, i) => ({
-    id: String(r.id ?? r.question_id ?? i),
-    question: String(r.question ?? r.question_text ?? ""),
-    answer: r.answer != null ? String(r.answer) : undefined,
-    passed: Boolean(r.passed ?? r.met ?? true),
-    is_eliminatory: r.is_eliminatory !== false,
-    reconsideration: r.reconsideration != null ? String(r.reconsideration) : undefined,
-  }))
-}
 
 export type { LanguageEntry, OpinionsData }
 export type { OpinionEntry } from './ProfileTabTypes'
