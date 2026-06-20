@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { useTranslations } from "next-intl"
@@ -79,7 +80,7 @@ interface ContextMenuProps {
   triggerRef: React.RefObject<HTMLButtonElement>
 }
 
-function SessionContextMenu({
+const SessionContextMenu = React.forwardRef<HTMLDivElement, ContextMenuProps>(function SessionContextMenu({
   session,
   onClose,
   onPin,
@@ -88,7 +89,7 @@ function SessionContextMenu({
   onArchive,
   onDelete,
   triggerRef,
-}: ContextMenuProps) {
+}, ref) {
   const t = useTranslations("iaSidebar")
   const [pos, setPos] = useState({ top: 0, right: 0 })
 
@@ -101,7 +102,7 @@ function SessionContextMenu({
 
   return (
     <div
-      data-session-menu
+      ref={ref}
       style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999 }}
       className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg shadow-lg py-1 min-w-[160px]"
       onClick={(e) => e.stopPropagation()}
@@ -143,7 +144,7 @@ function SessionContextMenu({
       </button>
     </div>
   )
-}
+})
 
 // ---------------------------------------------------------------------------
 // Session item
@@ -174,11 +175,13 @@ function SessionItem({
   const [addingNote, setAddingNote] = useState(false)
   const [noteValue, setNoteValue] = useState(session.note ?? "")
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!menuOpen) return
     const handler = (e: MouseEvent) => {
-      if (!(e.target as Element).closest("[data-session-menu]")) {
+      const t = e.target as Node
+      if (!menuButtonRef.current?.contains(t) && !menuRef.current?.contains(t)) {
         setMenuOpen(false)
       }
     }
@@ -273,7 +276,7 @@ function SessionItem({
 
       {/* "..." hover menu trigger */}
       {!renaming && !addingNote && (
-        <div data-session-menu className={cn("absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100", menuOpen && "!opacity-100")}>
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
           <button
             ref={menuButtonRef}
             onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v) }}
@@ -282,19 +285,21 @@ function SessionItem({
           >
             <MoreHorizontal className="w-3 h-3" />
           </button>
-          {menuOpen && (
-            <SessionContextMenu
-              session={session}
-              triggerRef={menuButtonRef}
-              onClose={() => setMenuOpen(false)}
-              onPin={() => onUpdate({ id: session.id, is_pinned: !session.is_pinned })}
-              onRename={() => { setRenameValue(session.title ?? ""); setRenaming(true) }}
-              onNote={() => { setNoteValue(session.note ?? ""); setAddingNote(true) }}
-              onArchive={() => onArchive(session.id)}
-              onDelete={() => onDelete(session.id)}
-            />
-          )}
         </div>
+      )}
+      {menuOpen && createPortal(
+        <SessionContextMenu
+          ref={menuRef}
+          session={session}
+          triggerRef={menuButtonRef}
+          onClose={() => setMenuOpen(false)}
+          onPin={() => onUpdate({ id: session.id, is_pinned: !session.is_pinned })}
+          onRename={() => { setRenameValue(session.title ?? ""); setRenaming(true) }}
+          onNote={() => { setNoteValue(session.note ?? ""); setAddingNote(true) }}
+          onArchive={() => onArchive(session.id)}
+          onDelete={() => onDelete(session.id)}
+        />,
+        document.body
       )}
     </div>
   )
