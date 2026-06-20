@@ -399,7 +399,7 @@ async def delete_pipeline_stage(
     context = _extract_context(kwargs)
     effective_company_id = context.company_id if context else company_id
 
-    logger.info(f"🔧 Deleting pipeline stage: {stage_id} (company: {effective_company_id})")
+    logger.info(f"\U0001f527 Deleting pipeline stage: {stage_id} (company: {effective_company_id})")
 
     try:
         from sqlalchemy import and_, func, select
@@ -421,41 +421,48 @@ async def delete_pipeline_stage(
             if not stage:
                 return {
                     "success": False,
-                    "message": f"❌ Etapa não encontrada ou não pertence a esta empresa.",
+                    "message": "❌ Etapa não encontrada ou não pertence a esta empresa.",
                     "error": "stage_not_found"
                 }
 
             if stage.is_system:
                 return {
                     "success": False,
-                    "message": f"❌ Etapa '{stage.display_name}' é uma etapa do sistema e não pode ser excluída.",
+                    "message": f"❌ Etapa ‘{stage.display_name}’ é uma etapa do sistema e não pode ser excluída.",
                     "error": "system_stage_protected"
                 }
 
-            # Count candidates in this stage
+            # P-FAILLOUD: count failure is fatal, not silently swallowed
             candidate_count = 0
             try:
-                from app.models.vacancy_candidates import VacancyCandidate
+                from lia_models.candidate import VacancyCandidate
                 count_result = await db.execute(
                     select(func.count()).where(
                         and_(
-                            VacancyCandidate.stage_id == stage_id,
+                            VacancyCandidate.recruitment_stage_id == stage_id,
                             VacancyCandidate.company_id == effective_company_id,
                         )
                     )
                 )
                 candidate_count = count_result.scalar() or 0
-            except Exception:
-                # VacancyCandidate model may have different field names — safe fallback
-                logger.warning("Could not count candidates in stage, proceeding with caution")
+            except Exception as _count_exc:
+                logger.error(
+                    "delete_pipeline_stage: failed to count candidates in stage %s: %s",
+                    stage_id, _count_exc, exc_info=True
+                )
+                return {
+                    "success": False,
+                    "message": "Erro ao contar candidatos na etapa. Operação abortada.",
+                    "error": "count_failed",
+                }
 
             # HITL guard: refuse to delete stage with candidates if no move_to provided
             if candidate_count > 0 and not move_candidates_to_stage_id:
                 return {
                     "success": False,
                     "message": (
-                        f"⚠️ A etapa '{stage.display_name}' possui {candidate_count} candidato(s). "
-                        f"Informe 'move_candidates_to_stage_id' para mover os candidatos antes de excluir."
+                        f"⚠️ A etapa ‘{stage.display_name}’ possui {candidate_count} candidato(s). "
+                        f"Informe ‘move_candidates_to_stage_id’ para mover os candidatos antes de excluir."
                     ),
                     "error": "stage_has_candidates",
                     "requires_confirmation": True,
@@ -464,7 +471,10 @@ async def delete_pipeline_stage(
                     "ui_action_params": {"modal_id": "confirm_stage_delete"}
                 }
 
-            # Move candidates if requested
+            # Move candidates via canonical service (P-SSOT, P-GUARD, P-TENANT)
+            _moved_count = 0
+            _failed_ids: dict[str, str] = {}
+
             if candidate_count > 0 and move_candidates_to_stage_id:
                 # Validate destination stage belongs to same company
                 dest_result = await db.execute(
@@ -480,28 +490,78 @@ async def delete_pipeline_stage(
                 if not dest_stage:
                     return {
                         "success": False,
-                        "message": f"❌ Etapa de destino não encontrada ou não pertence a esta empresa.",
+                        "message": "❌ Etapa de destino não encontrada ou não pertence a esta empresa.",
                         "error": "destination_stage_not_found"
                     }
 
-                try:
-                    from sqlalchemy import update as sa_update
+                # P-GUARD layer 1 (PRIMARY): refuse rejection stage destination.
+                # Deleting a workflow stage is NOT a mass-rejection vector.
+                if dest_stage.is_rejection:
+                    return {
+                        "success": False,
+                        "message": (
+                            f"❌ Não é possível mover candidatos para o estágio de rejeição "
+                            f"‘{dest_stage.display_name}’ via exclusão de etapa. "
+                            f"Deletar uma etapa de workflow não é um vetor de rejeição em massa. "
+                            f"Escolha um estágio neutro ou ativo como destino."
+                        ),
+                        "error": "destination_is_rejection_stage",
+                        "rejected_by": "P-GUARD",
+                    }
 
-                    from app.models.vacancy_candidates import VacancyCandidate
-                    # R1-EXEMPT: updates stage_id FK (not stage string) during stage-definition deletion — bulk move preserves tenant isolation; tracked for pipeline_stage_service migration in <card>
-                    await db.execute(
-                        sa_update(VacancyCandidate)
-                        .where(
-                            and_(
-                                VacancyCandidate.stage_id == stage_id,
-                                VacancyCandidate.company_id == effective_company_id,
-                            )
+                # Fetch all VCs in the stage to delete (P-TENANT: filtered by company_id)
+                from lia_models.candidate import VacancyCandidate
+                vc_result = await db.execute(
+                    select(VacancyCandidate).where(
+                        and_(
+                            VacancyCandidate.recruitment_stage_id == stage_id,
+                            VacancyCandidate.company_id == effective_company_id,
                         )
-                        .values(stage_id=move_candidates_to_stage_id, updated_at=datetime.utcnow())
                     )
-                    logger.info(f"Moved {candidate_count} candidates from {stage_id} to {move_candidates_to_stage_id}")
-                except Exception as e:
-                    logger.warning(f"Could not move candidates: {e}")
+                )
+                all_vcs = vc_result.scalars().all()
+
+                # P-GUARD layer 2 (defense-in-depth) + P-SSOT: per-candidate
+                # transition via canonical service — runs fairness gate, writes
+                # CandidateStageHistory, fires STAGE_CHANGED, calls AuditService.
+                from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+                    FairnessBlockedError,
+                    pipeline_stage_service,
+                )
+
+                for _vc in all_vcs:
+                    _vc_id = str(_vc.id)
+                    try:
+                        await pipeline_stage_service.transition_candidate(
+                            vacancy_candidate_id=_vc_id,
+                            to_stage=dest_stage.display_name,
+                            triggered_by="delete_pipeline_stage",
+                            source_agent="pipeline_tools",
+                        )
+                        _moved_count += 1
+                    except FairnessBlockedError as _fb:
+                        _failed_ids[_vc_id] = _fb.message
+                    except Exception as _ex:
+                        _failed_ids[_vc_id] = (
+                            f"Erro interno: {type(_ex).__name__} — {str(_ex)[:80]}"
+                        )
+
+                if _failed_ids:
+                    # Partial failure: do NOT delete the stage — candidates would be orphaned
+                    logger.error(
+                        "delete_pipeline_stage: %d/%d candidates failed to move — aborting stage deletion",
+                        len(_failed_ids), len(all_vcs),
+                    )
+                    return {
+                        "success": False,
+                        "message": (
+                            f"⚠️ {len(_failed_ids)}/{len(all_vcs)} candidato(s) não puderam ser movidos. "
+                            f"A etapa NÃO foi excluída para evitar candidatos órfãos."
+                        ),
+                        "error": "partial_move_failure",
+                        "failed_moves": _failed_ids,
+                        "moved_count": _moved_count,
+                    }
 
             stage_name = stage.display_name
             stage.is_active = False
@@ -509,19 +569,20 @@ async def delete_pipeline_stage(
 
             await db.commit()
 
-            logger.info(f"✅ Deleted (soft) pipeline stage {stage_id}: '{stage_name}'")
+            logger.info(f"✅ Deleted (soft) pipeline stage {stage_id}: ‘{stage_name}’")
 
             return {
                 "success": True,
-                "message": f"✅ Etapa '{stage_name}' excluída com sucesso.",
+                "message": f"✅ Etapa ‘{stage_name}’ excluída com sucesso.",
                 "action_taken": "delete_pipeline_stage",
                 "affected_entities": [stage_id],
                 "data": {
                     "stage_id": stage_id,
                     "stage_name": stage_name,
-                    "candidates_moved": candidate_count if move_candidates_to_stage_id else 0,
+                    "candidates_moved": _moved_count,
                     "move_target": move_candidates_to_stage_id,
                     "company_id": effective_company_id,
+                    "failed_moves": _failed_ids,
                 }
             }
 
@@ -533,63 +594,6 @@ async def delete_pipeline_stage(
             "error": str(e)
         }
 
-
-RENAME_PIPELINE_STAGE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "stage_id": {
-            "type": "string",
-            "description": "ID da etapa a ser renomeada"
-        },
-        "new_name": {
-            "type": "string",
-            "description": "Novo nome para a etapa (1-80 caracteres)",
-            "minLength": 1,
-            "maxLength": 80
-        },
-        "company_id": {
-            "type": "string",
-            "description": "ID da empresa"
-        }
-    },
-    "required": ["stage_id", "new_name", "company_id"]
-}
-
-REORDER_PIPELINE_STAGES_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "stage_ids_ordered": {
-            "type": "array",
-            "items": {"type": "string"},
-            "minItems": 1,
-            "description": "Lista completa de IDs de etapas na nova ordem desejada"
-        },
-        "company_id": {
-            "type": "string",
-            "description": "ID da empresa"
-        }
-    },
-    "required": ["stage_ids_ordered", "company_id"]
-}
-
-DELETE_PIPELINE_STAGE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "stage_id": {
-            "type": "string",
-            "description": "ID da etapa a ser excluída"
-        },
-        "move_candidates_to_stage_id": {
-            "type": "string",
-            "description": "ID da etapa destino para mover candidatos (obrigatório se a etapa tiver candidatos)"
-        },
-        "company_id": {
-            "type": "string",
-            "description": "ID da empresa"
-        }
-    },
-    "required": ["stage_id", "company_id"]
-}
 
 def register_pipeline_tools() -> None:
     tool_registry.register(ToolDefinition(
