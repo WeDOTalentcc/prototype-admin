@@ -2,7 +2,6 @@
 
 import React from "react"
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from "react"
-import { createPortal } from "react-dom"
 import { useTranslations } from "next-intl"
 import {
   Brain, Plus, Pin, PinOff, Edit3, StickyNote, Archive, Trash2,
@@ -67,84 +66,8 @@ function NoteCallout({
 }
 
 // ---------------------------------------------------------------------------
-// Context menu
+// Context menu (inline — no portal, position:fixed escapes overflow containers)
 // ---------------------------------------------------------------------------
-interface ContextMenuProps {
-  session: IASession
-  onClose: () => void
-  onPin: () => void
-  onRename: () => void
-  onNote: () => void
-  onArchive: () => void
-  onDelete: () => void
-  triggerRef: React.RefObject<HTMLButtonElement>
-}
-
-const SessionContextMenu = React.forwardRef<HTMLDivElement, ContextMenuProps>(function SessionContextMenu({
-  session,
-  onClose,
-  onPin,
-  onRename,
-  onNote,
-  onArchive,
-  onDelete,
-  triggerRef,
-}, ref) {
-  const t = useTranslations("iaSidebar")
-  const [pos, setPos] = useState({ top: 0, right: 0 })
-
-  useLayoutEffect(() => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect()
-      setPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
-    }
-  }, [triggerRef])
-
-  return (
-    <div
-      ref={ref}
-      style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999 }}
-      className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg shadow-lg py-1 min-w-[160px]"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <button
-        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
-        onClick={() => { onPin(); onClose() }}
-      >
-        {session.is_pinned ? (
-          <><PinOff className="w-3.5 h-3.5" /> {t("context.unpin")} <kbd className="ml-auto text-[10px] text-lia-text-muted">P</kbd></>
-        ) : (
-          <><Pin className="w-3.5 h-3.5" /> {t("context.pin")} <kbd className="ml-auto text-[10px] text-lia-text-muted">P</kbd></>
-        )}
-      </button>
-      <button
-        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
-        onClick={() => { onRename(); onClose() }}
-      >
-        <Edit3 className="w-3.5 h-3.5" /> {t("context.rename")} <kbd className="ml-auto text-[10px] text-lia-text-muted">R</kbd>
-      </button>
-      <button
-        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
-        onClick={() => { onNote(); onClose() }}
-      >
-        <StickyNote className="w-3.5 h-3.5" /> {t("context.note")} <kbd className="ml-auto text-[10px] text-lia-text-muted">N</kbd>
-      </button>
-      <div className="my-1 border-t border-lia-border-subtle" />
-      <button
-        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
-        onClick={() => { onArchive(); onClose() }}
-      >
-        <Archive className="w-3.5 h-3.5" /> {t("context.archive")} <kbd className="ml-auto text-[10px] text-lia-text-muted">A</kbd>
-      </button>
-      <button
-        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-status-error hover:bg-status-error/10"
-        onClick={() => { onDelete(); onClose() }}
-      >
-        <Trash2 className="w-3.5 h-3.5" /> {t("context.delete")} <kbd className="ml-auto text-[10px] text-lia-text-muted">Del</kbd>
-      </button>
-    </div>
-  )
-})
 
 // ---------------------------------------------------------------------------
 // Session item
@@ -176,6 +99,15 @@ function SessionItem({
   const [noteValue, setNoteValue] = useState(session.note ?? "")
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
+
+  // Compute fixed position from trigger button when menu opens
+  useLayoutEffect(() => {
+    if (menuOpen && menuButtonRef.current) {
+      const rect = menuButtonRef.current.getBoundingClientRect()
+      setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+    }
+  }, [menuOpen])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -274,9 +206,12 @@ function SessionItem({
         </button>
       )}
 
-      {/* "..." hover menu trigger */}
+      {/* "..." hover menu trigger — visible on hover OR when menu is open */}
       {!renaming && !addingNote && (
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+        <div className={cn(
+          "absolute right-1 top-1/2 -translate-y-1/2",
+          menuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"
+        )}>
           <button
             ref={menuButtonRef}
             onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v) }}
@@ -287,19 +222,79 @@ function SessionItem({
           </button>
         </div>
       )}
-      {menuOpen && createPortal(
-        <SessionContextMenu
+
+      {/* Context menu — inline with position:fixed (escapes overflow:auto, no nested portal) */}
+      {menuOpen && !renaming && !addingNote && (
+        <div
           ref={menuRef}
-          session={session}
-          triggerRef={menuButtonRef}
-          onClose={() => setMenuOpen(false)}
-          onPin={() => onUpdate({ id: session.id, is_pinned: !session.is_pinned })}
-          onRename={() => { setRenameValue(session.title ?? ""); setRenaming(true) }}
-          onNote={() => { setNoteValue(session.note ?? ""); setAddingNote(true) }}
-          onArchive={() => onArchive(session.id)}
-          onDelete={() => onDelete(session.id)}
-        />,
-        document.body
+          style={{ position: "fixed", top: menuPos.top, right: menuPos.right, zIndex: 9999 }}
+          className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg shadow-lg py-1 min-w-[160px]"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              onUpdate({ id: session.id, is_pinned: !session.is_pinned })
+              setMenuOpen(false)
+            }}
+          >
+            {session.is_pinned ? (
+              <><PinOff className="w-3.5 h-3.5" /> {t("context.unpin")} <kbd className="ml-auto text-[10px] text-lia-text-muted">P</kbd></>
+            ) : (
+              <><Pin className="w-3.5 h-3.5" /> {t("context.pin")} <kbd className="ml-auto text-[10px] text-lia-text-muted">P</kbd></>
+            )}
+          </button>
+          <button
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              setRenameValue(session.title ?? "")
+              setRenaming(true)
+              setMenuOpen(false)
+            }}
+          >
+            <Edit3 className="w-3.5 h-3.5" /> {t("context.rename")} <kbd className="ml-auto text-[10px] text-lia-text-muted">R</kbd>
+          </button>
+          <button
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              setNoteValue(session.note ?? "")
+              setAddingNote(true)
+              setMenuOpen(false)
+            }}
+          >
+            <StickyNote className="w-3.5 h-3.5" /> {t("context.note")} <kbd className="ml-auto text-[10px] text-lia-text-muted">N</kbd>
+          </button>
+          <div className="my-1 border-t border-lia-border-subtle" />
+          <button
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              onArchive(session.id)
+              setMenuOpen(false)
+            }}
+          >
+            <Archive className="w-3.5 h-3.5" /> {t("context.archive")} <kbd className="ml-auto text-[10px] text-lia-text-muted">A</kbd>
+          </button>
+          <button
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-status-error hover:bg-status-error/10"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(session.id)
+              setMenuOpen(false)
+            }}
+          >
+            <Trash2 className="w-3.5 h-3.5" /> {t("context.delete")} <kbd className="ml-auto text-[10px] text-lia-text-muted">Del</kbd>
+          </button>
+        </div>
       )}
     </div>
   )
