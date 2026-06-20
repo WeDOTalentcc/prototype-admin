@@ -883,7 +883,7 @@ export function ChatWorkflowReels({
                       })}
                     </div>
                     <div className="min-w-0">
-                      <span className="text-xs font-semibold text-lia-text-primary block mb-0.5">
+                      <span className="text-micro font-semibold text-lia-text-primary block mb-0.5">
                         {suggestion.title}
                         {COMING_SOON_CARDS.has(suggestion.id) && (
                           <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle align-middle">
@@ -891,7 +891,7 @@ export function ChatWorkflowReels({
                           </span>
                         )}
                       </span>
-                      <span className="text-xs leading-snug text-lia-text-secondary block">
+                      <span className="text-micro leading-snug text-lia-text-secondary block">
                         {suggestion.description}
                       </span>
                     </div>
@@ -1178,7 +1178,7 @@ function CompactReels({
                       className: "w-3.5 h-3.5",
                     })}
                   </div>
-                  <span className="text-xs font-medium text-lia-text-primary">
+                  <span className="text-micro font-medium text-lia-text-primary">
                     {suggestion.title}
                   </span>
                 </button>
