@@ -86,13 +86,10 @@ class TestFallbackQuestionsCount:
     """
 
     @pytest.mark.parametrize("block,count", [
-        pytest.param("technical", 5,
-                     marks=pytest.mark.xfail(reason="Bug 12 — _fallback_questions ignores count; Fase 4", strict=True)),
-        pytest.param("behavioral", 3,
-                     marks=pytest.mark.xfail(reason="Bug 12 — _fallback_questions ignores count; Fase 4", strict=True)),
-        pytest.param("technical", 1),   # green anchor — retorna 1, count=1; SEM marker
-        pytest.param("behavioral", 7,
-                     marks=pytest.mark.xfail(reason="Bug 12 — _fallback_questions ignores count; Fase 4", strict=True)),
+        ("technical", 5),   # Fase 4: xfail markers removidos — PASS apos fix Bug 12
+        ("behavioral", 3),
+        ("technical", 1),   # green anchor — retorna 1, count=1
+        ("behavioral", 7),
     ])
     def test_fallback_returns_exactly_count_questions(self, block, count):
         """
@@ -107,36 +104,39 @@ class TestFallbackQuestionsCount:
 
         assert len(result) == count, (
             f"_fallback_questions(block={block!r}, count={count}) "
-            f"returned {len(result)} questions, expected {count}. "
-            "Phase 4 must fix: duplicate the single template to fill count."
+            f"returned {len(result)} questions, expected {count}."
         )
+        if count > 1:
+            unique_texts = {q.question for q in result}
+            _tpl_count = 7  # len(_TECHNICAL_FALLBACKS) == len(_BEHAVIORAL_FALLBACKS)
+            expected_unique = min(count, _tpl_count)
+            assert len(unique_texts) == expected_unique, (
+                f"_fallback_questions(block={block!r}, count={count}) devolveu "
+                f"{len(unique_texts)} textos distintos, esperado {expected_unique} "
+                f"(min(count={count}, templates={_tpl_count})). "
+                "Fase 4: items devem ser distintos ciclando por indice."
+            )
 
 
 # ── Bug 7: screening_mode coerce without warning ─────────────────────────────
 
 class TestScreeningModeWarning:
     """
-    When screening_mode=None is coerced to 'compact', a logger.warning must be
-    emitted. Currently no warning is emitted. Phase 4 adds it.
+    Fase 4 Bug 7 — screening_mode coerce sem logger.warning.
 
-    SEE FINDING A above: site 70 is a dead variable — Phase 4 must also wire
-    the mode to suggest_competencies_canonical, not only add the warning.
+    Site 70 foi DELETADO (variavel morta em _handle_suggest_competencies — nunca
+    chegava ao suggest_competencies_canonical). Tests abaixo verificam:
+      - site 70: sem warning de screening_mode apos delecao (GREEN).
+      - sites 734/1247/2354/548: warning emitido ao coercir (GREEN apos Fase 4).
     """
 
-    @pytest.mark.xfail(
-        reason=(
-            "Bug 7 — no logger.warning on screening_mode coerce; Fase 4. "
-            "See Finding A: site 70 is dead variable — Phase 4 must wire+warn."
-        ),
-        strict=True,
-    )
-    def test_warning_emitted_when_coercing_screening_mode(self, caplog):
+    def test_suggest_competencies_does_not_emit_screening_mode_warning(self, caplog):
+        """Phase 4 DELETE site 70: _handle_suggest_competencies nao usa screening_mode
+        — nenhum warning de screening_mode deve ser emitido."""
         from app.domains.job_creation.orchestrator.wizard_service_tools import (
             _handle_suggest_competencies,
         )
-
         state = _make_state(screening_mode=None)
-
         with patch(
             "app.domains.job_creation.orchestrator.wsi_canonical_adapter"
             ".suggest_competencies_canonical",
@@ -146,11 +146,111 @@ class TestScreeningModeWarning:
             logger="app.domains.job_creation.orchestrator.wizard_service_tools",
         ):
             _handle_suggest_competencies(state, {}, CTX)
+        warns = [
+            r.message for r in caplog.records
+            if r.levelno >= logging.WARNING and "screening_mode" in r.message.lower()
+        ]
+        assert not warns, (
+            f"Nenhum warning de screening_mode esperado apos DELETE site 70. "
+            f"Emitido: {warns}"
+        )
 
-        warning_msgs = [r.message for r in caplog.records if r.levelno >= logging.WARNING]
-        assert any("screening_mode" in m.lower() for m in warning_msgs), (
-            "Phase 4 must add logger.warning when coercing screening_mode to 'compact'. "
-            f"Warnings emitted: {warning_msgs or ['(none)']}"
+    def test_wsi_distribution_status_warns_when_mode_absent(self, caplog):
+        """Site 734: _wsi_distribution_status emite warning quando mode ausente."""
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _wsi_distribution_status,
+        )
+        state = _make_state(wsi_questions=[])
+        with caplog.at_level(
+            logging.WARNING,
+            logger="app.domains.job_creation.orchestrator.wizard_service_tools",
+        ):
+            _wsi_distribution_status(state)
+        warns = [
+            r.message for r in caplog.records
+            if r.levelno >= logging.WARNING and "screening_mode" in r.message.lower()
+        ]
+        assert warns, "Warning de screening_mode nao emitido em _wsi_distribution_status."
+
+    def test_add_wsi_question_warns_when_mode_absent(self, caplog):
+        """Site 1247: _handle_add_wsi_question emite warning antes do gate de limite."""
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_add_wsi_question,
+        )
+        # 7 perguntas = limite compact; warning dispara ANTES do gate, handler retorna error.
+        state = _make_state(wsi_questions=[{"block": "technical"}] * 7)
+        with caplog.at_level(
+            logging.WARNING,
+            logger="app.domains.job_creation.orchestrator.wizard_service_tools",
+        ):
+            result = _handle_add_wsi_question(state, {"block": "technical"}, CTX)
+        warns = [
+            r.message for r in caplog.records
+            if r.levelno >= logging.WARNING and "screening_mode" in r.message.lower()
+        ]
+        assert warns, "Warning de screening_mode nao emitido em _handle_add_wsi_question."
+        assert result.error is True  # gate de limite disparou apos o warning
+
+    def test_add_bank_question_warns_when_mode_absent(self, caplog):
+        """Site 2354: _handle_add_bank_question emite warning antes do gate de limite."""
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_add_bank_question,
+        )
+        state = _make_state(wsi_questions=[{"block": "technical"}] * 7)
+        with caplog.at_level(
+            logging.WARNING,
+            logger="app.domains.job_creation.orchestrator.wizard_service_tools",
+        ):
+            result = _handle_add_bank_question(
+                state, {"question_id": "550e8400-e29b-41d4-a716-446655440000"}, CTX
+            )
+        warns = [
+            r.message for r in caplog.records
+            if r.levelno >= logging.WARNING and "screening_mode" in r.message.lower()
+        ]
+        assert warns, "Warning de screening_mode nao emitido em _handle_add_bank_question."
+        assert result.error is True
+
+    def test_publish_warns_when_mode_absent(self, caplog):
+        """Site 548: _publish_job_fastapi emite warning quando screening_mode ausente."""
+        import asyncio
+        import app.core.database as _db_mod
+        import app.domains.job_management.repositories.job_vacancy_crud_repository as _jr_mod
+        import app.domains.cv_screening.repositories.screening_question_set_repository as _qs_mod
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _publish_job_fastapi,
+        )
+        mock_vacancy = MagicMock()
+        mock_vacancy.id = "vac-548"
+        mock_crud = AsyncMock()
+        mock_crud.create_vacancy = AsyncMock(return_value=mock_vacancy)
+        mock_qs = AsyncMock()
+        mock_qs.insert_set = AsyncMock()
+        state = {
+            "company_id": _VALID_UUID,
+            "jd_enriched": {"titulo_padronizado": "Eng Sr", "about_role": "desc"},
+            "wsi_questions": [{"block": "technical"}],
+            "questions_approved": True,
+            # NO screening_mode — warning deve ser emitido
+        }
+        import libs.models.lia_models.job_vacancy as _jv_mod
+        mock_jv_cls = MagicMock(return_value=MagicMock())
+        with patch.object(_db_mod, "AsyncSessionLocal", _fake_db_session), \
+             patch.object(_jr_mod, "JobVacancyCRUDRepository", return_value=mock_crud), \
+             patch.object(_qs_mod, "ScreeningQuestionSetRepository", return_value=mock_qs), \
+             patch.object(_jv_mod, "JobVacancy", mock_jv_cls), \
+             caplog.at_level(
+                 logging.WARNING,
+                 logger="app.domains.job_creation.orchestrator.wizard_service_tools",
+             ):
+            asyncio.run(_publish_job_fastapi(state, _VALID_UUID))
+        warns = [
+            r.message for r in caplog.records
+            if r.levelno >= logging.WARNING and "screening_mode" in r.message.lower()
+        ]
+        assert warns, (
+            f"Warning de screening_mode nao emitido em _publish_job_fastapi. "
+            f"caplog msgs: {[r.message for r in caplog.records]}"
         )
 
 
@@ -315,6 +415,59 @@ class TestBenefitsHandlerFixed:
         assert vc[0]["matches_vaga"] is True, "matches_vaga flag missing"
         # Confirms _fetch() ran to completion
         mock_repo_instance.list_matching.assert_called_once()
+
+
+# ── Correção 1 (Fase 4): site 976 — guard incondicional em _wsi_generate_core ──
+
+class TestGenerateWsiScreeningModeGuard:
+    """
+    Fase 4 Correção 1: o guard de screening_mode em _wsi_generate_core
+    e agora incondicional — force_regen=True sem mode definido tambem
+    retorna error=True roteando o LLM a CHAMAR set_screening_mode.
+    """
+
+    def _state_with_salary(self, **extra):
+        """Estado minimo que passa o salary gate mas NAO tem screening_mode."""
+        base = {
+            "company_id": _VALID_UUID,
+            "parsed_title": "Eng Sr",
+            "jd_enriched": {"about_role": "Engenheiro Senior"},
+            "salary_min": 5000,  # passa o salary gate
+            # NO screening_mode
+        }
+        base.update(extra)
+        return base
+
+    def test_generate_wsi_errors_when_screening_mode_absent(self):
+        """force_regen=False (path generate): mode ausente => error=True + set_screening_mode."""
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_generate_wsi_questions,
+        )
+        result = _handle_generate_wsi_questions(self._state_with_salary(), {}, CTX)
+        assert result.error is True, (
+            "_handle_generate_wsi_questions deve retornar error=True quando screening_mode ausente."
+        )
+        assert "set_screening_mode" in result.llm_message, (
+            f"Mensagem deve nomear a tool set_screening_mode. Got: {result.llm_message!r}"
+        )
+
+    def test_regen_wsi_errors_when_screening_mode_absent(self):
+        """CORRECAO 1 (novo): force_regen=True com mode ausente tambem fail-closed."""
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_regenerate_wsi_questions,
+        )
+        # wsi_questions presente ativa o caminho force_regen=True no handler
+        state = self._state_with_salary(
+            wsi_questions=[{"block": "technical", "question": "q1"}]
+        )
+        result = _handle_regenerate_wsi_questions(state, {}, CTX)
+        assert result.error is True, (
+            "CORRECAO 1: _handle_regenerate_wsi_questions deve retornar error=True "
+            "quando screening_mode ausente (force_regen=True)."
+        )
+        assert "set_screening_mode" in result.llm_message, (
+            f"Mensagem deve nomear a tool set_screening_mode. Got: {result.llm_message!r}"
+        )
 
 
 # ── Bug 13: Calibração handlers ──────────────────────────────────────────────

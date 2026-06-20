@@ -67,7 +67,6 @@ def _handle_suggest_competencies(
         )
     seniority = state.get("parsed_seniority")
     department = state.get("parsed_department")
-    screening_mode = state.get("screening_mode") or "compact"
 
     # Consolidação WSI Fase 1 (2026-05-31): kernel canônico cv_screening.WSIService
     # via Anticorruption Layer (wsi_canonical_adapter) — NÃO mais o fork
@@ -536,6 +535,11 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
                 for q in questions:
                     b = str(q.get("block") or "other")
                     block_dist[b] = block_dist.get(b, 0) + 1
+                if not state.get("screening_mode"):
+                    logger.warning(
+                        "[WizardServiceTools] screening_mode ausente em publish (question_set) "
+                        "— coercindo para 'compact'. Chamar set_screening_mode."
+                    )
                 await qs_repo.insert_set(
                     job_vacancy_id=job_id,
                     version=1,
@@ -545,7 +549,7 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
                     block_distribution=block_dist,
                     metadata={
                         "source": "wizard_orchestrator",
-                        "mode": state.get("screening_mode", "compact"),
+                        "mode": state.get("screening_mode") or "compact",
                     },
                     source="wizard_approved",
                     created_by=None,
@@ -731,7 +735,13 @@ def _wsi_distribution_status(state: dict) -> dict:
     )
     behavioral_count = len(questions) - tech_count
 
-    mode = (state.get("screening_mode") or "compact").lower()
+    _raw_mode = state.get("screening_mode")
+    if not _raw_mode:
+        logger.warning(
+            "[WizardServiceTools] screening_mode ausente em _wsi_distribution_status "
+            "— coercindo para 'compact'. Chamar set_screening_mode."
+        )
+    mode = (_raw_mode or "compact").lower()
     seniority = (
         state.get("seniority_resolved") or state.get("parsed_seniority") or "pleno"
     ).lower()
@@ -938,19 +948,19 @@ def _wsi_generate_core(
             error=True,
         )
 
-    # Gate computacional (#2 audit 2026-06-05): o MODO de triagem
-    # (compact/full) NAO pode ser escolhido pelo sistema silenciosamente.
-    # Antes caia em default "compact" implicito -> a LIA pulava a pergunta e
-    # o recrutador tinha que cobrar. Forca perguntar quando nao definido via
-    # set_screening_mode (a menos que seja regeneracao, ja com modo setado).
-    if not force_regen and not state.get("screening_mode"):
+    # Gate computacional (#2 audit 2026-06-05 — enforced Fase 4): o MODO de
+    # triagem (compact/full) NAO pode ser escolhido pelo sistema silenciosamente.
+    # Fase 4: fail-closed incondicional — force_regen sem mode definido tambem
+    # retorna error=True roteando o LLM a CHAMAR set_screening_mode (auto-cura).
+    if not state.get("screening_mode"):
         return ToolResult(
             llm_message=(
-                "Antes de gerar a triagem, PERGUNTE ao recrutador qual o "
-                "MODO de triagem WSI e registre com set_screening_mode: "
-                "'compact' (7 perguntas, ~10 min, triagem rapida) ou "
-                "'full' (12 perguntas, ~18 min, avaliacao aprofundada). "
-                "Nao escolha por ele."
+                "O modo de triagem WSI nao esta definido. CHAME set_screening_mode "
+                "antes de gerar as perguntas: "
+                "set_screening_mode(mode='compact') para 7 perguntas (~10 min) ou "
+                "set_screening_mode(mode='full') para 12 perguntas (~18 min). "
+                "Se o recrutador ja indicou preferencia, use essa; caso contrario, "
+                "pergunte e depois chame set_screening_mode."
             ),
             error=True,
         )
@@ -973,7 +983,7 @@ def _wsi_generate_core(
         or state.get("parsed_seniority")
         or "pleno"
     )
-    mode = state.get("screening_mode") or "compact"
+    mode = state.get("screening_mode")  # garantido pelo guard acima
 
     # W2-D: reordenar skills por efetividade histórica (fail-open se sem dados)
     _company_id_eff = state.get("company_id") or (ctx.company_id if ctx else "")
@@ -1244,7 +1254,13 @@ def _handle_add_wsi_question(
             llm_message="block deve ser 'technical' ou 'behavioral'.", error=True
         )
     # Gate de limite máximo por modo (full=12, compact=7)
-    _mode = str(state.get("screening_mode") or "compact").strip().lower()
+    _raw_mode = state.get("screening_mode")
+    if not _raw_mode:
+        logger.warning(
+            "[WizardServiceTools] screening_mode ausente em add_wsi_question "
+            "— coercindo para 'compact'. Chamar set_screening_mode."
+        )
+    _mode = str(_raw_mode or "compact").strip().lower()
     _max_total = 12 if _mode == "full" else 7
     _current_count = len(state.get("wsi_questions") or [])
     if _current_count >= _max_total:
@@ -2353,7 +2369,13 @@ def _handle_add_bank_question(
         )
 
     # Gate de limite máximo por modo
-    _mode = str(state.get("screening_mode") or "compact").strip().lower()
+    _raw_mode = state.get("screening_mode")
+    if not _raw_mode:
+        logger.warning(
+            "[WizardServiceTools] screening_mode ausente em add_bank_question "
+            "— coercindo para 'compact'. Chamar set_screening_mode."
+        )
+    _mode = str(_raw_mode or "compact").strip().lower()
     _max_total = 12 if _mode == "full" else 7
     _current = list(state.get("wsi_questions") or [])
     if len(_current) >= _max_total:

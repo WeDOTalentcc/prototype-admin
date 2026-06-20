@@ -628,28 +628,53 @@ class WSIQuestionGenerator:
     def _fallback_questions(
         self, block: str, count: int
     ) -> List[GeneratedQuestion]:
-        """Fallback questions when LLM fails."""
+        """Fallback questions when LLM fails. Returns exactly `count` distinct items."""
+        w = 1.0 / max(count, 1)
         if block == "technical":
-            return [GeneratedQuestion(
-                question="Descreva uma situacao real onde voce precisou resolver um problema tecnico complexo. Qual foi o resultado?",
-                ideal_answer="Resposta com STAR: situacao concreta, acoes tecnicas especificas, resultado mensuravel",
-                framework="CBI",
-                block="technical",
-                competency="technical",
-                skill="problem_solving",
-                weight=1.0 / max(count, 1),
-            )]
+            tpls = [
+                ("Descreva uma situacao real onde voce precisou resolver um problema tecnico complexo. Qual foi o resultado?", "problem_solving"),
+                ("Descreva um projeto tecnico desafiador que voce liderou. Quais obstaculos encontrou e como os superou?", "project_leadership"),
+                ("Como voce aborda revisao de codigo e garantia de qualidade tecnica no desenvolvimento?", "code_quality"),
+                ("Descreva uma situacao em que precisou aprender rapidamente uma nova tecnologia para resolver um problema.", "learning_agility"),
+                ("Conte sobre uma decisao tecnica dificil que voce tomou. Quais foram os trade-offs considerados?", "technical_decision"),
+                ("Como voce depura e resolve problemas em sistemas complexos ou de producao?", "debugging"),
+                ("Como voce garante que o codigo que escreve e testavel e mantenivel a longo prazo?", "maintainability"),
+            ]
+            return [
+                GeneratedQuestion(
+                    question=tpls[i % len(tpls)][0],
+                    ideal_answer="Resposta com STAR: situacao concreta, acoes especificas, resultado mensuravel",
+                    framework="CBI",
+                    block="technical",
+                    competency="technical",
+                    skill=tpls[i % len(tpls)][1],
+                    weight=w,
+                )
+                for i in range(count)
+            ]
         else:
-            return [GeneratedQuestion(
-                question="Conte sobre uma situacao em que precisou lidar com pressao ou prazos apertados. Como voce agiu?",
-                ideal_answer="Resposta com STAR: situacao de pressao real, estrategia de coping, resultado positivo",
-                framework="CBI",
-                block="behavioral",
-                competency="behavioral",
-                skill="stress_management",
-                trait_ocean="stability",
-                weight=1.0 / max(count, 1),
-            )]
+            tpls = [
+                ("Conte sobre uma situacao em que precisou lidar com pressao ou prazos apertados. Como voce agiu?", "stress_management", "stability"),
+                ("Descreva uma experiencia trabalhando em colaboracao com pessoas de areas ou culturas diferentes.", "collaboration", "agreeableness"),
+                ("Conte sobre um momento em que recebeu um feedback critico. Como voce reagiu e o que fez com ele?", "feedback_receptivity", "openness"),
+                ("Descreva uma situacao em que voce identificou um problema antes que ele se tornasse critico.", "proactivity", "conscientiousness"),
+                ("Conte sobre um conflito profissional que voce vivenciou. Como voce o resolveu?", "conflict_resolution", "agreeableness"),
+                ("Descreva uma situacao em que precisou influenciar ou convencer outros sem ter autoridade direta.", "influence", "extraversion"),
+                ("Conte sobre uma falha profissional significativa. O que voce aprendeu e como agiu depois?", "resilience", "stability"),
+            ]
+            return [
+                GeneratedQuestion(
+                    question=tpls[i % len(tpls)][0],
+                    ideal_answer="Resposta com STAR: situacao real, estrategia aplicada, resultado positivo",
+                    framework="CBI",
+                    block="behavioral",
+                    competency="behavioral",
+                    skill=tpls[i % len(tpls)][1],
+                    trait_ocean=tpls[i % len(tpls)][2],
+                    weight=w,
+                )
+                for i in range(count)
+            ]
 
     def generate_single_question(
         self,

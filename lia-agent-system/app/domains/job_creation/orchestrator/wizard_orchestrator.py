@@ -419,7 +419,7 @@ class WizardOrchestrator:
             api_key = tenant_keys.get("claude") or _resolve_provider_api_key("claude")
             base_url = _resolve_provider_base_url("claude")
         except Exception as exc:  # noqa: BLE001 — fail-open ao env global
-            logger.debug("[WizardOrchestrator] factory resolve failed (fallback env): %s", exc)
+            logger.warning("[WizardOrchestrator] factory resolve failed (fallback env): %s", exc, exc_info=True)
         # Fallback ao env global se a factory não resolveu a chave.
         api_key = api_key or (
             os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
@@ -481,7 +481,7 @@ class WizardOrchestrator:
             if rendered and rendered.strip():
                 modes_block = f"\n\n## Capacidades de criação\n{rendered}"
         except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: bloco de modos é enriquecimento cosmético — falha não quebra o turn
-            logger.debug("[WizardOrchestrator] creation modes block skipped: %s", type(exc).__name__)
+            logger.warning("[WizardOrchestrator] creation modes block skipped: %s", type(exc).__name__, exc_info=True)
         # Recruiter identity — explicit so LLM never guesses the name
         recruiter_name = str(state.get("parsed_recruiter_name") or "").strip()
         recruiter_email = str(state.get("parsed_recruiter_email") or "").strip()
@@ -703,7 +703,7 @@ class WizardOrchestrator:
                                 })
                     except Exception as exc:  # noqa: BLE001 — fail-soft p/ o LLM
                         logger.warning(
-                            "[WizardOrchestrator] tool %s raised: %s", name, exc
+                            "[WizardOrchestrator] tool %s raised: %s", name, exc, exc_info=True
                         )
                         result_text = (
                             f"A tool {name} falhou: {exc}. Tente outra abordagem "
