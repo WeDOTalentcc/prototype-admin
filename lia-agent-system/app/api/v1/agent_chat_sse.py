@@ -528,7 +528,17 @@ company_id: str = Depends(require_company_id)):
                             # Store in cache for subsequent turns (TTL=300s)
                             _pii_identity_cache[_b2_cache_key] = (_mask_val, _name_val, _email_val, _time_module.time())
             except Exception:
-                logger.debug("[B2] chat identity-masking setup skipped (non-blocking)", exc_info=True)
+                # P-FAILLOUD (S05): PII masking failure must log at ERROR level and apply
+                # safe fallback — never silently expose raw PII fields.
+                # LGPD: failure to mask = potential PII exposure to wrong recipient.
+                logger.error(
+                    "[B2] chat identity-masking FAILED — applying safe fallback (PII protected)",
+                    exc_info=True,
+                )
+                # Safe fallback: mask=True (suppress), name/email cleared from response
+                _mask_b2 = True
+                _name_b2 = None
+                _email_b2 = None
 
         async def _check_budget_async():
             try:

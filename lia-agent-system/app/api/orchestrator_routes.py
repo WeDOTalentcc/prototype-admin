@@ -215,6 +215,11 @@ async def execute_tool(request: ExecuteToolRequest, company_id: str = Depends(re
             tool_name=request.tool_name,
             parameters=request.parameters,
             user_id=request.user_id,
+            # S04 NOTE (census 2026-06-20): orchestrator_routes.router is NOT mounted in
+            # app/api/routes.py — this endpoint is unreachable (dead route).
+            # If ever mounted, replace this line with JWT-enforced company_id:
+            #   company_id=company_id,  # from Depends(require_company_id) in handler signature
+            # Using request.context allows cross-tenant data access (P-TENANT violation).
             company_id=request.context.get("company_id") if request.context else None,
             context=request.context,
             agent_type="orchestrator"
