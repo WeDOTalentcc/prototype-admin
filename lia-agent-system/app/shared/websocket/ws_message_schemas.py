@@ -214,25 +214,10 @@ class UIBulkExecuteParams(BaseModel):
     results: list[dict[str, Any]] = Field(default_factory=list)
 
 
-GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
-    "navigate_to",
-    "open_modal",
-    "close_modal",
-    "open_offer_review",
-    "wizard_step",
-    "open_panel",
-    "close_panel",
-    "scroll_to",
-    "settings_open_tab",
-    "open_communication_modal",
-    "open_schedule_modal",
-    "open_screening_modal",
-    "apply_table_state",
-    "select_rows",
-    "bulk_execute",
-    "start_wizard_seeded",
-)
-"""Espelho runtime do `GLOBAL_UI_ACTION_TYPES` em `src/types/ui-action.ts`."""
+# P-SSOT: import from single canonical source.
+# Only GLOBAL_UI_ACTION_TYPES_CORE (16 types) -- page-specific actions are not
+# part of the WebSocket schema (they reach FE via ChatResponse.ui_action only).
+from app.shared.ui_action_canonical import GLOBAL_UI_ACTION_TYPES_CORE as GLOBAL_UI_ACTION_TYPES  # noqa: E501
 
 
 _UI_ACTION_PARAMS_BY_TYPE: dict[str, type[BaseModel]] = {
@@ -246,6 +231,13 @@ _UI_ACTION_PARAMS_BY_TYPE: dict[str, type[BaseModel]] = {
     "apply_table_state": UIApplyTableStateParams,  # Fase 2 slice 1
     "select_rows": UISelectRowsParams,  # Fase 2 surface close
     "bulk_execute": UIBulkExecuteParams,  # F3 Gap 1
+    # Minimal schema entries (params are optional/unvalidated) -- C10-04 fix.
+    "close_modal": None,
+    "close_panel": None,
+    "start_wizard_seeded": None,
+    "open_communication_modal": None,
+    "open_schedule_modal": None,
+    "open_screening_modal": None,
 }
 
 

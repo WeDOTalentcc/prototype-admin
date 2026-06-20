@@ -107,28 +107,8 @@ def _is_transient_provider_error(exc: BaseException) -> bool:
 # UI actions a agentic tool result may carry that the orchestrator must ACT on
 # (vs. merely feed back to the LLM as text). Additive surfacing: only these
 # directives are promoted to ``run()``'s ``tool_directive`` return field.
-_ACTIONABLE_TOOL_UI_ACTIONS: frozenset[str] = frozenset({
-    "navigate_to",
-    "open_modal",
-    "close_modal",
-    "open_offer_review",
-    "wizard_step",
-    "open_panel",
-    "close_panel",
-    "scroll_to",
-    "settings_open_tab",
-    "open_communication_modal",
-    "open_schedule_modal",
-    "open_screening_modal",
-    "apply_table_state",
-    "select_rows",
-    "bulk_execute",
-    "start_wizard_seeded",
-    # Page/wizard-specific: pass through lia:unhandled_ui_action on FE
-    "suggest_pipeline_template",  # WizardPipelineTemplateCard
-    "move_candidate",              # Kanban stage move
-    "switch_search_mode",          # Talent funnel search mode toggle
-})
+# P-SSOT: import from single canonical source -- do not redefine here.
+from app.shared.ui_action_canonical import ALL_ACTIONABLE_UI_ACTION_TYPES as _ACTIONABLE_TOOL_UI_ACTIONS  # noqa: E501
 
 
 def _extract_response_blocks(result: object) -> list:
@@ -194,6 +174,13 @@ def _extract_tool_directive(result: object) -> "dict | None":
         return None
     ui_action = data.get("ui_action")
     if ui_action not in _ACTIONABLE_TOOL_UI_ACTIONS:
+        # P-FAILLOUD: log when a non-empty ui_action string is discarded.
+        # Expected drop (LLM hallucination / wrong string). Warning for observability.
+        logger.warning(
+            "gate1: ui_action %r discarded -- not in ALL_ACTIONABLE_UI_ACTION_TYPES "
+            "(check agentic tool output or add to app/shared/ui_action_canonical.py)",
+            ui_action,
+        )
         return None
     return {
         "ui_action": ui_action,

@@ -273,24 +273,12 @@ PREFER_AGENTIC_ON_MISSING_PARAMS: frozenset = frozenset({"search_candidates"})
 # Fase 2 (2026-06-09): ui_actions emitidas por tool que o FE consome direto
 # (useUIAction). Constante nomeada = sensor testavel. apply_table_state = ponte
 # in-page (filtra/ordena a tabela aberta). open_modal/navigate_to = open_ui.
-_FE_TOOL_UI_ACTIONS: tuple[str, ...] = (
-    "navigate_to",
-    "open_modal",
-    "close_modal",
-    "open_offer_review",
-    "wizard_step",
-    "open_panel",
-    "close_panel",
-    "scroll_to",
-    "settings_open_tab",
-    "open_communication_modal",
-    "open_schedule_modal",
-    "open_screening_modal",
-    "apply_table_state",
-    "select_rows",
-    "bulk_execute",
-    "start_wizard_seeded",
-)
+# P-SSOT: import from single canonical source -- do not redefine here.
+# ALL_ACTIONABLE_UI_ACTION_TYPES includes the 3 page-specific strings
+# (suggest_pipeline_template, move_candidate, switch_search_mode) that previously
+# passed gate1 but were silently dropped here. They reach FE via ChatResponse.ui_action
+# and are dispatched via lia:unhandled_ui_action to page-specific handlers.
+from app.shared.ui_action_canonical import ALL_ACTIONABLE_UI_ACTION_TYPES as _FE_TOOL_UI_ACTIONS  # noqa: E501
 
 
 def _defer_needs_params_to_agentic(action_response) -> bool:
@@ -1785,6 +1773,15 @@ class MainOrchestrator:
                         if _directive and _directive.get("ui_action") in _FE_TOOL_UI_ACTIONS:
                             _modal_ui_action = _directive.get("ui_action")
                             _modal_ui_params = _directive.get("ui_action_params")
+                        elif _directive and _directive.get("ui_action"):
+                            # P-FAILLOUD: a non-None directive arrived at gate 2 with an unknown ui_action.
+                            # This should be impossible after gate 1 is wired to the same canonical source.
+                            # If this fires, it means a code path bypassed gate 1 or the canonical is out of sync.
+                            logger.warning(
+                                "gate2: ui_action %r passed gate1 but is not in _FE_TOOL_UI_ACTIONS -- "
+                                "invariant violation, check app/shared/ui_action_canonical.py",
+                                _directive.get("ui_action"),
+                            )
                         _resp = ChatResponse(
                             success=True,
                             content=_agentic_result["response"],

@@ -33,29 +33,13 @@ WORKSPACE = Path(__file__).resolve().parent.parent
 
 # Allowlist canônica — single source of truth em agentic_loop.py
 # Atualizar aqui SE e SOMENTE SE _ACTIONABLE_TOOL_UI_ACTIONS for atualizado lá.
-CANONICAL_UI_ACTIONS: frozenset[str] = frozenset({
-    "navigate_to",
-    "open_modal",
-    "close_modal",
-    "open_offer_review",
-    "wizard_step",
-    "open_panel",
-    "close_panel",
-    "scroll_to",
-    "settings_open_tab",
-    "open_communication_modal",
-    "open_schedule_modal",
-    "open_screening_modal",
-    "apply_table_state",
-    "select_rows",
-    "bulk_execute",
-    "start_wizard_seeded",
-    # Page/wizard-specific: pass through lia:unhandled_ui_action on FE
-    # (mirrored from agentic_loop._ACTIONABLE_TOOL_UI_ACTIONS)
-    "suggest_pipeline_template",  # WizardPipelineTemplateCard
-    "move_candidate",              # Kanban stage move
-    "switch_search_mode",          # Talent funnel search mode toggle
-})
+# P-SSOT: import from single canonical source -- do not redefine here.
+try:
+    if str(WORKSPACE) not in sys.path:
+        sys.path.insert(0, str(WORKSPACE))
+    from app.shared.ui_action_canonical import ALL_ACTIONABLE_UI_ACTION_TYPES as CANONICAL_UI_ACTIONS
+except ImportError as _e:
+    raise SystemExit(f"Cannot import canonical: {_e}. Run from lia-agent-system root.")
 
 # Padrões para detectar ui_action string literal em código
 PATTERNS: list[re.Pattern] = [

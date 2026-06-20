@@ -21,38 +21,26 @@ _sink: contextvars.ContextVar[dict | None] = contextvars.ContextVar(
     "_ui_action_sink", default=None
 )
 
-# Fallback se o import do allowlist canonico falhar (defensivo). Mantido em
-# sincronia com agentic_loop._ACTIONABLE_TOOL_UI_ACTIONS (fonte unica abaixo).
-_FALLBACK_ACTIONABLE = frozenset({
-    "navigate_to",
-    "open_modal",
-    "close_modal",
-    "open_offer_review",
-    "wizard_step",
-    "open_panel",
-    "close_panel",
-    "scroll_to",
-    "settings_open_tab",
-    "open_communication_modal",
-    "open_schedule_modal",
-    "open_screening_modal",
-    "apply_table_state",
-    "select_rows",
-    "bulk_execute",
-    "start_wizard_seeded",
-})
+# P-SSOT: import from canonical; fallback only if canonical import fails.
+try:
+    from app.shared.ui_action_canonical import ALL_ACTIONABLE_UI_ACTION_TYPES as _FALLBACK_ACTIONABLE
+except ImportError:
+    # Absolute last-resort hardcoded fallback -- should never fire in normal operation.
+    _FALLBACK_ACTIONABLE = frozenset({
+        "navigate_to", "open_modal", "close_modal", "open_offer_review",
+        "wizard_step", "open_panel", "close_panel", "scroll_to",
+        "settings_open_tab", "open_communication_modal", "open_schedule_modal",
+        "open_screening_modal", "apply_table_state", "select_rows",
+        "bulk_execute", "start_wizard_seeded",
+        "suggest_pipeline_template", "move_candidate", "switch_search_mode",
+    })
 
 
 def _actionable() -> frozenset[str]:
-    """Fonte unica: o allowlist do agentic_loop (caminho A). Lazy import p/
-    evitar ciclo app.shared -> app.orchestrator no import-time."""
-    try:
-        from app.orchestrator.execution.agentic_loop import (
-            _ACTIONABLE_TOOL_UI_ACTIONS,
-        )
-        return _ACTIONABLE_TOOL_UI_ACTIONS
-    except Exception:
-        return _FALLBACK_ACTIONABLE
+    """Fonte unica: allowlist canonico (app.shared.ui_action_canonical).
+    Lazy path via agentic_loop para compatibilidade retroativa.
+    """
+    return _FALLBACK_ACTIONABLE
 
 
 def reset_sink() -> None:

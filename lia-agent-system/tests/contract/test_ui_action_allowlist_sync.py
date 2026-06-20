@@ -65,9 +65,23 @@ def test_global_ui_action_types_covers_fe():
 
 
 def test_no_be_only_types():
+    """_ACTIONABLE is allowed to have PAGE_SPECIFIC_UI_ACTION_TYPES beyond FE_CANONICAL.
+    GLOBAL_UI_ACTION_TYPES (WebSocket schema) must equal FE_CANONICAL exactly (no extras).
+    Updated 2026-06-20: canonical now has two tiers (global + page-specific).
+    """
     from app.orchestrator.execution.agentic_loop import _ACTIONABLE_TOOL_UI_ACTIONS
     from app.shared.websocket.ws_message_schemas import GLOBAL_UI_ACTION_TYPES
-    be_only_actionable = _ACTIONABLE_TOOL_UI_ACTIONS - FE_CANONICAL
+    from app.shared.ui_action_canonical import PAGE_SPECIFIC_UI_ACTION_TYPES
+
+    # _ACTIONABLE = FE_CANONICAL + PAGE_SPECIFIC -- all are legitimate.
+    # Anything beyond that would be unrecognized by both FE tiers.
+    expected_actionable = FE_CANONICAL | PAGE_SPECIFIC_UI_ACTION_TYPES
+    be_only_actionable = _ACTIONABLE_TOOL_UI_ACTIONS - expected_actionable
+    assert not be_only_actionable, (
+        f"BE-only in _ACTIONABLE (not in global OR page-specific canonical): {be_only_actionable}"
+    )
+
+    # GLOBAL_UI_ACTION_TYPES (WS schema) must equal FE_CANONICAL exactly.
+    # Page-specific types are NOT in the WS schema (they flow via ChatResponse.ui_action only).
     be_only_global = frozenset(GLOBAL_UI_ACTION_TYPES) - FE_CANONICAL
-    assert not be_only_actionable, f"BE-only in _ACTIONABLE: {be_only_actionable}"
-    assert not be_only_global, f"BE-only in GLOBAL: {be_only_global}"
+    assert not be_only_global, f"BE-only in GLOBAL_UI_ACTION_TYPES (WS schema): {be_only_global}"
