@@ -583,9 +583,7 @@ export function ChatWorkflowReels({
   const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null;
 
   const { pulse } = usePipelinePulse();
-  const [activeStageId, setActiveStageId] = useState<string | null>(
-    firstWithSuggestions,
-  );
+  const [activeStageId, setActiveStageId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<(HTMLElement | null)[]>([]);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -850,7 +848,7 @@ export function ChatWorkflowReels({
                       }
                     }}
                     className={cn(
-                      "flex items-start gap-3 p-4 text-left rounded-xl bg-lia-bg-primary border transition-all duration-150 group flex-1 min-w-[180px]",
+                      "flex items-start gap-2.5 p-3 text-left rounded-xl bg-lia-bg-primary border transition-all duration-150 group flex-1 min-w-[160px]",
                       COMING_SOON_CARDS.has(suggestion.id)
                         ? "opacity-60 cursor-default"
                         : "hover:-translate-y-0.5",
@@ -874,18 +872,18 @@ export function ChatWorkflowReels({
                     }}
                   >
                     <div
-                      className="rounded-lg p-2 flex-shrink-0"
+                      className="rounded-lg p-1.5 flex-shrink-0"
                       style={{
                         backgroundColor: activeStage.color.accentBg,
                         color: activeStage.color.accent,
                       }}
                     >
                       {React.createElement(activeStage.icon, {
-                        className: "w-4 h-4",
+                        className: "w-3.5 h-3.5",
                       })}
                     </div>
                     <div className="min-w-0">
-                      <span className="text-[14px] font-semibold text-lia-text-primary block mb-0.5">
+                      <span className="text-xs font-semibold text-lia-text-primary block mb-0.5">
                         {suggestion.title}
                         {COMING_SOON_CARDS.has(suggestion.id) && (
                           <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle align-middle">
@@ -1041,9 +1039,7 @@ function CompactReels({
   const allNodes = [...stages, ...utilityNodes];
   const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0);
   const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null;
-  const [activeStageId, setActiveStageId] = useState<string | null>(
-    firstWithSuggestions,
-  );
+  const [activeStageId, setActiveStageId] = useState<string | null>(null);
   const activeStage = allNodes.find((s) => s.id === activeStageId) ?? null;
 
   const handleNodeClick = (nodeId: string, hasSuggestions: boolean) => {
@@ -1182,7 +1178,7 @@ function CompactReels({
                       className: "w-3.5 h-3.5",
                     })}
                   </div>
-                  <span className="text-base-ui font-medium text-lia-text-primary">
+                  <span className="text-xs font-medium text-lia-text-primary">
                     {suggestion.title}
                   </span>
                 </button>
