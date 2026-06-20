@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from "react"
+import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef, createPortal } from "react"
 import { useTranslations } from "next-intl"
 import {
   Brain, Plus, Pin, PinOff, Edit3, StickyNote, Archive, Trash2,
