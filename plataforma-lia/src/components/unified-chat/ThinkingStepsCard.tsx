@@ -30,10 +30,19 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
   const locale = useLocale()
 
   if (!steps || steps.length === 0) {
-    // Silent wait: the AgentActivityTimeline chip appears when the first
-    // reasoning_step/tool_started event arrives. Showing "Pensando" here
-    // breaks the dynamic progressive flow.
-    return null
+    // Padrão de mercado (Claude, ChatGPT, Gemini): mostrar dots imediatamente
+    // após o envio, sem esperar o primeiro reasoning_step do backend.
+    // Os dots transitam naturalmente para o primeiro passo quando ele chegar.
+    return (
+      <div
+        className="flex items-center h-5 animate-in fade-in duration-150"
+        role="status"
+        aria-live="polite"
+        aria-label="Processando"
+      >
+        <ActivityDots />
+      </div>
+    )
   }
 
   const lastIndex = steps.length - 1
