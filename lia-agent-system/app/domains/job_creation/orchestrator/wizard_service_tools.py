@@ -502,6 +502,10 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
 
     async with AsyncSessionLocal() as db:
         repo = JobVacancyCRUDRepository(db)
+        # H1+H3+H4: identidade do recrutador/gestor, stakeholders e audit created_by.
+        # Fonte unica: state (unica disponivel dentro de _publish_job_fastapi).
+        # "anonymous" e "" sao filtrados — created_by=None significa "sem autor identificado".
+        _uid = state.get("user_id") or ""
         vacancy = _JobVacancyModel(
             company_id=company_id,
             title=title,
@@ -514,6 +518,12 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
             work_model=work_model,
             salary_range=salary_range,
             status="Ativa",
+            recruiter=state.get("parsed_recruiter_name") or "",
+            recruiter_email=state.get("parsed_recruiter_email") or "",
+            manager=state.get("parsed_manager_name") or "",
+            manager_email=state.get("parsed_manager_email") or "",
+            stakeholders=state.get("parsed_stakeholders") or [],
+            created_by=_uid if _uid not in ("", "anonymous") else None,
         )
         vacancy = await repo.create_vacancy(vacancy)
         job_id = str(vacancy.id)
@@ -552,7 +562,7 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
                         "mode": state.get("screening_mode") or "compact",
                     },
                     source="wizard_approved",
-                    created_by=None,
+                    created_by=_uid if _uid not in ("", "anonymous") else None,
                     difficulty_coefficient=0.5,
                 )
             except Exception as _qset_err:

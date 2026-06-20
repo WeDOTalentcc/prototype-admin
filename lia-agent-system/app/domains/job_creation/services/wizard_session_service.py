@@ -1093,6 +1093,17 @@ class WizardSessionService:
                     "[WizardOrchestrator] manager_email capturado deterministicamente "
                     "(len=%d) thread=%s", len(_email), thread_id,
                 )
+                # H2-warning: dominio diferente do recrutador pode indicar email
+                # de outra empresa (sem validacao de tenant para manager).
+                _mgr_domain = _email.split("@")[-1].lower()
+                if _recruiter_email and _mgr_domain != _recruiter_email.split("@")[-1].lower():
+                    logger.warning(
+                        "[WizardOrchestrator] manager_email dominio difere do recrutador "
+                        "(%s vs %s) — sem validacao de tenant, thread=%s",
+                        _mgr_domain,
+                        _recruiter_email.split("@")[-1].lower(),
+                        thread_id,
+                    )
             else:
                 logger.debug(
                     "[WizardOrchestrator] manager_email ignorado (igual ao email do recrutador) "
