@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 import {
   Brain, X, Maximize2, PanelRight, MessageSquare, Minimize2,
-  Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, ArrowRightLeft,
+  Plus, MoreHorizontal, ChevronDown, Pencil, Trash2,
   CheckCircle2, Briefcase, CornerDownRight
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -28,7 +28,6 @@ interface Props {
   onModeChange: (mode: ChatMode) => void
   onClose: () => void
   onNewChat: () => void
-  onSwitchTask?: () => void
   conversationTitle?: string | null
   isConnected: boolean
   transportMode?: TransportMode
@@ -67,7 +66,6 @@ export function UnifiedChatHeader({
   onModeChange,
   onClose,
   onNewChat,
-  onSwitchTask,
   conversationTitle,
   isConnected,
   transportMode,
@@ -178,24 +176,7 @@ export function UnifiedChatHeader({
           align === "left" ? "left-0" : "right-0",
         )}
       >
-        {/* Floating mode (360px) — "Trocar conversa" is tucked into this menu
-            instead of a dedicated header icon to declutter the cramped header.
-            Sidebar/fullscreen keep the standalone icon. */}
-        {mode === "floating" && onSwitchTask && (
-          <>
-            <button
-              onClick={() => {
-                onSwitchTask()
-                setOptionsAnchor(null)
-              }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
-            >
-              <ArrowRightLeft className="w-3.5 h-3.5" />
-              {t('switchChatLabel')}
-            </button>
-            <div className="my-1 border-t border-lia-border-subtle" />
-          </>
-        )}
+
         <button
           onClick={handleStartRename}
           className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
@@ -259,15 +240,12 @@ export function UnifiedChatHeader({
 
         {/* Active task pill (Tezi Task Context Bar pattern) */}
         {activeTaskLabel && (
-          <button
-            onClick={onSwitchTask}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex-shrink-0 max-w-[200px]"
-            title={`${activeTaskLabel} — trocar conversa (⌘K)`}
-            aria-label={`Tarefa ativa: ${activeTaskLabel}. Clique para trocar`}
+          <span
+            className="flex items-center px-2 py-0.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary flex-shrink-0 max-w-[200px]"
+            aria-label={`Tarefa ativa: ${activeTaskLabel}`}
           >
             <span className="text-xs truncate">{activeTaskLabel}</span>
-            <ArrowRightLeft className="w-3 h-3 flex-shrink-0 opacity-60" aria-hidden="true" />
-          </button>
+          </span>
         )}
 
         {/* "Ver vaga" — re-open the right-side wizard panel after the
@@ -311,16 +289,6 @@ export function UnifiedChatHeader({
           <Plus className="w-4 h-4" />
         </button>
 
-        {onSwitchTask && mode !== "floating" && (
-          <button
-            onClick={onSwitchTask}
-            className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-            title={t('switchChat', { shortcut: '\u2318K' })}
-            aria-label={t('switchChatLabel')}
-          >
-            <ArrowRightLeft className="w-4 h-4" />
-          </button>
-        )}
 
         {/* Task #1291 — "back to corner": only shown in floating mode once the
             window has been dragged away from its dock. Returns it to the

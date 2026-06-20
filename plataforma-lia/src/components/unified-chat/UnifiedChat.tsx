@@ -5,7 +5,6 @@ import {
   BackgroundAgentsStatus,
   type BackgroundTask,
 } from "@/components/lia-float/BackgroundAgentsStatus";
-import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -240,7 +239,6 @@ export function UnifiedChat({
   const [mode, setMode] = useState<ChatMode>(initialMode ?? getStoredMode());
   const [inputText, setInputText] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [showSwitchTask, setShowSwitchTask] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth);
   const [isResizing, setIsResizing] = useState(false);
@@ -1020,14 +1018,7 @@ export function UnifiedChat({
   ]);
 
   // Switch to a different conversation
-  const handleSelectSession = useCallback(
-    async (sessionId: string) => {
-      setChatConversationId(sessionId);
-      await loadChatHistory(sessionId);
-      setShowSwitchTask(false);
-    },
-    [setChatConversationId, loadChatHistory],
-  );
+
 
   const currentModeRef = useRef(mode);
   currentModeRef.current = mode;
@@ -1239,7 +1230,6 @@ export function UnifiedChat({
             onModeChange={handleModeChange}
             onClose={handleClose}
             onNewChat={handleNewChat}
-            onSwitchTask={() => setShowSwitchTask(true)}
             conversationTitle={conversationTitle}
             isConnected={chatIsConnected}
             transportMode={chatTransportMode}
@@ -1559,13 +1549,7 @@ export function UnifiedChat({
       )}
       </AnimatePresence>
 
-      {/* Switch Task Modal (⌘K) */}
-      <SwitchTaskModal
-        isOpen={showSwitchTask}
-        onClose={() => setShowSwitchTask(false)}
-        onSelectSession={handleSelectSession}
-        currentSessionId={chatConversationId}
-      />
+
 
       {/*
         Task #1133 — modal canônico de confirmação ao cancelar wizard
