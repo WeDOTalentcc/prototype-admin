@@ -315,3 +315,173 @@ class TestBenefitsHandlerFixed:
         assert vc[0]["matches_vaga"] is True, "matches_vaga flag missing"
         # Confirms _fetch() ran to completion
         mock_repo_instance.list_matching.assert_called_once()
+
+
+# ── Bug 13: Calibração handlers ──────────────────────────────────────────────
+
+class TestCalibrationHandlers:
+    """
+    _handle_calibration_action — fail-loud validation + signal semantics
+    _handle_advance_calibration — sets calibration_complete=True
+
+    Threshold decision (Paulo 2026-06-19):
+      - like + dislike contam para signal_count; skip NÃO conta
+      - can_advance = signal_count >= threshold
+      - calibration_complete NUNCA setado por _handle_calibration_action
+    """
+
+    _CANDS = [
+        {"id": "cand-1", "name": "Alice"},
+        {"id": "cand-2", "name": "Bob"},
+        {"id": "cand-3", "name": "Carol"},
+    ]
+
+    def _state(self, **extra):
+        base = {
+            "company_id": _VALID_UUID,
+            "calibration_candidates": [dict(c) for c in self._CANDS],
+            "calibration_threshold": 3,
+        }
+        base.update(extra)
+        return base
+
+    # ── Validation: fail-loud ────────────────────────────────────────────────
+
+    def test_missing_candidate_id_returns_error(self):
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_calibration_action,
+        )
+        result = _handle_calibration_action(self._state(), {"signal": "like"}, CTX)
+        assert result.error is True, "candidate_id ausente deve retornar error=True"
+        assert "obrigatório" in result.llm_message.lower()
+
+    def test_invalid_signal_returns_error(self):
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_calibration_action,
+        )
+        result = _handle_calibration_action(
+            self._state(), {"candidate_id": "cand-1", "signal": "thumbsup"}, CTX
+        )
+        assert result.error is True, "signal inválido deve retornar error=True"
+        assert "inválido" in result.llm_message.lower() or "invalid" in result.llm_message.lower()
+
+    def test_candidate_not_found_returns_error(self):
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_calibration_action,
+        )
+        result = _handle_calibration_action(
+            self._state(), {"candidate_id": "cand-999", "signal": "like"}, CTX
+        )
+        assert result.error is True, "candidato não encontrado deve retornar error=True"
+        assert "não encontrado" in result.llm_message or "not found" in result.llm_message.lower()
+
+    # ── Signal semantics ─────────────────────────────────────────────────────
+
+    def test_like_increments_signal_count(self):
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_calibration_action,
+        )
+        result = _handle_calibration_action(
+            self._state(), {"candidate_id": "cand-1", "signal": "like"}, CTX
+        )
+        assert not result.error
+        cands = result.state_updates["calibration_candidates"]
+        alice = next(c for c in cands if c["id"] == "cand-1")
+        assert alice["decision"] == "approved"
+        # 1 like → signal_count=1 < threshold=3 → can_advance=False
+        assert result.state_updates["can_advance"] is False
+
+    def test_dislike_increments_signal_count(self):
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_calibration_action,
+        )
+        result = _handle_calibration_action(
+            self._state(), {"candidate_id": "cand-2", "signal": "dislike"}, CTX
+        )
+        assert not result.error
+        cands = result.state_updates["calibration_candidates"]
+        bob = next(c for c in cands if c["id"] == "cand-2")
+        assert bob["decision"] == "rejected"
+        assert result.state_updates["can_advance"] is False
+
+    def test_skip_does_not_count_toward_threshold(self):
+        """Skip NÃO conta para signal_count — decisão Paulo 2026-06-19."""
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_calibration_action,
+        )
+        result = _handle_calibration_action(
+            self._state(), {"candidate_id": "cand-3", "signal": "skip"}, CTX
+        )
+        assert not result.error
+        cands = result.state_updates["calibration_candidates"]
+        carol = next(c for c in cands if c["id"] == "cand-3")
+        assert carol["decision"] == "skip"
+        # skip → signal_count=0 → can_advance=False
+        assert result.state_updates["can_advance"] is False
+
+    def test_threshold_met_sets_can_advance_true_but_not_calibration_complete(self):
+        """2 likes + 1 dislike = signal_count=3 = threshold → can_advance=True.
+        calibration_complete NÃO deve aparecer em state_updates (nunca auto-eject).
+        """
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_calibration_action,
+        )
+        state = self._state()
+        # pre-populate 2 existing signals
+        state["calibration_candidates"][0]["decision"] = "approved"  # cand-1 like
+        state["calibration_candidates"][1]["decision"] = "rejected"  # cand-2 dislike
+        # add 3rd signal (like for cand-3) → signal_count=3
+        result = _handle_calibration_action(
+            state, {"candidate_id": "cand-3", "signal": "like"}, CTX
+        )
+        assert not result.error
+        assert result.state_updates["can_advance"] is True, (
+            "signal_count=3 >= threshold=3 deve setar can_advance=True"
+        )
+        assert "calibration_complete" not in result.state_updates, (
+            "_handle_calibration_action NUNCA seta calibration_complete "
+            "(sem auto-eject — decisão Paulo 2026-06-19)"
+        )
+
+    def test_decision_is_idempotent_substitution(self):
+        """Re-marcar um candidato substitui a decisão anterior (idempotente)."""
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_calibration_action,
+        )
+        state = self._state()
+        # First mark: like
+        r1 = _handle_calibration_action(
+            state, {"candidate_id": "cand-1", "signal": "like"}, CTX
+        )
+        assert not r1.error
+        cands_after_like = r1.state_updates["calibration_candidates"]
+        # signal_count after like = 1
+        sc1 = sum(1 for c in cands_after_like if c.get("decision") in ("approved", "rejected"))
+        assert sc1 == 1
+
+        # Second mark: dislike for same candidate
+        state2 = dict(state)
+        state2["calibration_candidates"] = cands_after_like
+        r2 = _handle_calibration_action(
+            state2, {"candidate_id": "cand-1", "signal": "dislike"}, CTX
+        )
+        assert not r2.error
+        cands_after_dislike = r2.state_updates["calibration_candidates"]
+        alice = next(c for c in cands_after_dislike if c["id"] == "cand-1")
+        assert alice["decision"] == "rejected", "decisão deve ser substituída, não acumulada"
+        # signal_count still = 1 (not 2)
+        sc2 = sum(1 for c in cands_after_dislike if c.get("decision") in ("approved", "rejected"))
+        assert sc2 == 1, f"signal_count deve ser 1 (substituição), não {sc2} (acumulação)"
+
+    # ── advance_calibration ──────────────────────────────────────────────────
+
+    def test_advance_calibration_sets_complete(self):
+        """_handle_advance_calibration → calibration_complete=True."""
+        from app.domains.job_creation.orchestrator.wizard_service_tools import (
+            _handle_advance_calibration,
+        )
+        result = _handle_advance_calibration(self._state(), {}, CTX)
+        assert not result.error
+        assert result.state_updates.get("calibration_complete") is True, (
+            "advance_calibration deve setar calibration_complete=True"
+        )

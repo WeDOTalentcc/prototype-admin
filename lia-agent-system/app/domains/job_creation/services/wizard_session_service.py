@@ -72,6 +72,15 @@ def _derive_wizard_stage(state: dict) -> str:
     painel lateral é stage-driven. Derivamos o stage do conteúdo do estado
     para o painel transicionar naturalmente (ficha → JD → publicado).
     """
+    # Bug 13: calibração pós-publish — candidatos em calibração + vaga publicada
+    # + calibração NÃO concluída → manter no stage de calibração.
+    # guard not calibration_complete para cair em handoff após advance_calibration.
+    if (
+        state.get("calibration_candidates")
+        and state.get("job_id")
+        and not state.get("calibration_complete")
+    ):
+        return "calibration"
     # Navegação explícita OU pós-publish → handoff (o FE auto-navega para a
     # página de vagas quando currentStage == "handoff").
     if state.get("_navigate_to_jobs") or state.get("job_id"):
@@ -1313,6 +1322,24 @@ class WizardSessionService:
             if _elig_q and not new_state.get("wsi_questions"):
                 data["questions"] = _elig_q
 
+            # Bug 13: Calibração — alimenta WizardCalibrationCard
+            # threshold: like + dislike contam; skip NÃO (decisão 2026-06-19)
+            if new_state.get("calibration_candidates") and stage == "calibration":
+                _cands = new_state.get("calibration_candidates") or []
+                _threshold = new_state.get("calibration_threshold", 3)
+                _signal_count = sum(
+                    1 for c in _cands
+                    if c.get("decision") in ("approved", "rejected")
+                )
+                _approved_count = sum(
+                    1 for c in _cands if c.get("decision") == "approved"
+                )
+                _can_advance = new_state.get("can_advance", _signal_count >= _threshold)
+                data["calibration_candidates"] = _cands
+                data["threshold"] = _threshold
+                data["signal_count"] = _signal_count
+                data["approved_count"] = _approved_count
+                data["can_advance"] = _can_advance
             if new_state.get("job_id"):
                 data["job_id"] = new_state.get("job_id")
                 data["share_link"] = new_state.get("share_link")

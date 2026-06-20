@@ -2712,6 +2712,82 @@ _VALID_STAKEHOLDER_ROLES = {
 }
 
 
+def _handle_calibration_action(state: dict, args: dict, ctx: "ToolContext") -> ToolResult:
+    """Bug 13: registra decisão do recrutador sobre candidato na calibração.
+
+    Threshold: like + dislike contam; skip NÃO conta (decisão 2026-06-19).
+    can_advance é nudge — NÃO seta calibration_complete (sem auto-eject).
+    """
+    candidate_id = (args.get("candidate_id") or "").strip()
+    signal = (args.get("signal") or "").strip()
+    reason = args.get("reason")
+
+    if not candidate_id:
+        return ToolResult(
+            llm_message="candidate_id é obrigatório para registrar ação de calibração.",
+            state_updates={},
+            error=True,
+        )
+
+    _VALID_SIGNALS = {"like", "dislike", "skip"}
+    if signal not in _VALID_SIGNALS:
+        return ToolResult(
+            llm_message=f"signal inválido: {signal!r}. Valores aceitos: like, dislike, skip.",
+            state_updates={},
+            error=True,
+        )
+
+    _SIGNAL_TO_DECISION = {"like": "approved", "dislike": "rejected", "skip": "skip"}
+    decision = _SIGNAL_TO_DECISION[signal]
+
+    candidates = list(state.get("calibration_candidates") or [])
+    updated = False
+    for c in candidates:
+        if str(c.get("id", "")) == candidate_id or str(c.get("candidate_id", "")) == candidate_id:
+            c["decision"] = decision
+            if reason:
+                c["recruiter_decision_reason"] = reason
+            updated = True
+            break
+
+    if not updated:
+        return ToolResult(
+            llm_message=f"Candidato {candidate_id!r} não encontrado na lista de calibração.",
+            state_updates={},
+            error=True,
+        )
+
+    threshold = state.get("calibration_threshold", 3)
+    # like e dislike contam; skip NÃO (decisão Paulo 2026-06-19)
+    signal_count = sum(1 for c in candidates if c.get("decision") in ("approved", "rejected"))
+    can_advance = signal_count >= threshold
+
+    _action_label = {"approved": "aprovado", "rejected": "rejeitado", "skip": "pulado"}[decision]
+    msg = f"Candidato {candidate_id} {_action_label}. Sinais registrados: {signal_count}/{threshold}."
+    if can_advance:
+        msg += " Mínimo atingido — recrutador pode avançar."
+
+    return ToolResult(
+        llm_message=msg,
+        state_updates={
+            "calibration_candidates": candidates,
+            "can_advance": can_advance,
+        },
+    )
+
+
+def _handle_advance_calibration(state: dict, args: dict, ctx: "ToolContext") -> ToolResult:
+    """Bug 13: confirma conclusão da calibração e libera transição para handoff.
+
+    ÚNICO setter de calibration_complete — separa nudge (can_advance)
+    de ejeção (calibration_complete). Acionado por [calibration_complete].
+    """
+    return ToolResult(
+        llm_message="Calibração concluída. Avançando para a próxima etapa.",
+        state_updates={"calibration_complete": True},
+    )
+
+
 def _handle_set_stakeholders(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -2832,6 +2908,54 @@ SET_STAKEHOLDERS = WizardTool(
     handler=_handle_set_stakeholders,
 )
 
+CALIBRATION_ACTION = WizardTool(
+    name="calibration_action",
+    description=(
+        "Registra a decisão do recrutador sobre um candidato na etapa de calibração. "
+        "Use quando receber a mensagem estruturada "
+        "[calibration_action candidate_id=ID signal=SIGNAL]. "
+        "signal: like=aprovar, dislike=rejeitar, skip=pular (skip não conta para o threshold). "
+        "Após chamar, relate o progresso (sinais: N/threshold)."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "candidate_id": {
+                "type": "string",
+                "description": "ID do candidato (extrair EXATAMENTE do marcador)",
+            },
+            "signal": {
+                "type": "string",
+                "enum": ["like", "dislike", "skip"],
+                "description": "like=aprovar, dislike=rejeitar, skip=pular",
+            },
+            "reason": {
+                "type": "string",
+                "description": "Motivo (opcional)",
+            },
+        },
+        "required": ["candidate_id", "signal"],
+        "additionalProperties": False,
+    },
+    handler=_handle_calibration_action,
+)
+
+ADVANCE_CALIBRATION = WizardTool(
+    name="advance_calibration",
+    description=(
+        "Confirma conclusão da etapa de calibração e avança para handoff. "
+        "Chamar quando receber a mensagem [calibration_complete]. "
+        "NÃO chamar sem que o recrutador tenha clicado em Avançar."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {},
+        "additionalProperties": False,
+    },
+    handler=_handle_advance_calibration,
+)
+
+
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
@@ -2854,5 +2978,7 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SET_AFFIRMATIVE_FIELDS,
     INFER_DEPARTMENT,
     SET_STAKEHOLDERS,
+    CALIBRATION_ACTION,
+    ADVANCE_CALIBRATION,
     CLOSE_PANEL,
 )

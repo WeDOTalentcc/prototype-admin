@@ -192,13 +192,10 @@ export function useWizardIntegration({
           body: JSON.stringify({ candidate_id: candidateId, feedback: feedbackKind, reason: reason ?? null }),
         }).catch(() => {})
 
-        if (eventType === "calibration_approve") {
-          sendMessage(`Aprovar candidato para calibracao: ${candidateId}` + (reason ? `. Comentario: ${reason}` : ""))
-        } else if (eventType === "calibration_reject") {
-          sendMessage(`Rejeitar candidato da calibracao: ${candidateId}` + (reason ? `. Comentario: ${reason}` : ""))
-        } else {
-          sendMessage(`Pular candidato da calibracao: ${candidateId}`)
-        }
+        // Bug 13: structured marker so LLM calls calibration_action deterministically
+        sendMessage(
+          `[calibration_action candidate_id=${candidateId} signal=${feedbackKind}${reason ? ` reason="${reason}"` : ""}]`
+        )
         return
       }
 
@@ -258,10 +255,10 @@ export function useWizardIntegration({
       sendMessage(`Adicionar do banco pergunta id=${questionId}`)
     }
 
-    // W2-C: avançar estágio — WizardCalibrationCard botão "Avançar" emite
-    // lia:wizard-advance; orphan desde a criação do card (2026-06-18 fix).
+    // Bug 13: advance_calibration wired — envia marcador estruturado para o
+    // LLM chamar advance_calibration (seta calibration_complete=True no state).
     function handleAdvance() {
-      sendMessage("Avançar: etapa de calibração concluída")
+      sendMessage("[calibration_complete]")
     }
 
     const c1 = onCustomEvent("lia:wizard-edit-question", handleEditQuestion)

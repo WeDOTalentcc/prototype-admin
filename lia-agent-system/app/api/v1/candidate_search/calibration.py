@@ -161,11 +161,13 @@ company_id: str = Depends(require_company_id)):
             await repo.create_calibration_session(session)
 
         feedback_entry = CalibrationFeedback(
-            session_id=session.id,
+            id=str(uuid.uuid4()),  # explicit so feedback_id is available before flush
+            search_session_id=session.id,
             candidate_id=request.candidate_id,
-            feedback_type=request.feedback,
+            feedback=request.feedback,
             reason=request.reason,
-            candidate_snapshot=request.candidate_snapshot
+            candidate_snapshot=request.candidate_snapshot,
+            company_id=company_id,  # Bug 13: LGPD Art.18 tenant erasure anchor
         )
         await repo.create_calibration_feedback(feedback_entry)
 
