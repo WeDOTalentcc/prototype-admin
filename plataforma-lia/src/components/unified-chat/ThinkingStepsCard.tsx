@@ -3,6 +3,7 @@
 import React from "react"
 import { useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
+import { Brain } from "lucide-react"
 import { phaseLabel, phaseIcon } from "./activity-labels"
 
 interface ThinkingStepsCardProps {
@@ -30,17 +31,21 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
   const locale = useLocale()
 
   if (!steps || steps.length === 0) {
-    // Padrão de mercado (Claude, ChatGPT, Gemini): mostrar dots imediatamente
-    // após o envio, sem esperar o primeiro reasoning_step do backend.
-    // Os dots transitam naturalmente para o primeiro passo quando ele chegar.
+    // Padrão de mercado: feedback imediato com mesma tipografia dos steps.
+    // Ícone Brain pulsando + "Pensando" + dots — idêntico ao spotlight ativo.
+    const label = locale?.toLowerCase().startsWith("en") ? "Thinking" : "Pensando"
     return (
       <div
-        className="flex items-center h-5 animate-in fade-in duration-150"
+        className="flex items-center gap-2 animate-in fade-in duration-200"
         role="status"
         aria-live="polite"
-        aria-label="Processando"
       >
-        <ActivityDots />
+        <Brain
+          className="w-3.5 h-3.5 shrink-0 text-lia-text-secondary animate-pulse motion-reduce:animate-none"
+          aria-hidden="true"
+        />
+        <span className="text-xs text-lia-text-secondary">{label}</span>
+        <ActivityDots className="shrink-0" />
       </div>
     )
   }
