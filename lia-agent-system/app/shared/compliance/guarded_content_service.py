@@ -149,15 +149,16 @@ class GuardedCandidateContentService:
             )
 
         # 3. Layer 2 — vies implicito (soft warning, nao bloqueia)
-        implicit_result = guard.check_implicit_bias(content)
-        if implicit_result.blocked_terms:
-            fairness_warnings.extend(implicit_result.blocked_terms)
+        # check_implicit_bias retorna list[str] (nao FairnessCheckResult)
+        implicit_warnings = guard.check_implicit_bias(content)
+        if implicit_warnings:
+            fairness_warnings.extend(implicit_warnings)
             logger.info(
                 "[GuardedCandidateContentService] FairnessGuard Layer 2 soft warnings: "
                 "content_type=%s company_id=%s warnings=%s",
                 content_type,
                 company_id,
-                implicit_result.blocked_terms,
+                implicit_warnings,
             )
 
         # 4. Conteudo passou — retorna com provenance

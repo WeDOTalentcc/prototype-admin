@@ -154,6 +154,7 @@ class TestGenerateReportEnvelope:
             candidate_id="cand-test-001",
             wsi_result=wsi_result_sample,
             responses=responses_sample,
+            company_id="test-company-001",  # C4 P0 #1: obrigatorio
         )
 
         assert isinstance(report, StructuredReport)
@@ -180,6 +181,7 @@ class TestGenerateReportEnvelope:
             candidate_id="cand-test-001",
             wsi_result=wsi_result_sample,
             responses=responses_sample,
+            company_id="test-company-001",  # C4 P0 #1: obrigatorio
         )
 
         assert isinstance(report, StructuredReport)
@@ -214,6 +216,7 @@ class TestGenerateFeedbackEnvelope:
             wsi_result=wsi_result_sample,
             responses=responses_sample,
             decision="aprovado",
+            company_id="test-company-001",  # C4 P0 #1: obrigatorio
         )
 
         assert isinstance(feedback, CandidateFeedback)
@@ -243,6 +246,7 @@ class TestGenerateFeedbackEnvelope:
             wsi_result=wsi_result_sample,
             responses=responses_sample,
             decision="aguardando",
+            company_id="test-company-001",  # C4 P0 #1: obrigatorio
         )
 
         assert isinstance(feedback, CandidateFeedback)
@@ -266,6 +270,7 @@ class TestGenerateFeedbackEnvelope:
             wsi_result=wsi_result_sample,
             responses=responses_sample,
             decision="nao_aprovado",
+            company_id="test-company-001",  # C4 P0 #1: obrigatorio
         )
 
         # decision eh audit trail interno — preservado independente de fallback
@@ -295,6 +300,7 @@ class TestBackwardCompat:
             candidate_id="cand-test-001",
             wsi_result=wsi_result_sample,
             responses=responses_sample,
+            company_id="test-company-001",  # C4 P0 #1: obrigatorio
         )
 
         # Caller legacy soh consulta content

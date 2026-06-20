@@ -28,7 +28,10 @@ from pathlib import Path
 
 # Baseline de surfaces ainda nao-migradas (ratchet que encolhe com o tempo)
 # Cada card P0 subsequente deve reduzir esse numero.
-BASELINE_NOT_MIGRATED = 4  # C4 P0 #1 migrou: report_generator (generate_report + generate_feedback)
+BASELINE_NOT_MIGRATED = 5  # C4 P0 #1 migrou: report_generator (generate_report + generate_feedback)
+# Surfaces restantes descobertas em scan: candidate_report_service (generate_parecer + generate_report),
+# compliance_reporter (generate_report), personalized_feedback_service (generate_personalized_feedback),
+# wsi_service/service.py (generate_candidate_feedback). Cards C4 P0 #2+ migrarão cada uma.
 
 # Funcoes-alvo: nomes que sugerem geracao de conteudo sobre candidato
 CANDIDATE_CONTENT_FUNCTIONS = {
