@@ -1133,7 +1133,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             <Settings className="w-3 h-3" />
           </Button>
 
-          <LanguageSwitcher collapsed={false} />
+          <LanguageSwitcher collapsed={true} />
 
           <Button
             variant="ghost"
