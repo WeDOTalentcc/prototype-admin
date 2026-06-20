@@ -363,7 +363,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
   const t = useTranslations("iaSidebar")
   const { isIASidebarOpen, closeIASidebar, activeConversationId, setActiveConversation, localUnreadCounts } =
     useIASessionStore()
-  const { open: openLiaChat } = useLiaFloat()
+  const { open: openLiaChat, switchChatContext, loadChatHistory, chatContextType, setChatMessages } = useLiaFloat()
   const [searchQuery, setSearchQuery] = useState("")
   const [panelWidth, setPanelWidth] = useState(340)
   const isDraggingRef = useRef(false)
@@ -415,12 +415,15 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
     (id: string) => {
       setActiveConversation(id)
       markRead.mutate(id)
-      // Open the conversation in LIA chat panel
+      // Clear existing messages and load the selected conversation
+      setChatMessages([])
+      switchChatContext(chatContextType, { conversationId: id })
+      void loadChatHistory(id)
       openLiaChat(id)
       onOpenConversation?.(id)
       closeIASidebar()
     },
-    [setActiveConversation, markRead, openLiaChat, closeIASidebar, onOpenConversation]
+    [setActiveConversation, markRead, openLiaChat, switchChatContext, loadChatHistory, chatContextType, setChatMessages, closeIASidebar, onOpenConversation]
   )
 
   // Keyboard shortcuts: P=pin, N=new, A=archive, Del=delete, Esc=close
