@@ -4,8 +4,9 @@ import { useState, useMemo, useCallback, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import {
   Brain, Plus, Pin, PinOff, Edit3, StickyNote, Archive, Trash2,
-  X, Search, MessageSquare, ChevronDown,
+  X, Search, MessageSquare, ChevronDown, ChevronsLeft,
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useIASessionStore } from "@/stores/ia-session-store"
@@ -413,7 +414,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
       {/* Panel — positioned adjacent to sidebar (Apollo-style) */}
       <aside
         className={cn(
-          "fixed top-0 z-40 h-full w-72 bg-lia-bg-primary border-r border-lia-border-subtle",
+          "fixed top-0 z-40 h-full w-[420px] bg-lia-bg-primary border-r border-lia-border-subtle",
           "flex flex-col shadow-lg",
           "transform transition-transform duration-200 ease-out"
         )}
@@ -426,13 +427,15 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
             <Brain className="w-4 h-4 text-wedo-cyan" />
             <span className="text-sm font-semibold text-lia-text-primary">Conversas</span>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={closeIASidebar}
-            className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-muted hover:text-lia-text-secondary"
-            aria-label="Fechar histórico"
+            className="h-6 w-6 p-0 text-lia-text-secondary hover:text-lia-text-primary"
+            aria-label="Retrair painel"
           >
-            <X className="w-4 h-4" />
-          </button>
+            <ChevronsLeft className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Nova conversa CTA */}
