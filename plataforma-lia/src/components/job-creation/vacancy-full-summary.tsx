@@ -139,12 +139,12 @@ const EMPLOYMENT_TYPE_LABELS: Record<string, string> = {
 }
 
 export function VacancyFullSummary({
-  const personaName = usePersonaName()
   vacancy,
   editableFields,
   lockedFields,
   isLoading = false
 }: VacancyFullSummaryProps) {
+  const personaName = usePersonaName()
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">

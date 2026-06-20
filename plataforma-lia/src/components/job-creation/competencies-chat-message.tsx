@@ -185,13 +185,13 @@ function BehavioralCompetencyCard({ competency }: { competency: BehavioralCompet
 }
 
 export function CompetenciesChatMessage({
-  const personaName = usePersonaName()
   technicalSkills,
   behavioralCompetencies,
   isLoading = false,
   onAccept,
   onAdjust
 }: CompetenciesChatMessageProps) {
+  const personaName = usePersonaName()
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">

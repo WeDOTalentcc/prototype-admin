@@ -160,11 +160,11 @@ function VacancyCard({
 }
 
 export function VacancySearchResults({
-  const personaName = usePersonaName()
   vacancies,
   onSelect,
   isLoading = false
 }: VacancySearchResultsProps) {
+  const personaName = usePersonaName()
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">

@@ -19,8 +19,8 @@ import {
   Brain
 } from"lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
-import type { 
 import usePersonaName from "@/hooks/company/usePersonaName"
+import type { 
   CompensationAnalysisResult, 
   SalaryRange, 
   CompetitivenessStatus,
