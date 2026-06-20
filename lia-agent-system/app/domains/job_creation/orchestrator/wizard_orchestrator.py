@@ -538,8 +538,18 @@ class WizardOrchestrator:
                     or "Não posso seguir com critérios discriminatórios.",
                     fairness_blocked=True,
                 )
-        except Exception as exc:  # noqa: BLE001 — fail-open: guard não trava fluxo
-            logger.debug("[WizardOrchestrator] FairnessGuard failed (open): %s", exc)
+        except Exception as exc:
+            logger.error(
+                "[WizardOrchestrator] FairnessGuard L1 exception — compliance check unavailable",
+                exc_info=True,
+            )
+            return OrchestratorResult(
+                reply=(
+                    "Verificação de compliance temporariamente indisponível. "
+                    "Por favor, tente novamente em instantes."
+                ),
+                error=True,
+            )
 
         client = llm_client or self._build_anthropic_client(getattr(ctx, "company_id", None))
         if client is None:

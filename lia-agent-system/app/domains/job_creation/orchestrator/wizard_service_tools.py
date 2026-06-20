@@ -1571,6 +1571,47 @@ def _handle_suggest_eligibility_templates(
     )
 
 
+# ─── Fairness guard para perguntas de elegibilidade ─────────────────────────
+_FAIRNESS_ELIGIBILITY_REPLY = (
+    "Esta pergunta contém critério discriminatório e não pode ser usada como pergunta "
+    "de triagem. Por favor, reformule para focar em requisitos técnicos ou de experiência."
+)
+
+
+def _check_question_fairness(question_text: str):
+    """Retorna ToolResult bloqueante se FairnessGuard detectar texto discriminatório.
+
+    Fail-closed: exception do guard também bloqueia (fail-loud com logger.error).
+    Retorna None se o texto for aprovado pelo guard.
+    """
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard  # local: evita circular
+        fg = FairnessGuard().check(question_text)
+        if fg.is_blocked:
+            logger.warning(
+                "[WizardServiceTools] FairnessGuard BLOCK eligibility cat=%s q=%r",
+                fg.category,
+                question_text[:80],
+            )
+            return ToolResult(
+                llm_message=(
+                    f"Pergunta bloqueada (critério discriminatório — {fg.category}): "
+                    f"{fg.educational_message or _FAIRNESS_ELIGIBILITY_REPLY}"
+                ),
+                error=True,
+            )
+    except Exception:
+        logger.error(
+            "[WizardServiceTools] FairnessGuard check falhou em pergunta de elegibilidade",
+            exc_info=True,
+        )
+        return ToolResult(
+            llm_message="Verificação de compliance indisponível. Tente novamente em instantes.",
+            error=True,
+        )
+    return None
+
+
 def _handle_apply_eligibility_template_to_vacancy(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -1642,6 +1683,14 @@ def _handle_apply_eligibility_template_to_vacancy(
     snapshot["_template_id"] = str(template.id)
     snapshot["_is_master_origin"] = template.is_master_template
 
+    snapshot_question = (
+        snapshot.get("question") or snapshot.get("question_text") or ""
+    ).strip()
+    if snapshot_question:
+        fairness_block = _check_question_fairness(snapshot_question)
+        if fairness_block:
+            return fairness_block
+
     current = list(state.get("eligibility_questions") or [])
     current.append(snapshot)
 
@@ -1685,6 +1734,10 @@ def _handle_create_custom_eligibility_template(
             llm_message="Pergunta obrigatória (mínimo 3 caracteres).",
             error=True,
         )
+
+    fairness_block = _check_question_fairness(question)
+    if fairness_block:
+        return fairness_block
 
     company_id = ctx.company_id
     user_id = ctx.user_id
