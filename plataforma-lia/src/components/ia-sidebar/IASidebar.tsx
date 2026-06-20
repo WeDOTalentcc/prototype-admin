@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useIASessionStore } from "@/stores/ia-session-store"
+import { useUIPreferencesStore, type LiaRecentItem } from "@/stores/ui-preferences-store"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import {
   useIASessions,
@@ -85,6 +86,7 @@ function SessionContextMenu({
   onArchive,
   onDelete,
 }: ContextMenuProps) {
+  const t = useTranslations("iaSidebar")
   return (
     <div
       className="absolute right-0 top-6 z-50 bg-lia-bg-primary border border-lia-border-subtle rounded-lg shadow-lg py-1 min-w-[160px]"
@@ -95,35 +97,35 @@ function SessionContextMenu({
         onClick={() => { onPin(); onClose() }}
       >
         {session.is_pinned ? (
-          <><PinOff className="w-3.5 h-3.5" /> Desafixar <kbd className="ml-auto text-[10px] text-lia-text-muted">P</kbd></>
+          <><PinOff className="w-3.5 h-3.5" /> {t("context.unpin")} <kbd className="ml-auto text-[10px] text-lia-text-muted">P</kbd></>
         ) : (
-          <><Pin className="w-3.5 h-3.5" /> Fixar <kbd className="ml-auto text-[10px] text-lia-text-muted">P</kbd></>
+          <><Pin className="w-3.5 h-3.5" /> {t("context.pin")} <kbd className="ml-auto text-[10px] text-lia-text-muted">P</kbd></>
         )}
       </button>
       <button
         className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
         onClick={() => { onRename(); onClose() }}
       >
-        <Edit3 className="w-3.5 h-3.5" /> Renomear <kbd className="ml-auto text-[10px] text-lia-text-muted">R</kbd>
+        <Edit3 className="w-3.5 h-3.5" /> {t("context.rename")} <kbd className="ml-auto text-[10px] text-lia-text-muted">R</kbd>
       </button>
       <button
         className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
         onClick={() => { onNote(); onClose() }}
       >
-        <StickyNote className="w-3.5 h-3.5" /> Nota <kbd className="ml-auto text-[10px] text-lia-text-muted">N</kbd>
+        <StickyNote className="w-3.5 h-3.5" /> {t("context.note")} <kbd className="ml-auto text-[10px] text-lia-text-muted">N</kbd>
       </button>
       <div className="my-1 border-t border-lia-border-subtle" />
       <button
         className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover"
         onClick={() => { onArchive(); onClose() }}
       >
-        <Archive className="w-3.5 h-3.5" /> Arquivar <kbd className="ml-auto text-[10px] text-lia-text-muted">A</kbd>
+        <Archive className="w-3.5 h-3.5" /> {t("context.archive")} <kbd className="ml-auto text-[10px] text-lia-text-muted">A</kbd>
       </button>
       <button
         className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-status-error hover:bg-status-error/10"
         onClick={() => { onDelete(); onClose() }}
       >
-        <Trash2 className="w-3.5 h-3.5" /> Excluir <kbd className="ml-auto text-[10px] text-lia-text-muted">Del</kbd>
+        <Trash2 className="w-3.5 h-3.5" /> {t("context.delete")} <kbd className="ml-auto text-[10px] text-lia-text-muted">Del</kbd>
       </button>
     </div>
   )
@@ -151,6 +153,7 @@ function SessionItem({
   onArchive,
   onDelete,
 }: SessionItemProps) {
+  const t = useTranslations("iaSidebar")
   const [menuOpen, setMenuOpen] = useState(false)
   const [renaming, setRenaming] = useState(false)
   const [renameValue, setRenameValue] = useState(session.title ?? "")
@@ -175,7 +178,7 @@ function SessionItem({
     session.title ||
     (session.created_at
       ? new Date(session.created_at).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })
-      : "Conversa")
+      : t("fallbackTitle"))
 
   return (
     <div className="relative group">
@@ -203,14 +206,14 @@ function SessionItem({
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleNoteSubmit()
               if (e.key === "Escape") setAddingNote(false)
             }}
-            placeholder="Adicionar nota..."
+            placeholder={t("note.placeholder")}
             rows={3}
             maxLength={500}
             className="w-full text-xs px-2 py-1 rounded border border-lia-border-medium bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-wedo-cyan resize-none"
           />
           <div className="flex justify-end gap-1 mt-1">
-            <button onClick={() => setAddingNote(false)} className="text-[10px] text-lia-text-muted px-2 py-0.5 hover:text-lia-text-secondary">Cancelar</button>
-            <button onClick={handleNoteSubmit} className="text-[10px] text-wedo-cyan px-2 py-0.5 font-medium hover:text-wedo-cyan/80">Salvar (⌘↵)</button>
+            <button onClick={() => setAddingNote(false)} className="text-[10px] text-lia-text-muted px-2 py-0.5 hover:text-lia-text-secondary">{t("note.cancel")}</button>
+            <button onClick={handleNoteSubmit} className="text-[10px] text-wedo-cyan px-2 py-0.5 font-medium hover:text-wedo-cyan/80">{t("note.save")}</button>
           </div>
         </div>
       ) : (
@@ -251,7 +254,7 @@ function SessionItem({
           <button
             onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v) }}
             className="p-1 rounded hover:bg-lia-bg-elevated text-lia-text-muted hover:text-lia-text-secondary"
-            aria-label="Opções da conversa"
+            aria-label={t("aria.sessionOptions")}
           >
             <ChevronDown className="w-3 h-3" />
           </button>
@@ -288,6 +291,27 @@ function SectionHeader({ label }: { label: string }) {
 // ---------------------------------------------------------------------------
 // Main IASidebar component
 // ---------------------------------------------------------------------------
+function localItemToSession(item: LiaRecentItem): IASession {
+  return {
+    id: item.id,
+    user_id: "",
+    context_type: "chat_bubble",
+    context_id: null,
+    title: item.title || "Conversa",
+    summary: item.lastMessage ?? null,
+    intent: null,
+    status: "active",
+    is_active: true,
+    is_pinned: false,
+    domain_tag: null,
+    note: null,
+    unread_count: 0,
+    message_count: 0,
+    created_at: new Date(item.timestamp).toISOString(),
+    updated_at: new Date(item.timestamp).toISOString(),
+  }
+}
+
 function isToday(dateStr: string | null): boolean {
   if (!dateStr) return false
   const d = new Date(dateStr)
@@ -311,6 +335,7 @@ interface IASidebarProps {
 }
 
 export function IASidebar({ onOpenConversation, onNewConversation, activeNoteConversationId, sidebarOffset = 64 }: IASidebarProps) {
+  const t = useTranslations("iaSidebar")
   const { isIASidebarOpen, closeIASidebar, activeConversationId, setActiveConversation, localUnreadCounts } =
     useIASessionStore()
   const { open: openLiaChat } = useLiaFloat()
@@ -349,6 +374,13 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
     }
   }, [])
   const { data: sessions = [], isLoading } = useIASessions()
+  const liaRecentItems = useUIPreferencesStore((s) => s.liaRecentItems)
+  // Fallback: when backend returns empty (user_id mismatch between accounts),
+  // show localStorage recent items so history is never blank to the user.
+  const localChatItems = liaRecentItems.filter((i) => i.type === "chat")
+  const effectiveSessions: IASession[] = sessions.length > 0
+    ? sessions
+    : (!isLoading && localChatItems.length > 0 ? localChatItems.map(localItemToSession) : sessions)
   const updateSession = useUpdateSession()
   const markRead = useMarkSessionRead()
   const deleteSession = useDeleteSession()
@@ -373,7 +405,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
     const handler = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement
       if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable) return
-      const target = sessions.find((s) => s.id === activeConversationId)
+      const target = effectiveSessions.find((s) => s.id === activeConversationId)
       switch (e.key) {
         case "n":
         case "N":
@@ -412,14 +444,14 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
 
   // Client-side search filter
   const filteredSessions = useMemo(() => {
-    if (!searchQuery.trim()) return sessions
+    if (!searchQuery.trim()) return effectiveSessions
     const q = searchQuery.toLowerCase()
-    return sessions.filter(
+    return effectiveSessions.filter(
       (s) =>
         (s.title ?? "").toLowerCase().includes(q) ||
         (s.domain_tag ?? "").toLowerCase().includes(q)
     )
-  }, [sessions, searchQuery])
+  }, [effectiveSessions, searchQuery])
 
   const pinned = filteredSessions.filter((s) => s.is_pinned)
   const todaySessions = filteredSessions.filter((s) => !s.is_pinned && isToday(s.updated_at))
@@ -428,43 +460,45 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
     (s) => !s.is_pinned && !isToday(s.updated_at) && !isYesterday(s.updated_at)
   )
 
-  const activeSession = sessions.find((s) => s.id === activeConversationId)
+  const activeSession = effectiveSessions.find((s) => s.id === activeConversationId)
   const activeNote = activeSession?.note ?? null
-
-  if (!isIASidebarOpen) return null
 
   return (
     <>
-      {/* Overlay — covers only content area to the right of sidebar (Apollo-style) */}
-      <div
-        className="fixed top-0 bottom-0 right-0 z-30"
-        style={{ left: sidebarOffset }}
-        onClick={closeIASidebar}
-        aria-hidden="true"
-      />
+      {/* Overlay — only when open */}
+      {isIASidebarOpen && (
+        <div
+          className="fixed top-0 bottom-0 right-0 z-30"
+          style={{ left: sidebarOffset }}
+          onClick={closeIASidebar}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Panel — positioned adjacent to sidebar (Apollo-style) */}
       <aside
         className={cn(
           "fixed top-0 z-40 h-full bg-lia-bg-primary border-r border-lia-border-subtle",
           "flex flex-col shadow-lg",
-          "transform transition-transform duration-200 ease-out"
+          "transform transition-transform duration-200 ease-out",
+        isIASidebarOpen ? "translate-x-0" : "-translate-x-full",
+        !isIASidebarOpen && "pointer-events-none"
         )}
         style={{ left: sidebarOffset, width: panelWidth }}
-        aria-label="Histórico de conversas com a LIA"
+        aria-label={t("aria.historyPanel")}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <span className="text-sm font-semibold text-lia-text-primary">Conversas</span>
+            <span className="text-sm font-semibold text-lia-text-primary">{t("header")}</span>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={closeIASidebar}
             className="h-6 w-6 p-0 text-lia-text-secondary hover:text-lia-text-primary"
-            aria-label="Retrair painel"
+            aria-label={t("aria.collapsePanel")}
           >
             <ChevronsLeft className="w-4 h-4" />
           </Button>
@@ -477,7 +511,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-wedo-cyan/10 hover:bg-wedo-cyan/15 text-wedo-cyan text-sm font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Nova conversa
+            {t("newConversation")}
           </button>
         </div>
 
@@ -500,7 +534,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar conversas..."
+              placeholder={t("search.placeholder")}
               className="flex-1 text-xs bg-transparent text-lia-text-primary placeholder:text-lia-text-muted focus:outline-none"
             />
             {searchQuery && (
@@ -515,7 +549,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
         <div className="flex-1 overflow-y-auto px-1">
           {isLoading && (
             <div className="flex items-center justify-center py-8 text-lia-text-muted">
-              <span className="text-xs">Carregando...</span>
+              <span className="text-xs">{t("loading")}</span>
             </div>
           )}
 
@@ -525,11 +559,11 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
                 <MessageSquare className="w-6 h-6 text-lia-text-muted" aria-hidden="true" />
               </div>
               <p className="text-xs font-medium text-lia-text-primary">
-                {searchQuery ? "Nenhuma conversa encontrada" : "Comece uma conversa com a LIA"}
+                {searchQuery ? t("search.noResults") : t("empty.title")}
               </p>
               {!searchQuery && (
                 <p className="text-[11px] text-lia-text-tertiary mt-1">
-                  Clique em &ldquo;Nova conversa&rdquo; para começar
+                  {t("empty.hint")}
                 </p>
               )}
             </div>
@@ -538,7 +572,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
           {/* Pinned */}
           {pinned.length > 0 && (
             <>
-              <SectionHeader label="Fixadas" />
+              <SectionHeader label={t("sections.pinned")} />
               {pinned.map((s) => (
                 <SessionItem
                   key={s.id}
@@ -557,7 +591,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
           {/* Today */}
           {todaySessions.length > 0 && (
             <>
-              <SectionHeader label="Hoje" />
+              <SectionHeader label={t("sections.today")} />
               {todaySessions.map((s) => (
                 <SessionItem
                   key={s.id}
@@ -576,7 +610,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
           {/* Yesterday */}
           {yesterdaySessions.length > 0 && (
             <>
-              <SectionHeader label="Ontem" />
+              <SectionHeader label={t("sections.yesterday")} />
               {yesterdaySessions.map((s) => (
                 <SessionItem
                   key={s.id}
@@ -595,7 +629,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
           {/* Older */}
           {olderSessions.length > 0 && (
             <>
-              <SectionHeader label="Anteriores" />
+              <SectionHeader label={t("sections.older")} />
               {olderSessions.map((s) => (
                 <SessionItem
                   key={s.id}

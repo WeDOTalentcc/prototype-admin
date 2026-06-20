@@ -8391,5 +8391,43 @@
     "footer": {
       "legal": "Este portal é operado pela WeDOTalent. Seus dados são protegidos conforme a LGPD."
     }
+  },
+  "iaSidebar": {
+    "aria": {
+      "historyPanel": "Histórico de conversas com a LIA",
+      "collapsePanel": "Retrair painel",
+      "sessionOptions": "Opções da conversa"
+    },
+    "header": "Conversas",
+    "newConversation": "Nova conversa",
+    "search": {
+      "placeholder": "Buscar conversas...",
+      "noResults": "Nenhuma conversa encontrada"
+    },
+    "loading": "Carregando...",
+    "empty": {
+      "title": "Comece uma conversa com a LIA",
+      "hint": "Clique em \"Nova conversa\" para começar"
+    },
+    "sections": {
+      "pinned": "Fixadas",
+      "today": "Hoje",
+      "yesterday": "Ontem",
+      "older": "Anteriores"
+    },
+    "context": {
+      "pin": "Fixar",
+      "unpin": "Desafixar",
+      "rename": "Renomear",
+      "note": "Nota",
+      "archive": "Arquivar",
+      "delete": "Excluir"
+    },
+    "note": {
+      "placeholder": "Adicionar nota...",
+      "save": "Salvar (⌘↵)",
+      "cancel": "Cancelar"
+    },
+    "fallbackTitle": "Conversa"
   }
 }

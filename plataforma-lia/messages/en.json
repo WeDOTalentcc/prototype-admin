@@ -8391,5 +8391,43 @@
     "footer": {
       "legal": "This portal is operated by WeDOTalent. Your data is protected under LGPD."
     }
+  },
+  "iaSidebar": {
+    "aria": {
+      "historyPanel": "AI conversation history",
+      "collapsePanel": "Collapse panel",
+      "sessionOptions": "Session options"
+    },
+    "header": "Conversations",
+    "newConversation": "New conversation",
+    "search": {
+      "placeholder": "Search conversations...",
+      "noResults": "No conversations found"
+    },
+    "loading": "Loading...",
+    "empty": {
+      "title": "Start a conversation with LIA",
+      "hint": "Click \"New conversation\" to begin"
+    },
+    "sections": {
+      "pinned": "Pinned",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "older": "Older"
+    },
+    "context": {
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "rename": "Rename",
+      "note": "Note",
+      "archive": "Archive",
+      "delete": "Delete"
+    },
+    "note": {
+      "placeholder": "Add note...",
+      "save": "Save (⌘↵)",
+      "cancel": "Cancel"
+    },
+    "fallbackTitle": "Conversation"
   }
 }
