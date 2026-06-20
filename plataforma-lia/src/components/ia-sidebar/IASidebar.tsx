@@ -463,26 +463,23 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
   const activeSession = effectiveSessions.find((s) => s.id === activeConversationId)
   const activeNote = activeSession?.note ?? null
 
+  if (!isIASidebarOpen) return null
+
   return (
     <>
-      {/* Overlay — only when open */}
-      {isIASidebarOpen && (
-        <div
-          className="fixed top-0 bottom-0 right-0 z-30"
-          style={{ left: sidebarOffset }}
-          onClick={closeIASidebar}
-          aria-hidden="true"
-        />
-      )}
+      {/* Overlay — covers only content area to the right of sidebar (Apollo-style) */}
+      <div
+        className="fixed top-0 bottom-0 right-0 z-30"
+        style={{ left: sidebarOffset }}
+        onClick={closeIASidebar}
+        aria-hidden="true"
+      />
 
       {/* Panel — positioned adjacent to sidebar (Apollo-style) */}
       <aside
         className={cn(
           "fixed top-0 z-40 h-full bg-lia-bg-primary border-r border-lia-border-subtle",
-          "flex flex-col shadow-lg",
-          "transform transition-transform duration-200 ease-out",
-        isIASidebarOpen ? "translate-x-0" : "-translate-x-full",
-        !isIASidebarOpen && "pointer-events-none"
+          "flex flex-col shadow-lg"
         )}
         style={{ left: sidebarOffset, width: panelWidth }}
         aria-label={t("aria.historyPanel")}
