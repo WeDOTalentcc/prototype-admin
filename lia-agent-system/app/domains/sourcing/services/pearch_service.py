@@ -381,7 +381,10 @@ class PearchService:
                     pass
                 return _blocked
         except Exception as _fg_exc:
-            logger.debug("[PearchService] FairnessGuard check skipped: %s", _fg_exc)
+            logger.error(
+                "[PearchService] FairnessGuard check FAILED (pearch query proceeding without fairness verification): %s",
+                _fg_exc, exc_info=True,
+            )
 
         company_id = company_id or getattr(request, "company_id", None)
 

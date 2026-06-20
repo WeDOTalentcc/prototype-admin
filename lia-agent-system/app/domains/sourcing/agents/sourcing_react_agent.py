@@ -334,7 +334,10 @@ class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                     company_id=str(input.company_id or ""),
                 )
         except Exception as _fg_exc:
-            logger.debug("[SourcingReActAgent] FairnessGuard check skipped: %s", _fg_exc)
+            logger.error(
+                "[SourcingReActAgent] FairnessGuard check FAILED (result served without fairness verification): %s",
+                _fg_exc, exc_info=True,
+            )
             _soft_warnings = []
 
         # AUD-4: HITL — abordagem (outreach) exige aprovação humana antes de enviar

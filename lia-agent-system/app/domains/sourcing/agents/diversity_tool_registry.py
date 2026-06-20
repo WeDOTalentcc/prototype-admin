@@ -17,6 +17,7 @@ from lia_agents_core.tool_adapter import ToolDefinition
 from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
+from app.domains.sourcing.fairness import run_sourcing_fairness_check
 
 logger = logging.getLogger(__name__)
 
@@ -62,18 +63,15 @@ async def _wrap_diversity_search_candidates(**kwargs: Any) -> dict[str, Any]:
 
     # FairnessGuard: garante que query base não é discriminatória
     query_str = f"{role} {location} {' '.join(skills or [])}"
-    try:
-        _fg = FairnessGuard()
-        _fg_result = _fg.check(query_str)
-        if _fg_result.is_blocked:
-            return {
+    _fg_blocked, _fg_block_msg = run_sourcing_fairness_check(
+        FairnessGuard().check, query_str, registry_name="diversity_tool_registry",
+    )
+    if _fg_blocked:
+        return {
                 "success": False,
                 "data": {},
-                "message": _fg_result.educational_message or "Busca bloqueada por critério discriminatório.",
+                "message": _fg_block_msg or "Busca bloqueada por critério discriminatório.",
             }
-    except Exception as _fg_exc:
-        logger.debug("[diversity_tools] FairnessGuard check skipped: %s", _fg_exc)
-
     conditions = ["is_active = true"]
     params: dict[str, Any] = {"lim": limit, "off": offset}
 

@@ -22,6 +22,7 @@ from lia_agents_core.tool_adapter import ToolDefinition
 from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
+from app.domains.sourcing.fairness import run_sourcing_fairness_check
 
 logger = logging.getLogger(__name__)
 
@@ -52,19 +53,16 @@ async def _wrap_nurture_create_sequence(**kwargs: Any) -> dict[str, Any]:
 
     # FairnessGuard: verificar contexto da sequência
     query_str = f"{vacancy_id} {company_id} candidate:{candidate_id}"
-    try:
-        from app.shared.compliance.fairness_guard import FairnessGuard
-        _fg = FairnessGuard()
-        _fg_result = _fg.check(query_str)
-        if _fg_result.is_blocked:
-            return {
+    from app.shared.compliance.fairness_guard import FairnessGuard
+    _fg_blocked, _fg_block_msg = run_sourcing_fairness_check(
+        FairnessGuard().check, query_str, registry_name="nurture_sequence_tool_registry",
+    )
+    if _fg_blocked:
+        return {
                 "success": False,
                 "data": {},
-                "message": _fg_result.educational_message or "Criação de sequência bloqueada por critério discriminatório.",
+                "message": _fg_block_msg or "Criação de sequência bloqueada por critério discriminatório.",
             }
-    except Exception as _fg_exc:
-        logger.debug("[nurture_tools] FairnessGuard check skipped: %s", _fg_exc)
-
     if not steps:
         steps = [
             {
