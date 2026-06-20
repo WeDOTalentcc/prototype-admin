@@ -17,7 +17,7 @@ import pytest
 from app.domains.job_management.services.jd_enrichment_service import (
     MIN_BEHAVIORAL_COMPETENCIES_FOR_WSI,
     MIN_TECHNICAL_SKILLS_FOR_WSI,
-    JdEnrichmentService,
+    JobManagementJdEnrichmentService as JdEnrichmentService,
     build_wsi_persistence_payload,
 )
 from app.schemas.jd_enrichment import (

@@ -17,7 +17,7 @@ from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, "/home/runner/workspace/lia-agent-system")
 
-from app.domains.job_creation.nodes.publish import _build_manager_briefing_html
+from app.domains.job_creation.helpers.manager_briefing import build_manager_briefing_html as _build_manager_briefing_html
 
 
 class TestBuildManagerBriefingHtml(unittest.TestCase):
@@ -26,27 +26,20 @@ class TestBuildManagerBriefingHtml(unittest.TestCase):
         return {"parsed_title": "Dev Backend Senior"}
 
     def test_retorna_string_html(self):
-        html = _build_manager_briefing_html(
-            state=self._minimal_state(), job_id="jid-123", share_link=None
-        )
+        html = _build_manager_briefing_html({**(self._minimal_state()), "job_id": "jid-123", "share_link": None})
         self.assertIsInstance(html, str)
         self.assertIn("<!DOCTYPE html>", html)
 
     def test_contem_titulo_da_vaga(self):
-        html = _build_manager_briefing_html(
-            state={"parsed_title": "Product Manager Senior"},
-            job_id="jid-1", share_link=None,
-        )
+        html = _build_manager_briefing_html({**({"parsed_title": "Product Manager Senior"}), "job_id": "jid-1", "share_link": None,})
         self.assertIn("Product Manager Senior", html)
 
     def test_sem_titulo_usa_fallback(self):
-        html = _build_manager_briefing_html(state={}, job_id="jid-1", share_link=None)
+        html = _build_manager_briefing_html({**({}), "job_id": "jid-1", "share_link": None})
         self.assertIn("Nova Vaga", html)
 
     def test_inclui_job_id_no_footer(self):
-        html = _build_manager_briefing_html(
-            state=self._minimal_state(), job_id="abc-uuid-001", share_link=None
-        )
+        html = _build_manager_briefing_html({**(self._minimal_state()), "job_id": "abc-uuid-001", "share_link": None})
         self.assertIn("abc-uuid-001", html)
 
     def test_contem_jd_about_role(self):
@@ -54,7 +47,7 @@ class TestBuildManagerBriefingHtml(unittest.TestCase):
             "parsed_title": "Dev",
             "generated_jd": {"about_role": "Vai construir APIs robustas com Python."},
         }
-        html = _build_manager_briefing_html(state=state, job_id="jid-1", share_link=None)
+        html = _build_manager_briefing_html({**(state), "job_id": "jid-1", "share_link": None})
         self.assertIn("Vai construir APIs robustas", html)
 
     def test_contem_competencias(self):
@@ -62,7 +55,7 @@ class TestBuildManagerBriefingHtml(unittest.TestCase):
             "parsed_title": "Dev",
             "competencies": [{"name": "Python"}, {"name": "FastAPI"}, {"name": "Docker"}],
         }
-        html = _build_manager_briefing_html(state=state, job_id="jid-1", share_link=None)
+        html = _build_manager_briefing_html({**(state), "job_id": "jid-1", "share_link": None})
         self.assertIn("Python", html)
         self.assertIn("FastAPI", html)
 
@@ -71,7 +64,7 @@ class TestBuildManagerBriefingHtml(unittest.TestCase):
             "parsed_title": "Dev",
             "bigfive_profile": {"openness": 0.8, "conscientiousness": 0.75},
         }
-        html = _build_manager_briefing_html(state=state, job_id="jid-1", share_link=None)
+        html = _build_manager_briefing_html({**(state), "job_id": "jid-1", "share_link": None})
         self.assertIn("BigFive", html)
         self.assertIn("0.8", html)
 
@@ -81,7 +74,7 @@ class TestBuildManagerBriefingHtml(unittest.TestCase):
             "salary_min": 8000,
             "salary_max": 12000,
         }
-        html = _build_manager_briefing_html(state=state, job_id="jid-1", share_link=None)
+        html = _build_manager_briefing_html({**(state), "job_id": "jid-1", "share_link": None})
         self.assertIn("8,000", html)
         self.assertIn("12,000", html)
 
@@ -93,29 +86,23 @@ class TestBuildManagerBriefingHtml(unittest.TestCase):
                 {"name": "Entrevista", "sla_days": 5, "offset_start": 7, "offset_end": 12},
             ],
         }
-        html = _build_manager_briefing_html(state=state, job_id="jid-1", share_link=None)
+        html = _build_manager_briefing_html({**(state), "job_id": "jid-1", "share_link": None})
         self.assertIn("Cronograma", html)
         self.assertIn("Triagem", html)
         self.assertIn("Entrevista", html)
 
     def test_contem_link_quando_disponivel(self):
-        html = _build_manager_briefing_html(
-            state=self._minimal_state(),
-            job_id="jid-1",
-            share_link="https://app.wedotalent.cc/jobs/123",
-        )
+        html = _build_manager_briefing_html({**(self._minimal_state()), "job_id": "jid-1", "share_link": "https://app.wedotalent.cc/jobs/123",})
         self.assertIn("https://app.wedotalent.cc/jobs/123", html)
 
     def test_state_vazio_nao_lanca_excecao(self):
         """Todos os campos None/ausentes — deve retornar HTML sem lancar excecao."""
-        html = _build_manager_briefing_html(state={}, job_id=None, share_link=None)
+        html = _build_manager_briefing_html({**({}), "job_id": None, "share_link": None})
         self.assertIsInstance(html, str)
         self.assertTrue(len(html) > 50)
 
     def test_bigfive_vazio_nao_quebra(self):
-        html = _build_manager_briefing_html(
-            state={"bigfive_profile": {}}, job_id="jid-1", share_link=None
-        )
+        html = _build_manager_briefing_html({**({"bigfive_profile": {}}), "job_id": "jid-1", "share_link": None})
         self.assertIsInstance(html, str)
 
     def test_competencias_com_strings_mistas(self):
@@ -124,7 +111,7 @@ class TestBuildManagerBriefingHtml(unittest.TestCase):
             "parsed_title": "Dev",
             "competencies": ["Python", {"name": "Docker"}, "K8s"],
         }
-        html = _build_manager_briefing_html(state=state, job_id="jid-1", share_link=None)
+        html = _build_manager_briefing_html({**(state), "job_id": "jid-1", "share_link": None})
         self.assertIn("Python", html)
         self.assertIn("Docker", html)
 
@@ -150,7 +137,7 @@ class TestW1JEmailDispatch(unittest.TestCase):
 
     def test_com_manager_email_chama_send_email(self):
         """Quando ha manager_email, send_email deve ser chamado."""
-        from app.domains.job_creation.nodes.publish import _build_manager_briefing_html
+        from app.domains.job_creation.helpers.manager_briefing import build_manager_briefing_html as _build_manager_briefing_html
 
         state = {"parsed_title": "Dev Backend"}
         job_id = "job-123"
@@ -167,7 +154,7 @@ class TestW1JEmailDispatch(unittest.TestCase):
                 })
                 return {"success": True, "mock": True}
 
-        html = _build_manager_briefing_html(state=state, job_id=job_id, share_link=share_link)
+        html = _build_manager_briefing_html({**(state), "job_id": job_id, "share_link": share_link})
 
         with patch(
             "app.domains.communication.services.communication_dispatcher.CommunicationDispatcher",
@@ -187,10 +174,10 @@ class TestW1JEmailDispatch(unittest.TestCase):
 
     def test_erro_no_send_email_nao_propaga(self):
         """Erros de envio devem ser capturados (fail-soft)."""
-        from app.domains.job_creation.nodes.publish import _build_manager_briefing_html
+        from app.domains.job_creation.helpers.manager_briefing import build_manager_briefing_html as _build_manager_briefing_html
 
         state = {"parsed_title": "Dev"}
-        html = _build_manager_briefing_html(state=state, job_id="j1", share_link=None)
+        html = _build_manager_briefing_html({**(state), "job_id": "j1", "share_link": None})
 
         class BrokenDispatcher:
             def send_email(self, *args, **kwargs):

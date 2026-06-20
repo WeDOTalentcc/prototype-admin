@@ -177,7 +177,7 @@ class AgentQualityEvaluator:
 
             client = anthropic.AsyncAnthropic()
             response = await client.messages.create(
-                model=CANONICAL_HAIKU_MODEL  # was claude-haiku-20240307 (deprecated),
+                model=CANONICAL_HAIKU_MODEL,  # was claude-haiku-20240307 (deprecated)
                 max_tokens=10,
                 messages=[{"role": "user", "content": prompt}],
             )

@@ -40,7 +40,7 @@ class WhatsAppClient:
     ) -> dict:
         """Send a Meta-approved template message."""
         try:
-                        to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
+            to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
             url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
 
             # Build content variables for template
@@ -73,7 +73,7 @@ class WhatsAppClient:
     ) -> dict:
         """Send a free-form message (within 24h window)."""
         try:
-                        to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
+            to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
             url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
 
             async with get_http_client("twilio") as client:
@@ -102,7 +102,7 @@ class WhatsAppClient:
     ) -> dict:
         """Send interactive message with quick reply buttons (max 3)."""
         try:
-                        to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
+            to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
             url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
 
             # Twilio interactive button format
@@ -157,7 +157,7 @@ class WhatsAppClient:
     ) -> dict:
         """Trigger a WhatsApp Flow (multi-screen form)."""
         try:
-                        to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
+            to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
             url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
 
             import json
