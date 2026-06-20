@@ -9,7 +9,6 @@ Persiste no modelo SearchFeedback (tabela search_feedbacks ja existente, com RLS
 company_id). Ancorado por search_fingerprint (criterios da busca) para re-hidratar ao
 re-executar/resgatar a busca.
 """
-from datetime import datetime
 import uuid as _uuid
 
 from fastapi import APIRouter, Depends, Query
@@ -44,6 +43,72 @@ class SearchFeedbackResponse(BaseModel):
     feedback_type: str | None = None
 
 
+async def _persist_search_feedback_internal(
+    db: AsyncSession,
+    *,
+    company_id: str,
+    user_id: str,
+    candidate_id: str,
+    feedback_type: str,
+    job_id: str | None = None,
+    search_query: str | None = None,
+    candidate_score: float | None = None,
+    candidate_name: str | None = None,
+    search_fingerprint: str | None = None,
+    reason: str | None = None,
+) -> None:
+    """Fonte unica de escrita em SearchFeedback (endpoint HTTP + wizard handler).
+
+    Upsert por (company_id, candidate_id, user_id[, search_fingerprint]).
+    NAO commita — caller decide (FastAPI: auto via get_tenant_db;
+    wizard handler: commit explicito apos esta chamada).
+    updated_at: delegado ao onupdate do modelo, sem atribuicao manual.
+    reason: atualizado so quando fornecido (None preserva valor anterior no UPDATE).
+    """
+    conditions = [
+        SearchFeedback.company_id == str(company_id),
+        SearchFeedback.candidate_id == candidate_id,
+        SearchFeedback.user_id == user_id,  # C1: per-recrutador — nao sobrescrever feedback de outro usuario
+    ]
+    if search_fingerprint:
+        conditions.append(SearchFeedback.search_fingerprint == search_fingerprint)
+
+    existing = (
+        await db.execute(select(SearchFeedback).where(*conditions))
+    ).scalars().first()
+
+    if existing:
+        existing.feedback_type = feedback_type
+        existing.candidate_score = candidate_score
+        existing.candidate_name = candidate_name
+        existing.search_query = search_query
+        if reason is not None:  # None preserva reason anterior; str (incl. "") sobrescreve
+            existing.reason = reason
+        # updated_at: onupdate do modelo dispara no flush — sem atribuicao manual (evita utcnow deprecation)
+    else:
+        db.add(
+            SearchFeedback(
+                id=str(_uuid.uuid4()),
+                company_id=str(company_id),
+                candidate_id=candidate_id,
+                job_id=job_id,
+                user_id=user_id,
+                search_query=search_query,
+                search_fingerprint=search_fingerprint,
+                feedback_type=feedback_type,
+                candidate_score=candidate_score,
+                candidate_name=candidate_name,
+                reason=reason,
+            )
+        )
+
+    await db.flush()
+    logger.info(
+        "[SearchFeedback] %s candidate=%s fingerprint=%s",
+        feedback_type, candidate_id, search_fingerprint,
+    )
+
+
 @router.post("/feedback", response_model=SearchFeedbackResponse)
 async def submit_search_feedback(
     request: SearchFeedbackRequest,
@@ -57,45 +122,18 @@ async def submit_search_feedback(
         or getattr(current_user, "user_id", None)
         or ""
     )
-
-    conditions = [
-        SearchFeedback.company_id == str(company_id),
-        SearchFeedback.candidate_id == request.candidate_id,
-        SearchFeedback.user_id == user_id,  # C1: per-recrutador — nao sobrescrever feedback de outro usuario
-    ]
-    if request.search_fingerprint:
-        conditions.append(SearchFeedback.search_fingerprint == request.search_fingerprint)
-
-    existing = (
-        await db.execute(select(SearchFeedback).where(*conditions))
-    ).scalars().first()
-
-    if existing:
-        existing.feedback_type = request.feedback_type
-        existing.candidate_score = request.candidate_score
-        existing.candidate_name = request.candidate_name
-        existing.search_query = request.search_query
-        existing.updated_at = datetime.utcnow()
-    else:
-        db.add(
-            SearchFeedback(
-                id=str(_uuid.uuid4()),
-                company_id=str(company_id),
-                candidate_id=request.candidate_id,
-                job_id=request.job_id,
-                user_id=user_id,
-                search_query=request.search_query,
-                search_fingerprint=request.search_fingerprint,
-                feedback_type=request.feedback_type,
-                candidate_score=request.candidate_score,
-                candidate_name=request.candidate_name,
-            )
-        )
-
-    await db.flush()
-    logger.info(
-        "[SearchFeedback] %s candidate=%s fingerprint=%s",
-        request.feedback_type, request.candidate_id, request.search_fingerprint,
+    await _persist_search_feedback_internal(
+        db,
+        company_id=str(company_id),
+        user_id=user_id,
+        candidate_id=request.candidate_id,
+        feedback_type=request.feedback_type,
+        job_id=request.job_id,
+        search_query=request.search_query,
+        candidate_score=request.candidate_score,
+        candidate_name=request.candidate_name,
+        search_fingerprint=request.search_fingerprint,
+        # reason: nao exposto no HTTP endpoint (campo interno, propagado so via wizard)
     )
     return SearchFeedbackResponse(success=True, feedback_type=request.feedback_type)
 

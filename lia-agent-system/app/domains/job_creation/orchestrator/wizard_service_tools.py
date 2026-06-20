@@ -2967,13 +2967,70 @@ def _handle_calibration_action(state: dict, args: dict, ctx: "ToolContext") -> T
     if can_advance:
         msg += " Mínimo atingido — recrutador pode avançar."
 
-    return ToolResult(
-        llm_message=msg,
-        state_updates={
-            "calibration_candidates": candidates,
-            "can_advance": can_advance,
-        },
-    )
+    # ── Fase B — persistir like/dislike em SearchFeedback (skip não persiste) ────
+    # Reutiliza _persist_search_feedback_internal (feedback.py) — fonte única de
+    # escrita em SearchFeedback. feedback_type=signal ("like"/"dislike") — é isso
+    # que apply_feedback_boost lê. ctx.company_id/user_id chegam diretamente (não ContextVar).
+    _fb_persist_error = False
+    if signal in ("like", "dislike"):
+        from app.core.database import AsyncSessionLocal as _FBSL
+        from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool as _rcitp
+        from app.api.v1.candidate_search.feedback import (
+            _persist_search_feedback_internal as _psfb,
+        )
+
+        _fingerprint = state.get("calibration_search_fingerprint") or ""
+        _job_id_fb = state.get("job_id") or ""
+        _cand_dict = next(
+            (c for c in candidates if str(c.get("id", "")) == candidate_id), {}
+        )
+        _cand_name_fb: "str | None" = _cand_dict.get("name") or None
+        _cand_score_raw = _cand_dict.get("match_score")
+        _cand_score_fb: "float | None" = (
+            float(_cand_score_raw) if _cand_score_raw is not None else None
+        )
+        _company_id_fb = ctx.company_id
+        _user_id_fb = ctx.user_id or ""
+
+        async def _persist_calibration_signal() -> None:
+            async with _FBSL() as _fb_db:
+                await _psfb(
+                    _fb_db,
+                    company_id=_company_id_fb,
+                    user_id=_user_id_fb,
+                    candidate_id=candidate_id,
+                    feedback_type=signal,
+                    job_id=_job_id_fb or None,
+                    candidate_score=_cand_score_fb,
+                    candidate_name=_cand_name_fb,
+                    search_fingerprint=_fingerprint or None,
+                    reason=reason,
+                )
+                await _fb_db.commit()
+
+        try:
+            _rcitp(lambda: _persist_calibration_signal(), timeout=5.0)
+            logger.info(
+                "[calibration_action] SearchFeedback persisted: "
+                "candidate=%s signal=%s fingerprint=%s",
+                candidate_id, signal, _fingerprint or "(none)",
+            )
+        except Exception as _fb_err:
+            _fb_persist_error = True
+            logger.error(
+                "[calibration_action] SearchFeedback persist FALHOU — "
+                "boost Fase C pode ser afetado: candidate=%s signal=%s err=%s",
+                candidate_id, signal, _fb_err, exc_info=True,
+            )
+
+    _state_updates: dict = {
+        "calibration_candidates": candidates,
+        "can_advance": can_advance,
+    }
+    if _fb_persist_error:
+        _state_updates["calibration_feedback_persist_error"] = True
+
+    return ToolResult(llm_message=msg, state_updates=_state_updates)
 
 
 def _handle_advance_calibration(state: dict, args: dict, ctx: "ToolContext") -> ToolResult:
