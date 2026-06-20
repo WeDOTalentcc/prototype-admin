@@ -33,6 +33,7 @@ import { useLiaFloat } from "@/contexts/lia-float-context"
 import { LiaSplitPanel } from "@/components/lia-float/LiaSplitPanel"
 import { DashboardChatPanel } from "@/components/unified-chat"
 import { GlobalSearchModal } from "@/components/global-search-modal"
+import { useIASessionStore } from "@/stores/ia-session-store"
 import { useProactiveHintsInChat } from "@/hooks/proactive/use-proactive-hints-in-chat"  // WT-2022 (chat-first)
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 import { ProjetosSection } from "@/components/pages/jobs/ProjetosSection"
@@ -121,6 +122,11 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   const [currentPage, setCurrentPage] = useState<CurrentPage>(normalizePageLabel(initialPage))
   const [showGlobalSearch, setShowGlobalSearch] = useState(false)
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false)
+  const { isIASidebarOpen, closeIASidebar } = useIASessionStore()
+
+  useEffect(() => {
+    if (isIASidebarOpen) setNotificationPanelOpen(false)
+  }, [isIASidebarOpen])
   const [pendingChatOpen, setPendingChatOpen] = useState<{ mode: 'general' | 'job-creation' } | null>(null)
   const [pendingChatConversationId, setPendingChatConversationId] = useState<string | null>(null)
   const [pendingJobOpen, setPendingJobOpen] = useState<{ jobId: string; jobTitle: string } | null>(null)
@@ -542,7 +548,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
         onRecentItemsClear={clearRecentItems}
         onShowSearch={() => setShowGlobalSearch(true)}
         notificationOpen={notificationPanelOpen}
-        onNotificationToggle={() => setNotificationPanelOpen(o => !o)}
+        onNotificationToggle={() => { closeIASidebar(); setNotificationPanelOpen(o => !o) }}
       />
       {notificationPanelOpen && notifAuthReady && notifUserId && (
         <div className="w-[340px] flex-shrink-0 h-full">

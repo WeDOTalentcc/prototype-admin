@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback, useEffect } from "react"
+import { useState, useMemo, useCallback, useEffect, useRef } from "react"
 import { useTranslations } from "next-intl"
 import {
   Brain, Plus, Pin, PinOff, Edit3, StickyNote, Archive, Trash2,
@@ -315,6 +315,39 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
     useIASessionStore()
   const { open: openLiaChat } = useLiaFloat()
   const [searchQuery, setSearchQuery] = useState("")
+  const [panelWidth, setPanelWidth] = useState(340)
+  const isDraggingRef = useRef(false)
+  const resizeStartRef = useRef({ x: 0, width: 0 })
+
+  // Resize drag handler
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    isDraggingRef.current = true
+    resizeStartRef.current = { x: e.clientX, width: panelWidth }
+    document.body.style.cursor = "col-resize"
+    document.body.style.userSelect = "none"
+  }, [panelWidth])
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current) return
+      const delta = e.clientX - resizeStartRef.current.x
+      const next = Math.min(600, Math.max(280, resizeStartRef.current.width + delta))
+      setPanelWidth(next)
+    }
+    const onUp = () => {
+      if (!isDraggingRef.current) return
+      isDraggingRef.current = false
+      document.body.style.cursor = ""
+      document.body.style.userSelect = ""
+    }
+    document.addEventListener("mousemove", onMove)
+    document.addEventListener("mouseup", onUp)
+    return () => {
+      document.removeEventListener("mousemove", onMove)
+      document.removeEventListener("mouseup", onUp)
+    }
+  }, [])
   const { data: sessions = [], isLoading } = useIASessions()
   const updateSession = useUpdateSession()
   const markRead = useMarkSessionRead()
@@ -413,11 +446,11 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
       {/* Panel — positioned adjacent to sidebar (Apollo-style) */}
       <aside
         className={cn(
-          "fixed top-0 z-40 h-full w-[420px] bg-lia-bg-primary border-r border-lia-border-subtle",
+          "fixed top-0 z-40 h-full bg-lia-bg-primary border-r border-lia-border-subtle",
           "flex flex-col shadow-lg",
           "transform transition-transform duration-200 ease-out"
         )}
-        style={{ left: sidebarOffset }}
+        style={{ left: sidebarOffset, width: panelWidth }}
         aria-label="Histórico de conversas com a LIA"
       >
         {/* Header */}
@@ -487,18 +520,18 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
           )}
 
           {!isLoading && filteredSessions.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center px-4 gap-3">
-              <MessageSquare className="w-8 h-8 text-lia-text-muted opacity-40" />
-              <div>
-                <p className="text-xs font-medium text-lia-text-secondary">
-                  {searchQuery ? "Nenhuma conversa encontrada" : "Comece uma conversa com a LIA"}
-                </p>
-                {!searchQuery && (
-                  <p className="text-[11px] text-lia-text-muted mt-1">
-                    Clique em &ldquo;Nova conversa&rdquo; para começar
-                  </p>
-                )}
+            <div className="py-14 px-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-lia-bg-tertiary flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="w-6 h-6 text-lia-text-muted" aria-hidden="true" />
               </div>
+              <p className="text-xs font-medium text-lia-text-primary">
+                {searchQuery ? "Nenhuma conversa encontrada" : "Comece uma conversa com a LIA"}
+              </p>
+              {!searchQuery && (
+                <p className="text-[11px] text-lia-text-tertiary mt-1">
+                  Clique em &ldquo;Nova conversa&rdquo; para começar
+                </p>
+              )}
             </div>
           )}
 
@@ -578,6 +611,12 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
             </>
           )}
         </div>
+        {/* Resize handle */}
+        <div
+          onMouseDown={handleResizeStart}
+          className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-wedo-cyan/30 transition-colors z-10"
+          aria-hidden="true"
+        />
       </aside>
     </>
   )
