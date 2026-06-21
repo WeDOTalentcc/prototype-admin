@@ -111,6 +111,10 @@ router = APIRouter(tags=["chat-sse"])
 
 
 _AGENT_TIMEOUT = settings.LLM_TIMEOUT_SECONDS
+# T2 audit 2026-06-21: PlanExecutor without DomainRegistry produces
+# fake [OK] on every task and skips the real agent. Gate OFF until
+# DomainRegistry wiring is restored.
+_PLAN_EXECUTOR_ENABLED = False
 
 
 async def _drain_queue_with_keepalive(queue, is_done, next_id, *, poll_s: float = 0.5, keepalive_after_s: float = 15.0):
@@ -1244,7 +1248,7 @@ company_id: str = Depends(require_company_id)):
                 import re as _re_plan_sv
                 _PLANEJAR_RE_SV = _re_plan_sv.compile(r"^/planejar\s*(.*)", _re_plan_sv.IGNORECASE)
                 _planejar_match_sv = _PLANEJAR_RE_SV.match((_eff_content or "").strip())
-                if _planejar_match_sv:
+                if _planejar_match_sv and _PLAN_EXECUTOR_ENABLED:
                     _task_desc_sv = _planejar_match_sv.group(1).strip()
                     if _task_desc_sv:
                         try:
@@ -1452,7 +1456,7 @@ company_id: str = Depends(require_company_id)):
                 import re as _re_plan
                 _PLANEJAR_RE = _re_plan.compile(r"^/planejar\b\s*(.*)", _re_plan.IGNORECASE)
                 _planejar_match = _PLANEJAR_RE.match((_eff_content or "").strip())
-                if _planejar_match:
+                if _planejar_match and _PLAN_EXECUTOR_ENABLED:
                     _task_desc = _planejar_match.group(1).strip()
                     if _task_desc:
                         try:
@@ -1581,7 +1585,7 @@ company_id: str = Depends(require_company_id)):
                     )
                     from app.shared.chat_event_serializer import serialize_background_task_update as _ser_bg
                     _plan_det = PlanDetector()
-                    _detected = _plan_det.detect(_eff_content)
+                    _detected = _plan_det.detect(_eff_content) if _PLAN_EXECUTOR_ENABLED else None
                     if _detected and len(_detected.tasks) >= 2:
                         logger.info(
                             "[SSEChat] Multi-step plan detected: %s (%d tasks)",
