@@ -55,7 +55,7 @@ async def list_entries(
     include_master: bool = Query(True, description="Inclui master canonical"),
     include_deleted: bool = Query(False, description="Inclui soft-deleted (admin only)"),
     category: str | None = Query(None, description="Filtra por category (ats, ai_models, ...)"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(require_admin_or_recruiter),
     company_id: str = Depends(require_company_id),
 ):

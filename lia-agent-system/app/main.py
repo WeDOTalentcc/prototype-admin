@@ -715,6 +715,19 @@ async def lifespan(app: FastAPI):
 
     logger.info("🎯 LIA Agent System ready!")
 
+    # ─── PERF-299: DB connection pool warm-up (cold-start fix) ───────────────
+    # First query apos boot do pool leva ~538ms (conexao TCP + SSL handshake +
+    # auth PostgreSQL). Aqui executamos SELECT 1 pre-yield para que o pool
+    # ja tenha conexao aquecida antes de qualquer request chegar.
+    # Fail-open: nunca bloqueia boot.
+    try:
+        from sqlalchemy import text as _sa_text
+        async with AsyncSessionLocal() as _warmup_db:
+            await _warmup_db.execute(_sa_text("SELECT 1"))
+        logger.info("✅ DB connection pool warmed up (SELECT 1 pre-yield)")
+    except Exception as _warmup_exc:
+        logger.warning("⚠️  DB connection pool warm-up failed (non-blocking): %s", _warmup_exc)
+
     yield
 
     # Shutdown
