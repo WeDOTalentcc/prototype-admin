@@ -108,7 +108,7 @@ class UserManagementResponse(BaseModel):
     can_view_salary: bool | None = None
     can_view_sensitive_pii: bool | None = None
     pii_field_visibility: dict[str, bool] | None = None
-    department_id: str | None = None  # B4 fix: expose for FE filtering
+    department_id: UUID | None = None  # B4 fix: expose for FE filtering (UUID type — Pydantic v2 does not coerce UUID->str)
     department_name: str | None = None  # B4 fix: enriched from departments table
 
     class Config:

@@ -127,7 +127,6 @@ async def list_users(
         for u in users:
             resp = UserManagementResponse.model_validate(u)
             if u.department_id:
-                resp.department_id = str(u.department_id)
                 resp.department_name = dept_map.get(str(u.department_id))
             result.append(resp)
         return result
