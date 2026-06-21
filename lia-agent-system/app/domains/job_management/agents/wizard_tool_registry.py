@@ -276,6 +276,78 @@ async def _wrap_request_approval(**kwargs: Any) -> dict[str, Any]:
         return {"is_error": True, "error": str(e)}
 
 
+
+@tool_handler("wizard")
+async def _wrap_request_business_approval(**kwargs: Any) -> dict[str, Any]:
+    """Sprint 1 (2026-06-21) — solicitar aprovacao de negocio para publicar vaga.
+
+    Distinto de request_approval (WSI interno, aprovacao de perguntas de triagem).
+    Este tool aciona o fluxo de aprovacao de negocio: cria ApprovalRequest rows,
+    seta approval_requested_at, envia email para aprovador nivel 1.
+
+    Guide (computacional): unico ponto de chamada de trigger_approval_if_required
+    no contexto do wizard. Segue canonical fix produtor.
+
+    Stage allowlist: review, publish (STAGE_TOOLS abaixo).
+    Multi-tenancy: company_id vem do ContextVar JWT via @tool_handler — NUNCA
+    declarado no schema LLM (REGRA 2 Pydantic Conventions canonical).
+    """
+    vacancy_id = kwargs.get("vacancy_id")
+    company_id = kwargs.get("company_id")
+
+    job = await _load_vacancy_or_error(vacancy_id, company_id)
+    if isinstance(job, dict):
+        return job
+
+    try:
+        from app.domains.job_creation.services.approval_trigger_service import (
+            trigger_approval_if_required,
+        )
+        from app.core.database import AsyncSessionLocal
+
+        requested_by_email = kwargs.get("user_email", f"wizard:{company_id}")
+        requested_by_name = kwargs.get("user_name", "Recrutador")
+
+        async with AsyncSessionLocal() as db:
+            # Sync job to this session for stamp
+            from sqlalchemy import select
+            from lia_models.job_vacancy import JobVacancy
+            from uuid import UUID
+            result = await db.execute(
+                select(JobVacancy).where(JobVacancy.id == UUID(str(job.id)))
+            )
+            job_in_session = result.scalar_one_or_none()
+            if not job_in_session:
+                return {"is_error": True, "error": "Vaga nao encontrada na sessao"}
+
+            approvals = await trigger_approval_if_required(
+                job_in_session,
+                requested_by_name=requested_by_name,
+                requested_by_email=requested_by_email,
+                db=db,
+            )
+            await db.commit()
+
+        if not approvals:
+            return {
+                "is_error": False,
+                "vacancy_id": str(vacancy_id),
+                "approvals_created": 0,
+                "message": "Nenhum aprovador configurado. Vaga pode ser publicada diretamente.",
+            }
+
+        return {
+            "is_error": False,
+            "vacancy_id": str(vacancy_id),
+            "approvals_created": len(approvals),
+            "approval_status": "pendente",
+            "message": f"Aprovacao solicitada para {len(approvals)} aprovador(es). Aguardando aprovacao antes de publicar.",
+        }
+    except Exception as e:
+        logger.error(f"[wizard_tools] request_business_approval error: {e}", exc_info=True)
+        return {"is_error": True, "error": str(e)}
+
+
 @tool_handler("wizard")
 async def _wrap_publish_vacancy(**kwargs: Any) -> dict[str, Any]:
     """Phase E — publish (status -> Ativa) or unpublish (clear flags) a vacancy."""
@@ -856,6 +928,22 @@ TOOL_DEFINITIONS.append(
         function=_wrap_request_approval,
     )
 )
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="request_business_approval",
+        description="Solicita aprovacao de negocio para publicar a vaga. Use quando o recrutador indicar que a vaga precisa de aprovacao de um gestor ou diretor antes de ser publicada. Cria ApprovalRequest e notifica aprovadores configurados. Distinto de request_approval (que e aprovacao interna WSI de perguntas de triagem).",
+        parameters={
+            "type": "object",
+            "properties": {
+                "vacancy_id": {"type": "string", "description": "ID da vaga (UUID)"},
+            },
+            "required": ["vacancy_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_request_business_approval,
+    )
+)
+
 TOOL_DEFINITIONS.append(
     ToolDefinition(
         name="publish_vacancy",
@@ -1956,8 +2044,8 @@ STAGE_TOOLS: dict[str, list[str]] = {
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
     "competency": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template", "update_competencies"],
     "wsi_questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft", "generate_screening_questions", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
-    "review": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
-    "publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
+    "review": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template", "request_business_approval"],
+    "publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template", "request_business_approval"],
     # Phase E -- vacancy lifecycle stages (Recrutar > Vagas rail).
     # Stage names match _classify_job_lifecycle_stage in
     # app/api/v1/job_vacancies/analytics.py.
