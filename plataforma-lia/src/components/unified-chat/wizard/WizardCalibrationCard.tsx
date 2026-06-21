@@ -21,11 +21,16 @@ import type { CalibrationData, CalibrationCandidate } from "./wizard-types"
  */
 export function WizardCalibrationCard({ data }: { data: Record<string, unknown> }) {
   const [expanded, setExpanded] = useState(true)
-  const d = data as unknown as CalibrationData & { pool_count?: number }
+  const d = data as unknown as CalibrationData & {
+    pool_count?: number
+    can_advance?: boolean
+    signal_count?: number
+  }
   const candidates = d.candidates || []
-  const threshold = d.threshold || 3
+  const threshold = d.threshold || 5
   const approvedCount = d.approved_count || 0
-  const canAdvance = approvedCount >= threshold
+  const signalCount = d.signal_count ?? approvedCount
+  const canAdvance = d.can_advance ?? (signalCount >= threshold)
   const poolCount = d.pool_count ?? null
 
   const handleApprove = (candidateId: string, comment?: string) => {
@@ -71,7 +76,7 @@ export function WizardCalibrationCard({ data }: { data: Record<string, unknown> 
             Calibração de candidatos
           </p>
           <p className="text-xs text-lia-text-secondary">
-            {approvedCount}/{threshold} perfis avaliados
+            {signalCount}/{threshold} perfis avaliados
             {poolCount !== null && (
               <span className="ml-2 text-lia-text-secondary">
                 · {poolCount.toLocaleString("pt-BR")} no pool
@@ -100,7 +105,7 @@ export function WizardCalibrationCard({ data }: { data: Record<string, unknown> 
             "h-full transition-[width] duration-300",
             canAdvance ? "bg-status-success" : "bg-wedo-cyan"
           )}
-          style={{ width: `${Math.min(100, (approvedCount / threshold) * 100)}%` }}
+          style={{ width: `${Math.min(100, (signalCount / threshold) * 100)}%` }}
         />
       </div>
 
@@ -152,7 +157,7 @@ export function WizardCalibrationCard({ data }: { data: Record<string, unknown> 
                   <CheckCircle className="w-3.5 h-3.5" />
                   {canAdvance
                     ? "Calibração completa — Avançar"
-                    : `Aprovar candidatos (${approvedCount}/${threshold})`}
+                    : `Avaliar candidatos (${signalCount}/${threshold})`}
                 </button>
               </div>
             )}

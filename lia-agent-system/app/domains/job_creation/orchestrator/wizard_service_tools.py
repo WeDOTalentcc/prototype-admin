@@ -648,8 +648,8 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
                 ),
                 "current_title": p.current_title or getattr(p, "title", "") or "",
                 "current_company": p.current_company or "",
-                "match_score": p.get_score_percentage(),
-                "match_criteria": [{"skill": s} for s in (p.skills or [])[:5]],
+                "match_score": p.get_score_percentage() / 100.0,
+                "match_criteria": [{"criterion": s, "score": 1.0, "met": True} for s in (p.skills or [])[:5]],
                 "decision": None,
                 "reason": None,
                 "avatar_url": p.picture_url or None,
@@ -2957,7 +2957,7 @@ def _handle_calibration_action(state: dict, args: dict, ctx: "ToolContext") -> T
             error=True,
         )
 
-    threshold = state.get("calibration_threshold", 3)
+    threshold = state.get("calibration_threshold", 5)
     # like e dislike contam; skip NÃO (decisão Paulo 2026-06-19)
     signal_count = sum(1 for c in candidates if c.get("decision") in ("approved", "rejected"))
     can_advance = signal_count >= threshold

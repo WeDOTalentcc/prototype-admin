@@ -1343,7 +1343,7 @@ class WizardSessionService:
             # threshold: like + dislike contam; skip NÃO (decisão 2026-06-19)
             if new_state.get("calibration_candidates") and stage == "calibration":
                 _cands = new_state.get("calibration_candidates") or []
-                _threshold = new_state.get("calibration_threshold", 3)
+                _threshold = new_state.get("calibration_threshold", 5)
                 _signal_count = sum(
                     1 for c in _cands
                     if c.get("decision") in ("approved", "rejected")
@@ -1352,7 +1352,7 @@ class WizardSessionService:
                     1 for c in _cands if c.get("decision") == "approved"
                 )
                 _can_advance = new_state.get("can_advance", _signal_count >= _threshold)
-                data["calibration_candidates"] = _cands
+                data["candidates"] = _cands
                 data["threshold"] = _threshold
                 data["signal_count"] = _signal_count
                 data["approved_count"] = _approved_count
