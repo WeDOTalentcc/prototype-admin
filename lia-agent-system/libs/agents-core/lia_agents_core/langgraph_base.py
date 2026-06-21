@@ -44,6 +44,55 @@ def _extract_ai_text(message: Any) -> str:
     return ""
 
 
+_TOOL_DISPLAY_NAMES = {
+    "list_jobs": "Consultando vagas",
+    "view_job_details": "Analisando vaga",
+    "get_portfolio_metrics": "Calculando indicadores",
+    "list_candidates": "Listando candidatos",
+    "search_candidates": "Buscando candidatos",
+    "view_candidate_profile": "Analisando perfil",
+    "get_pipeline_summary": "Verificando pipeline",
+    "list_stage_candidates": "Listando candidatos do est\u00e1gio",
+    "get_workforce_plan_summary": "Consultando workforce",
+    "view_screening_results": "Analisando triagem",
+    "get_candidate_bigfive": "Consultando perfil comportamental",
+    "update_candidate_stage": "Atualizando candidato",
+    "reject_candidate": "Processando rejei\u00e7\u00e3o",
+    "batch_move_candidates": "Movendo candidatos em lote",
+    "send_batch_communication": "Preparando comunica\u00e7\u00e3o em lote",
+    "close_job": "Encerrando vaga",
+    "pause_job": "Pausando vaga",
+    "reopen_job": "Reabrindo vaga",
+    "send_email": "Preparando e-mail",
+    "send_whatsapp": "Preparando WhatsApp",
+    "schedule_interview": "Agendando entrevista",
+    "check_interviewer_availability": "Verificando disponibilidade",
+    "list_job_creation_sources": "Consultando fontes de cria\u00e7\u00e3o",
+    "start_creation_from_source": "Iniciando cria\u00e7\u00e3o de vaga",
+    "open_ui": "Navegando",
+    "apply_table_state": "Aplicando filtros",
+    "select_rows": "Selecionando itens",
+}
+
+
+def _tool_calls_label(message) -> str:
+    tcs = getattr(message, "tool_calls", None) or []
+    names = []
+    for tc in tcs:
+        name = tc.get("name") if isinstance(tc, dict) else getattr(tc, "name", None)
+        if name:
+            names.append(name)
+    if not names:
+        return ""
+    display = _TOOL_DISPLAY_NAMES.get(names[0])
+    if display:
+        return display
+    pretty = names[0].replace("_", " ").capitalize()
+    if len(names) > 1:
+        pretty += f" (+{len(names) - 1})"
+    return pretty
+
+
 def _messages_for_continuation(messages, has_prior_state):
     """Turno de continuacao: o checkpointer ja preserva o historico COMPLETO.
     Injetar conversation_history junto com checkpointer causava duplicacao
@@ -294,33 +343,114 @@ class LangGraphBase(BaseAgent, ABC):
         config: Dict[str, Any],
         streaming_callback: Any,
     ) -> Dict[str, Any]:
-        """Run the graph via astream(stream_mode="values"), emitting a
-        reasoning_step for each intermediate AIMessage that carries tool_calls.
-        Returns the final state (last values chunk), equivalent to ainvoke.
+        """Run the graph via astream(stream_mode=["values","messages"]).
+
+        "values" captures final_state (identical to previous ainvoke behavior).
+        "messages" streams AIMessageChunk text deltas as SSE token events,
+        filling the silent gaps the user previously experienced.
         """
+        import time as _time
+        _t0 = _time.monotonic()
         final_state: Optional[Dict[str, Any]] = None
         emitted: set = set()
-        async for chunk in compiled.astream(
-            initial_state, config=config, stream_mode="values"
+        _chunk_count = 0
+        _is_streaming_text = False
+
+        async for mode, data in compiled.astream(
+            initial_state, config=config, stream_mode=["values", "messages"]
         ):
-            final_state = chunk
-            if not isinstance(chunk, dict):
+            _chunk_count += 1
+
+            if mode == "values":
+                final_state = data
+                if not isinstance(data, dict):
+                    continue
+                for m in data.get("messages", []) or []:
+                    is_ai = (
+                        getattr(m, "type", "") == "ai"
+                        or m.__class__.__name__ == "AIMessage"
+                    )
+                    if not is_ai:
+                        continue
+                    _tcs = getattr(m, "tool_calls", None)
+                    if not _tcs:
+                        continue
+                    mid = getattr(m, "id", None) or id(m)
+                    if mid in emitted:
+                        continue
+                    emitted.add(mid)
+                    _text = _extract_ai_text(m)
+                    _tc_label = _tool_calls_label(m)
+                    label = _text or _tc_label
+                    _elapsed = _time.monotonic() - _t0
+                    logger.info(
+                        "[ASTREAM-DBG] +%.2fs chunk=%d tool_calls=%d text=%r tc_label=%r label=%r",
+                        _elapsed, _chunk_count, len(_tcs), _text[:50] if _text else "",
+                        _tc_label, label[:80] if label else "",
+                    )
+                    if label and hasattr(streaming_callback, "emit_reasoning_step"):
+                        streaming_callback.emit_reasoning_step(label)
                 continue
-            for m in chunk.get("messages", []) or []:
-                is_ai = (
-                    getattr(m, "type", "") == "ai"
-                    or m.__class__.__name__ == "AIMessage"
+
+            # mode == "messages": tuple (chunk, metadata)
+            if not isinstance(data, (tuple, list)) or len(data) < 2:
+                continue
+            chunk_obj = data[0]
+            _cls_name = type(chunk_obj).__name__
+
+            if _cls_name == "ToolMessage":
+                continue
+
+            if _cls_name != "AIMessageChunk":
+                continue
+
+            content = getattr(chunk_obj, "content", None)
+            if not isinstance(content, list):
+                continue
+
+            if len(content) == 0:
+                logger.debug(
+                    "[ASTREAM-TOKEN] header/trailer marker: repr=%r len=%d streaming=%s",
+                    content, len(content), _is_streaming_text,
                 )
-                if not is_ai or not getattr(m, "tool_calls", None):
-                    continue
-                mid = getattr(m, "id", None) or id(m)
-                if mid in emitted:
-                    continue
-                emitted.add(mid)
-                text = _extract_ai_text(m)
-                if text and hasattr(streaming_callback, "emit_reasoning_step"):
-                    streaming_callback.emit_reasoning_step(text)
+                if _is_streaming_text:
+                    _is_streaming_text = False
+                    if streaming_callback:
+                        streaming_callback._schedule_send(
+                            {"type": "token_done", "tokens_sent": 0}
+                        )
+                continue
+
+            for block in content:
+                if isinstance(block, dict):
+                    btype = block.get("type", "")
+                    if btype == "text":
+                        text = block.get("text", "")
+                        if text and streaming_callback:
+                            if not _is_streaming_text:
+                                _is_streaming_text = True
+                            streaming_callback._schedule_send(
+                                {"type": "token", "content": text}
+                            )
+                elif isinstance(block, str) and block:
+                    if not _is_streaming_text:
+                        _is_streaming_text = True
+                    if streaming_callback:
+                        streaming_callback._schedule_send(
+                            {"type": "token", "content": block}
+                        )
+
+        _total = _time.monotonic() - _t0
+        logger.info(
+            "[ASTREAM-DBG] done total=%.2fs chunks=%d emitted=%d",
+            _total, _chunk_count, len(emitted),
+        )
         if final_state is None:
+            logger.error(
+                "[ASTREAM] final_state None após stream — RE-EXECUTANDO grafo "
+                "(tools/DB 2x!) session=%s",
+                config.get("configurable", {}).get("thread_id", "?"),
+            )
             return await compiled.ainvoke(initial_state, config=config)
         return final_state
 
