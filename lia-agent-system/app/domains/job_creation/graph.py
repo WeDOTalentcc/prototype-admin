@@ -271,16 +271,8 @@ from app.domains.job_creation.nodes.eligibility import eligibility_node  # noqa:
 from app.domains.job_creation.nodes.review import review_node  # noqa: F401, E402
 
 
-# publish_node moved to nodes/publish.py (PR-10 ONDA 3 sub-B)
-from app.domains.job_creation.nodes.publish import publish_node  # noqa: F401, E402
 
 
-# calibration_node moved to nodes/calibration.py (PR-10 ONDA 3 sub-B)
-from app.domains.job_creation.nodes.calibration import calibration_node  # noqa: F401, E402
-
-
-# handoff_node moved to nodes/handoff.py (PR-10 ONDA 3 sub-B)
-from app.domains.job_creation.nodes.handoff import handoff_node  # noqa: F401, E402
 
 
 # ---------------------------------------------------------------------------
@@ -494,8 +486,8 @@ def route_after_review(state: JobCreationState) -> str:
     """After review: check readiness."""
     readiness = state.get("readiness_check", {})
     if readiness.get("ready"):
-        logger.info("[JobCreation:route] review -> publish")
-        return "publish"
+        logger.info("[JobCreation:route] review -> END (publish removed Fase 8)")
+        return "end"
     logger.info("[JobCreation:route] review -> END (not ready)")
     return "end"
 
@@ -582,8 +574,8 @@ def route_after_review_gate(state: JobCreationState) -> str:
                 _readiness.get("missing"),
             )
             return "end"
-        logger.info("[JobCreation:route] review_gate -> publish (dual-confirmation + ready)")
-        return "publish"
+        logger.info("[JobCreation:route] review_gate -> END (dual-confirmation + ready; publish/calibration/handoff removed Fase 8)")
+        return "end"
     pending = state.get("review_request_changes_pending") or {}
     if isinstance(pending, dict):
         target = str(pending.get("target_section") or "").strip().lower()
@@ -608,22 +600,7 @@ def route_after_review_gate(state: JobCreationState) -> str:
     return "review_gate"
 
 
-def route_after_publish(state: JobCreationState) -> str:
-    """After publish: go to calibration if job was published."""
-    if state.get("job_id"):
-        logger.info("[JobCreation:route] publish -> calibration")
-        return "calibration"
-    logger.info("[JobCreation:route] publish -> END (publish failed)")
-    return "end"
 
-
-def route_after_calibration(state: JobCreationState) -> str:
-    """After calibration: if threshold met, handoff."""
-    if state.get("calibration_complete"):
-        logger.info("[JobCreation:route] calibration -> handoff")
-        return "handoff"
-    logger.info("[JobCreation:route] calibration -> END (awaiting more calibration)")
-    return "end"
 
 
 # ---------------------------------------------------------------------------
@@ -796,9 +773,6 @@ def create_job_creation_graph(
     builder.add_node("review", review_node)
     if use_llm_gates:
         builder.add_node("review_gate", review_gate_node)
-    builder.add_node("publish", publish_node)
-    builder.add_node("calibration", calibration_node)
-    builder.add_node("handoff", handoff_node)
 
     # Entry point
     builder.set_entry_point("intake")
@@ -930,7 +904,6 @@ def create_job_creation_graph(
             "review_gate",
             route_after_review_gate,
             {
-                "publish": "publish",
                 "jd_enrichment": "jd_enrichment",
                 "salary": "salary",
                 "wsi_questions": "wsi_questions",
@@ -945,33 +918,11 @@ def create_job_creation_graph(
             "review",
             route_after_review,
             {
-                "publish": "publish",
                 "end": END,
             },
         )
 
-    # Publish -> Calibration
-    builder.add_conditional_edges(
-        "publish",
-        route_after_publish,
-        {
-            "calibration": "calibration",
-            "end": END,
-        },
-    )
 
-    # Calibration -> Handoff
-    builder.add_conditional_edges(
-        "calibration",
-        route_after_calibration,
-        {
-            "handoff": "handoff",
-            "end": END,
-        },
-    )
-
-    # Handoff -> Done
-    builder.add_edge("handoff", END)
 
     # Compile with checkpointer
     if checkpointer is not None:
