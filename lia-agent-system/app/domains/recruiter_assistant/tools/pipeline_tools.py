@@ -247,6 +247,41 @@ CREATE_PIPELINE_STAGE_SCHEMA = {
     "required": ["stage_name", "company_id"]
 }
 
+RENAME_PIPELINE_STAGE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "stage_id": {"type": "string", "description": "ID da etapa a ser renomeada"},
+        "new_name": {"type": "string", "description": "Novo nome para a etapa"},
+        "company_id": {"type": "string", "description": "ID da empresa"},
+    },
+    "required": ["stage_id", "new_name", "company_id"],
+}
+
+REORDER_PIPELINE_STAGES_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "stage_ids_ordered": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Lista completa de IDs das etapas na nova ordem desejada",
+        },
+        "company_id": {"type": "string", "description": "ID da empresa"},
+    },
+    "required": ["stage_ids_ordered", "company_id"],
+}
+
+DELETE_PIPELINE_STAGE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "stage_id": {"type": "string", "description": "ID da etapa a ser excluída"},
+        "company_id": {"type": "string", "description": "ID da empresa"},
+        "move_candidates_to_stage_id": {
+            "type": "string",
+            "description": "ID da etapa destino para mover candidatos antes de excluir (obrigatório se a etapa tiver candidatos)",
+        },
+    },
+    "required": ["stage_id", "company_id"],
+}
 
 
 async def rename_pipeline_stage(

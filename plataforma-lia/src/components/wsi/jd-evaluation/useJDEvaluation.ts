@@ -185,7 +185,7 @@ export function useJDEvaluation(props: {
     try {
       const response = await fetch("/api/backend-proxy/skills-catalog/wizard/suggest-skills", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_id: companyId || "", job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
+        body: JSON.stringify({ job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
       })
       const data = await response.json()
       if (data.technical_skills && data.technical_skills.length > 0) {
@@ -202,7 +202,7 @@ export function useJDEvaluation(props: {
     try {
       const response = await fetch("/api/backend-proxy/skills-catalog/wizard/suggest-skills", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_id: companyId || "", job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
+        body: JSON.stringify({ job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
       })
       const data = await response.json()
       if (data.behavioral_competencies && data.behavioral_competencies.length > 0) {
@@ -394,7 +394,7 @@ export function useJDEvaluation(props: {
   const handleSaveRascunho = async () => {
     setIsSavingInline(true); setSaveError(false)
     try {
-      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD?.full_description || undefined, updated_at: new Date().toISOString() }
+      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD?.full_description ?? enrichedJd?.generated_jd_text ?? undefined, updated_at: new Date().toISOString() }
       if (onSaveEnrichedJD) { await onSaveEnrichedJD(enrichedData) }
       else if (onSaveJDInline) { await onSaveJDInline({ description: editDescription, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }) }
       setIsEditing(false)
@@ -404,8 +404,8 @@ export function useJDEvaluation(props: {
   const handleSaveDefinitiva = async () => {
     setIsSavingDefinitive(true); setSaveError(false)
     try {
-      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD?.full_description || undefined, updated_at: new Date().toISOString() }
-      const officialUpdates = { description: editDescription, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }
+      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD?.full_description ?? enrichedJd?.generated_jd_text ?? undefined, updated_at: new Date().toISOString() }
+      const officialUpdates = { description: editDescription, responsibilities: editResponsibilities, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }
       if (onSaveDefinitiva) {
         // P1-1: 1 PUT atômico com enriched_jd + campos canônicos
         await onSaveDefinitiva(enrichedData, officialUpdates)

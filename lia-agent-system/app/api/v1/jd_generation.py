@@ -89,11 +89,17 @@ async def extract_jd(
             behavioral_competencies.append(text_val)
         elif category in ("experience", "responsibility", "responsibilities"):
             responsibilities.append(text_val)
+        elif category == "education":
+            # Requisitos de formação vão para technical_skills (pré-requisito técnico)
+            technical_skills.append(text_val)
         else:
             # Heurística leve: itens que começam com verbo no infinitivo ("Desenvolver",
             # "Coordenar", "Liderar"...) provavelmente são responsabilidades, e não skills.
             if re.match(r"^[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(ar|er|ir)\b", text_val):
                 responsibilities.append(text_val)
+            else:
+                # Fallback: competências que o LLM não classificou (ex: "Liderança", "Visão Estratégica")
+                behavioral_competencies.append(text_val)
     return ExtractJDResponse(
         success=True,
         job_title=extracted.get("job_title"),
