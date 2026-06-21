@@ -20,15 +20,23 @@ class TestDeriveWizardStageCalibration:
     """Bug 13 — stage derivation para fluxo de calibração."""
 
     def test_calibration_state_returns_calibration(self):
-        """State com calibration_candidates + job_id sem flag → stage=calibration."""
+        """Bug B fix (2026-06-20): sinal canônico e current_stage=calibration.
+
+        Contrato anterior (candidates+job_id suficientes) foi substituido em
+        Bug B por leitura direta de current_stage -- evita dependencia circular
+        com ws_stage_payload (construido APOS _derive_wizard_stage).
+        _handle_calibration em domain.py seta current_stage=calibration antes
+        de chamar graph.resume(), tornando-o sinal confiavel.
+        """
         state = {
             "job_id": "job-test-001",
+            "current_stage": "calibration",
             "calibration_candidates": _BASE_CANDIDATES,
             # calibration_complete ausente
         }
         assert _derive_wizard_stage(state) == "calibration", (
-            "Esperado 'calibration' quando calibration_candidates presente, "
-            "job_id presente, calibration_complete ausente."
+            "Esperado 'calibration' quando current_stage='calibration' e "
+            "calibration_complete ausente (contrato Bug B fix 2026-06-20)."
         )
 
     def test_calibration_complete_exits_to_handoff(self):
