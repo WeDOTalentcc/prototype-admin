@@ -192,7 +192,11 @@ def test_a3_regression_b_is_clean_after_a_terminal():
     _WIZARD_FRESH_FIELDS (simulating update_state). Asserts that Vacancy B
     inherits NONE of the 19 critical fields from A.
     """
-    from app.domains.job_creation.services.wizard_session_service import _WIZARD_FRESH_FIELDS
+    from app.domains.job_creation.services.wizard_session_service import (
+        _WIZARD_FRESH_FIELDS,
+        _build_wipe_payload,
+        _WIZARD_SESSION_PRESERVE_KEYS,
+    )
 
     # Full vacancy A final state — all stages populated
     vacancy_a = {
@@ -228,9 +232,20 @@ def test_a3_regression_b_is_clean_after_a_terminal():
         "screening_mode": "standard",
     }
 
-    # Apply wipe: simulate update_state(config, _WIZARD_FRESH_FIELDS)
-    # LangGraph last-value reducer: FRESH_FIELDS keys REPLACE A's values
-    state_b = {**vacancy_a, **_WIZARD_FRESH_FIELDS}
+    # Apply wipe: simulate update_state(config, _build_wipe_payload())
+    # C2 hardening: wipe covers ALL JobCreationState fields minus preserve keys
+    wipe_payload = _build_wipe_payload()
+    state_b = {**vacancy_a, **wipe_payload}
+
+    # C2 RUN: verify session-level fields are preserved (not in wipe payload)
+    for preserved_key in _WIZARD_SESSION_PRESERVE_KEYS:
+        assert preserved_key not in wipe_payload, (
+            f"{preserved_key} in wipe_payload — should be in _WIZARD_SESSION_PRESERVE_KEYS"
+        )
+
+    # C2 RUN: verify per-vacancy fake field (benefits, salary_min) is wiped
+    assert "benefits" in wipe_payload, "benefits missing from wipe_payload (C2 regression)"
+    assert wipe_payload["benefits"] == [], f"benefits not reset to [] ({wipe_payload['benefits']})"
 
     # Assert ALL 19 fields are clean in B
     assert state_b["job_id"] is None, "LEAK: job_id from A survived → B would overwrite A's vacancy"

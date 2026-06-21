@@ -128,9 +128,34 @@ _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context
 # Fase 3 fix (2026-06-21): per-vacancy fields to clear when a terminal wizard
 # reuses the same session_id. thread_id is keyed by (company_id, session_id)
 # so the LangGraph checkpoint persists across vacancies in the same session.
-# Calling update_state(config, _WIZARD_FRESH_FIELDS) overwrites stale values
-# (last-value reducer semantics — TypedDict without Annotated) before invoking
-# the graph, preventing intake_node from short-circuiting with the old vacancy.
+#
+# C2 hardening (2026-06-21): preserve-allowlist inversion.
+# Instead of enumerating which fields to wipe (brittle — new fields in
+# JobCreationState are silently missed), we now enumerate which fields to
+# PRESERVE and wipe everything else dynamically.
+#
+# _WIZARD_SESSION_PRESERVE_KEYS: session-scoped fields that must survive
+# when starting a new vacancy within the same chat session.
+#
+# _WIZARD_FRESH_FIELDS: known per-vacancy reset values (type-preserving).
+# Used as override map by _build_wipe_payload(). Fields in JobCreationState
+# that are NOT in this map get a type-inferred reset value (None/[]/""/"").
+# Keep this dict updated whenever you add a field with a non-trivial reset.
+_WIZARD_SESSION_PRESERVE_KEYS: frozenset = frozenset({
+    # Identity — same user/company/session across vacancies
+    "company_id",
+    "session_id",
+    "user_id",
+    "auth_token",
+    "language",
+    "workspace_id",
+    # Recruiter — same person creates multiple vacancies in the same session
+    "parsed_recruiter_name",
+    "parsed_recruiter_email",
+    # Tenant context — global company config, not per-vacancy
+    "tenant_context_snippet",
+})
+
 _WIZARD_FRESH_FIELDS: dict = {
     # Identity / routing — prevent intake_node from short-circuiting
     "job_id": None,
@@ -156,7 +181,61 @@ _WIZARD_FRESH_FIELDS: dict = {
     # Conversation history — must start fresh so B doesn't see A's chat
     "conversation_messages": [],
     "current_stage": None,
+    # Calibration config — reset to production default for each vacancy
+    "calibration_threshold": 5,
 }
+
+
+def _build_wipe_payload() -> dict:
+    """Build the full per-vacancy wipe dict dynamically from JobCreationState.
+
+    Enumerates all fields in JobCreationState.__annotations__ and assigns
+    type-appropriate reset values. Fields in _WIZARD_SESSION_PRESERVE_KEYS
+    are excluded (they survive across vacancies in the same session).
+    Fields with an explicit entry in _WIZARD_FRESH_FIELDS use that value
+    (correct semantics, e.g. None vs False vs []).
+
+    This means any new field added to JobCreationState is automatically
+    wiped without manual intervention — zero maintenance overhead.
+    """
+    import typing as _typing
+
+    try:
+        from app.domains.job_creation.state import JobCreationState
+        hints = _typing.get_type_hints(JobCreationState)
+    except Exception:
+        # Fallback: use the known static dict if import fails at module load
+        return dict(_WIZARD_FRESH_FIELDS)
+
+    wipe: dict = {}
+    for field, hint in hints.items():
+        if field in _WIZARD_SESSION_PRESERVE_KEYS:
+            continue
+        # Use explicit reset value if known
+        if field in _WIZARD_FRESH_FIELDS:
+            wipe[field] = _WIZARD_FRESH_FIELDS[field]
+            continue
+        # Type-infer reset value
+        origin = getattr(hint, "__origin__", None)
+        args = getattr(hint, "__args__", ())
+        # Optional[X] = Union[X, None] — origin is Union, NoneType in args
+        if origin is _typing.Union and type(None) in args:
+            wipe[field] = None
+        elif origin is list:
+            wipe[field] = []
+        elif origin is dict:
+            wipe[field] = {}
+        elif hint is str:
+            wipe[field] = ""
+        elif hint is bool:
+            wipe[field] = False
+        elif hint is int:
+            wipe[field] = 0
+        elif hint is float:
+            wipe[field] = 0.0
+        else:
+            wipe[field] = None
+    return wipe
 
 # ── Sprint F.2-v2 (2026-05-26) — Supervisor skip with content threshold ──
 # Sprint F.2 (2026-05-20) introduziu skip binário do supervisor quando
@@ -600,7 +679,7 @@ class WizardSessionService:
         """
         try:
             config = {"configurable": {"thread_id": thread_id}}
-            await asyncio.to_thread(wiz_g._graph.update_state, config, _WIZARD_FRESH_FIELDS)
+            await asyncio.to_thread(wiz_g._graph.update_state, config, _build_wipe_payload())
             logger.info(
                 "[WizardSession] Fase3 wipe: checkpoint cleared for new wizard thread=%s",
                 thread_id,

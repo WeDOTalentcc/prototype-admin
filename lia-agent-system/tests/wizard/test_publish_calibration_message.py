@@ -136,3 +136,60 @@ def test_fresh_publish_with_error_does_not_celebrate():
     # Should fall back to canonical 0-candidate progress msg, not celebrate
     assert "publicada com sucesso" not in msg.lower()
     assert result["ws_stage_payload"]["data"]["fresh_publish"] is False
+
+
+# ---------------------------------------------------------------------------
+# C1: PIN calibration_threshold production default == 5
+# ---------------------------------------------------------------------------
+
+def test_calibration_threshold_default_is_5():
+    """Sensor: _handle_advance_calibration must use default threshold == 5.
+
+    The test fixture uses threshold=3 (via state fixture) so tests can pass
+    with 3 decisions. But the production default must stay at 5.
+    Changing `state.get("calibration_threshold", X)` where X != 5 breaks
+    the harness intent and requires a conscious 3-party change:
+      1. This test (C1 sensor)
+      2. Both occurrences in _handle_advance_calibration source
+      3. Production docs / CLAUDE.md calibration_threshold note
+
+    If you legitimately need a different default, update all 3 together.
+    """
+    import ast
+    import pathlib
+
+    src = pathlib.Path(
+        "/home/runner/workspace/lia-agent-system/app/domains/job_creation/orchestrator/wizard_service_tools.py"
+    ).read_text()
+    tree = ast.parse(src)
+
+    defaults_found = []
+    for node in ast.walk(tree):
+        # Find: state.get("calibration_threshold", <default>)
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "get"
+            and len(node.args) == 2
+        ):
+            if (
+                isinstance(node.args[0], ast.Constant)
+                and node.args[0].value == "calibration_threshold"
+            ):
+                default_node = node.args[1]
+                if isinstance(default_node, ast.Constant):
+                    defaults_found.append(default_node.value)
+
+    assert defaults_found, (
+        "No state.get('calibration_threshold', ...) call found in wizard_service_tools.py "
+        "— the sensor anchor is broken, likely the handler was refactored."
+    )
+    non_five = [d for d in defaults_found if d != 5]
+    assert not non_five, (
+        f"calibration_threshold default(s) changed from 5 to {non_five}. "
+        "Update this test + docs if the change is intentional."
+    )
+    assert len(defaults_found) >= 2, (
+        f"Expected >=2 occurrences of state.get('calibration_threshold', 5), "
+        f"found {len(defaults_found)}. Handler may have been refactored."
+    )
