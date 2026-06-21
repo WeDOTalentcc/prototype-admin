@@ -630,7 +630,7 @@ export default function SettingsPageEnhanced() {
 
   return (
     <>
-    <div className="flex h-screen bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
+    <div className="flex h-full bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       <aside 
         className={`
           ${isRailExpanded ? 'w-64' : 'w-16'}

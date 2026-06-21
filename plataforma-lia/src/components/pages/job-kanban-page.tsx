@@ -48,7 +48,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
 
   if (!state.isClient) {
     return (
-      <div className="flex items-center justify-center h-screen bg-lia-bg-primary" role="status" aria-live="polite" aria-label={t('loading')}>
+      <div className="flex items-center justify-center h-full bg-lia-bg-primary" role="status" aria-live="polite" aria-label={t('loading')}>
         <div className="flex flex-col items-center gap-4" role="status" aria-live="polite" aria-label={t('loading')}>
           <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-lia-border-medium" role="status" aria-live="polite" aria-label={t('loading')}></div>
           <span className="text-sm text-lia-text-tertiary">{t('loading')}</span>
@@ -59,7 +59,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
 
   return (
     <ErrorBoundarySection>
-    <div className="h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col overflow-hidden">
+    <div className="h-full bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col overflow-hidden">
       <div className="flex-shrink-0">
       <KanbanJobHeader
         onBack={onBack}

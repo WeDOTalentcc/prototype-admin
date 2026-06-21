@@ -182,7 +182,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   }
 
   return (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col space-y-4">
       {(error || successMessage) && (
         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
           error
