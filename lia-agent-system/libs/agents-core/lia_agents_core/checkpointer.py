@@ -270,7 +270,11 @@ def _memory_saver() -> Any:
     try:
         from langgraph.checkpoint.memory import MemorySaver
         saver = MemorySaver()
-        logger.debug("[Checkpointer] MemorySaver ativo (dev fallback)")
+        logger.warning(
+            "[Checkpointer] *** ATENCAO: MemorySaver ATIVO -- estado do wizard"
+            " sera PERDIDO em restart do processo. Calibracao e checkpoints"
+            " nao persistem. Corrija DATABASE_URL ou aguarde PostgreSQL. ***"
+        )
         return saver
     except ImportError:
         logger.warning("[Checkpointer] LangGraph nao instalado, checkpointer=None")
@@ -316,10 +320,11 @@ def get_checkpointer() -> Any:
             f"chame initialize_checkpointer_async() no lifespan da app."
         )
 
-    logger.warning(
-        "[Checkpointer] get_checkpointer() chamado antes de "
-        "initialize_checkpointer_async() em dev. Retornando MemorySaver "
-        "fallback. Em production/staging isso seria RuntimeError."
+    logger.critical(
+        "[Checkpointer] *** ATENCAO: get_checkpointer() chamado ANTES de"
+        " initialize_checkpointer_async() em dev (boot-order bug?). MemorySaver"
+        " fallback ativo -- checkpoints NAO persistem entre restarts."
+        " Em production/staging isso seria RuntimeError. ***"
     )
     _SAVER_SINGLETON = _memory_saver()
     return _SAVER_SINGLETON
