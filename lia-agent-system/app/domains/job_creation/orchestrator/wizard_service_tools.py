@@ -591,6 +591,9 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
         from libs.models.lia_models.pearch import HybridSearchRequest as _HybridReq
 
         # A2 — query determinística rica: título + senioridade + skills + resps + work_model
+        # D2-NOTE: location NÃO entra no query text (ILIKE é OR: corromperia resultados).
+        #          Location vai via search_spec → to_pearch_custom_filters() → Pearch API.
+        #          Para filtro local por cidade/estado: WHERE clause em V2.
         _jd_title = jd.get("titulo_padronizado") or state.get("parsed_title") or ""
         _jd_seniority = (
             state.get("seniority_resolved") or state.get("parsed_seniority") or ""
@@ -623,10 +626,17 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
         _sourcing_mode = state.get("sourcing_mode") or "local"
         _include_pearch = _sourcing_mode != "local"
 
+        # D2 — search_spec: location, seniority, work_model, skills, languages -> Pearch
+        from app.domains.job_creation.helpers.search_spec_builder import (
+            build_search_spec_from_jd as _build_search_spec,
+        )
+        _search_spec = _build_search_spec(jd, state) or None
+
         # A3 — busca real: 5 candidatos (amostra de calibração; sample 3-10)
         async with AsyncSessionLocal() as _src_db:
             _search_req = _HybridReq(
                 query=_search_query,
+                search_spec=_search_spec,
                 search_local_first=True,
                 include_pearch=_include_pearch,
                 local_limit=5,
