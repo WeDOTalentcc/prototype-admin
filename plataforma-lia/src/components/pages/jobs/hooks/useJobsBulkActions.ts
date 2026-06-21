@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { liaApi } from "@/services/lia-api"
+import { archiveJobs, unarchiveJobs } from "@/services/lia-api/jobs-api"
 import { toast } from "sonner"
 import type { Job } from "@/components/jobs"
 
@@ -40,6 +41,7 @@ interface UseJobsBulkActionsReturn {
     showReactivateScreeningDialog: boolean
     reactivateScreeningJobs: Record<string, unknown>[]
     reactivateEndDate: string
+    isArchivingJobs: boolean
   }
   actions: {
     setSelectedJobsForBatch: React.Dispatch<React.SetStateAction<Set<number>>>
@@ -67,6 +69,7 @@ interface UseJobsBulkActionsReturn {
     handleJobToggleStatus: () => void
     handleJobAssignRecruiter: () => void
     getSelectedJobsHaveActiveStatus: () => boolean
+    handleJobArchive: (archive: boolean) => Promise<boolean>
   }
 }
 
@@ -96,6 +99,7 @@ export function useJobsBulkActions({
   const [showReactivateScreeningDialog, setShowReactivateScreeningDialog] = useState(false)
   const [reactivateScreeningJobs, setReactivateScreeningJobs] = useState<Record<string, unknown>[]>([])
   const [reactivateEndDate, setReactivateEndDate] = useState('')
+  const [isArchivingJobs, setIsArchivingJobs] = useState(false)
 
   // Load company recruiters when assign or duplicate modal opens
   useEffect(() => {
@@ -216,6 +220,43 @@ export function useJobsBulkActions({
 
   const handleJobAssignRecruiter = () => setShowAssignRecruiterModal(true)
 
+  const handleJobArchive = async (archive: boolean): Promise<boolean> => {
+    const selected = allJobs.filter(job => selectedJobsForBatch.has(job.id))
+    if (selected.length === 0) return false
+
+    const backendIds = selected
+      .map((job) => job.backendId)
+      .filter((id): id is string => Boolean(id))
+
+    if (backendIds.length === 0) {
+      toast.error('Nenhuma vaga válida selecionada')
+      return false
+    }
+
+    setIsArchivingJobs(true)
+    try {
+      if (archive) {
+        await archiveJobs(backendIds)
+        setBackendJobs(prev => prev.filter(j => !selectedJobsForBatch.has(j.id)))
+        toast.success(`${backendIds.length} vaga${backendIds.length > 1 ? 's' : ''} arquivada${backendIds.length > 1 ? 's' : ''}`)
+      } else {
+        await unarchiveJobs(backendIds)
+        setBackendJobs(prev => prev.map(j =>
+          selectedJobsForBatch.has(j.id) ? { ...j, status: 'Rascunho' as const } : j
+        ))
+        toast.success(`${backendIds.length} vaga${backendIds.length > 1 ? 's' : ''} desarquivada${backendIds.length > 1 ? 's' : ''}`)
+      }
+      setSelectedJobsForBatch(new Set())
+      return true
+    } catch (err) {
+      const action = archive ? 'arquivar' : 'desarquivar'
+      toast.error(`Falha ao ${action} vagas`)
+      return false
+    } finally {
+      setIsArchivingJobs(false)
+    }
+  }
+
   const getSelectedJobsHaveActiveStatus = () => {
     return allJobs.filter(job => selectedJobsForBatch.has(job.id)).some(job => job.status === 'Ativa')
   }
@@ -227,6 +268,7 @@ export function useJobsBulkActions({
       showDuplicateModal, showStatusModal, showAssignRecruiterModal, statusModalMode,
       companyRecruiters, isLoadingRecruiters, showReactivateScreeningDialog,
       reactivateScreeningJobs, reactivateEndDate,
+      isArchivingJobs,
     },
     actions: {
       setSelectedJobsForBatch, setShowCompareModal, setShowPublishModal, setShowUnpublishModal,
@@ -234,7 +276,7 @@ export function useJobsBulkActions({
       setShowReactivateScreeningDialog, setReactivateScreeningJobs, setReactivateEndDate,
       selectAllJobs, deselectAllJobs, toggleJobSelection, togglePinJob, toggleUrgentJob,
       toggleFavoriteJob, handleJobCompare, requestJobCompare, handleJobPublish, handleJobInsights, handleJobDuplicate,
-      handleJobToggleStatus, handleJobAssignRecruiter, getSelectedJobsHaveActiveStatus,
+      handleJobToggleStatus, handleJobAssignRecruiter, getSelectedJobsHaveActiveStatus, handleJobArchive,
     },
   }
 }

@@ -94,7 +94,7 @@ const STATUS_FILTERS = [
 
 function buildNavigationFilters(backendJobs: Job[], draftsCount = 0, campanhasCount = 0) {
   return [
-    { id: 'todas', label: 'Todas', description: 'Todas as vagas do sistema', count: backendJobs.length },
+    { id: 'todas', label: 'Todas', description: 'Todas as vagas do sistema', count: backendJobs.filter(j => j.status !== 'Arquivada').length },
     { id: 'ativas', label: 'Ativas', description: 'Vagas abertas e em andamento', count: backendJobs.filter(j => j.status === 'Ativa').length },
     { id: 'urgentes', label: 'Urgentes', description: 'Vagas com alta prioridade de preenchimento', count: backendJobs.filter(j => j.urgencyLevel >= 4).length, highlight: true },
     // Phase 4H — ATS filter (vagas importadas do ATS)
@@ -104,6 +104,7 @@ function buildNavigationFilters(backendJobs: Job[], draftsCount = 0, campanhasCo
     { id: 'canceladas', label: 'Canceladas', description: 'Vagas canceladas ou arquivadas', count: backendJobs.filter(j => j.status === 'Cancelada').length },
     { id: 'rascunhos', label: 'Rascunhos', description: 'Vagas em rascunho aguardando revisao', count: draftsCount },
     { id: 'projetos', label: 'Projetos', description: 'Projetos de recrutamento ativos', count: campanhasCount },
+    { id: 'arquivadas', label: 'Arquivadas', description: 'Vagas arquivadas (ocultas da lista principal)', count: backendJobs.filter(j => j.status === 'Arquivada').length },
   ]
 }
 
@@ -236,6 +237,10 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
       else if (activeFilter === 'paralisadas') matchesActiveFilter = job.status === 'Paralisada'
       else if (activeFilter === 'concluidas') matchesActiveFilter = job.status === 'Concluída'
       else if (activeFilter === 'canceladas') matchesActiveFilter = job.status === 'Cancelada'
+      else if (activeFilter === 'arquivadas') matchesActiveFilter = job.status === 'Arquivada'
+
+      // Vagas arquivadas ficam ocultas em todos os outros tabs
+      if (activeFilter !== 'arquivadas' && job.status === 'Arquivada') return false
       if (!matchesActiveFilter) return false
 
       // Status filter

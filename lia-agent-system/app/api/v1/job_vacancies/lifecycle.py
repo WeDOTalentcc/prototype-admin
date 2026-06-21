@@ -1053,6 +1053,65 @@ company_id: str = Depends(require_company_id)):
     )
 
 
+
+
+@router.post("/job-vacancies/bulk/unarchive", response_model=BulkActionResponse)
+async def bulk_unarchive_job_vacancies(
+    request: BulkActionRequest,
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
+    """Restore archived job vacancies to Rascunho status."""
+    from app.domains.job_management.services.job_audit_service import job_audit_service
+
+    company_id = get_user_company_id(current_user)
+    changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
+
+    successful = 0
+    failed = 0
+    errors: list[BulkActionError] = []
+
+    for job_id in request.job_ids:
+        try:
+            job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
+            if not job:
+                errors.append(BulkActionError(job_id=str(job_id), error_message="Vaga nao encontrada"))
+                failed += 1
+                continue
+            if job.status != "Arquivada":
+                errors.append(BulkActionError(job_id=str(job_id), error_message="Vaga nao esta arquivada"))
+                failed += 1
+                continue
+            await repo.update_vacancy_status(job, "Rascunho")
+            await job_audit_service.log_update(
+                job_id=str(job_id),
+                changes={"status": {"old": "Arquivada", "new": "Rascunho"}},
+                changed_by=changed_by,
+                company_id=company_id,
+                db=repo.db,
+            )
+            await job_status_webhook_service.dispatch_status_change(
+                job_id=str(job_id),
+                old_status="Arquivada",
+                new_status="Rascunho",
+                company_id=company_id,
+                db=repo.db,
+                changed_by=changed_by,
+                job_title=job.title
+            )
+            successful += 1
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error unarchiving job {job_id}: {e}")
+            errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
+            failed += 1
+
+    return BulkActionResponse(
+        total_requested=len(request.job_ids),
+        successful=successful,
+        failed=failed,
+        errors=errors
+    )
 @router.post("/job-vacancies/bulk/assign-recruiter", response_model=BulkActionResponse)
 async def bulk_assign_recruiter(
     request: BulkAssignRecruiterRequest,
