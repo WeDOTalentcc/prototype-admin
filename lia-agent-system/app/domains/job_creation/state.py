@@ -224,6 +224,11 @@ class JobCreationState(TypedDict, total=False):
 
     # --- Eligibility ---
     eligibility_questions: List[EligibilityQuestion]
+    eligibility_skip_confirmed: bool
+
+    # --- Competencies confirmation ---
+    competencies_confirmed: bool
+    confirmed_competencies: Optional[Dict[str, Any]]
 
     # --- Review ---
     readiness_check: Optional[Dict[str, Any]]

@@ -117,6 +117,84 @@ def _handle_suggest_competencies(
     )
 
 
+
+def _handle_confirm_competencies(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Registra a confirmação/ajuste das competências pelo recrutador.
+
+    O recrutador pode aprovar as sugestões como estão ou fornecer uma lista
+    ajustada. O state ``competencies_confirmed`` grava a decisão.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    confirmed_technical = tool_input.get("technical") or []
+    confirmed_behavioral = tool_input.get("behavioral") or []
+
+    if not confirmed_technical and not confirmed_behavioral:
+        suggested = state.get("suggested_competencies") or {}
+        confirmed_technical = [
+            c.get("skill") or c.get("name") or ""
+            for c in (suggested.get("technical") or [])
+        ]
+        confirmed_behavioral = [
+            c.get("competencia") or c.get("name") or ""
+            for c in (suggested.get("behavioral") or [])
+        ]
+
+    if not confirmed_technical and not confirmed_behavioral:
+        return ToolResult(
+            llm_message=(
+                "Nenhuma competência para confirmar. Primeiro chame "
+                "suggest_competencies ou peça ao recrutador quais competências "
+                "são relevantes para o cargo."
+            ),
+            error=True,
+        )
+
+    from app.domains.job_creation.internal.audit import _emit_wizard_step_audit
+    _emit_wizard_step_audit(
+        stage="competencies_confirm",
+        state=state,
+        before={
+            "competencies_confirmed": bool(state.get("competencies_confirmed")),
+            "confirmed_competencies": state.get("confirmed_competencies"),
+        },
+        after={
+            "competencies_confirmed": True,
+            "confirmed_competencies": {
+                "technical": confirmed_technical,
+                "behavioral": confirmed_behavioral,
+            },
+        },
+        reasoning_extra=[
+            f"Técnicas confirmadas: {len(confirmed_technical)}",
+            f"Comportamentais confirmadas: {len(confirmed_behavioral)}",
+        ],
+        criteria_used=["recruiter_explicit_confirmation", "wizard_competency_review"],
+    )
+
+    tech_str = ", ".join(str(c) for c in confirmed_technical[:10]) or "(nenhuma)"
+    behav_str = ", ".join(str(c) for c in confirmed_behavioral[:10]) or "(nenhuma)"
+
+    return ToolResult(
+        llm_message=(
+            f"Competências confirmadas pelo recrutador.\n"
+            f"Técnicas: {tech_str}\n"
+            f"Comportamentais: {behav_str}"
+        ),
+        state_updates={
+            "competencies_confirmed": True,
+            "confirmed_competencies": {
+                "technical": confirmed_technical,
+                "behavioral": confirmed_behavioral,
+            },
+        },
+    )
+
+
 # ── enrich_job_description ───────────────────────────────────────────────
 
 
@@ -338,6 +416,33 @@ SUGGEST_COMPETENCIES = WizardTool(
     input_schema={"type": "object", "properties": {}, "additionalProperties": False},
     handler=_handle_suggest_competencies,
 )
+
+CONFIRM_COMPETENCIES = WizardTool(
+    name="confirm_competencies",
+    description=(
+        "Registra a confirmação das competências pelo recrutador. "
+        "Chame quando o recrutador aprovar ou ajustar as competências "
+        "sugeridas por suggest_competencies."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "technical": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Lista de competências técnicas confirmadas.",
+            },
+            "behavioral": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Lista de competências comportamentais confirmadas.",
+            },
+        },
+        "required": [],
+    },
+    handler=_handle_confirm_competencies,
+)
+
 
 ENRICH_JOB_DESCRIPTION = WizardTool(
     name="enrich_job_description",
@@ -2033,6 +2138,56 @@ CREATE_CUSTOM_ELIGIBILITY_TEMPLATE = WizardTool(
 
 
 
+
+# ── confirm_skip_eligibility (Bug 5 — Fase 7) ───────────────────────────
+
+def _handle_confirm_skip_eligibility(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Registra a decisão explícita de prosseguir SEM critérios de elegibilidade.
+
+    Grava ``eligibility_skip_confirmed=True`` no state e emite audit row
+    via ``_emit_wizard_step_audit`` (caminho existente — EU AI Act Art.13).
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    current_qs = list(state.get("eligibility_questions") or [])
+    if current_qs:
+        return ToolResult(
+            llm_message=(
+                f"Já existem {len(current_qs)} critério(s) de elegibilidade configurados. "
+                "Esta tool é para confirmar avanço SEM critérios."
+            ),
+            error=True,
+        )
+
+    reason = tool_input.get("reason", "").strip()
+
+    from app.domains.job_creation.internal.audit import _emit_wizard_step_audit
+    _emit_wizard_step_audit(
+        stage="eligibility_skip",
+        state=state,
+        before={"eligibility_questions": [], "eligibility_skip_confirmed": False},
+        after={"eligibility_questions": [], "eligibility_skip_confirmed": True},
+        reasoning_extra=[
+            "Recrutador confirmou explicitamente: avançar sem critérios de elegibilidade.",
+            f"Motivo informado: {reason or '(nenhum)'}",
+        ],
+        criteria_used=["recruiter_explicit_confirmation", "wizard_eligibility_gate"],
+        human_review_required=False,
+    )
+
+    return ToolResult(
+        llm_message=(
+            "Decisão registrada: prosseguir sem critérios de elegibilidade. "
+            "Este registro fica na trilha de auditoria da vaga."
+        ),
+        state_updates={"eligibility_skip_confirmed": True},
+    )
+
+
 def _handle_send_manager_briefing(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -2163,6 +2318,27 @@ def _handle_close_panel(
             "Use open_panel para reabrir quando necessario."
         )
     )
+
+
+CONFIRM_SKIP_ELIGIBILITY = WizardTool(
+    name="confirm_skip_eligibility",
+    description=(
+        "Registra a decisão explícita do recrutador de avançar SEM nenhum "
+        "critério de elegibilidade. Chame SOMENTE quando o recrutador "
+        "confirmar que deseja prosseguir sem perguntas eliminatórias."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "reason": {
+                "type": "string",
+                "description": "Motivo informado pelo recrutador para pular elegibilidade (opcional).",
+            },
+        },
+        "required": [],
+    },
+    handler=_handle_confirm_skip_eligibility,
+)
 
 
 SEND_MANAGER_BRIEFING = WizardTool(
@@ -3391,6 +3567,7 @@ ADVANCE_CALIBRATION = WizardTool(
 
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_COMPETENCIES,
+    CONFIRM_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
     SUGGEST_SALARY,
     PUBLISH_JOB,
@@ -3403,6 +3580,7 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_ELIGIBILITY_TEMPLATES,
     APPLY_ELIGIBILITY_TEMPLATE,
     CREATE_CUSTOM_ELIGIBILITY_TEMPLATE,
+    CONFIRM_SKIP_ELIGIBILITY,
     SUGGEST_MANAGERS,
     SEND_MANAGER_BRIEFING,
     SUGGEST_BENEFITS,
