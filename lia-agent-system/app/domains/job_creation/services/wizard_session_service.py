@@ -1412,7 +1412,7 @@ class WizardSessionService:
         # do intake_gate) + campos de gestor + JD enriquecida. O FE substitui
         # stageData pelo payload (não faz merge) — por isso é cumulativo.
         try:
-            from app.domains.job_creation.nodes.intake_gate import _ficha_data
+            from app.domains.job_creation.helpers.ficha_builder import build_ficha_data as _ficha_data
             data = _ficha_data(new_state, result.reply)
             # Gestor (não cobertos por _ficha_data) — painel renderiza estes.
             data["parsed_manager_name"] = new_state.get("parsed_manager_name")

@@ -325,7 +325,7 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     # renderizar um aviso de revisão ANTES de aprovar.
     _distribution_gap: Dict[str, Any] | None = None
     try:
-        from app.domains.job_creation.graph import _get_question_distribution as _gqd
+        from app.domains.job_creation.helpers.wsi_distribution import block_distribution as _gqd
         _dist_mode = state.get("screening_mode", "compact") or "compact"
         _dist_seniority = state.get("seniority_resolved", "pleno") or "pleno"
         _expected_dist = _gqd(_dist_mode, _dist_seniority)

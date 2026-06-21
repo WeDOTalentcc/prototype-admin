@@ -101,28 +101,9 @@ def _tok_sim(a: str, b: str) -> float:
 
 
 def _match_department(title, dept_names, threshold: float = 0.8):
-    """Casa o título contra a lista de departamentos REAIS do cliente. Retorna o
-    nome do depto (original) com melhor match acima do threshold, ou None —
-    nunca inventa um departamento que o cliente não tem (tenant-aware).
-    """
-    if not title or not dept_names:
-        return None
-    title_toks = _dept_tokens(title, drop_seniority=True)
-    if not title_toks:
-        return None
-    best, best_score = None, 0.0
-    for name in dept_names:
-        dtoks = _dept_tokens(name)
-        if not dtoks:
-            continue
-        score = max(
-            (_tok_sim(dt, tt) for dt in dtoks for tt in title_toks),
-            default=0.0,
-        )
-        if score > best_score:
-            best, best_score = name, score
-    return best if best_score >= threshold else None
-
+    """Delegate to canonical helper (Fase 8 A1)."""
+    from app.domains.job_creation.helpers.department_match import match_department
+    return match_department(title, dept_names, threshold)
 
 
 _AFFIRMATIVE_PATTERNS: list[tuple[str, str]] = [

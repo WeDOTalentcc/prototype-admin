@@ -992,7 +992,7 @@ def _wsi_distribution_status(state: dict) -> dict:
         state.get("seniority_resolved") or state.get("parsed_seniority") or "pleno"
     ).lower()
     try:
-        from app.domains.job_creation.graph import _get_question_distribution
+        from app.domains.job_creation.helpers.wsi_distribution import block_distribution as _get_question_distribution
         expected = _get_question_distribution(mode, seniority) or {}
         min_tech = int(expected.get("technical", 0))
         min_behavioral = int(expected.get("behavioral", 0))
@@ -3136,7 +3136,7 @@ def _handle_infer_department(
         )
 
     # Fuzzy match usando a mesma logica de intake.py (single source of truth)
-    from app.domains.job_creation.nodes.intake import _match_department
+    from app.domains.job_creation.helpers.department_match import match_department as _match_department
 
     matched = _match_department(title, dept_names, threshold=0.7)
 

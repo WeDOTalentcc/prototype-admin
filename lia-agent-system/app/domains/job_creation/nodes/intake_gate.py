@@ -527,36 +527,9 @@ def _ficha_data(
     message: str,
     extra: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Monta o ws_stage_payload.data CUMULATIVO da ficha viva (Fase 5).
-
-    Todas as respostas do intake_gate carregam parsed_* + screening_mode +
-    salary (+ confirmed_* quando existem) no MESMO payload, porque o
-    useWizardFlow (FE) substitui stageData por payload — não faz merge. Sem
-    isso, a ficha viva mostraria zonas OU competências, nunca as duas juntas.
-    """
-    data: Dict[str, Any] = {
-        "message": message,
-        "parsed_title": state.get("parsed_title"),
-        "parsed_seniority": state.get("parsed_seniority"),
-        "parsed_model": state.get("parsed_model"),
-        "parsed_department": state.get("parsed_department"),
-        "parsed_location": state.get("parsed_location"),
-        "parsed_employment_type": state.get("parsed_employment_type"),
-        "screening_mode": state.get("screening_mode"),
-        "salary_min": state.get("salary_min"),
-        "salary_max": state.get("salary_max"),
-        "salary_range": state.get("salary_range"),
-        "parsed_manager_email": state.get("parsed_manager_email"),
-        "parsed_manager_name": state.get("parsed_manager_name"),
-    }
-    _ct = state.get("confirmed_technical_competencies")
-    _cb = state.get("confirmed_behavioral_competencies")
-    if _ct or _cb:
-        data["confirmed_technical_competencies"] = _ct or []
-        data["confirmed_behavioral_competencies"] = _cb or []
-    if extra:
-        data.update(extra)
-    return data
+    """Delegate to canonical helper (Fase 8 A1)."""
+    from app.domains.job_creation.helpers.ficha_builder import build_ficha_data
+    return build_ficha_data(state, message, extra)
 
 
 def _make_ws_response(
