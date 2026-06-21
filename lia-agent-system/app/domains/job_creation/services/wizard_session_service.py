@@ -1178,25 +1178,30 @@ class WizardSessionService:
 
     # ── Orquestrador conversacional (strangler-fig, Paulo 2026-05-31) ────
     # Caminho alternativo ao pipeline LangGraph: um tool-calling agent
-    # state-aware. Ligado por LIA_WIZARD_ORCHESTRATOR (default OFF). Quando
+    # state-aware. Ligado por LIA_WIZARD_ORCHESTRATOR (default ON). Quando
     # ON, BYPASSA o graph completamente — lê o state via checkpointer
     # (mesma fonte do graph), roda o orquestrador, e persiste o state
     # mutado via update_state. Coexistência: o schema JobCreationState é o
     # mesmo, então alternar a flag preserva a sessão.
     @staticmethod
     def _orchestrator_enabled() -> bool:
-        """Lê a flag de os.environ (prod/Secrets) OU do .env (dev).
+        """Default ON (Fase 8). Grafo legado requer flag explícita =0.
 
         No setup Replit dev, o ``.env`` NÃO é injetado em ``os.environ``
         (pydantic-settings o lê para o objeto Settings, não para o environ).
         Para a flag funcionar em dev sem precisar de Secret nem restart com
         export, fazemos fallback para uma leitura cacheada do ``.env``.
-        Fail-open: qualquer erro → False (orquestrador desligado).
         """
-        _TRUTHY = ("1", "true", "yes", "on")
+        _FALSY = ("0", "false", "no", "off")
         val = os.environ.get("LIA_WIZARD_ORCHESTRATOR")
         if val is not None:
-            return val.strip().lower() in _TRUTHY
+            result = val.strip().lower() not in _FALSY
+            if not result:
+                logger.warning(
+                    "[WizardSession] LIA_WIZARD_ORCHESTRATOR=%s — routing via GRAPH LEGADO. "
+                    "Desde Fase 8, o default é orchestrator (ON).", val,
+                )
+            return result
         try:
             from dotenv import dotenv_values  # type: ignore
             cached = getattr(WizardSessionService, "_dotenv_cache", None)
@@ -1204,9 +1209,20 @@ class WizardSessionService:
                 cached = dotenv_values(".env") or {}
                 WizardSessionService._dotenv_cache = cached  # type: ignore[attr-defined]
             dv = (cached.get("LIA_WIZARD_ORCHESTRATOR") or "").strip().lower()
-            return dv in _TRUTHY
-        except Exception:  # noqa: BLE001 — fail-open
-            return False
+            if dv and dv in _FALSY:
+                logger.warning(
+                    "[WizardSession] LIA_WIZARD_ORCHESTRATOR=%s (.env) — routing via GRAPH LEGADO.", dv,
+                )
+                return False
+            if dv:
+                return True
+        except Exception:  # noqa: BLE001
+            pass
+        logger.warning(
+            "[WizardSession] LIA_WIZARD_ORCHESTRATOR UNSET — defaulting to ORCHESTRATOR (Fase 8). "
+            "Set =0 explicitly to use legacy graph.",
+        )
+        return True
 
     @classmethod
     async def _persist_orchestrator_state(
@@ -1664,7 +1680,7 @@ class WizardSessionService:
 
         # ── Orquestrador conversacional (flag LIA_WIZARD_ORCHESTRATOR) ──
         # Quando ON, bypassa o pipeline LangGraph e roda o tool-calling
-        # agent state-aware. Default OFF — zero impacto em produção.
+        # agent state-aware. Default ON (Fase 8) — grafo legado requer flag explícita =0.
         if cls._orchestrator_enabled():
             logger.info(
                 "[WizardSession] routing via ORCHESTRATOR thread=%s", thread_id,

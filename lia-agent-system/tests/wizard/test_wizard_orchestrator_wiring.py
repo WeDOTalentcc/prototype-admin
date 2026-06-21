@@ -18,14 +18,21 @@ from app.domains.job_creation.orchestrator.wizard_orchestrator import (
 
 
 @pytest.mark.medium
-def test_orchestrator_flag_default_off(monkeypatch):
-    # Isola o fallback .env (que em dev tem a flag ligada) forçando cache vazio.
+def test_orchestrator_flag_default_on(monkeypatch):
+    # Fase 8: default é ON (orchestrator). Ausência da var = orchestrator ativo.
     monkeypatch.delenv("LIA_WIZARD_ORCHESTRATOR", raising=False)
     WizardSessionService._dotenv_cache = {}
     try:
-        assert WizardSessionService._orchestrator_enabled() is False
+        assert WizardSessionService._orchestrator_enabled() is True
     finally:
         WizardSessionService._dotenv_cache = None
+
+
+@pytest.mark.medium
+def test_orchestrator_flag_explicit_off(monkeypatch):
+    # Flag =0 explícito desliga o orchestrator (fallback pro grafo legado).
+    monkeypatch.setenv("LIA_WIZARD_ORCHESTRATOR", "0")
+    assert WizardSessionService._orchestrator_enabled() is False
 
 
 @pytest.mark.medium
