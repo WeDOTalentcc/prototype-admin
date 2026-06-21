@@ -15,6 +15,8 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from app.shared.types import WeDoBaseModel
+
 from app.core.database import get_db
 from app.repositories.approvals_repository import ApprovalsRepository
 from lia_models.approval import ApprovalStatus
@@ -24,13 +26,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/approvals", tags=["approvals"])
 
 
-class ResolveByTokenRequest(BaseModel):
+class ResolveByTokenRequest(WeDoBaseModel):
     token: str
     decision: str  # "approve" | "reject"
     notes: str | None = None
 
 
-class ResolveByTokenResponse(BaseModel):
+class ResolveByTokenResponse(BaseModel):  # response — extra='allow' is fine
     ok: bool
     message: str
     approval_id: str | None = None
