@@ -60,6 +60,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
   return (
     <ErrorBoundarySection>
     <div className="h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col overflow-hidden">
+      <div className="flex-shrink-0">
       <KanbanJobHeader
         onBack={onBack}
         router={state.router}
@@ -83,9 +84,12 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         setJobLocalOverrides={state.setJobLocalOverrides}
         onOpenVacancySearch={vs.openModal}
       />
+      </div>
 
       {/* Workflow Rail — Campaign progress bar */}
+      <div className="flex-shrink-0">
       <VagaProgressBar jobId={String(state.currentJob?.id || "")} onNavigateToStage={(stage) => state.setActiveTab?.(stage as any)} />
+      </div>
 
       {state.proactiveInsights.length > 0 && state.activeTab === 'management' && (
         <div className="px-4 py-2 space-y-1.5">

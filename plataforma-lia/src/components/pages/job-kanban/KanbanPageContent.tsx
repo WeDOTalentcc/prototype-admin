@@ -113,7 +113,7 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
 
   return (
     <>
-    <div data-testid="kanban-page-content" className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0">
+    <div data-testid="kanban-page-content" className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0 min-h-0">
       {viewMode === "table" && (
         <div className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-primary px-4 py-2">
           <div className="w-full">
