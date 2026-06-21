@@ -2870,6 +2870,7 @@ class MainOrchestrator:
         # com o caminho WS para que ``_build_state`` funcione idêntico.
         wiz_context: dict[str, Any] = dict(ctx.extra or {})
         wiz_context.setdefault("user_id", ctx.user_id)
+        wiz_context.setdefault("user_email", ctx.user_email or None)
         wiz_context.setdefault("company_id", company_id)
         wiz_context.setdefault("session_id", session_id)
         if getattr(ctx, "tenant_context_snippet", ""):

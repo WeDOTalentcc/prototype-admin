@@ -2202,6 +2202,96 @@ CLOSE_PANEL = WizardTool(
 )
 
 
+
+# -- suggest_managers ---------------------------------------------------------
+
+def _handle_suggest_managers(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    _reject_tenant_keys(tool_input)
+
+    company_id = ctx.company_id
+    if not company_id:
+        return ToolResult(
+            llm_message="Empresa nao identificada -- nao consigo buscar gestores.",
+            error=True,
+        )
+
+    department = state.get("parsed_department") or state.get("department") or ""
+
+    async def _fetch():
+        from app.core.database import AsyncSessionLocal
+        from app.domains.company.services.manager_inference_service import ManagerInferenceService
+        async with AsyncSessionLocal() as db:
+            svc = ManagerInferenceService(db)
+            if department:
+                return await svc.get_managers_by_department(
+                    department_name=department,
+                    company_id=str(company_id),
+                )
+            return await svc.list_managers(company_id=str(company_id), limit=20)
+
+    from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+    try:
+        managers = run_coro_in_threadpool(lambda: _fetch(), timeout=10)
+    except Exception as exc:
+        logger.warning("[WizardServiceTools] suggest_managers failed: %s", exc)
+        return ToolResult(
+            llm_message=(
+                "Nao consegui carregar os gestores agora. "
+                "Oriente o recrutador a informar o gestor manualmente."
+            ),
+            error=True,
+        )
+
+    if not managers:
+        return ToolResult(
+            llm_message=(
+                "Nenhum gestor encontrado"
+                + (f" para o departamento {department!r}" if department else "")
+                + ". O recrutador pode informar o gestor manualmente."
+            ),
+            state_updates={"suggested_managers": []},
+        )
+
+    result_list = []
+    for m in managers:
+        if isinstance(m, dict):
+            result_list.append(m)
+        else:
+            result_list.append({
+                "id": str(getattr(m, "id", "")),
+                "name": getattr(m, "name", "") or getattr(m, "full_name", ""),
+                "email": getattr(m, "email", ""),
+                "role": getattr(m, "role", ""),
+                "department_name": getattr(m, "department_name", ""),
+            })
+
+    names = [m.get("name", "") for m in result_list[:5]]
+    summary = ", ".join(names) + (f" e mais {len(result_list)-5}" if len(result_list) > 5 else "")
+    dept_ctx = f" do departamento {department!r}" if department else ""
+    return ToolResult(
+        llm_message=(
+            f"Encontrei {len(result_list)} gestor(es){dept_ctx}: {summary}. "
+            "Qual deles sera o gestor desta vaga?"
+        ),
+        state_updates={"suggested_managers": result_list},
+    )
+
+
+SUGGEST_MANAGERS = WizardTool(
+    name="suggest_managers",
+    description=(
+        "Busca e sugere gestores disponiveis na empresa para a vaga. "
+        "Use quando o recrutador precisar escolher ou confirmar o gestor da vaga, "
+        "especialmente durante o intake ou apos definir o departamento. "
+        "Prioriza gestores do mesmo departamento. Retorna lista com nome, email e cargo."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_suggest_managers,
+)
+
+
 # ── suggest_benefits ─────────────────────────────────────────────────────────
 
 def _handle_suggest_benefits(
@@ -3315,6 +3405,7 @@ SERVICE_TOOLS: tuple[WizardTool, ...] = (
     SUGGEST_ELIGIBILITY_TEMPLATES,
     APPLY_ELIGIBILITY_TEMPLATE,
     CREATE_CUSTOM_ELIGIBILITY_TEMPLATE,
+    SUGGEST_MANAGERS,
     SEND_MANAGER_BRIEFING,
     SUGGEST_BENEFITS,
     SUGGEST_VARIABLE_COMPENSATION,

@@ -77,6 +77,7 @@ class UniversalContext(BaseModel):
 
     # Contexto do usuário (enriquecido pelo MainOrchestrator via DB lookup)
     user_name: str = ""
+    user_email: str = ""
     user_role: str = ""
 
     # Contexto do tenant (injetado pelo MainOrchestrator)
@@ -125,6 +126,7 @@ class UniversalContext(BaseModel):
             "channel": self.channel,
             "company_id": self.company_id,
             "user_name": self.user_name,
+            "user_email": self.user_email,
             "user_role": self.user_role,
             "context_page": self.context_page,
             "entity_type": self.entity_type,
