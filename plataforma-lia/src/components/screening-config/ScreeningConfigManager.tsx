@@ -10,6 +10,7 @@ import {
   Scale, ClipboardList, FileText, Edit, Calendar, Play, Pause, AlertCircle
 } from 'lucide-react'
 import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit } from '@/hooks/recruitment/useScreeningConfig'
+import { wsiPresetToScore } from '@/lib/wsi/visual'
 import { CompanyBankQuestions } from './CompanyBankQuestions'
 import { CompanyDefaultQuestions } from "./CompanyDefaultQuestions"
 import { CustomQuestions } from './CustomQuestions'
@@ -189,14 +190,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       </Button>
                       <Button size="sm" className="gap-1.5 text-xs rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover" onClick={async () => {
                         try {
-                          // Task #512 (PR3 #497) — escala WSI 0-10
-                          const presetToScore = (preset: string) => {
-                            switch(preset) {
-                              case 'rigorous': return 8.4
-                              case 'flexible': return 6.0
-                              default: return 7.6
-                            }
-                          }
+                          // wsiPresetToScore importado de @/lib/wsi/visual
                           const success = await updateScreeningConfig({
                             channels_master_enabled: editChannelsMasterEnabled,
                             channels: {
@@ -218,7 +212,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 }),
                             },
                             settings: {
-                              min_score: presetToScore(editMinScorePreset),
+                              min_score: wsiPresetToScore(editMinScorePreset),
                               min_score_preset: editMinScorePreset,
                               response_timeout_hours: editTimeoutHours,
                               max_retries: editMaxRetries,
@@ -229,7 +223,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             },
                             scheduling: {
                               auto_enabled: editSchedulingEnabled,
-                              min_score_for_auto: presetToScore(editSchedulingMinScorePreset),
+                              min_score_for_auto: wsiPresetToScore(editSchedulingMinScorePreset),
                               min_score_for_auto_preset: editSchedulingMinScorePreset,
                               calendar_provider: editCalendarProvider,
                               available_hours: editAvailableHours,

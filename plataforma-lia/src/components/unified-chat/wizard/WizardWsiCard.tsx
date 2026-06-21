@@ -1,5 +1,6 @@
 "use client"
 
+import { WSI_SCORE_PRESETS, wsiPresetToScore } from "@/lib/wsi/visual"
 import React, { useState } from "react"
 import { ChevronDown, Brain, AlertCircle } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -50,11 +51,7 @@ function QBadge({ block }: { block?: string }) {
  */
 // ─── TriagemConfigSection ─────────────────────────────────────────────────────
 // Escala canônica: WSI 0–10, alinhada com CompanyScreeningConfigHub e SCMSectionConfiguracoes.
-const WSI_PRESETS = [
-  { key: "rigorous", label: "Rigoroso", score: 8.4 },
-  { key: "recommended", label: "Recomendado", score: 7.6 },
-  { key: "flexible", label: "Flexível", score: 6.0 },
-] as const
+// WSI_SCORE_PRESETS -> WSI_SCORE_PRESETS canonico de @/lib/wsi/visual
 
 const TIMEOUT_OPTIONS = [12, 24, 48, 72]
 const RETRIES_OPTIONS = [1, 2, 3, 4, 5]
@@ -89,7 +86,7 @@ function TriagemConfigSection({ jobId }: { jobId?: string }) {
       .catch(() => setLoaded(true))
   }, [open, loaded])
 
-  const currentScore = WSI_PRESETS.find(p => p.key === scorePreset)?.score ?? 7.6
+  const currentScore = wsiPresetToScore(scorePreset)
 
   const handleSave = async () => {
     if (!jobId) return
@@ -154,7 +151,7 @@ function TriagemConfigSection({ jobId }: { jobId?: string }) {
           <div>
             <label className="text-[10px] font-medium text-lia-text-secondary block mb-1.5">Score mínimo (WSI)</label>
             <div className="flex gap-1.5">
-              {WSI_PRESETS.map(p => (
+              {WSI_SCORE_PRESETS.map(p => (
                 <button
                   key={p.key}
                   onClick={() => setScorePreset(p.key)}

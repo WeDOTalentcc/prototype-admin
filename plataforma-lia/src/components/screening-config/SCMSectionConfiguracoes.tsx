@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
 import { Card, CardContent } from "@/components/ui/card"
 import { approvalPresetToLimit, type ScreeningChannelKey } from '@/hooks/recruitment/useScreeningConfig'
+import { WSI_SCORE_PRESETS } from '@/lib/wsi/visual'
 import {
   AlertCircle, AlertTriangle, Calendar, CalendarCheck,
   CheckCircle, Clock, Globe, MessageSquare, Pause, Phone, Play, ShieldAlert,
@@ -180,11 +181,7 @@ export function SCMSectionConfiguracoes({
                 <div>
                   <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo Aprovação (WSI)</label>
                   <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { key: 'rigorous', label: 'Rigoroso', score: '≥ 8.4/10', desc: 'Só aprovados automaticamente' },
-                      { key: 'recommended', label: 'Recomendado', score: '≥ 7.6/10', desc: 'Inclui revisão manual' },
-                      { key: 'flexible', label: 'Flexível', score: '≥ 6.0/10', desc: 'Todos acima do corte' },
-                    ].map((preset) => {
+                    {WSI_SCORE_PRESETS.map((preset) => {
                       const isSelected = (screeningConfig?.settings?.min_score_preset ?? 'recommended') === preset.key
                       return (
                         <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-lia-bg-secondary/50' : 'border-lia-border-subtle bg-lia-bg-primary/50'}`}>
@@ -192,8 +189,8 @@ export function SCMSectionConfiguracoes({
                             <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`}>{preset.label}</span>
                             {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-muted" />}
                           </div>
-                          <span className={`text-micro font-medium block ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`}>{preset.score}</span>
-                          <span className="text-micro text-lia-text-muted block mt-0.5">{preset.desc}</span>
+                          <span className={`text-micro font-medium block ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`}>{`≥ ${preset.score.toFixed(1)}/10`}</span>
+                          <span className="text-micro text-lia-text-muted block mt-0.5">{preset.descView}</span>
                         </div>
                       )
                     })}
@@ -309,11 +306,7 @@ export function SCMSectionConfiguracoes({
                   <div>
                     <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo para Agendamento (WSI)</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { key: 'rigorous', label: 'Rigoroso', score: '≥ 8.4/10', desc: 'Só aprovados automaticamente' },
-                        { key: 'recommended', label: 'Recomendado', score: '≥ 7.6/10', desc: 'Inclui revisão manual' },
-                        { key: 'flexible', label: 'Flexível', score: '≥ 6.0/10', desc: 'Todos acima do corte' },
-                      ].map((preset) => {
+                      {WSI_SCORE_PRESETS.map((preset) => {
                         const isSelected = (screeningConfig?.scheduling?.min_score_for_auto_preset ?? 'recommended') === preset.key
                         return (
                           <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-lia-bg-secondary/50' : 'border-lia-border-subtle bg-lia-bg-primary/50'}`}>
@@ -321,8 +314,8 @@ export function SCMSectionConfiguracoes({
                               <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`}>{preset.label}</span>
                               {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-muted" />}
                             </div>
-                            <span className={`text-micro font-medium block ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`}>{preset.score}</span>
-                            <span className="text-micro text-lia-text-muted block mt-0.5">{preset.desc}</span>
+                            <span className={`text-micro font-medium block ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`}>{`≥ ${preset.score.toFixed(1)}/10`}</span>
+                            <span className="text-micro text-lia-text-muted block mt-0.5">{preset.descView}</span>
                           </div>
                         )
                       })}
@@ -591,11 +584,7 @@ export function SCMSectionConfiguracoes({
                 <div>
                   <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo Aprovação (WSI)</label>
                   <div className="grid grid-cols-3 gap-2">
-                    {([
-                      { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 8.4/10', desc: 'Só aprovados automaticamente' },
-                      { key: 'recommended' as const, label: 'Recomendado', score: '≥ 7.6/10', desc: 'Inclui revisão manual' },
-                      { key: 'flexible' as const, label: 'Flexível', score: '≥ 6.0/10', desc: 'Todos acima do corte' },
-                    ] as const).map((preset) => {
+                    {WSI_SCORE_PRESETS.map((preset) => {
                       const isSelected = editMinScorePreset === preset.key
                       return (
                         <button key={preset.key} onClick={() => setEditMinScorePreset(preset.key)}
@@ -604,8 +593,8 @@ export function SCMSectionConfiguracoes({
                             <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`}>{preset.label}</span>
                             {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary" />}
                           </div>
-                          <span className="text-micro font-medium text-lia-text-primary block">{preset.score}</span>
-                          <span className="text-micro text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
+                          <span className="text-micro font-medium text-lia-text-primary block">{`≥ ${preset.score.toFixed(1)}/10`}</span>
+                          <span className="text-micro text-lia-text-tertiary block mt-0.5">{preset.descView}</span>
                         </button>
                       )
                     })}
@@ -718,11 +707,7 @@ export function SCMSectionConfiguracoes({
                   <div>
                     <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo para Agendamento (WSI)</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {([
-                        { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 8.4/10', desc: 'Só aprovados automaticamente' },
-                        { key: 'recommended' as const, label: 'Recomendado', score: '≥ 7.6/10', desc: 'Inclui revisão manual' },
-                        { key: 'flexible' as const, label: 'Flexível', score: '≥ 6.0/10', desc: 'Todos acima do corte' },
-                      ] as const).map((preset) => {
+                      {WSI_SCORE_PRESETS.map((preset) => {
                         const isSelected = editSchedulingMinScorePreset === preset.key
                         return (
                           <button key={preset.key} onClick={() => setEditSchedulingMinScorePreset(preset.key)}
@@ -731,8 +716,8 @@ export function SCMSectionConfiguracoes({
                               <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`}>{preset.label}</span>
                               {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-primary" />}
                             </div>
-                            <span className="text-micro font-medium text-lia-text-primary block">{preset.score}</span>
-                            <span className="text-micro text-lia-text-tertiary block mt-0.5">{preset.desc}</span>
+                            <span className="text-micro font-medium text-lia-text-primary block">{`≥ ${preset.score.toFixed(1)}/10`}</span>
+                            <span className="text-micro text-lia-text-tertiary block mt-0.5">{preset.descView}</span>
                           </button>
                         )
                       })}

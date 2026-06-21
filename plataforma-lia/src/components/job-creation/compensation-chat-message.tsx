@@ -139,13 +139,13 @@ function MiniSalaryBar({
 }
 
 export function CompensationChatMessage({
-  const personaName = usePersonaName()
   analysis,
   isLoading = false,
   onConfirm,
   onAdjust,
   onSuggestNewValue
 }: CompensationChatMessageProps) {
+  const personaName = usePersonaName()
   const [salaryInput, setSalaryInput] = useState("")
   const [showInput, setShowInput] = useState(false)
 

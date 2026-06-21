@@ -1,4 +1,5 @@
 "use client"
+import { WSI_SCORE_PRESETS, wsiPresetToScore } from "@/lib/wsi/visual"
 
 /**
  * CompanyScreeningConfigHub — seção "Configurações de Triagem" em Dados da Empresa.
@@ -93,11 +94,8 @@ const DEFAULTS: ScreeningDefaults = {
 }
 
 // Canônico: alinhado com useScreeningConfig.ts e SCMSectionConfiguracoes.tsx
-const SCORE_PRESETS = [
-  { key: "rigorous" as const, label: "Rigoroso", score: 8.4, desc: "Alta exigência" },
-  { key: "recommended" as const, label: "Recomendado", score: 7.6, desc: "Equilíbrio qualidade/volume" },
-  { key: "flexible" as const, label: "Flexível", score: 6.0, desc: "Mais candidatos em revisão" },
-]
+// SCORE_PRESETS -> WSI_SCORE_PRESETS canonico de @/lib/wsi/visual
+const SCORE_PRESETS = WSI_SCORE_PRESETS
 
 const AUTO_APPROVAL_PRESETS = [
   { key: "conservative" as const, label: "Conservador", limit: 5, desc: "Revisão humana frequente" },
@@ -195,7 +193,7 @@ export function CompanyScreeningConfigHub({ showHeader = true }: { showHeader?: 
     }))
   }
 
-  const setScorePreset = (preset: typeof SCORE_PRESETS[0]) => {
+  const setScorePreset = (preset: typeof WSI_SCORE_PRESETS[number]) => {
     setDraft((prev) => ({
       ...effective,
       ...prev,
@@ -203,7 +201,7 @@ export function CompanyScreeningConfigHub({ showHeader = true }: { showHeader?: 
     }))
   }
 
-  const setSchedulingScorePreset = (preset: typeof SCORE_PRESETS[0]) => {
+  const setSchedulingScorePreset = (preset: typeof WSI_SCORE_PRESETS[number]) => {
     setDraft((prev) => ({
       ...effective,
       ...prev,
