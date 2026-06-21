@@ -49,12 +49,24 @@ function QBadge({ block }: { block?: string }) {
  * adaptive-surface: auto-expandido e sem botão "Ver todas" em surface=panel.
  */
 // ─── TriagemConfigSection ─────────────────────────────────────────────────────
+// Escala canônica: WSI 0–10, alinhada com CompanyScreeningConfigHub e SCMSectionConfiguracoes.
+const WSI_PRESETS = [
+  { key: "rigorous", label: "Rigoroso", score: 8.4 },
+  { key: "recommended", label: "Recomendado", score: 7.6 },
+  { key: "flexible", label: "Flexível", score: 6.0 },
+] as const
+
+const TIMEOUT_OPTIONS = [12, 24, 48, 72]
+const RETRIES_OPTIONS = [1, 2, 3, 4, 5]
+
 function TriagemConfigSection({ jobId }: { jobId?: string }) {
   const [open, setOpen] = React.useState(false)
-  const [score, setScore] = React.useState<number>(76)
+  const [scorePreset, setScorePreset] = React.useState<"rigorous" | "recommended" | "flexible">("recommended")
   const [timeout, setTimeout] = React.useState<number>(48)
+  const [retries, setRetries] = React.useState<number>(2)
   const [chatWeb, setChatWeb] = React.useState(true)
   const [whatsapp, setWhatsapp] = React.useState(true)
+  const [masterEnabled, setMasterEnabled] = React.useState(true)
   const [saving, setSaving] = React.useState(false)
   const [loaded, setLoaded] = React.useState(false)
 
@@ -63,16 +75,21 @@ function TriagemConfigSection({ jobId }: { jobId?: string }) {
     fetch("/api/backend-proxy/company/screening-config-defaults")
       .then((r) => r.json())
       .then((d) => {
-        const s = d?.screening_config_defaults?.settings ?? d?.settings ?? {}
-        const ch = d?.screening_config_defaults?.channels ?? d?.channels ?? {}
-        if (s.min_score != null) setScore(Number(s.min_score))
+        const raw = d?.screening_config_defaults ?? d ?? {}
+        const s = raw.settings ?? {}
+        const ch = raw.channels ?? {}
+        if (s.min_score_preset) setScorePreset(s.min_score_preset)
         if (s.response_timeout_hours != null) setTimeout(Number(s.response_timeout_hours))
+        if (s.max_retries != null) setRetries(Number(s.max_retries))
         if (ch.chat_web?.enabled != null) setChatWeb(Boolean(ch.chat_web.enabled))
         if (ch.whatsapp?.enabled != null) setWhatsapp(Boolean(ch.whatsapp.enabled))
+        if (raw.channels_master_enabled != null) setMasterEnabled(Boolean(raw.channels_master_enabled))
         setLoaded(true)
       })
       .catch(() => setLoaded(true))
   }, [open, loaded])
+
+  const currentScore = WSI_PRESETS.find(p => p.key === scorePreset)?.score ?? 7.6
 
   const handleSave = async () => {
     if (!jobId) return
@@ -82,8 +99,17 @@ function TriagemConfigSection({ jobId }: { jobId?: string }) {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          settings: { min_score: score, response_timeout_hours: timeout },
-          channels: { chat_web: { enabled: chatWeb }, whatsapp: { enabled: whatsapp } },
+          channels_master_enabled: masterEnabled,
+          settings: {
+            min_score: currentScore,
+            min_score_preset: scorePreset,
+            response_timeout_hours: timeout,
+            max_retries: retries,
+          },
+          channels: {
+            chat_web: { enabled: chatWeb },
+            whatsapp: { enabled: whatsapp },
+          },
         }),
       })
     } catch {}
@@ -100,31 +126,79 @@ function TriagemConfigSection({ jobId }: { jobId?: string }) {
         <div className="flex items-center gap-2">
           <span className="text-lia-text-secondary font-medium">Configurações de Triagem</span>
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-muted">
-            Score: {score}/100 · {timeout}h
+            ≥{currentScore} WSI · {timeout}h · {retries}x
           </span>
         </div>
         <span className="text-lia-text-tertiary text-xs">{open ? "▲" : "▼"}</span>
       </button>
       {open && (
         <div className="px-4 pb-3 space-y-3 bg-lia-bg-secondary/30">
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="space-y-1">
-              <label className="text-[10px] font-medium text-lia-text-secondary block">Score mínimo (/100)</label>
-              <input
-                type="number" min={0} max={100} value={score}
-                onChange={(e) => setScore(Math.max(0, Math.min(100, Number(e.target.value))))}
-                className="w-full h-7 px-2 text-sm rounded border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:border-wedo-cyan"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-medium text-lia-text-secondary block">Prazo de resposta (h)</label>
-              <input
-                type="number" min={1} max={168} value={timeout}
-                onChange={(e) => setTimeout(Math.max(1, Math.min(168, Number(e.target.value))))}
-                className="w-full h-7 px-2 text-sm rounded border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:border-wedo-cyan"
-              />
+          {/* Master toggle */}
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-[10px] font-medium text-lia-text-secondary">Triagem ativa nesta vaga</span>
+            <button
+              onClick={() => setMasterEnabled(!masterEnabled)}
+              className={cn(
+                "relative inline-flex h-4 w-7 items-center rounded-full transition-colors",
+                masterEnabled ? "bg-wedo-cyan" : "bg-lia-border-medium"
+              )}
+              aria-label="Triagem ativa"
+            >
+              <span className={cn(
+                "inline-block h-3 w-3 transform rounded-full bg-white transition-transform",
+                masterEnabled ? "translate-x-3.5" : "translate-x-0.5"
+              )} />
+            </button>
+          </div>
+          {/* Score preset */}
+          <div>
+            <label className="text-[10px] font-medium text-lia-text-secondary block mb-1.5">Score mínimo (WSI)</label>
+            <div className="flex gap-1.5">
+              {WSI_PRESETS.map(p => (
+                <button
+                  key={p.key}
+                  onClick={() => setScorePreset(p.key)}
+                  className={cn(
+                    "flex-1 px-2 py-1.5 rounded-lg border text-left transition-colors",
+                    scorePreset === p.key
+                      ? "border-wedo-cyan bg-wedo-cyan/10 text-wedo-cyan-text"
+                      : "border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary"
+                  )}
+                >
+                  <div className="text-[9px] font-semibold">{p.label}</div>
+                  <div className="text-xs font-bold">≥{p.score}</div>
+                </button>
+              ))}
             </div>
           </div>
+          {/* Timeout + Retries */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-medium text-lia-text-secondary block mb-1">Timeout</label>
+              <select
+                value={timeout}
+                onChange={(e) => setTimeout(Number(e.target.value))}
+                className="w-full h-7 px-2 text-xs border border-lia-border-subtle rounded-lg bg-lia-bg-secondary text-lia-text-primary"
+              >
+                {TIMEOUT_OPTIONS.map(h => (
+                  <option key={h} value={h}>{h}h</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-lia-text-secondary block mb-1">Re-tentativas</label>
+              <select
+                value={retries}
+                onChange={(e) => setRetries(Number(e.target.value))}
+                className="w-full h-7 px-2 text-xs border border-lia-border-subtle rounded-lg bg-lia-bg-secondary text-lia-text-primary"
+              >
+                {RETRIES_OPTIONS.map(n => (
+                  <option key={n} value={n}>{n}x</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {/* Canais */}
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={chatWeb} onChange={(e) => setChatWeb(e.target.checked)} className="accent-wedo-cyan" />

@@ -78,7 +78,7 @@ export const SCREENING_SECTIONS = [
 function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar }: ScreeningConfigManagerProps & { _externalActiveSection?: string; _hideOwnSidebar?: boolean }) {
   const core = useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar })
   const {
-    activeSection, companyQuestions, configDone, currentSection, customQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited, editCalendarProvider, editChannels, editChannelsMasterEnabled, editWhatsappMode, editFallbackOrder, editInterviewDuration, editMaxRetries, editMinScorePreset, editPrimaryChannel, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours, getConfigStatusInfo, isEditingScreening, isEditingScreeningConfig, screeningConfigLoadError, retryScreeningConfig, jdDone, questionsDone, resetScreeningEditing, screeningConfig, selectedBankQuestions, setActiveSection, setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditChannelsMasterEnabled, setEditWhatsappMode, setEditFallbackOrder, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditPrimaryChannel, setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setIsEditingScreening, setIsEditingScreeningConfig, setShowScreeningToggleConfirm, showScreeningToggleConfirm, updateScreeningConfig,
+    companyScreeningDefaults, activeSection, companyQuestions, configDone, currentSection, customQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited, editCalendarProvider, editChannels, editChannelsMasterEnabled, editWhatsappMode, editFallbackOrder, editInterviewDuration, editMaxRetries, editMinScorePreset, editPrimaryChannel, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours, getConfigStatusInfo, isEditingScreening, isEditingScreeningConfig, screeningConfigLoadError, retryScreeningConfig, jdDone, questionsDone, resetScreeningEditing, screeningConfig, selectedBankQuestions, setActiveSection, setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditChannelsMasterEnabled, setEditWhatsappMode, setEditFallbackOrder, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditPrimaryChannel, setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setIsEditingScreening, setIsEditingScreeningConfig, setShowScreeningToggleConfirm, showScreeningToggleConfirm, updateScreeningConfig,
   } = core
 
   if (screeningConfigLoadError) {
@@ -174,15 +174,15 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           setEditPrimaryChannel(screeningConfig.screening_channels?.primary_channel ?? 'chat_web')
                           setEditFallbackOrder(screeningConfig.screening_channels?.fallback_order ?? ['whatsapp'])
                           setEditMinScorePreset(screeningConfig.settings?.min_score_preset ?? 'recommended')
-                          setEditTimeoutHours(screeningConfig.settings?.response_timeout_hours ?? 48)
-                          setEditMaxRetries(screeningConfig.settings?.max_retries ?? 2)
+                          setEditTimeoutHours(screeningConfig.settings?.response_timeout_hours ?? companyScreeningDefaults?.settings?.response_timeout_hours ?? 48)
+                          setEditMaxRetries(screeningConfig.settings?.max_retries ?? companyScreeningDefaults?.settings?.max_retries ?? 2)
                           setEditSchedulingEnabled(screeningConfig.scheduling?.auto_enabled ?? true)
                           setEditSchedulingMinScorePreset(screeningConfig.scheduling?.min_score_for_auto_preset ?? 'recommended')
                           setEditCalendarProvider(screeningConfig.scheduling?.calendar_provider ?? 'Microsoft')
                           setEditAvailableHours(screeningConfig.scheduling?.available_hours ?? '9h-18h')
                           setEditAvailableHoursInherited(screeningConfig.scheduling?.available_hours_inherited ?? true)
                           setEditInterviewDuration(screeningConfig.scheduling?.interview_duration_min ?? 60)
-                          setEditAutoApprovalPreset(screeningConfig.settings?.auto_approval_preset ?? limitToApprovalPreset(screeningConfig.settings?.auto_approval_limit))
+                          setEditAutoApprovalPreset(screeningConfig.settings?.auto_approval_preset ?? limitToApprovalPreset(screeningConfig.settings?.auto_approval_limit) ?? companyScreeningDefaults?.settings?.auto_approval_preset ?? recommended)
                         }
                       }}>
                         Cancelar

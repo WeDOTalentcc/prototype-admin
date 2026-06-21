@@ -41,6 +41,7 @@ export function SCMSectionConfiguracoes({
   editAvailableHoursInherited, setEditAvailableHoursInherited,
   editInterviewDuration, setEditInterviewDuration,
   setShowScreeningToggleConfirm,
+  companyScreeningDefaults,
 }: Props) {
   const statusValue = (job.screeningStatus || 'not_configured') as ScreeningStatus
 
@@ -202,13 +203,13 @@ export function SCMSectionConfiguracoes({
                   <div>
                     <label className="text-xs font-medium text-lia-text-primary block mb-2">Timeout Resposta</label>
                     <div className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
-                      {screeningConfig?.settings?.response_timeout_hours ?? 48}h
+                      {screeningConfig?.settings?.response_timeout_hours ?? companyScreeningDefaults?.settings?.response_timeout_hours ?? 48}h
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-lia-text-primary block mb-2">Re-tentativas</label>
                     <div className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-secondary text-lia-text-secondary opacity-60">
-                      {screeningConfig?.settings?.max_retries ?? 2}x
+                      {screeningConfig?.settings?.max_retries ?? companyScreeningDefaults?.settings?.max_retries ?? 2}x
                     </div>
                   </div>
                 </div>

@@ -202,6 +202,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   const [companyQuestionsLoading, setCompanyQuestionsLoading] = useState(false)
   const [companyQuestionsError, setCompanyQuestionsError] = useState<string | null>(null)
   const [companyQuestionsReloadKey, setCompanyQuestionsReloadKey] = useState(0)
+  const [companyScreeningDefaults, setCompanyScreeningDefaults] = useState<Record<string, any> | null>(null)
   const retryCompanyQuestions = React.useCallback(() => setCompanyQuestionsReloadKey((k) => k + 1), [])
   const [disabledCompanyQIds, setDisabledCompanyQIds] = useState<Set<string>>(new Set())
   const [selectedBankQuestions, setSelectedBankQuestions] = useState<string[]>([])
@@ -245,6 +246,49 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
       controller.abort()
     }
   }, [companyQuestionsReloadKey])
+
+  // Carrega defaults da empresa para usar como fallback de herança nas vagas
+  useEffect(() => {
+    fetchWithRetry("/api/backend-proxy/company/screening-config-defaults", {}, { attempts: 2, timeoutMs: 10000 })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => {
+        if (!d) return
+        const raw = d?.screening_config_defaults ?? d ?? {}
+        setCompanyScreeningDefaults({
+          channels_master_enabled: raw.channels_master_enabled,
+          settings: raw.settings ?? {},
+          channels: raw.channels ?? {},
+          screening_channels: raw.screening_channels ?? {},
+          scheduling: raw.scheduling ?? {},
+        })
+      })
+      .catch(() => {}) // non-critical — fallback to hardcoded defaults se falhar
+  }, [])
+
+  // Propaga defaults da empresa para o estado de edição quando a vaga não tem valor próprio
+  useEffect(() => {
+    if (isEditingScreeningConfig || !companyScreeningDefaults) return
+    if (!screeningConfig?.settings?.response_timeout_hours) {
+      setEditTimeoutHours(companyScreeningDefaults.settings?.response_timeout_hours ?? 48)
+    }
+    if (!screeningConfig?.settings?.max_retries) {
+      setEditMaxRetries(companyScreeningDefaults.settings?.max_retries ?? 2)
+    }
+    if (!screeningConfig?.settings?.min_score_preset) {
+      setEditMinScorePreset(companyScreeningDefaults.settings?.min_score_preset ?? "recommended")
+    }
+    if (!screeningConfig?.settings?.auto_approval_preset) {
+      setEditAutoApprovalPreset(
+        companyScreeningDefaults.settings?.auto_approval_preset ??
+        limitToApprovalPreset(companyScreeningDefaults.settings?.auto_approval_limit) ??
+        "recommended"
+      )
+    }
+    if (companyScreeningDefaults.channels_master_enabled != null && screeningConfig?.channels_master_enabled == null) {
+      setEditChannelsMasterEnabled(Boolean(companyScreeningDefaults.channels_master_enabled))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyScreeningDefaults, isEditingScreeningConfig])
 
   useEffect(() => {
     const ids: string[] = (job?.disabled_eligibility_question_ids as string[] | undefined) || []
@@ -697,6 +741,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     companyQuestions,
     companyQuestionsLoading,
     companyQuestionsError,
+    companyScreeningDefaults,
     retryCompanyQuestions,
     screeningConfig,
     updateScreeningConfig,
