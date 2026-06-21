@@ -65,7 +65,7 @@ async function saveOfferRules(rules: Partial<OfferRules>): Promise<void> {
   }
 }
 
-export function ContratacaoHub() {
+export function ContratacaoHub({ showHeader = true }: { showHeader?: boolean } = {}) {
   // ─── HOOKS TODOS ANTES DE QUALQUER EARLY RETURN (rules-of-hooks) ──────────
   const queryClient = useQueryClient()
 
@@ -133,10 +133,12 @@ export function ContratacaoHub() {
 
   return (
     <div className="space-y-6" data-testid="contratacao-hub">
-      <HubHeader
-        title="Configurações de Contratação"
-        description="Define regras de proposta de oferta, datas de início e negociação."
-      />
+      {showHeader && (
+        <HubHeader
+          title="Configurações de Contratação"
+          description="Define regras de proposta de oferta, datas de início e negociação."
+        />
+      )}
 
       {/* Dias de início */}
       <section className="space-y-3">

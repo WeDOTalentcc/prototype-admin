@@ -124,10 +124,6 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'basic',
     estimatedTime: 15,
     group: 'empresa' as const,
-    subsections: [
-      { id: 'contratacao', title: 'Contratação', description: 'Pipeline, stages e ofertas', fields: [] },
-      { id: 'configuracoes-triagem', title: 'Configurações de Triagem', description: 'Score mínimo, canais ativos e prazo de resposta', fields: [] },
-    ],
   },
   {
     id: 'lia-personalizacao',

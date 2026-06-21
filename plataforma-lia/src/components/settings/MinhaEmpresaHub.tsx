@@ -4,7 +4,9 @@ import React from "react"
 import {
   Building, Heart, Code, Gift, Network, GitBranch, BarChart3, FileText,
   Loader2, RefreshCw, AlertCircle, CheckCircle, Upload,
+  ChevronDown, ChevronUp, CalendarDays, Settings2,
 } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 import { useTranslations } from "next-intl"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
@@ -119,6 +121,8 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
 
   // Task #1180 — botão "Analisar nosso site" agora abre o modal pré-análise
   const [analyzeModalOpen, setAnalyzeModalOpen] = React.useState(false)
+  const [contratacaoExpanded, setContratacaoExpanded] = React.useState(false)
+  const [triagemExpanded, setTriagemExpanded] = React.useState(false)
   const handleAnalyzeWebsite = React.useCallback(() => {
     setAnalyzeModalOpen(true)
   }, [])
@@ -167,13 +171,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
     return <LiaFieldsConfigPanel />
   }
 
-  if (activeSubsection === "contratacao") {
-    return <ContratacaoHub />
-  }
 
-  if (activeSubsection === "configuracoes-triagem") {
-    return <CompanyScreeningConfigHub />
-  }
 
   // ─── LOADING STATE ────────────────────────────────────────────
   if (watchdogError) {
@@ -317,6 +315,61 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
           />
         ))}
       </div>
+
+      {/* Contratação — expandable card no grid */}
+      <Card className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-xl">
+        <button
+          onClick={() => setContratacaoExpanded((v) => !v)}
+          className="w-full px-4 py-3 flex items-center justify-between hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse duration-150 text-left"
+          aria-expanded={contratacaoExpanded}
+          data-block-anchor="contratacao"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <CalendarDays className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
+            <span className="text-sm font-semibold text-lia-text-primary">Configurações de Contratação</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {contratacaoExpanded ? (
+              <ChevronUp className="w-4 h-4 text-lia-text-tertiary" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
+            )}
+          </div>
+        </button>
+        {contratacaoExpanded && (
+          <CardContent className="px-4 py-4 border-t border-lia-border-subtle">
+            <ContratacaoHub showHeader={false} />
+          </CardContent>
+        )}
+      </Card>
+
+      {/* Configurações de Triagem — expandable card no grid */}
+      <Card className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-xl">
+        <button
+          onClick={() => setTriagemExpanded((v) => !v)}
+          className="w-full px-4 py-3 flex items-center justify-between hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse duration-150 text-left"
+          aria-expanded={triagemExpanded}
+          data-block-anchor="configuracoes-triagem"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <Settings2 className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
+            <span className="text-sm font-semibold text-lia-text-primary">Configurações de Triagem</span>
+            <span className="text-xs text-lia-text-tertiary truncate">· Score WSI, canais, prazo, paralização e agendamento</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {triagemExpanded ? (
+              <ChevronUp className="w-4 h-4 text-lia-text-tertiary" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
+            )}
+          </div>
+        </button>
+        {triagemExpanded && (
+          <CardContent className="px-4 py-4 border-t border-lia-border-subtle">
+            <CompanyScreeningConfigHub showHeader={false} />
+          </CardContent>
+        )}
+      </Card>
 
       <AnalyzeWebsiteModal
         open={analyzeModalOpen}

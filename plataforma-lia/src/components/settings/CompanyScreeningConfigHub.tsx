@@ -15,7 +15,7 @@
  */
 
 import React, { useState } from "react"
-import { Globe, MessageSquare, Phone, Wifi, Clock, Shield, Settings2 } from "lucide-react"
+import { Globe, MessageSquare, Phone, Wifi, Clock, Shield, Settings2, CalendarCheck, PauseCircle } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { HubHeader, HubLoadingState, HubErrorState } from "@/components/settings/_shared"
@@ -80,6 +80,12 @@ const DEFAULTS: ScreeningDefaults = {
   },
 }
 
+const AUTO_APPROVAL_PRESETS = [
+  { key: "conservative", label: "Conservador", limit: 5, desc: "Revisão humana frequente" },
+  { key: "recommended", label: "Recomendado", limit: 10, desc: "Equilíbrio automação/supervisão" },
+  { key: "autonomous", label: "Autônomo", limit: 25, desc: "Máxima automação" },
+]
+
 const CHANNEL_DEFS = [
   { key: "chat_web" as const, label: "Chat Web", icon: Globe, desc: "Candidato responde via portal web" },
   { key: "whatsapp" as const, label: "WhatsApp", icon: MessageSquare, desc: "Triagem por WhatsApp Business" },
@@ -109,7 +115,7 @@ async function saveDefaults(companyId: string, updates: Partial<ScreeningDefault
   if (!res.ok) throw new Error("Erro ao salvar configurações de triagem")
 }
 
-export function CompanyScreeningConfigHub() {
+export function CompanyScreeningConfigHub({ showHeader = true }: { showHeader?: boolean } = {}) {
   const { companyId } = useCompanyId()
   const queryClient = useQueryClient()
 
@@ -158,6 +164,22 @@ export function CompanyScreeningConfigHub() {
     }))
   }
 
+  const updateScheduling = (key: keyof ScreeningDefaults["scheduling"], val: unknown) => {
+    setDraft((prev) => ({
+      ...effective,
+      ...prev,
+      scheduling: { ...effective.scheduling, ...prev?.scheduling, [key]: val },
+    }))
+  }
+
+  const setSchedulingScorePreset = (preset: typeof SCORE_PRESETS[0]) => {
+    setDraft((prev) => ({
+      ...effective,
+      ...prev,
+      scheduling: { ...effective.scheduling, ...prev?.scheduling, min_score_for_auto: preset.score, min_score_for_auto_preset: preset.key },
+    }))
+  }
+
   const setScorePreset = (preset: typeof SCORE_PRESETS[0]) => {
     setDraft((prev) => ({
       ...effective,
@@ -168,11 +190,13 @@ export function CompanyScreeningConfigHub() {
 
   return (
     <div className="space-y-6" data-testid="company-screening-config-hub">
-      <HubHeader
-        title="Configurações de Triagem"
-        description="Defaults empresa: usados ao criar vagas novas. Pode ser sobrescrito por vaga individualmente."
-        icon={<Settings2 className="w-5 h-5" />}
-      />
+      {showHeader && (
+        <HubHeader
+          title="Configurações de Triagem"
+          description="Defaults empresa: usados ao criar vagas novas. Pode ser sobrescrito por vaga individualmente."
+          icon={<Settings2 className="w-5 h-5" />}
+        />
+      )}
 
       {/* Score WSI */}
       <section className="rounded-xl border border-lia-border-subtle p-4 space-y-3">
@@ -289,6 +313,123 @@ export function CompanyScreeningConfigHub() {
             <p className="text-[10px] text-lia-text-tertiary">Número de reenvios antes de desistir.</p>
           </div>
         </div>
+      </section>
+
+      {/* Controle de Paralização */}
+      <section className="rounded-xl border border-lia-border-subtle p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <PauseCircle className="w-4 h-4 text-wedo-cyan-text" />
+          <span className="text-sm font-semibold text-lia-text-primary">Controle de Paralização</span>
+        </div>
+        <p className="text-xs text-lia-text-secondary">
+          Pausa a triagem após atingir o limite de aprovações automáticas. Exige revisão humana antes de continuar.
+        </p>
+        <div className="flex gap-2 flex-wrap">
+          {AUTO_APPROVAL_PRESETS.map((preset) => {
+            const isSelected = effective.settings.auto_approval_preset === preset.key
+            return (
+              <button
+                key={preset.key}
+                onClick={() => {
+                  updateSettings("auto_approval_limit", preset.limit)
+                  updateSettings("auto_approval_preset", preset.key)
+                }}
+                className={cn(
+                  "flex-1 min-w-[100px] p-3 rounded-lg border text-left transition-colors",
+                  isSelected
+                    ? "border-wedo-cyan bg-wedo-cyan/10 text-wedo-cyan-text"
+                    : "border-lia-border-subtle bg-lia-bg-secondary/50 text-lia-text-secondary hover:bg-lia-interactive-hover"
+                )}
+              >
+                <div className="text-xs font-semibold">{preset.label}</div>
+                <div className="text-lg font-bold">{preset.limit} <span className="text-xs font-normal">aprovações</span></div>
+                <div className="text-[10px] mt-0.5 opacity-70">{preset.desc}</div>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* Agendamento Automático */}
+      <section className="rounded-xl border border-lia-border-subtle p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CalendarCheck className="w-4 h-4 text-wedo-cyan-text" />
+            <span className="text-sm font-semibold text-lia-text-primary">Agendamento Automático</span>
+          </div>
+          <Switch
+            checked={effective.scheduling.auto_enabled}
+            onCheckedChange={(v) => updateScheduling("auto_enabled", v)}
+            aria-label="Habilitar agendamento automático"
+          />
+        </div>
+        <p className="text-xs text-lia-text-secondary">
+          Quando ativado, candidatos aprovados acima do score mínimo recebem link de agendamento automaticamente.
+        </p>
+        {effective.scheduling.auto_enabled && (
+          <div className="pt-2 space-y-4 border-t border-lia-border-subtle">
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">Score Mínimo para Agendamento (WSI)</Label>
+              <div className="flex gap-2 flex-wrap">
+                {SCORE_PRESETS.map((preset) => {
+                  const isSelected = effective.scheduling.min_score_for_auto_preset === preset.key
+                  return (
+                    <button
+                      key={preset.key}
+                      onClick={() => setSchedulingScorePreset(preset)}
+                      className={cn(
+                        "flex-1 min-w-[80px] p-2.5 rounded-lg border text-left transition-colors",
+                        isSelected
+                          ? "border-wedo-cyan bg-wedo-cyan/10 text-wedo-cyan-text"
+                          : "border-lia-border-subtle bg-lia-bg-secondary/50 text-lia-text-secondary hover:bg-lia-interactive-hover"
+                      )}
+                    >
+                      <div className="text-[10px] font-semibold">{preset.label}</div>
+                      <div className="text-base font-bold">{preset.score}<span className="text-[10px] font-normal">/100</span></div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Calendário</Label>
+                <select
+                  value={effective.scheduling.calendar_provider}
+                  onChange={(e) => updateScheduling("calendar_provider", e.target.value)}
+                  className="w-full h-8 text-sm rounded-md border border-lia-border px-2 bg-lia-bg-primary text-lia-text-primary"
+                >
+                  <option value="Microsoft">Microsoft</option>
+                  <option value="Google">Google</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Horários</Label>
+                <Input
+                  type="text"
+                  value={effective.scheduling.available_hours}
+                  onChange={(e) => updateScheduling("available_hours", e.target.value)}
+                  placeholder="9h-18h"
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Duração (min)</Label>
+                <Input
+                  type="number"
+                  min={15}
+                  max={120}
+                  value={effective.scheduling.interview_duration_min}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10)
+                    if (!isNaN(v)) updateScheduling("interview_duration_min", Math.max(15, Math.min(120, v)))
+                  }}
+                  className="h-8 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Save */}
