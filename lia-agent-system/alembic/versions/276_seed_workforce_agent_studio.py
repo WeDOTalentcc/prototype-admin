@@ -15,7 +15,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "276_seed_wf_agent_studio"
-down_revision = "275_seed_ti_agent_studio"
+down_revision = "275_add_tier_policies"
 branch_labels = None
 depends_on = None
 
