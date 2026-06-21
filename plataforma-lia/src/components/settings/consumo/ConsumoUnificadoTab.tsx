@@ -27,7 +27,7 @@ function UsageBar({
   cap,
   unit,
   capReachedText,
-  capWarningTemplate,
+  capWarningFn,
 }: {
   label: string
   icon: React.ElementType
@@ -35,7 +35,7 @@ function UsageBar({
   cap: number
   unit: string
   capReachedText: string
-  capWarningTemplate: string
+  capWarningFn: (pct: number) => string
 }) {
   const isUnlimited = cap === -1
   const pct = isUnlimited ? 0 : cap > 0 ? Math.min((used / cap) * 100, 100) : 0
@@ -62,7 +62,7 @@ function UsageBar({
         <p className="text-xs text-amber-600">
           {pct >= 100
             ? capReachedText
-            : capWarningTemplate.replace("{pct}", pct.toFixed(0))}
+            : capWarningFn(pct)}
         </p>
       )}
     </div>
@@ -104,7 +104,7 @@ function QuotaSummary() {
   const apify = sub.apify || {}
   const quotas = sub.agent_quotas || {}
   const capReached = t("capReached")
-  const capWarning = t("capWarning")
+  const capWarningFn = (pct: number) => t("capWarning", { pct: pct.toFixed(0) })
 
   return (
     <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-primary p-5 space-y-4">
@@ -121,7 +121,7 @@ function QuotaSummary() {
           cap={llm.embedding_monthly_cap || 0}
           unit={t("tokens")}
           capReachedText={capReached}
-          capWarningTemplate={capWarning}
+          capWarningFn={capWarningFn}
         />
 
         {llm.byok_active ? (
@@ -140,28 +140,18 @@ function QuotaSummary() {
             cap={llm.general_monthly_cap || 0}
             unit={t("tokens")}
             capReachedText={capReached}
-            capWarningTemplate={capWarning}
+            capWarningFn={capWarningFn}
           />
         )}
 
         <UsageBar
-          label={t("pearchCredits")}
+          label={t("searchCredits")}
           icon={Search}
-          used={u.pearch_credits_used || 0}
-          cap={pearch.monthly_included_credits || 0}
+          used={(u.pearch_credits_used || 0) + (u.apify_credits_used || 0)}
+          cap={(pearch.monthly_included_credits || 0) + (apify.monthly_included_credits || 0)}
           unit={t("credits")}
           capReachedText={capReached}
-          capWarningTemplate={capWarning}
-        />
-
-        <UsageBar
-          label={t("apifyCredits")}
-          icon={Database}
-          used={u.apify_credits_used || 0}
-          cap={apify.monthly_included_credits || 0}
-          unit={t("credits")}
-          capReachedText={capReached}
-          capWarningTemplate={capWarning}
+          capWarningFn={capWarningFn}
         />
 
         <UsageBar
@@ -171,18 +161,19 @@ function QuotaSummary() {
           cap={0}
           unit={t("executions")}
           capReachedText={capReached}
-          capWarningTemplate={capWarning}
+          capWarningFn={capWarningFn}
         />
       </div>
 
       {quotas && (
         <div className="pt-2 border-t border-lia-border-subtle">
           <p className="text-xs text-lia-text-tertiary">
-            {t("agentsSummary")
-              .replace("{custom}", String(quotas.custom_agents ?? 0))
-              .replace("{sourcing}", String(quotas.sourcing_agents ?? 0))
-              .replace("{twins}", String(quotas.digital_twins ?? 0))
-              .replace("{campaigns}", String(quotas.campaigns ?? 0))}
+            {t("agentsSummary", {
+              custom: quotas.custom_agents ?? 0,
+              sourcing: quotas.sourcing_agents ?? 0,
+              twins: quotas.digital_twins ?? 0,
+              campaigns: quotas.campaigns ?? 0,
+            })}
           </p>
         </div>
       )}

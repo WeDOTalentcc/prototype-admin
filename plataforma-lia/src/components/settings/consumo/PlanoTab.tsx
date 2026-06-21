@@ -7,7 +7,7 @@ import { HubLoadingState, HubErrorState } from "@/components/settings/_shared"
 import { Chip } from "@/components/ui/chip"
 import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
 
-function PlanStatusChip({ status }: { status: string }) {
+function PlanStatusChip({ status }: { status: string | undefined }) {
   const t = useTranslations("settings.billing")
   const variants: Record<string, "success" | "warning" | "error" | "neutral"> = {
     active: "success",
@@ -16,9 +16,11 @@ function PlanStatusChip({ status }: { status: string }) {
     canceled: "error",
     past_due: "error",
   }
+  const safeStatus = status && Object.keys(variants).includes(status) ? status : null
+  const label = safeStatus ? t(`status.${safeStatus}` as any) : status || "—"
   return (
-    <Chip variant={variants[status] || "neutral"}>
-      {t(`status.${status}` as any) || status}
+    <Chip variant={safeStatus ? variants[safeStatus] : "neutral"}>
+      {label}
     </Chip>
   )
 }
@@ -82,7 +84,7 @@ export function PlanoTab() {
             <Tag className="h-3.5 w-3.5 text-teal-700 flex-shrink-0" aria-hidden="true" />
             <div>
               <p className="text-xs font-medium text-teal-800">
-                {t("descontoLabel").replace("{pct}", String(desconto.pct))}
+                {t("descontoLabel", { pct: desconto.pct })}
               </p>
               {desconto.validade && (
                 <p className="text-[10px] text-teal-600 mt-0.5">

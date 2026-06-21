@@ -7594,6 +7594,7 @@
       "agentExecutions": "Execuções de Agentes",
       "executions": "exec.",
       "credits": "créditos",
+      "searchCredits": "Créditos de busca",
       "capReached": "Limite atingido — excedente será cobrado no próximo ciclo.",
       "capWarning": "Atenção: {pct}% do limite utilizado.",
       "agentsSummary": "{custom} custom · {sourcing} sourcing · {twins} digital twins · {campaigns} campanhas",

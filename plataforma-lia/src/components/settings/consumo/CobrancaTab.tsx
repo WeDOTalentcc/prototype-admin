@@ -13,6 +13,7 @@ export function CobrancaTab() {
     queryKey: SETTINGS_QUERY_KEYS.billingPaymentMethods(),
     queryFn: async () => {
       const res = await fetch("/api/backend-proxy/billing/payment-methods")
+      if (res.status === 404) return { payment_methods: [] }
       if (!res.ok) throw new Error(t("errors.loadPaymentMethods"))
       return res.json()
     },

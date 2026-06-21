@@ -7594,6 +7594,7 @@
       "agentExecutions": "Agent Executions",
       "executions": "exec.",
       "credits": "credits",
+      "searchCredits": "Search credits",
       "capReached": "Limit reached — overage will be charged in the next cycle.",
       "capWarning": "Warning: {pct}% of limit used.",
       "agentsSummary": "{custom} custom · {sourcing} sourcing · {twins} digital twins · {campaigns} campaigns",
