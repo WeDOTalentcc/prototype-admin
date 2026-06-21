@@ -199,7 +199,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
+    <div className="h-full overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="p-2.5 max-w-full">
 
         {/* WT-2022 P1.LIB: banner warning - feature parcialmente implementada */}

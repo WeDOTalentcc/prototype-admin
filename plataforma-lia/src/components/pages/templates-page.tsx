@@ -162,7 +162,7 @@ export function TemplatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary p-6">
+    <div className="h-full overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
