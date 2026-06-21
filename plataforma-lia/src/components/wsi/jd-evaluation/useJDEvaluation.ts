@@ -193,7 +193,7 @@ export function useJDEvaluation(props: {
       } else {
         setAiTechSuggestions(FALLBACK_TECH_SKILLS.filter(s => !editTechSkills.includes(s)).map(s => ({ skill: s, confidence: 0.7 })))
       }
-    } catch { setAiTechSuggestions(FALLBACK_TECH_SKILLS.filter(s => !editTechSkills.includes(s)).map(s => ({ skill: s, confidence: 0.7 }))) }
+    } catch (err) { console.error('[useJDEvaluation] fetchTechSuggestions failed:', err); setAiTechSuggestions(FALLBACK_TECH_SKILLS.filter(s => !editTechSkills.includes(s)).map(s => ({ skill: s, confidence: 0.7 }))) }
     finally { setIsLoadingTechSuggestions(false) }
   }
 
@@ -210,7 +210,7 @@ export function useJDEvaluation(props: {
       } else {
         setAiBehavSuggestions(FALLBACK_BEHAV_COMPETENCIES.filter(c => !editBehavCompetencies.includes(c.name)))
       }
-    } catch { setAiBehavSuggestions(FALLBACK_BEHAV_COMPETENCIES.filter(c => !editBehavCompetencies.includes(c.name))) }
+    } catch (err) { console.error('[useJDEvaluation] fetchBehavSuggestions failed:', err); setAiBehavSuggestions(FALLBACK_BEHAV_COMPETENCIES.filter(c => !editBehavCompetencies.includes(c.name))) }
     finally { setIsLoadingBehavSuggestions(false) }
   }
 
@@ -228,6 +228,11 @@ export function useJDEvaluation(props: {
           existing_responsibilities: editResponsibilities,
         })
       })
+      if (!response.ok) {
+        console.error('[useJDEvaluation] fetchResponsibilitiesSuggestions error:', response.status)
+        setAiRespSuggestions([])
+        return
+      }
       const data = await response.json() as { success?: boolean; responsibilities?: string[] }
       if (data.responsibilities && data.responsibilities.length > 0) {
         const existing = new Set(editResponsibilities.map(r => r.toLowerCase().trim()))
@@ -235,7 +240,7 @@ export function useJDEvaluation(props: {
       } else {
         setAiRespSuggestions([])
       }
-    } catch { setAiRespSuggestions([]) }
+    } catch (err) { console.error('[useJDEvaluation] fetchResponsibilitiesSuggestions failed:', err); setAiRespSuggestions([]) }
     finally { setIsLoadingRespSuggestions(false) }
   }
 
@@ -424,7 +429,7 @@ export function useJDEvaluation(props: {
     if (!generatedJD?.full_description) return
     setIsSavingWithJD(true); setSaveError(false)
     try {
-      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD.full_description, updated_at: new Date().toISOString() }
+      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD.full_description ?? enrichedJd?.generated_jd_text, updated_at: new Date().toISOString() }
       if (onSaveEnrichedJD) { await onSaveEnrichedJD(enrichedData) }
       if (onUpdateOfficialJD) { await onUpdateOfficialJD({ description: editDescription, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }) }
       if (onUpdateJobDescription) { await onUpdateJobDescription(generatedJD.full_description) }
