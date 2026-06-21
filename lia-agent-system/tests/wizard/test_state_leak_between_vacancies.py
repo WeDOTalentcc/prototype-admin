@@ -37,22 +37,44 @@ def _make_terminal_state():
 # ---------------------------------------------------------------------------
 
 def test_wizard_fresh_fields_constant_exists():
-    """_WIZARD_FRESH_FIELDS must exist with the critical per-vacancy keys."""
+    """_WIZARD_FRESH_FIELDS must contain all critical per-vacancy keys.
+
+    V1 audit 2026-06-21 expanded the set from 15 to 19 fields by detecting
+    4 critical orphans: wsi_questions, questions_approved, eligibility_questions,
+    stage_history. Also corrected parsed_work_model -> parsed_model.
+    """
     from app.domains.job_creation.services.wizard_session_service import _WIZARD_FRESH_FIELDS
 
     required_keys = {
+        # original 15 (minus parsed_work_model which was wrong name)
         "job_id",
         "parsed_title",
+        "parsed_seniority",
+        "parsed_department",
+        "parsed_location",
+        "parsed_model",            # corrected: was parsed_work_model
         "jd_enriched",
         "jd_enriched_present",
+        "intake_approved",
+        "intake_salary_suggested",
+        "gate_resume_message",
         "calibration_candidates",
         "calibration_complete",
-        "intake_approved",
         "conversation_messages",
         "current_stage",
+        # V1 audit additions (4 critical orphans)
+        "wsi_questions",
+        "questions_approved",
+        "eligibility_questions",
+        "stage_history",
     }
     missing = required_keys - set(_WIZARD_FRESH_FIELDS.keys())
     assert not missing, f"_WIZARD_FRESH_FIELDS missing keys: {missing}"
+
+    # parsed_work_model must NOT be in the constant (wrong field name)
+    assert "parsed_work_model" not in _WIZARD_FRESH_FIELDS, (
+        "parsed_work_model is not a field in JobCreationState — use parsed_model"
+    )
 
     # Values must be falsy/empty — no stale data in the constant itself
     assert _WIZARD_FRESH_FIELDS["job_id"] is None
@@ -60,6 +82,10 @@ def test_wizard_fresh_fields_constant_exists():
     assert _WIZARD_FRESH_FIELDS["jd_enriched"] is None
     assert _WIZARD_FRESH_FIELDS["calibration_candidates"] == []
     assert _WIZARD_FRESH_FIELDS["conversation_messages"] == []
+    assert _WIZARD_FRESH_FIELDS["wsi_questions"] == []
+    assert _WIZARD_FRESH_FIELDS["eligibility_questions"] == []
+    assert _WIZARD_FRESH_FIELDS["questions_approved"] is None
+    assert _WIZARD_FRESH_FIELDS["stage_history"] == []
 
 
 # ---------------------------------------------------------------------------
@@ -151,4 +177,91 @@ def test_intake_shortcircuit_broken_after_fresh_fields():
         f"intake_node STILL short-circuits after wipe! "
         f"parsed_title={parsed_title!r}, jd_enriched={bool(jd_enriched)}, "
         f"intake_approved={intake_approved!r}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Test 6: A3 REGRESSION — full A3 scenario: B is clean after A terminal
+# ---------------------------------------------------------------------------
+
+def test_a3_regression_b_is_clean_after_a_terminal():
+    """V5 gap: actual A3 scenario regression test.
+
+    Simulates vacancy A completing (current_stage='completed') with ALL
+    per-vacancy fields populated across all stages. Then applies
+    _WIZARD_FRESH_FIELDS (simulating update_state). Asserts that Vacancy B
+    inherits NONE of the 19 critical fields from A.
+    """
+    from app.domains.job_creation.services.wizard_session_service import _WIZARD_FRESH_FIELDS
+
+    # Full vacancy A final state — all stages populated
+    vacancy_a = {
+        "job_id": 42,
+        "parsed_title": "Engenheiro de Software Backend Senior",
+        "parsed_seniority": "senior",
+        "parsed_department": "Engenharia de Produto",
+        "parsed_location": {"city": "Sao Paulo"},
+        "parsed_model": "hibrido",
+        "jd_enriched": {"titulo_padronizado": "Engenheiro Backend Senior"},
+        "jd_enriched_present": True,
+        "intake_approved": True,
+        "intake_salary_suggested": True,
+        "gate_resume_message": "Retomando criacao da vaga.",
+        "wsi_questions": [
+            {"id": "q1", "question": "Descreva experiencia com Python.", "block": "technical"},
+        ],
+        "questions_approved": True,
+        "eligibility_questions": [{"id": "e1", "question": "Possui CNH?"}],
+        "stage_history": ["intake", "jd_enrichment", "wsi_questions", "calibration"],
+        "calibration_candidates": [
+            {"id": "c1", "name": "Joao", "decision": "approved"},
+            {"id": "c2", "name": "Maria", "decision": "rejected"},
+        ],
+        "calibration_complete": True,
+        "conversation_messages": [
+            {"role": "user", "content": "cria vaga de engenheiro senior"},
+        ],
+        "current_stage": "completed",
+        # Additional fields not in wipe (LOW/MEDIUM severity)
+        "salary_min": 12000,
+        "salary_max": 18000,
+        "screening_mode": "standard",
+    }
+
+    # Apply wipe: simulate update_state(config, _WIZARD_FRESH_FIELDS)
+    # LangGraph last-value reducer: FRESH_FIELDS keys REPLACE A's values
+    state_b = {**vacancy_a, **_WIZARD_FRESH_FIELDS}
+
+    # Assert ALL 19 fields are clean in B
+    assert state_b["job_id"] is None, "LEAK: job_id from A survived → B would overwrite A's vacancy"
+    assert state_b["parsed_title"] == "", "LEAK: parsed_title → intake_node would short-circuit"
+    assert state_b["parsed_seniority"] == ""
+    assert state_b["parsed_department"] == ""
+    assert state_b["parsed_location"] is None
+    assert state_b["parsed_model"] == ""
+    assert state_b["jd_enriched"] is None, "LEAK: jd_enriched → intake_node would short-circuit"
+    assert state_b["jd_enriched_present"] is False
+    assert state_b["intake_approved"] is None, "LEAK: intake_approved → intake stage skipped"
+    assert state_b["intake_salary_suggested"] is False
+    assert state_b["gate_resume_message"] == ""
+    assert state_b["wsi_questions"] == [], "LEAK: wsi_questions from A → B shows wrong questions"
+    assert state_b["questions_approved"] is None, "LEAK: questions_approved=True → question gen skipped"
+    assert state_b["eligibility_questions"] == [], "LEAK: eligibility_questions from A → B shows wrong questions"
+    assert state_b["stage_history"] == [], "LEAK: stage_history from A → supervisor routing confused"
+    assert state_b["calibration_candidates"] == [], "LEAK: calibration_candidates from A → B shows old candidates"
+    assert state_b["calibration_complete"] is False, "LEAK: calibration_complete=True → calibration skipped"
+    assert state_b["conversation_messages"] == [], "LEAK: conversation_messages → B sees A's chat history"
+    assert state_b["current_stage"] is None, "LEAK: current_stage from A → routing starts at wrong stage"
+
+    # Also verify intake short-circuit is broken (the original Fase 3 bug)
+    would_shortcircuit = bool(
+        state_b.get("parsed_title") and (
+            state_b.get("jd_enriched")
+            or state_b.get("gate_resume_message")
+            or state_b.get("intake_salary_suggested")
+            or state_b.get("intake_approved") is True
+        )
+    )
+    assert not would_shortcircuit, (
+        "intake_node STILL short-circuits after wipe — Fase 3 fix is broken"
     )

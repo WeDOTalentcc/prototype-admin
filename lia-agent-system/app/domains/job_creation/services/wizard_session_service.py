@@ -132,19 +132,28 @@ _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context
 # (last-value reducer semantics — TypedDict without Annotated) before invoking
 # the graph, preventing intake_node from short-circuiting with the old vacancy.
 _WIZARD_FRESH_FIELDS: dict = {
+    # Identity / routing — prevent intake_node from short-circuiting
     "job_id": None,
     "parsed_title": "",
     "parsed_seniority": "",
     "parsed_department": "",
     "parsed_location": None,
-    "parsed_work_model": "",
+    "parsed_model": "",            # correct field name (state.py); was parsed_work_model
     "jd_enriched": None,
     "jd_enriched_present": False,
-    "calibration_candidates": [],
-    "calibration_complete": False,
+    # Gate flags — prevent skipping stages that already completed for vacancy A
     "intake_approved": None,
     "intake_salary_suggested": False,
     "gate_resume_message": "",
+    # V1 audit 2026-06-21: 4 additional critical orphans detected
+    "wsi_questions": [],           # vacancy B must regenerate questions for its own JD
+    "questions_approved": None,    # False/None forces question approval step to re-run
+    "eligibility_questions": [],   # vacancy B must regenerate eligibility for its own role
+    "stage_history": [],           # stale history confuses supervisor routing
+    # Calibration — candidates and completion are per-vacancy
+    "calibration_candidates": [],
+    "calibration_complete": False,
+    # Conversation history — must start fresh so B doesn't see A's chat
     "conversation_messages": [],
     "current_stage": None,
 }
