@@ -25,6 +25,7 @@
  * - Secondary: gray-600 (light) / gray-400 (dark) - Descrições, captions
  * - Muted: gray-500 (light) / gray-500 (dark) - Placeholders, disabled
  */
+import { WSI_VISUAL_3TIER } from '@/lib/wsi/visual'
 
 export const colors = {
   primary: {
@@ -794,8 +795,8 @@ export function getScoreColor(score: number, type: 'lia' | 'wsi' = 'lia'): {
     // `lib/wsi/visual.ts` — aqui mantemos a versão simplificada de 3 níveis
     // só para compat com call-sites legados que usam `getScoreColor(_, 'wsi')`.
     // 3-tier WSI 0-10: ver `lib/wsi/visual.ts` (WSI_VISUAL_3TIER).
-    if (score >= 7.5) return { text: 'text-status-success', bg: 'bg-status-success/10', border: 'border-status-success/30' }
-    if (score >= 6.0) return { text: 'text-status-warning', bg: 'bg-status-warning/10', border: 'border-status-warning/30' }
+    if (score >= WSI_VISUAL_3TIER.green) return { text: 'text-status-success', bg: 'bg-status-success/10', border: 'border-status-success/30' }
+    if (score >= WSI_VISUAL_3TIER.yellow) return { text: 'text-status-warning', bg: 'bg-status-warning/10', border: 'border-status-warning/30' }
     return { text: 'text-status-error', bg: 'bg-status-error/10', border: 'border-status-error/30' }
   }
   

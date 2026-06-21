@@ -19,6 +19,7 @@ import {
 } from"lucide-react"
 import { liaApi, VoiceScreeningStatusResponse, WSICompetency, StartVoiceScreeningRequest } from"@/services/lia-api"
 import { useTranslations } from "next-intl"
+import { WSI_VISUAL_3TIER } from '@/lib/wsi/visual'
 
 interface WSIVoiceScreeningStatusProps {
   isOpen: boolean
@@ -354,8 +355,8 @@ export function WSIVoiceScreeningStatus({
                     <div className="text-center">
                       <div className={`text-3xl font-semibold ${
  // Escala WSI 0-10 (Task #512). Cutoffs canônicos em `lib/wsi/visual.ts`.
-                        result.overall_wsi >= 7.5 ? 'text-status-success' :
-                        result.overall_wsi >= 6.0 ? 'text-status-warning' :
+                        result.overall_wsi >= WSI_VISUAL_3TIER.green ? 'text-status-success' :
+                        result.overall_wsi >= WSI_VISUAL_3TIER.yellow ? 'text-status-warning' :
                         'text-status-error'
                       }`}>
                         {result.overall_wsi.toFixed(1)}

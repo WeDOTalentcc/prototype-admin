@@ -4,6 +4,7 @@ import { Brain, Download, X } from "lucide-react"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { WSIResultDetails, WSICandidateRanking } from "@/services/lia-api"
 import { getClassificationLabel } from "./useTriagemDetailsState"
+import { WSI_VISUAL_3TIER } from '@/lib/wsi/visual'
 
 interface TriagemDetailsHeaderProps {
   candidate: Candidate
@@ -38,7 +39,7 @@ export function TriagemDetailsHeader({ candidate, details, ranking, onClose }: T
               <div style="margin-bottom:16px;padding:12px;border:1px solid #D4D4D4;border-radius:8px;">
                 <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
                   <strong>${resp.competency}</strong>
-                  <span style="font-weight:bold;color:${resp.scores.final_score >= 8.0 ? 'var(--status-success)' : resp.scores.final_score >= 6.0 ? 'var(--status-warning)' : 'var(--status-error)'}">${resp.scores.final_score.toFixed(1)}/10.0</span>
+                  <span style="font-weight:bold;color:${resp.scores.final_score >= WSI_VISUAL_3TIER.green ? 'var(--status-success)' : resp.scores.final_score >= WSI_VISUAL_3TIER.yellow ? 'var(--status-warning)' : 'var(--status-error)'}">${resp.scores.final_score.toFixed(1)}/10.0</span>
                 </div>
                 <p style="color:var(--lia-text-secondary);font-size:12px;margin-bottom:4px;"><strong>Pergunta:</strong> ${resp.question.text}</p>
                 <p style="font-size:12px;margin-bottom:4px;"><strong>Resposta:</strong> ${resp.response_text}</p>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useLoadingWatchdog } from '@/hooks/shared/use-loading-watchdog'
+import { WSI_DECISION_CUTOFFS, wsiPresetToScore } from '@/lib/wsi/visual'
 
 /**
  * Canonical screening channel keys — Task #425 (4 Canais MVP).
@@ -128,7 +129,7 @@ const DEFAULT_CONFIG: ScreeningConfig = {
   },
   scheduling: {
     auto_enabled: true,
-    min_score_for_auto: 7.6,
+    min_score_for_auto: WSI_DECISION_CUTOFFS.humanReview,
     min_score_for_auto_preset: 'recommended',
     calendar_provider: 'Microsoft',
     available_hours: '9h-18h',
@@ -141,8 +142,8 @@ const DEFAULT_CONFIG: ScreeningConfig = {
 export function scoreToPreset(score: number | undefined): 'rigorous' | 'recommended' | 'flexible' {
   // Escala WSI 0-10 (Task #512). Cutoffs canônicos em `lib/wsi/visual.ts`.
   if (score === undefined) return 'recommended'
-  if (score >= 8.4) return 'rigorous'
-  if (score >= 7.6) return 'recommended'
+  if (score >= WSI_DECISION_CUTOFFS.approved) return 'rigorous'
+  if (score >= WSI_DECISION_CUTOFFS.humanReview) return 'recommended'
   return 'flexible'
 }
 

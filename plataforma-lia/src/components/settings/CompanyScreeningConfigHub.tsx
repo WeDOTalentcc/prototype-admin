@@ -70,7 +70,7 @@ interface ScreeningDefaults {
 const DEFAULTS: ScreeningDefaults = {
   channels_master_enabled: true,
   settings: {
-    min_score: 7.6, min_score_preset: "recommended",
+    min_score: wsiPresetToScore("recommended"), min_score_preset: "recommended",
     response_timeout_hours: 48, max_retries: 2,
     auto_approval_limit: 10, auto_approval_preset: "recommended",
     auto_approvals_count: 0, auto_approval_paused: false,
@@ -86,7 +86,7 @@ const DEFAULTS: ScreeningDefaults = {
     fallback_order: ["whatsapp"],
   },
   scheduling: {
-    auto_enabled: false, min_score_for_auto: 7.6,
+    auto_enabled: false, min_score_for_auto: wsiPresetToScore('recommended'), // WSI_SCORE_PRESETS canonical
     min_score_for_auto_preset: "recommended",
     calendar_provider: "Microsoft", available_hours: "9h-18h",
     interview_duration_min: 45,

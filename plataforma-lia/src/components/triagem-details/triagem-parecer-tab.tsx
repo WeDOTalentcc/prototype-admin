@@ -7,6 +7,7 @@ import type { WSIResultDetails } from "@/services/lia-api"
 import type { F11ReportData } from "./useTriagemDetailsState"
 import { dreyfusLabel, sevConfig } from "./useTriagemDetailsState"
 import { DreyfusRow } from "./dreyfus-row"
+import { WSI_VISUAL_3TIER } from '@/lib/wsi/visual'
 
 interface TechnicalAnalysis {
   pontos_fortes?: string[]
@@ -66,7 +67,7 @@ export function TriagemParecerTab({
   return (
     <div className="space-y-3">
       {/* Faixa "média baixa" (revisão humana recomendada) — escala WSI 0-10. */}
-      {(scores.overall_wsi >= 6.0 && scores.overall_wsi < 7.5) && (
+      {(scores.overall_wsi >= WSI_VISUAL_3TIER.yellow && scores.overall_wsi < WSI_VISUAL_3TIER.green) && (
         <div className="rounded-xl border border-status-warning/30 bg-status-warning/10 p-4">
           <div className="flex items-center gap-2 mb-3">
             <AlertCircle className="w-4 h-4 text-status-warning" />
