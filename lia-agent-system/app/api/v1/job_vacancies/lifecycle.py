@@ -117,6 +117,60 @@ class SourcingStatusResponseV2(BaseModel):
     error: str | None = None
 
 
+
+# ─── Request Approval ─────────────────────────────────────────────────────────
+
+class RequestApprovalResponse(BaseModel):
+    success: bool
+    approvals_created: int
+    message: str
+
+
+@router.post("/job-vacancies/{job_id}/request-approval", response_model=RequestApprovalResponse)
+async def request_job_approval(
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
+    current_user: User = Depends(get_current_active_user),
+    company_id: str = Depends(require_company_id),
+) -> RequestApprovalResponse:
+    """
+    Trigger approval flow for a vacancy.
+    Called by wizard (chat LIA) and by the manual vacancy form.
+    Single canonical trigger — delegates to approval_trigger_service.
+    """
+    from app.domains.job_creation.services.approval_trigger_service import (
+        trigger_approval_if_required,
+    )
+
+    company_id = get_user_company_id(current_user)
+    job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Vaga não encontrada")
+
+    requested_by_name = getattr(current_user, "name", None) or str(getattr(current_user, "email", "Recrutador"))
+    requested_by_email = str(getattr(current_user, "email", ""))
+
+    approvals = await trigger_approval_if_required(
+        job,
+        requested_by_name=requested_by_name,
+        requested_by_email=requested_by_email,
+        db=repo.db,
+    )
+
+    if not approvals:
+        return RequestApprovalResponse(
+            success=True,
+            approvals_created=0,
+            message="Nenhum aprovador configurado para esta empresa. Vaga pode ser publicada diretamente.",
+        )
+
+    return RequestApprovalResponse(
+        success=True,
+        approvals_created=len(approvals),
+        message=f"Aprovação solicitada para {len(approvals)} aprovador(es). Aguardando aprovação antes de publicar.",
+    )
+
+
 # ─── Publish (job-vacancies prefix) ──────────────────────────────────────────
 
 @router.post("/job-vacancies/{job_id}/publish", response_model=JobPublishResponse)
@@ -143,6 +197,24 @@ company_id: str = Depends(require_company_id)):
                 "missing_fields": missing_fields,
                 "target_stage": "publicada",
                 "message": "Campos obrigatórios faltando para publicação: " + ", ".join(missing_fields),
+            },
+        )
+
+    # Sprint 1 gate (2026-06-21): block publish if vacancy awaiting business approval
+    from app.domains.job_creation.services.approval_trigger_service import (
+        ApprovalPendingError,
+        assert_can_publish,
+    )
+    try:
+        await assert_can_publish(job, db=repo.db)
+    except ApprovalPendingError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "approval_pending",
+                "approver_name": exc.approver_name,
+                "approver_email": exc.approver_email,
+                "message": str(exc),
             },
         )
 
@@ -410,6 +482,24 @@ company_id: str = Depends(require_company_id)):
                     "missing_fields": missing_fields,
                     "target_stage": "publicada",
                     "message": "Campos obrigatórios faltando para publicação: " + ", ".join(missing_fields),
+                },
+            )
+
+        # Sprint 1 gate (2026-06-21): block publish if vacancy awaiting business approval
+        from app.domains.job_creation.services.approval_trigger_service import (
+            ApprovalPendingError,
+            assert_can_publish,
+        )
+        try:
+            await assert_can_publish(job_vacancy, db=repo.db)
+        except ApprovalPendingError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "approval_pending",
+                    "approver_name": exc.approver_name,
+                    "approver_email": exc.approver_email,
+                    "message": str(exc),
                 },
             )
 

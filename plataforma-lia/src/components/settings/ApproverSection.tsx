@@ -93,7 +93,6 @@ export const ApproverSection = React.memo(function ApproverSection({
                   role: "",
                   level: approvers.length + 1,
                   departmentId: null,
-                  canApproveAboveAmount: null,
                 });
                 setShowApproverForm(true);
               }}
@@ -235,35 +234,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                       />
                     )}
                   </div>
-                  {/* P0.D2: amount-threshold routing */}
-                  <div>
-                    <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                      Limite de aprovacao (R$, opcional)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      data-field="approver-can-approve-above-amount"
-                      data-testid="approver-field-can-approve-above-amount"
-                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
-                      placeholder="Qualquer valor"
-                      value={
-                        (editingApprover
-                          ? editingApprover.canApproveAboveAmount
-                          : newApprover.canApproveAboveAmount) ?? ""
-                      }
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        const val = raw === "" ? null : parseFloat(raw);
-                        if (editingApprover) {
-                          setEditingApprover({ ...editingApprover, canApproveAboveAmount: val })
-                        } else {
-                          setNewApprover((prev) => ({ ...prev, canApproveAboveAmount: val }))
-                        }
-                      }}
-                    />
-                  </div>
+
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button

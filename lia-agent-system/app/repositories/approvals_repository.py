@@ -114,3 +114,27 @@ class ApprovalsRepository:
         default = result.scalar_one_or_none()
         return default.id if default else None
 
+
+    async def get_pending_by_target(
+        self,
+        target_id: UUID,
+        request_type: str,
+    ) -> list[ApprovalRequest]:
+        """Return pending ApprovalRequests for a specific target (job, candidate).
+
+        Used by approval_trigger_service for idempotency check and by
+        assert_can_publish gate. Ordered by approval_level asc (level 1 first).
+
+        Multi-tenancy: caller must ensure target_id belongs to the correct
+        company (verified upstream via job/company_id JWT-derived load).
+        """
+        result = await self.db.execute(
+            select(ApprovalRequest).where(
+                and_(
+                    ApprovalRequest.target_id == target_id,
+                    ApprovalRequest.request_type == request_type,
+                    ApprovalRequest.status == ApprovalStatus.PENDING.value,
+                )
+            ).order_by(ApprovalRequest.approval_level)
+        )
+        return list(result.scalars().all())
