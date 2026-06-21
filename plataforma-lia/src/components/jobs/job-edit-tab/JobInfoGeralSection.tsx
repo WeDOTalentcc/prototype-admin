@@ -76,6 +76,8 @@ export function JobInfoGeralSection({
     setScreeningStatusLocal((job?.screeningStatus as string) || "not_configured")
   }, [job?.screeningStatus])
 
+  const [approvalPending, setApprovalPending] = React.useState(false)
+
   const { options: statusOptions, isLoading: statusLoading } = useJobStatuses()
   const { options: priorityOptions, isLoading: priorityLoading } = useJobPriorities()
   const { options: urgencyOptions, isLoading: urgencyLoading } = useJobUrgencyLevels()
@@ -102,6 +104,30 @@ export function JobInfoGeralSection({
     } catch {
       setScreeningStatusLocal(prev)
       toast.error("Não foi possível alterar a triagem. Tente novamente.", { description: "Verifique sua conexão e tente novamente." })
+    }
+  }
+
+
+  const handleRequestApproval = async () => {
+    const jid = String((job?.backendId as string) || (job?.id as string) || "")
+    if (!jid) return
+    setApprovalPending(true)
+    try {
+      const res = await fetch(`/api/backend-proxy/job-vacancies/${jid}/request-approval`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.detail?.message || String(res.status))
+      }
+      toast.success("Aprovação solicitada! Aprovadores foram notificados por e-mail.")
+    } catch (err) {
+      setApprovalPending(false)
+      toast.error("Não foi possível solicitar aprovação.", {
+        description: String(err instanceof Error ? err.message : err),
+      })
     }
   }
 
@@ -179,6 +205,55 @@ export function JobInfoGeralSection({
                 })()}
               </div>
             </div>
+
+            {/* Sprint 1 Aprovação — toggle para solicitar aprovação de negócio (2026-06-21) */}
+            {(() => {
+              const approvalStatus = (job?.approval_status as string) || null
+              const approvalRequestedAt = (job?.approval_requested_at as string) || null
+              const isPending = approvalRequestedAt && approvalStatus === "pendente"
+              const isApproved = approvalStatus === "aprovado"
+              const isRejected = approvalStatus === "rejeitado"
+              const approverName = (job?.approver_name as string) || null
+
+              if (isPending) {
+                return (
+                  <div className="mt-3 pt-3 border-t border-lia-border-subtle flex items-center gap-3">
+                    <span className={labelClass + " mb-0"}>Aprovação</span>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-amber-300/50 bg-amber-50/30 text-amber-700 text-xs">
+                      <span className="animate-pulse">●</span>
+                      <span>Aguardando aprovação{approverName ? ` de ${approverName}` : ""}</span>
+                    </div>
+                  </div>
+                )
+              }
+              if (isApproved) {
+                return (
+                  <div className="mt-3 pt-3 border-t border-lia-border-subtle flex items-center gap-3">
+                    <span className={labelClass + " mb-0"}>Aprovação</span>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-status-success/30 bg-status-success/10 text-status-success text-xs">
+                      ✓ Aprovado
+                    </div>
+                  </div>
+                )
+              }
+              return (
+                <div className="mt-3 pt-3 border-t border-lia-border-subtle flex items-center gap-3">
+                  <span className={labelClass + " mb-0"}>Aprovação</span>
+                  <button
+                    type="button"
+                    disabled={!isEditing || approvalPending}
+                    onClick={handleRequestApproval}
+                    className="px-3 py-1.5 text-xs rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Solicitar aprovação de gestor antes de publicar"
+                  >
+                    {approvalPending ? "Solicitando..." : isRejected ? "Solicitar novamente" : "Solicitar aprovação"}
+                  </button>
+                  {isRejected && (
+                    <span className="text-xs text-red-500">Aprovação rejeitada</span>
+                  )}
+                </div>
+              )
+            })()}
           </CardContent>
         </Card>
       </div>
