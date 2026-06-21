@@ -29,6 +29,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { cn } from "@/lib/utils"
+import { useTranslations } from "next-intl"
 
 interface ChannelConfig {
   enabled: boolean
