@@ -642,8 +642,8 @@ export default function SettingsPageEnhanced() {
           flex-shrink-0
         `}
       >
-        <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-xl overflow-hidden flex flex-col">
-          <div className={`p-4 dark:border-lia-border-subtle ${!isRailExpanded ? 'px-2' : ''}`}>
+        <Card className="h-[calc(100%-1.5rem)] m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-xl overflow-hidden flex flex-col">
+          <div className={`flex-shrink-0 p-4 dark:border-lia-border-subtle ${!isRailExpanded ? 'px-2' : ''}`}>
             <div className={`flex items-center gap-3 mb-4 ${!shouldShowContent ? 'flex-col' : ''}`}>
               <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary rounded-lg flex items-center justify-center flex-shrink-0">
                 <Settings className="w-5 h-5" />
@@ -830,8 +830,8 @@ export default function SettingsPageEnhanced() {
         </Card>
       </aside>
 
-        <div className="flex-1 flex flex-col" data-testid="settings-content-area" data-active-section={activeSection}>
-          <div className="p-6 dark:border-lia-border-subtle">
+        <div className="flex-1 flex flex-col min-h-0" data-testid="settings-content-area" data-active-section={activeSection}>
+          <div className="flex-shrink-0 p-6 dark:border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className={`${textStyles.h3} mb-1`}>
