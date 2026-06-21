@@ -454,6 +454,20 @@ export default function SettingsPageEnhanced() {
     }
   }, [progressData])
 
+  // perf: preload all hub chunks on settings page mount to eliminate
+  // the download waterfall when the user navigates between tabs.
+  useEffect(() => {
+    void import("@/components/settings/IntegrationsHub")
+    void import("@/components/settings/MinhaEmpresaHub")
+    void import("@/components/settings/RecruitmentPipelineTab")
+    void import("@/components/settings/RecruitmentScreeningTab")
+    void import("@/components/settings/CommunicationHub")
+    void import("@/components/settings/UsuariosDepartamentosHub")
+    void import("@/components/settings/FairnessComplianceHub")
+    void import("@/components/settings/ConsumoHub")
+    void import("@/components/settings/LiaPersonalizacaoHub")
+  }, [])
+
   const handleSectionCompletionUpdate = useCallback((sectionId: string, completion: number) => {
     setSectionCompletion(prev => ({ ...prev, [sectionId]: completion }))
   }, [])
