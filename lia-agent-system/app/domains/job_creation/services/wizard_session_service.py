@@ -1383,6 +1383,10 @@ class WizardSessionService:
             if new_state.get("_navigate_to_fullscreen_chat"):
                 payload["ui_action"] = "navigate_to"
                 payload["ui_action_params"] = {"page": "chat"}
+            # Fase C — calibração concluída: navegar para página da vaga (kanban + busca).
+            if new_state.get("_navigate_to_search") and new_state.get("job_id"):
+                payload["ui_action"] = "navigate_to"
+                payload["ui_action_params"] = {"page": "vaga_detalhe", "id": new_state["job_id"]}
         except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: payload é best-effort (UI continua com payload vazio), reply já foi gerado
             logger.warning(
                 "[WizardOrchestrator] payload build failed: %s", type(exc).__name__,

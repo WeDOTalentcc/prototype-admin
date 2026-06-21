@@ -3033,16 +3033,88 @@ def _handle_calibration_action(state: dict, args: dict, ctx: "ToolContext") -> T
     return ToolResult(llm_message=msg, state_updates=_state_updates)
 
 
+
 def _handle_advance_calibration(state: dict, args: dict, ctx: "ToolContext") -> ToolResult:
-    """Bug 13: confirma conclusão da calibração e libera transição para handoff.
+    """Fase C: valida sinais, adiciona aprovados à vaga, sinaliza navigate_to.
 
     ÚNICO setter de calibration_complete — separa nudge (can_advance)
     de ejeção (calibration_complete). Acionado por [calibration_complete].
     """
-    return ToolResult(
-        llm_message="Calibração concluída. Avançando para a próxima etapa.",
-        state_updates={"calibration_complete": True},
+    candidates = state.get("calibration_candidates") or []
+    threshold = state.get("calibration_threshold", 5)
+    signal_count = sum(
+        1 for c in candidates if c.get("decision") in ("approved", "rejected")
     )
+
+    # STEP 1 — fail-loud se sinais insuficientes
+    if signal_count < threshold:
+        return ToolResult(
+            llm_message=(
+                f"Avalie ao menos {threshold} candidatos antes de avançar "
+                f"({signal_count}/{threshold} avaliados). "
+                "Aprovação e rejeição contam; pular não conta."
+            ),
+            error=True,
+        )
+
+    job_id = state.get("job_id") or ""
+    company_id = ctx.company_id or ""
+    approved_ids = [c["id"] for c in candidates if c.get("decision") == "approved"]
+    approved_count = len(approved_ids)
+
+    # STEP 2 — adicionar aprovados à vaga (deduped, sem busca, <1 s)
+    _add_error = False
+    if approved_ids and job_id:
+        from app.core.database import AsyncSessionLocal as _FBSL
+        from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool as _rcitp
+        from app.api.v1.candidate_search.calibration import (
+            _add_candidates_to_vacancy_internal as _add_internal,
+        )
+
+        _cids = list(approved_ids)
+        _jid = job_id
+        _coid = company_id
+
+        async def _add_approved() -> None:
+            async with _FBSL() as _add_db:
+                await _add_internal(
+                    db=_add_db,
+                    job_id=_jid,
+                    company_id=_coid,
+                    candidate_ids=_cids,
+                    source="calibration_wizard",
+                    with_rubric=False,
+                )
+                await _add_db.commit()
+
+        try:
+            _rcitp(lambda: _add_approved(), timeout=5.0)
+            logger.info(
+                "[advance_calibration] %d aprovado(s) adicionado(s) à vaga %s",
+                approved_count, job_id,
+            )
+        except Exception as _add_err:
+            _add_error = True
+            logger.error(
+                "[advance_calibration] add_approved FALHOU: job=%s err=%s",
+                job_id, _add_err, exc_info=True,
+            )
+
+    # STEP 3 — sinalizar handoff
+    n = approved_count
+    msg = (
+        f"Calibração concluída! "
+        + (f"{n} candidato(s) aprovado(s) adicionado(s) à vaga. " if n else "")
+        + "Abrindo a vaga..."
+    )
+    state_updates: dict = {
+        "calibration_complete": True,
+        "_navigate_to_search": True,
+    }
+    if _add_error:
+        state_updates["calibration_add_error"] = True
+
+    return ToolResult(llm_message=msg, state_updates=state_updates)
 
 
 def _handle_set_stakeholders(
