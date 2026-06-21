@@ -28,7 +28,7 @@ revision = "107_job_vacancy_source_stage"
 # 106_sprint_b_learning_tables. That branch had migrations 105 (merge heads)
 # and 106 (Sprint B tables) that do NOT exist on fix/remediation-unified.
 # Adapted to skip directly to 104 (the latest existing pre-107 migration here).
-down_revision = "104"
+down_revision = "aefc81463fac"
 branch_labels = None
 depends_on = None
 

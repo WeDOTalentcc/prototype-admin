@@ -20,7 +20,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 revision = "079_sox_audit_company_id"
-down_revision = "078_few_shot_candidates"
+down_revision = "079_align_learning_patterns_columns"
 branch_labels = None
 depends_on = None
 
