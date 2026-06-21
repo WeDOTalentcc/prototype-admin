@@ -2220,16 +2220,14 @@ def _handle_suggest_managers(
     department = state.get("parsed_department") or state.get("department") or ""
 
     async def _fetch():
-        from app.core.database import AsyncSessionLocal
         from app.domains.company.services.manager_inference_service import ManagerInferenceService
-        async with AsyncSessionLocal() as db:
-            svc = ManagerInferenceService(db)
-            if department:
-                return await svc.get_managers_by_department(
-                    department_name=department,
-                    company_id=str(company_id),
-                )
-            return await svc.list_managers(company_id=str(company_id), limit=20)
+        svc = ManagerInferenceService()
+        if department:
+            return await svc.get_managers_by_department(
+                department_name=department,
+                company_id=str(company_id),
+            )
+        return await svc.list_managers(company_id=str(company_id), limit=20)
 
     from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
     try:
