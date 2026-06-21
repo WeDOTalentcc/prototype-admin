@@ -169,9 +169,12 @@ def _extract_auth(token: str | None) -> dict[str, Any]:
         return {
             "company_id": str(payload.get("company_id") or payload.get("organization_id") or ""),
             "user_id": str(payload.get("sub") or payload.get("user_id") or "anonymous"),
+            "user_name": str(payload.get("name") or ""),
+            "user_email": str(payload.get("email") or ""),
+            "user_role": str(payload.get("role") or ""),
         }
     except Exception:
-        return {"company_id": "", "user_id": "anonymous"}
+        return {"company_id": "", "user_id": "anonymous", "user_name": "", "user_email": "", "user_role": ""}
 
 
 def _strip_thought_tags(text: str) -> str:
@@ -408,6 +411,12 @@ company_id: str = Depends(require_company_id)):
     context = req.context or {}
     context.setdefault("company_id", company_id)
     context.setdefault("user_id", user_id)
+    if auth.get("user_name"):
+        context.setdefault("user_name", auth["user_name"])
+    if auth.get("user_email"):
+        context.setdefault("user_email", auth["user_email"])
+    if auth.get("user_role"):
+        context.setdefault("user_role", auth["user_role"])
     context["_raw_user_message"] = _raw_content
     if req.conversation_id:
         context["conversation_id"] = req.conversation_id
