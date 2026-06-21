@@ -610,3 +610,142 @@ async def get_integrations_health(
         "total": len(integrations),
         "integrations": integrations,
     }
+
+
+# ---------------------------------------------------------------------------
+# GET /integrations/summary — agrega 4 fetches em 1 (performance fix 2026-06-21)
+# ---------------------------------------------------------------------------
+
+class CalendarSummary(WeDoBaseModel):
+    graph_configured: bool
+    google_configured: bool
+
+
+class TeamsSummary(WeDoBaseModel):
+    configured: bool
+    source: str
+
+
+class LLMConfigSummary(WeDoBaseModel):
+    company_id: str
+    primary_provider: str
+    fallback_order: list[str]
+    providers: dict[str, dict]
+    routing: dict[str, str]
+    is_active: bool
+
+
+class ATSConnectionSummary(WeDoBaseModel):
+    provider: str
+    is_active: bool
+
+
+class IntegrationsSummaryResponse(WeDoBaseModel):
+    calendar: CalendarSummary
+    teams: TeamsSummary
+    llm_config: LLMConfigSummary
+    ats_connections: list[ATSConnectionSummary]
+
+
+@router.get("/summary", response_model=IntegrationsSummaryResponse)
+async def get_integrations_summary(
+    current_user: dict = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    # multi-tenancy: company_id via JWT Depends(require_company_id)
+    """
+    Aggregate summary of calendar health, teams status, LLM config and ATS
+    connections. Runs all 4 queries in parallel via asyncio.gather — reduces
+    4 serial roundtrips from the frontend to 1.
+
+    Performance fix 2026-06-21: replaces 4 separate useQuery fetches in
+    use-integrations-data.ts with a single call.
+    """
+    import asyncio
+    import os
+
+    from app.core.config import settings
+    from app.domains.ai.repositories.llm_config_repository import LlmConfigRepository
+    from app.domains.ats_integration.repositories.ats_repository import ATSRepository
+
+    async def _get_calendar() -> dict:
+        ms_ok = bool(
+            getattr(settings, "AZURE_CLIENT_ID", None)
+            and getattr(settings, "AZURE_CLIENT_SECRET", None)
+            and getattr(settings, "AZURE_TENANT_ID", None)
+        )
+        gc_enabled = os.getenv("ENABLE_GOOGLE_CALENDAR", "false").lower() in ("1", "true", "yes")
+        gc_configured = gc_enabled and bool(
+            os.getenv("GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON")
+            or (os.getenv("GOOGLE_CALENDAR_CLIENT_ID") and os.getenv("GOOGLE_CALENDAR_CLIENT_SECRET"))
+        )
+        return {"graph_configured": ms_ok, "google_configured": gc_configured}
+
+    async def _get_teams() -> dict:
+        url, source = await _get_tenant_teams_webhook_url(company_id, db)
+        return {"configured": url is not None, "source": source}
+
+    async def _get_llm_config() -> dict:
+        repo = LlmConfigRepository(db)
+        config = await repo.get_by_company_id(company_id)
+        if not config:
+            return {
+                "company_id": company_id,
+                "primary_provider": "gemini",
+                "fallback_order": ["gemini", "claude", "openai"],
+                "providers": {},
+                "routing": {"chat": "gemini", "embedding": "gemini", "screening": "gemini", "voice": "gemini"},
+                "is_active": True,
+            }
+        masked_providers: dict = {}
+        for name, prov in (config.providers or {}).items():
+            masked = dict(prov) if isinstance(prov, dict) else {}
+            if "api_key" in masked and masked["api_key"]:
+                key = masked["api_key"]
+                masked["api_key"] = (key[:8] + "..." + key[-4:]) if len(key) > 12 else "••••••••"
+            masked_providers[name] = masked
+        return {
+            "company_id": company_id,
+            "primary_provider": config.primary_provider or "gemini",
+            "fallback_order": config.fallback_order or ["gemini", "claude", "openai"],
+            "providers": masked_providers,
+            "routing": config.routing or {},
+            "is_active": config.is_active,
+        }
+
+    async def _get_ats_connections() -> list:
+        repo = ATSRepository(db)
+        connections = await repo.get_active_connections_by_company(company_id)
+        return [
+            {"provider": conn.provider.value, "is_active": conn.is_active}
+            for conn in connections
+        ]
+
+    calendar_data, teams_data, llm_data, ats_data = await asyncio.gather(
+        _get_calendar(),
+        _get_teams(),
+        _get_llm_config(),
+        _get_ats_connections(),
+        return_exceptions=True,
+    )
+
+    # Fail-loud per REGRA 4 (CLAUDE.md) — nao retornar dados fabricados em erro
+    for result_name, result in [("calendar", calendar_data), ("teams", teams_data), ("llm_config", llm_data), ("ats_connections", ats_data)]:
+        if isinstance(result, Exception):
+            logger.error("[integrations/summary] sub-query %s failed for company %s: %s", result_name, company_id, result)
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "error": f"integrations_summary_{result_name}_failed",
+                    "message": f"Falha ao carregar dados de integracoes ({result_name}). Tente novamente.",
+                    "section": result_name,
+                },
+            )
+
+    return IntegrationsSummaryResponse(
+        calendar=CalendarSummary(**calendar_data),
+        teams=TeamsSummary(**teams_data),
+        llm_config=LLMConfigSummary(**llm_data),
+        ats_connections=[ATSConnectionSummary(**c) for c in ats_data],
+    )
