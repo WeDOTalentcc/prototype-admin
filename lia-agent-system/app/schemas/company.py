@@ -762,6 +762,8 @@ class ApproverBase(BaseModel):
     # P0.D2 (audit Wave 2 2026-05-22): per-department routing + amount threshold.
     # Both NULL = backward-compat (company-wide, any-amount approver).
     department_id: UUID | None = None
+    # Sprint 2 (2026-06-21): platform = usuario interno com conta; email_link = externo via magic link.
+    approval_method: str = "email_link" 
 
 
 class ApproverCreate(WeDoBaseModel):
@@ -773,6 +775,7 @@ class ApproverCreate(WeDoBaseModel):
     level: int = 1
     user_id: UUID | None = None
     department_id: UUID | None = None
+    approval_method: str = "email_link" 
 
 
 class ApproverUpdate(WeDoBaseModel):
@@ -783,6 +786,7 @@ class ApproverUpdate(WeDoBaseModel):
     user_id: UUID | None = None
     department_id: UUID | None = None
     is_active: bool | None = None
+    approval_method: str | None = None
 
 
 class ApproverResponse(ApproverBase):

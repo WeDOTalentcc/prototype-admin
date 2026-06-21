@@ -144,6 +144,8 @@ const DEFAULT_NEW_APPROVER: NewApproverForm = {
   level: 1,
   departmentId: null,
   canApproveAboveAmount: null,
+  userId: null,
+  approvalMethod: "email_link",
 };
 
 const initialUIState: UIState = {
@@ -385,6 +387,8 @@ export function useDepartmentManagement({
         level: number;
         departmentId: string | null;
         canApproveAboveAmount: number | null;
+        userId?: string | null;
+        approvalMethod?: "platform" | "email_link";
       };
       isNew: boolean;
       id?: string;
@@ -403,6 +407,8 @@ export function useDepartmentManagement({
           level: approver.level,
           department_id: approver.departmentId,
           can_approve_above_amount: approver.canApproveAboveAmount,
+          user_id: approver.userId ?? null,
+          approval_method: approver.approvalMethod ?? "email_link",
         }),
       });
       if (!res.ok) throw new Error("Falha ao salvar aprovador");
@@ -682,7 +688,7 @@ export function useDepartmentManagement({
         const result = await saveApproverMutation.mutateAsync({ approver: ui.newApprover, isNew: true });
         const newApproverData: Approver = {
           id: result?.id || `approver-${Date.now()}`,
-          userId: result?.user_id || "",
+          userId: result?.user_id || ui.newApprover.userId || "",
           userName: ui.newApprover.userName,
           email: ui.newApprover.email,
           role: ui.newApprover.role,

@@ -607,7 +607,10 @@ class Approver(Base):
     # NULL can_approve_above_amount = approver pode aprovar qualquer valor.
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id", ondelete="SET NULL"), nullable=True, index=True)
     can_approve_above_amount = Column(Numeric(12, 2), nullable=True)
-    
+
+    # Sprint 2 (2026-06-21): 'platform' = usuario interno; 'email_link' = externo magic link.
+    approval_method = Column(String(20), nullable=False, default="email_link")
+
     is_active = Column(Boolean, default=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)

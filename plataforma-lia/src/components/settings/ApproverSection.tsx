@@ -54,6 +54,29 @@ export const ApproverSection = React.memo(function ApproverSection({
 }: ApproverSectionProps) {
   const t = useTranslations('settings.approvers');
 
+  // Sprint 2 (2026-06-21): local state for TIPO A user search (does not need to be in parent hook)
+  const [userSearchQuery, setUserSearchQuery] = React.useState("")
+  const [userSearchResults, setUserSearchResults] = React.useState<Array<{id: string; name: string; email: string; role: string}>>([])
+  const [isSearchingUsers, setIsSearchingUsers] = React.useState(false)
+
+  const searchPlatformUsers = React.useCallback(async (q: string) => {
+    if (!q || q.length < 2) { setUserSearchResults([]); return }
+    setIsSearchingUsers(true)
+    try {
+      const res = await fetch(`/api/backend-proxy/company/users/search?q=${encodeURIComponent(q)}&limit=10`, { credentials: "include" })
+      if (res.ok) setUserSearchResults((await res.json() as Array<{id: string; name: string; email: string; role: string}>))
+    } catch { setUserSearchResults([]) }
+    finally { setIsSearchingUsers(false) }
+  }, [])
+
+  React.useEffect(() => {
+    const t2 = setTimeout(() => { void searchPlatformUsers(userSearchQuery) }, 300)
+    return () => clearTimeout(t2)
+  }, [userSearchQuery, searchPlatformUsers])
+
+  const currentMethod = (newApprover as NewApproverForm & { approvalMethod?: string }).approvalMethod ?? "email_link"
+
+
   return (
     <div className="space-y-3" data-testid="approver-section-root">
       {successMessage && (
@@ -109,6 +132,65 @@ export const ApproverSection = React.memo(function ApproverSection({
                 <h4 className="text-xs font-semibold">
                   {editingApprover ? t("editApprover") : t("newApprover")}
                 </h4>
+
+                {/* Sprint 2 (2026-06-21): TIPO A/B selector — only when adding new approver */}
+                {!editingApprover && (
+                  <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-md">
+                    <button type="button"
+                      onClick={() => {
+                        setNewApprover(prev => ({ ...prev, approvalMethod: "platform" as const, userId: null, userName: "", email: "" }) as typeof prev)
+                        setUserSearchQuery("")
+                        setUserSearchResults([])
+                      }}
+                      className={`flex-1 py-1.5 text-xs rounded transition-colors ${currentMethod !== "email_link" ? "bg-lia-surface text-lia-text-primary shadow-sm" : "text-lia-text-secondary hover:text-lia-text-primary"}`}
+                    >Usuário do sistema</button>
+                    <button type="button"
+                      onClick={() => {
+                        setNewApprover(prev => ({ ...prev, approvalMethod: "email_link" as const, userId: null, userName: "", email: "" }) as typeof prev)
+                        setUserSearchQuery("")
+                        setUserSearchResults([])
+                      }}
+                      className={`flex-1 py-1.5 text-xs rounded transition-colors ${currentMethod === "email_link" ? "bg-lia-surface text-lia-text-primary shadow-sm" : "text-lia-text-secondary hover:text-lia-text-primary"}`}
+                    >Externo (magic link)</button>
+                  </div>
+                )}
+
+                {/* TIPO A: internal user search */}
+                {!editingApprover && currentMethod !== "email_link" && (
+                  <div>
+                    <label className="block text-micro font-medium text-lia-text-secondary mb-1">Buscar usuário</label>
+                    <div className="relative">
+                      <input type="text" placeholder="Nome ou email do usuário..."
+                        value={userSearchQuery}
+                        onChange={e => setUserSearchQuery(e.target.value)}
+                        className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle bg-lia-bg-primary text-xs"
+                      />
+                      {isSearchingUsers && <span className="absolute right-3 top-2 text-xs text-lia-text-tertiary">...</span>}
+                    </div>
+                    {userSearchResults.length > 0 && (
+                      <div className="mt-1 border border-lia-border-subtle rounded-md bg-lia-surface shadow-sm max-h-36 overflow-y-auto z-10 relative">
+                        {userSearchResults.map(u => (
+                          <button key={u.id} type="button"
+                            className="w-full text-left px-2 py-1.5 text-xs hover:bg-lia-interactive-hover transition-colors"
+                            onClick={() => {
+                              setNewApprover(prev => ({ ...prev, userId: u.id, userName: u.name, email: u.email, role: u.role, approvalMethod: "platform" as const }) as typeof prev)
+                              setUserSearchQuery(u.name)
+                              setUserSearchResults([])
+                            }}
+                          >
+                            <span className="font-medium">{u.name}</span>
+                            <span className="ml-2 text-lia-text-tertiary">{u.email}</span>
+                            {u.role && <span className="ml-2 text-lia-text-tertiary">· {u.role}</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {(newApprover as NewApproverForm & { userId?: string | null }).userId && (
+                      <p className="mt-1 text-xs text-status-success">✓ {newApprover.userName} selecionado</p>
+                    )}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-micro font-medium text-lia-text-secondary mb-1">
@@ -121,6 +203,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                       className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
                       placeholder={t('namePlaceholder')}
                       value={editingApprover ? editingApprover.userName : newApprover.userName}
+                      readOnly={!editingApprover && currentMethod !== "email_link" && !!(newApprover as NewApproverForm & { userId?: string | null }).userId}
                       onChange={(e) =>
                         editingApprover
                           ? setEditingApprover({ ...editingApprover, userName: e.target.value })
@@ -139,6 +222,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                       className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
                       placeholder={t('emailPlaceholder')}
                       value={editingApprover ? editingApprover.email : newApprover.email}
+                      readOnly={!editingApprover && currentMethod !== "email_link" && !!(newApprover as NewApproverForm & { userId?: string | null }).userId}
                       onChange={(e) =>
                         editingApprover
                           ? setEditingApprover({ ...editingApprover, email: e.target.value })

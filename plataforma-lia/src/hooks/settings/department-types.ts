@@ -157,6 +157,9 @@ export interface NewApproverForm {
   level: number;
   departmentId: string | null;
   canApproveAboveAmount: number | null;
+  // Sprint 2 (2026-06-21): TIPO A = user from platform; TIPO B = external magic link
+  userId?: string | null;
+  approvalMethod: "platform" | "email_link";
 }
 
 export const DEFAULT_NEW_DEPARTMENT: NewDepartmentForm = {

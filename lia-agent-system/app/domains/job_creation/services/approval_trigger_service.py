@@ -21,6 +21,7 @@ Principios (REGRA #0 + CLAUDE.md canonical-fix):
 from __future__ import annotations
 
 import logging
+import secrets
 from datetime import datetime, timedelta
 from uuid import UUID
 
@@ -99,6 +100,15 @@ async def trigger_approval_if_required(
     deadline = now + timedelta(days=DEFAULT_APPROVAL_DEADLINE_DAYS)
     created: list[ApprovalRequest] = []
     for approver in approvers:
+        # Sprint 2: TIPO B (email_link) gets a cryptographic magic token for link-based approval.
+        # TIPO A (platform) has user_id → logs in and approves via UI (no magic token).
+        approver_method = getattr(approver, "approval_method", "email_link") or "email_link"
+        token = None
+        token_expires = None
+        if approver_method == "email_link":
+            token = secrets.token_urlsafe(32)
+            token_expires = deadline  # same 7-day window as approval deadline
+
         req = ApprovalRequest(
             company_id=company_id,
             request_type=ApprovalType.VACANCY_APPROVAL.value,
@@ -113,6 +123,9 @@ async def trigger_approval_if_required(
             approval_level=approver.level,
             status=ApprovalStatus.PENDING.value,
             expires_at=deadline,
+            magic_token=token,
+            magic_token_expires_at=token_expires,
+            magic_token_used=False,
         )
         created_req = await approvals_repo.add_and_flush(req)
         created.append(created_req)
@@ -126,19 +139,48 @@ async def trigger_approval_if_required(
         company_id,
     )
 
-    first = approvers[0]
+    # Sprint 2: LGPD Art.37V audit trail for approval request
     try:
-        from app.services.email_service import email_service
-
-        await email_service.send_approval_request(
-            approver_email=first.email,
-            approver_name=first.user_name,
-            job_title=getattr(job, "title", "") or "",
-            requester_name=requested_by_name,
-            requester_email=requested_by_email,
-            job_id=job_id,
-            deadline_days=DEFAULT_APPROVAL_DEADLINE_DAYS,
+        from app.shared.compliance.audit_service import AuditService
+        audit = AuditService(db)
+        await audit.log_action(
+            trace_id=f"approval-trigger-{job_id}",
+            company_id=str(company_id),
+            action_type="approval_requested",
+            actor=requested_by_email,
+            target_id=str(job.id),
+            target_type="job_vacancy",
+            metadata={
+                "approvers_count": len(created),
+                "approval_level_range": f"1-{max(a.level for a in approvers)}",
+                "requested_by_name": requested_by_name,
+                "job_title": getattr(job, "title", "") or "",
+            },
         )
+    except Exception as audit_exc:
+        logger.warning("[approval_trigger] audit log failed — non-blocking. err=%s", audit_exc)
+
+    # Send email to first (level-1) approver using canonical email function
+    first_created = created[0] if created else None
+    try:
+        if first_created:
+            from app.api.v1.approvals import send_approval_request_email
+
+            # For TIPO B (email_link): append magic link to the email body via target_description
+            first_method = getattr(approvers[0], "approval_method", "email_link") or "email_link"
+            if first_method == "email_link" and first_created.magic_token:
+                try:
+                    from app.core.config import settings
+                    base_url = getattr(settings, "FRONTEND_BASE_URL", "https://app.wedotalent.cc")
+                except Exception:
+                    base_url = "https://app.wedotalent.cc"
+                magic_link = f"{base_url}/approve/{first_created.magic_token}"
+                # Store magic link in target_description for email function to pick up
+                first_created.target_description = (
+                    f"Link para aprovar/rejeitar (válido por {DEFAULT_APPROVAL_DEADLINE_DAYS} dias):\n"
+                    f"{magic_link}"
+                )
+            await send_approval_request_email(db, first_created)
     except Exception as exc:
         logger.warning(
             "[approval_trigger] email send failed — approval rows created, email skipped. err=%s",

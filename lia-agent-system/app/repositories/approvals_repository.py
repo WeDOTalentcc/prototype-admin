@@ -138,3 +138,14 @@ class ApprovalsRepository:
             ).order_by(ApprovalRequest.approval_level)
         )
         return list(result.scalars().all())
+
+    async def get_by_magic_token(self, token: str) -> "Optional[ApprovalRequest]":
+        """Return ApprovalRequest for a magic token. None if not found.
+
+        Used by public resolve-by-token endpoint (no JWT auth).
+        Caller must verify magic_token_used=False and magic_token_expires_at > now().
+        """
+        result = await self.db.execute(
+            select(ApprovalRequest).where(ApprovalRequest.magic_token == token).limit(1)
+        )
+        return result.scalar_one_or_none()

@@ -82,7 +82,12 @@ class ApprovalRequest(Base):
     resource_id = Column(String(255), nullable=True)
     
     expires_at = Column(DateTime, nullable=True)
-    
+
+    # Sprint 2 (2026-06-21): magic token para aprovacao sem login (TIPO B externo).
+    magic_token = Column(String(128), nullable=True)
+    magic_token_expires_at = Column(DateTime, nullable=True)
+    magic_token_used = Column(Boolean, nullable=False, default=False)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -118,6 +123,9 @@ class ApprovalRequest(Base):
             "resource_type": self.resource_type,
             "resource_id": self.resource_id,
             "expires_at": self.expires_at.isoformat() if self.expires_at else None,
+            "magic_token": self.magic_token,
+            "magic_token_expires_at": self.magic_token_expires_at.isoformat() if self.magic_token_expires_at else None,
+            "magic_token_used": self.magic_token_used,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

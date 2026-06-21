@@ -124,3 +124,38 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error deleting approver: {e}")
         raise LIAError(message="Erro interno do servidor")
+
+
+@router.get("/users/search")
+async def search_platform_users(
+    q: str = Query(..., min_length=1, description="Search term (name or email)"),
+    limit: int = Query(10, ge=1, le=50),
+    company_id: str = Depends(require_company_id),
+):
+    """Search internal platform users by name or email — TIPO A approver selection.
+
+    Multi-tenancy: company_id from JWT via Depends(require_company_id).
+    Returns [{id, name, email, role}] for active users in the same company.
+    """
+    from app.core.database import get_db as _get_db
+    from app.repositories.client_user_repository import ClientUserRepository
+    import uuid as _uuid
+
+    try:
+        cid = _uuid.UUID(str(company_id))
+    except ValueError:
+        return []
+
+    async for _db in _get_db():
+        repo = ClientUserRepository(_db)
+        users = await repo.list_users(cid, search=q, limit=limit, status="active")
+        return [
+            {
+                "id": str(u.id),
+                "name": u.name or "",
+                "email": u.email or "",
+                "role": u.role or "",
+            }
+            for u in users
+        ]
+    return []

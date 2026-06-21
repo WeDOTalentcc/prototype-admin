@@ -69,6 +69,7 @@ from app.api.v1 import (
     communications,
     company,
     company_approvers,
+    approval_resolve_token,
     company_users,
     company_benefits,
     company_compensation_components,
@@ -408,6 +409,7 @@ def register_all_routes(app: FastAPI) -> None:
     # ── Company ───────────────────────────────────────────────────────────────
     app.include_router(company.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_approvers.router, prefix="/api/v1", tags=["company"])
+    app.include_router(approval_resolve_token.router, prefix="/api/v1", tags=["approvals"])
     app.include_router(company_users.router, prefix="/api/v1", tags=["company"])
     app.include_router(lia_field_toggles.router, prefix="/api/v1", tags=["field-toggles"])
     app.include_router(company_culture.router, prefix="/api/v1", tags=["company-culture"])
