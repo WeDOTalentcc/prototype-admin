@@ -629,12 +629,26 @@ class TestCalibrationHandlers:
     # ── advance_calibration ──────────────────────────────────────────────────
 
     def test_advance_calibration_sets_complete(self):
-        """_handle_advance_calibration → calibration_complete=True."""
+        """_handle_advance_calibration → calibration_complete=True.
+
+        Requires signal_count >= threshold (3). Pre-populate 3 decisions so the
+        threshold gate passes and the handler reaches the state_updates step.
+        No DB is available in test env — approved_ids branch is skipped when
+        job_id is absent (no attempt to add to vacancy).
+        """
         from app.domains.job_creation.orchestrator.wizard_service_tools import (
             _handle_advance_calibration,
         )
-        result = _handle_advance_calibration(self._state(), {}, CTX)
-        assert not result.error
+        state = self._state()
+        # Meet threshold=3: set decisions on all 3 candidates
+        state["calibration_candidates"][0]["decision"] = "approved"
+        state["calibration_candidates"][1]["decision"] = "rejected"
+        state["calibration_candidates"][2]["decision"] = "approved"
+        # No job_id → add_approved branch skipped (no DB call needed)
+        result = _handle_advance_calibration(state, {}, CTX)
+        assert not result.error, (
+            f"advance_calibration returned error=True unexpectedly: {result.llm_message!r}"
+        )
         assert result.state_updates.get("calibration_complete") is True, (
             "advance_calibration deve setar calibration_complete=True"
         )
