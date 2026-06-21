@@ -137,6 +137,7 @@ async function saveDefaults(updates: Partial<ScreeningDefaults>): Promise<void> 
 }
 
 export function CompanyScreeningConfigHub({ showHeader = true }: { showHeader?: boolean } = {}) {
+  const t = useTranslations("settings.screening")
   const { companyId } = useCompanyId()
   const queryClient = useQueryClient()
 
@@ -406,7 +407,7 @@ export function CompanyScreeningConfigHub({ showHeader = true }: { showHeader?: 
       <section className="rounded-xl border border-lia-border-subtle p-4 space-y-3">
         <div className="flex items-center gap-2">
           <PauseCircle className="w-4 h-4 text-wedo-cyan-text" />
-          <span className="text-sm font-semibold text-lia-text-primary">Controle de Paralização</span>
+          <span className="text-sm font-semibold text-lia-text-primary">{t("sectionPauseControl")}</span>
         </div>
         <p className="text-xs text-lia-text-secondary">
           Pausa a triagem após atingir o limite de aprovações automáticas. Exige revisão humana antes de continuar.
@@ -442,7 +443,7 @@ export function CompanyScreeningConfigHub({ showHeader = true }: { showHeader?: 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CalendarCheck className="w-4 h-4 text-wedo-cyan-text" />
-            <span className="text-sm font-semibold text-lia-text-primary">Agendamento Automático</span>
+            <span className="text-sm font-semibold text-lia-text-primary">{t("sectionScheduling")}</span>
           </div>
           <Switch
             checked={effective.scheduling.auto_enabled}

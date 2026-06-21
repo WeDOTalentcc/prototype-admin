@@ -7626,6 +7626,10 @@
       "descontoAlfa": "Desconto ALFA",
       "descontoValidade": "Válido até",
       "descontoLabel": "{pct}% de desconto no plano (ALFA)"
+    },
+    "screening": {
+      "sectionPauseControl": "Controle de Paralização",
+      "sectionScheduling": "Agendamento Automático"
     }
   },
   "publicJob": {
