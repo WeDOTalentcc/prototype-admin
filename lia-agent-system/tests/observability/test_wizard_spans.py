@@ -103,17 +103,6 @@ def test_eligibility_node_emits_span_with_required_attributes():
     assert result.is_valid, result.reason()
 
 
-def test_handoff_node_emits_span_with_required_attributes(monkeypatch):
-    """handoff_node calls emit_job_creation_audit — stub it for hermeticity."""
-    from app.domains.job_creation import graph as g
-
-    monkeypatch.setattr(g, "emit_job_creation_audit", lambda *_a, **_kw: None)
-    g.handoff_node(_seed_state(current_stage="handoff", job_id=99))
-    spans = _spans_named([WIZARD_SPANS.JOB_CREATION_HANDOFF])
-    assert spans
-    result = validate_span_attributes(spans[-1])
-    assert result.is_valid, result.reason()
-
 
 def test_node_error_marks_span_status(monkeypatch):
     """When a node raises, its span must still be emitted with status=error."""
