@@ -1846,10 +1846,15 @@ class WizardSessionService:
                 if row:
                     _enrich_state_with_hiring_policy(state, row)
             except Exception as _hp_exc:
-                # Fail-open: classifier opera com summary vazio, mantém allowlist intacta.
-                logger.debug(
-                    "[WizardSession] hiring_policy_summary lazy-load failed (fail-open): %s",
+                # Fail-open: wizard segue sem herdar defaults. DEVE ser visível em prod.
+                # ADR-001-EXEMPT: lazy-load hiring_policy na invocação do wizard — não há
+                # HiringPolicyRepository no path do wizard; injeção por DI seria prematura
+                # para lazy-load one-shot. P0 fix 2026-06-21: warning, não debug.
+                logger.warning(
+                    "[WizardSession] hiring_policy lazy-load FAILED (fail-open) — "
+                    "company defaults NOT inherited: %s | company_id=%s",
                     _hp_exc,
+                    company_id,
                 )
 
         tokens_emitted = 0
