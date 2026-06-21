@@ -125,6 +125,30 @@ def _consume_panel_pref(state: dict) -> str | None:
 # Keys carried forward from context into wizard state
 _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
 
+# Fase 3 fix (2026-06-21): per-vacancy fields to clear when a terminal wizard
+# reuses the same session_id. thread_id is keyed by (company_id, session_id)
+# so the LangGraph checkpoint persists across vacancies in the same session.
+# Calling update_state(config, _WIZARD_FRESH_FIELDS) overwrites stale values
+# (last-value reducer semantics — TypedDict without Annotated) before invoking
+# the graph, preventing intake_node from short-circuiting with the old vacancy.
+_WIZARD_FRESH_FIELDS: dict = {
+    "job_id": None,
+    "parsed_title": "",
+    "parsed_seniority": "",
+    "parsed_department": "",
+    "parsed_location": None,
+    "parsed_work_model": "",
+    "jd_enriched": None,
+    "jd_enriched_present": False,
+    "calibration_candidates": [],
+    "calibration_complete": False,
+    "intake_approved": None,
+    "intake_salary_suggested": False,
+    "gate_resume_message": "",
+    "conversation_messages": [],
+    "current_stage": None,
+}
+
 # ── Sprint F.2-v2 (2026-05-26) — Supervisor skip with content threshold ──
 # Sprint F.2 (2026-05-20) introduziu skip binário do supervisor quando
 # prior_stage em ACTIVE_WIZARD_STAGES. Protege respostas curtas a prompts
@@ -552,6 +576,31 @@ class WizardSessionService:
         from app.shared.sessions import is_wizard_session_active as _canonical
 
         return await _canonical(company_id, session_id)
+
+    @classmethod
+    async def _wipe_terminal_checkpoint(cls, thread_id: str, wiz_g) -> None:
+        """Wipe per-vacancy fields from a terminal checkpoint before starting new wizard.
+
+        Fase 3 fix: when current_stage is in terminal set ('completed'/'handoff'/'done'),
+        the LangGraph checkpoint still holds job_id, calibration_candidates, jd_enriched
+        from the previous vacancy. Calling update_state with _WIZARD_FRESH_FIELDS
+        overwrites those stale values (last-value reducer) so intake_node cannot
+        short-circuit with wrong data.
+
+        Called before wiz_g.invoke() in both code paths that detect a terminal stage.
+        """
+        try:
+            config = {"configurable": {"thread_id": thread_id}}
+            await asyncio.to_thread(wiz_g._graph.update_state, config, _WIZARD_FRESH_FIELDS)
+            logger.info(
+                "[WizardSession] Fase3 wipe: checkpoint cleared for new wizard thread=%s",
+                thread_id,
+            )
+        except Exception as wipe_exc:
+            logger.warning(
+                "[WizardSession] Fase3 wipe FAILED (non-blocking) thread=%s: %s",
+                thread_id, wipe_exc,
+            )
 
     @staticmethod
     async def _get_prior_state(thread_id: str) -> dict:
@@ -1125,9 +1174,12 @@ class WizardSessionService:
         if _prior_stage in {'handoff', 'completed', 'done'}:
             logger.info(
                 "[WizardOrchestrator] terminal stage: stage=%s thread=%s "
-                "— resetting to fresh state for new wizard",
+                "— resetting to fresh state + wiping checkpoint for new wizard",
                 _prior_stage, thread_id,
             )
+            from app.domains.job_creation.graph import get_job_creation_graph
+            _orch_wiz_g = get_job_creation_graph()
+            await WizardSessionService._wipe_terminal_checkpoint(thread_id, _orch_wiz_g)
             state = {}
         # Carrega campos do context (right_panel_form, tenant snippet) p/ o state.
         for k in _CONTEXT_CARRY_KEYS:
@@ -1565,9 +1617,10 @@ class WizardSessionService:
         if _prior_stage in ('handoff', 'completed', 'done'):
             logger.info(
                 "[WizardSession] terminal stage (graph): stage=%s "
-                "thread=%s — resetting prior_state for new wizard",
+                "thread=%s — resetting prior_state + wiping checkpoint for new wizard",
                 _prior_stage, thread_id,
             )
+            await cls._wipe_terminal_checkpoint(thread_id, wiz_g)
             prior_state = {}
         _skip_supervisor = _compute_supervisor_skip(user_message, _prior_stage)
         _msg_len = len((user_message or "").strip())
