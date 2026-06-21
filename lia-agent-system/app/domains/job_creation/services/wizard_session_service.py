@@ -421,6 +421,64 @@ def _emit_silent_fallback(
         )
 
 
+
+def _enrich_state_with_hiring_policy(state: dict, row: object) -> None:
+    """Enrich wizard state with company hiring-policy data from a DB row.
+
+    Row columns expected (positional): pipeline_rules, screening_rules,
+    automation_rules, screening_config_defaults.  Any column may be None.
+
+    Responsibilities:
+    - Build ``hiring_policy_summary`` string for wizard_gate_classifier context.
+    - Store ``screening_config_defaults`` dict so downstream wizard nodes can
+      inherit company defaults (P0 ghost-setting fix 2026-06-21).
+    - Apply enabled channels to ``contact_channels`` via setdefault (non-destructive).
+    - Track applied defaults in ``company_defaults_applied`` for audit transparency.
+    """
+    if not row:
+        return
+
+    pr = (row[0] or {}) if len(row) > 0 else {}
+    sr = (row[1] or {}) if len(row) > 1 else {}
+    ar = (row[2] or {}) if len(row) > 2 else {}
+    scd = (row[3] or {}) if len(row) > 3 else {}
+
+    # ── Build hiring_policy_summary (existing behaviour, preserved) ──────────
+    parts: list[str] = []
+    if pr.get("manager_approval_for_offer") is not None:
+        parts.append(f"aprovação_gestor_oferta={pr['manager_approval_for_offer']}")
+    if sr.get("min_quality_score") is not None:
+        parts.append(f"qualidade_min_jd={sr['min_quality_score']}")
+    if ar.get("auto_approve_threshold") is not None:
+        parts.append(f"auto_approve_threshold={ar['auto_approve_threshold']}")
+    if ar.get("automation_level"):
+        parts.append(f"automação={ar['automation_level']}")
+    if parts and not state.get("hiring_policy_summary"):
+        state["hiring_policy_summary"] = " | ".join(parts)[:500]
+        logger.info(
+            "[WizardSession] hiring_policy_summary injected (%d fields)", len(parts)
+        )
+
+    # ── Store screening_config_defaults (P0 fix) ─────────────────────────────
+    if scd and not state.get("screening_config_defaults"):
+        state["screening_config_defaults"] = scd
+        applied: list[str] = list(state.get("company_defaults_applied") or [])
+        applied.append("screening_config_defaults")
+
+        # Apply enabled channels → contact_channels (setdefault — never overwrites)
+        channels: dict = scd.get("channels", {})
+        enabled = [ch for ch, v in channels.items() if isinstance(v, dict) and v.get("enabled")]
+        if enabled and not state.get("contact_channels"):
+            state["contact_channels"] = enabled
+            applied.append("contact_channels")
+
+        state["company_defaults_applied"] = applied
+        logger.info(
+            "[WizardSession] screening_config_defaults inherited from company policy (%d channels enabled)",
+            len(enabled),
+        )
+
+
 class WizardSessionService:
     """Manages JobCreationGraph invocation with per-session state accumulation.
 
@@ -1778,7 +1836,7 @@ class WizardSessionService:
                 async with AsyncSessionLocal() as _hp_db:
                     row = (await _hp_db.execute(
                         _sql_text(
-                            "SELECT pipeline_rules, screening_rules, automation_rules "
+                            "SELECT pipeline_rules, screening_rules, automation_rules, screening_config_defaults "
                             "FROM company_hiring_policies "
                             "WHERE company_id = CAST(:cid AS uuid) "
                             "LIMIT 1"
@@ -1786,26 +1844,7 @@ class WizardSessionService:
                         {"cid": str(company_id)},
                     )).first()
                 if row:
-                    pr, sr, ar = row[0] or {}, row[1] or {}, row[2] or {}
-                    parts: list[str] = []
-                    if pr.get("manager_approval_for_offer") is not None:
-                        parts.append(
-                            f"aprovação_gestor_oferta={pr['manager_approval_for_offer']}"
-                        )
-                    if sr.get("min_quality_score") is not None:
-                        parts.append(f"qualidade_min_jd={sr['min_quality_score']}")
-                    if ar.get("auto_approve_threshold") is not None:
-                        parts.append(
-                            f"auto_approve_threshold={ar['auto_approve_threshold']}"
-                        )
-                    if ar.get("automation_level"):
-                        parts.append(f"automação={ar['automation_level']}")
-                    if parts:
-                        state["hiring_policy_summary"] = " | ".join(parts)[:500]
-                        logger.info(
-                            "[WizardSession] hiring_policy_summary injected (%d fields)",
-                            len(parts),
-                        )
+                    _enrich_state_with_hiring_policy(state, row)
             except Exception as _hp_exc:
                 # Fail-open: classifier opera com summary vazio, mantém allowlist intacta.
                 logger.debug(
