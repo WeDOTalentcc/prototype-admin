@@ -590,10 +590,13 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
         from app.api.v1.candidate_search._shared import _generate_search_fingerprint
         from libs.models.lia_models.pearch import HybridSearchRequest as _HybridReq
 
-        # A2 — query determinística rica: título + senioridade + skills + resps + work_model
-        # D2-NOTE: location NÃO entra no query text (ILIKE é OR: corromperia resultados).
-        #          Location vai via search_spec → to_pearch_custom_filters() → Pearch API.
-        #          Para filtro local por cidade/estado: WHERE clause em V2.
+        # A2 — query local limpa: tokens de título + senioridade + skills + work_model.
+        # REGRA: sem prosa de responsabilidades — geram stopwords 'do'/'de' que casam
+        #        em 'Advogado'/'Coordenador' via ILIKE OR (bug pré-D2 confirmado).
+        # REGRA: space-join, não ', '.join — vírgulas produziam tokens 'python,' que
+        #        nunca casavam em nenhuma coluna do DB.
+        # Responsabilidades já vão para Pearch via search_spec.required_skills.
+        # D2-NOTE: location fora do query (ILIKE OR corromperia ranking — removida).
         _jd_title = jd.get("titulo_padronizado") or state.get("parsed_title") or ""
         _jd_seniority = (
             state.get("seniority_resolved") or state.get("parsed_seniority") or ""
@@ -604,17 +607,20 @@ async def _publish_job_fastapi(state: dict, company_id: str) -> dict:
             for x in (jd.get("skills_obrigatorias") or [])
             if x
         ]
-        _jd_resps = [
-            (r if isinstance(r, str) else str(r))
-            for r in (jd.get("responsabilidades") or [])
-        ]
-        _q_parts = (
+        # Tokens limpos: palavras individuais, strip de pontuacao, sem stopwords <= 2 chars
+        _raw_terms = (
             [_jd_title, _jd_seniority]
             + _jd_skills[:5]
-            + [r[:80] for r in _jd_resps[:2]]
             + ([_jd_work_model] if _jd_work_model else [])
         )
-        _search_query = ", ".join(p for p in _q_parts if p) or "profissional"
+        _PUNCT = ',.;:()"\''
+        _clean_words = [
+            w.strip(_PUNCT)
+            for part in _raw_terms if part
+            for w in part.split()
+            if len(w.strip(_PUNCT)) > 2
+        ]
+        _search_query = " ".join(_clean_words) or "profissional"
 
         # A4 — fingerprint: mesmo _generate_search_fingerprint de candidate_search._shared
         # que apply_feedback_boost usa -> boost da Fase C funciona com este fingerprint
