@@ -202,18 +202,25 @@ class PlanDecomposer:
         self,
         query: str,
         company_id: str | None = None,
+        raw_query: str | None = None,
     ) -> ExecutionPlan | None:
         """
         Decompose a user query into a multi-step ExecutionPlan.
+
+        Args:
+            query: The enriched query (with history context) — sent to LLM.
+            raw_query: The original user message — used for heuristic and regex.
+                       Falls back to query if not provided.
 
         Returns None if the query is single-step or conversational.
         Falls back gracefully on any LLM error.
         """
         t0 = time.perf_counter()
+        _raw = raw_query or query
 
         # ── Fast path: regex fallback (0ms, covers existing patterns) ────
         if self._fallback:
-            regex_plan = self._fallback.detect(query)
+            regex_plan = self._fallback.detect(_raw)
             if regex_plan and len(regex_plan.tasks) >= 2:
                 elapsed = (time.perf_counter() - t0) * 1000
                 logger.info(
@@ -224,8 +231,10 @@ class PlanDecomposer:
                 return regex_plan
 
         # ── Heuristic pre-filter ─────────────────────────────────────────
-        if not _passes_heuristic(query):
+        if not _passes_heuristic(_raw):
+            logger.info("[PlanDecomposer] heuristic: no multi-step signal in: %.80s", _raw)
             return None
+        logger.info("[PlanDecomposer] heuristic passed, calling LLM for: %.80s", _raw)
 
         # ── LLM decomposition ───────────────────────────────────────────
         try:
@@ -282,6 +291,7 @@ class PlanDecomposer:
             max_steps=MAX_PLAN_STEPS,
         )
 
+        logger.info("[PlanDecomposer] calling LLM (provider=%s, max_tokens=%d)", _DECOMPOSE_PROVIDER, _DECOMPOSE_MAX_TOKENS)
         llm = LLMService()
         result: DecompositionResult = await llm.generate_structured(
             messages=[{"role": "user", "content": query}],
@@ -289,6 +299,10 @@ class PlanDecomposer:
             provider=_DECOMPOSE_PROVIDER,
             system_prompt=system_prompt,
             max_tokens=_DECOMPOSE_MAX_TOKENS,
+        )
+        logger.info(
+            "[PlanDecomposer] LLM result: is_multi_step=%s confidence=%.2f steps=%d reasoning=%.60s",
+            result.is_multi_step, result.confidence, len(result.steps), result.reasoning,
         )
         return result
 
