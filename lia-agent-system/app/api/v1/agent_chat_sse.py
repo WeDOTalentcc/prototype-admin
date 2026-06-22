@@ -395,17 +395,15 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.debug("[LIA-P03] Agent SSE compliance skipped: %s", e)
 
-    # LGPD (2026-05-31): harmonizar com o WS — mascarar PII no inbound ANTES
-    # de qualquer LLM. O WS faz via pre_compliance; o SSE nao fazia (email/CPF/
-    # telefone iam crus ao LLM). Captura o texto CRU antes do strip para a
-    # captura deterministica do email do gestor no wizard (que grava no state
-    # mas NUNCA envia ao LLM — o LLM ve o content mascarado).
-    _raw_content = content
-    try:
-        from app.shared.pii_masking import strip_pii_for_llm_prompt
-        content = strip_pii_for_llm_prompt(content, mask_names=False)  # chat do recrutador: preserva nome/titulo p/ busca; CPF/email/tel seguem mascarados
-    except Exception as _pii_exc:
-        logger.warning("[SSEChat] PII strip inbound failed (fail-open): %s", _pii_exc)
+    # PII input strip — DISABLED for recruiter SSE chat (2026-06-22 T3 audit).
+    # Recruiter is LGPD data controller (Art. 7 III legitimate interest) chatting
+    # about their own companys candidates. Input strip converted CPF/email/phone
+    # to [EMAIL REMOVIDO] / [CPF REMOVIDO] markers that the LLM echoed back to
+    # the recruiter — destroying usability. Output masking per RBAC stays active
+    # via mask_pii_outbound on every SSE chunk (lines 967+, 1055+, 1196+, 2028+).
+    # Aligns with RecruiterCopilotReActAgent._enable_pii_strip=False (line 260).
+    # Candidate-facing chat (candidate_portal.py) keeps its own input strip.
+    _raw_content = content  # wizard email extraction still needs raw content
 
     active_domain = req.domain or "recruiter_assistant"
     context = req.context or {}
