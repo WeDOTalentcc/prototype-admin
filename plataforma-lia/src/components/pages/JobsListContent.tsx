@@ -97,7 +97,6 @@ interface JobsListContentProps {
   toggleUrgentJob: (id: number) => void; togglePinJob: (id: number) => void; toggleFavoriteJob: (id: number) => void
   jobsError?: string | null; loadBackendJobs?: () => Promise<void>
   // Phase 4H — ATS rail filter
-  activeFilter?: string
   setShowBulkImportModal?: (open: boolean) => void
   /** Lista completa de vagas (sem filtro) para derivar opções de Localização no painel de filtros (RV-019). */
   allJobs?: Job[]
@@ -130,7 +129,7 @@ export function JobsListContent(props: JobsListContentProps) {
     handleJobsColumnDrop, handleJobsColumnDragEnd, startJobsColumnResize,
     toggleUrgentJob, togglePinJob, toggleFavoriteJob, setShowColumnConfig,
     jobsError, loadBackendJobs,
-    activeFilter, setShowBulkImportModal,
+    setShowBulkImportModal,
     allJobs,
   } = props
 
@@ -230,24 +229,26 @@ export function JobsListContent(props: JobsListContentProps) {
       </div>
 
       {jobsViewMode === 'table' && (
-        <BulkActionsBar
-          selectedCount={selectedJobsForBatch.size} entityLabel={t('newJob')}
-          entityIcon={<Briefcase className="w-3.5 h-3.5 text-lia-text-secondary" />}
-          onDeselectAll={deselectAllJobs} className="flex-shrink-0 mb-3" actions={bulkActions}
-        />
-      {showArchiveConfirm && handleJobArchive && (
-        <ConfirmArchiveDialog
-          open={showArchiveConfirm}
-          mode={archiveMode}
-          jobCount={selectedJobsForBatch?.size ?? 0}
-          isLoading={isArchivingJobs ?? false}
-          onCancel={() => setShowArchiveConfirm(false)}
-          onConfirm={async () => {
-            const ok = await handleJobArchive(archiveMode === 'archive')
-            if (ok) setShowArchiveConfirm(false)
-          }}
-        />
-      )}
+        <>
+          <BulkActionsBar
+            selectedCount={selectedJobsForBatch.size} entityLabel={t('newJob')}
+            entityIcon={<Briefcase className="w-3.5 h-3.5 text-lia-text-secondary" />}
+            onDeselectAll={deselectAllJobs} className="flex-shrink-0 mb-3" actions={bulkActions}
+          />
+          {showArchiveConfirm && handleJobArchive && (
+            <ConfirmArchiveDialog
+              open={showArchiveConfirm}
+              mode={archiveMode}
+              jobCount={selectedJobsForBatch?.size ?? 0}
+              isLoading={isArchivingJobs ?? false}
+              onCancel={() => setShowArchiveConfirm(false)}
+              onConfirm={async () => {
+                const ok = await handleJobArchive(archiveMode === 'archive')
+                if (ok) setShowArchiveConfirm(false)
+              }}
+            />
+          )}
+        </>
       )}
 
       <div className="flex gap-2 transition-colors motion-reduce:transition-none duration-300 flex-1 min-h-0 overflow-hidden">

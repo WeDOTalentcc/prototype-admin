@@ -165,6 +165,68 @@ export function computeBlockProgress(fields: CardField[]): BlockProgress {
   return { filled, total: dataFields.length, missingLabels }
 }
 
+
+// ─── Contratação & Triagem progress helpers (Phase B 2026-06-22) ────────────
+
+export interface OfferRulesData {
+  allowed_start_day_of_month?: number[]
+  min_notice_days?: number
+  negotiation_enabled?: boolean
+  salary_flex_pct_max?: number
+  counter_proposal_max_rounds?: number
+  negotiation_hitl_threshold_pct?: number
+}
+
+export interface ScreeningDefaultsData {
+  channels_master_enabled?: boolean
+  settings?: {
+    min_score?: number
+    min_score_preset?: string
+    response_timeout_hours?: number
+    auto_approval_limit?: number
+    auto_approval_preset?: string
+  }
+  channels?: Record<string, { enabled?: boolean }>
+  scheduling?: {
+    auto_enabled?: boolean
+    min_score_for_auto?: number
+    interview_duration_min?: number
+  }
+}
+
+export function computeOfferRulesProgress(rules: OfferRulesData | null | undefined): BlockProgress {
+  if (!rules) return { filled: 0, total: 4, missingLabels: ["Dias de início", "Aviso prévio", "Negociação", "Flexibilidade salarial"] }
+  const checks: Array<[unknown, string]> = [
+    [rules.allowed_start_day_of_month?.length, "Dias de início"],
+    [rules.min_notice_days != null, "Aviso prévio"],
+    [rules.negotiation_enabled != null, "Negociação"],
+    [rules.salary_flex_pct_max != null, "Flexibilidade salarial"],
+  ]
+  const filled = checks.filter(([v]) => !!v).length
+  const missingLabels = checks.filter(([v]) => !v).map(([, l]) => l)
+  return { filled, total: checks.length, missingLabels }
+}
+
+export function computeScreeningDefaultsProgress(defaults: ScreeningDefaultsData | null | undefined): BlockProgress {
+  if (!defaults) return { filled: 0, total: 4, missingLabels: ["Score mínimo", "Canais", "Timeout resposta", "Agendamento auto"] }
+  const checks: Array<[unknown, string]> = [
+    [defaults.settings?.min_score != null, "Score mínimo"],
+    [defaults.channels && Object.values(defaults.channels).some(c => c?.enabled), "Canais"],
+    [defaults.settings?.response_timeout_hours != null, "Timeout resposta"],
+    [defaults.scheduling?.auto_enabled != null, "Agendamento auto"],
+  ]
+  const filled = checks.filter(([v]) => !!v).length
+  const missingLabels = checks.filter(([v]) => !v).map(([, l]) => l)
+  return { filled, total: checks.length, missingLabels }
+}
+
+export function progressToStatus(progress: BlockProgress): "configured" | "partial" | "pending" {
+  if (progress.total === 0) return "pending"
+  if (progress.filled === 0) return "pending"
+  if (progress.filled === progress.total) return "configured"
+  return "partial"
+}
+
 /** Pure transform: company + benefits + policy → CardBlock[]. No side-effects. */
 export function buildBlocks(
   company: CompanyData | null,

@@ -28,6 +28,15 @@ import { Button } from "@/components/ui/button"
 import { HubHeader, HubLoadingState, HubErrorState } from "./_shared"
 import { SettingsEditModeToggle } from "@/components/settings/SettingsEditModeToggle"
 import { useSettingsEditMode } from "@/hooks/settings/useSettingsEditMode"
+import { useQuery } from "@tanstack/react-query"
+import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
+import {
+  computeOfferRulesProgress,
+  computeScreeningDefaultsProgress,
+  progressToStatus,
+  type OfferRulesData,
+  type ScreeningDefaultsData,
+} from "@/hooks/settings/useCompanyBlocks"
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Building,
@@ -123,6 +132,24 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   const [analyzeModalOpen, setAnalyzeModalOpen] = React.useState(false)
   const [contratacaoExpanded, setContratacaoExpanded] = React.useState(false)
   const [triagemExpanded, setTriagemExpanded] = React.useState(false)
+
+  // Phase B (2026-06-22): fetch data for progress badges on Contratação & Triagem cards
+  const { data: offerRulesData } = useQuery<OfferRulesData>({
+    queryKey: SETTINGS_QUERY_KEYS.offerRules(),
+    queryFn: () => fetch("/api/backend-proxy/offer-rules").then(r => r.ok ? r.json() : null),
+    staleTime: 30_000,
+  })
+  const { data: screeningDefaultsData } = useQuery<ScreeningDefaultsData>({
+    queryKey: SETTINGS_QUERY_KEYS.screeningDefaults(companyId ?? ""),
+    queryFn: () => fetch("/api/backend-proxy/company/screening-config-defaults").then(r => r.ok ? r.json() : null),
+    staleTime: 30_000,
+    enabled: !!companyId,
+  })
+
+  const contratacaoProgress = React.useMemo(() => computeOfferRulesProgress(offerRulesData), [offerRulesData])
+  const contratacaoStatus = React.useMemo(() => progressToStatus(contratacaoProgress), [contratacaoProgress])
+  const triagemProgress = React.useMemo(() => computeScreeningDefaultsProgress(screeningDefaultsData), [screeningDefaultsData])
+  const triagemStatus = React.useMemo(() => progressToStatus(triagemProgress), [triagemProgress])
   const handleAnalyzeWebsite = React.useCallback(() => {
     setAnalyzeModalOpen(true)
   }, [])
@@ -329,6 +356,15 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
             <span className="text-sm font-semibold text-lia-text-primary">Configurações de Contratação</span>
           </div>
           <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+              contratacaoStatus === "configured"
+                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                : contratacaoStatus === "partial"
+                ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                : "bg-lia-bg-secondary text-lia-text-tertiary"
+            }`}>
+              {contratacaoProgress.filled}/{contratacaoProgress.total}
+            </span>
             {contratacaoExpanded ? (
               <ChevronUp className="w-4 h-4 text-lia-text-tertiary" />
             ) : (
@@ -357,6 +393,15 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
             <span className="text-xs text-lia-text-tertiary truncate">· Score WSI, canais, prazo, paralização e agendamento</span>
           </div>
           <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+              triagemStatus === "configured"
+                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                : triagemStatus === "partial"
+                ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                : "bg-lia-bg-secondary text-lia-text-tertiary"
+            }`}>
+              {triagemProgress.filled}/{triagemProgress.total}
+            </span>
             {triagemExpanded ? (
               <ChevronUp className="w-4 h-4 text-lia-text-tertiary" />
             ) : (
