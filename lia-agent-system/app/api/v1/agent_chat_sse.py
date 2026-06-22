@@ -1591,7 +1591,7 @@ company_id: str = Depends(require_company_id)):
                             logger.warning("[SSEChat] /planejar execution (fail-open): %s", _pe)
 
                 try:
-                    from app.shared.execution import PlanDetector, PlanExecutor
+                    from app.shared.execution import PlanDecomposer, PlanDetector, PlanExecutor
                     from app.domains.registry import DomainRegistry
                     from app.domains.workflow import DomainWorkflow
                     from app.shared.execution.plan_progress_mapper import (
@@ -1599,8 +1599,15 @@ company_id: str = Depends(require_company_id)):
                         new_plan_progress_state,
                     )
                     from app.shared.chat_event_serializer import serialize_background_task_update as _ser_bg
-                    _plan_det = PlanDetector()
-                    _detected = _plan_det.detect(_eff_content) if _PLAN_EXECUTOR_ENABLED else None
+                    _plan_decomposer = PlanDecomposer(
+                        registry=DomainRegistry(),
+                        fallback_detector=PlanDetector(),
+                    )
+                    _detected = (
+                        await _plan_decomposer.decompose(_eff_content, company_id=str(company_id))
+                        if _PLAN_EXECUTOR_ENABLED
+                        else None
+                    )
                     if _detected and len(_detected.tasks) >= 2:
                         logger.info(
                             "[SSEChat] Multi-step plan detected: %s (%d tasks)",
