@@ -1417,8 +1417,8 @@ class MainOrchestrator:
                     # (view_context) no system prompt -> supervisor abre ciente
                     # do que o recrutador ve agora (page_type + counts + filtros).
                     try:
-                        from app.orchestrator.context.context_adapter import render_view_context
-                        _vc_snip = render_view_context(getattr(ctx, "view_context", None))
+                        from app.orchestrator.context.view_context import format_view_context
+                        _vc_snip = format_view_context(getattr(ctx, "view_context", None))
                         if _vc_snip:
                             _phase15_system_prompt = (_phase15_system_prompt or "") + "\n\n" + _vc_snip
                     except Exception:

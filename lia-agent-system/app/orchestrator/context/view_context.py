@@ -76,6 +76,10 @@ def format_view_context(view_context: dict[str, Any] | None) -> str:
     if page_label:
         lines.append(f"- Tela: {page_label}")
 
+    job_ref = view_context.get("job_title") or view_context.get("job_id") or view_context.get("job_vacancy_id")
+    if job_ref:
+        lines.append(f"- Vaga atual: {job_ref}")
+
     counts = view_context.get("counts")
     if isinstance(counts, dict) and counts:
         counts_str = _format_counts(counts)
