@@ -32,7 +32,7 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
 
   if (!steps || steps.length === 0) {
     // Padrão de mercado: feedback imediato com mesma tipografia dos steps.
-    // Ícone Brain pulsando + "Pensando" + dots — idêntico ao spotlight ativo.
+    // Ícone Brain pulsando + "Pensando" — feedback imediato sem dots.
     const label = locale?.toLowerCase().startsWith("en") ? "Thinking" : "Pensando"
     return (
       <div
@@ -45,7 +45,6 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
           aria-hidden="true"
         />
         <span className="text-xs text-lia-text-secondary">{label}</span>
-        <ActivityDots className="shrink-0" />
       </div>
     )
   }
@@ -82,7 +81,7 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
             >
               {phaseLabel(step, locale)}
             </span>
-            {spotlight && <ActivityDots className="shrink-0" />}
+
           </div>
         )
       })}
