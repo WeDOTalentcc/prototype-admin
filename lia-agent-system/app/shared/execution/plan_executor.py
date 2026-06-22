@@ -316,6 +316,22 @@ class PlanExecutor:
             if self._domain_registry and self._domain_workflow:
                 domain = self._domain_registry.get_instance(task.domain_id)
                 if domain:
+                    # Guard: validate action_id exists in domain before executing
+                    if hasattr(domain, '_ACTION_MAP') and task.action_id not in getattr(domain, '_ACTION_MAP', {}):
+                        logger.warning(
+                            "[PlanExecutor] action_id '%s' not found in domain '%s' action map. "
+                            "Available: %s. Skipping task %s.",
+                            task.action_id, task.domain_id,
+                            list(getattr(domain, '_ACTION_MAP', {}).keys())[:10],
+                            task.task_id,
+                        )
+                        plan.update_task_result(
+                            task.task_id,
+                            result=None,
+                            success=False,
+                            error=f"Action '{task.action_id}' not available in domain '{task.domain_id}'. This plan step cannot execute yet.",
+                        )
+                        return
                     dc = DomainContext(
                         domain_id=task.domain_id,
                         user_id=user_id,
@@ -362,13 +378,16 @@ class PlanExecutor:
                         error=f"Domain '{task.domain_id}' not found in registry",
                     )
             else:
+                logger.error(
+                    "[PlanExecutor] No domain_registry/domain_workflow — cannot execute task %s. "
+                    "This is a wiring bug: PlanExecutor must be instantiated with both args.",
+                    task.task_id,
+                )
                 plan.update_task_result(
                     task.task_id,
-                    result=DomainResponse.success_response(
-                        message=f"Task {task.task_id} executed (no domain registry)",
-                        data=resolved_params,
-                    ),
-                    success=True,
+                    result=None,
+                    success=False,
+                    error=f"Plan executor not properly configured (missing domain registry). Task {task.task_id} cannot execute.",
                 )
 
         except Exception as e:
