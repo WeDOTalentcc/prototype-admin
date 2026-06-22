@@ -65,7 +65,7 @@ export function buildGlossaryDeepLink(term: string): string {
 
 export function GlossaryDrawer({ term, onClose }: GlossaryDrawerProps) {
   // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('glossary-drawer', open)
+  useLiaModalTracking('glossary-drawer', !!term)
 
   const [state, setState] = useState<DrawerState | null>(null)
   const [copied, setCopied] = useState(false)

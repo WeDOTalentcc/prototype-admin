@@ -21,6 +21,7 @@ interface KanbanCandidateBase {
   role?: string
   location?: string
   currentCompany?: string
+  appliedDate?: string
   id: string | number
 }
 

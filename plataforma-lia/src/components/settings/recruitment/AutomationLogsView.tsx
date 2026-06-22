@@ -114,14 +114,13 @@ export function exportLogsToCsv(
 }
 
 export function AutomationLogsView() {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('automation-log-detail', selectedLog)
-
   const t = useTranslations("settings.recruitment.automationsTab")
   const { data: automations = [] } = useAutomationsList()
   const [selectedAutomationId, setSelectedAutomationId] = useState<string | "all">("all")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('automation-log-detail', !!selectedLog)
 
   // Quando "all", precisa agregar logs de multiplas automations.
   // Por agora: se "all", lista vazia + hint "selecione uma automacao".

@@ -158,10 +158,6 @@ const DEFAULT_TEMPLATES: EmailTemplate[] = [
 ]
 
 export function EmailTemplatesManager() {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('email-template-preview', isPreviewModalOpen)
-  useLiaModalTracking('email-template-delete', isDeleteModalOpen)
-
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
@@ -169,6 +165,9 @@ export function EmailTemplatesManager() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('email-template-preview', isPreviewModalOpen)
+  useLiaModalTracking('email-template-delete', isDeleteModalOpen)
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null)
   const [templateToDelete, setTemplateToDelete] = useState<EmailTemplate | null>(null)
   const [deleting, setDeleting] = useState(false)

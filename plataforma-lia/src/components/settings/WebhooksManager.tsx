@@ -21,10 +21,6 @@ import { apiFetch } from "@/lib/api/api-fetch"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
 export function WebhooksManager() {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('webhook-create', creating)
-  useLiaModalTracking('webhook-secret', showSecret)
-
   const t = useTranslations("settings.webhooks")
   const { webhooks, isLoading, mutate } = useWebhooks()
   // Sprint 5 catalogos dinamicos: substituiu WEBHOOK_EVENTS hardcoded.
@@ -37,6 +33,9 @@ export function WebhooksManager() {
   const [newEvents, setNewEvents] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [showSecret, setShowSecret] = useState<{ id: string; secret: string } | null>(null)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('webhook-create', creating)
+  useLiaModalTracking('webhook-secret', !!showSecret)
   const [testingId, setTestingId] = useState<string | null>(null)
 
   const eventLabel = (event: string): string => {

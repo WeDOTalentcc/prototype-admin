@@ -310,7 +310,7 @@ export function useDepartmentManagement({
   // ── React Query: departments list ──────────────────────────────────────────
   const { data: queriedDepartments = [] } = useQuery<Department[]>({
     queryKey: ["departments", companyId],
-    queryFn: () => fetchDepartments(companyId),
+    queryFn: () => fetchDepartments(companyId ?? ''),
     staleTime: 30_000,
     initialData: initialDepartments.length > 0 ? initialDepartments : undefined,
   });
@@ -483,7 +483,7 @@ export function useDepartmentManagement({
 
   async function loadDepartments() {
     try {
-      const data = await fetchDepartments(companyId);
+      const data = await fetchDepartments(companyId ?? '');
       dispatch({ type: "SET_DEPTS_OVERRIDE", payload: data });
     } catch (err) {
       console.error("[Departments] loadDepartments failed:", err);

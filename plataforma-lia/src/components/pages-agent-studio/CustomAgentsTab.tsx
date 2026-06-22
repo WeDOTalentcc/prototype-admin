@@ -342,7 +342,7 @@ export function CreateCustomAgentModal({
   initialTemplate?: { id: string; display_name: string } | null
 }) {
   // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('create-custom-agent', open)
+  useLiaModalTracking('create-custom-agent', true)
 
   const t = useTranslations('agents.customAgents')
   const isEditing = !!agent
@@ -852,7 +852,7 @@ export function CreateCustomAgentModal({
 
 function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () => void }) {
   // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('test-agent', open)
+  useLiaModalTracking('test-agent', true)
 
   const t = useTranslations('agents.customAgents')
   // White-label canonical: fallback do nome no título do modal de teste.

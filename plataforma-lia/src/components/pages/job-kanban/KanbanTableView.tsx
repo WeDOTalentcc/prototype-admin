@@ -260,7 +260,7 @@ export function KanbanTableView({
     openTransition,
     onTransitionRequired,
     onStatusChange,
-    onDirectTransition: async (candidate, toStage, subStatus, jvId) => {
+    onDirectTransition: async (candidate: any, toStage: string, subStatus?: string, jvId?: string) => {
       const id = candidate.id
       await fetch(`/api/backend-proxy/candidates/${encodeURIComponent(id)}/stage`, {
         method: 'PATCH',

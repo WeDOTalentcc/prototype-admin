@@ -271,6 +271,8 @@ function CreateFromDescription({
   isCreatingArchetype,
   onCreateArchetypeFromDescription,
 }: CreateFromDescriptionProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "LIA"
   return (
     <div className="space-y-2">
       <p className="text-xs text-lia-text-secondary">

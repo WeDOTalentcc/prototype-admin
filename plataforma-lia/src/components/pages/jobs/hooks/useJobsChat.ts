@@ -362,7 +362,7 @@ export function useJobsChat({
           false && response.ui_action === "filter_jobs" &&
           response.ui_action_params?.filter
         ) {
-          setActiveFilter?.(response.ui_action_params.filter);
+          setActiveFilter?.(response.ui_action_params?.filter as string);
         } else if (
           // eslint-disable-next-line no-constant-condition
           false && response.ui_action === "compare_jobs"

@@ -373,11 +373,11 @@ function MiniBar({ pct, color = "bg-blue-400" }: { pct: number; color?: string }
 }
 
 function DistTable({
-  title, items, color,
+  title, items, color = "bg-blue-400",
 }: {
-  title: string
+  title?: string
   items: DiversityDistributionItem[]
-  color: string
+  color?: string
 }) {
   if (items.length === 0) return null
   return (

@@ -27,9 +27,6 @@ import { StageTransitionRightPanel } from "./stage-transition-right-panel"
 export type { TransitionActionType }
 
 export function StageTransitionActionsModal(props: StageTransitionActionsModalProps) {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('stage-transition-actions', isOpen)
-
   const {
     isOpen,
     onClose,
@@ -39,6 +36,8 @@ export function StageTransitionActionsModal(props: StageTransitionActionsModalPr
     newStage,
     wsiData,
   } = props
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('stage-transition-actions', isOpen)
 
   const {
     selectedAction,

@@ -86,7 +86,7 @@ interface NormalizedActivity {
   details?: Record<string, any>
 }
 
-function normalizeActivity(a: CandidateActivity): NormalizedActivity {
+function normalizeActivity(a: CandidateActivity, personaName: string): NormalizedActivity {
   const { icon, color } = getActivityIconMeta(a.type)
   const rawDate = a.timestamp ?? a.date ?? ""
   const dateObj = rawDate ? new Date(rawDate) : new Date()
@@ -181,8 +181,8 @@ export function CandidateActivitiesTab({
   const { activities: rawActivities, isLoading, error } = useCandidateActivities(candidate)
 
   const activities: NormalizedActivity[] = useMemo(
-    () => rawActivities.map(normalizeActivity),
-    [rawActivities],
+    () => rawActivities.map(a => normalizeActivity(a, personaName)),
+    [rawActivities, personaName],
   )
 
   const filterByPeriod = (a: NormalizedActivity) => {

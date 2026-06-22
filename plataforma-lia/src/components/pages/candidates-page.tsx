@@ -356,7 +356,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             onSendTriagem={handleSendTriagem}
             onSendAgendamento={handleSendAgendamento}
             onSendFeedback={handleSendFeedback}
-            onScheduleMessage={handleOpenScheduleMessageModal}
             setPreviewCandidate={setPreviewCandidate}
             setShareSearchCandidates={setShareSearchCandidates}
             setShareSearchTitle={setShareSearchTitle}

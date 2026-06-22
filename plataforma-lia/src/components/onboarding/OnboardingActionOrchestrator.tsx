@@ -11,6 +11,8 @@ import type { ProposedSaves } from "@/lib/website-proposal-mapper"
 import { buildWebsiteProposalMessage } from "@/components/unified-chat/website-proposal-injector"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
+const DEFAULT_PERSONA_NAME = "LIA"
+
 /**
  * OnboardingActionOrchestrator — Task #712
  *
@@ -97,7 +99,7 @@ const STEPS: StepDef[] = [
   {
     key: "persona",
     actionId: "configure_persona",
-    title: `Personalidade de ${personaName}`,
+    title: `Personalidade de ${DEFAULT_PERSONA_NAME}`,
     question: "Quer dar um nome ou escolher um tom de voz para a sua assistente?",
     prompt:
       "Quero personalizar a assistente: escolher um nome customizado e o tom de comunicação que combina com a nossa empresa.",

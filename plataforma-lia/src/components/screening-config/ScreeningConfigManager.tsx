@@ -183,7 +183,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           setEditAvailableHours(screeningConfig.scheduling?.available_hours ?? '9h-18h')
                           setEditAvailableHoursInherited(screeningConfig.scheduling?.available_hours_inherited ?? true)
                           setEditInterviewDuration(screeningConfig.scheduling?.interview_duration_min ?? 60)
-                          setEditAutoApprovalPreset(screeningConfig.settings?.auto_approval_preset ?? limitToApprovalPreset(screeningConfig.settings?.auto_approval_limit) ?? companyScreeningDefaults?.settings?.auto_approval_preset ?? recommended)
+                          setEditAutoApprovalPreset(screeningConfig.settings?.auto_approval_preset ?? limitToApprovalPreset(screeningConfig.settings?.auto_approval_limit) ?? companyScreeningDefaults?.settings?.auto_approval_preset ?? 'recommended')
                         }
                       }}>
                         Cancelar

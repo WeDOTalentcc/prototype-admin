@@ -37,7 +37,7 @@ export function useRevealContact({
           candidate_name: revealCandidate.name,
           reveal_type: revealType,
           linkedin_slug: revealCandidate.linkedin_url?.split('/in/')?.[1]?.replace('/', '') || null,
-          pearch_profile_id: (revealCandidate as Record<string,unknown>).pearch_profile_id as string || null
+          pearch_profile_id: (revealCandidate as unknown as Record<string,unknown>).pearch_profile_id as string || null
         })
       })
 

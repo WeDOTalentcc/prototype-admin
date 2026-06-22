@@ -101,7 +101,6 @@ export function JobPublishModal({
 }: JobPublishModalProps) {
   // P0-2 (2026-06-18): LIA screen awareness
   useLiaModalTracking('job-publish', isOpen)
-  useLiaModalTracking('job-publish-channel-info', channelInfoModal)
 
   const { persona } = useAiPersona()
   const personaName = persona?.name ?? "IA"
@@ -113,6 +112,7 @@ export function JobPublishModal({
   const [autoSearchGlobal, setAutoSearchGlobal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [channelInfoModal, setChannelInfoModal] = useState<{ name: string; message: string; configUrl?: string } | null>(null)
+  useLiaModalTracking('job-publish-channel-info', !!channelInfoModal)
   const [integrationHealth, setIntegrationHealth] = useState<Record<string, { configured: boolean }>>({})
 
   const PUBLICATION_CHANNELS: ChannelConfig[] = BASE_CHANNELS.map((ch) => {

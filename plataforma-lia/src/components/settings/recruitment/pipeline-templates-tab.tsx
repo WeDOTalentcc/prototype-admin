@@ -51,10 +51,6 @@ function ConfirmDialog({ open, title, description, confirmLabel, cancelLabel, de
 // ─── PipelineTemplatesTab ─────────────────────────────────────────────────────
 
 export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: (changed: boolean) => void }) {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('pipeline-template-confirm-archive', confirmArchive)
-  useLiaModalTracking('pipeline-template-confirm-delete', confirmDelete)
-
   const t       = useTranslations("settings.recruitment.pipelineTemplates")
   const tEmpty  = useTranslations("settings.recruitment.pipelineTemplates.empty")
   const tHints  = useTranslations("settings.recruitment.pipelineTemplates.hints")
@@ -78,6 +74,9 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
   const [busy, setBusy] = useState(false)
   const [confirmArchive, setConfirmArchive] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete]   = useState<string | null>(null)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('pipeline-template-confirm-archive', !!confirmArchive)
+  useLiaModalTracking('pipeline-template-confirm-delete', !!confirmDelete)
 
   // Sheet editor
   const [sheetOpen, setSheetOpen]           = useState(false)

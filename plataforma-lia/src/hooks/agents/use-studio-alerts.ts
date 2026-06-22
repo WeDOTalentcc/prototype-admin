@@ -73,8 +73,7 @@ async function fetchAlerts(): Promise<FetchAlertsResult> {
           })
         }
       }
-    } catch (error) { /* */ }
-      console.error("[use-studio-alerts] Error:", error)
+    } catch { /* */ }
   }
 
   // TWIN_LOW_ACCURACY — accuracy_pct < 60%
@@ -106,7 +105,6 @@ async function fetchAlerts(): Promise<FetchAlertsResult> {
           })
         }
       }
-        console.error("[use-studio-alerts] Error:", error)
     } catch { /* */ }
   }
 
@@ -122,7 +120,6 @@ async function fetchAlerts(): Promise<FetchAlertsResult> {
           message: `Quota de agentes quase esgotada (${used}/${limit})`,
           severity: "error",
         })
-          console.error("[use-studio-alerts] Error:", error)
       }
     } catch { /* */ }
   }
@@ -146,7 +143,6 @@ async function fetchAlerts(): Promise<FetchAlertsResult> {
             entityId: String(al.id),
             severity: "warning",
           })
-            console.error("[use-studio-alerts] Error:", error)
         }
       }
     } catch { /* */ }

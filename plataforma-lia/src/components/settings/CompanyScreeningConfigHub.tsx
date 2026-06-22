@@ -159,7 +159,7 @@ export function CompanyScreeningConfigHub({ showHeader = true }: { showHeader?: 
       queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.screeningDefaults(companyId ?? "") })
       setDraft(null)
       toast.success("Configurações de triagem salvas")
-      dispatchSettingsUpdate({ section: "screening_defaults", source: "ui" })
+      dispatchSettingsUpdate({ actionId: "screening_defaults_saved", section: "screening_defaults", source: "ui", ts: Date.now() })
     },
     onError: (e: Error) => toast.error(e.message),
   })
@@ -237,7 +237,6 @@ export function CompanyScreeningConfigHub({ showHeader = true }: { showHeader?: 
         <HubHeader
           title="Configurações de Triagem"
           description="Defaults empresa: usados ao criar vagas novas. Pode ser sobrescrito por vaga individualmente."
-          icon={<Settings2 className="w-5 h-5" />}
         />
       )}
 

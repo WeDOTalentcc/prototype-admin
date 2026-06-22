@@ -40,7 +40,7 @@ export function OrgChartDialog({
   setOrgChartDepartment,
 }: OrgChartDialogProps) {
   // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('org-chart', orgChartDepartment)
+  useLiaModalTracking('org-chart', !!orgChartDepartment)
 
   const t = useTranslations('settings.departments');
 

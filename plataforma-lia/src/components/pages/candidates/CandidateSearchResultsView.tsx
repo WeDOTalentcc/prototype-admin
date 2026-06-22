@@ -275,11 +275,10 @@ export function CandidateSearchResultsView({
   error,
   onRetry,
 }: CandidateSearchResultsViewProps) {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('tag-dialog', showTagDialog)
-
   const t = useTranslations('candidates')
   const [showTagDialog, setShowTagDialog] = useState<'add' | 'remove' | null>(null)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('tag-dialog', !!showTagDialog)
   const [tagInput, setTagInput] = useState('')
   const [isTagLoading, setIsTagLoading] = useState(false)
   const [isExporting, setIsExporting] = useState(false)

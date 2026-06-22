@@ -538,10 +538,9 @@ export function InteractiveStageCell({
   onStageChange,
   onTransitionRequest
 }: InteractiveStageCellProps) {
+  const [open, setOpen] = useState(false)
   // P0-2 (2026-06-18): LIA screen awareness
   useLiaModalTracking('interactive-stage', open)
-
-  const [open, setOpen] = useState(false)
   const [selectedStage, setSelectedStage] = useState<string>('')
 
   // WT-2022 P0.STAGES: hook canonical com fallback transitional ao RECRUITMENT_STAGES estatico

@@ -76,12 +76,12 @@ function useBillingPaymentMethods(errorMsg: string) {
 // ---------------------------------------------------------------------------
 
 function StatusBadge({ status, t }: { status: string | undefined; t: (key: string) => string }) {
-  const variants: Record<string, "success" | "warning" | "error" | "neutral"> = {
+  const variants: Record<string, "success" | "warning" | "danger" | "neutral"> = {
     active: "success",
     trialing: "warning",
-    suspended: "error",
-    canceled: "error",
-    past_due: "error",
+    suspended: "danger",
+    canceled: "danger",
+    past_due: "danger",
   }
   if (!status) return <Chip variant="neutral">—</Chip>
   const label = t(`status.${status}`) || status
@@ -367,11 +367,11 @@ function InvoicesSection({ data, t }: { data: any; t: (key: string) => string })
 }
 
 function InvoiceStatusChip({ status, t }: { status: string; t: (key: string) => string }) {
-  const variants: Record<string, "success" | "warning" | "error" | "neutral"> = {
+  const variants: Record<string, "success" | "warning" | "danger" | "neutral"> = {
     paid: "success",
     pending: "warning",
-    overdue: "error",
-    failed: "error",
+    overdue: "danger",
+    failed: "danger",
   }
   const label = t(`invoiceStatuses.${status}`) || status || "-"
   const variant = variants[status] || "neutral"

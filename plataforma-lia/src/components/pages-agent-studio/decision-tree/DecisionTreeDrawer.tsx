@@ -354,13 +354,12 @@ export function DecisionTreeBody({ reasoning, agentDisplayName }: DecisionTreeBo
 }
 
 export function DecisionTreeDrawer({ executionId, onClose }: DecisionTreeDrawerProps) {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('decision-tree-drawer', open)
-
   const t = useTranslations("agents.studio.decisionTree")
   const { persona } = useAiPersona()
   const { data, isLoading, isError, isLegacy } = useExecutionReasoning(executionId)
   const open = executionId !== null
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('decision-tree-drawer', open)
   // White-label canonical: nome do agente passa pelo useAiPersona — se o agente
   // for o assistente padrão (sem nome custom), exibe o persona.name configurado;
   // senão usa o agent_name canonical (custom agent tem nome próprio).

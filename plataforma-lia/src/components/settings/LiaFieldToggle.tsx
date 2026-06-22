@@ -308,7 +308,7 @@ export function LiaFieldToggle({
   )
 }
 
-export const defaultLiaFieldExamples: Record<LiaFieldKey, string[]> = {
+export const defaultLiaFieldExamples: Partial<Record<LiaFieldKey, string[]>> = {
   work_model: [
     "Híbrido com preferência para 3 dias presenciais. Cargos júnior devem ter mais dias no escritório.",
     "Remoto apenas para cargos sênior+ com experiência comprovada em trabalho remoto.",

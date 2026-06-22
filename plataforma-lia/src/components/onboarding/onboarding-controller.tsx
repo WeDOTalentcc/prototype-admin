@@ -242,6 +242,8 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 }
 
 function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, onSkip: () => void }) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "LIA"
   return (
     <div className="fixed inset-0 z-50 overflow-hidden lia-bg-lavender">
       {/* OPT-027: Decorative particles — static (replaced framer-motion infinite float) */}

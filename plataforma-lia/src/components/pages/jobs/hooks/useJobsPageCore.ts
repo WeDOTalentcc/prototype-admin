@@ -536,8 +536,8 @@ export function useJobsPageCore(props: JobsPageProps) {
     handleJobToggleStatus: bulkActions.handleJobToggleStatus,
     handleJobAssignRecruiter: bulkActions.handleJobAssignRecruiter,
     getSelectedJobsHaveActiveStatus: bulkActions.getSelectedJobsHaveActiveStatus,
-    handleJobArchive: bulkActions.actions.handleJobArchive,
-    isArchivingJobs: bulkActions.state.isArchivingJobs,
+    handleJobArchive: bulkActions.handleJobArchive,
+    isArchivingJobs: bulkState.isArchivingJobs,
 
     // --- chat (orquestrador LIA + abertura do chat flutuante unificado) ---
     liaMessages: chatState.liaMessages,

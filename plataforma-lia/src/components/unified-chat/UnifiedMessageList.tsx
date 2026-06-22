@@ -808,7 +808,6 @@ export function UnifiedMessageList({
                 {hasWizardIntakeCard && (
                   <WizardIntakeCard
                     data={meta!.wizardStageData as Record<string, unknown>}
-                    onOpenPanel={onOpenPanel}
                   />
                 )}
 
@@ -816,7 +815,6 @@ export function UnifiedMessageList({
                 {hasWizardCompetencyCard && (
                   <WizardCompetencyCard
                     data={meta!.wizardStageData as Record<string, unknown>}
-                    onOpenPanel={onOpenPanel}
                   />
                 )}
 
@@ -825,7 +823,6 @@ export function UnifiedMessageList({
                 {hasWizardJdCard && (
                   <WizardJdCard
                     data={meta!.wizardStageData as Record<string, unknown>}
-                    onOpenPanel={onOpenPanel}
                   />
                 )}
 

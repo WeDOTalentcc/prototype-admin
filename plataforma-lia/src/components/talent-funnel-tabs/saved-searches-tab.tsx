@@ -103,13 +103,12 @@ export function SavedSearchesTab({
   onToggleFavorite,
   onNavigateToSearch
 }: SavedSearchesTabProps) {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('saved-search-create', showCreateModal)
-  useLiaModalTracking('saved-search-edit', showEditModal)
-
   const [searchFilter, setSearchFilter] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('saved-search-create', showCreateModal)
+  useLiaModalTracking('saved-search-edit', showEditModal)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [selectedSearch, setSelectedSearch] = useState<SavedSearch | null>(null)
   const [newSearchName, setNewSearchName] = useState('')

@@ -57,8 +57,6 @@ export function UpgradeRequestModal({ isOpen, onClose, context }: UpgradeRequest
   const t = useTranslations("agents.studio.upgradeRequest")
   const [requestedPlan, setRequestedPlan] = useState<string>("")
   const [notes, setNotes] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
   const { mutate: submitUpgradeRequest, isPending: isSubmitting } = useMutation({
     mutationFn: async () => {
       if (!context) throw new Error("Context required")

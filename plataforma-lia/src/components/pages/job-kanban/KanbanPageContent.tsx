@@ -73,7 +73,7 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
     )
   }
 
-  if (activeTab === 'indicators') {
+  if ((activeTab as string) === 'indicators') {
     return (
       <div className="flex-1 overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary">
         <div className="px-4 py-4 pb-12">

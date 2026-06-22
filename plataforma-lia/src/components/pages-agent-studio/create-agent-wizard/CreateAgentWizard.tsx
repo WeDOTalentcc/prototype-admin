@@ -378,7 +378,7 @@ export function CreateAgentWizard({
         const tmpl = AGENT_TEMPLATES.find((t) => t.id === config.templateId)
         if (!tmpl) throw new Error("Template nao encontrado")
         const payload = buildCreateAgentPayloadFromTemplate(tmpl, config.name || tmpl.name)
-        const data = await createAgentFromTemplateMutation.mutateAsync(payload)
+        const data = await createAgentFromTemplateMutation.mutateAsync(payload as any)
         toast.success(`Agente "${config.name || tmpl.name}" criado`, "A partir de template")
         const newAgentId = data?.id ?? ""
         const failedChannels = await enableChannelsMutation.mutateAsync({

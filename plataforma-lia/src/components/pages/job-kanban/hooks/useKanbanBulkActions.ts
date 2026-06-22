@@ -132,7 +132,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
 
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {
-            results.push({ candidateId, success: false, error: failedMap.get(candidateId) })
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
           } else {
             results.push({ candidateId, success: true })
           }
@@ -178,7 +178,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
 
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {
-            results.push({ candidateId, success: false, error: failedMap.get(candidateId) })
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
           } else {
             results.push({ candidateId, success: true })
           }
@@ -195,7 +195,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
 
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {
-            results.push({ candidateId, success: false, error: failedMap.get(candidateId) })
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
           } else {
             results.push({ candidateId, success: true })
           }
@@ -209,7 +209,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
         const failedMap = new Map(apiResult.errors?.map((e) => [e.id, e.error_message]) || [])
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {
-            results.push({ candidateId, success: false, error: failedMap.get(candidateId) })
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
           } else {
             results.push({ candidateId, success: true })
           }
@@ -234,7 +234,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
 
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {
-            results.push({ candidateId, success: false, error: failedMap.get(candidateId) })
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
           } else {
             results.push({ candidateId, success: true })
           }
@@ -249,7 +249,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
         const failedMap = new Map(apiResult.errors?.map((e) => [e.id, e.error_message]) || [])
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {
-            results.push({ candidateId, success: false, error: failedMap.get(candidateId) })
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
           } else {
             results.push({ candidateId, success: true })
           }

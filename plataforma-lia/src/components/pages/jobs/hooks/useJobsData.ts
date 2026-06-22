@@ -175,6 +175,7 @@ async function fetchJobsData(): Promise<JobsQueryData> {
   let stats: Record<string, unknown> | null = null
       try {
         const overviewData = overviewResult
+        if (!overviewData) throw new Error("overviewData null")
         stats = {
           total: overviewData.active_jobs.total + (overviewData.all_jobs.hired_last_90d || 0),
           ativas: overviewData.active_jobs.total,

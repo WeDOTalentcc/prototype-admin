@@ -8,11 +8,11 @@ import { Chip } from "@/components/ui/chip"
 import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
 
 function InvoiceStatusChip({ status, t }: { status: string; t: (key: string) => string }) {
-  const variants: Record<string, "success" | "warning" | "error" | "neutral"> = {
+  const variants: Record<string, "success" | "warning" | "danger" | "neutral"> = {
     paid: "success",
     pending: "warning",
-    overdue: "error",
-    failed: "error",
+    overdue: "danger",
+    failed: "danger",
   }
   const label = t(`invoiceStatuses.${status}`) || status || "-"
   const variant = variants[status] || "neutral"

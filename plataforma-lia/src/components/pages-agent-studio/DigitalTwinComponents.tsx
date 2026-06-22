@@ -448,7 +448,7 @@ export function EvaluateWithTwinModal({
   onClose,
 }: EvaluateWithTwinModalProps) {
   // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('evaluate-with-twin', open)
+  useLiaModalTracking('evaluate-with-twin', isOpen)
 
   const t = useTranslations("agents.digitalTwin")
   const [evaluation, setEvaluation] = useState<TwinEvaluation | null>(null)

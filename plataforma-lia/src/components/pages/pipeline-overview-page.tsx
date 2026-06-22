@@ -501,7 +501,7 @@ export function PipelineOverviewPage() {
   // vacancy.imported_from_ats (ATS-imported vagas already have candidates,
   // so 'imported_untriaged' is the right default; greenfield uses 'new_only').
   const [showDispatchDialog, setShowDispatchDialog] = useState(false)
-  useLiaModalTracking('stage-agent-trigger', stageAgentModalStageId)
+  useLiaModalTracking('stage-agent-trigger', !!stageAgentModalStageId)
   useLiaModalTracking('dispatch-dialog', showDispatchDialog)
   const [dispatchVacancyId, setDispatchVacancyId] = useState<string | null>(null)
   const [dispatchAudience, setDispatchAudience] = useState<"new_only" | "imported_untriaged" | "manual_selection">("new_only")

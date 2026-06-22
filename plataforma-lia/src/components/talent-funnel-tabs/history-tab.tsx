@@ -126,9 +126,6 @@ export function HistoryTab({
   onDeleteItem,
   onClearAll
 }: HistoryTabProps) {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('history-save-search', showSaveModal)
-
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [selectedItem, setSelectedItem] = useState<SearchHistoryItem | null>(null)

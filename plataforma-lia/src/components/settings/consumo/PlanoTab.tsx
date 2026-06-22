@@ -9,12 +9,12 @@ import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
 
 function PlanStatusChip({ status }: { status: string | undefined }) {
   const t = useTranslations("settings.billing")
-  const variants: Record<string, "success" | "warning" | "error" | "neutral"> = {
+  const variants: Record<string, "success" | "warning" | "danger" | "neutral"> = {
     active: "success",
     trialing: "warning",
-    suspended: "error",
-    canceled: "error",
-    past_due: "error",
+    suspended: "danger",
+    canceled: "danger",
+    past_due: "danger",
   }
   const safeStatus = status && Object.keys(variants).includes(status) ? status : null
   const label = safeStatus ? t(`status.${safeStatus}` as any) : status || "—"

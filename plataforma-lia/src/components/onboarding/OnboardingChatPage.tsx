@@ -136,6 +136,8 @@ function OnboardingProgressBar({
   completedSteps: string[]
   totalSteps: number
 }) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "LIA"
   const STEPS = [
     { id: "whatsapp", label: `Conhecendo ${personaName}` },
     { id: "login", label: "Primeiro acesso" },

@@ -48,7 +48,7 @@ export function DepartmentGrid({
   handleOpenOrgChart,
 }: DepartmentGridProps) {
   // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('department-delete-confirm', departmentToDelete)
+  useLiaModalTracking('department-delete-confirm', !!departmentToDelete)
 
   const t = useTranslations('settings.departments');
 

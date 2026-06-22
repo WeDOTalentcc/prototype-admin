@@ -73,14 +73,13 @@ export function ColumnContextMenu({
   canMoveLeft,
   canMoveRight,
 }: ColumnContextMenuProps) {
+  const [renameOpen, setRenameOpen] = useState(false)
+  const [slaOpen, setSlaOpen] = useState(false)
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false)
   // P0-2 (2026-06-18): LIA screen awareness
   useLiaModalTracking('column-rename', renameOpen)
   useLiaModalTracking('column-sla', slaOpen)
   useLiaModalTracking('column-confirm-remove', confirmRemoveOpen)
-
-  const [renameOpen, setRenameOpen] = useState(false)
-  const [slaOpen, setSlaOpen] = useState(false)
-  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false)
   const [newName, setNewName] = useState(stage.displayName)
   const [slaHours, setSlaHours] = useState(0)
 

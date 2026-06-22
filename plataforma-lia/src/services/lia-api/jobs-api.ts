@@ -699,7 +699,7 @@ export async function archiveJobs(jobIds: string[]): Promise<BulkJobActionRespon
   })
   const payload = (await response.json().catch(() => ({}))) as BulkJobActionResponse
   if (!response.ok) {
-    throw new Error((payload as Record<string, unknown>)?.detail as string || response.statusText || "Falha ao arquivar vagas")
+    throw new Error((payload as unknown as Record<string, unknown>)?.detail as string || response.statusText || "Falha ao arquivar vagas")
   }
   return payload
 }
@@ -712,7 +712,7 @@ export async function unarchiveJobs(jobIds: string[]): Promise<BulkJobActionResp
   })
   const payload = (await response.json().catch(() => ({}))) as BulkJobActionResponse
   if (!response.ok) {
-    throw new Error((payload as Record<string, unknown>)?.detail as string || response.statusText || "Falha ao desarquivar vagas")
+    throw new Error((payload as unknown as Record<string, unknown>)?.detail as string || response.statusText || "Falha ao desarquivar vagas")
   }
   return payload
 }

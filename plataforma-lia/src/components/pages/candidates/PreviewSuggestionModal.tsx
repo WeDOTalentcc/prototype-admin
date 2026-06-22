@@ -51,7 +51,7 @@ export function PreviewSuggestionModal({
   onSetActiveSearchTab,
 }: PreviewSuggestionModalProps) {
   // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('preview-suggestion', previewSuggestion)
+  useLiaModalTracking('preview-suggestion', !!previewSuggestion)
 
   const t = useTranslations('candidates.modals')
 const [previewTags, setPreviewTags] = useState<string[]>([])

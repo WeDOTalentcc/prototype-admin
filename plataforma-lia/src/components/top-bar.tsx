@@ -45,9 +45,6 @@ interface TopBarProps {
 }
 
 export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking('topbar-password', showPasswordModal)
-
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [currentPassword, setCurrentPassword] = useState("")

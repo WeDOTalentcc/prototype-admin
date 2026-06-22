@@ -157,9 +157,6 @@ interface OfferReadiness {
 }
 
 function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory }: { onInstallSuccess?: () => void; initialCategory?: string }) {
-  // P0-2 (2026-06-18): LIA screen awareness
-  useLiaModalTracking("marketplace-template-preview", previewTemplate)
-
   const t = useTranslations("agents.marketplace")
   const queryClient = useQueryClient()
   const [search, setSearch] = React.useState("")
@@ -168,6 +165,8 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
 
   // Template preview modal state — "Ajustar antes" e "Ver detalhes"
   const [previewTemplate, setPreviewTemplate] = React.useState<AgentTemplate | null>(null)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking("marketplace-template-preview", !!previewTemplate)
 
   // Query: First-party WeDo agents
   const { data: agentsData, isLoading: loadingAgents } = useQuery({
@@ -280,7 +279,7 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
   const { templates, isLoading: loadingTemplates } = useLegacyAgentTemplates()
 
   const q = search.trim().toLowerCase()
-  const filteredAgents = firstPartyAgents.filter((a) =>
+  const filteredAgents = firstPartyAgents.filter((a: any) =>
     !q || a.name.toLowerCase().includes(q) || (a.description || "").toLowerCase().includes(q),
   )
   const filteredTemplates = templates.filter((tpl) =>
@@ -366,7 +365,7 @@ function BrowseMarketplace({ onInstallSuccess, initialCategory: _initialCategory
               </div>
             ) : null}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredAgents.map((agent) => {
+              {filteredAgents.map((agent: any) => {
                 const isActive = activatedIds.has(agent.id)
                 return (
                   <div
@@ -583,7 +582,7 @@ function InstalledAgents() {
 
   return (
     <div className="space-y-3">
-      {installations.map((inst) => (
+      {installations.map((inst: any) => (
         <div
           key={inst.id}
           className="flex items-center justify-between p-4 rounded-md border border-lia-border-subtle bg-lia-bg-secondary"
