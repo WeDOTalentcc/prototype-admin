@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.company import Approver, Benefit, CompanyProfile, Department, GlobalSearchSettings
 from app.models.recruitment_journey import RecruitmentAutomation, RecruitmentSLA, RecruitmentTemplate
 from lia_models.workforce import HiringPlan
+from lia_models.company_hiring_policy import CompanyHiringPolicy
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,21 @@ class SettingsProgressRepository:
             )
         )
         return result.scalar() or 0
+
+
+    async def get_hiring_policy(self, company_id) -> CompanyHiringPolicy | None:
+        """Fetch CompanyHiringPolicy for a company."""
+        try:
+            company_id_str = str(company_id)
+            result = await self.db.execute(
+                select(CompanyHiringPolicy).where(
+                    CompanyHiringPolicy.company_id == company_id_str
+                )
+            )
+            return result.scalar_one_or_none()
+        except Exception as e:
+            logger.error(f"Error fetching hiring policy: {e}")
+            return None
 
     async def get_global_search_settings(self, company_id) -> GlobalSearchSettings | None:
         """Fetch GlobalSearchSettings for a company."""
