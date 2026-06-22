@@ -42,9 +42,27 @@ GLOBAL_UI_ACTION_TYPES_CORE: frozenset[str] = frozenset({
 # (default branch in useUIAction.ts switch -> dispatchOrEmit).
 # They are NOT in the TypeScript GlobalUIAction union -- the TS switch default handles them.
 PAGE_SPECIFIC_UI_ACTION_TYPES: frozenset[str] = frozenset({
+    # ── existing (pre-2026-06-22) ──
     "suggest_pipeline_template",   # WizardPipelineTemplateCard (useWizardFlow.ts)
     "move_candidate",              # Kanban stage move (useKanbanLIAHandlers.ts)
     "switch_search_mode",          # Talent funnel toggle (useLIAQuickActions.ts)
+    # ── kanban page-specific (useKanbanLIAHandlers.ts) ──
+    "approve_candidate",
+    "send_email",
+    "start_screening",
+    "schedule_interview",
+    "request_data",
+    "analyze_profile",
+    # ── talent funnel page-specific (useLIAQuickActions.ts) ──
+    "start_job_wizard",
+    "trigger_export",
+    "open_add_to_list_modal",
+    # ── jobs page-specific (useJobsChat.ts) ──
+    "filter_jobs",
+    "compare_jobs",
+    # ── offer policy gate types (send_offer.py ui_action_by_reason) ──
+    "request_offer_approval",
+    "schedule_more_interviews",
 })
 
 # Union: every string that is ALLOWED to pass through the backend gates.
