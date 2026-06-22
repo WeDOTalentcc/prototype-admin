@@ -10,7 +10,6 @@ import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { sanitizeHtml } from "@/lib/sanitize"
-import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { toast } from "sonner"
 
 interface LiaExpandedPanelProps {
@@ -499,9 +498,7 @@ export function LiaLoadingIndicator() {
           </span>
         </div>
         <div className="bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px] p-3 inline-block">
-          <div className="flex items-center gap-1">
-            <ThinkingDots dotClassName="bg-wedo-cyan" size="md" />
-          </div>
+          <span className="text-xs text-lia-text-secondary animate-pulse motion-reduce:animate-none">Pensando…</span>
         </div>
       </div>
     </div>

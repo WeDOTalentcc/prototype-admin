@@ -10,15 +10,6 @@ import { Chip } from "@/components/ui/chip"
 
 // Thinking Indicator Component
 export const ThinkingIndicator = ({ message }: { message?: string }) => {
-  const [dots, setDots] = useState("")
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ?"" : prev +".")
-    }, 500)
-    return () => clearInterval(interval)
-  }, [])
-
   return (
     <div
       className="flex items-center gap-3 p-3 bg-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3 animate-fade-in-up"
@@ -28,8 +19,8 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-lia-text-primary">
-            Pensando{dots}
+          <span className="text-sm font-normal text-lia-text-secondary animate-pulse motion-reduce:animate-none">
+            Pensando…
           </span>
         </div>
         {message && (

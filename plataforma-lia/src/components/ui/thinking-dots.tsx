@@ -15,17 +15,10 @@ interface ThinkingDotsProps {
  *   <ThinkingDots dotClassName="bg-lia-text-tertiary" />    // neutral contexts
  *   <ThinkingDots dotClassName="bg-lia-text-primary" size="sm" /> // settings
  */
-export function ThinkingDots({ dotClassName = "bg-lia-text-tertiary", size = "md", className }: ThinkingDotsProps) {
-  const sizeClass = size === "sm" ? "w-1 h-1" : size === "lg" ? "w-2 h-2" : "w-1.5 h-1.5"
+export function ThinkingDots({ dotClassName, size, className }: ThinkingDotsProps) {
   return (
-    <div className={cn("flex items-center gap-1", className)}>
-      {[0, 150, 300].map((delay, i) => (
-        <span
-          key={i}
-          className={cn("rounded-full animate-bounce motion-reduce:animate-none", sizeClass, dotClassName)}
-          style={{ animationDelay: `${delay}ms` }}
-        />
-      ))}
-    </div>
+    <span className={cn("inline animate-pulse motion-reduce:animate-none text-inherit font-normal", className)}
+      aria-hidden="true"
+    >…</span>
   )
 }

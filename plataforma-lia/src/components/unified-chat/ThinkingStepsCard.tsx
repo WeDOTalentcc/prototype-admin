@@ -11,19 +11,15 @@ interface ThinkingStepsCardProps {
 }
 
 /**
- * ActivityDots — animated ellipsis indicating active processing.
+ * ActivityDots — text ellipsis matching surrounding text weight.
  * Reused by AgentActivityTimeline (DRY).
  */
 export function ActivityDots({ className }: { className?: string }) {
   return (
     <span
-      className={`inline-flex gap-1 items-center ${className ?? ""}`}
+      className={`inline animate-pulse motion-reduce:animate-none text-inherit font-normal ${className ?? ""}`}
       aria-hidden="true"
-    >
-      <span className="w-1.5 h-1.5 rounded-full bg-lia-text-secondary animate-[pulse-dot_1.4s_ease-in-out_infinite]" />
-      <span className="w-1.5 h-1.5 rounded-full bg-lia-text-secondary animate-[pulse-dot_1.4s_ease-in-out_0.2s_infinite]" />
-      <span className="w-1.5 h-1.5 rounded-full bg-lia-text-secondary animate-[pulse-dot_1.4s_ease-in-out_0.4s_infinite]" />
-    </span>
+    >…</span>
   )
 }
 
