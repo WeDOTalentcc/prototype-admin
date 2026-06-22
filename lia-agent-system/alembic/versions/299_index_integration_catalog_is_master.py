@@ -29,18 +29,20 @@ depends_on = None
 def upgrade() -> None:
     # Indice parcial para o pattern: is_master_template=TRUE AND deleted_at IS NULL
     # Usado pela branch OR da query list_for_company (selecao dos master templates ativos).
-    # CONCURRENTLY evita lock exclusivo em producao.
-    op.execute(
-        """
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS
-            ix_integration_catalog_master_active
-        ON integration_catalog_entries (is_master_template)
-        WHERE is_master_template = TRUE AND deleted_at IS NULL
-        """
-    )
+    # CONCURRENTLY exige autocommit — nao pode rodar dentro de transaction block.
+    with op.get_context().autocommit_block():
+        op.execute(
+            """
+            CREATE INDEX CONCURRENTLY IF NOT EXISTS
+                ix_integration_catalog_master_active
+            ON integration_catalog_entries (is_master_template)
+            WHERE is_master_template = TRUE AND deleted_at IS NULL
+            """
+        )
 
 
 def downgrade() -> None:
-    op.execute(
-        "DROP INDEX CONCURRENTLY IF EXISTS ix_integration_catalog_master_active"
-    )
+    with op.get_context().autocommit_block():
+        op.execute(
+            "DROP INDEX CONCURRENTLY IF EXISTS ix_integration_catalog_master_active"
+        )
