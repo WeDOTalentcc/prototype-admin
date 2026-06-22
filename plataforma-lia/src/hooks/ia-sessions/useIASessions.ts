@@ -1,6 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 // IA_SESSION_QUERY_KEYS — canonical keys for IASidebar session queries
 export const IA_SESSION_QUERY_KEYS = {
@@ -91,8 +92,11 @@ export function useUpdateSession() {
       return res.json()
     },
     onSuccess: () => {
-      // Invalidate all session list queries
       qc.invalidateQueries({ queryKey: ["ia-sessions"] })
+    },
+    onError: (err: Error) => {
+      console.error("[useUpdateSession]", err)
+      toast.error("Erro ao atualizar conversa")
     },
   })
 }
@@ -111,6 +115,10 @@ export function useMarkSessionRead() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ia-sessions"] })
     },
+    onError: (err: Error) => {
+      console.error("[useMarkSessionRead]", err)
+      toast.error("Erro ao marcar conversa como lida")
+    },
   })
 }
 
@@ -127,6 +135,10 @@ export function useDeleteSession() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ia-sessions"] })
     },
+    onError: (err: Error) => {
+      console.error("[useDeleteSession]", err)
+      toast.error("Erro ao excluir conversa")
+    },
   })
 }
 
@@ -142,6 +154,10 @@ export function useArchiveSession() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ia-sessions"] })
+    },
+    onError: (err: Error) => {
+      console.error("[useArchiveSession]", err)
+      toast.error("Erro ao arquivar conversa")
     },
   })
 }
