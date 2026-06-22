@@ -390,6 +390,14 @@ class LangGraphBase(BaseAgent, ABC):
                     )
                     if label and hasattr(streaming_callback, "emit_reasoning_step"):
                         streaming_callback.emit_reasoning_step(label)
+                    if hasattr(streaming_callback, "_schedule_send"):
+                        for _tc in _tcs:
+                            streaming_callback._schedule_send({
+                                "type": "tool_started",
+                                "tool_name": _tc.get("name", "unknown") if isinstance(_tc, dict) else getattr(_tc, "name", "unknown"),
+                                "tool_id": _tc.get("id", "") if isinstance(_tc, dict) else getattr(_tc, "id", ""),
+                                "tool_args_keys": list((_tc.get("args") or {}).keys()) if isinstance(_tc, dict) else list((getattr(_tc, "args", None) or {}).keys()),
+                            })
                 continue
 
             # mode == "messages": tuple (chunk, metadata)
@@ -399,6 +407,25 @@ class LangGraphBase(BaseAgent, ABC):
             _cls_name = type(chunk_obj).__name__
 
             if _cls_name == "ToolMessage":
+                if hasattr(streaming_callback, "_schedule_send"):
+                    _tm_name = getattr(chunk_obj, "name", None) or ""
+                    _tm_id = getattr(chunk_obj, "tool_call_id", None) or ""
+                    _tm_content = getattr(chunk_obj, "content", "")
+                    _tm_success = True
+                    if isinstance(_tm_content, str) and _tm_content.startswith("{"):
+                        try:
+                            import json as _json_tf
+                            _parsed_tf = _json_tf.loads(_tm_content)
+                            if isinstance(_parsed_tf, dict):
+                                _tm_success = _parsed_tf.get("success", True)
+                        except Exception:
+                            pass
+                    streaming_callback._schedule_send({
+                        "type": "tool_finished",
+                        "tool_name": _tm_name,
+                        "tool_id": _tm_id,
+                        "success": _tm_success,
+                    })
                 continue
 
             if _cls_name != "AIMessageChunk":
