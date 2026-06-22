@@ -198,7 +198,10 @@ def _parameters_to_args_schema(name: str, parameters: Dict[str, Any]) -> Any:
 
     fields: Dict[str, Any] = {}
     for fname, fschema in props.items():
-        py_type = _TYPE_MAP.get(fschema.get("type", "string"), str)
+        raw_type = fschema.get("type", "string")
+        if isinstance(raw_type, list):
+            raw_type = next((t for t in raw_type if t != "null"), "string")
+        py_type = _TYPE_MAP.get(raw_type, str)
         desc = fschema.get("description", "")
         extra: Dict[str, Any] = {}
         if "enum" in fschema:

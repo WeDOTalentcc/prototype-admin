@@ -387,7 +387,7 @@ class LangGraphReActBase(LangGraphBase):
                 _d = _parsed.get("data")
                 if isinstance(_d, dict):
                     _ua = _d.get("ui_action")
-                    if _ua and _ua in _DIRECT_ACTIONABLE:
+                    if _ua and _ua in _DIRECT_ACTIONABLE and _last_ui_directive is None:
                         _last_ui_directive = {
                             "ui_action": _ua,
                             "ui_action_params": _d.get("ui_action_params"),
@@ -399,6 +399,11 @@ class LangGraphReActBase(LangGraphBase):
                 if isinstance(_rblocks, list) and _rblocks:
                     _direct_blocks.extend(_rblocks)
             if _last_ui_directive:
+                _td_page = (_last_ui_directive.get("ui_action_params") or {}).get("page")
+                if _td_page == "pipeline_kanban":
+                    _um = getattr(input, "message", "") or ""
+                    if any(kw in _um.lower() for kw in ("inicio", "home", "pagina inicial", "tela inicial", "página inicial")):
+                        _last_ui_directive["ui_action_params"]["page"] = "home"
                 output.metadata = {
                     **(output.metadata or {}),
                     **_last_ui_directive,

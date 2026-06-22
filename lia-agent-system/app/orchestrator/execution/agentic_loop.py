@@ -503,8 +503,14 @@ class AgenticLoop:
                     # None for normal results, never raises (REGRA-4 fail-loud
                     # is N/A here: the LLM still gets the result via content).
                     _directive = _extract_tool_directive(result)
-                    if _directive is not None:
+                    if _directive is not None and tool_directive is None:
                         tool_directive = _directive
+                        _td_page = (tool_directive.get("ui_action_params") or {}).get("page")
+                        if _td_page == "pipeline_kanban" and user_message:
+                            _um_low = user_message.lower()
+                            if any(kw in _um_low for kw in ("inicio", "home", "pagina inicial", "tela inicial", "página inicial")):
+                                tool_directive["ui_action_params"]["page"] = "home"
+                                logger.debug("[AgenticLoop] home-intent guard: pipeline_kanban -> home")
                     _blocks = _extract_response_blocks(result)
                     if _blocks:
                         response_blocks_acc.extend(_blocks)

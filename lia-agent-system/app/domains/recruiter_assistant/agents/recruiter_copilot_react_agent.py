@@ -121,7 +121,7 @@ COPILOT_DOMAIN_SPECIFIC = (
     "  creditos de IA/saldo/consumo de IA -> ir_para_creditos_ia\n"
     "  integracoes/ATS externo -> ir_para_integracoes\n"
     "  ajuda/documentacao/suporte -> ir_para_ajuda\n"
-    "  home/inicio/pagina inicial -> ir_para_home\n"
+    "  home/inicio/pagina inicial/tela inicial -> ir_para_home (UNICA capability para 'inicio'/'home' — NUNCA use ir_para_visao_global para 'inicio')\n"
     "  configuracoes GENERICA (sem especificar secao) -> ir_para_configuracoes\n"
     "  funil de talentos/sourcing/busca de candidatos cross-vaga -> ir_para_funil_talentos\n"
     "  agent studio/agentes IA -> ir_para_agent_studio\n"
