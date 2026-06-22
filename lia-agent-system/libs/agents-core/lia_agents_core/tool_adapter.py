@@ -170,6 +170,56 @@ class ToolContract(BaseModel):
 ToolDefinition = ToolContract
 
 
+
+def _parameters_to_args_schema(name: str, parameters: Dict[str, Any]) -> Any:
+    """Convert ToolContract.parameters (JSON Schema dict) to a Pydantic model
+    suitable for StructuredTool.args_schema.
+
+    Without args_schema, LangChain infers schema from the function signature.
+    Since tee wrappers have ``*args, **kwargs``, it creates a single ``kwargs``
+    field — causing double-nesting: the LLM sends ``{"kwargs": {"field": val}}``
+    instead of ``{"field": val}``, and handlers that read ``kwargs.get("field")``
+    get None.
+    """
+    from pydantic import create_model as _create_model
+    from pydantic import Field as _Field
+
+    if not parameters or not isinstance(parameters, dict):
+        return None
+    props = parameters.get("properties")
+    if not props:
+        return None
+
+    required = set(parameters.get("required", []))
+    _TYPE_MAP = {
+        "string": str, "integer": int, "number": float,
+        "boolean": bool, "array": list, "object": dict,
+    }
+
+    fields: Dict[str, Any] = {}
+    for fname, fschema in props.items():
+        py_type = _TYPE_MAP.get(fschema.get("type", "string"), str)
+        desc = fschema.get("description", "")
+        extra: Dict[str, Any] = {}
+        if "enum" in fschema:
+            extra["enum"] = fschema["enum"]
+        if fname in required:
+            fields[fname] = (
+                py_type,
+                _Field(description=desc, **({"json_schema_extra": extra} if extra else {})),
+            )
+        else:
+            fields[fname] = (
+                Optional[py_type],
+                _Field(default=None, description=desc, **({"json_schema_extra": extra} if extra else {})),
+            )
+
+    try:
+        return _create_model(f"{name}_args", **fields)
+    except Exception:
+        return None
+
+
 def tool_definition_to_langchain_tool(td: ToolContract) -> Any:
     """
     Converte um ToolContract em LangChain StructuredTool compatível com
@@ -219,16 +269,22 @@ def tool_definition_to_langchain_tool(td: ToolContract) -> Any:
     name = td.name
     description = td.description or f"Executa {name}"
 
+    _schema = _parameters_to_args_schema(name, td.parameters)
+
     if inspect.iscoroutinefunction(fn):
         return StructuredTool.from_function(
             coroutine=fn,
             name=name,
             description=description,
+            args_schema=_schema,
+            infer_schema=_schema is None,
         )
     return StructuredTool.from_function(
         func=fn,
         name=name,
         description=description,
+        args_schema=_schema,
+        infer_schema=_schema is None,
     )
 
 

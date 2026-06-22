@@ -46,7 +46,7 @@ from app.shared.chat_event_serializer import (
     serialize_reasoning_step,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
-from app.shared.pii_masking import mask_pii_outbound
+from app.shared.pii_masking import mask_pii_outbound, set_skip_llm_input_pii_strip
 from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_plan_for_company,

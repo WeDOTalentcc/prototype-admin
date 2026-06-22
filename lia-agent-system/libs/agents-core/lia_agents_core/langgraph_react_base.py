@@ -359,6 +359,60 @@ class LangGraphReActBase(LangGraphBase):
 
         output = self._state_to_output(result, input)
 
+        # Fix canonical (2026-06-22): extract ui_action + response_blocks
+        # directly from ToolMessage content in the graph state.
+        # asyncio.gather in LangGraph ToolNode copies the Context, so
+        # ContextVar-based sinks (ui_action_sink, rrp_block_sink) set
+        # inside tools do NOT propagate back. This direct extraction
+        # is the primary mechanism; sink drains below are kept as
+        # defense-in-depth for execution paths that dont use gather.
+        try:
+            from app.shared.ui_action_canonical import ALL_ACTIONABLE_UI_ACTION_TYPES as _DIRECT_ACTIONABLE
+            _msgs = (result or {}).get("messages", [])
+            _last_ui_directive = None
+            _direct_blocks = []
+            for _msg in _msgs:
+                _raw = getattr(_msg, "content", None)
+                if _raw is None or not isinstance(_raw, str):
+                    continue
+                if not _raw.startswith("{"):
+                    continue
+                try:
+                    import json as _json_direct
+                    _parsed = _json_direct.loads(_raw)
+                except Exception:
+                    continue
+                if not isinstance(_parsed, dict):
+                    continue
+                _d = _parsed.get("data")
+                if isinstance(_d, dict):
+                    _ua = _d.get("ui_action")
+                    if _ua and _ua in _DIRECT_ACTIONABLE:
+                        _last_ui_directive = {
+                            "ui_action": _ua,
+                            "ui_action_params": _d.get("ui_action_params"),
+                        }
+                        _seed = _d.get("seed_source")
+                        if _seed is not None:
+                            _last_ui_directive["seed_source"] = _seed
+                _rblocks = _parsed.get("response_blocks")
+                if isinstance(_rblocks, list) and _rblocks:
+                    _direct_blocks.extend(_rblocks)
+            if _last_ui_directive:
+                output.metadata = {
+                    **(output.metadata or {}),
+                    **_last_ui_directive,
+                }
+            if _direct_blocks:
+                output.metadata = {
+                    **(output.metadata or {}),
+                    "response_blocks": (
+                        (output.metadata or {}).get("response_blocks") or []
+                    ) + _direct_blocks,
+                }
+        except Exception as _direct_exc:
+            logger.debug("[%s] direct tool-msg extraction (fail-open): %s", self.__class__.__name__, _direct_exc)
+
         # wire-B canonical (2026-06-06): drena response_blocks tee'd pelas tools
         # (via tool_definition_to_langchain_tool) pro metadata → SSE/WS serializa
         # → FE renderiza cards/tabelas/funis. Consumo unico no fim do turno.
