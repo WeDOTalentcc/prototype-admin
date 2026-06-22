@@ -154,11 +154,11 @@ capabilities:
     navigate_fallback: /analytics
 
   criar_automacao:
+    label: "Criar automação"
+    description: "Criar regra de automação (gatilhos + ações no pipeline de recrutamento)"
     chat_executable: false
     entity_required: []
-    # modal_id: automation_builder — REMOVIDO (F1 2026-06-09): componente inexistente,
-    # rota /automacoes nao existe; feature nao-implementada. Domínio automation é real
-    # (stage_automation_engine) mas acao create_automation nao tem handler. Usa navigate_fallback.
+    navigate_page: agent_studio
     navigate_fallback: /automacoes
 
   consultar_consumo:
@@ -171,13 +171,6 @@ capabilities:
     entity_required: []
     modal_id: hiring_policy_config
     navigate_fallback: /configuracoes/politicas
-
-  criar_template:
-    chat_executable: false
-    entity_required: []
-    # modal_id: template_builder — REMOVIDO (F1 2026-06-09): ghost puro — sem componente FE,
-    # sem handler BE, sem rota /templates. Usa navigate_fallback.
-    navigate_fallback: /templates
 
   criar_a_partir_de_template:
     chat_executable: true
