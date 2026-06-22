@@ -403,6 +403,8 @@ company_id: str = Depends(require_company_id)):
     # via mask_pii_outbound on every SSE chunk (lines 967+, 1055+, 1196+, 2028+).
     # Aligns with RecruiterCopilotReActAgent._enable_pii_strip=False (line 260).
     # Candidate-facing chat (candidate_portal.py) keeps its own input strip.
+    # T3 deep fix: set ContextVar so llm.py strip_pii_for_llm_prompt also skips
+    _pii_skip_token = set_skip_llm_input_pii_strip(True)
     _raw_content = content  # wizard email extraction still needs raw content
 
     active_domain = req.domain or "recruiter_assistant"
@@ -508,7 +510,7 @@ company_id: str = Depends(require_company_id)):
         async def _b2_setup_async():
             try:
                 import uuid as _uuid_b2
-                from app.shared.pii_masking import set_chat_pii_mask_identity, chat_should_mask_identity
+                from app.shared.pii_masking import set_chat_pii_mask_identity, chat_should_mask_identity, set_skip_llm_input_pii_strip
                 if user_id and user_id != "anonymous" and company_id:
                     _b2_cache_key = (str(user_id), str(company_id))
                     _b2_cached = _pii_identity_cache.get(_b2_cache_key)

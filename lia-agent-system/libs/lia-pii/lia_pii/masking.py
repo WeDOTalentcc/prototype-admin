@@ -121,6 +121,25 @@ _RECRUITER_CHAT_MASK_PII = os.environ.get(
 _chat_pii_mask_identity: ContextVar[bool] = ContextVar("_chat_pii_mask_identity", default=False)
 
 
+# T3 audit 2026-06-22: skip input PII strip for recruiter chat.
+# Recruiter is LGPD data controller (Art. 7 III legitimate interest).
+# Output masking per RBAC (mask_pii_outbound) stays active.
+_skip_llm_input_pii_strip: ContextVar[bool] = ContextVar("_skip_llm_input_pii_strip", default=False)
+
+
+def set_skip_llm_input_pii_strip(value: bool):
+    """Set per-request flag to skip input PII stripping (recruiter chat context)."""
+    return _skip_llm_input_pii_strip.set(bool(value))
+
+
+def reset_skip_llm_input_pii_strip(token) -> None:
+    """Reset the ContextVar to its previous value."""
+    try:
+        _skip_llm_input_pii_strip.reset(token)
+    except Exception:
+        pass
+
+
 def set_chat_pii_mask_identity(value: bool):
     """Set the per-turn identity-masking flag. Returns a token for reset()."""
     return _chat_pii_mask_identity.set(bool(value))
@@ -516,5 +535,7 @@ async def strip_pii_for_llm_prompt_async(text: str, mask_names: bool = True) -> 
     """
     import asyncio
     if not _LLM_PROMPT_PII_STRIPPING_ENABLED or not text:
+        return text
+    if _skip_llm_input_pii_strip.get():
         return text
     return await asyncio.to_thread(strip_pii_for_llm_prompt, text, mask_names)

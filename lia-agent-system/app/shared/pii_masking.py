@@ -38,7 +38,9 @@ from lia_pii.masking import (
     mask_pii,
     mask_pii_outbound,
     reset_chat_pii_mask_identity,
+    reset_skip_llm_input_pii_strip,
     set_chat_pii_mask_identity,
+    set_skip_llm_input_pii_strip,
     strip_pii_for_llm_prompt,
     strip_pii_for_llm_prompt_async,
 )
@@ -56,6 +58,8 @@ __all__ = [
     "mask_pii",
     "mask_pii_outbound",
     "reset_chat_pii_mask_identity",
+    "reset_skip_llm_input_pii_strip",
     "set_chat_pii_mask_identity",
+    "set_skip_llm_input_pii_strip",
     "strip_pii_for_llm_prompt",
 ]
