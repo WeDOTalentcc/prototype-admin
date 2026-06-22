@@ -15,6 +15,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.core.database import get_db, get_tenant_db
+from app.domains.cv_screening.services.lia_field_config_service import invalidate_lia_field_config_cache
+from app.shared.services.tenant_context_service import invalidate_tenant_context_cache
 from app.models.lia_field_toggles import DEFAULT_FIELD_TOGGLES, FIELD_FALLBACK_CONFIG, LiaFieldToggle
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
@@ -219,6 +221,9 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         for t in all_toggles
     ]
     
+    invalidate_lia_field_config_cache(company_id)
+    invalidate_tenant_context_cache(company_id)
+
     return FieldTogglesResponse(
         company_id=company_id,
         toggles=toggles_dict,

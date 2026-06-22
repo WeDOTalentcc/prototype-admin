@@ -371,11 +371,16 @@ class LiaFieldConfigService:
             from app.models.company_hiring_policy import CompanyHiringPolicy as _HP
             from sqlalchemy import select as _sel
             result = await self.db.execute(
-                _sel(_HP).where(_HP.company_id == company_uuid)
+                _sel(_HP).where(_HP.company_id == str(company_uuid))
             )
             return result.scalars().first()
         except Exception as e:
-            logger.warning("[LiaFieldConfigService] _load_hiring_policy failed: %s", e)
+            logger.warning(
+                "[LiaFieldConfigService] _load_hiring_policy failed for company=%s: %s",
+                company_uuid,
+                e,
+                exc_info=True,
+            )
             return None
 
     async def _load_job_history(self, company_id: str, limit: int = 20) -> list[dict[str, Any]]:
