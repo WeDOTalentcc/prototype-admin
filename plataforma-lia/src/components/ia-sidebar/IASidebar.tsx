@@ -534,7 +534,12 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
         {/* Nova conversa CTA */}
         <div className="px-3 py-2">
           <button
-            onClick={() => { openLiaChat(); closeIASidebar() }}
+            onClick={() => {
+              switchChatContext("general", { conversationId: null, resetConversation: true })
+              setChatMessages([])
+              onNewConversation?.()
+              closeIASidebar()
+            }}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-lia-bg-inverse hover:bg-lia-bg-inverse/90 text-lia-text-on-inverse text-sm font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
