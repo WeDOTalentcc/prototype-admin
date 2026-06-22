@@ -114,7 +114,7 @@ _AGENT_TIMEOUT = settings.LLM_TIMEOUT_SECONDS
 # T2 audit 2026-06-21: PlanExecutor without DomainRegistry produces
 # fake [OK] on every task and skips the real agent. Gate OFF until
 # DomainRegistry wiring is restored.
-_PLAN_EXECUTOR_ENABLED = False
+_PLAN_EXECUTOR_ENABLED = True  # restored 2026-06-22 after wiring DomainRegistry in all call sites
 
 
 async def _drain_queue_with_keepalive(queue, is_done, next_id, *, poll_s: float = 0.5, keepalive_after_s: float = 15.0):
@@ -1263,6 +1263,8 @@ company_id: str = Depends(require_company_id)):
                         try:
                             from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
                             from app.shared.execution import PlanExecutor
+                            from app.domains.registry import DomainRegistry
+                            from app.domains.workflow import DomainWorkflow
                             from app.shared.execution.plan_detector import ExecutionPlan, AgentTask
                             _auto_sv = AutomationReActAgent()
                             _decomp_sv = await _auto_sv.decompose_task(
@@ -1327,7 +1329,7 @@ company_id: str = Depends(require_company_id)):
                                     "total_tasks": len(_agent_tasks_sv),
                                     "tasks": [{"task_id": t.task_id, "action_id": t.action_id, "domain_id": t.domain_id} for t in _agent_tasks_sv],
                                 })
-                                _plan_exec_sv = PlanExecutor()
+                                _plan_exec_sv = PlanExecutor(domain_registry=DomainRegistry(), domain_workflow=DomainWorkflow())
                                 _exec_result_sv = await asyncio.wait_for(
                                     _plan_exec_sv.execute(
                                         plan=_plan_sv, user_id=user_id, session_id=_cid,
@@ -1471,6 +1473,8 @@ company_id: str = Depends(require_company_id)):
                         try:
                             from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
                             from app.shared.execution import PlanExecutor
+                            from app.domains.registry import DomainRegistry
+                            from app.domains.workflow import DomainWorkflow
                             from app.shared.execution.plan_detector import ExecutionPlan, AgentTask
 
                             _auto = AutomationReActAgent()
@@ -1549,7 +1553,7 @@ company_id: str = Depends(require_company_id)):
                                     "tasks": [{"task_id": t.task_id, "action_id": t.action_id, "domain_id": t.domain_id} for t in _agent_tasks],
                                 })
 
-                                _plan_exec = PlanExecutor()
+                                _plan_exec = PlanExecutor(domain_registry=DomainRegistry(), domain_workflow=DomainWorkflow())
                                 _exec_result = await asyncio.wait_for(
                                     _plan_exec.execute(
                                         plan=_plan,
@@ -1588,6 +1592,8 @@ company_id: str = Depends(require_company_id)):
 
                 try:
                     from app.shared.execution import PlanDetector, PlanExecutor
+                    from app.domains.registry import DomainRegistry
+                    from app.domains.workflow import DomainWorkflow
                     from app.shared.execution.plan_progress_mapper import (
                         map_plan_event,
                         new_plan_progress_state,
@@ -1637,7 +1643,7 @@ company_id: str = Depends(require_company_id)):
                             "total_tasks": len(_detected.tasks),
                             "tasks": [{"task_id": t.task_id, "action_id": t.action_id, "domain_id": t.domain_id} for t in _detected.tasks],
                         })
-                        _plan_exec = PlanExecutor()
+                        _plan_exec = PlanExecutor(domain_registry=DomainRegistry(), domain_workflow=DomainWorkflow())
                         _exec_result = await asyncio.wait_for(
                             _plan_exec.execute(
                                 plan=_detected,
