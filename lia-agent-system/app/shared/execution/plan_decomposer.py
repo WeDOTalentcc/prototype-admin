@@ -200,27 +200,29 @@ class PlanDecomposer:
 
     async def decompose(
         self,
-        query: str,
+        *,
+        user_message: str,
+        enriched_context: str,
         company_id: str | None = None,
-        raw_query: str | None = None,
     ) -> ExecutionPlan | None:
         """
         Decompose a user query into a multi-step ExecutionPlan.
 
         Args:
-            query: The enriched query (with history context) — sent to LLM.
-            raw_query: The original user message — used for heuristic and regex.
-                       Falls back to query if not provided.
+            user_message: The original recruiter message (no history prefix).
+                          Used for heuristic pre-filter and regex fast-path.
+            enriched_context: The full enriched string with conversation history
+                              and entity hints. Sent to LLM for richer decomposition.
+            company_id: Tenant ID for audit/logging.
 
         Returns None if the query is single-step or conversational.
         Falls back gracefully on any LLM error.
         """
         t0 = time.perf_counter()
-        _raw = raw_query or query
 
         # ── Fast path: regex fallback (0ms, covers existing patterns) ────
         if self._fallback:
-            regex_plan = self._fallback.detect(_raw)
+            regex_plan = self._fallback.detect(user_message)
             if regex_plan and len(regex_plan.tasks) >= 2:
                 elapsed = (time.perf_counter() - t0) * 1000
                 logger.info(
@@ -231,14 +233,20 @@ class PlanDecomposer:
                 return regex_plan
 
         # ── Heuristic pre-filter ─────────────────────────────────────────
-        if not _passes_heuristic(_raw):
-            logger.info("[PlanDecomposer] heuristic: no multi-step signal in: %.80s", _raw)
+        if not _passes_heuristic(user_message):
+            logger.info(
+                "[PlanDecomposer] heuristic: no multi-step signal in: %.80s",
+                user_message,
+            )
             return None
-        logger.info("[PlanDecomposer] heuristic passed, calling LLM for: %.80s", _raw)
+        logger.info(
+            "[PlanDecomposer] heuristic passed, calling LLM for: %.80s",
+            user_message,
+        )
 
         # ── LLM decomposition ───────────────────────────────────────────
         try:
-            result = await self._call_llm(query)
+            result = await self._call_llm(enriched_context)
         except Exception as exc:
             elapsed = (time.perf_counter() - t0) * 1000
             logger.warning(
@@ -251,7 +259,7 @@ class PlanDecomposer:
         elapsed = (time.perf_counter() - t0) * 1000
 
         if not result.is_multi_step or result.confidence < _CONFIDENCE_THRESHOLD:
-            logger.debug(
+            logger.info(
                 "[PlanDecomposer] LLM says single-step (confidence=%.2f, %.0fms)",
                 result.confidence,
                 elapsed,
@@ -259,11 +267,11 @@ class PlanDecomposer:
             return None
 
         if len(result.steps) < 2:
-            logger.debug("[PlanDecomposer] LLM returned < 2 steps, skipping")
+            logger.info("[PlanDecomposer] LLM returned < 2 steps, skipping")
             return None
 
         # ── Validate and build plan ──────────────────────────────────────
-        plan = self._validate_and_build_plan(result, query)
+        plan = self._validate_and_build_plan(result, enriched_context)
 
         if plan:
             logger.info(
@@ -274,14 +282,14 @@ class PlanDecomposer:
                 ", ".join(f"{t.domain_id}.{t.action_id}" for t in plan.tasks),
             )
         else:
-            logger.debug(
+            logger.info(
                 "[PlanDecomposer] validation reduced to <2 valid steps (%.0fms)",
                 elapsed,
             )
 
         return plan
 
-    async def _call_llm(self, query: str) -> DecompositionResult:
+    async def _call_llm(self, enriched_context: str) -> DecompositionResult:
         """Call LLM with structured output to decompose the query."""
         from app.domains.ai.services.llm import LLMService
 
@@ -291,10 +299,14 @@ class PlanDecomposer:
             max_steps=MAX_PLAN_STEPS,
         )
 
-        logger.info("[PlanDecomposer] calling LLM (provider=%s, max_tokens=%d)", _DECOMPOSE_PROVIDER, _DECOMPOSE_MAX_TOKENS)
+        logger.info(
+            "[PlanDecomposer] calling LLM (provider=%s, max_tokens=%d)",
+            _DECOMPOSE_PROVIDER,
+            _DECOMPOSE_MAX_TOKENS,
+        )
         llm = LLMService()
         result: DecompositionResult = await llm.generate_structured(
-            messages=[{"role": "user", "content": query}],
+            messages=[{"role": "user", "content": enriched_context}],
             output_model=DecompositionResult,
             provider=_DECOMPOSE_PROVIDER,
             system_prompt=system_prompt,
@@ -302,7 +314,10 @@ class PlanDecomposer:
         )
         logger.info(
             "[PlanDecomposer] LLM result: is_multi_step=%s confidence=%.2f steps=%d reasoning=%.60s",
-            result.is_multi_step, result.confidence, len(result.steps), result.reasoning,
+            result.is_multi_step,
+            result.confidence,
+            len(result.steps),
+            result.reasoning,
         )
         return result
 
@@ -321,7 +336,6 @@ class PlanDecomposer:
         valid_steps: list[DecomposedStep] = []
 
         for step in result.steps[:MAX_PLAN_STEPS]:
-            # Check domain exists
             domain = self._registry.get_instance(step.domain_id)
             if not domain:
                 logger.debug(
@@ -330,7 +344,6 @@ class PlanDecomposer:
                 )
                 continue
 
-            # Check action exists in domain
             domain_actions = domain.get_allowed_actions()
             action_ids = {(a.action_id or a.id) for a in domain_actions}
             if step.action_id not in action_ids:
@@ -342,7 +355,6 @@ class PlanDecomposer:
                 )
                 continue
 
-            # Block job creation actions (INVIOLABLE — Task #1211)
             if step.action_id in JOB_CREATION_ACTION_IDS:
                 logger.warning(
                     "[PlanDecomposer] BLOCKED job creation action '%s' in plan (INVIOLABLE)",
@@ -355,7 +367,6 @@ class PlanDecomposer:
         if len(valid_steps) < 2:
             return None
 
-        # Build ExecutionPlan
         plan = ExecutionPlan()
         plan.original_query = original_query
         plan.detected_pattern = f"llm_decomposed:{result.reasoning[:60]}"

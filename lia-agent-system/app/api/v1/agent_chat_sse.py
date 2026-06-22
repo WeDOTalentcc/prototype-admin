@@ -1604,14 +1604,14 @@ company_id: str = Depends(require_company_id)):
                         fallback_detector=PlanDetector(),
                     )
                     _detected = (
-                    await _plan_decomposer.decompose(
-                        _eff_content,
-                        company_id=str(company_id),
-                        raw_query=content,
+                        await _plan_decomposer.decompose(
+                            user_message=content,
+                            enriched_context=_eff_content,
+                            company_id=str(company_id),
+                        )
+                        if _PLAN_EXECUTOR_ENABLED
+                        else None
                     )
-                    if _PLAN_EXECUTOR_ENABLED
-                    else None
-                )
                     if _detected and len(_detected.tasks) >= 2:
                         logger.info(
                             "[SSEChat] Multi-step plan detected: %s (%d tasks)",
