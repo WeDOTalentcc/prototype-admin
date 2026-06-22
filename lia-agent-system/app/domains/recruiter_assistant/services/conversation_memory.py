@@ -476,6 +476,7 @@ class ConversationMemory:
         self,
         db: AsyncSession,
         conversation_id: str,
+        company_id: str | None = None,
     ) -> bool:
         """
         Archive a conversation.
@@ -483,18 +484,23 @@ class ConversationMemory:
         Args:
             db: Database session
             conversation_id: Conversation ID
+            company_id: When provided, enforces tenant isolation — prevents IDOR archive.
             
         Returns:
-            True if successful
+            True if successful, False if not found or wrong tenant.
         """
         try:
-            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             conv_uuid = UUID(conversation_id) if isinstance(conversation_id, str) else conversation_id
         except (ValueError, TypeError):
             return False
+
+        if company_id:
+            conv = await self.get_conversation(db, conversation_id, company_id=company_id)
+            if conv is None:
+                logger.warning("archive_conversation: tenant mismatch or not found — %s / %s", conversation_id, company_id)
+                return False
         
         await db.execute(
-            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             update(Conversation)
             .where(Conversation.id == conv_uuid)
             .values(

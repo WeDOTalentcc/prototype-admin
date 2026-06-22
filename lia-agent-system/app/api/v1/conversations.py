@@ -598,6 +598,7 @@ company_id: str = Depends(require_company_id)):
         success = await conversation_memory.archive_conversation(
             db=db,
             conversation_id=conversation_id,
+            company_id=company_id,
         )
         
         if not success:
