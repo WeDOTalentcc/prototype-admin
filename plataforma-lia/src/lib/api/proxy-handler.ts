@@ -11,7 +11,7 @@ type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
 
 type HandlerFn = (
   request: NextRequest,
-  context: { params: Promise<Record<string, string>> }
+  context: { params: Promise<Record<string, string | string[]>> }
 ) => Promise<NextResponse>
 
 type ProxyResult<M extends HttpMethod> = {
@@ -109,11 +109,11 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
   function makeHandler(method: string): HandlerFn {
     return async (
       request: NextRequest,
-      context: { params: Promise<Record<string, string>> }
+      context: { params: Promise<Record<string, string | string[]>> }
     ) => {
       try {
         const resolvedParams = hasParams && context?.params
-          ? await context.params
+          ? (await context.params) as Record<string, string>
           : {}
         const resolvedPath = hasParams
           ? resolvePath(backendPath, resolvedParams)

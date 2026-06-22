@@ -9,7 +9,7 @@ const handlers = createProxyHandlers({
   backendTarget: "fastapi",
 })
 
-export const dynamic = handlers.dynamic
+export const dynamic = "force-dynamic"
 
 async function withCompanyId(
   request: NextRequest,

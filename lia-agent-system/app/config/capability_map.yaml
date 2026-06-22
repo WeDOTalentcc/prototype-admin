@@ -540,3 +540,14 @@ capabilities:
     entity_required: []
     settings_section: fairness-compliance
     navigate_fallback: /configuracoes?section=fairness-compliance
+
+  # ── Alias: ir_para_relatorios → dashboard (P2 navegação 2026-06-22) ────
+  # LLM não mapeia "relatórios/indicadores/métricas/KPIs" para ir_para_dashboard
+  # porque o key name não contém essas palavras. Alias semântico resolve.
+  ir_para_relatorios:
+    label: "Ir para Relatórios / Indicadores"
+    description: "Navegar para relatórios, indicadores, métricas e KPIs de recrutamento"
+    chat_executable: false
+    entity_required: []
+    navigate_page: dashboard
+    navigate_fallback: /?view=Indicadores
