@@ -463,7 +463,8 @@ export function UnifiedChat({
     setWizardPanelMode,
     wizardConsentDeclined,
     setWizardConsentDeclined,
-  } = useLiaFloat();
+    registerNewConversationGuard,
+    requestNewConversation,} = useLiaFloat();
 
   const {
     chatMessages,
@@ -951,25 +952,26 @@ export function UnifiedChat({
     resolver?.(decision);
   }, []);
 
-  // Task #1128 — "Nova conversa": clears wizard AND switches to a fresh
-  // conversation. Triggered by the sidebar/slash command "/nova-conversa".
-  // Task #1133 — quando há wizard ativo, exige confirmação antes de
-  // descartar o rascunho (mesmo modal canônico do "Cancelar wizard").
+  // Register wizard guard in context so ANY caller of requestNewConversation()
+  // (IASidebar, slash commands, etc.) gets wizard protection automatically.
+  useEffect(() => {
+    registerNewConversationGuard(async () => {
+      const proceed = await requireWizardCancelConfirm("new-chat");
+      if (!proceed) return false;
+      return await resetCurrentWizardSession();
+    });
+    return () => registerNewConversationGuard(null);
+  }, [registerNewConversationGuard, requireWizardCancelConfirm, resetCurrentWizardSession]);
+
+  // Task #1128 — "Nova conversa": delegates to context's canonical
+  // requestNewConversation (which calls our registered wizard guard),
+  // then cleans up local-only state (input text, attached file).
   const handleNewChat = useCallback(async () => {
-    const proceed = await requireWizardCancelConfirm("new-chat");
-    if (!proceed) return;
-    const ok = await resetCurrentWizardSession();
+    const ok = await requestNewConversation();
     if (!ok) return;
-    switchChatContext("general", { conversationId: null, resetConversation: true });
-    setChatMessages([]);
     setInputText("");
     setAttachedFile(null);
-  }, [
-    requireWizardCancelConfirm,
-    resetCurrentWizardSession,
-    switchChatContext,
-    setChatMessages,
-  ]);
+  }, [requestNewConversation]);
 
   // Task #1128 — "Cancelar wizard": kills the wizard checkpoint but
   // PRESERVES the current `conversation_id` / chat thread. The recruiter

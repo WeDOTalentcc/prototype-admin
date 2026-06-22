@@ -364,7 +364,7 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
   const t = useTranslations("iaSidebar")
   const { isIASidebarOpen, closeIASidebar, activeConversationId, setActiveConversation, localUnreadCounts } =
     useIASessionStore()
-  const { open: openLiaChat, switchChatContext, loadChatHistory, chatContextType, setChatMessages } = useLiaFloat()
+  const { open: openLiaChat, switchChatContext, loadChatHistory, chatContextType, setChatMessages, requestNewConversation } = useLiaFloat()
   const [searchQuery, setSearchQuery] = useState("")
   const [panelWidth, setPanelWidth] = useState(340)
   const isDraggingRef = useRef(false)
@@ -427,13 +427,13 @@ export function IASidebar({ onOpenConversation, onNewConversation, activeNoteCon
     [setActiveConversation, markRead, openLiaChat, switchChatContext, loadChatHistory, chatContextType, setChatMessages, closeIASidebar, onOpenConversation]
   )
 
-  const handleNewConversation = useCallback(() => {
-    switchChatContext("general", { conversationId: null, resetConversation: true })
-    setChatMessages([])
+  const handleNewConversation = useCallback(async () => {
+    const ok = await requestNewConversation()
+    if (!ok) return
     setActiveConversation(null)
     onNewConversation?.()
     closeIASidebar()
-  }, [switchChatContext, setChatMessages, setActiveConversation, onNewConversation, closeIASidebar])
+  }, [requestNewConversation, setActiveConversation, onNewConversation, closeIASidebar])
 
   // Keyboard shortcuts: P=pin, N=new, A=archive, Del=delete, Esc=close
   // Scoped to sidebar open + focus NOT in a text field

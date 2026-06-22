@@ -258,6 +258,9 @@ interface LiaFloatContextType extends LiaFloatState {
   connectChat: () => void;
   disconnectChat: () => void;
   pendingPrefill: string | null;
+
+  registerNewConversationGuard: (guard: (() => Promise<boolean>) | null) => void;
+  requestNewConversation: () => Promise<boolean>;
   clearPendingPrefill: () => void;
 }
 
@@ -973,6 +976,30 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, isOpen: false }));
   }, []);
 
+  // ── "Nova conversa" canonical entry point ──────────────────────────
+  // Guard slot: UnifiedChat registers its wizard confirm + session reset
+  // here on mount. Any caller of requestNewConversation() automatically
+  // gets wizard protection without knowing about wizard internals.
+  const newConversationGuardRef = useRef<(() => Promise<boolean>) | null>(null);
+
+  const registerNewConversationGuard = useCallback(
+    (guard: (() => Promise<boolean>) | null) => {
+      newConversationGuardRef.current = guard;
+    },
+    [],
+  );
+
+  const requestNewConversation = useCallback(async (): Promise<boolean> => {
+    const guard = newConversationGuardRef.current;
+    if (guard) {
+      const proceed = await guard();
+      if (!proceed) return false;
+    }
+    switchChatContext("general", { conversationId: null, resetConversation: true });
+    setChatMessages([]);
+    return true;
+  }, [switchChatContext, setChatMessages]);
+
   const toggle = useCallback(() => {
     setState((prev) => ({ ...prev, isOpen: !prev.isOpen }));
   }, []);
@@ -1228,6 +1255,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       disconnectChat: connection.disconnect,
       pendingPrefill,
       clearPendingPrefill: () => setPendingPrefill(null),
+      registerNewConversationGuard,
+      requestNewConversation,
     }),
     [
       state,
@@ -1239,6 +1268,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       collapse,
       closeAll,
       navigateToChat,
+      registerNewConversationGuard,
+      requestNewConversation,
       setContextPage,
       setEntityContext,
       openWithEntity,
@@ -1356,5 +1387,7 @@ export function useLiaChatContext() {
     expand: ctx.expand,
     collapse: ctx.collapse,
     navigateToChat: ctx.navigateToChat,
+    registerNewConversationGuard: ctx.registerNewConversationGuard,
+    requestNewConversation: ctx.requestNewConversation,
   };
 }

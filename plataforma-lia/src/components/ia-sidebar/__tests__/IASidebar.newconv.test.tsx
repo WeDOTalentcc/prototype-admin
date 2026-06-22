@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, act } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import React from "react"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-const mockSwitchChatContext = vi.fn()
-const mockSetChatMessages = vi.fn()
+const mockRequestNewConversation = vi.fn().mockResolvedValue(true)
 const mockCloseIASidebar = vi.fn()
 const mockSetActiveConversation = vi.fn()
 const mockOnNewConversation = vi.fn()
@@ -53,10 +53,11 @@ vi.mock("@/stores/ui-preferences-store", () => ({
 vi.mock("@/contexts/lia-float-context", () => ({
   useLiaFloat: () => ({
     open: vi.fn(),
-    switchChatContext: mockSwitchChatContext,
+    switchChatContext: vi.fn(),
     loadChatHistory: vi.fn(),
     chatContextType: "general",
-    setChatMessages: mockSetChatMessages,
+    setChatMessages: vi.fn(),
+    requestNewConversation: mockRequestNewConversation,
   }),
 }))
 
@@ -68,58 +69,70 @@ vi.mock("@/hooks/ia-sessions/useIASessions", () => ({
   useArchiveSession: () => ({ mutateAsync: vi.fn() }),
 }))
 
-// ── Test ─────────────────────────────────────────────────────────────────────
+// ── Tests ────────────────────────────────────────────────────────────────────
 
-describe("IASidebar — Nova conversa contract", () => {
+describe("IASidebar — Nova conversa contract (wizard guard lift)", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockRequestNewConversation.mockResolvedValue(true)
   })
 
-  it("S1: clicking 'Nova conversa' calls switchChatContext with resetConversation: true", async () => {
-    const { IASidebar } = await import("../IASidebar")
-    render(
-      <IASidebar onNewConversation={mockOnNewConversation} />
-    )
-
-    const btn = screen.getByText("Nova conversa")
-    fireEvent.click(btn)
-
-    expect(mockSwitchChatContext).toHaveBeenCalledTimes(1)
-    expect(mockSwitchChatContext).toHaveBeenCalledWith(
-      "general",
-      { conversationId: null, resetConversation: true },
-    )
-  })
-
-  it("S2: clicking 'Nova conversa' clears messages", async () => {
+  it("S1: clicking Nova conversa calls requestNewConversation from context", async () => {
     const { IASidebar } = await import("../IASidebar")
     render(<IASidebar onNewConversation={mockOnNewConversation} />)
 
-    fireEvent.click(screen.getByText("Nova conversa"))
-    expect(mockSetChatMessages).toHaveBeenCalledWith([])
+    await act(async () => {
+      screen.getByText("Nova conversa").click()
+    })
+
+    expect(mockRequestNewConversation).toHaveBeenCalledTimes(1)
   })
 
-  it("S3: clicking 'Nova conversa' calls onNewConversation prop", async () => {
+  it("S2: when requestNewConversation resolves true, clears active conversation", async () => {
     const { IASidebar } = await import("../IASidebar")
     render(<IASidebar onNewConversation={mockOnNewConversation} />)
 
-    fireEvent.click(screen.getByText("Nova conversa"))
-    expect(mockOnNewConversation).toHaveBeenCalledTimes(1)
-  })
+    await act(async () => {
+      screen.getByText("Nova conversa").click()
+    })
 
-  it("S4: clicking 'Nova conversa' clears active conversation", async () => {
-    const { IASidebar } = await import("../IASidebar")
-    render(<IASidebar onNewConversation={mockOnNewConversation} />)
-
-    fireEvent.click(screen.getByText("Nova conversa"))
     expect(mockSetActiveConversation).toHaveBeenCalledWith(null)
   })
 
-  it("S5: clicking 'Nova conversa' closes sidebar", async () => {
+  it("S3: when requestNewConversation resolves true, calls onNewConversation prop", async () => {
     const { IASidebar } = await import("../IASidebar")
     render(<IASidebar onNewConversation={mockOnNewConversation} />)
 
-    fireEvent.click(screen.getByText("Nova conversa"))
+    await act(async () => {
+      screen.getByText("Nova conversa").click()
+    })
+
+    expect(mockOnNewConversation).toHaveBeenCalledTimes(1)
+  })
+
+  it("S4: when requestNewConversation resolves true, closes sidebar", async () => {
+    const { IASidebar } = await import("../IASidebar")
+    render(<IASidebar onNewConversation={mockOnNewConversation} />)
+
+    await act(async () => {
+      screen.getByText("Nova conversa").click()
+    })
+
     expect(mockCloseIASidebar).toHaveBeenCalledTimes(1)
+  })
+
+  it("S5: when requestNewConversation resolves false (wizard denied), does NOTHING", async () => {
+    mockRequestNewConversation.mockResolvedValue(false)
+
+    const { IASidebar } = await import("../IASidebar")
+    render(<IASidebar onNewConversation={mockOnNewConversation} />)
+
+    await act(async () => {
+      screen.getByText("Nova conversa").click()
+    })
+
+    expect(mockSetActiveConversation).not.toHaveBeenCalled()
+    expect(mockOnNewConversation).not.toHaveBeenCalled()
+    expect(mockCloseIASidebar).not.toHaveBeenCalled()
   })
 })
