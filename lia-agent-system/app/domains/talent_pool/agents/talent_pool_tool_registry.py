@@ -291,18 +291,18 @@ async def _wrap_create_job_from_pool(**kwargs: Any) -> dict[str, Any]:
                 f"Preparando criacao de vaga a partir do pool **{pool.name}**. "
                 f"O assistente de criacao de vagas sera aberto com o perfil pre-configurado."
             ),
-            "ui_action": "wizard_step",
-            "ui_action_params": {
-                "wizard": "create_job",
-                "step": "step_1",
-                "prefill": {
-                    "source": "talent_pool",
-                    "pool_id": str(pool_id),
-                    "archetype_id": str(pool.archetype_id) if pool.archetype_id else None,
-                    "pool_name": pool.name,
-                },
-            },
             "data": {
+                "ui_action": "wizard_step",
+                "ui_action_params": {
+                    "wizard": "create_job",
+                    "step": "step_1",
+                    "prefill": {
+                        "source": "talent_pool",
+                        "pool_id": str(pool_id),
+                        "archetype_id": str(pool.archetype_id) if pool.archetype_id else None,
+                        "pool_name": pool.name,
+                    },
+                },
                 "pool_id": str(pool_id),
                 "pool_name": pool.name,
                 "archetype_id": str(pool.archetype_id) if pool.archetype_id else None,

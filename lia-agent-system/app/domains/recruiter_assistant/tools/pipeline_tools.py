@@ -502,8 +502,10 @@ async def delete_pipeline_stage(
                     "error": "stage_has_candidates",
                     "requires_confirmation": True,
                     "candidate_count": candidate_count,
-                    "ui_action": "open_modal",
-                    "ui_action_params": {"modal_id": "confirm_stage_delete"}
+                    "data": {
+                        "ui_action": "open_modal",
+                        "ui_action_params": {"modal_id": "confirm_stage_delete"},
+                    },
                 }
 
             # Move candidates via canonical service (P-SSOT, P-GUARD, P-TENANT)

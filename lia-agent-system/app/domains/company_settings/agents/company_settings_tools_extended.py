@@ -121,10 +121,12 @@ async def _wrap_toggle_learning_loop(**kwargs: Any) -> dict[str, Any]:
             "success": True,
             "loop_name": loop_name,
             "value": value,
-            "ui_action": "settings_open_tab",
-            "ui_action_params": {
+            "data": {
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {
                 "section": "minha-empresa",
                 "subsection": "learning-loops",
+            },
             },
         }
     except Exception as exc:
@@ -180,11 +182,13 @@ async def _wrap_toggle_lia_field(**kwargs: Any) -> dict[str, Any]:
             "field_name": field_name,
             "value": value,
             "instruction_updated": instruction is not None,
-            "ui_action": "settings_open_tab",
-            "ui_action_params": {
+            "data": {
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {
                 "section": "minha-empresa",
                 "subsection": "instrucoes-lia",
                 "field": field_name,
+            },
             },
         }
     except Exception as exc:
@@ -270,11 +274,13 @@ async def _wrap_record_dsr_action(**kwargs: Any) -> dict[str, Any]:
             "success": True,
             "request_id": str(dsr.id),
             "new_status": dsr.status,
-            "ui_action": "settings_open_tab",
-            "ui_action_params": {
+            "data": {
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {
                 "section": "fairness-compliance",
                 "subsection": "lgpd-candidatos",
                 "field": str(dsr.id),
+            },
             },
         }
     except Exception as exc:
@@ -483,10 +489,12 @@ async def _wrap_toggle_communication_alert(**kwargs: Any) -> dict[str, Any]:
             "alert_id": alert_id,
             "enabled": enabled,
             "channel": channel,
-            "ui_action": "settings_open_tab",
-            "ui_action_params": {
+            "data": {
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {
                 "section": "comunicacao-alertas",
                 "field": alert_id,
+            },
             },
         }
     except Exception as exc:
@@ -536,8 +544,10 @@ async def _wrap_update_email_signature(**kwargs: Any) -> dict[str, Any]:
             "signature_updated": True,
             "text_updated": text is not None,
             "html_updated": html is not None,
-            "ui_action": "settings_open_tab",
-            "ui_action_params": {"section": "templates-assinatura"},
+            "data": {
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {"section": "templates-assinatura"},
+            },
         }
     except Exception as exc:
         logger.error(
@@ -644,8 +654,10 @@ async def _wrap_configure_pipeline_stage(**kwargs: Any) -> dict[str, Any]:
             "success": True,
             "action": action,
             "stage": result_payload,
-            "ui_action": "settings_open_tab",
-            "ui_action_params": {"section": "pipeline"},
+            "data": {
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {"section": "pipeline"},
+            },
         }
     except Exception as exc:
         logger.error(
@@ -748,8 +760,10 @@ async def _wrap_configure_screening_questions(**kwargs: Any) -> dict[str, Any]:
             "success": True,
             "action": action,
             "question": result_payload,
-            "ui_action": "settings_open_tab",
-            "ui_action_params": {"section": "screening"},
+            "data": {
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {"section": "screening"},
+            },
         }
     except Exception as exc:
         logger.error(
@@ -832,8 +846,10 @@ async def _wrap_set_communication_schedule(**kwargs: Any) -> dict[str, Any]:
             "success": True,
             "schedule_updated": True,
             "updated_fields": list(update_data.keys()),
-            "ui_action": "settings_open_tab",
-            "ui_action_params": {"section": "comunicacao-alertas"},
+            "data": {
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {"section": "comunicacao-alertas"},
+            },
         }
     except Exception as exc:
         logger.error(

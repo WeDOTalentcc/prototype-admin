@@ -58,8 +58,10 @@ async def run(params: dict[str, Any], context: DomainContext) -> dict[str, Any]:
                     "error": str(gate_exc),
                     "requires_approval": gate_exc.reason == "manager_approval_required",
                     "policy_gate": gate_exc.reason,
-                    "ui_action": ui_action_by_reason.get(gate_exc.reason, "open_offer_review"),
-                    "ui_action_params": {"modal_id": "offer_review", "offer_id": str(offer_id)},
+                    "data": {
+                        "ui_action": ui_action_by_reason.get(gate_exc.reason, "open_offer_review"),
+                        "ui_action_params": {"modal_id": "offer_review", "offer_id": str(offer_id)},
+                    },
                 }
 
             variables = svc.render_offer_template_variables(draft)
@@ -103,8 +105,10 @@ async def run(params: dict[str, Any], context: DomainContext) -> dict[str, Any]:
                     "success": False,
                     "error": str(gate_exc),
                     "requires_approval": True,
-                    "ui_action": "open_modal",
-                    "ui_action_params": {"offer_id": str(offer_id)},
+                    "data": {
+                        "ui_action": "open_modal",
+                        "ui_action_params": {"offer_id": str(offer_id)},
+                    },
                 }
             await db.commit()
 
