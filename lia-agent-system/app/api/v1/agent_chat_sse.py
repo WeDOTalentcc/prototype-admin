@@ -1007,6 +1007,30 @@ company_id: str = Depends(require_company_id)):
                             "[SSEChat-T12] disambiguator skipped: %s", _t12_store_exc,
                         )
 
+                # ── B8 Peça 2: carry pending_manager from chat → wizard ──────
+                if req.conversation_id:
+                    try:
+                        from app.core.database import AsyncSessionLocal as _B8P2ASL
+                        from app.shared.conversation_memory import ConversationMemory as _B8P2CM
+                        async with _B8P2ASL() as _b8p2_db:
+                            _b8p2_cmem = _B8P2CM()
+                            _b8p2_conv = await _b8p2_cmem.get_conversation(
+                                _b8p2_db, req.conversation_id
+                            )
+                            if _b8p2_conv and _b8p2_conv.conversation_metadata:
+                                _pm = _b8p2_conv.conversation_metadata.get("pending_manager")
+                                if _pm:
+                                    if _pm.get("name"):
+                                        context["parsed_manager_name"] = _pm["name"]
+                                    if _pm.get("email"):
+                                        context["parsed_manager_email"] = _pm["email"]
+                                    logger.info(
+                                        "[B8-P2] pending_manager carried to wizard: name=%s email=%s",
+                                        _pm.get("name"), _pm.get("email"),
+                                    )
+                    except Exception as _b8p2_exc:
+                        logger.warning("[B8-P2] pending_manager carry failed (non-blocking): %s", _b8p2_exc)
+
                 async def _run_wizard():
                     return await WizardSessionService.process_message(
                         thread_id=_wiz_thread_id,

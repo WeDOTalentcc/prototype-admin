@@ -123,7 +123,7 @@ def _consume_panel_pref(state: dict) -> str | None:
 
 
 # Keys carried forward from context into wizard state
-_CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
+_CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet", "parsed_manager_name", "parsed_manager_email")
 
 # Fase 3 fix (2026-06-21): per-vacancy fields to clear when a terminal wizard
 # reuses the same session_id. thread_id is keyed by (company_id, session_id)
@@ -870,6 +870,11 @@ class WizardSessionService:
                 state["parsed_recruiter_name"] = ctx["user_name"]
             if ctx.get("user_email"):
                 state["parsed_recruiter_email"] = ctx["user_email"]
+            # B8 Peça 2: manager from chat general (pending_manager carry)
+            if ctx.get("parsed_manager_name") and not state.get("parsed_manager_name"):
+                state["parsed_manager_name"] = ctx["parsed_manager_name"]
+            if ctx.get("parsed_manager_email") and not state.get("parsed_manager_email"):
+                state["parsed_manager_email"] = ctx["parsed_manager_email"]
             # W0-B: extract jd_similar_reuse_id from right_panel_form if present
             _rpf = ctx.get("right_panel_form") or {}
             if _rpf.get("jd_similar_reuse_id"):
@@ -905,6 +910,9 @@ class WizardSessionService:
         # W0-A: recruiter identity from session user (passed via context by SSE/REST endpoint)
         state["parsed_recruiter_name"] = ctx.get("user_name") or None
         state["parsed_recruiter_email"] = ctx.get("user_email") or None
+        # B8 Peça 2: manager from chat general (pending_manager carry)
+        state["parsed_manager_name"] = ctx.get("parsed_manager_name") or None
+        state["parsed_manager_email"] = ctx.get("parsed_manager_email") or None
         # W0-B: extract jd_similar_reuse_id from right_panel_form if present
         _rpf = ctx.get("right_panel_form") or {}
         if _rpf.get("jd_similar_reuse_id"):
