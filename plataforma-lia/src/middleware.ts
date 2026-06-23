@@ -1,2 +1,9 @@
 export const runtime = 'nodejs'
-export { proxy as middleware, config } from './proxy'
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
+}
+
+export { proxy as middleware } from './proxy'

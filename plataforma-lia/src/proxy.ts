@@ -3,7 +3,7 @@ import { jwtVerify } from 'jose'
 import { verifyAndDecodeSession } from '@/lib/session-crypto'
 import { getDevToken, isDevAutoLoginEnabled } from '@/lib/auth/dev-auto-login'
 import createMiddleware from 'next-intl/middleware'
-import { routing } from '@/i18n/routing'
+import { routing } from '@/i18n/routing-config'
 import { locales, defaultLocale } from '@/i18n/config'
 
 const DEV_AUTO_LOGIN = isDevAutoLoginEnabled()
