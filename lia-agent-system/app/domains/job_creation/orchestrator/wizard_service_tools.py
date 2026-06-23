@@ -125,26 +125,45 @@ def _handle_confirm_competencies(
 
     O recrutador pode aprovar as sugestões como estão ou fornecer uma lista
     ajustada. O state ``competencies_confirmed`` grava a decisão.
+
+    FIX G4: escreve nas flat keys ``confirmed_technical_competencies`` e
+    ``confirmed_behavioral_competencies`` que os 8+ consumers leem.
+    A versão anterior escrevia apenas ``confirmed_competencies`` (nested dict)
+    que nenhum consumer lia — competências desapareciam silenciosamente.
     """
     tenant_err = _reject_tenant_keys(tool_input)
     if tenant_err:
         return ToolResult(llm_message=tenant_err, error=True)
 
-    confirmed_technical = tool_input.get("technical") or []
-    confirmed_behavioral = tool_input.get("behavioral") or []
+    # ── coerce inputs to List[Dict] matching state.py schema ──────────
+    # Handles both string items ("Python") and dict items ({"skill": "Python"}).
+    # Mirrors _coerce from wizard_tools.py PURE version for format parity.
+    def _coerce(items: Any, key: str) -> list[dict]:
+        if not items or not isinstance(items, list):
+            return []
+        out: list[dict] = []
+        for it in items:
+            if isinstance(it, dict):
+                name = str(it.get("skill") or it.get("competencia") or it.get("name") or "").strip()
+            else:
+                name = str(it).strip()
+            if name:
+                out.append({key: name})
+        return out
 
-    if not confirmed_technical and not confirmed_behavioral:
+    raw_tech = tool_input.get("technical") or []
+    raw_behav = tool_input.get("behavioral") or []
+
+    tech = _coerce(raw_tech, "skill")
+    behav = _coerce(raw_behav, "competencia")
+
+    # Fallback: use suggested_competencies if LLM called without args
+    if not tech and not behav:
         suggested = state.get("suggested_competencies") or {}
-        confirmed_technical = [
-            c.get("skill") or c.get("name") or ""
-            for c in (suggested.get("technical") or [])
-        ]
-        confirmed_behavioral = [
-            c.get("competencia") or c.get("name") or ""
-            for c in (suggested.get("behavioral") or [])
-        ]
+        tech = _coerce(suggested.get("technical") or [], "skill")
+        behav = _coerce(suggested.get("behavioral") or [], "competencia")
 
-    if not confirmed_technical and not confirmed_behavioral:
+    if not tech and not behav:
         return ToolResult(
             llm_message=(
                 "Nenhuma competência para confirmar. Primeiro chame "
@@ -160,24 +179,25 @@ def _handle_confirm_competencies(
         state=state,
         before={
             "competencies_confirmed": bool(state.get("competencies_confirmed")),
-            "confirmed_competencies": state.get("confirmed_competencies"),
+            "confirmed_technical_competencies": state.get("confirmed_technical_competencies"),
+            "confirmed_behavioral_competencies": state.get("confirmed_behavioral_competencies"),
         },
         after={
             "competencies_confirmed": True,
-            "confirmed_competencies": {
-                "technical": confirmed_technical,
-                "behavioral": confirmed_behavioral,
-            },
+            "confirmed_technical_competencies": tech,
+            "confirmed_behavioral_competencies": behav,
         },
         reasoning_extra=[
-            f"Técnicas confirmadas: {len(confirmed_technical)}",
-            f"Comportamentais confirmadas: {len(confirmed_behavioral)}",
+            f"Técnicas confirmadas: {len(tech)}",
+            f"Comportamentais confirmadas: {len(behav)}",
         ],
         criteria_used=["recruiter_explicit_confirmation", "wizard_competency_review"],
     )
 
-    tech_str = ", ".join(str(c) for c in confirmed_technical[:10]) or "(nenhuma)"
-    behav_str = ", ".join(str(c) for c in confirmed_behavioral[:10]) or "(nenhuma)"
+    tech_names = [d.get("skill", "") for d in tech]
+    behav_names = [d.get("competencia", "") for d in behav]
+    tech_str = ", ".join(tech_names[:10]) or "(nenhuma)"
+    behav_str = ", ".join(behav_names[:10]) or "(nenhuma)"
 
     return ToolResult(
         llm_message=(
@@ -187,10 +207,9 @@ def _handle_confirm_competencies(
         ),
         state_updates={
             "competencies_confirmed": True,
-            "confirmed_competencies": {
-                "technical": confirmed_technical,
-                "behavioral": confirmed_behavioral,
-            },
+            "confirmed_technical_competencies": tech,
+            "confirmed_behavioral_competencies": behav,
+            "intake_competencies_suggested": True,
         },
     )
 
