@@ -84,18 +84,23 @@ Três blocos: Sourcing, Inteligência IA e Automação & Capacidade.
 
 #### Bloco A — Sourcing (Pearch + Apify)
 
-Créditos de sourcing determinam quantas buscas e enriquecimentos de perfil o cliente
-pode fazer por mês. Fonte: `pearch_credits_monthly` e `apify_credits_monthly`.
+Pearch e Apify são sempre pareados: toda vez que um candidato é adicionado a uma vaga,
+o Apify roda automaticamente para revelar o email. A métrica operacional relevante para
+o cliente é uma só: **candidatos processados/mês** (= créditos Apify, o gargalo real).
+
+Pearch são as buscas no pool global (2 créditos/busca, retorna até 20 candidatos por busca)
+— são a vitrine. Apify é o desbloqueio de contato (1 crédito/candidato) — é o que habilita
+o candidato a ser trabalhado. Os caps são iguais em todos os planos por design.
 
 | Dimensão | Base de cálculo | Trial | Starter | Pro | Enterprise |
 |---|---|---|---|---|---|
-| **Buscas no pool global (Pearch)** | credits / 2 créditos/busca | ~100 | ~250 | ~750 | ~2.000 |
-| **Perfis enriquecidos (Apify/LinkedIn)** | 1 crédito/perfil | ~200 | ~500 | ~1.500 | ~4.000 |
+| **Candidatos processados/mês** | apify_credits_monthly (1 crédito/candidato) | **200** | **500** | **1.500** | **4.000** |
+| **Buscas no pool global** | pearch_credits / 2 créditos/busca × 20 candidatos/busca | ~2.000 encontrados | ~5.000 encontrados | ~15.000 encontrados | ~40.000 encontrados |
 | **Rollover de créditos não usados** | pearch/apify_credits_rollover | N | N | N | S |
 
-> Candidatos buscados ≠ perfis enriquecidos: busca retorna lista do pool global;
-> enriquecimento puxa dados detalhados (LinkedIn, email, telefone) de candidatos selecionados.
-> Cliente típico enriquece ~20-30% dos candidatos encontrados.
+> "Candidatos processados" = adicionados à vaga com email revelado. As buscas Pearch
+> retornam uma vitrine muito maior, mas só viram candidatos reais quando o Apify roda.
+> Rollover Enterprise: créditos não usados acumulam para o mês seguinte.
 
 #### Bloco B — Inteligência IA (LLM)
 
