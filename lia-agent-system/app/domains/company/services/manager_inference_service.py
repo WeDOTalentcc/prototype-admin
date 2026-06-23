@@ -23,6 +23,7 @@ from sqlalchemy import func, or_, select
 
 from app.core.database import AsyncSessionLocal
 from lia_models.company import CompanyProfile, Department, DepartmentMember
+from lia_models.client_user import ClientUser
 
 logger = logging.getLogger(__name__)
 
@@ -177,6 +178,37 @@ class ManagerInferenceService:
                                 similarity * 0.95
                             ))
         
+            # --- Source 3: ClientUser table (actual company users) ---
+            user_query = select(ClientUser).where(
+                ClientUser.company_id == company.id,
+                ClientUser.status == "active",
+                ClientUser.is_deleted.is_(False),
+                ClientUser.name.isnot(None),
+            )
+            user_result = await db.execute(user_query)
+            client_users = user_result.scalars().all()
+
+            for cu in client_users:
+                cu_name = str(cu.name) if cu.name else None
+                cu_email = str(cu.email) if cu.email else None
+                if cu_name and cu_email:
+                    similarity = self._calculate_similarity(manager_name, cu_name)
+                    if similarity >= min_similarity:
+                        candidates.append((
+                            {
+                                "name": cu_name,
+                                "email": cu_email,
+                                "title": str(cu.role) if cu.role else None,
+                                "phone": None,
+                                "department": None,
+                                "department_id": None,
+                                "source": "client_user",
+                                "confidence": similarity * 0.90,
+                                "client_user_id": str(cu.id),
+                            },
+                            similarity * 0.90,
+                        ))
+
         if not candidates:
             # pii-logs ok: nome de config (manager/schedule), nao PII pessoa natural
             logger.info(f"No manager found for name: {manager_name}")
