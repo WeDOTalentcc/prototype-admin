@@ -745,6 +745,8 @@ class MainOrchestrator:
                 except Exception as e:
                     logger.warning("[LIA-M01] Memory setup failed (non-blocking): %s", e)
 
+
+
             # ── Phase 0.5: Rail A capability gate (PR-J) ──────────────────
             # Computational guide: check capability_map BEFORE pending action or LLM.
             # Non-chat-executable intents (add_candidate, interview_scheduling) return
@@ -1522,6 +1524,8 @@ class MainOrchestrator:
                         "---\n\n"
                     )
                     _phase15_system_prompt = _greeting_priority + _phase15_system_prompt
+
+
 
                     # Sprint 12.5-TF (2026-05-24): clarification instruction.
                     # Encourage LIA to ASK when query is ambiguous instead of

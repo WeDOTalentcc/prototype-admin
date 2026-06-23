@@ -1738,6 +1738,7 @@ company_id: str = Depends(require_company_id)):
         _hist: list = []
         _ehint = ""
         _cid = req.conversation_id or session_id
+        _b8_manager_hint = ""  # B8: initialized before try, used after
         try:
             from app.core.database import AsyncSessionLocal
             async with AsyncSessionLocal() as _mdb:
@@ -1757,6 +1758,27 @@ company_id: str = Depends(require_company_id)):
                 # Garante thread_id = session::domain::_cid (fresco p/ nova conversa,
                 # correto p/ conversa carregada da sidebar).
                 context["conversation_id"] = _cid
+
+                # ── B8 Peca 1: Captura de gestor no chat geral ───────────
+                _b8_manager_hint = ""
+                try:
+                    from app.orchestrator.guards.pending_manager_capture import (
+                        extract_pending_manager,
+                        persist_pending_manager,
+                        MANAGER_PROMPT_HINT,
+                    )
+                    _pending_mgr = extract_pending_manager(_raw_content)
+                    if _pending_mgr and (_pending_mgr.get("name") or _pending_mgr.get("email")):
+                        await persist_pending_manager(_conv, _pending_mgr, _mdb)
+                        await _mdb.commit()
+                        _b8_manager_hint = MANAGER_PROMPT_HINT
+                        logger.info(
+                            "[B8] pending_manager captured: name=%s email=%s conv=%s",
+                            _pending_mgr.get("name"), _pending_mgr.get("email"), _cid,
+                        )
+                except Exception as _mgr_exc:
+                    logger.warning("[B8] Manager capture failed (non-blocking): %s", _mgr_exc)
+
                 _hctx = await _cmem.get_context_for_llm(
                     _mdb, _cid, max_messages=20
                 )
@@ -1897,6 +1919,10 @@ company_id: str = Depends(require_company_id)):
             )
         except Exception:
             pass
+
+        # B8: inject anti-"registrado" hint into effective content
+        if _b8_manager_hint:
+            _eff_content = _eff_content + "\n\n" + _b8_manager_hint
 
         agent_task = asyncio.create_task(
             _run_via_supervisor() if _bubble_via_supervisor else _run_agent()
