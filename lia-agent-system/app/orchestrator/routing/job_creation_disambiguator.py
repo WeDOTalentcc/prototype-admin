@@ -52,7 +52,10 @@ _CREATION_RE = re.compile(
 # phrasings that still mean "start the creation wizard".
 _CREATION_INTENT_RE = re.compile(
     r"\b("
-    r"(quero|preciso|vamos|gostaria)\s+(de\s+)?(criar|abrir|uma\s+vaga|nova\s+vaga)|"
+    r"(quero|preciso|vamos|gostaria)\s+(de\s+)?("
+    r"(criar|abrir)\s+(uma\s+|a\s+|o\s+)?(nova?\s+)?(vaga|posi[cC][aA]o|requisi[cC][aA]o)"
+    r"|uma\s+vaga|nova\s+vaga"
+    r")|"
     r"contratar\b"
     r")",
     re.IGNORECASE,
