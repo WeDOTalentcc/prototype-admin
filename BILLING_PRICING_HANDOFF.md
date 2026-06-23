@@ -84,25 +84,33 @@ Três blocos: Sourcing, Inteligência IA e Automação & Capacidade.
 
 #### Bloco A — Sourcing (Pearch + Apify)
 
-Pearch e Apify são sempre pareados: toda vez que um candidato é adicionado a uma vaga,
-o Apify roda automaticamente para revelar o email. A métrica operacional relevante para
-o cliente é uma só: **candidatos processados/mês** (= créditos Apify, o gargalo real).
+Pearch e Apify são **dois pools independentes** consumidos em momentos diferentes:
 
-Pearch são as buscas no pool global (2 créditos/busca, retorna até 20 candidatos por busca)
-— são a vitrine. Apify é o desbloqueio de contato (1 crédito/candidato) — é o que habilita
-o candidato a ser trabalhado. Os caps são iguais em todos os planos por design.
+- **Pearch (busca):** 2 créditos/busca → retorna até 20 candidatos com flag "tem email disponível"
+  mas sem revelar o contato. Créditos debitados do cap `pearch_credits_monthly`.
 
-| Dimensão | Base de cálculo | Trial | Starter | Pro | Enterprise |
+- **Apify (reveal):** 1 crédito/candidato → revela email real sob demanda.
+  Dispara quando o recrutador adiciona o candidato à vaga ou clica "Revelar".
+  Créditos debitados do cap `apify_credits_monthly` (pool separado do Pearch).
+  Por padrão NÃO enriquece automaticamente durante a busca
+  (`SEARCH_EAGER_CONTACT_ENRICHMENT=False` no código — `_shared.py:670`).
+
+O recrutador pode fazer 100 buscas (usando 200 créditos Pearch), visualizar 2.000 candidatos,
+e revelar emails apenas dos candidatos selecionados para trabalhar — economizando créditos Apify.
+
+| Dimensão | Base | Trial | Starter | Pro | Enterprise |
 |---|---|---|---|---|---|
-| **Buscas no pool global/mês** | pearch_credits / 2 créditos/busca | ~100 | ~250 | ~750 | ~2.000 |
-| **Candidatos encontrados/mês** | buscas × 20 candidatos/busca (média) | ~2.000 | ~5.000 | ~15.000 | ~40.000 |
-| **Candidatos processados/mês** | apify_credits (1 crédito/candidato com email) | **200** | **500** | **1.500** | **4.000** |
-| **Rollover de créditos não usados** | pearch/apify_credits_rollover | N | N | N | S |
+| **Créditos Pearch/mês** (pool busca) | DB | 200 | 500 | 1.500 | 4.000 |
+| **Buscas no pool global/mês** (÷ 2 créditos/busca) | Est. | ~100 | ~250 | ~750 | ~2.000 |
+| **Candidatos encontrados/mês** (× 20/busca, média) | Est. | ~2.000 | ~5.000 | ~15.000 | ~40.000 |
+| **Créditos Apify/mês** (pool reveal) | DB | 200 | 500 | 1.500 | 4.000 |
+| **Candidatos com email revelado/mês** (1 crédito/cand.) | Est. | até 200 | até 500 | até 1.500 | até 4.000 |
+| **Rollover Pearch** | DB | N | N | N | S |
+| **Rollover Apify** | DB | N | N | N | S |
 
-> "Candidatos processados" = adicionados à vaga com email revelado via Apify.
-> O recrutador vê ~20 candidatos por busca (vitrine Pearch) e adiciona os mais
-> promissores à vaga — nesse momento o Apify roda e debita 1 crédito por candidato.
-> Rollover Enterprise: créditos não usados acumulam para o mês seguinte.
+> "Email revelado" = recrutador adicionou candidato à vaga ou clicou "Revelar".
+> Pearch (busca) e Apify (reveal) têm caps separados — o recrutador pode buscar mais
+> e revelar seletivamente. Enterprise: créditos não usados acumulam para o mês seguinte.
 
 #### Bloco B — Inteligência IA (LLM)
 
@@ -634,9 +642,11 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 | | Digital twins | DB | 0 | 0 | 0 | 10 |
 | | BYOK habilitado | DB | S | S | S | S |
 | | Trial (dias) | DB | 30 | — | — | — |
-| **SOURCING ESTIMADO** | Buscas no pool/mês | Est. | ~100 | ~250 | ~750 | ~2.000 |
-| | Candidatos encontrados/mês (×20/busca) | Est. | ~2.000 | ~5.000 | ~15.000 | ~40.000 |
-| | **Candidatos processados/mês** (email revelado) | Est. | **200** | **500** | **1.500** | **4.000** |
+| **SOURCING ESTIMADO** | Créditos Pearch/mês (pool busca) | DB | 200 | 500 | 1.500 | 4.000 |
+| (2 pools separados) | Buscas no pool global (÷ 2 créditos/busca) | Est. | ~100 | ~250 | ~750 | ~2.000 |
+| | Candidatos encontrados/mês (× 20/busca) | Est. | ~2.000 | ~5.000 | ~15.000 | ~40.000 |
+| | Créditos Apify/mês (pool reveal) | DB | 200 | 500 | 1.500 | 4.000 |
+| | **Candidatos com email revelado/mês** (sob demanda) | Est. | **até 200** | **até 500** | **até 1.500** | **até 4.000** |
 | **INTELIGÊNCIA IA ESTIMADA** | Triagens de candidatos/mês | Est. | ~125 | ~500 | ~2.500 | ~10.000 |
 | | Consultas no chat LIA/mês | Est. | ~500 | ~2.000 | ~10.000 | ~40.000 |
 | | Geração de JDs/mês | Est. | ~62 | ~250 | ~1.250 | ~5.000 |
