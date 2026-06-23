@@ -1011,7 +1011,7 @@ company_id: str = Depends(require_company_id)):
                 if req.conversation_id:
                     try:
                         from app.core.database import AsyncSessionLocal as _B8P2ASL
-                        from app.shared.conversation_memory import ConversationMemory as _B8P2CM
+                        from app.domains.recruiter_assistant.services.conversation_memory import ConversationMemory as _B8P2CM
                         async with _B8P2ASL() as _b8p2_db:
                             _b8p2_cmem = _B8P2CM()
                             _b8p2_conv = await _b8p2_cmem.get_conversation(
