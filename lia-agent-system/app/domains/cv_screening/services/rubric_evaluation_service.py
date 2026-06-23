@@ -29,6 +29,16 @@ from app.schemas.rubric import (
     RequirementPriorityEnum,
     RubricEvaluationResult,
 )
+
+
+class RubricEvaluationError(Exception):
+    """LLM evaluation failed — cannot produce reliable score.
+
+    Callers MUST handle this explicitly: either re-try or route the
+    candidate to manual review.  Silently returning score=0 is the
+    anti-pattern this exception replaces (F5a fail-loud).
+    """
+
 from app.domains.ai.services.llm import LLMService
 from app.services.notification_service import NotificationChannel, NotificationService, NotificationType
 from app.domains.analytics.services.sector_benchmark_service import sector_benchmark_service
@@ -769,11 +779,15 @@ class RubricEvaluationService:
             return evaluations, strengths, concerns, overall_reasoning
             
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse LLM response as JSON: {e}")
-            return self._fallback_evaluation(requirements)
+            logger.error("[RubricEval] Failed to parse LLM response as JSON: %s", e, exc_info=True)
+            raise RubricEvaluationError(
+                f"LLM response is not valid JSON: {e}"
+            ) from e
         except Exception as e:
-            logger.error(f"Error parsing LLM response: {e}")
-            return self._fallback_evaluation(requirements)
+            logger.error("[RubricEval] Error parsing LLM response: %s", e, exc_info=True)
+            raise RubricEvaluationError(
+                f"LLM evaluation parse failed: {e}"
+            ) from e
     
     def _fallback_evaluation(
         self, 
@@ -1149,23 +1163,18 @@ class RubricEvaluationService:
             try:
                 result = await self.evaluate_candidate(candidate, requirements)
                 results.append((candidate, result))
-            except Exception as e:
-                logger.error(f"Failed to evaluate candidate: {e}")
-                fallback_result = RubricEvaluationResult(
-                    score=0.0,
-                    raw_score=0.0,
-                    total_weighted_points=0.0,
-                    max_possible_points=0.0,
-                    evaluations=[],
-                    strengths=[],
-                    concerns=[f"Evaluation failed: {str(e)}"],
-                    reasoning="Evaluation could not be completed.",
-                    recommendation="Não Recomendado",
+            except RubricEvaluationError as e:
+                logger.error(
+                    "[RubricEval] Candidate evaluation FAILED (no score produced): %s",
+                    e, exc_info=True,
                 )
-                results.append((candidate, fallback_result))
+                results.append((candidate, None))
+            except Exception as e:
+                logger.error("[RubricEval] Unexpected error evaluating candidate: %s", e, exc_info=True)
+                raise
         
         if sort_by_score:
-            results.sort(key=lambda x: x[1].score, reverse=True)
+            results.sort(key=lambda x: x[1].score if x[1] is not None else -1, reverse=True)
         
         return results
     

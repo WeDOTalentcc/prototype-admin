@@ -94,12 +94,14 @@ o candidato a ser trabalhado. Os caps são iguais em todos os planos por design.
 
 | Dimensão | Base de cálculo | Trial | Starter | Pro | Enterprise |
 |---|---|---|---|---|---|
-| **Candidatos processados/mês** | apify_credits_monthly (1 crédito/candidato) | **200** | **500** | **1.500** | **4.000** |
-| **Buscas no pool global** | pearch_credits / 2 créditos/busca × 20 candidatos/busca | ~2.000 encontrados | ~5.000 encontrados | ~15.000 encontrados | ~40.000 encontrados |
+| **Buscas no pool global/mês** | pearch_credits / 2 créditos/busca | ~100 | ~250 | ~750 | ~2.000 |
+| **Candidatos encontrados/mês** | buscas × 20 candidatos/busca (média) | ~2.000 | ~5.000 | ~15.000 | ~40.000 |
+| **Candidatos processados/mês** | apify_credits (1 crédito/candidato com email) | **200** | **500** | **1.500** | **4.000** |
 | **Rollover de créditos não usados** | pearch/apify_credits_rollover | N | N | N | S |
 
-> "Candidatos processados" = adicionados à vaga com email revelado. As buscas Pearch
-> retornam uma vitrine muito maior, mas só viram candidatos reais quando o Apify roda.
+> "Candidatos processados" = adicionados à vaga com email revelado via Apify.
+> O recrutador vê ~20 candidatos por busca (vitrine Pearch) e adiciona os mais
+> promissores à vaga — nesse momento o Apify roda e debita 1 crédito por candidato.
 > Rollover Enterprise: créditos não usados acumulam para o mês seguinte.
 
 #### Bloco B — Inteligência IA (LLM)

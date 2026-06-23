@@ -25,7 +25,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.cv_screening.services.rubric_evaluation_service import (
+    rubric_evaluation_service,
+    RubricEvaluationError,
+)
 from lia_models.candidate import Candidate, VacancyCandidate
 from lia_models.job_vacancy import JobVacancy
 from lia_models.rubric import JobRequirement
@@ -122,11 +125,63 @@ class CVScoringService:
             
             job_info = await self._get_job_info(vacancy_id, db)
             
-            evaluation_result = await rubric_evaluation_service.evaluate_candidate(
-                candidate_data=candidate_data,
-                requirements=requirements
-            )
-            
+            try:
+                evaluation_result = await rubric_evaluation_service.evaluate_candidate(
+                    candidate_data=candidate_data,
+                    requirements=requirements
+                )
+            except RubricEvaluationError as eval_err:
+                logger.error(
+                    "[CV_SCORING] Evaluation FAILED for candidate=%s vacancy=%s: %s",
+                    candidate_id, vacancy_id, eval_err, exc_info=True,
+                )
+                # Status FIRST — protects candidate from limbo
+                await self._update_candidate_score(
+                    candidate_id=candidate_id,
+                    vacancy_id=vacancy_id,
+                    score=None,
+                    cv_fit_score=None,
+                    sub_status="cv_pending_review",
+                    db=db,
+                    company_id=company_id,
+                )
+                await db.commit()
+
+                # Activity SECOND — observability, best-effort
+                try:
+                    await activity_service.create_activity(
+                        activity_type="cv_screening_failed",
+                        title="CV Screening Automático — Falha",
+                        description="Avaliação IA indisponível. Requer revisão manual do recrutador.",
+                        actor_id="cv_screening_agent",
+                        actor_name="CV Screening Agent",
+                        actor_type="agent",
+                        target_id=candidate_id,
+                        target_type="candidate",
+                        extra_data={
+                            "vacancy_id": vacancy_id,
+                            "company_id": company_id,
+                            "error": str(eval_err),
+                            "needs_manual_review": True,
+                        },
+                        category="screening",
+                    )
+                except Exception as act_exc:
+                    logger.warning(
+                        "[CV_SCORING] Activity creation failed (status already saved): %s",
+                        act_exc,
+                    )
+
+                return {
+                    "success": False,
+                    "error": "evaluation_unavailable",
+                    "sub_status": "cv_pending_review",
+                    "needs_manual_review": True,
+                    "message": "Avaliação IA indisponível. Candidato movido para revisão manual.",
+                    "candidate_id": candidate_id,
+                    "vacancy_id": vacancy_id,
+                }
+
             screening_result = self._build_screening_result(
                 candidate_data=candidate_data,
                 evaluation_result=evaluation_result,
@@ -570,8 +625,8 @@ class CVScoringService:
         self,
         candidate_id: str,
         vacancy_id: str,
-        score: float,
-        cv_fit_score: float,
+        score: float | None,
+        cv_fit_score: float | None,
         sub_status: str,
         db: AsyncSession,
         company_id: str = "",
