@@ -90,7 +90,7 @@ _CULTURE_FIELDS: frozenset[str] = frozenset({
 # `default_salary_ranges` (ver use-company-settings-cards.ts:246) e
 # portanto NÃO precisa de save próprio — é read-only no card.
 _PROFILE_ADDITIONAL_DATA_FIELDS: frozenset[str] = frozenset({
-    "additional_notes", "responsible_name", "responsible_position",
+
     # Sprint 1 BE-2 (2026-05-27) — workforce planning context fields from
     # onboarding_questions.yaml block "workforce". Stored as additional_data
     # JSONB until a dedicated column exists.

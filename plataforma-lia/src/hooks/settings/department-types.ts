@@ -113,11 +113,7 @@ export interface CompanyData {
     platform_expectations?: string;
     communication_channels?: string[];
     allow_lia_contact?: boolean;
-    additional_notes?: string;
-    responsible_name?: string;
-    responsible_position?: string;
     preferred_contact_time?: string;
-    onboarding_completed_at?: string;
   };
 }
 
