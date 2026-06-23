@@ -653,6 +653,36 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 | | Custo Apify (enriquecimento) | Ref. | $0,01 USD | $0,01 USD | $0,01 USD | $0,01 USD |
 | | Custo por candidato processado (Pearch+Apify) | Ref. | $0,34 USD | $0,34 USD | $0,34 USD | $0,34 USD |
 | | Custo WhatsApp Meta por conversa | Ref. | $0,0588 USD | $0,0588 USD | $0,0588 USD | $0,0588 USD |
+| **CUSTOS VARIÁVEIS** | Custo LLM/triagem candidato contratado (~6K tokens) | Est. | R$3,02 | R$3,02 | R$3,02 | R$3,02 |
+| (WeDOTalent paga) | Custo LLM/triagem candidato recusado (~2.4K tokens) | Est. | R$1,18 | R$1,18 | R$1,18 | R$1,18 |
+| | Custo Pearch/busca | Ref. | R$0,62 | R$0,62 | R$0,62 | R$0,62 |
+| | Custo Apify/candidato processado | Ref. | R$0,05 | R$0,05 | R$0,05 | R$0,05 |
+| | COGS/candidato processado (Pearch amortizado + Apify, sem triagem LLM) | Est. | ~R$0,08 | ~R$0,08 | ~R$0,08 | ~R$0,08 |
+| **INFRAESTRUTURA EST.** | PostgreSQL (RDS t3.medium) | Est. | ~R$80 | ~R$80 | ~R$80 | ~R$80 |
+| (por tenant/mês, | Redis ElastiCache (t3.micro) | Est. | ~R$30 | ~R$30 | ~R$30 | ~R$30 |
+| não varia por plano) | Compute EC2/ECS (FastAPI + workers) | Est. | ~R$150 | ~R$150 | ~R$150 | ~R$150 |
+| | Storage S3 (CVs, JDs, logs) | Est. | ~R$25 | ~R$25 | ~R$25 | ~R$25 |
+| | Monitoring + Observability | Est. | ~R$45 | ~R$45 | ~R$45 | ~R$45 |
+| | Email transacional (SES/SendGrid) | Est. | ~R$20 | ~R$20 | ~R$20 | ~R$20 |
+| | Backup e transferência de dados | Est. | ~R$30 | ~R$30 | ~R$30 | ~R$30 |
+| | **TOTAL infra/tenant/mês** | Est. | **~R$380** | **~R$380** | **~R$380** | **~R$380** |
+| **MODELO DE MARGEM** | Receita mensal (Sodexo ALFA Fase 2) | Ref. | R$2.500 | — | — | — |
+| (caso Sodexo ALFA, | COGS LLM triagens (~750 triagens × R$1,30 médio) | Est. | ~R$975 | — | — | — |
+| ~300 cand/mês, 5 seats) | COGS Pearch + Apify (~300 candidatos processados) | Est. | ~R$53 | — | — | — |
+| | COGS total | Est. | ~R$1.028 | — | — | — |
+| | Infraestrutura/tenant | Est. | ~R$380 | — | — | — |
+| | Margem bruta (sem infra) | Est. | R$1.472 (59%) | — | — | — |
+| | **Margem líquida (com infra)** | Est. | **R$1.092 (44%)** | — | — | — |
+
+> **⚠️ Gaps de pricing identificados (resolver antes de assinar contratos ALFA):**
+> - **P1a** `pearch_search = 2 créditos` no código vs. proposta = 3 → diferença de R$0,31/busca.
+>   Arquivo: `lia-agent-system/app/shared/billing/credit_service.py` → dict `ACTION_CREDIT_COSTS`
+> - **P1b** `email_desbloqueio` ausente em `ACTION_CREDIT_COSTS` → cobrança de desbloqueio de email não contabilizada
+> - **P1c** `telefone_desbloqueio` ausente em `ACTION_CREDIT_COSTS` → idem para telefone
+> - **P2** Flag `is_alfa_partner` inexistente → clientes ALFA recebem markup 3x no LLM em vez de pass-through.
+>   Arquivo: `billing.py` → precisa de `if subscription.is_alfa_partner: aplicar_custo_sem_markup()`
+> - **P3** Linguagem da proposta usa "por candidato" vs. sistema cobra "por token" — alinhar linguagem antes de assinar contrato
+> - **P4** Infraestrutura (~R$380/tenant/mês) não estava incluída na proposta Sodexo → margem real 44%, não 59%
 
 > **Legenda base:** DB = valor fixo no banco (migration 292/301), confirmado por código.
 > Est. = estimativa calculada a partir dos caps do DB. Pendente = decisão de produto pendente.
@@ -668,6 +698,10 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 > - Parsings = llm_monthly_cap / 2.500 tokens
 > - Conversas WhatsApp = apify_credits × 2
 > - Custo WhatsApp = conversas × $0,0588 × R$5,20
+> - Custo LLM/triagem contratado: 6.000 tokens × (input $0,003 + output $0,015)/1K × R$5,20 = R$3,02
+> - Custo LLM/triagem recusado: 2.400 tokens × mesma fórmula = R$1,18
+> - COGS/candidato processado (sem triagem): R$0,62/20 cand. (Pearch amortizado) + R$0,05 Apify ≈ R$0,08
+> - Infra por tenant: estimativa para tenant ativo com ~300 cand/mês (não varia por plano)
 
 ---
 
