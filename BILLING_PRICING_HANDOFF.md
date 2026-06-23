@@ -718,6 +718,35 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 | | Infraestrutura/tenant | Est. | ~R$380 | — | — | — |
 | | Margem bruta (sem infra) | Est. | R$1.472 (59%) | — | — | — |
 | | **Margem líquida (com infra)** | Est. | **R$1.092 (44%)** | — | — | — |
+| **VOICE CAPS POR SETOR** | default | Policy | 20/dia (~600/mês) | 20/dia (~600/mês) | 20/dia (~600/mês) | 20/dia (~600/mês) |
+| (fonte: `policy.py` — | tech | Policy | 100/dia (~3.000/mês) | 100/dia (~3.000/mês) | 100/dia (~3.000/mês) | 100/dia (~3.000/mês) |
+| varia por setor do tenant, | varejo | Policy | 500/dia (~15.000/mês) | 500/dia (~15.000/mês) | 500/dia (~15.000/mês) | 500/dia (~15.000/mês) |
+| não por plano) | logística | Policy | 1.000/dia (~30.000/mês) | 1.000/dia (~30.000/mês) | 1.000/dia (~30.000/mês) | 1.000/dia (~30.000/mês) |
+| | saúde | Policy | 50/dia (~1.500/mês) | 50/dia (~1.500/mês) | 50/dia (~1.500/mês) | 50/dia (~1.500/mês) |
+| | educação | Policy | 80/dia (~2.400/mês) | 80/dia (~2.400/mês) | 80/dia (~2.400/mês) | 80/dia (~2.400/mês) |
+| | agro | Policy | 2.000/dia (~60.000/mês) | 2.000/dia (~60.000/mês) | 2.000/dia (~60.000/mês) | 2.000/dia (~60.000/mês) |
+| **COGS TOTAL POR PLANO** | LLM (triagem + JD + chat) | Est. | R$133 | R$530 | R$2.650 | R$10.600 |
+| (cenário 20 cand/vaga) | Pearch (buscas, R$0,62/busca) | Est. | R$3 | R$12 | R$62 | R$248 |
+| | Apify (reveal 50% dos cand.) | Est. | R$3 | R$10 | R$50 | R$200 |
+| | Voice (Gemini Live, 5% triagens) | Est. | R$2 | R$9 | R$43 | R$170 |
+| | Embeddings (Gemini = grátis) | Est. | R$0 | R$0 | R$0 | R$0 |
+| | Infra fixa (Postgres+Redis+Compute+S3+etc.) | Est. | R$380 | R$380 | R$380 | R$380 |
+| | **COGS total/mês** | Est. | **R$521** | **R$941** | **R$3.185** | **R$11.598** |
+| | COGS/seat | Est. | R$261 | R$188 | R$319 | R$116 |
+| **PREÇO RECOMENDADO** | Margem 50% (piso aceitável) | Calc. | R$0 (trial) | R$1.882 | R$6.370 | R$23.196 |
+| (por margem-alvo) | Margem 55% (conservador) | Calc. | R$0 | R$2.091 | R$7.078 | R$25.773 |
+| | **Margem 60% (benchmark 2026)** | Calc. | **R$0** | **R$2.353** | **R$7.963** | **R$28.995** |
+| | Margem 65% (meta agressiva) | Calc. | R$0 | R$2.689 | R$9.100 | R$33.137 |
+| | Preço/seat (margem 60%) | Calc. | — | R$471/seat | R$796/seat | R$1.933/seat |
+| | USD equiv./seat (60%) | Calc. | — | ~$91 | ~$153 | ~$372 |
+| **CENÁRIOS COMERCIAIS** | **A — Conservador** (margem 53-58%) | Proposta | R$0 | R$1.990 | R$6.990 | R$19.990 |
+| (arredondados) | **B — Benchmark** (margem 62-66%) | Proposta | R$0 | R$2.490 | R$8.990 | R$29.990 |
+| | **C — Premium** (margem 69-73%) | Proposta | R$0 | R$2.990 | R$11.990 | R$39.990 |
+| **MARKUP DE OVERAGE** | LLM tokens (custo R$0,05/1K) | Proposta | 3× → R$0,15/1K | 3× → R$0,15/1K | 3× → R$0,15/1K | 3× → R$0,15/1K |
+| (sugestão — campos | Pearch busca (custo R$0,62) | Proposta | 2× → R$1,24/busca | 2× → R$1,24/busca | 2× → R$1,24/busca | 2× → R$1,24/busca |
+| *_overage_price_cents | Apify reveal (custo R$0,05) | Proposta | 3× → R$0,15/cand | 3× → R$0,15/cand | 3× → R$0,15/cand | 3× → R$0,15/cand |
+| todos zerados no código) | Voice sessão extra (custo R$0,34-8,27) | Proposta | 5-15× → R$5-10/sessão | 5-15× → R$5-10/sessão | 5-15× → R$5-10/sessão | 5-15× → R$5-10/sessão |
+| | Agent execution (já definido) | DB | — | R$0,40/exec | R$0,30/exec | R$0,20/exec |
 
 > **⚠️ Gaps de pricing identificados (resolver antes de assinar contratos ALFA):**
 > - **P1a** `pearch_search = 2 créditos` no código vs. proposta = 3 → diferença de R$0,31/busca.
@@ -733,6 +762,8 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 > **Legenda base:** DB = valor fixo no banco (migration 292/301), confirmado por código.
 > Est. = estimativa calculada a partir dos caps do DB. Pendente = decisão de produto pendente.
 > Ref. = custo de fornecedor externo (não é receita WeDOTalent).
+> Policy = definido em `policy.py` (varia por setor, não por plano).
+> Calc. = derivado de COGS ÷ (1 − margem). Proposta = sugestão de pricing (decisão pendente Paulo).
 >
 > **Fórmulas usadas nas estimativas:**
 > - Buscas Pearch = pearch_credits / 2
