@@ -663,6 +663,21 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 | | Custo Apify (enriquecimento) | Ref. | $0,01 USD | $0,01 USD | $0,01 USD | $0,01 USD |
 | | Custo por candidato processado (Pearch+Apify) | Ref. | $0,34 USD | $0,34 USD | $0,34 USD | $0,34 USD |
 | | Custo WhatsApp Meta por conversa | Ref. | $0,0588 USD | $0,0588 USD | $0,0588 USD | $0,0588 USD |
+| **EMBEDDINGS** | Cap mensal (tokens) | DB | 10.000.000 | 50.000.000 | 200.000.000 | 500.000.000 |
+| (Gemini text-embedding-004 | Embeddings geradas/mês (est.) | Est. | ~1.100 | ~4.250 | ~20.750 | ~82.000 |
+| fallback: OpenAI | Tokens estimados/mês | Est. | ~1,6M | ~6,4M | ~31M | ~123M |
+| text-embedding-3-small) | % do cap utilizado | Est. | ~16% | ~13% | ~16% | ~25% |
+| | **Custo Gemini** (text-embedding-004) | Ref. | GRATUITO | GRATUITO | GRATUITO | GRATUITO |
+| | Custo OpenAI fallback (text-emb-3-small) | Ref. | $0,02/M tok. | $0,02/M tok. | $0,02/M tok. | $0,02/M tok. |
+| | **COGS embeddings/mês** | Est. | ~R$0 | ~R$0 | ~R$0 | ~R$13 |
+| **VOICE SCREENING** | Feature incluída no plano | DB | ❌ | ❌ | ✅ | ✅ |
+| (OpenAI Realtime API | Cap diário (policy.py padrão) | Policy | — | — | 20/dia | 20/dia |
+| gpt-4o-realtime-preview) | Cap mensal (× 30 dias) | Est. | — | — | ~600 sessões | ~600 sessões |
+| | Sessões estimadas/mês (5% das triagens) | Est. | — | — | ~125 sessões | ~500 sessões |
+| | Duração típica/sessão | Ref. | — | — | ~20 min | ~20 min |
+| | Custo OpenAI Realtime/sessão (~20 min) | Ref. | — | — | ~$0,90/min × 20 = ~R$94 | ~R$94 |
+| | **COGS voice/mês (sem BYOK) ⚠️** | Est. | — | — | **~R$11.750** | **~R$47.000** |
+| | **COGS voice/mês (com BYOK ativo)** | Est. | — | — | **R$0** (cliente paga) | **R$0** (cliente paga) |
 | **CUSTOS VARIÁVEIS** | Custo LLM/triagem candidato contratado (~6K tokens) | Est. | R$3,02 | R$3,02 | R$3,02 | R$3,02 |
 | (WeDOTalent paga) | Custo LLM/triagem candidato recusado (~2.4K tokens) | Est. | R$1,18 | R$1,18 | R$1,18 | R$1,18 |
 | | Custo Pearch/busca | Ref. | R$0,62 | R$0,62 | R$0,62 | R$0,62 |
@@ -693,6 +708,7 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 >   Arquivo: `billing.py` → precisa de `if subscription.is_alfa_partner: aplicar_custo_sem_markup()`
 > - **P3** Linguagem da proposta usa "por candidato" vs. sistema cobra "por token" — alinhar linguagem antes de assinar contrato
 > - **P4** Infraestrutura (~R$380/tenant/mês) não estava incluída na proposta Sodexo → margem real 44%, não 59%
+> - **P5 🔴 CRÍTICO** Voice Screening sem BYOK = COGS de R$11.750/mês para Pro (235% da receita). Voice EXIGE BYOK para ser economicamente viável. Cap de sessões está em `policy.py` (setor-based: padrão 20/dia), **não** em `company_plan_configs` → não é possível cobrar por sessão de voz como add-on sem implementar rate limit no plano. Decisão necessária: (a) exigir BYOK para ativar voice_screening, (b) criar `voice_sessions_monthly` em `company_plan_configs`, ou (c) manter como BYOK-only feature.
 
 > **Legenda base:** DB = valor fixo no banco (migration 292/301), confirmado por código.
 > Est. = estimativa calculada a partir dos caps do DB. Pendente = decisão de produto pendente.
@@ -708,6 +724,11 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 > - Parsings = llm_monthly_cap / 2.500 tokens
 > - Conversas WhatsApp = apify_credits × 2
 > - Custo WhatsApp = conversas × $0,0588 × R$5,20
+> - Embeddings/mês = (triagens × 3) + (chat × 1) + (JDs × 2) + (sourcing × 1)  — média 1.500 tokens/embedding
+> - Custo embedding Gemini text-embedding-004: GRATUITO (sem cobrança por token)
+> - Custo embedding OpenAI fallback: $0,02/M tokens × tokens_estimados × R$5,20
+> - Voice COGS (sem BYOK): sessões × 20 min × $0,90/min × R$5,20 (fonte: `realtime_credit_session.py` _REALTIME_TOKEN_EQ_PER_SEC)
+> - Voice sessões estimadas: 5% das triagens do plano (estimativa conservadora de adoção)
 > - Custo LLM/triagem contratado: 6.000 tokens × (input $0,003 + output $0,015)/1K × R$5,20 = R$3,02
 > - Custo LLM/triagem recusado: 2.400 tokens × mesma fórmula = R$1,18
 > - COGS/candidato processado (sem triagem): R$0,62/20 cand. (Pearch amortizado) + R$0,05 Apify ≈ R$0,08
