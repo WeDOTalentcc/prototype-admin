@@ -670,14 +670,17 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 | | **Custo Gemini** (text-embedding-004) | Ref. | GRATUITO | GRATUITO | GRATUITO | GRATUITO |
 | | Custo OpenAI fallback (text-emb-3-small) | Ref. | $0,02/M tok. | $0,02/M tok. | $0,02/M tok. | $0,02/M tok. |
 | | **COGS embeddings/mês** | Est. | ~R$0 | ~R$0 | ~R$0 | ~R$13 |
-| **VOICE SCREENING** | Feature incluída no plano | DB | ❌ | ❌ | ✅ | ✅ |
-| (OpenAI Realtime API | Cap diário (policy.py padrão) | Policy | — | — | 20/dia | 20/dia |
-| gpt-4o-realtime-preview) | Cap mensal (× 30 dias) | Est. | — | — | ~600 sessões | ~600 sessões |
-| | Sessões estimadas/mês (5% das triagens) | Est. | — | — | ~125 sessões | ~500 sessões |
-| | Duração típica/sessão | Ref. | — | — | ~20 min | ~20 min |
-| | Custo OpenAI Realtime/sessão (~20 min) | Ref. | — | — | ~$0,90/min × 20 = ~R$94 | ~R$94 |
-| | **COGS voice/mês (sem BYOK) ⚠️** | Est. | — | — | **~R$11.750** | **~R$47.000** |
-| | **COGS voice/mês (com BYOK ativo)** | Est. | — | — | **R$0** (cliente paga) | **R$0** (cliente paga) |
+| **TRIAGEM POR VOZ** | Disponível no plano | Policy | ✅ todos | ✅ todos | ✅ todos | ✅ todos |
+| (WSI candidato via phone | Cap diário (policy.py `max_voice_screenings_per_day`) | Policy | 20/dia | 20/dia | 20/dia | 20/dia |
+| Twilio + Gemini Voice) | Cap mensal estimado (× 30 dias) | Est. | ~600 | ~600 | ~600 | ~600 |
+| | Sessões estimadas/mês (5% das triagens) | Est. | ~6 | ~25 | ~125 | ~500 |
+| | Duração típica/sessão | Ref. | ~20 min | ~20 min | ~20 min | ~20 min |
+| | Custo OpenAI Realtime/sessão (~20 min) | Ref. | ~R$94 | ~R$94 | ~R$94 | ~R$94 |
+| | **COGS triagem voz/mês (sem BYOK) ⚠️** | Est. | **~R$564** | **~R$2.350** | **~R$11.750** | **~R$47.000** |
+| | COGS triagem voz/mês (com BYOK ativo) | Est. | R$0 | R$0 | R$0 | R$0 |
+| **AGENT STUDIO VOICE** | Feature incluída no plano | DB | ❌ | ❌ | ✅ | ✅ |
+| (agentes customizados | Gate: `voice_screening_v2_enabled` per-tenant | Code | — | — | WeDOTalent ativa | WeDOTalent ativa |
+| com canal de voz) | Custo: mesmo modelo OpenAI Realtime (BYOK recomendado) | Ref. | — | — | ~R$94/sessão | ~R$94/sessão |
 | **CUSTOS VARIÁVEIS** | Custo LLM/triagem candidato contratado (~6K tokens) | Est. | R$3,02 | R$3,02 | R$3,02 | R$3,02 |
 | (WeDOTalent paga) | Custo LLM/triagem candidato recusado (~2.4K tokens) | Est. | R$1,18 | R$1,18 | R$1,18 | R$1,18 |
 | | Custo Pearch/busca | Ref. | R$0,62 | R$0,62 | R$0,62 | R$0,62 |
@@ -708,7 +711,7 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 >   Arquivo: `billing.py` → precisa de `if subscription.is_alfa_partner: aplicar_custo_sem_markup()`
 > - **P3** Linguagem da proposta usa "por candidato" vs. sistema cobra "por token" — alinhar linguagem antes de assinar contrato
 > - **P4** Infraestrutura (~R$380/tenant/mês) não estava incluída na proposta Sodexo → margem real 44%, não 59%
-> - **P5 🔴 CRÍTICO** Voice Screening sem BYOK = COGS de R$11.750/mês para Pro (235% da receita). Voice EXIGE BYOK para ser economicamente viável. Cap de sessões está em `policy.py` (setor-based: padrão 20/dia), **não** em `company_plan_configs` → não é possível cobrar por sessão de voz como add-on sem implementar rate limit no plano. Decisão necessária: (a) exigir BYOK para ativar voice_screening, (b) criar `voice_sessions_monthly` em `company_plan_configs`, ou (c) manter como BYOK-only feature.
+> - **P5 🔴 CRÍTICO** Triagem por voz (WSI candidato via phone) é disponível para TODOS os planos via `policy.py`, não gated por feature_flag de plano. COGS sem BYOK: Trial ~R$564/mês, Starter ~R$2.350, Pro ~R$11.750, Enterprise ~R$47.000. Em Pro e Enterprise ultrapassa a receita. Voice EXIGE BYOK para ser economicamente viável. Cap está em `policy.py` por setor (padrão 20/dia), não por plano → não há como cobrar por sessão de voz como add-on sem implementar `voice_sessions_monthly` em `company_plan_configs`. Nota: `voice_screening` feature_flag em plan_configs é exclusivamente para **Agent Studio voice** (agentes customizados com canal de voz) — esse sim é Pro+ only.
 
 > **Legenda base:** DB = valor fixo no banco (migration 292/301), confirmado por código.
 > Est. = estimativa calculada a partir dos caps do DB. Pendente = decisão de produto pendente.
