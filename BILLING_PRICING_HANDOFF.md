@@ -510,7 +510,9 @@ CUSTO VARIAVEL (WeDOTalent paga)
     Subtotal LLM .........................   R$ 410
   Pool Global (Pearch + Apify)
     300 candidatos * $0,36 * R$5,20 .....   R$ 562
-  TOTAL CUSTO VARIAVEL ................... R$ 972
+  Voice screening (5% das triagens, VoIP)
+    ~15 sessões * R$0,34/sessão .........   R$   5
+  TOTAL CUSTO VARIAVEL ................... R$ 977
 
 INFRAESTRUTURA (estimativa mensal)
   PostgreSQL (shared tenant) .............   R$  80
@@ -522,11 +524,12 @@ INFRAESTRUTURA (estimativa mensal)
   Backup .................................   R$  30
   TOTAL INFRA ............................   R$ 380
 
-MARGEM BRUTA ESTIMADA = R$2.500 - R$972 - R$380 = R$1.148 (46%)
+MARGEM BRUTA ESTIMADA = R$2.500 - R$977 - R$380 = R$1.143 (46%)
 ```
 
 Nota: WhatsApp fora do COGS — custo do cliente Sodexo, não da WeDOTalent.
 BYOK ativo reduziria o custo LLM significativamente.
+Voice com Twilio PSTN (ligação telefônica): ~R$32-124/mês adicional.
 
 ### 8.4 Caps protegem margem LLM
 
@@ -549,17 +552,25 @@ O argumento "consumo pode explodir e destruir margem" é PARCIALMENTE INCORRETO:
 | Não-concorrência assimétrica | 11 | P2 | Adicionar reciprocidade |
 | Confidencialidade sem proibição de uso derivativo | 15 | P2 | Adicionar cláusula de não-uso derivativo 24 meses |
 
-### 8.6 Benchmarks de mercado
+### 8.6 Benchmarks de mercado (atualizado 2026-06-23)
 
-| Produto | Ticket médio | Seats tier 2 | IA nativa |
-|---|---|---|---|
-| HireVue | $35K-$100K/ano | — | Avançada |
-| Gupy | R$3K-R$15K/mês | 10 | Parcial |
-| Fetcher.ai | $3K-$8K/mês | 10 | Sourcing |
-| Lever | $30K-$80K/ano | 15 | Conversacional |
-| **WeDOTalent regular** | **R$5K/mês** | **5** | **LLM nativo** |
-| **WeDOTalent ALFA** | **R$2,5K/mês** | **5** | **LLM nativo** |
-| Kenoby | R$1,5K-R$5K/mês | 10 | Basica |
+> Pesquisa expandida com 15+ concorrentes — ver seção 13.2 para tabela completa com fontes.
+
+| Produto | Ticket médio | Seats | IA nativa | Fonte |
+|---|---|---|---|---|
+| Eightfold AI | R$4.4M+/ano (10K emp.) | PEPM | Enterprise AI | christianandtimbers.com |
+| Phenom | R$520K+/ano (mín.) | PEPM | Enterprise AI | christianandtimbers.com |
+| HireVue | R$182K-754K/ano | — | Avançada | hirevue.com |
+| SeekOut | R$104K/ano (mediana Vendr) | 3+ | Sourcing AI | vendr.com |
+| hireEZ | R$68K/ano (mediana Vendr) | 3+ | Sourcing AI | vendr.com |
+| Greenhouse | R$64K/ano (mediana Vendr) | PEPM | ATS+Sourcing | vendr.com |
+| Lever | R$64K/ano (mediana Vendr) | PEPM | Conversacional | vendr.com |
+| Fetcher | R$57K/ano (mediana Vendr) | 1-3 | Sourcing AI | vendr.com |
+| SmartRecruiters | R$78K+/ano | — | ATS+AI | selectsoftwarereviews.com |
+| Gupy | R$3K-R$15K/mês | 10 | Parcial | — |
+| Kenoby | R$1,5K-R$5K/mês | 10 | Basica | — |
+| **WeDOTalent regular** | **R$5K/mês (R$60K/ano)** | **5** | **LLM nativo** | — |
+| **WeDOTalent ALFA** | **R$2,5K/mês (R$30K/ano)** | **5** | **LLM nativo** | — |
 
 ---
 
@@ -671,16 +682,22 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 | | Custo OpenAI fallback (text-emb-3-small) | Ref. | $0,02/M tok. | $0,02/M tok. | $0,02/M tok. | $0,02/M tok. |
 | | **COGS embeddings/mês** | Est. | ~R$0 | ~R$0 | ~R$0 | ~R$13 |
 | **TRIAGEM POR VOZ** | Disponível no plano | Policy | ✅ todos | ✅ todos | ✅ todos | ✅ todos |
-| (WSI candidato via phone | Cap diário (policy.py `max_voice_screenings_per_day`) | Policy | 20/dia | 20/dia | 20/dia | 20/dia |
-| Twilio + Gemini Voice) | Cap mensal estimado (× 30 dias) | Est. | ~600 | ~600 | ~600 | ~600 |
+| (WSI candidato — 2 pipelines) | Cap diário (policy.py `max_voice_screenings_per_day`) | Policy | 20/dia | 20/dia | 20/dia | 20/dia |
+| | Cap mensal estimado (× 30 dias) | Est. | ~600 | ~600 | ~600 | ~600 |
 | | Sessões estimadas/mês (5% das triagens) | Est. | ~6 | ~25 | ~125 | ~500 |
-| | Duração típica/sessão | Ref. | ~20 min | ~20 min | ~20 min | ~20 min |
-| | Custo OpenAI Realtime/sessão (~20 min) | Ref. | ~R$94 | ~R$94 | ~R$94 | ~R$94 |
-| | **COGS triagem voz/mês (sem BYOK) ⚠️** | Est. | **~R$564** | **~R$2.350** | **~R$11.750** | **~R$47.000** |
-| | COGS triagem voz/mês (com BYOK ativo) | Est. | R$0 | R$0 | R$0 | R$0 |
+| | Duração típica/sessão | Ref. | ~15 min | ~15 min | ~15 min | ~15 min |
+| | **Pipeline 1: Gemini Live Audio (VoIP browser)** | Ref. | — | — | — | — |
+| | Custo Gemini 2.5 Flash/sessão (STT+LLM+TTS nativo) | Ref. | **~R$0,34** | **~R$0,34** | **~R$0,34** | **~R$0,34** |
+| | **Pipeline 2: Twilio PSTN (ligação telefônica)** | Ref. | — | — | — | — |
+| | Twilio ($0,05-0,10/min × 15 min) | Ref. | R$3,90-7,80 | R$3,90-7,80 | R$3,90-7,80 | R$3,90-7,80 |
+| | Gemini STT + LLM + OpenAI TTS | Ref. | ~R$0,47 | ~R$0,47 | ~R$0,47 | ~R$0,47 |
+| | Custo total Twilio pipeline/sessão | Ref. | **~R$2,13-8,27** | **~R$2,13-8,27** | **~R$2,13-8,27** | **~R$2,13-8,27** |
+| | **COGS triagem voz/mês (Gemini Live VoIP)** | Est. | **~R$2** | **~R$9** | **~R$43** | **~R$170** |
+| | COGS triagem voz/mês (Twilio PSTN, rate negociado) | Est. | ~R$13 | ~R$53 | ~R$266 | ~R$1.065 |
+| | COGS triagem voz/mês (Twilio PSTN, rate padrão) | Est. | ~R$50 | ~R$207 | ~R$1.034 | ~R$4.135 |
 | **AGENT STUDIO VOICE** | Feature incluída no plano | DB | ❌ | ❌ | ✅ | ✅ |
 | (agentes customizados | Gate: `voice_screening_v2_enabled` per-tenant | Code | — | — | WeDOTalent ativa | WeDOTalent ativa |
-| com canal de voz) | Custo: mesmo modelo OpenAI Realtime (BYOK recomendado) | Ref. | — | — | ~R$94/sessão | ~R$94/sessão |
+| com canal de voz) | Custo: mesmo modelo Gemini Live (VoIP) ou Twilio (PSTN) | Ref. | — | — | R$0,34-8,27/sessão | R$0,34-8,27/sessão |
 | **CUSTOS VARIÁVEIS** | Custo LLM/triagem candidato contratado (~6K tokens) | Est. | R$3,02 | R$3,02 | R$3,02 | R$3,02 |
 | (WeDOTalent paga) | Custo LLM/triagem candidato recusado (~2.4K tokens) | Est. | R$1,18 | R$1,18 | R$1,18 | R$1,18 |
 | | Custo Pearch/busca | Ref. | R$0,62 | R$0,62 | R$0,62 | R$0,62 |
@@ -711,7 +728,7 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 >   Arquivo: `billing.py` → precisa de `if subscription.is_alfa_partner: aplicar_custo_sem_markup()`
 > - **P3** Linguagem da proposta usa "por candidato" vs. sistema cobra "por token" — alinhar linguagem antes de assinar contrato
 > - **P4** Infraestrutura (~R$380/tenant/mês) não estava incluída na proposta Sodexo → margem real 44%, não 59%
-> - **P5 🔴 CRÍTICO** Triagem por voz (WSI candidato via phone) é disponível para TODOS os planos via `policy.py`, não gated por feature_flag de plano. COGS sem BYOK: Trial ~R$564/mês, Starter ~R$2.350, Pro ~R$11.750, Enterprise ~R$47.000. Em Pro e Enterprise ultrapassa a receita. Voice EXIGE BYOK para ser economicamente viável. Cap está em `policy.py` por setor (padrão 20/dia), não por plano → não há como cobrar por sessão de voz como add-on sem implementar `voice_sessions_monthly` em `company_plan_configs`. Nota: `voice_screening` feature_flag em plan_configs é exclusivamente para **Agent Studio voice** (agentes customizados com canal de voz) — esse sim é Pro+ only.
+> - **P5** ~~CRÍTICO~~ **RECLASSIFICADO → P2** após investigação de custo real (2026-06-23). Triagem por voz WSI é disponível para TODOS os planos via `policy.py`. Custos reais: **Gemini Live (VoIP browser) = R$0,34/sessão** | **Twilio PSTN = R$2,13-8,27/sessão**. COGS mensal aceitável (ver seção 11 corrigida). A estimativa anterior de R$94/sessão usava preços de OpenAI Realtime API — o código real usa Gemini 2.5 Flash com TTS nativo (`gemini_live_audio_service.py`), 28× mais barato. Voice pode ser incluído nos planos com margem positiva. Oportunidade: cobrar R$5-10/sessão extra-plano com margem 40-93%. Cap continua em `policy.py` por setor (padrão 20/dia). Nota: `voice_screening` feature_flag em plan_configs é exclusivamente para **Agent Studio voice** (agentes customizados com canal de voz) — esse sim é Pro+ only.
 
 > **Legenda base:** DB = valor fixo no banco (migration 292/301), confirmado por código.
 > Est. = estimativa calculada a partir dos caps do DB. Pendente = decisão de produto pendente.
@@ -730,8 +747,10 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 > - Embeddings/mês = (triagens × 3) + (chat × 1) + (JDs × 2) + (sourcing × 1)  — média 1.500 tokens/embedding
 > - Custo embedding Gemini text-embedding-004: GRATUITO (sem cobrança por token)
 > - Custo embedding OpenAI fallback: $0,02/M tokens × tokens_estimados × R$5,20
-> - Voice COGS (sem BYOK): sessões × 20 min × $0,90/min × R$5,20 (fonte: `realtime_credit_session.py` _REALTIME_TOKEN_EQ_PER_SEC)
+> - Voice COGS Gemini Live (VoIP browser): sessões × $0,065/sessão × R$5,20 = ~R$0,34/sessão (fonte: `gemini_live_audio_service.py:18`)
+> - Voice COGS Twilio PSTN: sessões × ($0,05-0,10/min × 15 min + $0,09 STT/LLM/TTS) × R$5,20 = R$2,13-8,27/sessão
 > - Voice sessões estimadas: 5% das triagens do plano (estimativa conservadora de adoção)
+> - Nota (2026-06-23): estimativa anterior usava OpenAI Realtime API (~$18/sessão = R$94). Código real usa Gemini 2.5 Flash com TTS nativo, 28× mais barato.
 > - Custo LLM/triagem contratado: 6.000 tokens × (input $0,003 + output $0,015)/1K × R$5,20 = R$3,02
 > - Custo LLM/triagem recusado: 2.400 tokens × mesma fórmula = R$1,18
 > - COGS/candidato processado (sem triagem): R$0,62/20 cand. (Pearch amortizado) + R$0,05 Apify ≈ R$0,08
@@ -802,6 +821,252 @@ Com BYOK ativo, o `llm_monthly_cap` do plano é substituído pelo limite da chav
 
 ---
 
+## 13. DIAGNÓSTICO DE PRICING — CUSTOS × MERCADO × MARGENS
+
+> **Data da análise:** 2026-06-23
+> **Objetivo:** cruzar custos reais do código com preços de concorrentes para determinar
+> o preço-alvo de cada plano, markups recomendados e modelo de pricing ideal.
+> **Status:** diagnóstico apenas — nenhum preço foi alterado no código.
+
+### 13.1 COGS por plano (cenário médio: 20 candidatos/vaga)
+
+Custo real que a WeDOTalent paga para entregar o serviço a um tenant ativo.
+
+| Componente | Trial (~5 vagas) | Starter (~20 vagas) | Pro (~100 vagas) | Enterprise (~400 vagas) |
+|---|---|---|---|---|
+| **LLM** (triagem + JD + chat) | R$133 | R$530 | R$2.650 | R$10.600 |
+| **Pearch** (buscas, R$0,62/busca) | R$3 | R$12 | R$62 | R$248 |
+| **Apify** (reveal 50% dos cand.) | R$3 | R$10 | R$50 | R$200 |
+| **Voice** (Gemini Live, 5% triagens) | R$2 | R$9 | R$43 | R$170 |
+| **Embeddings** (Gemini = grátis) | R$0 | R$0 | R$0 | R$0 |
+| **Infra fixa** (Postgres+Redis+Compute+S3+etc.) | R$380 | R$380 | R$380 | R$380 |
+| **COGS total** | **R$521** | **R$941** | **R$3.185** | **R$11.598** |
+| COGS/seat | R$261 | R$188 | R$319 | R$116 |
+
+> Fórmulas: LLM = vagas × (1,30 × cand/vaga + 1,12) tokens em R$. Pearch = vagas × R$0,62.
+> Apify = vagas × 0,05 × cand × 50% reveal. Voice = 5% das triagens × R$0,34 (Gemini Live VoIP).
+> Infra = R$380 fixo por tenant (não varia por plano).
+
+### 13.2 Benchmark de concorrentes (conversão USD→BRL a R$5,20)
+
+#### ATS + IA (plataformas comparáveis ao WeDOTalent)
+
+| Concorrente | Modelo | Preço/seat/mês (R$) | ACV médio (R$) | Fonte |
+|---|---|---|---|---|
+| Manatal | Per-seat | R$78 | ~R$5K/ano | hiretruffle.com |
+| Zoho Recruit | Per-seat | R$130-156 | ~R$9K/ano | selectsoftwarereviews.com |
+| JazzHR | Flat | R$390/mês flat | ~R$5K/ano | selectsoftwarereviews.com |
+| Lever | PEPM | R$36/employee | ~R$64K/ano (Vendr mediana) | pin.com, vendr.com |
+| Greenhouse | Tiers | R$520/seat (mediana) | ~R$64K/ano (Vendr mediana) | pin.com, vendr.com |
+| iCIMS | PEPM | R$31-47/employee | ~R$290K-3.3M/ano | christianandtimbers.com |
+| SmartRecruiters | Flat tiers | R$6.500+/mês | ~R$78K+/ano | selectsoftwarereviews.com |
+
+#### IA de sourcing puro (concorrentes parciais)
+
+| Concorrente | Modelo | Preço/seat/mês (R$) | ACV médio (R$) | Fonte |
+|---|---|---|---|---|
+| hireEZ | Per-seat + créditos | R$878-1.300 | ~R$68K/ano (Vendr) | glozo.com, vendr.com |
+| SeekOut | Per-seat + créditos | R$775 (Lite) | ~R$104K/ano (Vendr) | seekout.com, vendr.com |
+| Fetcher | Per-seat + cand caps | R$775-3.375 | ~R$57K/ano (Vendr) | pin.com, vendr.com |
+| Findem | Per-seat → per-hire | R$2.600 | ~R$31K/ano (est.) | herohunt.ai |
+| Entelo/Rival | Per-seat | R$650-1.040 (est.) | ~R$62K/ano | findhrsoftware.com |
+
+#### IA enterprise (faixa alta, referência de teto)
+
+| Concorrente | Modelo | Preço | ACV típico (R$) | Fonte |
+|---|---|---|---|---|
+| Eightfold AI | PEPM | R$36-52/employee | R$4.4M+ (10K emp.) | christianandtimbers.com |
+| Phenom | PEPM | R$36-68/employee | R$520K+/ano (mín.) | christianandtimbers.com |
+| Paradox | Contrato enterprise | R$62K-2.6M/ano | Custom | paradox.ai (adquirida por Workday $1B) |
+| HireVue | Contrato enterprise | R$182K-754K/ano | ~R$130/entrevista | hirevue.com |
+
+#### Voice screening (pricing de referência)
+
+| Concorrente | Preço/sessão (USD) | Preço/sessão (R$) | WeDOTalent custo real |
+|---|---|---|---|
+| PhoneScreen.AI | $4,00 | R$20,80 | **R$0,34 (VoIP)** |
+| Rebecca AI | $4-8 | R$20,80-41,60 | **R$2,13-8,27 (PSTN)** |
+| InterviewFlowAI | $0,99 | R$5,15 | — |
+| HireVue | ~$25/entrevista | R$130 | — |
+
+#### Modelo de AI credits (referência de mercado)
+
+| Concorrente | Preço/crédito | O que 1 crédito faz | Fonte |
+|---|---|---|---|
+| Workable Agent | $0,69-0,90 | 1 candidato processado | workable.com |
+| Intercom Fin AI | $0,99 | 1 conversa resolvida | intercom.com |
+| Salesforce Agentforce | Custom | 1 ação completada | salesforce.com |
+| Zendesk | $1,50-2,00 | 1 ticket resolvido | zendesk.com |
+
+### 13.3 Preço recomendado por margem-alvo
+
+Benchmark de margens brutas no mercado AI SaaS (fontes: ICONIQ, Bessemer, a16z):
+- **SaaS tradicional:** 80-90% gross margin
+- **AI SaaS 2024:** 41-50% gross margin (ICONIQ State of Cloud 2024)
+- **AI SaaS 2025:** 45-52% gross margin (melhorando com otimização de inference)
+- **AI SaaS 2026 target:** 55-65% gross margin (benchmark para escala)
+
+| Margem-alvo | Trial | Starter | Pro | Enterprise |
+|---|---|---|---|---|
+| **50%** (piso aceitável) | R$0 | R$1.882 | R$6.370 | R$23.196 |
+| **55%** (conservador) | R$0 | R$2.091 | R$7.078 | R$25.773 |
+| **60%** (benchmark 2026) | R$0 | R$2.353 | R$7.963 | R$28.995 |
+| **65%** (meta agressiva) | R$0 | R$2.689 | R$9.100 | R$33.137 |
+
+**Preço por seat (margem 60%):**
+
+| Plano | Preço total/mês | Preço/seat | USD equivalente | Referência de mercado |
+|---|---|---|---|---|
+| Trial | R$0 | — | — | Loss-leader (30 dias) |
+| **Starter** | **R$2.353** | **R$471/seat** | ~$91/seat | ≈ Greenhouse mediana (R$520) |
+| **Pro** | **R$7.963** | **R$796/seat** | ~$153/seat | Entre Greenhouse e hireEZ |
+| **Enterprise** | **R$28.995** | **R$1.933/seat** | ~$372/seat | Abaixo de SeekOut/Findem |
+
+### 13.4 Cenários de pricing comercial (arredondados)
+
+| Cenário | Starter (5 seats) | Pro (10 seats) | Enterprise (15 seats) | Filosofia |
+|---|---|---|---|---|
+| **A — Conservador** | R$1.990/mês | R$6.990/mês | R$19.990/mês | Margem 53-58%, conquista market share |
+| **B — Benchmark** | R$2.490/mês | R$8.990/mês | R$29.990/mês | Margem 62-66%, alinhado com mercado |
+| **C — Premium** | R$2.990/mês | R$11.990/mês | R$39.990/mês | Margem 69-73%, posicionamento AI-first |
+
+**Caso Sodexo ALFA (R$2.500/mês, 5 seats) = Cenário A com desconto ALFA:**
+- Regular seria R$5.000 (cenário B) com 50% desconto ALFA
+- Margem ALFA: 44% (aceitável para parceiro estratégico de validação)
+- Margem regular (sem desconto): 72% (saudável)
+
+### 13.5 Estratégia de markup recomendada
+
+Para os campos `*_overage_price_cents` e `*_price_per_1k_tokens_brl` zerados no código:
+
+| Componente | Custo WeDO (raw) | Markup sugerido | Preço ao cliente | Justificativa |
+|---|---|---|---|---|
+| **LLM tokens** (overage) | ~R$0,05/1K tokens | **3×** | R$0,15/1K tokens | PostHog 1.2× (transparente), Intercom 10-50× (value). 3× é sustentável |
+| **Pearch busca** (overage) | R$0,62/busca (2 créd.) | **2×** | R$1,24/busca | hireEZ cobra ~R$1,30/crédito implícito |
+| **Apify reveal** (overage) | R$0,05/candidato | **3×** | R$0,15/candidato | Volume alto compensa margem |
+| **Embedding** (overage) | R$0/1K tokens (Gemini) | **N/A** | N/A | Gemini text-embedding-004 = gratuito |
+| **Agent execution** (já definido) | Variável | — | 40¢/30¢/20¢ por tier | Já no código |
+| **Voice screening** (sessão extra) | R$0,34 (VoIP) / R$2,13-8,27 (PSTN) | **5-15×** | R$5-10/sessão | PhoneScreen.AI R$21, Rebecca AI R$21-42. WeDO pode ser o mais barato |
+
+**Implementação no código:**
+```python
+# Valores sugeridos para migration de UPDATE em company_plan_configs:
+llm_overage_price_cents     = 15   # R$0,15/1K tokens (3× markup)
+pearch_credit_price_cents   = 62   # R$0,62/crédito (1× = pass-through; ajustar se quiser 2×)
+apify_credit_price_cents    = 15   # R$0,15/crédito (3× markup)
+embedding_overage_price_cents = 0  # manter zero (Gemini é gratuito)
+```
+
+### 13.6 Voice screening — economia corrigida (2026-06-23)
+
+**Correção importante:** a estimativa anterior de R$94/sessão estava baseada em OpenAI
+Realtime API ($0,06/min input + $0,24/min output = ~$18/sessão). O código real usa
+**Gemini 2.5 Flash com TTS nativo** (`gemini_live_audio_service.py`), que é **28× mais barato**.
+
+**Dois pipelines no código:**
+
+```
+Pipeline 1 — Gemini Live Audio (VoIP, browser do candidato)
+  Browser mic → [PCM 16kHz] → WebSocket → Gemini Live → [audio] → Browser speaker
+  Custo: ~$0,065/sessão = R$0,34
+  Fonte: gemini_live_audio_service.py:18 (modelo: gemini-2.5-flash, voz: Aoede)
+
+Pipeline 2 — Twilio + Gemini STT + OpenAI TTS (ligação telefônica PSTN)
+  Twilio → [μ-law 8kHz] → mulaw_to_wav → Gemini Flash STT → LLM → OpenAI TTS → Twilio
+  Custo: $0,41-1,59/sessão = R$2,13-8,27
+  Fonte: voice_screening_orchestrator.py:2-29
+  Componentes: Twilio $0,05-0,10/min × 15 min + Gemini STT $0,01 + LLM $0,05 + OpenAI TTS $0,03
+```
+
+**Impacto no modelo de negócios:**
+- Voice NÃO é armadilha de margem — é barato o suficiente para incluir nos planos
+- Incluir no Starter (100 sessões VoIP/mês) = ~R$34 de COGS adicional
+- Concorrentes cobram R$5-42/sessão → WeDOTalent pode cobrar R$5-10/sessão extra com margem 40-93%
+- BYOK deixa de ser obrigatório para viabilidade econômica de voice
+
+**Caps de voice por setor** (fonte: `policy.py` — varia por setor do tenant, não por plano):
+
+| Setor | max_voice_screenings_per_day | Mensal estimado |
+|---|---|---|
+| default | 20 | ~600 |
+| tech | 100 | ~3.000 |
+| varejo | 500 | ~15.000 |
+| logística | 1.000 | ~30.000 |
+| saúde | 50 | ~1.500 |
+| educação | 80 | ~2.400 |
+| agro | 2.000 | ~60.000 |
+
+### 13.7 Modelo de pricing recomendado — híbrido (base + consumo)
+
+**Dados de mercado sobre modelos de pricing (2026):**
+- **92% das empresas AI SaaS** usam modelo híbrido com componente de consumo (Bessemer VP)
+- **126% de crescimento YoY** em modelos baseados em créditos (PricingSaaS 500 Index)
+- **37% das empresas SaaS** usam pricing híbrido (GrowthUnhinged, up de 25%)
+- **29% mantêm per-seat puro** (ainda dominante entre empresas >$150M ARR)
+- Gartner projeta **40% do spend SaaS enterprise** em modelos usage/outcome até 2030
+
+**Estrutura recomendada para WeDOTalent:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  CAMADA 1 — Base mensal fixa (assinatura)                   │
+│  Cobre: seats + caps generosos + features do tier           │
+│  Pricing: R$1.990-39.990/mês dependendo do plano            │
+├─────────────────────────────────────────────────────────────┤
+│  CAMADA 2 — AI credits para excedente                       │
+│  Quando o tenant ultrapassa o cap do plano:                 │
+│  - LLM excedente: R$0,15/1K tokens (3× markup)             │
+│  - Pearch excedente: R$1,24/busca (2× markup)              │
+│  - Apify excedente: R$0,15/reveal (3× markup)              │
+│  - Agent execution excedente: 40¢/30¢/20¢ (já no código)   │
+│  Comportamento: overage_allowed=True cobra; =False bloqueia │
+├─────────────────────────────────────────────────────────────┤
+│  CAMADA 3 — Add-ons opcionais                               │
+│  - Voice screening extra: R$5-10/sessão                     │
+│  - Digital twins: Enterprise-only (incluído)                │
+│  - White-label: Enterprise-only (incluído)                  │
+│  - BYOK: disponível em todos os planos (sem custo WeDO)     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Vantagens deste modelo:**
+1. **CFO-friendly**: base previsível + excedente transparente
+2. **Land & expand**: cliente começa no Starter, consome mais, paga excedente antes de fazer upgrade
+3. **Infraestrutura pronta**: `company_plan_configs` já tem campos `*_overage_price_cents` — só popular
+4. **Competitivo**: Workable Agent cobra R$3,60-4,70/candidato; WeDO cobra R$0,15/candidato em overage
+
+### 13.8 Tendências de mercado relevantes para decisão
+
+| Tendência | Dado | Fonte | Implicação WeDOTalent |
+|---|---|---|---|
+| AI comprime margens SaaS | 80-90% → 50-60% | HireFraction, a16z | Meta de 60% é realista, não agressiva |
+| Platforms AI custam 68% mais | +68% vs non-AI | Adeptiq 2026 | Justifica premium sobre Gupy/Kenoby |
+| ROI de recruiting AI | $4-6 por $1 investido | Christian & Timbers | Argumento de vendas: payback em 60-90 dias |
+| Renovação ATS sobe 7-40%/ano | iCIMS 30-40%, Greenhouse 8-15% | TreeGarden, Pin | Desconto ALFA tempo-limitado + renovação com aumento |
+| Hidden costs = +247% sobre preço base | Média do mercado | Adeptiq 2026 | WeDOTalent pode diferenciar com transparência |
+| 50% das empresas >$50M ARR | adicionarão AI credits em 2026 | GrowthUnhinged | AI credits é o padrão emergente |
+| AI agent pricing vai SUBIR | Diferente de chatbots que deflacionam | Ibbaka 2026 | Não sub-precificar execuções de agentes |
+
+### 13.9 Resumo executivo do diagnóstico
+
+**Posicionamento atual:**
+- WeDOTalent a R$500/seat (Sodexo ALFA) está entre Greenhouse (R$520) e Lever (R$416)
+- Margem ALFA 44% está abaixo do piso AI SaaS (50%) mas aceitável para parceiro estratégico
+- Preço regular (R$1.000/seat sem desconto) é competitivo com hireEZ/SeekOut
+
+**3 decisões pendentes:**
+1. **Popularizar preços de overage** — campos existem zerados no código. Sugestão: LLM 15¢/1K, Pearch 62¢/créd, Apify 15¢/créd
+2. **Definir preço-lista por plano** — Starter R$1.990-2.490, Pro R$6.990-8.990, Enterprise R$19.990-29.990
+3. **Voice screening pricing** — incluir no plano (COGS baixo) ou cobrar R$5-10/sessão extra
+
+**O que mudou com este diagnóstico:**
+- Voice screening reclassificado de P0 (armadilha) para P2 (oportunidade) — custo real 28× menor que estimado
+- Modelo híbrido (base + créditos) validado pelo mercado — 92% das empresas AI SaaS usam
+- Margem de 60% é atingível com Starter a R$2.353 e Pro a R$7.963
+
+---
+
 *Documento gerado a partir do estado do código + análise da proposta Sodexo em 2026-06-23.*
 *Seats atualizados via migration 301: pro=10, enterprise=15 (confirmado Paulo 2026-06-23).*
+*Seção 13 (diagnóstico de pricing) adicionada em 2026-06-23 — pesquisa de 15+ concorrentes.*
 *Próxima revisão recomendada: quando preços de overage forem definidos ou plano ALFA for criado.*
