@@ -2043,6 +2043,7 @@ company_id: str = Depends(require_company_id)):
                                 pass
 
                         clean_message = mask_pii_outbound(_strip_react_json(output.message or ""))
+                        logger.info("[NAV-DEBUG-1] output.message pre-extract (first 300): %s", (clean_message or "")[:300])
                         # FIX-NAVIGATE-LEAK (Fase 0 + hardening 2026-06-09):
                         # [NAVIGATE:...] vazava como texto no SSE. Fix em 2 camadas:
                         # Camada 1: extrai o PRIMEIRO marker -> strip + ui_action.
@@ -2063,6 +2064,7 @@ company_id: str = Depends(require_company_id)):
                                     _nav_ui_params = {"page": _np, **_npar}
                         except Exception:
                             pass
+                        logger.info("[NAV-DEBUG-2] nav extracted: action=%s params=%s", _nav_ui_action, _nav_ui_params)
                         # Camada 2: strip residual — quaisquer [NAVIGATE:...] que
                         # sobraram (multiplos markers ou excecao silenciada acima).
                         import re as _re_nav
@@ -2102,6 +2104,7 @@ company_id: str = Depends(require_company_id)):
                         _eff_ui_params = (
                             _tool_ui_params if _tool_ui_action else _nav_ui_params
                         )
+                        logger.info("[NAV-DEBUG-3] tool_ui=%s nav_ui=%s eff_ui=%s eff_params=%s", _tool_ui_action, _nav_ui_action, _eff_ui_action, _eff_ui_params)
 
                         # T7 (2026-06-13): start_wizard_seeded no caminho federado.
                         # Quando o recruiter_copilot chama start_creation_from_source
