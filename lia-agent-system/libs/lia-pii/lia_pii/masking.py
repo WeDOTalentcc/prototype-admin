@@ -355,7 +355,8 @@ def strip_pii_for_llm_prompt(text: str, mask_names: bool = True) -> str:
     """
     if not _LLM_PROMPT_PII_STRIPPING_ENABLED or not text:
         return text
-    import logging as _dbg_log2; _dbg_log2.getLogger("pii-debug").warning("[PII-DEBUG-SYNC] skip_cv=%s mask_names=%s text60=%.60s", _skip_llm_input_pii_strip.get(), mask_names, text or "")
+    if _skip_llm_input_pii_strip.get():
+        return text
 
     # ── Layer 0 (R1/T-F): UUID guard via reversible placeholder ──
     # Coleta UUIDs e substitui por sentinelas opacas que NÃO casam nenhum
@@ -537,7 +538,6 @@ async def strip_pii_for_llm_prompt_async(text: str, mask_names: bool = True) -> 
     import asyncio
     if not _LLM_PROMPT_PII_STRIPPING_ENABLED or not text:
         return text
-    import logging as _dbg_log; _dbg_log.getLogger("pii-debug").warning("[PII-DEBUG-ASYNC] skip_cv=%s mask_names=%s text60=%.60s", _skip_llm_input_pii_strip.get(), mask_names, text or "")
     if _skip_llm_input_pii_strip.get():
         return text
     return await asyncio.to_thread(strip_pii_for_llm_prompt, text, mask_names)
