@@ -79,31 +79,68 @@ Atualização de seats: `lia-agent-system/alembic/versions/293_update_plan_seats
 
 ### 2.2 Visibilidade operacional estimada (para o cliente)
 
-O cap de LLM determina quantas operações cabem no plano por mês. Estimativas
-baseadas nos tokens médios por tipo de operação (fonte: `token_budget_service.py`
-AGENT_TYPE_REQUEST_OVERRIDES — ScreeningAgent=1.5x, DeepAnalysisAgent=2x).
+Tradução dos caps técnicos em operações concretas que o cliente consegue entender.
+Três blocos: Sourcing, Inteligência IA e Automação & Capacidade.
+
+#### Bloco A — Sourcing (Pearch + Apify)
+
+Créditos de sourcing determinam quantas buscas e enriquecimentos de perfil o cliente
+pode fazer por mês. Fonte: `pearch_credits_monthly` e `apify_credits_monthly`.
+
+| Dimensão | Base de cálculo | Trial | Starter | Pro | Enterprise |
+|---|---|---|---|---|---|
+| **Buscas no pool global (Pearch)** | credits / 2 créditos/busca | ~100 | ~250 | ~750 | ~2.000 |
+| **Perfis enriquecidos (Apify/LinkedIn)** | 1 crédito/perfil | ~200 | ~500 | ~1.500 | ~4.000 |
+| **Rollover de créditos não usados** | pearch/apify_credits_rollover | N | N | N | S |
+
+> Candidatos buscados ≠ perfis enriquecidos: busca retorna lista do pool global;
+> enriquecimento puxa dados detalhados (LinkedIn, email, telefone) de candidatos selecionados.
+> Cliente típico enriquece ~20-30% dos candidatos encontrados.
+
+#### Bloco B — Inteligência IA (LLM)
+
+Todas as operações de IA competem pelo mesmo pool de tokens LLM. Estimativas baseadas
+nos tokens médios por operação (fonte: `token_budget_service.py` AGENT_TYPE_REQUEST_OVERRIDES
+— ScreeningAgent=1.5x, DeepAnalysisAgent=2x, CVParserAgent=1.25x).
 
 **Tokens médios por operação:**
 
 | Operação | Tokens médios | Base de cálculo |
 |---|---|---|
-| Triagem de candidato | ~4.000 tokens | req_ceiling * ScreeningAgent (1.5x) |
-| Consulta no chat | ~1.000 tokens | req_ceiling * 0.5 (resposta curta) |
-| Geração de JD | ~8.000 tokens | req_ceiling * DeepAnalysisAgent (2x) |
-| Parsing de CV | ~2.500 tokens | req_ceiling * CVParserAgent |
+| Triagem de candidato | ~4.000 tokens | req_ceiling × ScreeningAgent (1.5x) |
+| Consulta no chat LIA | ~1.000 tokens | req_ceiling × 0.5 (resposta curta) |
+| Geração de JD | ~8.000 tokens | req_ceiling × DeepAnalysisAgent (2x) |
+| Parsing de CV | ~2.500 tokens | req_ceiling × CVParserAgent (1.25x) |
 
 **Operações estimadas por plano:**
 
-| Plano | LLM cap/mês | Triagens est./mês | Chat queries est./mês |
-|---|---|---|---|
-| Trial | 500K | ~125 | ~500 |
-| Starter | 2M | ~500 | ~2.000 |
-| Pro | 10M | ~2.500 | ~10.000 |
-| Enterprise | 40M | ~10.000 | ~40.000 |
+| Dimensão | Trial (500K) | Starter (2M) | Pro (10M) | Enterprise (40M) |
+|---|---|---|---|---|
+| **Triagens de candidatos/mês** | ~125 | ~500 | ~2.500 | ~10.000 |
+| **Consultas no chat LIA/mês** | ~500 | ~2.000 | ~10.000 | ~40.000 |
+| **Geração de JDs/mês** | ~62 | ~250 | ~1.250 | ~5.000 |
+| **Parsings de CV/mês** | ~200 | ~800 | ~4.000 | ~16.000 |
 
-> Nota: triagens e chat queries competem pelo mesmo pool de tokens LLM. Um cliente
-> que usa mais chat terá menos triagens disponíveis no mês, e vice-versa. Exibir
-> isso na sub-tab Consumo como "pool compartilhado" com barra de uso acumulado.
+> Pool compartilhado: triagens, chat, JDs e parsings consomem do mesmo cap de LLM.
+> Um cliente que usa mais chat terá menos triagens disponíveis. Exibir na sub-tab
+> Consumo como barra única de "IA utilizada" com breakdown por tipo de operação.
+
+#### Bloco C — Automação & Capacidade
+
+Limites operacionais fixos por plano — não dependem de consumo variável.
+
+| Dimensão | Trial | Starter | Pro | Enterprise |
+|---|---|---|---|---|
+| **Execuções de agentes autônomos/mês** | 50 | 200 | 1.000 | 5.000 |
+| **Usuários (seats)** | 2 | 5 | 10 | 15 |
+| **Vagas/campanhas ativas simultâneas** | 0 | 0 | 5 | 20 |
+| **Agentes customizados** | 1 | 2 | 10 | 50 |
+| **Agentes de sourcing** | 1 | 1 | 5 | 20 |
+| **Digital twins** | 0 | 0 | 0 | 10 |
+
+> Execuções de agentes = chamadas de agentes autônomos completas (ex: agente de sourcing
+> rodando pipeline end-to-end, agente de triagem em lote). Custo de excedente:
+> Starter=R$0,40/exec | Pro=R$0,30/exec | Enterprise=R$0,20/exec.
 
 ### 2.3 Estimativa de custo WhatsApp para o cliente
 
