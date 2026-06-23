@@ -161,7 +161,7 @@ function CandidateStatusContent() {
 
 export default function CandidateStatusPage() {
   return (
-    <NextIntlClientProvider locale="pt" messages={ptBRMessages}>
+    <NextIntlClientProvider locale="pt" messages={ptBRMessages} timeZone="America/Sao_Paulo">
       <Suspense
         fallback={
           <div className="min-h-screen flex items-center justify-center">

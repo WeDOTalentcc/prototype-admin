@@ -414,7 +414,7 @@ function OfferPortalPageContent() {
 
 export default function OfferPortalPage() {
   return (
-    <NextIntlClientProvider locale="pt" messages={ptBRMessages as Record<string, unknown>}>
+    <NextIntlClientProvider locale="pt" messages={ptBRMessages as Record<string, unknown>} timeZone="America/Sao_Paulo">
       <OfferPortalPageContent />
     </NextIntlClientProvider>
   )

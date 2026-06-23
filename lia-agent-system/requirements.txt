@@ -131,5 +131,14 @@ presidio-analyzer==2.2.362
 pt-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl
 
 # Local libs (UV workspace) — instalar explicitamente para deploy Replit
+-e ./libs/agents-core
+-e ./libs/audit
+-e ./libs/config
+-e ./libs/events
+-e ./libs/messaging
+-e ./libs/models
+-e ./libs/schemas
+-e ./libs/services
+-e ./libs/utils
 -e ./libs/lia-llm
 -e ./libs/lia-pii
