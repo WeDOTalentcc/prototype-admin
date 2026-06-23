@@ -871,6 +871,32 @@ Sub-agents que rodam SSH ao Replit **DEVEM** usar `safe_commit.sh` — nao
 mismatch, empty staging, missing args, dry run, multi-file). Rodar quando
 modificar `scripts/safe_commit.sh`.
 
+### REGRA — git direto PROIBIDO com agente paralelo (registrada 2026-06-23)
+
+> **Principio:** enquanto houver agente paralelo no Replit (billing, deploy,
+> ou qualquer outro Claude Code Agent rodando na mesma working tree),
+> staging + commit direto e PROIBIDO. Usar SEMPRE
+> safe_commit.sh --message ... --files ...
+
+**Incidente 2026-06-23:** F5a (2 arquivos) foi staged via SSH. Entre o
+staging e o commit (sessao SSH separada), o agente billing paralelo fez
+commit do BILLING_PRICING_HANDOFF.md — capturou tudo que estava staged,
+incluindo os 2 arquivos F5a. Resultado: F5a commitado com mensagem do
+billing, commit atomico perdido, necessario marco empty commit.
+
+safe_commit.sh previne: guard 4 faz reset antes de re-stage (staging
+limpo). Guards 5/6/7 detectam absorcao pos-commit.
+
+Proibido:
+- staging + commit direto (em qualquer sessao, SSH ou local)
+- commit -a (stage implicito de TUDO)
+- staging de toda working tree
+
+Permitido:
+- safe_commit.sh --message ... --files ...
+- commit --allow-empty -m marco:... (marcos, sem files)
+- Commits via Replit IDE (Paulo via UI)
+
 ### Quando NAO usar
 
 - Merge commits (precisam de `--no-edit` ou interativo)
