@@ -210,7 +210,7 @@ Responda APENAS com JSON valido no formato:
   "titulo_padronizado": "titulo normalizado",
   "senioridade_confirmada": "junior|pleno|senior|lead|diretor",
   "about_role": "descricao resumida do papel (2-3 frases)",
-  "about_company": "2-3 frases sobre a empresa, baseado SOMENTE no CONTEXTO DA EMPRESA fornecido; string vazia se nenhum contexto foi dado",
+  "about_company": "2-3 frases sobre a empresa, baseado SOMENTE no CONTEXTO DA EMPRESA fornecido acima. Se NENHUM contexto de empresa foi fornecido, retorne string vazia '' — NUNCA use placeholders como {{company_name}}, [Nome da Empresa], {{empresa}} ou similares",
   "responsabilidades": ["resp1", "resp2", ...],
   "skills_obrigatorias": [
     {{"skill": "nome", "contexto": "como e usado no cargo"}}

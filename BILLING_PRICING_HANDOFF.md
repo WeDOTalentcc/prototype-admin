@@ -611,6 +611,66 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 
 ---
 
+## 11. PLANILHA CONSOLIDADA — TODOS OS PLANOS
+
+> Referência única para projeções e exportação para Excel.
+> Valores confirmados no código (migrations 292+301) + estimativas operacionais calculadas.
+> Coluna "Base" indica se o valor é fixo no DB ou estimado.
+
+| Categoria | Dimensão | Base | Trial | Starter | Pro | Enterprise |
+|---|---|---|---|---|---|---|
+| **LIMITES TÉCNICOS** | Usuários (seats) | DB | 2 | 5 | 10 | 15 |
+| | Cap LLM mensal (tokens) | DB | 500.000 | 2.000.000 | 10.000.000 | 40.000.000 |
+| | Cap LLM por request (tokens) | DB | 2.000 | 2.000 | 10.000 | 50.000 |
+| | Cap embedding mensal (tokens) | DB | 10.000.000 | 50.000.000 | 200.000.000 | 500.000.000 |
+| | Créditos Pearch/mês | DB | 200 | 500 | 1.500 | 4.000 |
+| | Rollover Pearch | DB | N | N | N | S |
+| | Créditos Apify/mês | DB | 200 | 500 | 1.500 | 4.000 |
+| | Rollover Apify | DB | N | N | N | S |
+| | Execuções de agentes/mês | DB | 50 | 200 | 1.000 | 5.000 |
+| | Agentes customizados | DB | 1 | 2 | 10 | 50 |
+| | Agentes de sourcing | DB | 1 | 1 | 5 | 20 |
+| | Vagas/campanhas ativas | DB | 0 | 0 | 5 | 20 |
+| | Digital twins | DB | 0 | 0 | 0 | 10 |
+| | BYOK habilitado | DB | S | S | S | S |
+| | Trial (dias) | DB | 30 | — | — | — |
+| **SOURCING ESTIMADO** | Buscas no pool/mês | Est. | ~100 | ~250 | ~750 | ~2.000 |
+| | Candidatos encontrados/mês (×20/busca) | Est. | ~2.000 | ~5.000 | ~15.000 | ~40.000 |
+| | **Candidatos processados/mês** (email revelado) | Est. | **200** | **500** | **1.500** | **4.000** |
+| **INTELIGÊNCIA IA ESTIMADA** | Triagens de candidatos/mês | Est. | ~125 | ~500 | ~2.500 | ~10.000 |
+| | Consultas no chat LIA/mês | Est. | ~500 | ~2.000 | ~10.000 | ~40.000 |
+| | Geração de JDs/mês | Est. | ~62 | ~250 | ~1.250 | ~5.000 |
+| | Parsings de CV/mês | Est. | ~200 | ~800 | ~4.000 | ~16.000 |
+| **WHATSAPP CLIENTE** | Conversas estimadas/mês | Est. | ~400 | ~1.000 | ~3.000 | ~8.000 |
+| | Custo WhatsApp cliente (R$/mês) | Est. | ~R$122 | ~R$305 | ~R$915 | ~R$2.440 |
+| **PREÇOS DE EXCEDENTE** | Excedente agentes (R$/execução) | DB | — | R$0,40 | R$0,30 | R$0,20 |
+| | Excedente LLM (R$/1K tokens) | Pendente | — | — | — | — |
+| | Excedente Pearch (R$/crédito) | Pendente | — | — | — | — |
+| | Excedente Apify (R$/crédito) | Pendente | — | — | — | — |
+| **REFERÊNCIA DE CUSTOS** | Custo LLM Anthropic (claude-3-sonnet input) | Ref. | $0,003/1K | $0,003/1K | $0,003/1K | $0,003/1K |
+| | Custo LLM Anthropic (claude-3-sonnet output) | Ref. | $0,015/1K | $0,015/1K | $0,015/1K | $0,015/1K |
+| | Custo Pearch (busca) | Ref. | $0,12 USD | $0,12 USD | $0,12 USD | $0,12 USD |
+| | Custo Apify (enriquecimento) | Ref. | $0,01 USD | $0,01 USD | $0,01 USD | $0,01 USD |
+| | Custo por candidato processado (Pearch+Apify) | Ref. | $0,34 USD | $0,34 USD | $0,34 USD | $0,34 USD |
+| | Custo WhatsApp Meta por conversa | Ref. | $0,0588 USD | $0,0588 USD | $0,0588 USD | $0,0588 USD |
+
+> **Legenda base:** DB = valor fixo no banco (migration 292/301), confirmado por código.
+> Est. = estimativa calculada a partir dos caps do DB. Pendente = decisão de produto pendente.
+> Ref. = custo de fornecedor externo (não é receita WeDOTalent).
+>
+> **Fórmulas usadas nas estimativas:**
+> - Buscas Pearch = pearch_credits / 2
+> - Candidatos encontrados = buscas × 20 (default da API, máx 50)
+> - Candidatos processados = apify_credits (1 crédito/candidato com email)
+> - Triagens = llm_monthly_cap / 4.000 tokens
+> - Chat queries = llm_monthly_cap / 1.000 tokens
+> - JDs = llm_monthly_cap / 8.000 tokens
+> - Parsings = llm_monthly_cap / 2.500 tokens
+> - Conversas WhatsApp = apify_credits × 2
+> - Custo WhatsApp = conversas × $0,0588 × R$5,20
+
+---
+
 *Documento gerado a partir do estado do código + análise da proposta Sodexo em 2026-06-23.*
-*Seats atualizados via migration 293: pro=10, enterprise=15 (confirmado Paulo 2026-06-23).*
+*Seats atualizados via migration 301: pro=10, enterprise=15 (confirmado Paulo 2026-06-23).*
 *Próxima revisão recomendada: quando preços de overage forem definidos ou plano ALFA for criado.*
