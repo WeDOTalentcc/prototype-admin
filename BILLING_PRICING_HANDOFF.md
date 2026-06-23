@@ -739,6 +739,69 @@ WeDOTalent (admin2.wedotalent.cc), não pelo cliente final.
 
 ---
 
+## 12. CAPACIDADE DE VAGAS POR PLANO
+
+> Responde: **"Quantas vagas eu consigo conduzir por mês em cada plano?"**
+>
+> O cap determinante é o `llm_monthly_cap`. Cada vaga consome tokens em 4 operações:
+
+| Operação | Tokens | Frequência |
+|---|---|---|
+| JD creation/enrichment | ~8.000 | 1× por vaga |
+| WSI setup (geração de perguntas) | ~4.000 | 1× por vaga |
+| Triagem por candidato (parse CV + score) | ~4.000 | N× por vaga |
+| Chat recruiter sobre a vaga (est. 10 queries) | ~5.000 | 1× por vaga |
+| **Total por vaga** | **17.000 + (N × 4.000)** | — |
+
+### 12.1 Vagas conduzíveis por mês — por cenário de volume
+
+| Cenário | Cand. triados/vaga | Tokens/vaga | Trial (500K) | Starter (2M) | Pro (10M) | Enterprise (40M) |
+|---|---|---|---|---|---|---|
+| Baixo volume (nicho, especializado) | 10 | ~57K | **~8 vagas** | **~35 vagas** | **~175 vagas** | **~700 vagas** |
+| **Médio — padrão de mercado** | **20** | **~97K** | **~5 vagas** | **~20 vagas** | **~100 vagas** | **~412 vagas** |
+| Alto volume (logística, varejo, ops) | 50 | ~217K | **~2 vagas** | **~9 vagas** | **~46 vagas** | **~184 vagas** |
+| Muito alto volume (massa, 200 cand.) | 200 | ~817K | **~0,6 vagas** ⚠️ | **~2 vagas** | **~12 vagas** | **~49 vagas** |
+
+> ⚠️ Trial com vaga de alto volume (50+ candidatos): 1-2 vagas esgotam o cap. Plano Trial é adequado apenas para testar o produto com vagas pequenas ou usar BYOK.
+
+### 12.2 Constraint secundário — Apify (email reveal)
+
+Se o recrutador revelar email de ~50% dos candidatos triados:
+
+| Plano | Apify credits | Reveals (50% de N=20) | Vagas até esgotar Apify |
+|---|---|---|---|
+| Trial | 200 | 10/vaga | **~20 vagas** |
+| Starter | 500 | 10/vaga | **~50 vagas** |
+| Pro | 1.500 | 10/vaga | **~150 vagas** |
+| Enterprise | 4.000 | 10/vaga | **~400 vagas** |
+
+**Conclusão:** Apify só limita quando o recrutador revela email de MUITOS candidatos por vaga. No cenário médio (20 cand/vaga, 50% reveals), o LLM limita primeiro em Trial e Starter; no Pro, os dois convergem em ~100 vagas.
+
+### 12.3 Tabela síntese — recomendação de plano por perfil de cliente
+
+| Perfil do cliente | Vagas/mês típicas | Cand./vaga | Plano adequado | Bottleneck |
+|---|---|---|---|---|
+| Startup / MVP | 1–5 | 10–20 | Trial (teste) → Starter | LLM |
+| PME crescimento | 5–20 | 15–30 | Starter | LLM |
+| Empresa média | 20–100 | 20–50 | Pro | LLM |
+| Enterprise / varejo | 50–200 | 50–200 | Enterprise | LLM + Apify |
+| BPO / RPO (massa) | 200+ | 200+ | Enterprise + BYOK | BYOK obrigatório |
+
+### 12.4 Impacto do BYOK na capacidade
+
+Com BYOK ativo, o `llm_monthly_cap` do plano é substituído pelo limite da chave do cliente — na prática ilimitado para fins práticos. O sistema rastreia o consumo (LGPD/billing) mas não bloqueia.
+
+| Plano | Vagas/mês sem BYOK (médio) | Vagas/mês com BYOK |
+|---|---|---|
+| Trial | ~5 | Ilimitado (rastreado) |
+| Starter | ~20 | Ilimitado (rastreado) |
+| Pro | ~100 | Ilimitado (rastreado) |
+| Enterprise | ~412 | Ilimitado (rastreado) |
+
+> **Implicação comercial:** BYOK é o upsell natural para clientes que precisam de mais vagas. O valor do plano muda de "cap de tokens" para "suporte + SLA + features" quando BYOK está ativo.
+
+---
+
 *Documento gerado a partir do estado do código + análise da proposta Sodexo em 2026-06-23.*
 *Seats atualizados via migration 301: pro=10, enterprise=15 (confirmado Paulo 2026-06-23).*
 *Próxima revisão recomendada: quando preços de overage forem definidos ou plano ALFA for criado.*
