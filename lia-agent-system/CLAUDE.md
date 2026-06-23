@@ -897,6 +897,60 @@ Permitido:
 - commit --allow-empty -m marco:... (marcos, sem files)
 - Commits via Replit IDE (Paulo via UI)
 
+### REGRA — git add && git commit direto PROIBIDO (registrada 2026-06-23)
+
+> **Princípio:** enquanto houver agente paralelo no Replit (billing, deploy,
+> ou qualquer outro Claude Code Agent rodando na mesma working tree),
+>  direto é **PROIBIDO**. Usar SEMPRE
+> .
+
+**Por quê (incidente 2026-06-23):** F5a (2 arquivos) foi staged via 
+em sessão SSH. Entre o  e o On branch feat/benefits-prv-canonical
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   ../.deploy-bin/env.sh
+
+no changes added to commit (use "git add" and/or "git commit -a") (sessão SSH separada), o
+agente billing paralelo fez On branch feat/benefits-prv-canonical
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   ../.deploy-bin/env.sh
+
+no changes added to commit (use "git add" and/or "git commit -a") do  —
+esse commit capturou tudo que estava staged, incluindo os 2 arquivos F5a.
+Resultado: F5a commitado com mensagem do billing (),
+commit atômico perdido, necessário marco empty commit pra rastrear.
+
+**safe_commit.sh previne isso:** guard 4 faz Unstaged changes after reset:
+M	.deploy-bin/env.sh
+M	lia-agent-system/CLAUDE.md antes de
+re-stage, garantindo staging limpo. Guards 5/6/7 detectam absorção pós-commit.
+
+**Proibido:**
+- ❌  (em qualquer sessão, SSH ou local)
+- ❌  (stage implícito de TUDO)
+- ❌  (stage de toda working tree)
+
+**Permitido:**
+- ✅ 🔍 safe_commit guard ativo (race-condition harness)
+  HEAD before: 58b2813892e74a6506496e9b5fbfd0967e93c446
+  ⚠ File nao existe (sera tratado como delete se tracked): lia-agent-system/X
+  ⚠ File nao existe (sera tratado como delete se tracked): lia-agent-system/Y
+  🚨 PRE-EXISTING ROGUE STAGING detected — files staged antes do script:
+    lia-agent-system/CLAUDE.md
+
+  Declared files:
+    lia-agent-system/X
+    lia-agent-system/Y
+
+  Likely cause: outro agent ou comando staged files antes desta invocacao.
+  Action: rodar 'git reset HEAD' manualmente, revisar, e rerun.
+- ✅ [feat/benefits-prv-canonical da6f5f337] marco: ...
+ 1 file changed, 26 insertions(+) (marcos, sem files)
+- ✅ Commits via Replit IDE (Paulo via UI — fluxo manual próprio)
+
 ### Quando NAO usar
 
 - Merge commits (precisam de `--no-edit` ou interativo)
