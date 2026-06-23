@@ -61,6 +61,10 @@
               <span class="nav-item-icon"><i data-lucide="server"></i></span>
               <span class="nav-item-label">Provisionamentos</span>
             </li>
+            <li id="nav-onboarding-portal" class="nav-item" data-tooltip="Onboarding Portal" onclick="showScreen('screen-onboarding-portal-global')">
+              <span class="nav-item-icon"><i data-lucide="clipboard-check"></i></span>
+              <span class="nav-item-label">Onboarding Portal</span>
+            </li>
           </ul>
         </div>
 
@@ -126,6 +130,10 @@
             <li id="nav-client-users" class="nav-item" data-tooltip="Usuários" onclick="showScreen('screen-client-users')">
               <span class="nav-item-icon"><i data-lucide="users"></i></span>
               <span class="nav-item-label">Usuários</span>
+            </li>
+            <li id="nav-client-onboarding" class="nav-item" data-tooltip="Onboarding Portal" onclick="showScreen('screen-onboarding-client')">
+              <span class="nav-item-icon"><i data-lucide="clipboard-check"></i></span>
+              <span class="nav-item-label">Onboarding</span>
             </li>
           </ul>
         </div>
@@ -3365,6 +3373,524 @@ Princípios: (1) Imparcialidade — aplicar sempre o FairnessGuard (Four-Fifths 
         </div>
       </div>
     </div><!-- /#screen-notifications -->
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- ONBOARDING PORTAL — VISÃO GLOBAL                          -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div class="screen" id="screen-onboarding-portal-global">
+      <div style="padding:24px 32px; max-width:1200px; margin:0 auto;">
+
+        <!-- Header -->
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px;">
+          <div>
+            <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px 0;">Onboarding Portal</h1>
+            <p style="font-size:13px; color:#6B7280; margin:0;">Acompanhe o progresso de cada cliente no portal de onboarding</p>
+          </div>
+          <button onclick="openModal('new-client')" style="display:flex; align-items:center; gap:6px; padding:9px 16px; background:#C74446; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#B23B3D'" onmouseout="this.style.background='#C74446'">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i> Novo Cliente
+          </button>
+        </div>
+
+        <!-- KPI cards -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px;">
+            <div style="font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Em Onboarding</div>
+            <div style="font-size:30px; font-weight:700; color:#111827; font-family:'Inter',sans-serif; margin-bottom:6px;">12</div>
+            <span style="font-size:12px; color:#166534; background:rgba(93,164,122,0.1); border-radius:99px; padding:2px 10px;">↑ 3 vs. mês anterior</span>
+          </div>
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px;">
+            <div style="font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">% Médio Concluído</div>
+            <div style="font-size:30px; font-weight:700; color:#111827; font-family:'Inter',sans-serif; margin-bottom:6px;">67%</div>
+            <div style="background:#E5E7EB; border-radius:2px; height:4px; overflow:hidden;"><div style="background:#60BED1; width:67%; height:100%; border-radius:2px;"></div></div>
+          </div>
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px;">
+            <div style="font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Clientes Atrasados</div>
+            <div style="font-size:30px; font-weight:700; color:#C74446; font-family:'Inter',sans-serif; margin-bottom:6px;">3</div>
+            <span style="font-size:12px; color:#B91C1C; background:rgba(199,68,70,0.08); border-radius:99px; padding:2px 10px;">Requer atenção</span>
+          </div>
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px;">
+            <div style="font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Concluídos este mês</div>
+            <div style="font-size:30px; font-weight:700; color:#111827; font-family:'Inter',sans-serif; margin-bottom:6px;">2</div>
+            <span style="font-size:12px; color:#166534; background:rgba(93,164,122,0.1); border-radius:99px; padding:2px 10px;">iFood · Nubank</span>
+          </div>
+        </div>
+
+        <!-- Filter pills -->
+        <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+          <div id="opg-pill-all" onclick="opgFilterPill('all')" style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:#111827; border:1px solid #111827; border-radius:99px; font-size:12px; cursor:pointer;">
+            <span style="color:white;">Todos</span><strong style="color:white; margin-left:4px;">12</strong>
+          </div>
+          <div id="opg-pill-andamento" onclick="opgFilterPill('andamento')" style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:white; border:1px solid #E5E7EB; border-radius:99px; font-size:12px; cursor:pointer;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">
+            <span style="width:7px;height:7px;border-radius:50%;background:#60BED1;display:inline-block;"></span>
+            <span style="color:#6B7280;">Em andamento</span><strong style="color:#111827; margin-left:4px;">7</strong>
+          </div>
+          <div id="opg-pill-atrasado" onclick="opgFilterPill('atrasado')" style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:white; border:1px solid #E5E7EB; border-radius:99px; font-size:12px; cursor:pointer;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">
+            <span style="width:7px;height:7px;border-radius:50%;background:#C74446;display:inline-block;"></span>
+            <span style="color:#6B7280;">Atrasado</span><strong style="color:#111827; margin-left:4px;">3</strong>
+          </div>
+          <div id="opg-pill-aguardando" onclick="opgFilterPill('aguardando')" style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:white; border:1px solid #E5E7EB; border-radius:99px; font-size:12px; cursor:pointer;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">
+            <span style="width:7px;height:7px;border-radius:50%;background:#D19960;display:inline-block;"></span>
+            <span style="color:#6B7280;">Aguardando cliente</span><strong style="color:#111827; margin-left:4px;">2</strong>
+          </div>
+          <div id="opg-pill-concluido" onclick="opgFilterPill('concluido')" style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:white; border:1px solid #E5E7EB; border-radius:99px; font-size:12px; cursor:pointer;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">
+            <span style="width:7px;height:7px;border-radius:50%;background:#5DA47A;display:inline-block;"></span>
+            <span style="color:#6B7280;">Concluído</span><strong style="color:#111827; margin-left:4px;">2</strong>
+          </div>
+        </div>
+
+        <!-- Search bar -->
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+          <div style="position:relative; flex:1; max-width:340px;">
+            <i data-lucide="search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; color:#9CA3AF; pointer-events:none;"></i>
+            <input type="text" placeholder="Buscar cliente…" style="width:100%; padding:8px 12px 8px 32px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#111827; outline:none; font-family:inherit; box-sizing:border-box;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'">
+          </div>
+          <select style="padding:8px 12px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#374151; background:white; cursor:pointer; font-family:inherit; outline:none;">
+            <option>Todas as fases</option>
+            <option>Coleta de dados</option>
+            <option>Validação</option>
+            <option>Setup Técnico</option>
+            <option>Onboarding CS</option>
+            <option>Go Live</option>
+          </select>
+          <span style="font-size:13px; color:#6B7280; margin-left:auto; white-space:nowrap;">Exibindo <strong style="color:#111827;">12</strong> clientes</span>
+        </div>
+
+        <!-- Table -->
+        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;">
+                <th style="text-align:left; padding:12px 20px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Cliente</th>
+                <th style="text-align:left; padding:12px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap;">Progresso</th>
+                <th style="text-align:left; padding:12px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap;">Fase Atual</th>
+                <th style="text-align:left; padding:12px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap;">Delegações</th>
+                <th style="text-align:left; padding:12px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap;">Msgs não lidas</th>
+                <th style="text-align:left; padding:12px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap;">Última atividade</th>
+                <th style="text-align:left; padding:12px 20px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+                <td style="padding:14px 20px;"><div style="display:flex; align-items:center; gap:10px;"><div style="width:36px; height:36px; border-radius:8px; background:#C74446; color:white; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">IF</div><div><div style="font-size:13px; font-weight:600; color:#111827;">iFood Talentos</div><div style="font-size:11px; color:#9CA3AF;">maria.silva@ifood.com.br</div></div></div></td>
+                <td style="padding:14px 12px;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:80px; background:#E5E7EB; border-radius:2px; height:6px; overflow:hidden;"><div style="background:#5DA47A; width:78%; height:100%; border-radius:2px;"></div></div><span style="font-size:12px; font-weight:600; color:#111827; font-family:'Inter',sans-serif;">78%</span></div></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#6B7280; background:#F3F4F6; padding:3px 8px; border-radius:99px;">Validação</span></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#374151;">2 ativas</span></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#9CA3AF;">—</span></td>
+                <td style="padding:14px 12px; font-size:12px; color:#6B7280;">há 2h</td>
+                <td style="padding:14px 20px;"><button onclick="showScreen('screen-onboarding-client'); setClientContext('ifood')" style="font-size:12px; font-weight:500; color:#60BED1; background:none; border:1px solid #60BED1; padding:5px 10px; border-radius:6px; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='rgba(96,190,209,0.06)'" onmouseout="this.style.background='none'">Ver onboarding</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+                <td style="padding:14px 20px;"><div style="display:flex; align-items:center; gap:10px;"><div style="width:36px; height:36px; border-radius:8px; background:#9860D1; color:white; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">NR</div><div><div style="font-size:13px; font-weight:600; color:#111827;">Nubank RH</div><div style="font-size:11px; color:#9CA3AF;">joao.costa@nubank.com.br</div></div></div></td>
+                <td style="padding:14px 12px;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:80px; background:#E5E7EB; border-radius:2px; height:6px; overflow:hidden;"><div style="background:#60BED1; width:45%; height:100%; border-radius:2px;"></div></div><span style="font-size:12px; font-weight:600; color:#111827; font-family:'Inter',sans-serif;">45%</span></div></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#6B7280; background:#F3F4F6; padding:3px 8px; border-radius:99px;">Coleta de dados</span></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#374151;">1 ativa</span></td>
+                <td style="padding:14px 12px;"><span style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:#B91C1C; background:rgba(199,68,70,0.08); padding:2px 8px; border-radius:99px; font-weight:600;"><svg width="6" height="6" viewBox="0 0 8 8" fill="#C74446"><circle cx="4" cy="4" r="4"/></svg>3</span></td>
+                <td style="padding:14px 12px; font-size:12px; color:#6B7280;">há 1 dia</td>
+                <td style="padding:14px 20px;"><button onclick="showScreen('screen-onboarding-client'); setClientContext('nubank')" style="font-size:12px; font-weight:500; color:#60BED1; background:none; border:1px solid #60BED1; padding:5px 10px; border-radius:6px; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='rgba(96,190,209,0.06)'" onmouseout="this.style.background='none'">Ver onboarding</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #F3F4F6; background:rgba(209,153,96,0.03);" onmouseover="this.style.background='rgba(209,153,96,0.07)'" onmouseout="this.style.background='rgba(209,153,96,0.03)'">
+                <td style="padding:14px 20px;"><div style="display:flex; align-items:center; gap:10px;"><div style="width:36px; height:36px; border-radius:8px; background:#D19960; color:white; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">PP</div><div><div style="font-size:13px; font-weight:600; color:#111827;">PicPay People</div><div style="font-size:11px; color:#9CA3AF;">ana.lima@picpay.com</div></div></div></td>
+                <td style="padding:14px 12px;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:80px; background:#E5E7EB; border-radius:2px; height:6px; overflow:hidden;"><div style="background:#C74446; width:8%; height:100%; border-radius:2px;"></div></div><span style="font-size:12px; font-weight:600; color:#C74446; font-family:'Inter',sans-serif;">8%</span></div></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#92400E; background:rgba(209,153,96,0.12); padding:3px 8px; border-radius:99px;">Aguardando</span></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#9CA3AF;">—</span></td>
+                <td style="padding:14px 12px;"><span style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:#B91C1C; background:rgba(199,68,70,0.08); padding:2px 8px; border-radius:99px; font-weight:600;"><svg width="6" height="6" viewBox="0 0 8 8" fill="#C74446"><circle cx="4" cy="4" r="4"/></svg>5</span></td>
+                <td style="padding:14px 12px; font-size:12px; color:#C74446; font-weight:600;">5 dias sem atividade</td>
+                <td style="padding:14px 20px;"><button onclick="showScreen('screen-onboarding-client')" style="font-size:12px; font-weight:500; color:#60BED1; background:none; border:1px solid #60BED1; padding:5px 10px; border-radius:6px; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='rgba(96,190,209,0.06)'" onmouseout="this.style.background='none'">Ver onboarding</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+                <td style="padding:14px 20px;"><div style="display:flex; align-items:center; gap:10px;"><div style="width:36px; height:36px; border-radius:8px; background:#5DA47A; color:white; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">CR</div><div><div style="font-size:13px; font-weight:600; color:#111827;">Creditas Tech</div><div style="font-size:11px; color:#9CA3AF;">pedro.melo@creditas.com</div></div></div></td>
+                <td style="padding:14px 12px;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:80px; background:#E5E7EB; border-radius:2px; height:6px; overflow:hidden;"><div style="background:#5DA47A; width:92%; height:100%; border-radius:2px;"></div></div><span style="font-size:12px; font-weight:600; color:#111827; font-family:'Inter',sans-serif;">92%</span></div></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#6B7280; background:#F3F4F6; padding:3px 8px; border-radius:99px;">Setup Técnico</span></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#9CA3AF;">—</span></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#9CA3AF;">—</span></td>
+                <td style="padding:14px 12px; font-size:12px; color:#6B7280;">há 5h</td>
+                <td style="padding:14px 20px;"><button onclick="showScreen('screen-onboarding-client')" style="font-size:12px; font-weight:500; color:#60BED1; background:none; border:1px solid #60BED1; padding:5px 10px; border-radius:6px; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='rgba(96,190,209,0.06)'" onmouseout="this.style.background='none'">Ver onboarding</button></td>
+              </tr>
+              <tr onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+                <td style="padding:14px 20px;"><div style="display:flex; align-items:center; gap:10px;"><div style="width:36px; height:36px; border-radius:8px; background:#60BED1; color:white; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">RC</div><div><div style="font-size:13px; font-weight:600; color:#111827;">Rock Content</div><div style="font-size:11px; color:#9CA3AF;">camila.f@rockcontent.com</div></div></div></td>
+                <td style="padding:14px 12px;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:80px; background:#E5E7EB; border-radius:2px; height:6px; overflow:hidden;"><div style="background:#60BED1; width:23%; height:100%; border-radius:2px;"></div></div><span style="font-size:12px; font-weight:600; color:#111827; font-family:'Inter',sans-serif;">23%</span></div></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#6B7280; background:#F3F4F6; padding:3px 8px; border-radius:99px;">Coleta de dados</span></td>
+                <td style="padding:14px 12px;"><span style="font-size:12px; color:#374151;">2 ativas</span></td>
+                <td style="padding:14px 12px;"><span style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:#B91C1C; background:rgba(199,68,70,0.08); padding:2px 8px; border-radius:99px; font-weight:600;"><svg width="6" height="6" viewBox="0 0 8 8" fill="#C74446"><circle cx="4" cy="4" r="4"/></svg>1</span></td>
+                <td style="padding:14px 12px; font-size:12px; color:#6B7280;">há 3 dias</td>
+                <td style="padding:14px 20px;"><button onclick="showScreen('screen-onboarding-client')" style="font-size:12px; font-weight:500; color:#60BED1; background:none; border:1px solid #60BED1; padding:5px 10px; border-radius:6px; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='rgba(96,190,209,0.06)'" onmouseout="this.style.background='none'">Ver onboarding</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /#screen-onboarding-portal-global -->
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- ONBOARDING PORTAL — DETALHE DO CLIENTE                    -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div class="screen" id="screen-onboarding-client">
+      <div style="padding:24px 32px; max-width:1200px; margin:0 auto;">
+
+        <!-- Breadcrumb -->
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px; font-size:14px;">
+          <a href="#" onclick="showScreen('screen-onboarding-portal-global'); return false;" style="color:#C74446; font-weight:500;">Onboarding Portal</a>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span style="color:#374151; font-weight:500;">iFood Talentos</span>
+        </div>
+
+        <!-- Client header -->
+        <div style="display:flex; gap:16px; align-items:flex-start; margin-bottom:24px;">
+          <div style="width:56px; height:56px; border-radius:12px; background:#C74446; color:white; font-size:20px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">IF</div>
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;">
+              <h1 style="font-size:20px; font-weight:700; color:#111827; margin:0;">iFood Talentos</h1>
+              <span style="background:rgba(96,190,209,0.12); color:#0E7490; border-radius:99px; padding:3px 10px; font-size:12px; font-weight:600;">PRO</span>
+              <span style="background:rgba(93,164,122,0.12); color:#166534; border-radius:99px; padding:3px 10px; font-size:12px; font-weight:600;">Em onboarding</span>
+            </div>
+            <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:13px; color:#6B7280;">
+              <span>maria.silva@ifood.com.br</span>
+              <span>+55 11 99123-4567</span>
+              <span>Início: 10/06/2026</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button onclick="showScreen('screen-client-detail')" style="padding:7px 14px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">Ver no ATS →</button>
+            <button onclick="openModal('onb-send-message')" style="display:flex; align-items:center; gap:5px; padding:7px 14px; border:none; background:#111827; color:white; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;"><i data-lucide="message-circle" style="width:13px;height:13px;"></i> Enviar Mensagem</button>
+          </div>
+        </div>
+
+        <!-- KPI cards -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px;">
+            <div style="font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Progresso geral</div>
+            <div style="font-size:28px; font-weight:700; color:#111827; font-family:'Inter',sans-serif; margin-bottom:8px;">78%</div>
+            <div style="background:#E5E7EB; border-radius:2px; height:5px; overflow:hidden; margin-bottom:4px;"><div style="background:#5DA47A; width:78%; height:100%; border-radius:2px;"></div></div>
+            <span style="font-size:11px; color:#6B7280;">Última atividade há 2h</span>
+          </div>
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px;">
+            <div style="font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Itens respondidos</div>
+            <div style="font-size:28px; font-weight:700; color:#111827; font-family:'Inter',sans-serif; margin-bottom:8px;">94<span style="font-size:16px; color:#9CA3AF;">/120</span></div>
+            <span style="font-size:11px; color:#6B7280;">26 itens pendentes</span>
+          </div>
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px;">
+            <div style="font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Delegações</div>
+            <div style="font-size:28px; font-weight:700; color:#111827; font-family:'Inter',sans-serif; margin-bottom:8px;">2</div>
+            <span style="font-size:11px; color:#D19960; background:rgba(209,153,96,0.1); border-radius:99px; padding:2px 8px;">1 aguardando resposta</span>
+          </div>
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px;">
+            <div style="font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Mensagens</div>
+            <div style="font-size:28px; font-weight:700; color:#111827; font-family:'Inter',sans-serif; margin-bottom:8px;">0</div>
+            <span style="font-size:11px; color:#6B7280;">nenhuma não lida</span>
+          </div>
+        </div>
+
+        <!-- Tab navigation -->
+        <div style="display:flex; gap:0; border-bottom:2px solid #E5E7EB; margin-bottom:24px;">
+          <button id="onb-tab-visao" onclick="onbSwitchTab('visao')" style="padding:10px 18px; border:none; background:none; font-size:13px; font-weight:600; color:#C74446; border-bottom:2px solid #C74446; margin-bottom:-2px; cursor:pointer; font-family:inherit;">Visão Geral</button>
+          <button id="onb-tab-checklist" onclick="onbSwitchTab('checklist')" style="padding:10px 18px; border:none; background:none; font-size:13px; font-weight:500; color:#6B7280; border-bottom:2px solid transparent; margin-bottom:-2px; cursor:pointer; font-family:inherit;" onmouseover="this.style.color='#374151'" onmouseout="if(document.getElementById('onb-panel-checklist').style.display==='none')this.style.color='#6B7280'">Checklist</button>
+          <button id="onb-tab-respostas" onclick="onbSwitchTab('respostas')" style="padding:10px 18px; border:none; background:none; font-size:13px; font-weight:500; color:#6B7280; border-bottom:2px solid transparent; margin-bottom:-2px; cursor:pointer; font-family:inherit;" onmouseover="this.style.color='#374151'" onmouseout="if(document.getElementById('onb-panel-respostas').style.display==='none')this.style.color='#6B7280'">Respostas</button>
+          <button id="onb-tab-delegacoes" onclick="onbSwitchTab('delegacoes')" style="padding:10px 18px; border:none; background:none; font-size:13px; font-weight:500; color:#6B7280; border-bottom:2px solid transparent; margin-bottom:-2px; cursor:pointer; font-family:inherit;" onmouseover="this.style.color='#374151'" onmouseout="if(document.getElementById('onb-panel-delegacoes').style.display==='none')this.style.color='#6B7280'">Delegações</button>
+          <button id="onb-tab-arquivos" onclick="onbSwitchTab('arquivos')" style="padding:10px 18px; border:none; background:none; font-size:13px; font-weight:500; color:#6B7280; border-bottom:2px solid transparent; margin-bottom:-2px; cursor:pointer; font-family:inherit;" onmouseover="this.style.color='#374151'" onmouseout="if(document.getElementById('onb-panel-arquivos').style.display==='none')this.style.color='#6B7280'">Arquivos</button>
+          <button id="onb-tab-mensagens" onclick="onbSwitchTab('mensagens')" style="padding:10px 18px; border:none; background:none; font-size:13px; font-weight:500; color:#6B7280; border-bottom:2px solid transparent; margin-bottom:-2px; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px;" onmouseover="this.style.color='#374151'" onmouseout="if(document.getElementById('onb-panel-mensagens').style.display==='none')this.style.color='#6B7280'">Mensagens</button>
+          <button id="onb-tab-implementacao" onclick="onbSwitchTab('implementacao')" style="padding:10px 18px; border:none; background:none; font-size:13px; font-weight:500; color:#6B7280; border-bottom:2px solid transparent; margin-bottom:-2px; cursor:pointer; font-family:inherit;" onmouseover="this.style.color='#374151'" onmouseout="if(document.getElementById('onb-panel-implementacao').style.display==='none')this.style.color='#6B7280'">Implementação</button>
+        </div>
+
+        <!-- TAB: Visão Geral -->
+        <div id="onb-panel-visao">
+          <div style="display:grid; grid-template-columns:1fr 380px; gap:24px;">
+            <div>
+              <!-- Progresso por grupo -->
+              <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px; margin-bottom:16px;">
+                <div style="font-size:15px; font-weight:600; color:#111827; margin-bottom:16px;">Progresso por grupo</div>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                  <div><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="font-size:13px; font-weight:500; color:#374151;">Bloqueante</span><span style="font-size:13px; font-weight:700; color:#111827; font-family:'Inter',sans-serif;">100%</span></div><div style="background:#E5E7EB; border-radius:4px; height:8px; overflow:hidden;"><div style="background:#5DA47A; width:100%; height:100%; border-radius:4px;"></div></div><div style="font-size:11px; color:#6B7280; margin-top:3px;">12/12 itens · Fase concluída</div></div>
+                  <div><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="font-size:13px; font-weight:500; color:#374151;">Core</span><span style="font-size:13px; font-weight:700; color:#111827; font-family:'Inter',sans-serif;">85%</span></div><div style="background:#E5E7EB; border-radius:4px; height:8px; overflow:hidden;"><div style="background:#60BED1; width:85%; height:100%; border-radius:4px;"></div></div><div style="font-size:11px; color:#6B7280; margin-top:3px;">34/40 itens · 6 pendentes</div></div>
+                  <div><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="font-size:13px; font-weight:500; color:#374151;">Deep Dive</span><span style="font-size:13px; font-weight:700; color:#C74446; font-family:'Inter',sans-serif;">55%</span></div><div style="background:#E5E7EB; border-radius:4px; height:8px; overflow:hidden;"><div style="background:#D19960; width:55%; height:100%; border-radius:4px;"></div></div><div style="font-size:11px; color:#6B7280; margin-top:3px;">22/40 itens · 18 pendentes</div></div>
+                  <div><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="font-size:13px; font-weight:500; color:#374151;">Jurídico</span><span style="font-size:13px; font-weight:700; color:#C74446; font-family:'Inter',sans-serif;">40%</span></div><div style="background:#E5E7EB; border-radius:4px; height:8px; overflow:hidden;"><div style="background:#C74446; width:40%; height:100%; border-radius:4px;"></div></div><div style="font-size:11px; color:#6B7280; margin-top:3px;">11/28 itens · Contrato pendente</div></div>
+                </div>
+              </div>
+              <!-- Itens críticos pendentes -->
+              <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                  <span style="font-size:15px; font-weight:600; color:#111827;">Itens críticos pendentes</span>
+                  <button onclick="onbSwitchTab('checklist')" style="font-size:12px; color:#C74446; font-weight:500; background:none; border:none; cursor:pointer; font-family:inherit;">Ver checklist →</button>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#FEF2F2; border-radius:8px; border:1px solid rgba(199,68,70,0.15);">
+                    <div style="width:8px; height:8px; border-radius:50%; background:#C74446; flex-shrink:0;"></div>
+                    <div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#111827;">1.3 — CNPJ e dados da empresa</div><div style="font-size:11px; color:#6B7280;">Jurídico · Obrigatório</div></div>
+                    <span style="font-size:11px; color:#B91C1C; font-weight:600;">Sem resposta</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#FFFBEB; border-radius:8px; border:1px solid rgba(209,153,96,0.2);">
+                    <div style="width:8px; height:8px; border-radius:50%; background:#D19960; flex-shrink:0;"></div>
+                    <div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#111827;">3.1 — Configuração de SSO / Identity Provider</div><div style="font-size:11px; color:#6B7280;">Deep Dive · Técnico</div></div>
+                    <span style="font-size:11px; color:#92400E; font-weight:600;">Em análise</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#FFFBEB; border-radius:8px; border:1px solid rgba(209,153,96,0.2);">
+                    <div style="width:8px; height:8px; border-radius:50%; background:#D19960; flex-shrink:0;"></div>
+                    <div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#111827;">3.4 — Integração com LinkedIn Recruiter</div><div style="font-size:11px; color:#6B7280;">Deep Dive · Técnico</div></div>
+                    <span style="font-size:11px; color:#92400E; font-weight:600;">Requer revisão</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Timeline de atividade -->
+            <div>
+              <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
+                <div style="font-size:15px; font-weight:600; color:#111827; margin-bottom:16px;">Atividade recente</div>
+                <div style="display:flex; flex-direction:column; gap:0;">
+                  <div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #F3F4F6;"><div style="flex-shrink:0; margin-top:4px; width:8px; height:8px; border-radius:50%; background:#5DA47A;"></div><div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#111827;">Resposta enviada</div><div style="font-size:12px; color:#6B7280;">2.4 — Definição de SLAs internos</div></div><div style="font-size:11px; color:#9CA3AF; white-space:nowrap;">há 2h</div></div>
+                  <div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #F3F4F6;"><div style="flex-shrink:0; margin-top:4px; width:8px; height:8px; border-radius:50%; background:#60BED1;"></div><div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#111827;">Arquivo enviado</div><div style="font-size:12px; color:#6B7280;">organograma_rh.pdf · 2.1 — Organograma</div></div><div style="font-size:11px; color:#9CA3AF; white-space:nowrap;">há 4h</div></div>
+                  <div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #F3F4F6;"><div style="flex-shrink:0; margin-top:4px; width:8px; height:8px; border-radius:50%; background:#9860D1;"></div><div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#111827;">Delegação respondida</div><div style="font-size:12px; color:#6B7280;">carlos.tech@ifood.com</div></div><div style="font-size:11px; color:#9CA3AF; white-space:nowrap;">há 6h</div></div>
+                  <div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #F3F4F6;"><div style="flex-shrink:0; margin-top:4px; width:8px; height:8px; border-radius:50%; background:#D19960;"></div><div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#111827;">Delegação criada</div><div style="font-size:12px; color:#6B7280;">3 itens → fernanda.legal@ifood.com</div></div><div style="font-size:11px; color:#9CA3AF; white-space:nowrap;">ontem</div></div>
+                  <div style="display:flex; gap:12px; padding:10px 0;"><div style="flex-shrink:0; margin-top:4px; width:8px; height:8px; border-radius:50%; background:#5DA47A;"></div><div style="flex:1;"><div style="font-size:13px; font-weight:500; color:#111827;">5 respostas enviadas</div><div style="font-size:12px; color:#6B7280;">Seção 2 — Estrutura organizacional</div></div><div style="font-size:11px; color:#9CA3AF; white-space:nowrap;">2 dias atrás</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /onb-panel-visao -->
+
+        <!-- TAB: Checklist -->
+        <div id="onb-panel-checklist" style="display:none;">
+          <!-- Filtros -->
+          <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+            <select style="padding:7px 10px; border:1px solid #E5E7EB; border-radius:8px; font-size:12px; background:white; font-family:inherit; outline:none; cursor:pointer;"><option>Todos os grupos</option><option>Bloqueante</option><option>Core</option><option>Deep Dive</option><option>Jurídico</option></select>
+            <select style="padding:7px 10px; border:1px solid #E5E7EB; border-radius:8px; font-size:12px; background:white; font-family:inherit; outline:none; cursor:pointer;"><option>Todos os status</option><option>Respondido</option><option>Pendente</option><option>Validado</option><option>Requer atenção</option></select>
+          </div>
+          <!-- Seção 1 -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; margin-bottom:10px; overflow:hidden;">
+            <div onclick="onbToggleSection('sec1')" style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; cursor:pointer; background:#F9FAFB;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='#F9FAFB'">
+              <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:12px; font-weight:700; color:#6B7280; background:#E5E7EB; padding:2px 8px; border-radius:99px;">1</span><span style="font-size:14px; font-weight:600; color:#111827;">Informações Básicas da Empresa</span><span style="font-size:11px; color:#6B7280; margin-left:4px;">· Bloqueante</span></div>
+              <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:12px; color:#166534; background:rgba(93,164,122,0.1); border-radius:99px; padding:2px 10px; font-weight:600;">12/12 respondidos</span><i data-lucide="chevron-down" id="onb-sec1-icon" style="width:16px;height:16px;color:#9CA3AF;"></i></div>
+            </div>
+            <div id="onb-sec1-body">
+              <div style="border-top:1px solid #E5E7EB;">
+                <div style="display:flex; align-items:center; gap:12px; padding:11px 20px; border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"><span style="font-size:11px; color:#9CA3AF; font-family:'Inter',monospace; min-width:28px;">1.1</span><span style="flex:1; font-size:13px; color:#374151;">Razão social da empresa</span><span style="font-size:11px; font-weight:600; color:#166534; background:rgba(93,164,122,0.1); padding:2px 8px; border-radius:99px;">Validado</span><button onclick="openModal('onb-validate')" style="padding:3px 8px; border:1px solid #E5E7EB; background:white; border-radius:5px; font-size:11px; color:#374151; cursor:pointer; font-family:inherit; margin-left:8px;">Ver</button></div>
+                <div style="display:flex; align-items:center; gap:12px; padding:11px 20px; border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"><span style="font-size:11px; color:#9CA3AF; font-family:'Inter',monospace; min-width:28px;">1.2</span><span style="flex:1; font-size:13px; color:#374151;">Nome fantasia</span><span style="font-size:11px; font-weight:600; color:#166534; background:rgba(93,164,122,0.1); padding:2px 8px; border-radius:99px;">Validado</span><button onclick="openModal('onb-validate')" style="padding:3px 8px; border:1px solid #E5E7EB; background:white; border-radius:5px; font-size:11px; color:#374151; cursor:pointer; font-family:inherit; margin-left:8px;">Ver</button></div>
+                <div style="display:flex; align-items:center; gap:12px; padding:11px 20px;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"><span style="font-size:11px; color:#9CA3AF; font-family:'Inter',monospace; min-width:28px;">1.3</span><span style="flex:1; font-size:13px; color:#374151;">CNPJ e dados cadastrais</span><span style="font-size:11px; font-weight:600; color:#B91C1C; background:rgba(199,68,70,0.08); padding:2px 8px; border-radius:99px;">Sem resposta</span><button onclick="openModal('onb-validate')" style="padding:3px 8px; border:1px solid #E5E7EB; background:white; border-radius:5px; font-size:11px; color:#374151; cursor:pointer; font-family:inherit; margin-left:8px;">Ver</button></div>
+              </div>
+            </div>
+          </div>
+          <!-- Seção 2 colapsada -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; margin-bottom:10px; overflow:hidden;">
+            <div onclick="onbToggleSection('sec2')" style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; cursor:pointer;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+              <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:12px; font-weight:700; color:#6B7280; background:#E5E7EB; padding:2px 8px; border-radius:99px;">2</span><span style="font-size:14px; font-weight:600; color:#111827;">Estrutura Organizacional</span><span style="font-size:11px; color:#6B7280; margin-left:4px;">· Core</span></div>
+              <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:12px; color:#92400E; background:rgba(209,153,96,0.1); border-radius:99px; padding:2px 10px; font-weight:600;">18/20 respondidos</span><i data-lucide="chevron-right" id="onb-sec2-icon" style="width:16px;height:16px;color:#9CA3AF;"></i></div>
+            </div>
+            <div id="onb-sec2-body" style="display:none;"></div>
+          </div>
+          <!-- Seção 3 colapsada -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; margin-bottom:10px; overflow:hidden;">
+            <div onclick="onbToggleSection('sec3')" style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; cursor:pointer;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+              <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:12px; font-weight:700; color:#6B7280; background:#E5E7EB; padding:2px 8px; border-radius:99px;">3</span><span style="font-size:14px; font-weight:600; color:#111827;">Configurações Técnicas</span><span style="font-size:11px; color:#6B7280; margin-left:4px;">· Deep Dive</span></div>
+              <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:12px; color:#B91C1C; background:rgba(199,68,70,0.08); border-radius:99px; padding:2px 10px; font-weight:600;">10/20 respondidos</span><i data-lucide="chevron-right" id="onb-sec3-icon" style="width:16px;height:16px;color:#9CA3AF;"></i></div>
+            </div>
+            <div id="onb-sec3-body" style="display:none;"></div>
+          </div>
+        </div><!-- /onb-panel-checklist -->
+
+        <!-- TAB: Respostas -->
+        <div id="onb-panel-respostas" style="display:none;">
+          <div style="display:flex; gap:8px; margin-bottom:16px; align-items:center;">
+            <select style="padding:7px 10px; border:1px solid #E5E7EB; border-radius:8px; font-size:12px; background:white; font-family:inherit; outline:none; cursor:pointer;"><option>Todos os status</option><option>Pendente revisão</option><option>Aprovado</option><option>Requer revisão</option></select>
+            <select style="padding:7px 10px; border:1px solid #E5E7EB; border-radius:8px; font-size:12px; background:white; font-family:inherit; outline:none; cursor:pointer;"><option>Todos os grupos</option><option>Bloqueante</option><option>Core</option><option>Deep Dive</option><option>Jurídico</option></select>
+            <button style="margin-left:auto; padding:7px 14px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit;">Exportar CSV</button>
+          </div>
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead><tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;"><th style="text-align:left; padding:11px 20px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Item</th><th style="text-align:left; padding:11px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Questão</th><th style="text-align:left; padding:11px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Resposta</th><th style="text-align:left; padding:11px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Validação</th><th style="text-align:left; padding:11px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Atualizado</th><th style="padding:11px 20px;"></th></tr></thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"><td style="padding:12px 20px; font-size:12px; color:#9CA3AF; font-family:'Inter',monospace;">1.1</td><td style="padding:12px 12px; font-size:13px; color:#374151; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Razão social da empresa</td><td style="padding:12px 12px; font-size:13px; color:#111827; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">iFood Comércio de Alimentos S.A.</td><td style="padding:12px 12px;"><span style="font-size:11px; font-weight:600; color:#166534; background:rgba(93,164,122,0.1); padding:2px 8px; border-radius:99px;">Aprovado</span></td><td style="padding:12px 12px; font-size:12px; color:#9CA3AF;">16/06/2026</td><td style="padding:12px 20px;"><button onclick="openModal('onb-validate')" style="padding:4px 10px; border:1px solid #E5E7EB; background:white; border-radius:6px; font-size:11px; color:#374151; cursor:pointer; font-family:inherit;">Ver</button></td></tr>
+                <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"><td style="padding:12px 20px; font-size:12px; color:#9CA3AF; font-family:'Inter',monospace;">2.1</td><td style="padding:12px 12px; font-size:13px; color:#374151; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Organograma da área de RH</td><td style="padding:12px 12px; font-size:13px; color:#60BED1;">📎 organograma_rh.pdf</td><td style="padding:12px 12px;"><span style="font-size:11px; font-weight:600; color:#92400E; background:rgba(209,153,96,0.1); padding:2px 8px; border-radius:99px;">Pendente revisão</span></td><td style="padding:12px 12px; font-size:12px; color:#9CA3AF;">18/06/2026</td><td style="padding:12px 20px;"><button onclick="openModal('onb-validate')" style="padding:4px 10px; border:1px solid #E5E7EB; background:white; border-radius:6px; font-size:11px; color:#374151; cursor:pointer; font-family:inherit;">Ver</button></td></tr>
+                <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"><td style="padding:12px 20px; font-size:12px; color:#9CA3AF; font-family:'Inter',monospace;">3.1</td><td style="padding:12px 12px; font-size:13px; color:#374151; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Configuração de SSO / Identity Provider</td><td style="padding:12px 12px; font-size:13px; color:#374151; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Azure AD — tenant ID …</td><td style="padding:12px 12px;"><span style="font-size:11px; font-weight:600; color:#1D4ED8; background:rgba(96,190,209,0.1); padding:2px 8px; border-radius:99px;">Em análise</span></td><td style="padding:12px 12px; font-size:12px; color:#9CA3AF;">19/06/2026</td><td style="padding:12px 20px;"><button onclick="openModal('onb-validate')" style="padding:4px 10px; border:1px solid #E5E7EB; background:white; border-radius:6px; font-size:11px; color:#374151; cursor:pointer; font-family:inherit;">Ver</button></td></tr>
+                <tr onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"><td style="padding:12px 20px; font-size:12px; color:#9CA3AF; font-family:'Inter',monospace;">2.4</td><td style="padding:12px 12px; font-size:13px; color:#374151; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Definição de SLAs internos</td><td style="padding:12px 12px; font-size:13px; color:#374151; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Resposta e triagem: 48h…</td><td style="padding:12px 12px;"><span style="font-size:11px; font-weight:600; color:#92400E; background:rgba(209,153,96,0.1); padding:2px 8px; border-radius:99px;">Pendente revisão</span></td><td style="padding:12px 12px; font-size:12px; color:#9CA3AF;">19/06/2026</td><td style="padding:12px 20px;"><button onclick="openModal('onb-validate')" style="padding:4px 10px; border:1px solid #E5E7EB; background:white; border-radius:6px; font-size:11px; color:#374151; cursor:pointer; font-family:inherit;">Ver</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div><!-- /onb-panel-respostas -->
+
+        <!-- TAB: Delegações -->
+        <div id="onb-panel-delegacoes" style="display:none;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
+            <!-- Delegação 1: pendente -->
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px;">
+              <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:10px;"><div style="width:36px; height:36px; border-radius:8px; background:#9860D1; color:white; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">FL</div><div><div style="font-size:13px; font-weight:600; color:#111827;">Fernanda Legal</div><div style="font-size:12px; color:#6B7280;">fernanda.legal@ifood.com</div></div></div>
+                <span style="font-size:11px; font-weight:600; color:#92400E; background:rgba(209,153,96,0.12); padding:3px 9px; border-radius:99px;">Pendente</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:#6B7280;">Itens delegados</span><span style="font-weight:600; color:#111827;">3 itens</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:#6B7280;">Prazo</span><span style="font-weight:600; color:#C74446;">23/06/2026 · vence amanhã</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:#6B7280;">Enviado em</span><span style="color:#374151;">18/06/2026</span></div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button style="flex:1; padding:7px 10px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">Reenviar lembrete</button>
+                <button style="padding:7px 10px; border:1px solid rgba(199,68,70,0.3); background:white; color:#C74446; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='rgba(199,68,70,0.04)'" onmouseout="this.style.background='white'">Revogar</button>
+              </div>
+            </div>
+            <!-- Delegação 2: respondida -->
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px;">
+              <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:10px;"><div style="width:36px; height:36px; border-radius:8px; background:#60BED1; color:white; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">CT</div><div><div style="font-size:13px; font-weight:600; color:#111827;">Carlos Techista</div><div style="font-size:12px; color:#6B7280;">carlos.tech@ifood.com</div></div></div>
+                <span style="font-size:11px; font-weight:600; color:#166534; background:rgba(93,164,122,0.12); padding:3px 9px; border-radius:99px;">Respondida</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:#6B7280;">Itens delegados</span><span style="font-weight:600; color:#111827;">2 itens (SSO + LinkedIn)</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:#6B7280;">Respondido em</span><span style="color:#374151;">19/06/2026 às 14:32</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:#6B7280;">Prazo original</span><span style="color:#374151;">20/06/2026</span></div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button onclick="onbSwitchTab('respostas')" style="flex:1; padding:7px 10px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">Ver respostas</button>
+              </div>
+            </div>
+          </div>
+        </div><!-- /onb-panel-delegacoes -->
+
+        <!-- TAB: Arquivos -->
+        <div id="onb-panel-arquivos" style="display:none;">
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead><tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;"><th style="text-align:left; padding:11px 20px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Nome</th><th style="text-align:left; padding:11px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Item relacionado</th><th style="text-align:left; padding:11px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Tamanho</th><th style="text-align:left; padding:11px 12px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Enviado em</th><th style="padding:11px 20px;"></th></tr></thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"><td style="padding:12px 20px;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:32px; height:32px; border-radius:6px; background:rgba(199,68,70,0.08); display:flex; align-items:center; justify-content:center;"><i data-lucide="file-text" style="width:14px;height:14px;color:#C74446;"></i></div><span style="font-size:13px; color:#111827;">organograma_rh.pdf</span></div></td><td style="padding:12px 12px; font-size:12px; color:#6B7280;">2.1 — Organograma RH</td><td style="padding:12px 12px; font-size:12px; color:#374151;">2.4 MB</td><td style="padding:12px 12px; font-size:12px; color:#6B7280;">18/06/2026</td><td style="padding:12px 20px;"><button style="padding:4px 10px; border:1px solid #E5E7EB; background:white; border-radius:6px; font-size:11px; color:#374151; cursor:pointer; font-family:inherit;">Download</button></td></tr>
+                <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"><td style="padding:12px 20px;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:32px; height:32px; border-radius:6px; background:rgba(96,190,209,0.08); display:flex; align-items:center; justify-content:center;"><i data-lucide="file-spreadsheet" style="width:14px;height:14px;color:#60BED1;"></i></div><span style="font-size:13px; color:#111827;">mapeamento_cargos.xlsx</span></div></td><td style="padding:12px 12px; font-size:12px; color:#6B7280;">2.3 — Mapeamento de cargos</td><td style="padding:12px 12px; font-size:12px; color:#374151;">1.1 MB</td><td style="padding:12px 12px; font-size:12px; color:#6B7280;">16/06/2026</td><td style="padding:12px 20px;"><button style="padding:4px 10px; border:1px solid #E5E7EB; background:white; border-radius:6px; font-size:11px; color:#374151; cursor:pointer; font-family:inherit;">Download</button></td></tr>
+                <tr onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"><td style="padding:12px 20px;"><div style="display:flex; align-items:center; gap:8px;"><div style="width:32px; height:32px; border-radius:6px; background:rgba(93,164,122,0.08); display:flex; align-items:center; justify-content:center;"><i data-lucide="file" style="width:14px;height:14px;color:#5DA47A;"></i></div><span style="font-size:13px; color:#111827;">contrato_confidencialidade.pdf</span></div></td><td style="padding:12px 12px; font-size:12px; color:#9CA3AF;">—</td><td style="padding:12px 12px; font-size:12px; color:#374151;">856 KB</td><td style="padding:12px 12px; font-size:12px; color:#6B7280;">15/06/2026</td><td style="padding:12px 20px;"><button style="padding:4px 10px; border:1px solid #E5E7EB; background:white; border-radius:6px; font-size:11px; color:#374151; cursor:pointer; font-family:inherit;">Download</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div><!-- /onb-panel-arquivos -->
+
+        <!-- TAB: Mensagens -->
+        <div id="onb-panel-mensagens" style="display:none;">
+          <div style="display:grid; grid-template-columns:1fr; max-width:700px;">
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden; display:flex; flex-direction:column;" style="height:460px;">
+              <div style="padding:16px 20px; border-bottom:1px solid #E5E7EB; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:14px; font-weight:600; color:#111827;">Mensagens</span>
+                <span style="font-size:12px; color:#6B7280;">Thread geral</span>
+              </div>
+              <div style="flex:1; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:12px; max-height:300px;">
+                <!-- mensagem admin -->
+                <div style="display:flex; gap:10px; flex-direction:row-reverse;">
+                  <div style="width:32px; height:32px; border-radius:8px; background:#111827; color:white; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">RA</div>
+                  <div style="max-width:70%;">
+                    <div style="background:#111827; color:white; padding:10px 14px; border-radius:12px 2px 12px 12px; font-size:13px; line-height:1.5;">Olá Maria! Vi que o item de CNPJ ainda está pendente. Consegue preencher até sexta-feira? 🙏</div>
+                    <div style="font-size:11px; color:#9CA3AF; text-align:right; margin-top:4px;">Rodrigo Alfieri · 19/06 09:42</div>
+                  </div>
+                </div>
+                <!-- mensagem cliente -->
+                <div style="display:flex; gap:10px;">
+                  <div style="width:32px; height:32px; border-radius:8px; background:#C74446; color:white; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">MS</div>
+                  <div style="max-width:70%;">
+                    <div style="background:#F3F4F6; color:#111827; padding:10px 14px; border-radius:2px 12px 12px 12px; font-size:13px; line-height:1.5;">Oi Rodrigo! Sim, vou preencher hoje à tarde. Estou aguardando o departamento jurídico me passar o número correto do CNPJ.</div>
+                    <div style="font-size:11px; color:#9CA3AF; margin-top:4px;">Maria Silva · 19/06 10:15</div>
+                  </div>
+                </div>
+              </div>
+              <!-- input de nova mensagem -->
+              <div style="padding:12px 16px; border-top:1px solid #E5E7EB; display:flex; gap:8px; align-items:center;">
+                <input type="text" placeholder="Escreva uma mensagem…" style="flex:1; padding:8px 12px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#111827; outline:none; font-family:inherit;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'">
+                <button style="padding:8px 16px; background:#C74446; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#B23B3D'" onmouseout="this.style.background='#C74446'">Enviar</button>
+              </div>
+            </div>
+          </div>
+        </div><!-- /onb-panel-mensagens -->
+
+        <!-- TAB: Implementação -->
+        <div id="onb-panel-implementacao" style="display:none;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+            <!-- Fase 1: Concluída -->
+            <div style="background:white; border:1px solid rgba(93,164,122,0.3); border-radius:12px; padding:20px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;"><div style="width:28px; height:28px; border-radius:8px; background:rgba(93,164,122,0.12); display:flex; align-items:center; justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5DA47A" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><span style="font-size:13px; font-weight:600; color:#111827;">Coleta de dados</span></div>
+                <span style="font-size:11px; font-weight:600; color:#166534; background:rgba(93,164,122,0.1); padding:2px 8px; border-radius:99px;">Concluída</span>
+              </div>
+              <div style="background:#E5E7EB; border-radius:2px; height:4px; overflow:hidden; margin-bottom:8px;"><div style="background:#5DA47A; width:100%; height:100%; border-radius:2px;"></div></div>
+              <div style="font-size:12px; color:#6B7280; margin-bottom:10px;">8/8 tarefas · Concluído em 17/06</div>
+            </div>
+            <!-- Fase 2: Em andamento -->
+            <div style="background:white; border:2px solid #60BED1; border-radius:12px; padding:20px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;"><div style="width:28px; height:28px; border-radius:8px; background:rgba(96,190,209,0.12); display:flex; align-items:center; justify-content:center;"><i data-lucide="activity" style="width:14px;height:14px;color:#60BED1;"></i></div><span style="font-size:13px; font-weight:600; color:#111827;">Validação</span></div>
+                <span style="font-size:11px; font-weight:600; color:#0E7490; background:rgba(96,190,209,0.12); padding:2px 8px; border-radius:99px;">Em andamento</span>
+              </div>
+              <div style="background:#E5E7EB; border-radius:2px; height:4px; overflow:hidden; margin-bottom:8px;"><div style="background:#60BED1; width:40%; height:100%; border-radius:2px;"></div></div>
+              <div style="font-size:12px; color:#6B7280; margin-bottom:10px;">4/10 tarefas</div>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5DA47A" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span style="color:#374151;">Validar seção Jurídico</span></div>
+                <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><div style="width:12px; height:12px; border:1.5px solid #D1D5DB; border-radius:3px; flex-shrink:0;"></div><span style="color:#6B7280;">Validar seção Core — CNPJ</span></div>
+                <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><div style="width:12px; height:12px; border:1.5px solid #D1D5DB; border-radius:3px; flex-shrink:0;"></div><span style="color:#6B7280;">Validar configurações técnicas</span></div>
+              </div>
+            </div>
+            <!-- Fase 3: Pendente -->
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px; opacity:0.7;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;"><div style="width:28px; height:28px; border-radius:8px; background:#F3F4F6; display:flex; align-items:center; justify-content:center;"><i data-lucide="settings" style="width:14px;height:14px;color:#9CA3AF;"></i></div><span style="font-size:13px; font-weight:600; color:#374151;">Setup Técnico</span></div>
+                <span style="font-size:11px; font-weight:600; color:#6B7280; background:#F3F4F6; padding:2px 8px; border-radius:99px;">Pendente</span>
+              </div>
+              <div style="background:#E5E7EB; border-radius:2px; height:4px; overflow:hidden; margin-bottom:8px;"><div style="background:#D1D5DB; width:0%; height:100%; border-radius:2px;"></div></div>
+              <div style="font-size:12px; color:#9CA3AF;">0/6 tarefas · Aguarda Validação</div>
+            </div>
+            <!-- Fase 4: Pendente -->
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px; opacity:0.7;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;"><div style="width:28px; height:28px; border-radius:8px; background:#F3F4F6; display:flex; align-items:center; justify-content:center;"><i data-lucide="users" style="width:14px;height:14px;color:#9CA3AF;"></i></div><span style="font-size:13px; font-weight:600; color:#374151;">Onboarding CS</span></div>
+                <span style="font-size:11px; font-weight:600; color:#6B7280; background:#F3F4F6; padding:2px 8px; border-radius:99px;">Pendente</span>
+              </div>
+              <div style="background:#E5E7EB; border-radius:2px; height:4px; overflow:hidden; margin-bottom:8px;"><div style="background:#D1D5DB; width:0%; height:100%; border-radius:2px;"></div></div>
+              <div style="font-size:12px; color:#9CA3AF;">0/5 tarefas</div>
+            </div>
+            <!-- Fase 5: Go Live bloqueada -->
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px; opacity:0.5;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;"><div style="width:28px; height:28px; border-radius:8px; background:#F3F4F6; display:flex; align-items:center; justify-content:center;"><i data-lucide="rocket" style="width:14px;height:14px;color:#9CA3AF;"></i></div><span style="font-size:13px; font-weight:600; color:#374151;">Go Live</span></div>
+                <span style="font-size:11px; font-weight:600; color:#6B7280; background:#F3F4F6; padding:2px 8px; border-radius:99px;">Bloqueado</span>
+              </div>
+              <div style="background:#E5E7EB; border-radius:2px; height:4px; overflow:hidden; margin-bottom:8px;"></div>
+              <div style="font-size:12px; color:#9CA3AF;">Aguarda fases anteriores</div>
+            </div>
+          </div>
+        </div><!-- /onb-panel-implementacao -->
+
+      </div>
+    </div><!-- /#screen-onboarding-client -->
+
+    <!-- Modal: validar resposta -->
+    <div id="overlay-onb-validate" class="modal-overlay" onclick="handleOverlayClick(event)" style="display:none; position:fixed; inset:0; z-index:1000; display:none; align-items:center; justify-content:center;">
+      <div class="modal-backdrop" style="position:absolute; inset:0; background:rgba(17,24,39,0.4); backdrop-filter:blur(2px);"></div>
+      <div class="modal" style="position:relative; background:white; border-radius:16px; padding:28px; width:560px; max-width:90vw; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+          <div><div style="font-size:16px; font-weight:700; color:#111827; margin-bottom:4px;">Revisar Resposta</div><div style="font-size:12px; color:#6B7280;">Item 2.1 — Organograma da área de RH</div></div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:4px; color:#6B7280; border-radius:6px;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='transparent'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <div style="background:#F9FAFB; border-radius:8px; padding:14px; margin-bottom:16px;">
+          <div style="font-size:12px; font-weight:600; color:#6B7280; margin-bottom:6px;">Resposta do cliente</div>
+          <div style="font-size:13px; color:#111827; display:flex; align-items:center; gap:8px;"><i data-lucide="file-text" style="width:14px;height:14px;color:#C74446;"></i> organograma_rh.pdf <span style="font-size:11px; color:#9CA3AF;">2.4 MB · 18/06/2026</span></div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Comentário (opcional)</div>
+          <textarea placeholder="Adicione uma observação para o cliente…" style="width:100%; padding:10px 12px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#111827; outline:none; font-family:inherit; resize:vertical; min-height:80px; box-sizing:border-box;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'"></textarea>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button onclick="closeModal()" style="padding:9px 18px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="closeModal()" style="padding:9px 18px; border:1px solid rgba(209,153,96,0.4); background:white; color:#92400E; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">Pedir revisão</button>
+          <button onclick="closeModal()" style="padding:9px 18px; background:#5DA47A; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#4D8F69'" onmouseout="this.style.background='#5DA47A'">Aprovar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: enviar mensagem para cliente -->
+    <div id="overlay-onb-send-message" class="modal-overlay" onclick="handleOverlayClick(event)" style="display:none; position:fixed; inset:0; z-index:1000; display:none; align-items:center; justify-content:center;">
+      <div class="modal-backdrop" style="position:absolute; inset:0; background:rgba(17,24,39,0.4); backdrop-filter:blur(2px);"></div>
+      <div class="modal" style="position:relative; background:white; border-radius:16px; padding:28px; width:500px; max-width:90vw; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <div style="font-size:16px; font-weight:700; color:#111827;">Enviar mensagem</div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:4px; color:#6B7280; border-radius:6px;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='transparent'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <div style="margin-bottom:14px;"><label style="font-size:13px; font-weight:500; color:#374151; display:block; margin-bottom:6px;">Para</label><div style="padding:9px 12px; background:#F3F4F6; border-radius:8px; font-size:13px; color:#374151;">Maria Silva · iFood Talentos</div></div>
+        <div style="margin-bottom:14px;"><label style="font-size:13px; font-weight:500; color:#374151; display:block; margin-bottom:6px;">Item relacionado (opcional)</label><select style="width:100%; padding:9px 12px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#374151; background:white; font-family:inherit; outline:none;"><option value="">— Nenhum item específico —</option><option>1.3 — CNPJ e dados cadastrais</option><option>3.1 — Configuração SSO</option><option>3.4 — Integração LinkedIn</option></select></div>
+        <div style="margin-bottom:20px;"><label style="font-size:13px; font-weight:500; color:#374151; display:block; margin-bottom:6px;">Mensagem</label><textarea placeholder="Escreva sua mensagem…" style="width:100%; padding:10px 12px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#111827; outline:none; font-family:inherit; resize:vertical; min-height:100px; box-sizing:border-box;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'"></textarea></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button onclick="closeModal()" style="padding:9px 18px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="closeModal()" style="padding:9px 18px; background:#C74446; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#B23B3D'" onmouseout="this.style.background='#C74446'">Enviar</button>
+        </div>
+      </div>
+    </div>
 
   </main><!-- /#main-content -->
 

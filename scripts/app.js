@@ -38,7 +38,9 @@ function updateSidebarActive(screenId) {
     'screen-clients':               'nav-clients',
     'screen-clients-empty':         'nav-clients',
     'screen-clients-search-empty':  'nav-clients',
-    'screen-onboarding':            'nav-onboarding',
+    'screen-onboarding':                  'nav-onboarding',
+    'screen-onboarding-portal-global':    'nav-onboarding-portal',
+    'screen-onboarding-client':           'nav-client-onboarding',
     'screen-ai-monitoring':         'nav-ai-monitoring',
     'screen-audit-logs':            'nav-audit-logs',
     'screen-client-detail':         'nav-client-overview',
@@ -71,7 +73,9 @@ function updateTopbarContext(screenId) {
     'screen-clients':               'Clientes',
     'screen-clients-empty':         'Clientes',
     'screen-clients-search-empty':  'Clientes',
-    'screen-onboarding':            'Provisionamentos',
+    'screen-onboarding':                 'Provisionamentos',
+    'screen-onboarding-portal-global':   'Onboarding Portal',
+    'screen-onboarding-client':          'Onboarding — iFood Talentos',
     'screen-ai-monitoring':         'Monitoramento de Agentes IA',
     'screen-audit-logs':            'Logs & Auditoria',
     'screen-client-detail':         'iFood Talentos',
@@ -186,7 +190,7 @@ function clearClientContext() {
     lucide.createIcons({ nodes: [scopeBtn] });
   }
 
-  const clientScreens = ['screen-client-detail','screen-client-users','screen-billing','screen-llm-config','screen-feature-flags'];
+  const clientScreens = ['screen-client-detail','screen-client-users','screen-billing','screen-llm-config','screen-feature-flags','screen-onboarding-client'];
   if (clientScreens.includes(currentScreen)) {
     showScreen('screen-clients');
   }
@@ -408,3 +412,61 @@ document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
   showScreen('screen-dashboard');
 });
+
+/* ----------------------------------------------------------
+   Onboarding Portal — Tab navigation
+   ---------------------------------------------------------- */
+const ONB_TABS = ['visao','checklist','respostas','delegacoes','arquivos','mensagens','implementacao'];
+
+function onbSwitchTab(tab) {
+  ONB_TABS.forEach(t => {
+    const panel = document.getElementById('onb-panel-' + t);
+    const btn   = document.getElementById('onb-tab-' + t);
+    if (!panel || !btn) return;
+    if (t === tab) {
+      panel.style.display = '';
+      btn.style.color = '#C74446';
+      btn.style.fontWeight = '600';
+      btn.style.borderBottom = '2px solid #C74446';
+    } else {
+      panel.style.display = 'none';
+      btn.style.color = '#6B7280';
+      btn.style.fontWeight = '500';
+      btn.style.borderBottom = '2px solid transparent';
+    }
+  });
+}
+
+/* ----------------------------------------------------------
+   Onboarding Portal — Checklist section toggle
+   ---------------------------------------------------------- */
+function onbToggleSection(secId) {
+  const body = document.getElementById('onb-' + secId + '-body');
+  const icon = document.getElementById('onb-' + secId + '-icon');
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  if (icon) {
+    icon.setAttribute('data-lucide', isOpen ? 'chevron-right' : 'chevron-down');
+    lucide.createIcons({ nodes: [icon] });
+  }
+}
+
+/* ----------------------------------------------------------
+   Onboarding Portal — Global filter pills
+   ---------------------------------------------------------- */
+function opgFilterPill(selected) {
+  ['all','andamento','atrasado','aguardando','concluido'].forEach(p => {
+    const el = document.getElementById('opg-pill-' + p);
+    if (!el) return;
+    if (p === selected) {
+      el.style.background = '#111827';
+      el.style.borderColor = '#111827';
+      el.querySelectorAll('span,strong').forEach(s => { s.style.color = 'white'; });
+    } else {
+      el.style.background = 'white';
+      el.style.borderColor = '#E5E7EB';
+      el.querySelectorAll('span,strong').forEach(s => { s.style.color = ''; });
+    }
+  });
+}
