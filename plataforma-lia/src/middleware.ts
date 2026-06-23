@@ -1,9 +1,10 @@
-export const runtime = 'nodejs'
+import type { NextRequest } from 'next/server'
+import { proxy } from './proxy'
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
 
-export { proxy as middleware } from './proxy'
+export function middleware(request: NextRequest) {
+  return proxy(request)
+}
