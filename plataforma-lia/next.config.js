@@ -29,7 +29,7 @@ const nextConfig = {
     : { fetches: { fullUrl: false, hmrRefreshes: false }, incomingRequests: false },
   webpack: (config, { dev }) => {
     if (!dev) {
-      config.parallelism = 1;
+      config.parallelism = 4;
     }
     return config;
   },
