@@ -269,6 +269,14 @@ def tool_definition_to_langchain_tool(td: ToolContract) -> Any:
         fn = _uia_tee(fn)
     except Exception:
         pass
+    # STL-GATE (Stop-The-Lie): reescreve resultado de ghost tools
+    # (side_effect_executed=False + success=True) ANTES da stringificacao.
+    # Outermost tee = primeiro a processar o resultado.
+    try:
+        from app.shared.stl_gate_sink import tee_tool_function as _stl_tee
+        fn = _stl_tee(fn)
+    except Exception:
+        pass
     name = td.name
     description = td.description or f"Executa {name}"
 
