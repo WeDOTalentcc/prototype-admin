@@ -27,7 +27,8 @@ async def send_email(
     body: str | None = None,
     job_id: str | None = None,
     cc: list[str] | None = None,
-    attachments: list[str] | None = None
+    attachments: list[str] | None = None,
+    **kwargs
 ) -> dict[str, Any]:
     """
     Send an email to a candidate.
@@ -137,7 +138,8 @@ async def send_whatsapp(
     candidate_id: str,
     message: str,
     template_id: str | None = None,
-    job_id: str | None = None
+    job_id: str | None = None,
+    **kwargs
 ) -> dict[str, Any]:
     """
     Send a WhatsApp message to a candidate.
@@ -249,7 +251,8 @@ async def schedule_interview(
     location: str | None = None,
     meeting_link: str | None = None,
     notes: str | None = None,
-    send_invite: bool = True
+    send_invite: bool = True,
+    **kwargs
 ) -> dict[str, Any]:
     """
     Schedule an interview with a candidate.
@@ -381,7 +384,8 @@ async def send_bulk_email(
     candidate_ids: list[str],
     template_id: str,
     job_id: str | None = None,
-    custom_variables: dict[str, str] | None = None
+    custom_variables: dict[str, str] | None = None,
+    **kwargs
 ) -> dict[str, Any]:
     """
     Send bulk emails to multiple candidates using a template.
