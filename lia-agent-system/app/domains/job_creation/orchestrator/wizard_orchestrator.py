@@ -574,6 +574,7 @@ class WizardOrchestrator:
 
         # Working copy do state — tools veem mutações acumuladas dentro do loop.
         working_state = dict(state)
+        working_state["_current_user_message"] = msg
         accumulated_updates: dict[str, Any] = {}
         tool_calls: list[str] = []
         # Acumula o texto emitido em QUALQUER iteração. O modelo pode emitir

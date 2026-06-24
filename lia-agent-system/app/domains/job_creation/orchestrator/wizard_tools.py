@@ -250,6 +250,25 @@ def _handle_set_job_fields(
             error=True,
         )
 
+    # ── Guard computacional: manager ↔ recruiter confusion ────────────
+    # Se a mensagem corrente do usuário menciona "recrutador/a" SEM
+    # mencionar "gestor/a", e o LLM tenta setar manager_*, redireciona
+    # para recruiter_*. Guard NÃO depende do LLM acertar.
+    _cur_msg = (state.get("_current_user_message") or "").lower()
+    _RECRUITER_KW = ("recrutador", "recrutadora", "recruiter")
+    _MANAGER_KW = ("gestor", "gestora", "manager", "hiring manager", "chefe", "líder")
+    _has_recruiter_kw = any(kw in _cur_msg for kw in _RECRUITER_KW)
+    _has_manager_kw = any(kw in _cur_msg for kw in _MANAGER_KW)
+    if _has_recruiter_kw and not _has_manager_kw:
+        _REDIRECT_MAP = {"manager_name": "recruiter", "manager_email": "recruiter_email"}
+        _redirected = {_REDIRECT_MAP.get(k, k): v for k, v in tool_input.items()}
+        if _redirected != tool_input:
+            logger.warning(
+                "[WizardTools] Guard: LLM sent manager_* but user said recrutador — "
+                "redirected to recruiter field"
+            )
+            tool_input = _redirected
+
     updates: dict[str, Any] = {}
     applied: list[str] = []
     notes: list[str] = []
