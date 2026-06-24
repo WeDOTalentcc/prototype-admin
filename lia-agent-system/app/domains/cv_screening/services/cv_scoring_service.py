@@ -202,28 +202,30 @@ class CVScoringService:
                 sub_status=sub_status,
                 db=db
             )
-            
-            await activity_service.create_activity(
-                activity_type="cv_screening_completed",
-                title="CV Screening Automático Concluído",
-                description=f"Score: {rubric_score:.1f}% - {recommendation}",
-                actor_id="cv_screening_agent",
-                actor_name="CV Screening Agent",
-                actor_type="agent",
-                target_id=candidate_id,
-                target_type="candidate",
-                extra_data={
-                    "vacancy_id": vacancy_id,
-                    "company_id": company_id,
-                    "rubric_score": rubric_score,
-                    "cv_fit_score": cv_fit["cv_fit_score"],
-                    "recommendation": recommendation,
-                    "sub_status": sub_status
-                },
-                category="screening"
-            )
-            
             await db.commit()
+
+            try:
+                await activity_service.create_activity(
+                    activity_type="cv_screening_completed",
+                    title="CV Screening Automático Concluído",
+                    description=f"Score: {rubric_score:.1f}% - {recommendation}",
+                    actor_id="cv_screening_agent",
+                    actor_name="CV Screening Agent",
+                    actor_type="agent",
+                    target_id=candidate_id,
+                    target_type="candidate",
+                    extra_data={
+                        "vacancy_id": vacancy_id,
+                        "company_id": company_id,
+                        "rubric_score": rubric_score,
+                        "cv_fit_score": cv_fit["cv_fit_score"],
+                        "recommendation": recommendation,
+                        "sub_status": sub_status
+                    },
+                    category="screening"
+                )
+            except Exception as act_exc:
+                logger.warning("Activity creation failed (score already saved): %s", act_exc)
             
             logger.info(
                 f"✅ [CV_SCORING] Completed screening for candidate={candidate_id}: "
